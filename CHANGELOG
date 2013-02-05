@@ -1,0 +1,160 @@
+[!] information
+[*] modify/update
+[+] add
+[-] remove/bugfix
+
+
+20.01.2013 - version 0.7.6
+    [!] Production use version for qgis version >1.9.0-130  (Please note, only from qgis build december 2012 and up.)
+    [*] A few Qt UI-fixes/changes
+    
+02.01.2013 - version 0.7.5
+    [!] Production use version for qgis version >1.9.0-130  (Please note, only from qgis build december 2012 and up.)
+    [-] Updates according to QGIS API Changes for version 2.0 (http://hub.qgis.org/wiki/quantum-gis/API_changes_for_version_20)
+
+19.12.2012 - version 0.7.4
+    [!] Production use version for qgis version >1.9.0-130  (Please note, only from qgis build december 2012 and up.)
+    [-] Legend Group Index issues
+    
+18.12.2012 - version 0.7.3
+    [!] Production use version for qgis version >1.9.0-130  (Please note, only from qgis build december 2012 and up.)
+    [-] Fixing legend problems related to matplotlib versions and linux
+    [-] Bug fix for checkbox in custom ui
+    [-] moving form logics due to unresolved pythonpath issues
+    [*] some ui cleanup
+    
+10.12.2012 - version 0.7.2
+    [!] Production use version for qgis version >1.9.0-130  (Please note, only from qgis build december 2012 and up.)
+    [+] New import function to import stratigraphy data
+    [*] A Minor change in loading custom forms due to the new python bindings for QgsVectorLayer.setEditorLayer
+    
+11.10.2012 - version 0.7.1
+    [!] Production use version for qgis version 1.9.0-65  (Please note, only from build -65 and up.)
+    [-] Encoding issues
+    
+09.10.2012 - version 0.7.0
+    [!] Production use version for qgis version 1.9.0-65  (Please note, only from build -65 and up.)
+    [*] Minor spelling update
+
+08.10.2012 - version 0.6.9
+    [!] Production use version for qgis version 1.9.0-65  (Please note, only from build -65 and up.)
+    [+] New function to generate an observation point report in html format
+
+05.10.2012 - version 0.6.8
+    [!] Production use version for qgis version 1.9.0-65  (Please note, only from build -65 and up.)
+    [+] New function to import obs_points data from a .csv file
+    [+] sanity checks when calculating water level and calibrating logger(to avoid getting database locked if sqlite error in update process)
+    [*] updating database changed to 'update or ignore' to reduce risk of having db locked when trying to update db without fulfilled criterias
+
+03.10.2012 - version 0.6.7
+    [!] Production use version for qgis version 1.9.0-65  (Please note, only from build -65 and up.)
+    [*] Minor change in default settings dictionary and geocolorsymbolsdictionary
+    
+30.09.2012 - version 0.6.6
+    [!] Production use version for qgis version 1.9.0-65  (Please note, only from build -65 and up.)
+    [+] New function to import water quality data (both laboratory analysis and field measurements) from csv file
+    [*] Minor database design change on table w_qual_lab
+    [*] Code revision to separate import functions 
+
+21.09.2012 - version 0.6.5
+    [!] Production use version for qgis version 1.9.0-65  (Please note, only from build -65 and up.)
+    [*] Menu update
+    [*] Sanity check update for functions calculate w levels and calibrate water levels from logger
+
+19.09.2012 - version 0.6.4
+    [!] Production use version for qgis version 1.9.0-65  (Please note, only from build -65 and up.)
+    [-] modified encodings when reading from .qgs project file, also modified encoding behaviour when retrieving data from sqlite
+
+18.09.2012 - version 0.6.3
+    [!] Production use version for qgis version 1.9.0-65  (Please note, only from build -65 and up.)
+    [-] Backwards compatibility arranged for time series plot and stratigraphy plot
+
+18.09.2012 - version 0.6.2
+    [!] Production use version for qgis version 1.9.0-65  (Please note, only from build -65 and up.)
+    [*] Minor change in the database table "about_db"
+    [*] Updated english custom edit forms
+    [*] Updated default CRS
+
+17.09.2012 - version 0.6.1
+    [!] First production use version for qgis version 1.9.0-65  (Please note, only from build -65 and up.)
+    [*] Fixed load default layers! But it causes qgis version 1.8 to crash and thus marked as valid only from 1.8!
+
+13.09.2012 - version 0.6.0
+    [!] Experimental version for qgis version 1.9.0  
+    [!] Also partially working in qgis version 1.8 (but you can not add/edit features) and hence marked in metadata as valid from 1.8 (to not have to reactivate when running v 1.9 - v 1.8 - v 1.9)
+    [*] major change to database design!
+
+09.09.2012 - version 0.5.8
+    [!] Experimental version for qgis version 1.9.0  
+    [!] Also partially working in qgis version 1.8 (but you can not add/edit features) and hence marked in metadata as valid from 1.8 (to not have to reactivate when running v 1.9 - v 1.8 - v 1.9)
+    [+] Added info on midvatten plugin version that created the midvatten db
+    [*] Don't stop loading if a single default layer do not exist
+
+07.09.2012 - version 0.5.7
+    [!] Experimental version for qgis version 1.9.0  
+    [!] Also partially working in qgis version 1.8 (but you can not add/edit features) and hence marked in metadata as valid from 1.8 (to not have to reactivate when running v 1.9 - v 1.8 - v 1.9)
+    [*] Added logic to check import w_level data, number of columns...
+    [*] Moved to separate 'Midvatten' menu
+    [+] Added english custom edit forms (which are loaded with load default layers) - swedish or english ui depends on locale.getdefaultlocale()
+
+06.09.2012 - version 0.5.6
+    [!] Experimental version for qgis version 1.9.0  
+    [!] Also partially working in qgis version 1.8 (but you can not add/edit features) and hence marked in metadata as valid from 1.8 (to not have to reactivate when running v 1.9 - v 1.8 - v 1.9)
+    [+] Added function for calculating water levels from "top of casing" and "measurement" 
+    [*] finished logger calibration function
+
+31.08.2012 - version 0.5.5
+    [!] Experimental version that only works on version 1.9.0  - although it is not seen in metadata (to not have to reactivate when running v 1.9 - v 1.8 - v 1.9)
+    [*] Changing XYplot drawstyle from step-plot to ordinary line plot
+    [*] Finished function for importing logger data
+    [+] tables obs_points, w_levels, w_levels_logger must not be in editing mode when they are edited by some plugin functions
+    [+] started on function for calibrating logger data
+    
+22.08.2012 - version 0.5.4
+    [!] Experimental version that only works on version 1.9.0  - although it is not seen in metadata (to not have to reactivate when running v 1.9 - v 1.8 - v 1.9)
+    [+] Added several functions to import water level data from csv file into the database
+    [*] code cleanup, several sanity checks and user info when something is missing or not correctly selectedn
+    
+14.08.2012 - version 0.5.3
+    [!] Experimental version that only works on version 1.9.0  - although it is not seen in metadata (to not have to reactivate when running v 1.9 - v 1.8 - v 1.9)
+    [*] default settings are now including default table and column names according to predefined db structure
+    [*] when a new database is created, make sure that database is the selected one in "settings"
+    
+12.08.2012 - version 0.5.2
+    [!] Experimental version that only works on version 1.9.0  - although it is not seen in metadata (to not have to reactivate when running v 1.9 - v 1.8 - v 1.9)
+    [-] fixed bug in time series step-plot when selecting no markers
+    [+] Added several custom edit forms with form logic to validate user input
+    
+02.08.2012 - version 0.5.1
+    [!] Experimental version that only works on version 1.9.0  - although it is not seen in metadata (to not have to reactivate when running v 1.9 - v 1.8 - v 1.9)
+    [-] tries to remove also the non-spatial tables before adding them as default layers "Midvatten_OBS_DB"
+
+02.08.2012 - version 0.5.0
+    [*] Modified database design
+    [+] Added function to create a new empty spatialite database of predefined design
+    [+] Added function to load default layers from database (incl symbologi, custom edit form etc)
+    [+] Added function to generate a water quality report
+
+21.06.2012 - version 0.4.2
+    [-] Minor bugfix in geo dictionary
+    [*] Minor change of stratigraphy plot layout
+    [+] Add option to either print descriptions or comments aside stratigraphy plot
+
+26.04.2012 - version 0.4.1
+    [-] Minor bugfix related to reset of settings
+
+05.04.2012 - version 0.4.0
+    [!] After some testing and revised plans for the the future - the plugin is no longer considered experimental
+    [*] The plugin now reads database views as well as tables
+    [*] About dialog reads from metadata.txt and also a minor enhancement of SQL clause
+
+18.03.2012 - version 0.3.2
+    [*] Settings are now stored in QGIS project file instead of global
+    [!] The stratigraphy plot is by default colored by geo codes
+
+14.03.2012 - version 0.3.1
+    [*] Cleaning code and some 
+    [-] bugfix concering last chosen tables and columns
+
+06.03.2012 - version 0.3
+    [!] First public experimental version
