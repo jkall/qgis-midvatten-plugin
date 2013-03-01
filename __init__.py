@@ -33,7 +33,7 @@ def name():
 def description():
     return "A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db. Partly based on the ARPAT plugin."
 def version():
-    return "Version 0.7.6"
+    return "Version 0.7.7"
 def icon():
     return "icons/MidvSettings.png"
 def authorName():
