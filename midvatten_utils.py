@@ -66,7 +66,13 @@ def getselectedobjectnames():
     observations = [None]*(qgis.utils.iface.activeLayer().selectedFeatureCount())
     i=0
     for k in selectedobs:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
-        attributes=selectedobs[i].attributeMap() #Copy attributes, for the i:th object, to a list 
+        #<CHANGE FOR QGIS 2.0>:
+        if hasattr(selectedobs[i], "attributeMap"): #duck typing scheme to test depreceated method, see http://hub.qgis.org/wiki/quantum-gis/API_changes_for_version_20
+            attributes=selectedobs[i].attributeMap() #Copy attributes, for the i:th object, to a list
+        else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
+            attributes = selectedobs[i]
+        #</CHANGE FOR QGIS 2.0>:
+                        
         observations[i] = str(attributes[kolumnindex].toString()) # Copy value in column obsid in the attribute list
         i+=1
     return observations

@@ -49,7 +49,12 @@ class wqualreport():        # extracts water quality data for selected objects, 
         f.write(rpt2)
 
         for object in observations:
-            attributes=observations[i].attributeMap() 
+            #<CHANGE FOR QGIS 2.0>:
+            if hasattr(observations[i], "attributeMap"): #duck typing scheme to test depreceated method, see http://hub.qgis.org/wiki/quantum-gis/API_changes_for_version_20
+                attributes=observations[i].attributeMap() #Copy attributes, for the i:th object, to a list
+            else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
+                attributes = observations[i]
+            #</CHANGE FOR QGIS 2.0>:                        
             obsid = attributes[kolumnindex].toString()    # NOTE! obsid is a QString!!
             ReportData = self.GetData(str(self.settingsdict['database']).encode(locale.getdefaultlocale()[1]), obsid)   # one observation at a time
             #ReportData.append(self.GetData(str(self.settingsdict['database']).encode('latin-1'), obsid))  # does not work as expected
