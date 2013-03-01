@@ -4,6 +4,10 @@
 [-] remove/bugfix
 
 
+01.03.2013 - version 0.7.7
+    [!] Production use version for qgis version >1.9.0-130  (Please note, only from qgis build december 2012 and up.)
+    [-] Fixes du to the API changes that lead to QgsFeature.attributeMap being deprecated 
+    
 20.01.2013 - version 0.7.6
     [!] Production use version for qgis version >1.9.0-130  (Please note, only from qgis build december 2012 and up.)
     [*] A few Qt UI-fixes/changes

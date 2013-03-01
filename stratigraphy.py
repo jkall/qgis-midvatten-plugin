@@ -154,14 +154,43 @@ class SurveyStore:
                 coord_list=[None]*nF # List for coordinates
                 i=0
                 for k in ob:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
-                    attributes=ob[i].attributeMap() #Copy attributes, for the i:th object, to a list 
-                    obsid_list[i] = unicode(attributes[obsid_ColNo].toString()) # Copy value in column obsid in the attribute list 
+                    #<CHANGE FOR QGIS 2.0>:
+                    if hasattr(ob[i], "attributeMap"): #duck typing scheme to test depreceated method, see http://hub.qgis.org/wiki/quantum-gis/API_changes_for_version_20
+                        attributes=ob[i].attributeMap() #Copy attributes, for the i:th object, to a list
+                    else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
+                        attributes = ob[i]
+
+                    obsid = unicode(attributes[obsid_ColNo].toString()) # Copy value in column obsid in the attribute list
+
                     if attributes[h_gs_ColNo].toDouble()[0] and attributes[h_gs_ColNo].toDouble()[0] >0:  # Only get h_gs if it exists
-                        toplvl_list[i] = attributes[h_gs_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list 
+                        top_lvl = attributes[h_gs_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
                     elif attributes[h_toc_ColNo].toDouble()[0] and attributes[h_toc_ColNo].toDouble()[0] >0:    # else get h_toc if that exists
-                        toplvl_list[i] = attributes[h_toc_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list 
-                    else:       # otherwise, if neither h_gs nor h_tox exists - plot as if h_gs is zero
-                        toplvl_list[i] = 0
+                        top_lvl = attributes[h_toc_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
+                    else:       # otherwise, if neither h_gs nor h_toc exists - plot as if h_gs is zero
+                        top_lvl = 0
+
+
+                    """
+                        obsid = unicode(attributes[obsid_ColNo].toString()) # Copy value in column obsid in the attribute list
+                        if attributes[h_gs_ColNo].toDouble()[0] and attributes[h_gs_ColNo].toDouble()[0] >0:  # Only get h_gs if it exists
+                            top_lvl = attributes[h_gs_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
+                        elif attributes[h_toc_ColNo].toDouble()[0] and attributes[h_toc_ColNo].toDouble()[0] >0:    # else get h_toc if that exists
+                            top_lvl = attributes[h_toc_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
+                        else:       # otherwise, if neither h_gs nor h_toc exists - plot as if h_gs is zero
+                            top_lvl = 0
+                    else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
+                        obsid = unicode(ob[i][obsid_ColNo].toString())
+                        if ob[i][h_gs_ColNo].toDouble()[0] and ob[i][h_gs_ColNo].toDouble()[0] >0:  # Only get h_gs if it exists
+                            top_lvl = ob[i][h_gs_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
+                        elif ob[i][h_toc_ColNo].toDouble()[0] and ob[i][h_toc_ColNo].toDouble()[0] >0:    # else get h_toc if that exists
+                            top_lvl = ob[i][h_toc_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
+                        else:       # otherwise, if neither h_gs nor h_toc exists - plot as if h_gs is zero
+                            top_lvl = 0
+                    """
+                    #</CHANGE FOR QGIS 2.0>:
+
+                    obsid_list[i] = obsid
+                    toplvl_list[i] = top_lvl
                     coord_list[i]= k.geometry().asPoint()
                     # add to array
                     surveys[obsid_list[i]] = SurveyInfo(obsid_list[i], toplvl_list[i], coord_list[i])

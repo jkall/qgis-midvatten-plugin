@@ -62,8 +62,13 @@ class TimeSeriesPlot:
                 
                 i=0
                 for k in ob:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
-                    attributes=ob[i].attributeMap() #Copy attributes, for the i:th object, to a list 
-                    obsid = attributes[kolumnindex].toString() # Copy value in column obsid in the attribute list 
+                    #<CHANGE FOR QGIS 2.0>:
+                    if hasattr(ob[i], "attributeMap"): #duck typing scheme to test depreceated method, see http://hub.qgis.org/wiki/quantum-gis/API_changes_for_version_20
+                        attributes=ob[i].attributeMap() #Copy attributes, for the i:th object, to a list 
+                        obsid = attributes[kolumnindex].toString() # Copy value in column obsid in the attribute list
+                    else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
+                        obsid = ob[i][kolumnindex].toString() 
+                    #</CHANGE FOR QGIS 2.0>:
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
                     sql =r"""SELECT date_time as 'date [datetime]', """
                     sql += str(self.settingsdict['tscolumn']).encode(locale.getdefaultlocale()[1])
