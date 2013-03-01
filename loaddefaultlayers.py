@@ -22,7 +22,6 @@ from PyQt4.QtCore import *  #Not necessary?
 from PyQt4.QtGui import *  #Not necessary?
 from qgis.core import *   # Necessary for the QgsFeature()
 from qgis.gui import *
-from sqlite3 import dbapi2 as sqlite
 import os
 import locale
 import midvatten_utils as utils

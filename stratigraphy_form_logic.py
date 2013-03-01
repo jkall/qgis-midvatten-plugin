@@ -3,7 +3,6 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import midvatten_utils as utils        # Whenever some global midvatten_utilities are needed
-#from sqlite3 import dbapi2 as sqlite
 myDialog = None
 
 def formOpen(dialog,layerid,featureid):

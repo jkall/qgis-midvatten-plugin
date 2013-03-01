@@ -17,18 +17,14 @@
  *                                                                         *
  ***************************************************************************/
 """
-# Import the PyQt libraries
 from PyQt4.QtCore import *  #Not necessary?
 from PyQt4.QtGui import *  #Not necessary?
 from qgis.core import *   # Necessary for the QgsFeature()
 from qgis.gui import *
-from sqlite3 import dbapi2 as sqlite    #sqlite3 is good enough since we not handle spatial data in this class (otherwise pyspatialite)
-#from pyspatialite import dbapi2 as sqlite
+from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import os
 import locale
 import midvatten_utils as utils  
-#import codecs
-#from HtmlDialog import HtmlDialog
 
 class wqualreport():        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     def __init__(self,layer, settingsdict = {}):

@@ -27,7 +27,7 @@ from qgis.gui import *
 import qgis.utils
 import locale
 import os
-from pyspatialite import dbapi2 as sqlite 
+from pyspatialite import dbapi2 as sqlite #could perhaps have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import midvatten_utils as utils    
    
 """ Note, these classes are quickfixes and they should be replaced by a multi-import class instead. As soon as there is time for code cleanup..."""

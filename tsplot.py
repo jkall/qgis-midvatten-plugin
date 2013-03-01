@@ -17,11 +17,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-#from PyQt4.QtCore import *
 from PyQt4.QtGui import *    # Needed for QMessageBox
-#from qgis.core import *
-#import qgis.utils
-from pyspatialite import dbapi2 as sqlite   # With the inititaion of class TimeSeriesPlot instead
+from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt  # THIS LINE may cause conflict with plugins "statist" and "chartmaker"  - THE ISSUE IS NOT SOLVED. May be due to matplotlib.pyplot assumes other backend by default  

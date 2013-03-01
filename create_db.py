@@ -25,8 +25,7 @@ from qgis.gui import *
 
 import os
 import locale
-# importing pyspatialite
-from pyspatialite import dbapi2 as db
+from pyspatialite import dbapi2 as sqlite
 import midvatten_utils as utils    
 
 class newdb():
@@ -56,7 +55,7 @@ class newdb():
             else:
                 try:
                     # creating/connecting the test_db
-                    conn = db.connect(str(self.dbpath)) 
+                    conn = sqlite.connect(str(self.dbpath)) 
                     # creating a Cursor
                     cur = conn.cursor()
                     cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.

@@ -43,9 +43,7 @@ from PyQt4.QtCore import * #For some reason both qtcore imports are necessary
 from PyQt4 import QtCore #For some reason both qtcore imports are necessary
 from PyQt4.QtGui import * #For some reason both qtgui imports are necessary
 from PyQt4 import QtGui #For some reason both qtgui imports are necessary
-#from qgis.core import *   # May be needed later, e.g. if using QgsFeature()
-#from qgis.gui import *        # May be needed later
-from pyspatialite import dbapi2 as sqlite 
+from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import unicodedata  # To normalize some special national characters to regular international characters
 from functools import partial # only to get combobox signals to work
 import midvatten_utils as utils        
@@ -160,37 +158,16 @@ class SurveyStore:
                     else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
                         attributes = ob[i]
 
-                    obsid = unicode(attributes[obsid_ColNo].toString()) # Copy value in column obsid in the attribute list
+                    obsid_list[i] = unicode(attributes[obsid_ColNo].toString()) # Copy value in column obsid in the attribute list
 
                     if attributes[h_gs_ColNo].toDouble()[0] and attributes[h_gs_ColNo].toDouble()[0] >0:  # Only get h_gs if it exists
-                        top_lvl = attributes[h_gs_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
+                        toplvl_list[i] = attributes[h_gs_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
                     elif attributes[h_toc_ColNo].toDouble()[0] and attributes[h_toc_ColNo].toDouble()[0] >0:    # else get h_toc if that exists
-                        top_lvl = attributes[h_toc_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
+                        toplvl_list[i] = attributes[h_toc_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
                     else:       # otherwise, if neither h_gs nor h_toc exists - plot as if h_gs is zero
-                        top_lvl = 0
-
-
-                    """
-                        obsid = unicode(attributes[obsid_ColNo].toString()) # Copy value in column obsid in the attribute list
-                        if attributes[h_gs_ColNo].toDouble()[0] and attributes[h_gs_ColNo].toDouble()[0] >0:  # Only get h_gs if it exists
-                            top_lvl = attributes[h_gs_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
-                        elif attributes[h_toc_ColNo].toDouble()[0] and attributes[h_toc_ColNo].toDouble()[0] >0:    # else get h_toc if that exists
-                            top_lvl = attributes[h_toc_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
-                        else:       # otherwise, if neither h_gs nor h_toc exists - plot as if h_gs is zero
-                            top_lvl = 0
-                    else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
-                        obsid = unicode(ob[i][obsid_ColNo].toString())
-                        if ob[i][h_gs_ColNo].toDouble()[0] and ob[i][h_gs_ColNo].toDouble()[0] >0:  # Only get h_gs if it exists
-                            top_lvl = ob[i][h_gs_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
-                        elif ob[i][h_toc_ColNo].toDouble()[0] and ob[i][h_toc_ColNo].toDouble()[0] >0:    # else get h_toc if that exists
-                            top_lvl = ob[i][h_toc_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
-                        else:       # otherwise, if neither h_gs nor h_toc exists - plot as if h_gs is zero
-                            top_lvl = 0
-                    """
+                        toplvl_list[i] = 0
                     #</CHANGE FOR QGIS 2.0>:
 
-                    obsid_list[i] = obsid
-                    toplvl_list[i] = top_lvl
                     coord_list[i]= k.geometry().asPoint()
                     # add to array
                     surveys[obsid_list[i]] = SurveyInfo(obsid_list[i], toplvl_list[i], coord_list[i])

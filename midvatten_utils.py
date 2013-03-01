@@ -23,8 +23,7 @@ from qgis.core import *
 from qgis.gui import *
 import qgis.utils
 import sys
-#from sqlite3 import dbapi2 as sqlite       #NOTE THIS IS NOT TESTED
-from pyspatialite import dbapi2 as sqlite
+from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 
 class askuser(QtGui.QDialog):
     def __init__(self, question="YesNo", msg = '', dialogtitle='User input needed', parent=None):
