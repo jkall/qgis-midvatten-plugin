@@ -20,7 +20,7 @@ def formOpen(dialog,layerid,featureid):
     buttonBox.rejected.connect(myDialog.reject)
 
 def validate():  # Make sure mandatory fields are not empty.
-    if not (myDialog.findChild(QLineEdit,"obsid").text().length() > 0):
+    if not (len(myDialog.findChild(QLineEdit,"obsid").text()) > 0): # SIP API UPDATE 2.0
         utils.pop_up_info("obsid must not be empty!")
     elif myDialog.findChild(QLineEdit,"obsid").text()=='NULL':
         utils.pop_up_info("obsid must not be NULL!")

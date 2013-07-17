@@ -19,37 +19,37 @@ def formOpen(dialog,layerid,featureid):
     buttonBox = dialog.findChild(QDialogButtonBox,"buttonBox")
     buttonBox.accepted.disconnect(myDialog.accept)
 
-    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (myDialog.findChild(QLineEdit,"obsid").text().length() == 0):
+    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) == 0): # SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
     dialog.findChild(QLineEdit,"obsid").textChanged.connect(obsid_FieldTextChanged)
     
-    if (myDialog.findChild(QLineEdit,"date_time").text()=='NULL') or (myDialog.findChild(QLineEdit,"date_time").text().length() == 0):
+    if (myDialog.findChild(QLineEdit,"date_time").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"date_time").text()) == 0): # SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"date_time").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"date_time").setStyleSheet("")
     dialog.findChild(QLineEdit,"date_time").textChanged.connect(date_time_FieldTextChanged)
     
-    if (myDialog.findChild(QLineEdit,"instrumentid").text()=='NULL') or (myDialog.findChild(QLineEdit,"instrumentid").text().length() == 0):
+    if (myDialog.findChild(QLineEdit,"instrumentid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"instrumentid").text()) == 0): # SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"instrumentid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"instrumentid").setStyleSheet("")
     dialog.findChild(QLineEdit,"instrumentid").textChanged.connect(instrumentid_FieldTextChanged)
 
-    if (myDialog.findChild(QLineEdit,"flowtype").text()=='NULL') or (myDialog.findChild(QLineEdit,"flowtype").text().length() == 0):
+    if (myDialog.findChild(QLineEdit,"flowtype").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"flowtype").text()) == 0):
         myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("")
     dialog.findChild(QLineEdit,"flowtype").textChanged.connect(flowtype_FieldTextChanged)
 
-    if (myDialog.findChild(QLineEdit,"reading").text()=='NULL') or (myDialog.findChild(QLineEdit,"reading").text().length() == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
+    if (myDialog.findChild(QLineEdit,"reading").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"reading").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False): # SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"reading").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"reading").setStyleSheet("")
     dialog.findChild(QLineEdit,"reading").textChanged.connect(reading_FieldTextChanged)
 
-    if (myDialog.findChild(QLineEdit,"unit").text()=='NULL') or (myDialog.findChild(QLineEdit,"unit").text().length() == 0):
+    if (myDialog.findChild(QLineEdit,"unit").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"unit").text()) == 0): # SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"unit").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"unit").setStyleSheet("")
@@ -64,19 +64,19 @@ def obsid_FieldTextChanged():
     for id in possibleobsids:
             if str(myDialog.findChild(QLineEdit,"obsid").text())==str(id[0]).encode('utf-8'):
                 obsidisok= 1
-    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (myDialog.findChild(QLineEdit,"obsid").text().length() ==0) or not (obsidisok==1):
+    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) ==0) or not (obsidisok==1):# SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
 
 def date_time_FieldTextChanged():
-    if (myDialog.findChild(QLineEdit,"date_time").text()=='NULL') or (myDialog.findChild(QLineEdit,"date_time").text().length() ==0):
+    if (myDialog.findChild(QLineEdit,"date_time").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"date_time").text()) ==0): # SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"date_time").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"date_time").setStyleSheet("")        
 
 def instrumentid_FieldTextChanged():
-    if (myDialog.findChild(QLineEdit,"instrumentid").text()=='NULL') or (myDialog.findChild(QLineEdit,"instrumentid").text().length() ==0):
+    if (myDialog.findChild(QLineEdit,"instrumentid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"instrumentid").text()) ==0): # SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"instrumentid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"instrumentid").setStyleSheet("")        
@@ -86,31 +86,31 @@ def flowtype_FieldTextChanged():
     for type in possibleflowtypes:
             if str(myDialog.findChild(QLineEdit,"flowtype").text())==str(type[0]).encode('utf-8'):
                 typeisok= 1
-    if (myDialog.findChild(QLineEdit,"flowtype").text()=='NULL') or (myDialog.findChild(QLineEdit,"flowtype").text().length() ==0) or not (typeisok==1):
+    if (myDialog.findChild(QLineEdit,"flowtype").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"flowtype").text()) ==0) or not (typeisok==1): # SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("")        
 
 def reading_FieldTextChanged():
-    if (myDialog.findChild(QLineEdit,"reading").text()=='NULL') or (myDialog.findChild(QLineEdit,"reading").text().length() == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
+    if (myDialog.findChild(QLineEdit,"reading").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"reading").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
         myDialog.findChild(QLineEdit,"reading").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"reading").setStyleSheet("")  
         
 
 def unit_FieldTextChanged():
-    if (myDialog.findChild(QLineEdit,"unit").text()=='NULL') or (myDialog.findChild(QLineEdit,"unit").text().length() ==0):
+    if (myDialog.findChild(QLineEdit,"unit").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"unit").text()) ==0):
         myDialog.findChild(QLineEdit,"unit").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"unit").setStyleSheet("") 
         
 def validate():  # Make sure mandatory fields are not empty.
-    if not (myDialog.findChild(QLineEdit,"obsid").text().length() > 0 and 
-            myDialog.findChild(QLineEdit,"instrumentid").text().length() > 0 and 
-            myDialog.findChild(QLineEdit,"flowtype").text().length() > 0 and 
-            myDialog.findChild(QLineEdit,"date_time").text().length() > 0 and 
-            myDialog.findChild(QLineEdit,"reading").text().length() > 0 and
-            myDialog.findChild(QLineEdit,"unit").text().length() > 0):
+    if not (len(myDialog.findChild(QLineEdit,"obsid").text()) > 0 and 
+            len(myDialog.findChild(QLineEdit,"instrumentid").text()) > 0 and 
+            len(myDialog.findChild(QLineEdit,"flowtype").text()) > 0 and 
+            len(myDialog.findChild(QLineEdit,"date_time").text()) > 0 and 
+            len(myDialog.findChild(QLineEdit,"reading").text()) > 0 and
+            len(myDialog.findChild(QLineEdit,"unit").text()) > 0): # SIP API UPDATE 2.0
         utils.pop_up_info("obsid, instrumentid, flowtype, date_time, reading and unit must not be empty!")
     elif (myDialog.findChild(QLineEdit,"obsid").text()=='NULL' or 
             myDialog.findChild(QLineEdit,"instrumentid").text()=='NULL' or 

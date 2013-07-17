@@ -1,14 +1,24 @@
-; the next section is mandatory
 [general]
+;mandatory metadata entries
 name=Midvatten
+qgisMinimumVersion=2.0
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db. Partly based on the ARPAT plugin.
-version=Version 0.7.8
-qgisMinimumVersion=1.9
+version=Version 0.8.0
+author=Josef Källgården
+email=groundwatergis@gmail.com
+
+;optional metadata entries
 tags=hydrogeology,time series,stratigraphy
 icon=icons/MidvSettings.png
 homepage=http://sites.google.com/site/midvattenpluginforqgis/
+authorName=Josef Källgården
+tracker=http://code.google.com/p/midvatten-plugin-for-qgis/issues/list
+repository=http://code.google.com/p/midvatten-plugin-for-qgis/source/checkout
 experimental=False
 deprecated=False
-authorName=Josef Källgården
-author=Josef Källgården
-email=groundwatergis@gmail.com
+
+changelog=
+        - Fixes due to SIP API update for QGIS 2.0
+        - Updates due to SpatiaLite 4.x (new db - lower case geometry columns and more)
+        - Minor bugfixes and enhancements (data importer, labelling of default layers, text in stratigraphy plots etc.)
+        - Added english terms and abbreviations for soils (geoshort in stratigraphy) 

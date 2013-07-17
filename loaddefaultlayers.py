@@ -55,7 +55,8 @@ class loadlayers():
                 
         """ THEN remove old group """
         while 'Midvatten_OBS_DB' in self.legend.groups():
-            group_index = self.legend.groups().indexOf('Midvatten_OBS_DB')    # this method is correct from QGIS version 1.9.0-65!!!
+            group_index = self.legend.groups().index('Midvatten_OBS_DB')      # SIP API UPDATE 2.0
+            #group_index = self.legend.groups().indexOf('Midvatten_OBS_DB')    # this method is correct from QGIS version 1.9.0-65!!!
             #group_index = self.getGroupIndex(self.iface, 'Midvatten_OBS_DB')   # This method is to be used for QGIS version < 1.9.0-65!!!!
             self.legend.removeGroup(group_index)
             #utils.pop_up_info("found and removed Midvatten_OBS_DB group at index " + str(group_index)) #debugging
@@ -79,7 +80,8 @@ class loadlayers():
                 except (AttributeError, TypeError):
                     QgsMapLayerRegistry.instance().addMapLayer(layer) # deprecated method, removed in qgis master before 2012-12-23
                     utils.pop_up_info("Warning, falling back to old method of registering layers!\nThis indicates that you use a deprecated version of QGIS.")
-                group_index = self.legend.groups().indexOf('Midvatten_OBS_DB')    # this method is correct from QGIS version 1.9.0-65!!!
+                group_index = self.legend.groups().index('Midvatten_OBS_DB')    # SIP API UPDATE 2.0 
+                #group_index = self.legend.groups().indexOf('Midvatten_OBS_DB')    # this method is correct from QGIS version 1.9.0-65!!!
                 #group_index = self.getGroupIndex(self.iface, 'Midvatten_OBS_DB')           # This method is to be used for QGIS version < 1.9.0-65!!!!
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
                 if tablename in ('w_levels','w_flow','stratigraphy'):
@@ -129,7 +131,8 @@ class loadlayers():
                     utils.pop_up_info("Warning, falling back to old method of registering layers!\nThis indicates that you use a deprecated version of QGIS.")
                 #utils.pop_up_info(self.legend.layers()[0].name())  # for debugging
                 #utils.pop_up_info(MyGroup)  # for debugging
-                group_index = self.legend.groups().indexOf('Midvatten_OBS_DB')    # this method is correct from QGIS version 1.9.0-65!!!
+                group_index = self.legend.groups().index('Midvatten_OBS_DB')   # SIPAPI UPDATE 2.0
+                #group_index = self.legend.groups().indexOf('Midvatten_OBS_DB')    # this method is correct from QGIS version 1.9.0-65!!!
                 #group_index = self.getGroupIndex(self.iface, 'Midvatten_OBS_DB')           # This method is to be used for QGIS version < 1.9.0-65!!!!
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
 

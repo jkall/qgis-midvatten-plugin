@@ -62,9 +62,9 @@ class TimeSeriesPlot:
                     #<CHANGE FOR QGIS 2.0>:
                     if hasattr(ob[i], "attributeMap"): #duck typing scheme to test depreceated method, see http://hub.qgis.org/wiki/quantum-gis/API_changes_for_version_20
                         attributes=ob[i].attributeMap() #Copy attributes, for the i:th object, to a list 
-                        obsid = attributes[kolumnindex].toString() # Copy value in column obsid in the attribute list
+                        obsid = str(attributes[kolumnindex]) # Copy value in column obsid in the attribute list # SIP API UPDATE 2.0
                     else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
-                        obsid = ob[i][kolumnindex].toString() 
+                        obsid = str(ob[i][kolumnindex]) # SIP API UPDATE 2.0
                     #</CHANGE FOR QGIS 2.0>:
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
                     sql =r"""SELECT date_time as 'date [datetime]', """

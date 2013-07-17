@@ -81,7 +81,7 @@ class XYPlot:
                     else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
                         attributes = ob[i]
                     #</CHANGE FOR QGIS 2.0>
-                    obsid = attributes[kolumnindex].toString() # Copy value in column obsid in the attribute list 
+                    obsid = str(attributes[kolumnindex]) # Copy value in column obsid in the attribute list # SIP API UPDATE 2.0
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
                     sql =r"""SELECT """ 
                     sql += str(self.xcol).encode(locale.getdefaultlocale()[1])

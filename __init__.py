@@ -28,20 +28,7 @@
  ***************************************************************************/
  This script initializes the plugin, making it known to QGIS.
 """
-def name():
-    return "Midvatten"
-def description():
-    return "A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db. Partly based on the ARPAT plugin."
-def version():
-    return "Version 0.7.8"
-def icon():
-    return "icons/MidvSettings.png"
-def authorName():
-    return "Josef Källgården"
-def qgisMinimumVersion():
-    return "1.9"
-def email():
-    return "groundwatergis[a]gmail.com"
+
 def classFactory(iface):
     from midvatten import midvatten
     return midvatten(iface)

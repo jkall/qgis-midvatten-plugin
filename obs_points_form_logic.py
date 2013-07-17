@@ -33,7 +33,7 @@ def formOpen(dialog,layerid,featureid):
             wlogg_yn_field = dialog.findChild(QCheckBox,"wlogg_yn")
             wlogg_yn_field.setChecked(True)
     
-    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (myDialog.findChild(QLineEdit,"obsid").text().length() == 0):
+    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) == 0):# SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
@@ -60,7 +60,7 @@ def formOpen(dialog,layerid,featureid):
     buttonBox.rejected.connect(myDialog.reject)
 
 def validate():  # Make sure mandatory fields are not empty.
-    if not (myDialog.findChild(QLineEdit,"obsid").text().length() > 0): # If obsid is empty
+    if not (len(myDialog.findChild(QLineEdit,"obsid").text()) > 0): # If obsid is empty# SIP API UPDATE 2.0
         utils.pop_up_info("obsid must not be empty!")
     elif myDialog.findChild(QLineEdit,"obsid").text()=='NULL': # or myDialog.findChild(QLineEdit,"h_gs").text()=='NULL'):
         utils.pop_up_info("obsid must not be NULL!")
@@ -76,7 +76,7 @@ def validate():  # Make sure mandatory fields are not empty.
         
 
 def obsid_FieldTextChanged():
-    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or myDialog.findChild(QLineEdit,"obsid").text().length() ==0:
+    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or len(myDialog.findChild(QLineEdit,"obsid").text()) ==0:# SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")

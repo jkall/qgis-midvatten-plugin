@@ -72,7 +72,7 @@ def getselectedobjectnames():
             attributes = selectedobs[i]
         #</CHANGE FOR QGIS 2.0>:
                         
-        observations[i] = str(attributes[kolumnindex].toString()) # Copy value in column obsid in the attribute list
+        observations[i] = str(attributes[kolumnindex]) # Copy value in column obsid in the attribute list # SIP API UPDATE 2.0
         i+=1
     return observations
     

@@ -214,10 +214,10 @@ class midvatten:
         #filenamepath = os.path.dirname(__file__) + "/metadata.txt"
         filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
         iniText = QSettings(filenamepath , QSettings.IniFormat)
-        verno = iniText.value('version').toString()
-        author = iniText.value('author').toString()
-        email = iniText.value('email').toString()
-        homepage = iniText.value('homepage').toString()
+        verno = str(iniText.value('version'))# SIP API UPDATE 2.0
+        author = str(iniText.value('author').encode('cp1252'))# SIP API UPDATE 2.0  #.encode due to encoding probs
+        email = str(iniText.value('email'))# SIP API UPDATE 2.0
+        homepage = str(iniText.value('homepage'))# SIP API UPDATE 2.0
 
         ABOUT_templatefile = os.path.join(os.sep,os.path.dirname(__file__),"about","about_template.htm")
         ABOUT_outputfile = os.path.join(os.sep,os.path.dirname(__file__),"about","about.htm")
@@ -286,8 +286,11 @@ class midvatten:
             sanity = utils.askuser("YesNo","""You are about to import observation points data, from a semicolon or comma separated ascii file (see plugin documentation for more information about the obs_points table).\n\nThe import file must have one header row and the following 26 columns:\n1. obsid, 2. name, 3. place, 4. type, 5. length, 6. drillstop\n7. diam, 8. material, 9. screen, 10. capacity, 11. drilldate, 12. wmeas_yn\n13. wlogg_yn, 14. east, 15. north, 16. ne_accur, 17. ne_source, 18. h_toc\n19. h_tocags, 20. h_gs, 21. h_accur, 22. h_syst, 23. h_source, 24. source\n25. com_onerow, 26. com_html\n\n                Continue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
-                from import_data_to_db import obspointimportclass
-                importinstance = obspointimportclass()
+                from import_data_to_db import midv_data_importer
+                importinstance = midv_data_importer()
+                importinstance.obsp_import()
+                #utils.pop_up_info(returnvalue) #debugging
+                #utils.pop_up_info(importinstance.status) #debugging
                 if not importinstance.status=='True':      # 
                     utils.pop_up_info("Something failed during import") #for debugging
                 else:  
@@ -376,12 +379,12 @@ class midvatten:
         # map data types to function names
         prj = QgsProject.instance()
         functions = { 'str' : prj.readEntry,
-                     'QString' : prj.readEntry,
+                     'str' : prj.readEntry, # SIP API UPDATE 2.0
                      'int' : prj.readNumEntry,
                      'float' : prj.readDoubleEntry,
                      'bool' : prj.readBoolEntry,
                      'datetime' : prj.readDoubleEntry, # we converted datetimes to float in writeSetting()
-                     'QStringList' : prj.readListEntry,
+                     'list' : prj.readListEntry, # SIP API UPDATE 2.0
                      'pyqtWrapperType' : prj.readListEntry # strange name for QStringList
                      }
         output = {}
@@ -414,7 +417,7 @@ class midvatten:
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
-            verno = iniText.value('version').toString()
+            verno = str(iniText.value('version')) # SIP API UPDATE 2.0
             from create_db import newdb
             newdbinstance = newdb(verno)
             if not newdbinstance.dbpath=='':
@@ -639,8 +642,9 @@ class midvatten:
             sanity = utils.askuser("YesNo","""You are about to import water level measurements\nfrom a semicolon or comma separated ascii text file.\nThe text file must have one header row and columns:\n\nobsid;date_time;meas;comment\n\nColumn names are unimportant although column\norder is, as well as format:\n\nobsid: string\ndate_time: yyyy-mm-dd hh:mm(:ss)\nMEAS: real number, decimal sep=point(.), No thousand sep.\ncomment: string, no commas!!!\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
-                from import_data_to_db import wlvlimportclass
-                importinstance = wlvlimportclass()
+                from import_data_to_db import midv_data_importer
+                importinstance = midv_data_importer()
+                importinstance.wlvl_import()
                 if not importinstance.status=='True':      #Why is this if statement? Nothing more is to be done! 
                     utils.pop_up_info("Something failed during import") #for debugging
                 else:  

@@ -106,7 +106,7 @@ class SurveyInfo:   # This class is to define the data structure...
         return "SURVEY('%s', %f, '%s')" % (unicode(self.obsid), self.top_lvl, self.coord) # _CHANGE_
 
 class StrataInfo:
-    def __init__(self, stratid=0, depthTop=0, depthBot=0, geology='',  geo_short='', hydro='', Comment=''): 
+    def __init__(self, stratid=0, depthTop=0, depthBot=0, geology='',  geo_short='', hydro='', Comment='', development=''): 
         self.stratid = stratid  # This is id no for the geological information (1 = uppermost stratigraphy layer)
         self.geology = geology # This is full text description of stratigraphy (the geologic descripition, e.g. "sandy till")
         self.depthTop = depthTop  # This is depth to top of the stratigraphy layer
@@ -114,6 +114,7 @@ class StrataInfo:
         self.geo_short = geo_short # This is short name for the geology of the stratigraphy layer, also used for symbology and color
         self.comment = Comment # Comment for the stratigraphy layer
         self.hydro = hydro # Water loss or similar measurement of layer permeability, given as 1, 2, 3, etc, see below
+        self.development = development 
     def __repr__(self):
         return "strata(%d, '%s', '%s', '%s', %f-%f)" % (self.stratid, self.hydro, self.geology, self.geo_short, self.depthTop, self.depthBot)
 
@@ -158,12 +159,19 @@ class SurveyStore:
                     else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
                         attributes = ob[i]
 
-                    obsid_list[i] = unicode(attributes[obsid_ColNo].toString()) # Copy value in column obsid in the attribute list
+                    obsid_list[i] = unicode(str(attributes[obsid_ColNo])) # Copy value in column obsid in the attribute list # SIP API UPDATE 2.0
 
-                    if attributes[h_gs_ColNo].toDouble()[0] and attributes[h_gs_ColNo].toDouble()[0] >0:  # Only get h_gs if it exists
+                    # SIP API UPDATE 2.0 - simply removed '.toDouble()[0]' from following 4 lines
+                    """
+                    if attributes[h_gs_ColNo].toDouble()[0] and attributes[h_gs_ColNo].toDouble()[0] >0:  # Only get h_gs if it exists # SIP API UPDATE 2.0
                         toplvl_list[i] = attributes[h_gs_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
                     elif attributes[h_toc_ColNo].toDouble()[0] and attributes[h_toc_ColNo].toDouble()[0] >0:    # else get h_toc if that exists
                         toplvl_list[i] = attributes[h_toc_ColNo].toDouble()[0] # Copy value in column h_gs in the attribute list
+                    """
+                    if attributes[h_gs_ColNo] and attributes[h_gs_ColNo] >0:  # Only get h_gs if it exists # SIP API UPDATE 2.0
+                        toplvl_list[i] = attributes[h_gs_ColNo] # Copy value in column h_gs in the attribute list
+                    elif attributes[h_toc_ColNo] and attributes[h_toc_ColNo] >0:    # else get h_toc if that exists
+                        toplvl_list[i] = attributes[h_toc_ColNo] # Copy value in column h_gs in the attribute list
                     else:       # otherwise, if neither h_gs nor h_toc exists - plot as if h_gs is zero
                         toplvl_list[i] = 0
                     #</CHANGE FOR QGIS 2.0>:
@@ -183,7 +191,7 @@ class SurveyStore:
         curs = conn.cursor()
         
         for (obsid, survey) in surveys.iteritems(): # _CHANGE_
-            sql =r"""SELECT stratid, depthtop, depthbot, geology, geoshort, capacity, comment FROM """
+            sql =r"""SELECT stratid, depthtop, depthbot, geology, geoshort, capacity, comment, development FROM """
             sql += str(self.stratitable).encode(locale.getdefaultlocale()[1])
             sql += r""" WHERE obsid = '"""    
             sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRAIGRAPHY FOR CHOOSEN obsid
@@ -210,7 +218,11 @@ class SurveyStore:
                     comment = record[6] # 
                 else: 
                     comment = " " 
-                st = StrataInfo(stratigaphy_id, depthtotop, depthtobot, geology, geo_short, hydro, comment)
+                if record[7]:  # Must check since it is not possible to print null values as text in qt widget
+                    development = record[7] # 
+                else: 
+                    development = " " 
+                st = StrataInfo(stratigaphy_id, depthtotop, depthtobot, geology, geo_short, hydro, comment, development)
                 # add strata information (in right order) 
                 insertAt = 0
                 for a in survey.strata:
@@ -438,8 +450,14 @@ class SurveyWidget(QtGui.QFrame):
             if self.showDesc:
                 if self.GeoOrComment == "geology":
                     p.drawText(tRect, QtCore.Qt.AlignVCenter, layer.geology)
-                else:
+                elif self.GeoOrComment == "comment":
                     p.drawText(tRect, QtCore.Qt.AlignVCenter, layer.comment)
+                elif self.GeoOrComment == "geoshort":
+                    p.drawText(tRect, QtCore.Qt.AlignVCenter, layer.geo_short)
+                elif self.GeoOrComment == "hydro":
+                    p.drawText(tRect, QtCore.Qt.AlignVCenter, layer.hydro)
+                else:
+                    p.drawText(tRect, QtCore.Qt.AlignVCenter, layer.development)
 
             y += y2
 
@@ -523,6 +541,9 @@ class SurveyDialog(QtGui.QDialog):
         self.GeologyOrCommentCBox = QtGui.QComboBox(self)
         self.GeologyOrCommentCBox.addItem('geology')
         self.GeologyOrCommentCBox.addItem('comment')
+        self.GeologyOrCommentCBox.addItem('geoshort')
+        self.GeologyOrCommentCBox.addItem('hydro')
+        self.GeologyOrCommentCBox.addItem('development')
         self.layout2.addWidget(self.GeologyOrCommentCBox)
         
 

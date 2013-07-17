@@ -49,7 +49,8 @@ class newdb():
             #path and name of new db
             self.dbpath = PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","Midv_obsdb.sqlite","Spatialite (*.sqlite)")
             #utils.pop_up_info(self.dbpath + " was returned from getsavefilename") #debugging
-            if self.dbpath.isEmpty():
+            #if self.dbpath.isEmpty(): # REMOVED DUE TO SIP API UPDATE 2.0
+            if not self.dbpath: # SIP API UPDATE 2.0
                 return ''
             #create Spatialite database
             else:
@@ -62,9 +63,14 @@ class newdb():
                 except:
                     utils.pop_up_info("Impossible to connect to selected DataBase")
                     return ''
+                #First, find spatialite version
+                versionstext = utils.sql_load_fr_db('select spatialite_version()')
                 # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
                 # then the syntax defines a Midvatten project db according to the loaded .sql-file
-                SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"definitions","create_db.sql")
+                if int(versionstext[0][0][0]) > 3: # which file to use depends on spatialite version installed
+                    SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"definitions","create_db_splite4.sql")
+                else:
+                    SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"definitions","create_db.sql") 
                 #PyQt4.QtGui.QMessageBox.information(None, "Info", SQLFile) # ONLY FOR DEBUGGING
                 f = open(SQLFile, 'r')
                 linecounter = 1

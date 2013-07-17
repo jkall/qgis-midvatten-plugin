@@ -51,7 +51,7 @@ class wqualreport():        # extracts water quality data for selected objects, 
             else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
                 attributes = observations[i]
             #</CHANGE FOR QGIS 2.0>:                        
-            obsid = attributes[kolumnindex].toString()    # NOTE! obsid is a QString!!
+            obsid = str(attributes[kolumnindex])    # NOTE! obsid WAS a QString!!  # SIP API UPDATE 2.0
             ReportData = self.GetData(str(self.settingsdict['database']).encode(locale.getdefaultlocale()[1]), obsid)   # one observation at a time
             #ReportData.append(self.GetData(str(self.settingsdict['database']).encode('latin-1'), obsid))  # does not work as expected
             self.WriteHTMLReport(ReportData, f)
