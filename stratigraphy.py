@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- This part of the Midvatten plugin is more or less just a small twak of
+ This part of the Midvatten plugin is more or less just a small tweak of
  the ARPAT plugin developed by Martin Dobias for Faunalia:
 
 # Copyright 2006-2007 by ARPAT-SIRA (www.arpat.toscana.it http://sira.arpat.toscana.it/sira/)

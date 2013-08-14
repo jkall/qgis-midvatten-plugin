@@ -74,14 +74,17 @@ class midvatten:
         self.actionupdateposition = QAction(QIcon(":/plugins/midvatten/icons/updateposfrcoord.png"), "Update map position from coordinates", self.iface.mainWindow())
         QObject.connect(self.actionupdateposition , SIGNAL("triggered()"), self.updateposition)
         
-        self.action_wlvlimport = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_manual.png"), "Import w level measurements", self.iface.mainWindow())
-        QObject.connect(self.action_wlvlimport , SIGNAL("triggered()"), self.wlvlimport)
+        self.action_import_wlvl = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_manual.png"), "Import w level measurements", self.iface.mainWindow())
+        QObject.connect(self.action_import_wlvl , SIGNAL("triggered()"), self.import_wlvl)
+        
+        self.action_import_wflow = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_manual.png"), "Import w flow measurements", self.iface.mainWindow())
+        QObject.connect(self.action_import_wflow , SIGNAL("triggered()"), self.import_wflow)
         
         self.action_wlvlcalculate = QAction(QIcon(":/plugins/midvatten/icons/calc_level_masl.png"), "Calculate w level above sea level", self.iface.mainWindow())
         QObject.connect(self.action_wlvlcalculate , SIGNAL("triggered()"), self.wlvlcalculate)
         
-        self.action_wlvlloggimport = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), "Import w level from logger", self.iface.mainWindow())
-        QObject.connect(self.action_wlvlloggimport , SIGNAL("triggered()"), self.wlvlloggimport)
+        self.action_import_wlvllogg = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), "Import w level from logger", self.iface.mainWindow())
+        QObject.connect(self.action_import_wlvllogg , SIGNAL("triggered()"), self.import_wlvllogg)
         
         self.action_wlvlloggcalibrate = QAction(QIcon(":/plugins/midvatten/icons/calibr_level_logger_masl.png"), "Calibrate w level from logger", self.iface.mainWindow())
         QObject.connect(self.action_wlvlloggcalibrate , SIGNAL("triggered()"), self.wlvlloggcalibrate)
@@ -147,12 +150,12 @@ class midvatten:
         self.menu.import_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Import data to database"))
         #self.iface.addPluginToMenu("&Midvatten", self.menu.add_data_menu.menuAction())
         self.menu.addMenu(self.menu.import_data_menu)
-        self.menu.import_data_menu.addAction(self.action_wlvlimport)   
-        self.menu.import_data_menu.addAction(self.action_wlvlloggimport)   
+        self.menu.import_data_menu.addAction(self.action_import_wlvl)   
+        self.menu.import_data_menu.addAction(self.action_import_wlvllogg)   
         self.menu.import_data_menu.addAction(self.actionimport_wqual_lab)
         self.menu.import_data_menu.addAction(self.actionimport_wqual_field)   
         self.menu.import_data_menu.addAction(self.actionimport_stratigraphy)   
-        #self.menu.import_data_menu.addAction(self.actionimport_wflow)   
+        self.menu.import_data_menu.addAction(self.actionimport_wflow)   
         self.menu.import_data_menu.addAction(self.actionimport_obs_points)   
 
         self.menu.add_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Edit data in database"))
@@ -269,7 +272,7 @@ class midvatten:
         else: 
             utils.pop_up_info("Check settings! \nYou have to select database first!")
         
-    def import_obs_points(self):            #  - Not ready - let this method import another 'ChartMaker-file' with necessary classes and methods
+    def import_obs_points(self):
         errorsignal = 0
         if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
             self.loadSettings()    
@@ -283,7 +286,7 @@ class midvatten:
                     errorsignal = 1
 
         if errorsignal == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo","""You are about to import observation points data, from a semicolon or comma separated ascii file (see plugin documentation for more information about the obs_points table).\n\nThe import file must have one header row and the following 26 columns:\n1. obsid, 2. name, 3. place, 4. type, 5. length, 6. drillstop\n7. diam, 8. material, 9. screen, 10. capacity, 11. drilldate, 12. wmeas_yn\n13. wlogg_yn, 14. east, 15. north, 16. ne_accur, 17. ne_source, 18. h_toc\n19. h_tocags, 20. h_gs, 21. h_accur, 22. h_syst, 23. h_source, 24. source\n25. com_onerow, 26. com_html\n\n                Continue?""",'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import observation points data, from an ascii text file which must have one header row and 26 columns (see plugin web page for further explanation):\n\n1. obsid, 2. name, 3. place, 4. type, 5. length, 6. drillstop, 7. diam, 8. material, 9. screen, 10. capacity, 11. drilldate, 12. wmeas_yn, 13. wlogg_yn, 14. east, 15. north, 16. ne_accur, 17. ne_source, 18. h_toc, 19. h_tocags, 20. h_gs, 21. h_accur, 22. h_syst, 23. h_source, 24. source, 25. com_onerow, 26. com_html\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in string fields.\nEmpty or null values are not allowed for obsid and there must not be any duplicates of obsid\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
@@ -296,7 +299,7 @@ class midvatten:
                 else:  
                     utils.pop_up_info("%s observation points were imported to the database.\nTo display the imported points on map, select them in\nthe obs_points attribute table then update map position:\nMidvatten - Edit data in database - Update map position from coordinates"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))            
 
-    def import_stratigraphy(self):            #  - Not ready - let this method import another 'ChartMaker-file' with necessary classes and methods
+    def import_stratigraphy(self):
         errorsignal = 0
         if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
             self.loadSettings()    
@@ -310,22 +313,103 @@ class midvatten:
                     errorsignal = 1
 
         if errorsignal == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo","""You are about to import stratigraphy data from a semicolon or comma separated ascii file (see plugin documentation for more information about the stratigraphy table).\n\nThe import file must have one header row and the following 9 columns:\n1. obsid\n2. stratigraphy_id\n3. depth_top\n4. depth_bot\n5. geology\n6. geoshort\n7. capacity\n8. well_development\n9. comment\n\n                Continue?""",'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import stratigraphy data, from an ascii text file which must have one header row and 9 columns:\n1. obsid\n2. stratid - integer starting from ground surface and increasing downwards\n3. depth_top - depth to top of stratigraphy layer\n4. depth_bot - depth to bottom of stratigraphy layer\n5. geology\n6. geoshort - shortname for layer geology (see dicionary)\n7. capacity\n8. development - well development\n9. comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid or stratid, such rows will be excluded from the import.\nEach combination of obsid and stratid must be unique.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
-                from import_data_to_db import stratigraphyimportclass
-                importinstance = stratigraphyimportclass()
+                from import_data_to_db import midv_data_importer
+                importinstance = midv_data_importer()
+                importinstance.strat_import()
                 if not importinstance.status=='True':      # 
                     utils.pop_up_info("Something failed during import") #for debugging
                 else:  
                     utils.pop_up_info("%s stratigraphy layers were imported to the database."%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
                     
-    def import_wflow(self):            #  - Not ready - let this method import another 'ChartMaker-file' with necessary classes and methods
-        if self.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file
+    def import_wflow(self):
+        errorsignal = 0
+        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
             self.loadSettings()    
-        utils.pop_up_info("not yet implemented") #for debugging
-            
-    def import_wqual_field(self):            #  - Not ready - let this method import another 'ChartMaker-file' with necessary classes and methods
+
+        allcritical_layers = ('obs_points', 'w_flow')     #Check that none of these layers are in editing mode
+        for layername in allcritical_layers:
+            layerexists = utils.find_layer(str(layername))
+            if layerexists:
+                if layerexists.isEditable():
+                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
+                    errorsignal = 1
+
+        if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
+            sanity = utils.askuser("YesNo","""You are about to import water flow reading, from an ascii text file which must have one header row and 7 columns:\n\n1. obsid\n2. instrumentid\n3. flowtype\n4. date_time\n5. reading\n6. unit\n7. comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of flowtypes since all new flowtypes will silently be added to the database table zz_flowtype during import.\nEmpty or null values are not allowed for obsid, instrumentid, flowtype or date_time.\nEach combination of obsid, instrumentid, flowtype or date_time must be unique.\n\nContinue?""",'Are you sure?')
+            #utils.pop_up_info(sanity.result)   #debugging
+            if sanity.result == 1:
+                from import_data_to_db import midv_data_importer
+                importinstance = midv_data_importer()
+                importinstance.wflow_import()
+                if not importinstance.status=='True':      #Why is this if statement? Nothing more is to be done! 
+                    utils.pop_up_info("Something failed during import") #for debugging
+                else:  
+                    utils.pop_up_info("%s water flow readings were imported to the database"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
+
+    def import_wlvl(self):            #  - To import (from a csv file) manual water level measurements 
+        errorsignal = 0
+        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.loadSettings()    
+
+        allcritical_layers = ('obs_points', 'w_levels')     #Check that none of these layers are in editing mode
+        for layername in allcritical_layers:
+            layerexists = utils.find_layer(str(layername))
+            if layerexists:
+                if layerexists.isEditable():
+                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
+                    errorsignal = 1
+
+        if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
+            sanity = utils.askuser("YesNo","""You are about to import water level measurements, from an ascii text file which must have one header row and 4 columns:\n\nobsid;date_time;meas;comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid or date_time, such rows will be excluded from the import.\nEmpty or null values are not accepted at the same time in both the columns meas and comment.\nEach combination of obsid and date_time must be unique.\n\nContinue?""",'Are you sure?')
+            #utils.pop_up_info(sanity.result)   #debugging
+            if sanity.result == 1:
+                from import_data_to_db import midv_data_importer
+                importinstance = midv_data_importer()
+                importinstance.wlvl_import()
+                if not importinstance.status=='True':      #Why is this if statement? Nothing more is to be done! 
+                    utils.pop_up_info("Something failed during import") #for debugging
+                else:  
+                    utils.pop_up_info("%s water level measurements were imported to the database"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
+
+    def import_wlvllogg(self):            #  - Not ready 
+        errorsignal = 0
+        if self.settingsareloaded == False:    # If this is the first thing user does - then load settings from project file
+            self.loadSettings()    
+
+        allcritical_layers = ('obs_points', 'w_levels_logger')     #Check that none of these layers are in editing mode
+        for layername in allcritical_layers:
+            layerexists = utils.find_layer(str(layername))
+            if layerexists:
+                if layerexists.isEditable():
+                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
+                    errorsignal = 1
+
+        if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
+            if not (self.settingsdict['database'] == ''):
+                if qgis.utils.iface.activeLayer():
+                    if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':
+                
+                        obsid = utils.getselectedobjectnames()
+                    
+                        longmessage = """You are about to import water head data, recorded with a\nLevel Logger (e.g. Diver), for """
+                        longmessage += obsid[0]
+                        longmessage +=""".\nData is supposed to be imported from a semicolon or comma\nseparated ascii text file. The text file must have one header row\nand columns:\n\nDate/time,Water head[cm],Temperature[°C]\nor\nDate/time,Water head[cm],Temperature[°C],1:Conductivity[mS/cm]\n\nColumn names are unimportant although column order is.\nAlso, date-time must have format yyyy-mm-dd hh:mm(:ss) and\nthe other columns must be real numbers with point(.) as decimal\nseparator and no separator for thousands.\nRemember to not use comma in the comment field!\n\nContinue?"""
+                        sanity = utils.askuser("YesNo",unicode(longmessage,'utf-8'),'Are you sure?')
+                        if sanity.result == 1:
+                            from import_data_to_db import wlvlloggimportclass
+                            importinstance = wlvlloggimportclass()
+                            if not importinstance.status=='True':      
+                                utils.pop_up_info("Something failed during import") #for debugging
+
+                else:
+                    utils.pop_up_info("You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!")
+            else: 
+                utils.pop_up_info("Check settings! \nYou have to select database first!")
+
+    def import_wqual_field(self):
         errorsignal = 0
         if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
             self.loadSettings()    
@@ -339,17 +423,18 @@ class midvatten:
                     errorsignal = 1
 
         if errorsignal == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo","""You are about to import, from a semicolon or comma separated ascii file, water quality data from field measurements. The text file must have one header row and the following 10 columns (the column order is important, column names are not):\n\n1. obsid - must exist in obs_points table\n2. staff\n3. date_time - on format yyyy-mm-dd hh:mm(:ss)\n4. instrument\n5. parameter - water quality parameter name\n6. reading_num - param. value (real number, decimal separator=point(.))\n7. reading_txt - parameter value as text, including <, > etc\n8. unit\n9. flow_lpm - sampling flow in litres/minute\n10. comment - text string, avoid semicolon and commas\n\nNote! Each set of obsid, date_time and parameter must be unique!\n\n                Continue?""",'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import water quality data from field measurements, from an ascii text file which must have one header row and the following 10 columns:\n\n1. obsid\n2. staff\n3. date_time - on format yyyy-mm-dd hh:mm(:ss)\n4. instrument\n5. parameter - water quality parameter name\n6. reading_num - param. value (real number, decimal separator=point(.))\n7. reading_txt - parameter value as text, including <, > etc\n8. unit\n9. flow_lpm - sampling flow in litres/minute\n10. comment - text string\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid, date_time or parameter, such rows will be excluded from the import.\nEach combination of obsid, date_time and parameter must be unique.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
-                from import_data_to_db import wqualfieldimportclass
-                importinstance = wqualfieldimportclass()
-                if not importinstance.status=='True':      #W
+                from import_data_to_db import midv_data_importer
+                importinstance = midv_data_importer()
+                importinstance.wqualfield_import()
+                if not importinstance.status=='True':  
                     utils.pop_up_info("Something failed during import") #for debugging
                 else:  
                     utils.pop_up_info("%s water quality parameter values were imported to the database"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
                     
-    def import_wqual_lab(self):            #  - Not ready - let this method import another 'ChartMaker-file' with necessary classes and methods
+    def import_wqual_lab(self):
         errorsignal = 0
         if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
             self.loadSettings()    
@@ -363,12 +448,13 @@ class midvatten:
                     errorsignal = 1
 
         if errorsignal == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo","""You are about to import, from a semicolon or comma separated ascii file, water quality data from laboratory analysis. The text file must have one header row and the following 12 columns (the column order is important, column names are not):\n\n1. obsid - must exist in obs_points table\n2. depth - sample depth (real number)\n3. report - each pair of 'report' & 'parameter' must be unique!\n4. project\n5. staff\n6. date_time - on format yyyy-mm-dd hh:mm(:ss)\n7. analysis_method\n8. parameter - water quality parameter name\n9. reading_num - param. value (real number, decimal separator=point(.))\n10. reading_txt - parameter value as text, including <, > etc\n11. unit\n12. comment - text string, avoid semicolon and commas\n\n                Continue?""",'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import water quality data from laboratory analysis, from an ascii text file which must have one header row and the following 12 columns:\n\n1. obsid - must exist in obs_points table\n2. depth - sample depth (real number)\n3. report - each pair of 'report' & 'parameter' must be unique!\n4. project\n5. staff\n6. date_time - on format yyyy-mm-dd hh:mm(:ss)\n7. analysis_method\n8. parameter - water quality parameter name\n9. reading_num - param. value (real number, decimal separator=point(.))\n10. reading_txt - parameter value as text, including <, > etc\n11. unit\n12. comment - text string, avoid semicolon and commas\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid, report or parameter, such rows will be excluded from the import.\nEach combination of report and parameter must be unique.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
-                from import_data_to_db import wqualimportclass
-                importinstance = wqualimportclass()
-                if not importinstance.status=='True':      #
+                from import_data_to_db import midv_data_importer
+                importinstance = midv_data_importer()
+                importinstance.wquallab_import()
+                if not importinstance.status=='True': 
                     utils.pop_up_info("Something failed during import") #for debugging
                 else:  
                     utils.pop_up_info("%s water quality parameter values were imported to the database"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
@@ -405,12 +491,12 @@ class midvatten:
         if self.settingsareloaded == False:    # If this is the first thing the user does, then load settings from project file
             self.loadSettings()    
         if not self.settingsdict['database'] == '':
-            sanity = utils.askuser("YesNo","""This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project,\nthen those layers first will be removed from your qgis project.\n\nProceed?""",'Warning!')
+            sanity = utils.askuser("YesNo","""This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""",'Warning!')
             if sanity.result == 1:
                 loadlayers(qgis.utils.iface, self.settingsdict)
                 self.iface.mapCanvas().refresh()  # to redraw after loaded symbology
         else:   
-            utils.pop_up_info("You have to select a database in Mivatten settings first!")
+            utils.pop_up_info("You have to select a database in Midvatten settings first!")
 
     def NewDB(self):            # NewDB - Calls function CreateNewDB
         sanity = utils.askuser("YesNo","""This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""",'Are you sure?')
@@ -425,7 +511,7 @@ class midvatten:
                 self.settingsdict['database'] = db
                 self.saveSettings()
 
-    def PlotTS(self):            # PlotTS -
+    def PlotTS(self):
         if self.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file    
             #utils.pop_up_info("reading from .qgs file")    #debugging
             self.loadSettings()    
@@ -625,31 +711,6 @@ class midvatten:
             dlg = calclvl(self.iface.mainWindow())  # dock is an instance of calibrlogger
             dlg.exec_()
 
-    def wlvlimport(self):            #  - To import (from a csv file) manual water level measurements 
-        errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()    
-
-        allcritical_layers = ('obs_points', 'w_levels')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
-                    errorsignal = 1
-
-        if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
-            sanity = utils.askuser("YesNo","""You are about to import water level measurements\nfrom a semicolon or comma separated ascii text file.\nThe text file must have one header row and columns:\n\nobsid;date_time;meas;comment\n\nColumn names are unimportant although column\norder is, as well as format:\n\nobsid: string\ndate_time: yyyy-mm-dd hh:mm(:ss)\nMEAS: real number, decimal sep=point(.), No thousand sep.\ncomment: string, no commas!!!\n\nContinue?""",'Are you sure?')
-            #utils.pop_up_info(sanity.result)   #debugging
-            if sanity.result == 1:
-                from import_data_to_db import midv_data_importer
-                importinstance = midv_data_importer()
-                importinstance.wlvl_import()
-                if not importinstance.status=='True':      #Why is this if statement? Nothing more is to be done! 
-                    utils.pop_up_info("Something failed during import") #for debugging
-                else:  
-                    utils.pop_up_info("%s water level measurements were imported to the database"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
-
     def wlvlloggcalibrate(self):             
         errorsignal = 0
         if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
@@ -690,39 +751,3 @@ class midvatten:
                     utils.pop_up_info("You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!")
             else: 
                 utils.pop_up_info("Check settings! \nYou have to select database first!")
-
-    def wlvlloggimport(self):            #  - Not ready 
-        errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first thing user does - then load settings from project file
-            self.loadSettings()    
-
-        allcritical_layers = ('obs_points', 'w_levels_logger')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
-                    errorsignal = 1
-
-        if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
-            if not (self.settingsdict['database'] == ''):
-                if qgis.utils.iface.activeLayer():
-                    if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':
-                
-                        obsid = utils.getselectedobjectnames()
-                    
-                        longmessage = """You are about to import water head data, recorded with a\nLevel Logger (e.g. Diver), for """
-                        longmessage += obsid[0]
-                        longmessage +=""".\nData is supposed to be imported from a semicolon or comma\nseparated ascii text file. The text file must have one header row\nand columns:\n\nDate/time,Water head[cm],Temperature[°C]\nor\nDate/time,Water head[cm],Temperature[°C],1:Conductivity[mS/cm]\n\nColumn names are unimportant although column order is.\nAlso, date-time must have format yyyy-mm-dd hh:mm(:ss) and\nthe other columns must be real numbers with point(.) as decimal\nseparator and no separator for thousands.\nRemember to not use comma in the comment field!\n\nContinue?"""
-                        sanity = utils.askuser("YesNo",unicode(longmessage,'utf-8'),'Are you sure?')
-                        if sanity.result == 1:
-                            from import_data_to_db import wlvlloggimportclass
-                            importinstance = wlvlloggimportclass()
-                            if not importinstance.status=='True':      
-                                utils.pop_up_info("Something failed during import") #for debugging
-
-                else:
-                    utils.pop_up_info("You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!")
-            else: 
-                utils.pop_up_info("Check settings! \nYou have to select database first!")
-
