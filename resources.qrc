@@ -23,5 +23,9 @@
         <file>icons/import_wqual_lab.png</file>
         <file>icons/import_obs_points.png</file>
         <file>icons/import_stratigraphy.png</file>
+        <file>icons/load_wflow.png</file>
+        <file>icons/import_obs_lines.png</file>
+        <file>icons/load_seismics.png</file>
+        <file>icons/load_vlf.png</file>
     </qresource>
 </RCC>

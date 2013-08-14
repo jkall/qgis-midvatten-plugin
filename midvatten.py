@@ -77,8 +77,17 @@ class midvatten:
         self.action_import_wlvl = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_manual.png"), "Import w level measurements", self.iface.mainWindow())
         QObject.connect(self.action_import_wlvl , SIGNAL("triggered()"), self.import_wlvl)
         
-        self.action_import_wflow = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_manual.png"), "Import w flow measurements", self.iface.mainWindow())
+        self.action_import_wflow = QAction(QIcon(":/plugins/midvatten/icons/load_wflow.png"), "Import w flow measurements", self.iface.mainWindow())
         QObject.connect(self.action_import_wflow , SIGNAL("triggered()"), self.import_wflow)
+        
+        self.action_import_seismics = QAction(QIcon(":/plugins/midvatten/icons/load_seismics.png"), "Import seismic data", self.iface.mainWindow())
+        QObject.connect(self.action_import_seismics , SIGNAL("triggered()"), self.import_seismics)
+        
+        self.action_import_vlf = QAction(QIcon(":/plugins/midvatten/icons/load_vlf.png"), "Import vlf data", self.iface.mainWindow())
+        QObject.connect(self.action_import_vlf , SIGNAL("triggered()"), self.import_vlf)
+        
+        self.action_import_obs_lines = QAction(QIcon(":/plugins/midvatten/icons/import_obs_lines.png"), "Import obs lines table", self.iface.mainWindow())
+        QObject.connect(self.action_import_obs_lines , SIGNAL("triggered()"), self.import_obs_lines)
         
         self.action_wlvlcalculate = QAction(QIcon(":/plugins/midvatten/icons/calc_level_masl.png"), "Calculate w level above sea level", self.iface.mainWindow())
         QObject.connect(self.action_wlvlcalculate , SIGNAL("triggered()"), self.wlvlcalculate)
@@ -150,13 +159,16 @@ class midvatten:
         self.menu.import_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Import data to database"))
         #self.iface.addPluginToMenu("&Midvatten", self.menu.add_data_menu.menuAction())
         self.menu.addMenu(self.menu.import_data_menu)
+        self.menu.import_data_menu.addAction(self.actionimport_obs_points)   
         self.menu.import_data_menu.addAction(self.action_import_wlvl)   
         self.menu.import_data_menu.addAction(self.action_import_wlvllogg)   
         self.menu.import_data_menu.addAction(self.actionimport_wqual_lab)
         self.menu.import_data_menu.addAction(self.actionimport_wqual_field)   
+        self.menu.import_data_menu.addAction(self.action_import_wflow)   
         self.menu.import_data_menu.addAction(self.actionimport_stratigraphy)   
-        self.menu.import_data_menu.addAction(self.actionimport_wflow)   
-        self.menu.import_data_menu.addAction(self.actionimport_obs_points)   
+        self.menu.import_data_menu.addAction(self.action_import_obs_lines)   
+        self.menu.import_data_menu.addAction(self.action_import_seismics)   
+        self.menu.import_data_menu.addAction(self.action_import_vlf)   
 
         self.menu.add_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Edit data in database"))
         #self.iface.addPluginToMenu("&Midvatten", self.menu.add_data_menu.menuAction())
@@ -272,6 +284,33 @@ class midvatten:
         else: 
             utils.pop_up_info("Check settings! \nYou have to select database first!")
         
+    def import_obs_lines(self):
+        errorsignal = 0
+        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.loadSettings()    
+
+        allcritical_layers = ('obs_lines')     #Check that none of these layers are in editing mode
+        for layername in allcritical_layers:
+            layerexists = utils.find_layer(str(layername))
+            if layerexists:
+                if layerexists.isEditable():
+                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
+                    errorsignal = 1
+
+        if errorsignal == 0:        # unless none of the critical layers are in editing mode
+            sanity = utils.askuser("YesNo","""You are about to import observation lines data, from a text file which must have one header row and 6 columns (see plugin web page for further explanation):\nWKT;obsid;name;place;type;source\n\nPlease note that:\nThere must be WKT geometries of type LINESTRING in the first column.\nThe LINESTRING geometries must correspond to SRID in the dataabse.\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in string fields.\nEmpty or null values are not allowed for obsid and there must not be any duplicates of obsid\n\nContinue?""",'Are you sure?')
+            #utils.pop_up_info(sanity.result)   #debugging
+            if sanity.result == 1:
+                from import_data_to_db import midv_data_importer
+                importinstance = midv_data_importer()
+                importinstance.obslines_import()
+                #utils.pop_up_info(returnvalue) #debugging
+                #utils.pop_up_info(importinstance.status) #debugging
+                if not importinstance.status=='True':      # 
+                    utils.pop_up_info("Something failed during import") #for debugging
+                else:  
+                    utils.pop_up_info("%s observation lines were imported to the database."%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))            
+
     def import_obs_points(self):
         errorsignal = 0
         if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
@@ -286,7 +325,7 @@ class midvatten:
                     errorsignal = 1
 
         if errorsignal == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo","""You are about to import observation points data, from an ascii text file which must have one header row and 26 columns (see plugin web page for further explanation):\n\n1. obsid, 2. name, 3. place, 4. type, 5. length, 6. drillstop, 7. diam, 8. material, 9. screen, 10. capacity, 11. drilldate, 12. wmeas_yn, 13. wlogg_yn, 14. east, 15. north, 16. ne_accur, 17. ne_source, 18. h_toc, 19. h_tocags, 20. h_gs, 21. h_accur, 22. h_syst, 23. h_source, 24. source, 25. com_onerow, 26. com_html\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in string fields.\nEmpty or null values are not allowed for obsid and there must not be any duplicates of obsid\n\nContinue?""",'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import observation points data, from an ascii text file which must have one header row and 26 columns (see plugin web page for further explanation):\n\n1. obsid, 2. name, 3. place, 4. type, 5. length, 6. drillstop, 7. diam, 8. material, 9. screen, 10. capacity, 11. drilldate, 12. wmeas_yn, 13. wlogg_yn, 14. east, 15. north, 16. ne_accur, 17. ne_source, 18. h_toc, 19. h_tocags, 20. h_gs, 21. h_accur, 22. h_syst, 23. h_source, 24. source, 25. com_onerow, 26. com_html\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in string fields.\nEmpty or null values are not allowed for obsid and there must not be any duplicates of obsid.\nEast and north values must correspond to the database SRID.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
@@ -298,6 +337,31 @@ class midvatten:
                     utils.pop_up_info("Something failed during import") #for debugging
                 else:  
                     utils.pop_up_info("%s observation points were imported to the database.\nTo display the imported points on map, select them in\nthe obs_points attribute table then update map position:\nMidvatten - Edit data in database - Update map position from coordinates"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))            
+
+    def import_seismics(self):
+        errorsignal = 0
+        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.loadSettings()    
+
+        allcritical_layers = ('obs_lines', 'seismic_data')     #Check that none of these layers are in editing mode
+        for layername in allcritical_layers:
+            layerexists = utils.find_layer(str(layername))
+            if layerexists:
+                if layerexists.isEditable():
+                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
+                    errorsignal = 1
+
+        if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
+            sanity = utils.askuser("YesNo","""You are about to import interpreted seismic data, from a text file which must have one header row and 7 columns:\n\nobsid,length,east,north,ground,bedrock,gw_table\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nEmpty or null values are not allowed for obsid or length.\nEach combination of obsid and length must be unique.\n\nContinue?""",'Are you sure?')
+            #utils.pop_up_info(sanity.result)   #debugging
+            if sanity.result == 1:
+                from import_data_to_db import midv_data_importer
+                importinstance = midv_data_importer()
+                importinstance.seismics_import()
+                if not importinstance.status=='True':      #Why is this if statement? Nothing more is to be done! 
+                    utils.pop_up_info("Something failed during import") #for debugging
+                else:  
+                    utils.pop_up_info("%s interpreted seismic data values were imported to the database"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
 
     def import_stratigraphy(self):
         errorsignal = 0
@@ -324,6 +388,31 @@ class midvatten:
                 else:  
                     utils.pop_up_info("%s stratigraphy layers were imported to the database."%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
                     
+    def import_vlf(self):
+        errorsignal = 0
+        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.loadSettings()    
+
+        allcritical_layers = ('obs_lines', 'vlf_data')     #Check that none of these layers are in editing mode
+        for layername in allcritical_layers:
+            layerexists = utils.find_layer(str(layername))
+            if layerexists:
+                if layerexists.isEditable():
+                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
+                    errorsignal = 1
+
+        if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
+            sanity = utils.askuser("YesNo","""You are about to import raw data from vlf measurements, from a text file which must have one header row and 6 columns:\n\nobsid;length;east;north;real_comp;imag_comp\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nEmpty or null values are not allowed for obsid or length.\nEach combination of obsid and length must be unique.\n\nContinue?""",'Are you sure?')
+            #utils.pop_up_info(sanity.result)   #debugging
+            if sanity.result == 1:
+                from import_data_to_db import midv_data_importer
+                importinstance = midv_data_importer()
+                importinstance.vlf_import()
+                if not importinstance.status=='True':      #Why is this if statement? Nothing more is to be done! 
+                    utils.pop_up_info("Something failed during import") #for debugging
+                else:  
+                    utils.pop_up_info("%s raw values of vlf measurements were imported to the database"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
+
     def import_wflow(self):
         errorsignal = 0
         if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
