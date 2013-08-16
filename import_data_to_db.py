@@ -33,581 +33,338 @@ import midvatten_utils as utils
 
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
 
+    def __init__(self):
+        self.csvpath = ''
+        self.columns = 0
+        self.status= 'False'
+        self.recsbefore = 0
+        self.recsafter = 0
+        self.recstoimport = 0
+        self.recsinfile = 0
+        self.temptablename = ''
+        
     def obslines_import(self): 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.csvpath = ''
         self.temptableName = 'temporary_obs_lines'
-        self.status = 'False' #Changes to True if qgiscsv2sqlitetable succeeds
+        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
-            self.qgiscsv2sqlitetable() #function name was earlier uploadQgisVectorLayer with args csvlayer and srid  
-            """perform some sanity checks of the imported data and removes duplicates and empty records"""
-            #First load column names
-            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )
-            if len(self.columns)==6:    #only  if correct number of columns
-                """And then simply remove all empty records (i.e. where the column obsid '', ' ' or null)"""
-                utils.sql_alter_db("""DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1]))
-                #Then check if any obsid already exist in obs_points
-                possibleobsids = utils.sql_load_fr_db('select distinct obsid from obs_lines') 
-                obsidstobeimported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[0][1],self.temptableName))
-                for id in obsidstobeimported:
-                        if id in possibleobsids:
-                            utils.pop_up_info("""An observation line with obsid=%s do already exist in table obs_lines!\n%s in the database will remain unchanged and the new observation line with same obsid will not be imported."""%(str(id[0]),str(id[0])),"Information")
-                            self.status = 'False'
-                            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                            return 0 # return simply to stop this function
-                #Some statistics
-                self.RecordsBefore = utils.sql_load_fr_db("""SELECT Count(*) FROM obs_lines""") #------CHANGE HERE!!
-                self.RecordsToImport = utils.sql_load_fr_db("""SELECT Count(*) FROM (SELECT DISTINCT "%s" FROM %s)"""%(self.columns[0][1],self.temptableName))
-                self.RecordsInFile = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%self.temptableName)
-                utils.pop_up_info("The import file has " + str(self.RecordsInFile[0][0]) + " non-empty observation lines \n" + "and among these are found " + str(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]) + " duplicates.")#--- CHANGE HERE!!!!!!
-
-                #Then check wether there are duplicates in the imported file and if so, ask user what to do
-                if self.RecordsInFile[0][0] > self.RecordsToImport[0][0]: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
-                    duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data! (You have several identical obs_id.)\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicate obs_id.\n\nProceed?"""%(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]),"Warning!")#--- CHANGE HERE!!!!!!
-                    if duplicatequestion.result == 0:      # if the user wants to abort
-                        self.status = 'False'
-                        PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                        return 0   # return simply to stop this function
-                cleaningok = 1
-            else:
-                cleaningok = 0
-            #HERE IS WHERE DATA IS TRANSFERRED TO 'tablename'
+            self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
+            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )#Load column names from sqlite table
+            sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1]) #first two cols are expected to be WKT geometry and obsid
+            cleaningok = self.SingleFieldDuplicates(6,'obs_lines',sqlremove,1) # This is where duplicates are removed  LAST ARGUMENT IS COLUMN FOR ID
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sql = r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_lines'"""
                 SRID = str(utils.sql_load_fr_db(sql)[0][0])# THIS IS DUE TO WKT-import of geometries below
-    
                 sqlpart1 = """INSERT OR IGNORE INTO "obs_lines" (obsid, name, place, type, source, geometry) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), ST_GeomFromText("%s",%s) from %s"""%(self.columns[1][1], self.columns[2][1], self.columns[3][1], self.columns[4][1], self.columns[5][1], self.columns[0][1],SRID,self.temptableName)#PLEASE NOTE THE SRID!
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
-                
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
-
-                #Statistics
-                self.RecordsAfter = utils.sql_load_fr_db("""SELECT Count(*) FROM obs_lines""") #general import fix
-                NoExcluded = self.RecordsToImport[0][0] - (self.RecordsAfter[0][0] - self.RecordsBefore[0][0])
-                if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-                    utils.pop_up_info("""In total %s observation lines were not imported from the file since they would cause duplicates in the database."""%NoExcluded)
-            elif cleaningok == 0:
-                utils.pop_up_info("Import file must have exactly 6 columns!\nCheck your data and try again.", "Import Error")
-                PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                self.status = 'False'
+                self.recsafter = utils.sql_load_fr_db("""SELECT Count(*) FROM obs_lines""")[0][0] #for the statistics
+                self.StatsAfter()
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def obsp_import(self): # was earlier found in __init__ and cleanupimportedata functions of specific importer class
+    def obsp_import(self): 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.csvpath = ''
         self.temptableName = 'temporary_obs_points'
-        self.status = 'False' #Changes to True if qgiscsv2sqlitetable succeeds
+        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
-            self.qgiscsv2sqlitetable() #function name was earlier uploadQgisVectorLayer with args csvlayer and srid  
-            """perform some sanity checks of the imported data and removes duplicates and empty records"""
-            #First load column names
-            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )
-            if len(self.columns)==26:    #only  if correct number of columns
-                """And then simply remove all empty records (i.e. where the column obsid '', ' ' or null)"""
-                utils.sql_alter_db("""DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1]))
-                #Then check if any obsid already exist in obs_points
-                possibleobsids = utils.sql_load_fr_db('select distinct obsid from obs_points') 
-                obsidstobeimported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[0][1],self.temptableName))
-                for id in obsidstobeimported:
-                        if id in possibleobsids:
-                            utils.pop_up_info("""An observation point with obsid=%s do already exist in table obs_points!\n%s in the database will remain unchanged and the new observation point with same obsid will not be imported."""%(str(id[0]),str(id[0])),"Information")
-                            self.status = 'False'
-                            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                            return 0 # return simply to stop this function
-                #Some statistics
-                self.RecordsBefore = utils.sql_load_fr_db("""SELECT Count(*) FROM obs_points""") #------CHANGE HERE!!
-                self.RecordsToImport = utils.sql_load_fr_db("""SELECT Count(*) FROM (SELECT DISTINCT "%s" FROM %s)"""%(self.columns[0][1],self.temptableName))
-                self.RecordsInFile = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%self.temptableName)
-                utils.pop_up_info("The import file has " + str(self.RecordsInFile[0][0]) + " non-empty observation points \n" + "and among these are found " + str(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]) + " duplicates.")#--- CHANGE HERE!!!!!!
-
-                #Then check wether there are duplicates in the imported file and if so, ask user what to do
-                if self.RecordsInFile[0][0] > self.RecordsToImport[0][0]: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
-                    duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data! (You have several identical obs_id.)\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicate obs_id.\n\nProceed?"""%(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]),"Warning!")#--- CHANGE HERE!!!!!!
-                    if duplicatequestion.result == 0:      # if the user wants to abort
-                        self.status = 'False'
-                        PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                        return 0   # return simply to stop this function
-                cleaningok = 1
-            else:
-                cleaningok = 0
-            #HERE IS WHERE DATA IS TRANSFERRED TO 'tablename'
-            if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db 
+            self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
+            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )#Load column names from sqlite table
+            sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1]) #CHANGE HERE!!!
+            cleaningok = self.SingleFieldDuplicates(26,'obs_points',sqlremove,0) # This is where duplicates are removed  LAST ARGUMENT IS COLUMN FOR ID 
+            if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
+                sql = r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'"""
                 sqlpart1 = """INSERT OR IGNORE INTO "obs_points" (obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as double), CAST("%s" as text), CAST("%s" as double), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as integer), CAST("%s" as integer), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as text), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(self.columns[0][1], self.columns[1][1], self.columns[2][1], self.columns[3][1], self.columns[4][1], self.columns[5][1], self.columns[6][1], self.columns[7][1], self.columns[8][1], self.columns[9][1], self.columns[10][1], self.columns[11][1], self.columns[12][1], self.columns[13][1], self.columns[14][1], self.columns[15][1], self.columns[16][1], self.columns[17][1], self.columns[18][1], self.columns[19][1], self.columns[20][1], self.columns[21][1], self.columns[22][1], self.columns[23][1], self.columns[24][1], self.columns[25][1],self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
-                
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
-
-                #Statistics
-                self.RecordsAfter = utils.sql_load_fr_db("""SELECT Count(*) FROM obs_points""") #general import fix
-                NoExcluded = self.RecordsToImport[0][0] - (self.RecordsAfter[0][0] - self.RecordsBefore[0][0])
-                if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-                    utils.pop_up_info("""In total %s observation points were not imported from the file since they would cause duplicates in the database."""%NoExcluded)
-            elif cleaningok == 0:
-                utils.pop_up_info("Import file must have exactly 26 columns!\nCheck your data and try again.", "Import Error")
-                PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                self.status = 'False'
+                self.recsafter = utils.sql_load_fr_db("""SELECT Count(*) FROM obs_points""")[0][0] #for the statistics
+                self.StatsAfter()
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def seismics_import(self):#NOT READY AT ALL, JUST A COPY OF WFLOW
+    def seismics_import(self): 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.csvpath = ''
         self.temptableName = 'temporary_seismics'
-        self.status = 'False' #Changed to True if uploadQgisVectorLayer succeeds
-        self.csvlayer = self.selectcsv()
+        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+        self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
-            self.qgiscsv2sqlitetable()
-            """perform some sanity checks of the imported data and removes duplicates and empty records"""
-            #First load column names
-            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )
-            if len(self.columns)==7:    #only  if correct number of columns
-                #And then simply remove all empty records
-                sql = """DELETE FROM "%s" where "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1])
-                utils.sql_alter_db(sql)
-                #Then check whether the obsid actually exists in obs_lines
-                possibleobsids = utils.sql_load_fr_db('select distinct obsid from obs_lines') 
-                obsidstobeimported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[0][1],self.temptableName))
-                for id in obsidstobeimported:
-                        if not id in possibleobsids:
-                            utils.pop_up_info("""The obsid=%s do not exist in obs_lines!"""%str(id[0]),"Error")
-                            self.status = 'False'
-                            return 0 # return simply to stop this function
-
-                #Some statistics
-                self.RecordsBefore = utils.sql_load_fr_db("""SELECT Count(*) FROM seismic_data""")
-                self.RecordsToImport = utils.sql_load_fr_db("""SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.temptableName))
-                self.RecordsInFile = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%self.temptableName)
-                utils.pop_up_info("The import file has " + str(self.RecordsInFile[0][0]) + " non-empty records\n" + "and among these are found " + str(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]) + " duplicates.")   # debug
-
-                #Then check wether there are duplicates in the imported file and if so, ask user what to do
-                if self.RecordsInFile[0][0] > self.RecordsToImport[0][0]: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
-                    duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\n(More than one interpreted data for the same obs line and length.)\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicate measurements.\n\nProceed?"""%(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]),"Warning!")
-                    #utils.pop_up_info(duplicatequestion.result)    #debug
-                    if duplicatequestion.result == 0:      # if the user wants to abort
-                        self.status = 'False'
-                        return 0   # return simply to stop this function
-                cleaningok = 1
-            else:
-                cleaningok = 0
-            #HERE IS WHERE DATA IS TRANSFERRED TO seismic_Data
-            if cleaningok == 1  and len(self.columns)==7: # If cleaning was OK, then perform the import
+            self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
+            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )#Load column names from sqlite table
+            sqlremove = """DELETE FROM "%s" where "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1]) #Delete empty records from the import table!!!
+            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.temptableName) # To select distinct data posts from the import table
+            cleaningok = self.MultipleFieldDuplicates(7,'seismic_data',sqlremove,'obs_lines',sqlNoOfdistinct)
+            if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sqlpart1 = """INSERT OR IGNORE INTO "seismic_data" (obsid, length, east, north, ground, bedrock, gw_table) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double) FROM %s"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.columns[4][1],self.columns[5][1],self.columns[6][1],self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
-
-                #Statistics
-                self.RecordsAfter = utils.sql_load_fr_db("""SELECT Count(*) FROM seismic_data""")
-                NoExcluded = self.RecordsToImport[0][0] - (self.RecordsAfter[0][0] - self.RecordsBefore[0][0])
-                if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-                    utils.pop_up_info("""In total %s measurements were not imported from the file since they would cause duplicates in the database."""%NoExcluded)
-            elif cleaningok == 0 and not(len(self.columns)==7):
-                utils.pop_up_info("Import file must have exactly seven columns!\n(Perhaps you had commas in the comment field?)", "Import Error")
-                self.status = 'False'
+                self.recsafter = utils.sql_load_fr_db("""SELECT Count(*) FROM seismic_data""")[0][0] #for the statistics
+                self.StatsAfter()
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def strat_import(self): # was earlier found in __init__ and cleanupimportedata functions of specific importer class
+    def strat_import(self): 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.csvpath = ''
         self.temptableName = 'temporary_stratigraphy'
-        self.status = 'False' #Changed to True if uploadQgisVectorLayer succeeds
-        self.csvlayer = self.selectcsv()
+        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+        self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
-            self.qgiscsv2sqlitetable()
-            """perform some sanity checks of the imported data and removes duplicates and empty records"""
-            #First load column names
-            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )
-            if len(self.columns)==9:    #only  if correct number of columns
-                """And then simply remove all empty records (i.e. where either of the columns obsid or stratid is '', ' ' or null)"""
-                utils.sql_alter_db("""DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1]))
-                
-                #Then check whether the obsid actually exists in obs_points
-                possibleobsids = utils.sql_load_fr_db('select distinct obsid from obs_points') 
-                obsidstobeimported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[0][1],self.temptableName))
-                for id in obsidstobeimported:
-                        if not id in possibleobsids:
-                            utils.pop_up_info("""The obsid=%s do not exist in obs_points!"""%str(id[0]),"Error")
-                            self.status = 'False'
-                            return 0 # return simply to stop this function
-
-                #Some statistics
-                self.RecordsBefore = utils.sql_load_fr_db("""SELECT Count(*) FROM stratigraphy""")
-                self.RecordsToImport = utils.sql_load_fr_db("""SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.temptableName))
-                self.RecordsInFile = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%self.temptableName)
-                utils.pop_up_info("The import file has " + str(self.RecordsInFile[0][0]) + " non-empty records\n" + "and among these are found " + str(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]) + " duplicates.")   # debug
-
-                #Then check wether there are duplicates in the imported file and if so, ask user what to do
-                if self.RecordsInFile[0][0] > self.RecordsToImport[0][0]: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
-                    duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\n(Each pair of obsid+stratid must be unique!)\nDo you still want to import these data?\nAnswering yes will start, from top of the imported\nfile and only import the first of the duplicate measurements.\n\nProceed?"""%(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]),"Warning!")
-                    #utils.pop_up_info(duplicatequestion.result)    #debug
-                    if duplicatequestion.result == 0:      # if the user wants to abort
-                        self.status = 'False'
-                        return 0   # return simply to stop this function
-                cleaningok = 1
-            else:
-                cleaningok = 0
-            #HERE IS WHERE DATA IS TRANSFERRED TO stratigraphy
-            if cleaningok == 1  and len(self.columns)==9: # If cleaning was OK, then perform the import
+            self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
+            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )#Load column names from sqlite table
+            sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1]) #Delete empty records from the import table!!!
+            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.temptableName) #Number of distinct data posts in the import table
+            cleaningok = self.MultipleFieldDuplicates(9,'stratigraphy',sqlremove,'obs_points',sqlNoOfdistinct)
+            if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sqlpart1 = """INSERT OR IGNORE INTO "stratigraphy" (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as integer), CAST("%s" as double), CAST("%s" as double), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(self.columns[0][1], self.columns[1][1], self.columns[2][1], self.columns[3][1], self.columns[4][1], self.columns[5][1], self.columns[6][1], self.columns[7][1], self.columns[8][1],self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
-
-                #Statistics
-                self.RecordsAfter = utils.sql_load_fr_db("""SELECT Count(*) FROM stratigraphy""")
-                NoExcluded = self.RecordsToImport[0][0] - (self.RecordsAfter[0][0] - self.RecordsBefore[0][0])
-                if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-                    utils.pop_up_info("""In total %s measurements were not imported from the file since they would cause duplicates in the database."""%NoExcluded)
-            elif cleaningok == 0 and not(len(self.columns)==9):
-                utils.pop_up_info("Import file must have exactly nine columns!\n(Perhaps you had commas in the comment field?)", "Import Error")
-                self.status = 'False'
+                self.recsafter = utils.sql_load_fr_db("""SELECT Count(*) FROM stratigraphy""")[0][0] #for the statistics
+                self.StatsAfter()
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
-    def vlf_import(self):#NOT READY AT ALL, JUST A COPY OF WFLOW
+    def vlf_import(self): 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.csvpath = ''
         self.temptableName = 'temporary_vlf_data'
-        self.status = 'False' #Changed to True if uploadQgisVectorLayer succeeds
-        self.csvlayer = self.selectcsv()
+        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+        self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
-            self.qgiscsv2sqlitetable()
-            """perform some sanity checks of the imported data and removes duplicates and empty records"""
-            #First load column names
-            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )
-            if len(self.columns)==6:    #only  if correct number of columns
-                #And then simply remove all empty records
-                sql = """DELETE FROM "%s" where "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1])
-                utils.sql_alter_db(sql)
-                #Then check whether the obsid actually exists in obs_points
-                possibleobsids = utils.sql_load_fr_db('select distinct obsid from obs_lines') 
-                obsidstobeimported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[0][1],self.temptableName))
-                for id in obsidstobeimported:
-                        if not id in possibleobsids:
-                            utils.pop_up_info("""The obsid=%s do not exist in obs_lines!"""%str(id[0]),"Error")
-                            self.status = 'False'
-                            return 0 # return simply to stop this function
-
-                #Some statistics
-                self.RecordsBefore = utils.sql_load_fr_db("""SELECT Count(*) FROM vlf_data""")
-                self.RecordsToImport = utils.sql_load_fr_db("""SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.temptableName))
-                self.RecordsInFile = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%self.temptableName)
-                utils.pop_up_info("The import file has " + str(self.RecordsInFile[0][0]) + " non-empty records\n" + "and among these are found " + str(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]) + " duplicates.")   # debug
-
-                #Then check wether there are duplicates in the imported file and if so, ask user what to do
-                if self.RecordsInFile[0][0] > self.RecordsToImport[0][0]: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
-                    duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\n(More than one measurement at the same length for the same profile.)\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicate measurements.\n\nProceed?"""%(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]),"Warning!")
-                    #utils.pop_up_info(duplicatequestion.result)    #debug
-                    if duplicatequestion.result == 0:      # if the user wants to abort
-                        self.status = 'False'
-                        return 0   # return simply to stop this function
-                cleaningok = 1
-            else:
-                cleaningok = 0
-            #HERE IS WHERE DATA IS TRANSFERRED TO vlf_data
-            if cleaningok == 1  and len(self.columns)==6: # If cleaning was OK, then perform the import
+            self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
+            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )#Load column names from sqlite table
+            sqlremove = """DELETE FROM "%s" where "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1])#Delete empty records from the import table!!!
+            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.temptableName) #Number of distinct data posts in the import table
+            cleaningok = self.MultipleFieldDuplicates(6,'vlf_data',sqlremove,'obs_lines',sqlNoOfdistinct)
+            if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sqlpart1 = """INSERT OR IGNORE INTO "vlf_data" (obsid, length, east, north, real_comp, imag_comp) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double) FROM %s"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.columns[4][1],self.columns[5][1],self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
-
-                #Statistics
-                self.RecordsAfter = utils.sql_load_fr_db("""SELECT Count(*) FROM vlf_data""")
-                NoExcluded = self.RecordsToImport[0][0] - (self.RecordsAfter[0][0] - self.RecordsBefore[0][0])
-                if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-                    utils.pop_up_info("""In total %s vlf data were not imported from the file since they would cause duplicates in the database."""%NoExcluded)
-            elif cleaningok == 0 and not(len(self.columns)==6):
-                utils.pop_up_info("Import file must have exactly six columns!\n(Perhaps you had commas in the comment field?)", "Import Error")
-                self.status = 'False'
+                self.recsafter = utils.sql_load_fr_db("""SELECT Count(*) FROM vlf_data""")[0][0] #for the statistics
+                self.StatsAfter()
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
-    def wflow_import(self):#please note the particular behaviour of adding additional flowtypes to table zz_flowtype
+        
+    def wflow_import(self): #please note the particular behaviour of adding additional flowtypes to table zz_flowtype
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.csvpath = ''
         self.temptableName = 'temporary_wflow'
-        self.status = 'False' #Changed to True if uploadQgisVectorLayer succeeds
-        self.csvlayer = self.selectcsv()
+        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+        self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
-            self.qgiscsv2sqlitetable()
-            """perform some sanity checks of the imported data and removes duplicates and empty records"""
-            #First load column names
-            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )
-            if len(self.columns)==7:    #only  if correct number of columns
-                #And then simply remove all empty records
-                sql = """DELETE FROM "%s" where "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1],self.columns[2][1],self.columns[2][1],self.columns[2][1],self.columns[3][1],self.columns[3][1],self.columns[3][1])
-                utils.sql_alter_db(sql)
-                utils.pop_up_info(sql)#DEBUG
-                #Then check whether the obsid actually exists in obs_points
-                possibleobsids = utils.sql_load_fr_db('select distinct obsid from obs_points') 
-                obsidstobeimported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[0][1],self.temptableName))
-                for id in obsidstobeimported:
-                        if not id in possibleobsids:
-                            utils.pop_up_info("""The obsid=%s do not exist in obs_points!"""%str(id[0]),"Error")
-                            self.status = 'False'
-                            return 0 # return simply to stop this function
-
-                #Then check for flowtypes and add those that are not present in db table zz_flowtype the obsid actually exists in obs_points
+            self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
+            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )#Load column names from sqlite table
+            sqlremove = """DELETE FROM "%s" where "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1],self.columns[2][1],self.columns[2][1],self.columns[2][1],self.columns[3][1],self.columns[3][1],self.columns[3][1])#Delete empty records from the import table!!!
+            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.temptableName) #Number of distinct data posts in the import table
+            cleaningok = self.MultipleFieldDuplicates(7,'w_flow',sqlremove,'obs_points',sqlNoOfdistinct)
+            if cleaningok == 1: # If cleaning was OK, then fix zz_flowtype and then copy data from the temporary table to the original table in the db
+                #check for flowtypes and add those that are not present in db table zz_flowtype the obsid actually exists in obs_points
                 FlTypesInDb = utils.sql_load_fr_db('select distinct type from zz_flowtype') 
                 FlTypes2BImported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[2][1],self.temptableName))
                 for tp in FlTypes2BImported:
                         if not tp in FlTypesInDb:
                             sql = """insert into "zz_flowtype" (type, explanation) VALUES ("%s", '');"""%str(tp[0])
                             utils.sql_alter_db(sql)
-
-                #Some statistics
-                self.RecordsBefore = utils.sql_load_fr_db("""SELECT Count(*) FROM w_flow""")
-                self.RecordsToImport = utils.sql_load_fr_db("""SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.temptableName))
-                self.RecordsInFile = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%self.temptableName)
-                utils.pop_up_info("The import file has " + str(self.RecordsInFile[0][0]) + " non-empty records\n" + "and among these are found " + str(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]) + " duplicates.")   # debug
-
-                #Then check wether there are duplicates in the imported file and if so, ask user what to do
-                if self.RecordsInFile[0][0] > self.RecordsToImport[0][0]: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
-                    duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\n(More than one measurement at the same date_time for the same obsid.)\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicate measurements.\n\nProceed?"""%(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]),"Warning!")
-                    #utils.pop_up_info(duplicatequestion.result)    #debug
-                    if duplicatequestion.result == 0:      # if the user wants to abort
-                        self.status = 'False'
-                        return 0   # return simply to stop this function
-                cleaningok = 1
-            else:
-                cleaningok = 0
-            #HERE IS WHERE DATA IS TRANSFERRED TO w_flow
-            if cleaningok == 1  and len(self.columns)==7: # If cleaning was OK, then perform the import
+            
                 sqlpart1 = """INSERT OR IGNORE INTO "w_flow" (obsid, instrumentid, flowtype, date_time, reading, unit, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as double), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.columns[4][1],self.columns[5][1],self.columns[6][1],self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
-
-                #Statistics
-                self.RecordsAfter = utils.sql_load_fr_db("""SELECT Count(*) FROM w_flow""")
-                NoExcluded = self.RecordsToImport[0][0] - (self.RecordsAfter[0][0] - self.RecordsBefore[0][0])
-                if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-                    utils.pop_up_info("""In total %s measurements were not imported from the file since they would cause duplicates in the database."""%NoExcluded)
-            elif cleaningok == 0 and not(len(self.columns)==7):
-                utils.pop_up_info("Import file must have exactly seven columns!\n(Perhaps you had commas in the comment field?)", "Import Error")
-                self.status = 'False'
+                self.recsafter = utils.sql_load_fr_db("""SELECT Count(*) FROM w_flow""")[0][0] #for the statistics
+                self.StatsAfter()
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
-    def wlvl_import(self): # was earlier found in __init__ and cleanupimportedata functions of specific importer class
+        
+    def wlvl_import(self): 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.csvpath = ''
-        self.temptableName = 'temporary_w_lvl'
-        self.status = 'False' #Changed to True if uploadQgisVectorLayer succeeds
-        self.csvlayer = self.selectcsv()
+        self.temptableName = 'temporary_wlevels'
+        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+        self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
-            self.qgiscsv2sqlitetable()
-            """perform some sanity checks of the imported data and removes duplicates and empty records"""
-            #First load column names
-            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )
-            if len(self.columns)==4:    #only  if correct number of columns
-                #And then simply remove all empty records
-                utils.sql_alter_db("""DELETE FROM "%s" where ("%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null) or (("%s"='' or "%s"=' ' or "%s" is null) and ("%s"='' or "%s"=' ' or "%s" is null))"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1],self.columns[2][1],self.columns[2][1],self.columns[2][1],self.columns[3][1],self.columns[3][1],self.columns[3][1]))
-                
-                #Then check whether the obsid actually exists in obs_points
-                possibleobsids = utils.sql_load_fr_db('select distinct obsid from obs_points') 
-                obsidstobeimported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[0][1],self.temptableName))
-                for id in obsidstobeimported:
-                        if not id in possibleobsids:
-                            utils.pop_up_info("""The obsid=%s do not exist in obs_points!"""%str(id[0]),"Error")
-                            self.status = 'False'
-                            return 0 # return simply to stop this function
-
-                #Some statistics
-                self.RecordsBefore = utils.sql_load_fr_db("""SELECT Count(*) FROM w_levels""")
-                self.RecordsToImport = utils.sql_load_fr_db("""SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.temptableName))
-                self.RecordsInFile = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%self.temptableName)
-                utils.pop_up_info("The import file has " + str(self.RecordsInFile[0][0]) + " non-empty records\n" + "and among these are found " + str(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]) + " duplicates.")   # debug
-
-                #Then check wether there are duplicates in the imported file and if so, ask user what to do
-                if self.RecordsInFile[0][0] > self.RecordsToImport[0][0]: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
-                    duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\n(More than one measurement at the same date_time for the same obsid.)\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicate measurements.\n\nProceed?"""%(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]),"Warning!")
-                    #utils.pop_up_info(duplicatequestion.result)    #debug
-                    if duplicatequestion.result == 0:      # if the user wants to abort
-                        self.status = 'False'
-                        return 0   # return simply to stop this function
-                cleaningok = 1
-            else:
-                cleaningok = 0
-            #HERE IS WHERE DATA IS TRANSFERRED TO w_levels
-            if cleaningok == 1  and len(self.columns)==4: # If cleaning was OK, then perform the import
+            self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
+            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )#Load column names from sqlite table
+            sqlremove = """DELETE FROM "%s" where ("%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null) or (("%s"='' or "%s"=' ' or "%s" is null) and ("%s"='' or "%s"=' ' or "%s" is null))"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1],self.columns[2][1],self.columns[2][1],self.columns[2][1],self.columns[3][1],self.columns[3][1],self.columns[3][1])#Delete empty records from the import table!!!
+            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.temptableName) #Number of distinct data posts in the import table
+            cleaningok = self.MultipleFieldDuplicates(4,'w_levels',sqlremove,'obs_points',sqlNoOfdistinct)
+            if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sqlpart1 = """INSERT OR IGNORE INTO "w_levels" (obsid, date_time, meas, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as double), CAST("%s" as text) FROM %s"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
-                #utils.sql_alter_db("""INSERT OR IGNORE INTO "w_levels" (obsid, date_time, meas, comment) SELECT CAST(obsid as text), CAST(date_time as text), CAST(MEAS as double), CAST(comment as text) FROM %s"""%self.temptableName)     # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
-
-                #Statistics
-                self.RecordsAfter = utils.sql_load_fr_db("""SELECT Count(*) FROM w_levels""")
-                NoExcluded = self.RecordsToImport[0][0] - (self.RecordsAfter[0][0] - self.RecordsBefore[0][0])
-                if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-                    utils.pop_up_info("""In total %s measurements were not imported from the file since they would cause duplicates in the database."""%NoExcluded)
-            elif cleaningok == 0 and not(len(self.columns)==4):
-                utils.pop_up_info("Import file must have exactly four columns!\n(Perhaps you had commas in the comment field?)", "Import Error")
-                self.status = 'False'
+                self.recsafter = utils.sql_load_fr_db("""SELECT Count(*) FROM w_levels""")[0][0] #for the statistics
+                self.StatsAfter()
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
-    def wquallab_import(self): # was earlier found in __init__ and cleanupimportedata functions of specific importer class
+        
+    def wquallab_import(self): 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.csvpath = ''
-        self.temptableName = 'temporary_w_qual'
-        self.status = 'False' #Changed to True if uploadQgisVectorLayer succeeds
-        self.csvlayer = self.selectcsv()
+        self.temptableName = 'temporary_wquallab'
+        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+        self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
-            self.qgiscsv2sqlitetable()
-            """perform some sanity checks of the imported data and removes duplicates and empty records"""
-            #First load column names
-            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )
-            if len(self.columns)==12:    #only  if correct number of columns
-                #And then simply remove all empty records (i.e. where any of columns obsid, report, date_time, parameter or (reading_num and reading_txt) is '', ' ' or null)
-                utils.sql_alter_db("""DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or ("%s" in ('', ' ') or "%s" is null) and ("%s" in ('', ' ') or "%s" is null)"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[2][1],self.columns[2][1],self.columns[5][1],self.columns[5][1],self.columns[7][1],self.columns[7][1],self.columns[8][1],self.columns[8][1],self.columns[9][1],self.columns[9][1]))
-                
-                #Then check whether the obsid actually exists in obs_points
-                possibleobsids = utils.sql_load_fr_db('select distinct obsid from obs_points') 
-                obsidstobeimported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[0][1],self.temptableName))
-                for id in obsidstobeimported:
-                        if not id in possibleobsids:
-                            utils.pop_up_info("""The obsid=%s do not exist in obs_points!"""%str(id[0]),"Error")
-                            self.status = 'False'
-                            return 0 # return simply to stop this function
-
-                #Some statistics
-                self.RecordsBefore = utils.sql_load_fr_db("""SELECT Count(*) FROM w_qual_lab""")
-                self.RecordsToImport = utils.sql_load_fr_db("""SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[2][1],self.columns[7][1],self.temptableName))
-                self.RecordsInFile = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%self.temptableName)
-                utils.pop_up_info("The import file has " + str(self.RecordsInFile[0][0]) + " non-empty records\n" + "and among these are found " + str(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]) + " duplicates.")   # debug
-
-                #Then check wether there are duplicates in the imported file and if so, ask user what to do
-                if self.RecordsInFile[0][0] > self.RecordsToImport[0][0]: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
-                    duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\n(Each pair of 'report' and 'parameter' is not unique.)\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicate analyses.\n\nProceed?"""%(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]),"Warning!")
-                    #utils.pop_up_info(duplicatequestion.result)    #debug
-                    if duplicatequestion.result == 0:      # if the user wants to abort
-                        self.status = 'False'
-                        return 0   # return simply to stop this function
-                cleaningok = 1
-            else:
-                cleaningok = 0
-            #HERE IS WHERE DATA IS TRANSFERRED TO w_levels
-            if cleaningok == 1  and len(self.columns)==12: # If cleaning was OK, then perform the import
+            self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
+            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )#Load column names from sqlite table
+            sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or ("%s" in ('', ' ') or "%s" is null) and ("%s" in ('', ' ') or "%s" is null)"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[2][1],self.columns[2][1],self.columns[5][1],self.columns[5][1],self.columns[7][1],self.columns[7][1],self.columns[8][1],self.columns[8][1],self.columns[9][1],self.columns[9][1])#Delete empty records from the import table!!!
+            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[2][1],self.columns[7][1],self.temptableName) #Number of distinct data posts in the import table
+            cleaningok = self.MultipleFieldDuplicates(12,'w_qual_lab',sqlremove,'obs_points',sqlNoOfdistinct)
+            if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sqlpart1 = """INSERT OR IGNORE INTO "w_qual_lab" (obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as double), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as double), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.columns[4][1],self.columns[5][1],self.columns[6][1],self.columns[7][1],self.columns[8][1],self.columns[9][1],self.columns[10][1],self.columns[11][1],self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
-                #utils.sql_alter_db("""INSERT OR IGNORE INTO "w_levels" (obsid, date_time, meas, comment) SELECT CAST(obsid as text), CAST(date_time as text), CAST(MEAS as double), CAST(comment as text) FROM %s"""%self.temptableName)     # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
-
-                #Statistics
-                self.RecordsAfter = utils.sql_load_fr_db("""SELECT Count(*) FROM w_qual_lab""")
-                NoExcluded = self.RecordsToImport[0][0] - (self.RecordsAfter[0][0] - self.RecordsBefore[0][0])
-                if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-                    utils.pop_up_info("""In total %s measurements were not imported from the file since they would cause duplicates in the database."""%NoExcluded)
-            elif cleaningok == 0 and not(len(self.columns)==12):
-                utils.pop_up_info("Import file must have exactly 12 columns!\n(Perhaps you had commas in the comment field?)", "Import Error")
-                self.status = 'False'
+                self.recsafter = utils.sql_load_fr_db("""SELECT Count(*) FROM w_qual_lab""")[0][0] #for the statistics
+                self.StatsAfter()
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
-    def wqualfield_import(self): # was earlier found in __init__ and cleanupimportedata functions of specific importer class
+        
+    def wqualfield_import(self): 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.csvpath = ''
-        self.temptableName = 'temporary_w_qual_field'
-        self.status = 'False' #Changed to True if uploadQgisVectorLayer succeeds
-        self.csvlayer = self.selectcsv()
+        self.temptableName = 'temporary_wqualfield'
+        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+        self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
-            self.qgiscsv2sqlitetable()
-            """perform some sanity checks of the imported data and removes duplicates and empty records"""
-            #First load column names
-            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )
-            if len(self.columns)==10:    #only  if correct number of columns
-                #And then simply remove all empty records (i.e. where any of columns obsid, date_time or parameter is '', ' ' or null)
-                utils.sql_alter_db("""DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[2][1],self.columns[2][1],self.columns[4][1],self.columns[4][1]))
-                
-                #Then check whether the obsid actually exists in obs_points
-                possibleobsids = utils.sql_load_fr_db('select distinct obsid from obs_points') 
-                obsidstobeimported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[0][1],self.temptableName))
-                for id in obsidstobeimported:
-                        if not id in possibleobsids:
-                            utils.pop_up_info("""The obsid=%s do not exist in obs_points!"""%str(id[0]),"Error")
-                            self.status = 'False'
-                            return 0 # return simply to stop this function
-
-                #Some statistics
-                self.RecordsBefore = utils.sql_load_fr_db("""SELECT Count(*) FROM w_qual_field""")
-                self.RecordsToImport = utils.sql_load_fr_db("""SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[2][1],self.columns[7][1],self.temptableName))
-                self.RecordsInFile = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%self.temptableName)
-                utils.pop_up_info("The import file has " + str(self.RecordsInFile[0][0]) + " non-empty records\n" + "and among these are found " + str(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]) + " duplicates.")   # debug
-
-                #Then check wether there are duplicates in the imported file and if so, ask user what to do
-                if self.RecordsInFile[0][0] > self.RecordsToImport[0][0]: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
-                    duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\n(Each set of 'obsid', 'date_time' and 'parameter' is not unique.)\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicate measurements.\n\nProceed?"""%(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]),"Warning!")
-                    #utils.pop_up_info(duplicatequestion.result)    #debug
-                    if duplicatequestion.result == 0:      # if the user wants to abort
-                        self.status = 'False'
-                        return 0   # return simply to stop this function
-                cleaningok = 1
-            else:
-                cleaningok = 0
-            #HERE IS WHERE DATA IS TRANSFERRED TO w_levels
-            if cleaningok == 1  and len(self.columns)==10: # If cleaning was OK, then perform the import
+            self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
+            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )#Load column names from sqlite table
+            sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[2][1],self.columns[2][1],self.columns[4][1],self.columns[4][1])#Delete empty records from the import table!!!
+            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[2][1],self.columns[7][1],self.temptableName) #Number of distinct data posts in the import table
+            cleaningok = self.MultipleFieldDuplicates(10,'w_qual_field',sqlremove,'obs_points',sqlNoOfdistinct)
+            if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sqlpart1 = """INSERT OR IGNORE INTO "w_qual_field" (obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as double), CAST("%s" as text), CAST("%s" as text), CAST("%s" as double), CAST("%s" as text) FROM %s"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.columns[4][1],self.columns[5][1],self.columns[6][1],self.columns[7][1],self.columns[8][1],self.columns[9][1],self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
-
-                #Statistics
-                self.RecordsAfter = utils.sql_load_fr_db("""SELECT Count(*) FROM w_qual_field""")
-                NoExcluded = self.RecordsToImport[0][0] - (self.RecordsAfter[0][0] - self.RecordsBefore[0][0])
-                if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-                    utils.pop_up_info("""In total %s measurements were not imported from the file since they would cause duplicates in the database."""%NoExcluded)
-            elif cleaningok == 0 and not(len(self.columns)==10):
-                utils.pop_up_info("Import file must have exactly 10 columns!\n(Perhaps you had commas in the comment field?)", "Import Error")
-                self.status = 'False'
+                self.recsafter = utils.sql_load_fr_db("""SELECT Count(*) FROM w_qual_field""")[0][0] #for the statistics
+                self.StatsAfter()
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def selectcsv(self): # general importer - ready, no fix needed
+    def VerifyIDInMajorTable(self,MajorTable): #for all tables with foreign key = obsid
+        notinmajor = 'False'
+        possibleobsids = utils.sql_load_fr_db("""select distinct obsid from %s"""%MajorTable) 
+        obsidstobeimported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[0][1],self.temptableName))
+        for id in obsidstobeimported:
+                if not id in possibleobsids:
+                    qgis.utils.iface.messageBar().pushMessage("Import Failure","""The obsid=%s do not exist in %s!"""%(str(id[0]),MajorTable),2)
+                    self.status = 'False'
+                    notinmajor = 'True'
+        if notinmajor == 'True':
+            return 0
+        else:
+            return 1
+            
+    def CheckIfOBSIDExists(self,GoalTable,idcol):#for obs_points and obs_lines where primary key = obsid
+        possibleobsids = utils.sql_load_fr_db("""select distinct obsid from '%s'"""%GoalTable)
+        obsidstobeimported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[idcol][1],self.temptableName))
+        for id in obsidstobeimported:
+            if id in possibleobsids:
+                qgis.utils.iface.messageBar().pushMessage("Warning","""obsid=%s do already exist in the database and will not be imported again!"""%str(id[0]),1)
+
+    def MultipleFieldDuplicates(self,NoCols,GoalTable,sqlremove,MajorTable,sqlNoOfdistinct): #For secondary tables linking to obs_points and obs_lines: Sanity checks and removes duplicates
+        """perform some sanity checks of the imported data and removes duplicates and empty records"""
+        if not len(self.columns)==NoCols:
+            qgis.utils.iface.messageBar().pushMessage("Import failure","Import file must have exactly " + str(NoCols) + " columns!\nCheck your data and try again.",2)
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.status = 'False'
+            return 0 #only to stop function
+        else:    #If correct number of columns, remove empty records
+            utils.sql_alter_db(sqlremove)
+            #Then verify that obsid exists in MajorTable and perform statistics
+            verifyok = self.VerifyIDInMajorTable(MajorTable) #Verify that all ID's exist in major table (obs_points or obs_lines)
+            if verifyok == 1: #Go on with some statistics
+                self.recsbefore = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%GoalTable)[0][0]
+                self.recstoimport = utils.sql_load_fr_db(sqlNoOfdistinct)[0][0]
+                self.recsinfile = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%self.temptableName)[0][0]
+                #qgis.utils.iface.messageBar().pushMessage("Info","The csv file had " + str(self.recsinfile) + " non-empty posts \n" + "and among these were found " + str(self.recsinfile - self.recstoimport) + " duplicates.", 0)
+                #Then check wether there are duplicates in the imported file and if so, ask user what to do
+                if self.recsinfile > self.recstoimport: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
+                    duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?"""%(self.recsinfile - self.recstoimport),"Warning!")
+                    if duplicatequestion.result == 0:      # if the user wants to abort
+                        self.status = 'False'
+                        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                        return 0   # return simply to stop this function
+                return 1
+            else:
+                return 0
+
+    def SingleFieldDuplicates(self,NoCols,GoalTable,sqlremove,idcol): #For major tables obs_points and obs_lines: Sanity checks and removes duplicates
+        """perform some sanity checks of the imported data and removes duplicates and empty records"""
+        if not len(self.columns)==NoCols:
+            qgis.utils.iface.messageBar().pushMessage("Import failure","Import file must have exactly " + str(NoCols) + " columns!\nCheck your data and try again.",2)
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.status = 'False'
+            return 0 #only to stop function
+        else:    #If correct number of columns, remove empty records
+            utils.sql_alter_db(sqlremove)
+            #Then check if any obsid already exist in GoalTable and perform statistics
+            self.CheckIfOBSIDExists(GoalTable,idcol)
+            #Some statistics
+            self.recsbefore = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%GoalTable)[0][0] 
+            self.recstoimport = utils.sql_load_fr_db("""SELECT Count(*) FROM (SELECT DISTINCT "%s" FROM %s)"""%(self.columns[0][1],self.temptableName))[0][0]
+            self.recsinfile = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%self.temptableName)[0][0]
+            #qgis.utils.iface.messageBar().pushMessage("Info","The csv file had " + str(self.recsinfile) + " non-empty posts \n" + "and among these were found " + str(self.recsinfile - self.recstoimport) + " duplicates.", 0)
+            #Then check wether there are duplicates in the imported file and if so, ask user what to do
+            if self.recsinfile > self.recstoimport: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
+                duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?"""%(self.recsinfile - self.recstoimport),"Warning!")
+                if duplicatequestion.result == 0:      # if the user wants to abort
+                    self.status = 'False'
+                    PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                    return 0   # return simply to stop this function
+            return 1
+
+    def StatsAfter(self):
+        NoExcluded = self.recstoimport - (self.recsafter - self.recsbefore)
+        if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
+            qgis.utils.iface.messageBar().pushMessage("Warning","""In total %s posts were not imported since they would have caused duplicates in the database."""%NoExcluded, 1)
+
+    def selectcsv(self): # general importer
         """Select the csv file, user must also tell what charset to use"""
         charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + locale.getdefaultlocale()[1] + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
         if charsetchoosen and not (charsetchoosen[0]==0 or charsetchoosen[0]==''):
@@ -617,12 +374,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:
                 csvlayer = QgsVectorLayer(self.csvpath, "temporary_csv_layer", "ogr")
                 if not csvlayer.isValid():
-                    utils.pop_up_info("Impossible to Load File in QGis:\n" + str(self.csvpath))
+                    qgis.utils.iface.messageBar().pushMessage("Failure","Impossible to Load File in QGis:\n" + str(self.csvpath), 2)
                     return False
                 csvlayer.setProviderEncoding(str(charsetchoosen[0]))                 #Set the Layer Encoding
                 return csvlayer
 
-    def qgiscsv2sqlitetable(self): # general importer - NOTE! csvlayer and srid no longer sent as args! Comment out one debugging-line later
+    def qgiscsv2sqlitetable(self): # general importer
         """Upload qgis csv-csvlayer (QgsMapLayer) as temporary table (temptableName) in current DB. status='True' if succesfull, else 'false'."""
         self.status = 'False'
         #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
@@ -639,14 +396,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         fields=[]
         fieldsNames=[]
         provider=self.csvlayer.dataProvider()
-        for name in provider.fields(): 
-            fldName=unicode(name.name()).replace("'"," ").replace('"'," ")  #Fixing field names in temporary table in sqlite
+        for name in provider.fields(): #fix field names and types in temporary table
+            fldName=unicode(name.name()).replace("'"," ").replace('"'," ")  #Fixing field names
             #Avoid two cols with same name:
             while fldName.upper() in fieldsNames:
                 fldName='%s_2'%fldName
             fldType=name.type()
             fldTypeName=unicode(name.typeName()).upper()
-            #print "field " + str(fldName) + " has type " + str(fldTypeName) # debugging
             if fldType in (PyQt4.QtCore.QVariant.Char,PyQt4.QtCore.QVariant.String): # field type is text  - this will be the case for all columns if not .csvt file is defined beside the imported file.
                 fldLength=name.length()
                 fldType='text(%s)'%fldLength  #Add field Length Information
@@ -678,7 +434,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 curs.execute("""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso])) 
                 self.status = 'True'
             else: #no attribute Datas
-                utils.pop_up_info("No data found in table!!")
+                qgis.utils.iface.messageBar().pushMessage("No data found!!","No data will be imported!!", 2)
                 self.status = 'False'
         conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
         curs.close()
@@ -686,7 +442,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
 
 """ Note, thes class below is a quickfix and should be incorporated into the a multi-import class above instead. As soon as there is time for code cleanup..."""
-                     
 class wlvlloggimportclass():
 
     def __init__(self):

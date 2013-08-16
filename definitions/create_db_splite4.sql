@@ -2,7 +2,7 @@
 select 'drop table ' || name || ';' from sqlite_master where type = 'table';
 select InitSpatialMetadata();
 create table about_db ("table" text, "column" text, "upd_date" text, "upd_sign" text, "description" text);
-insert into about_db values('*', '*', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION')
+insert into about_db values('*', '*', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION, running QGIS version CHANGETOQGISVERSION on top of SpatiaLite version CHANGETOSPLITEVERSION')
 insert into about_db values('about_db', '*', '', '', 'A status log for the tables in the db')
 insert into about_db values('about_db', 'table', '', '', 'Name of a table in the db')
 insert into about_db values('about_db', 'column', '', '', 'Name of column')
@@ -156,4 +156,6 @@ create view "w_levels_geom" as select "b"."rowid" as "rowid", "a"."obsid" as "ob
 insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) values ('w_levels_geom', 'geometry', 'rowid', 'obs_points', 'geometry',1);
 create view "w_qual_lab_dh" as select "obsid" as "obsid", "depth" as "depth", "report" as "report", "staff" as "staff", "date_time" as "date_time", "parameter" as "parameter", "reading_num" as "reading_num", "unit" as "unit" from "w_qual_lab" where "parameter" = 'Hårdhet tyska grader';
 create view "w_qual_lab_ph" as select "obsid" as "obsid", "depth" as "depth", "report" as "report", "staff" as "staff", "date_time" as "date_time", "parameter" as "parameter", "reading_num" as "reading_num", "unit" as "unit" from "w_qual_lab" where "parameter" = 'pH';
-
+create view w_flow_momflow as select "obsid" as "obsid","instrumentid" as "instrumentid","date_time" as "date_time","reading" as "reading", "unti" as "unit", "comment" as "comment" from w_flow where flowtype="Momflow"
+create view w_flow_aveflow as select "obsid" as "obsid","instrumentid" as "instrumentid","date_time" as "date_time","reading" as "reading", "unti" as "unit", "comment" as "comment" from w_flow where flowtype="Aveflow"
+create view w_flow_accvol as select "obsid" as "obsid","instrumentid" as "instrumentid","date_time" as "date_time","reading" as "reading", "unti" as "unit", "comment" as "comment" from w_flow where flowtype="Accvol"

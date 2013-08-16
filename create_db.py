@@ -71,12 +71,12 @@ class newdb():
                     SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"definitions","create_db_splite4.sql")
                 else:
                     SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"definitions","create_db.sql") 
-                #PyQt4.QtGui.QMessageBox.information(None, "Info", SQLFile) # ONLY FOR DEBUGGING
+                qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
                 f = open(SQLFile, 'r')
                 linecounter = 1
                 for line in f:
                     if linecounter > 1:    # first line is encoding info....
-                        rs = cur.execute(line.replace('CHANGETORELEVANTEPSGID',str(EPSGID[0])).replace('CHANGETOPLUGINVERSION',str(verno)))   # Replacing "CHANGETORELEVANTEPSGID" and "CHANGETOPLUGINVERSION" that is found in the create_db.sql  file 
+                        rs = cur.execute(line.replace('CHANGETORELEVANTEPSGID',str(EPSGID[0])).replace('CHANGETOPLUGINVERSION',str(verno)).replace('CHANGETOQGISVERSION',str(qgisverno)).replace('CHANGETOSPLITEVERSION',str(versionstext[0][0]))) # use tags to find and replace SRID and versioning info
                     linecounter += 1
                 
                 cur.execute("PRAGMA foreign_keys = OFF")

@@ -24,7 +24,7 @@ from qgis.core import *
 import qgis.utils
 import resources  # Initialize Qt resources from file resources.py
 import os.path # Just to be able to read from metadata.txt in the same directory
-from midvsettings import midvsettings  # Import the code for the settings dialog
+from midvsettings import midvsettings
 from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
@@ -38,7 +38,7 @@ import sys
 #sys.path.append(os.path.dirname(os.path.abspath(__file__))) # To enable loading of modules from inside the plugin directory
 
 class midvatten:
-    def __init__(self, iface):    # Might need revision of variables and method for loading default variables
+    def __init__(self, iface): # Might need revision of variables and method for loading default variables
         sys.path.append(os.path.dirname(os.path.abspath(__file__))) #add midvatten plugin directory to pythonpath
         self.iface = iface
         # settings...
@@ -49,12 +49,13 @@ class midvatten:
         #The settings must be loaded after the qgis project is loaded - thus settings is loaded when needed (and this is checked in several methods below)
         self.settingsareloaded = False # To make sure settings are loaded once and only once
         
-    def initGui(self):   # Creates actions that will start plugin configuration
+    def initGui(self): # Creates actions that will start plugin configuration
         self.actionNewDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), "Create a new Midvatten project DB", self.iface.mainWindow())
         QObject.connect(self.actionNewDB, SIGNAL("triggered()"), self.NewDB)
         
         self.actionloadthelayers = QAction(QIcon(":/plugins/midvatten/icons/loaddefaultlayers.png"), "Load default db-layers to qgis", self.iface.mainWindow())
         self.actionloadthelayers.setWhatsThis("Load default layers from the selected database")
+        self.iface.registerMainWindowAction(self.actionloadthelayers, "F7")   # The function should also be triggered by the F7 key
         QObject.connect(self.actionloadthelayers, SIGNAL("activated()"), self.loadthelayers)
 
         self.actionsetup = QAction(QIcon(":/plugins/midvatten/icons/MidvSettings.png"), "Midvatten Settings", self.iface.mainWindow())
@@ -115,32 +116,32 @@ class midvatten:
         
         self.actionPlotTS = QAction(QIcon(":/plugins/midvatten/icons/PlotTS.png"), "Time series plot", self.iface.mainWindow())
         self.actionPlotTS.setWhatsThis("Plot time series for selected objects")
-        self.iface.registerMainWindowAction(self.actionPlotTS, "F7")   # The function should also be triggered by the F7 key
+        self.iface.registerMainWindowAction(self.actionPlotTS, "F8")   # The function should also be triggered by the F8 key
         QObject.connect(self.actionPlotTS, SIGNAL("triggered()"), self.PlotTS)
         
         self.actionPlotXY = QAction(QIcon(":/plugins/midvatten/icons/PlotXY.png"), "Scatter plot", self.iface.mainWindow())
         self.actionPlotXY.setWhatsThis("Plot XY scatter data (e.g. seismic profiel) for the selected objects")
-        self.iface.registerMainWindowAction(self.actionPlotXY, "F8")   # The function should also be triggered by the F8 key
+        self.iface.registerMainWindowAction(self.actionPlotXY, "F9")   # The function should also be triggered by the F9 key
         QObject.connect(self.actionPlotXY, SIGNAL("triggered()"), self.PlotXY)
         
         self.actionPlotStratigraphy = QAction(QIcon(":/plugins/midvatten/icons/PlotStratigraphy.png"), "Plot stratigraphy", self.iface.mainWindow())
         self.actionPlotStratigraphy.setWhatsThis("Show stratigraphy for selected objects (modified ARPAT)")
-        self.iface.registerMainWindowAction(self.actionPlotStratigraphy, "F9")   # The function should also be triggered by the F9 key
+        self.iface.registerMainWindowAction(self.actionPlotStratigraphy, "F10")   # The function should also be triggered by the F10 key
         QObject.connect(self.actionPlotStratigraphy, SIGNAL("triggered()"), self.PlotStratigraphy)
         
         self.actiondrillreport = QAction(QIcon(":/plugins/midvatten/icons/drill_report.png"), "General Report", self.iface.mainWindow())
         self.actiondrillreport.setWhatsThis("Show a general report for the selected obs point")
-        self.iface.registerMainWindowAction(self.actiondrillreport, "F10")   # The function should also be triggered by the F10 key
+        self.iface.registerMainWindowAction(self.actiondrillreport, "F11")   # The function should also be triggered by the F11 key
         QObject.connect(self.actiondrillreport, SIGNAL("triggered()"), self.drillreport)
 
         self.actionwqualreport = QAction(QIcon(":/plugins/midvatten/icons/wqualreport.png"), "Water Quality Report", self.iface.mainWindow())
         self.actionwqualreport.setWhatsThis("Show water quality for the selected obs point")
-        self.iface.registerMainWindowAction(self.actionwqualreport, "F11")   # The function should also be triggered by the F11 key
+        self.iface.registerMainWindowAction(self.actionwqualreport, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionwqualreport, SIGNAL("triggered()"), self.waterqualityreport)
 
         self.actionChartMaker = QAction(QIcon(":/plugins/midvatten/icons/ChartMakerSQLite.png"), "ChartMaker for Midvatten DB", self.iface.mainWindow())
         self.actionChartMaker.setWhatsThis("Start ChartMaker for SQLite data")
-        self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
+        #self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionChartMaker, SIGNAL("triggered()"), self.ChartMaker)
 
         # Add toolbar with buttons 
@@ -215,7 +216,8 @@ class midvatten:
         # remove tool bar
         del self.toolBar
         
-        # Also remove F6 - F12 key triggers
+        # Also remove F5 - F12 key triggers
+        self.iface.unregisterMainWindowAction(self.actionloadthelayers)
         self.iface.unregisterMainWindowAction(self.actionsetup)
         self.iface.unregisterMainWindowAction(self.actionPlotTS)
         self.iface.unregisterMainWindowAction(self.actionPlotXY)
@@ -252,12 +254,12 @@ class midvatten:
         dlg = HtmlDialog("About Midvatten plugin for QGIS",QUrl.fromLocalFile(ABOUT_outputfile))
         dlg.exec_()
 
-    def ChartMaker(self):            #  - Not ready - let this method import another 'ChartMaker-file' with necessary classes and methods
-        if self.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file
+    def ChartMaker(self): #  - Not ready - 
+        if self.settingsareloaded == False:    # If this is the first thing the user does, then load settings from project file
             self.loadSettings()    
         utils.pop_up_info("not yet implemented") #for debugging
 
-    def createsettingsdict(self):    # Here is where an empty settings dictionary is defined
+    def createsettingsdict(self):# Here is where an empty settings dictionary is defined
         dictionary = defs.settingsdict()
         return dictionary
 
@@ -304,12 +306,12 @@ class midvatten:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.obslines_import()
-                #utils.pop_up_info(returnvalue) #debugging
-                #utils.pop_up_info(importinstance.status) #debugging
-                if not importinstance.status=='True':      # 
-                    utils.pop_up_info("Something failed during import") #for debugging
-                else:  
-                    utils.pop_up_info("%s observation lines were imported to the database."%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))            
+                if importinstance.status=='True':      #
+                    utils.pop_up_info("%s observation lines were imported to the database."%str(importinstance.recsafter - importinstance.recsbefore))
+                    #self.iface.messageBar().pushMessage("Info","%s observation lines were imported to the database."%str(importinstance.recsafter - importinstance.recsbefore), 0)
+                #else:  
+                    #self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    #utils.pop_up_info("Something failed during import") 
 
     def import_obs_points(self):
         errorsignal = 0
@@ -333,16 +335,16 @@ class midvatten:
                 importinstance.obsp_import()
                 #utils.pop_up_info(returnvalue) #debugging
                 #utils.pop_up_info(importinstance.status) #debugging
-                if not importinstance.status=='True':      # 
-                    utils.pop_up_info("Something failed during import") #for debugging
-                else:  
-                    utils.pop_up_info("%s observation points were imported to the database.\nTo display the imported points on map, select them in\nthe obs_points attribute table then update map position:\nMidvatten - Edit data in database - Update map position from coordinates"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))            
+                if importinstance.status=='True':      # 
+                    utils.pop_up_info("%s observation points were imported to the database.\nTo display the imported points on map, select them in\nthe obs_points attribute table then update map position:\nMidvatten - Edit data in database - Update map position from coordinates"%str(importinstance.recsafter - importinstance.recsbefore))
+                #else:  
+                    #self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    #utils.pop_up_info("Something failed during import") #for debugging
 
     def import_seismics(self):
         errorsignal = 0
         if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
             self.loadSettings()    
-
         allcritical_layers = ('obs_lines', 'seismic_data')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
             layerexists = utils.find_layer(str(layername))
@@ -358,10 +360,10 @@ class midvatten:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.seismics_import()
-                if not importinstance.status=='True':      #Why is this if statement? Nothing more is to be done! 
-                    utils.pop_up_info("Something failed during import") #for debugging
-                else:  
-                    utils.pop_up_info("%s interpreted seismic data values were imported to the database"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
+                if importinstance.status=='True':      #Why is this if statement? Nothing more is to be done! 
+                    self.iface.messageBar().pushMessage("Info","%s interpreted seismic data values were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
+                #else:  
+                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
 
     def import_stratigraphy(self):
         errorsignal = 0
@@ -383,10 +385,10 @@ class midvatten:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.strat_import()
-                if not importinstance.status=='True':      # 
-                    utils.pop_up_info("Something failed during import") #for debugging
-                else:  
-                    utils.pop_up_info("%s stratigraphy layers were imported to the database."%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
+                if importinstance.status=='True':      # 
+                    self.iface.messageBar().pushMessage("Info","%s stratigraphy layers were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
+                #else:  
+                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
                     
     def import_vlf(self):
         errorsignal = 0
@@ -408,10 +410,10 @@ class midvatten:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.vlf_import()
-                if not importinstance.status=='True':      #Why is this if statement? Nothing more is to be done! 
-                    utils.pop_up_info("Something failed during import") #for debugging
-                else:  
-                    utils.pop_up_info("%s raw values of vlf measurements were imported to the database"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
+                if importinstance.status=='True': 
+                    self.iface.messageBar().pushMessage("Info","%s raw values of vlf measurements were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
+                #else:  
+                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
 
     def import_wflow(self):
         errorsignal = 0
@@ -433,12 +435,12 @@ class midvatten:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.wflow_import()
-                if not importinstance.status=='True':      #Why is this if statement? Nothing more is to be done! 
-                    utils.pop_up_info("Something failed during import") #for debugging
-                else:  
-                    utils.pop_up_info("%s water flow readings were imported to the database"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
+                if importinstance.status=='True':      # 
+                    self.iface.messageBar().pushMessage("Info","%s water flow readings were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
+                #else:  
+                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
 
-    def import_wlvl(self):            #  - To import (from a csv file) manual water level measurements 
+    def import_wlvl(self):    
         errorsignal = 0
         if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
             self.loadSettings()    
@@ -458,12 +460,12 @@ class midvatten:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.wlvl_import()
-                if not importinstance.status=='True':      #Why is this if statement? Nothing more is to be done! 
-                    utils.pop_up_info("Something failed during import") #for debugging
-                else:  
-                    utils.pop_up_info("%s water level measurements were imported to the database"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
-
-    def import_wlvllogg(self):            #  - Not ready 
+                if importinstance.status=='True': 
+                    self.iface.messageBar().pushMessage("Info","%s water level measurements were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
+                #else:  
+                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    
+    def import_wlvllogg(self):#  - should be rewritten 
         errorsignal = 0
         if self.settingsareloaded == False:    # If this is the first thing user does - then load settings from project file
             self.loadSettings()    
@@ -479,10 +481,8 @@ class midvatten:
         if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
             if not (self.settingsdict['database'] == ''):
                 if qgis.utils.iface.activeLayer():
-                    if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':
-                
-                        obsid = utils.getselectedobjectnames()
-                    
+                    if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':                
+                        obsid = utils.getselectedobjectnames()                    
                         longmessage = """You are about to import water head data, recorded with a\nLevel Logger (e.g. Diver), for """
                         longmessage += obsid[0]
                         longmessage +=""".\nData is supposed to be imported from a semicolon or comma\nseparated ascii text file. The text file must have one header row\nand columns:\n\nDate/time,Water head[cm],Temperature[°C]\nor\nDate/time,Water head[cm],Temperature[°C],1:Conductivity[mS/cm]\n\nColumn names are unimportant although column order is.\nAlso, date-time must have format yyyy-mm-dd hh:mm(:ss) and\nthe other columns must be real numbers with point(.) as decimal\nseparator and no separator for thousands.\nRemember to not use comma in the comment field!\n\nContinue?"""
@@ -491,12 +491,11 @@ class midvatten:
                             from import_data_to_db import wlvlloggimportclass
                             importinstance = wlvlloggimportclass()
                             if not importinstance.status=='True':      
-                                utils.pop_up_info("Something failed during import") #for debugging
-
+                                self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
                 else:
-                    utils.pop_up_info("You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!")
+                    self.iface.messageBar().pushMessage("Critical","You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!", 2)
             else: 
-                utils.pop_up_info("Check settings! \nYou have to select database first!")
+                self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
 
     def import_wqual_field(self):
         errorsignal = 0
@@ -518,10 +517,10 @@ class midvatten:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.wqualfield_import()
-                if not importinstance.status=='True':  
-                    utils.pop_up_info("Something failed during import") #for debugging
-                else:  
-                    utils.pop_up_info("%s water quality parameter values were imported to the database"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
+                if importinstance.status=='True':      # 
+                    self.iface.messageBar().pushMessage("Info","%s water quality paramters were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
+                #else:  
+                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
                     
     def import_wqual_lab(self):
         errorsignal = 0
@@ -543,12 +542,12 @@ class midvatten:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.wquallab_import()
-                if not importinstance.status=='True': 
-                    utils.pop_up_info("Something failed during import") #for debugging
-                else:  
-                    utils.pop_up_info("%s water quality parameter values were imported to the database"%str(importinstance.RecordsAfter[0][0] - importinstance.RecordsBefore[0][0]))
+                if importinstance.status=='True':      # 
+                    self.iface.messageBar().pushMessage("Info","%s water quality parameters were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
+                #else:  
+                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
             
-    def loadSettings(self):   # settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
+    def loadSettings(self):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
         """read plugin settings from QgsProject instance"""
         self.readingSettings = True  
         # map data types to function names
@@ -587,7 +586,7 @@ class midvatten:
         else:   
             utils.pop_up_info("You have to select a database in Midvatten settings first!")
 
-    def NewDB(self):            # NewDB - Calls function CreateNewDB
+    def NewDB(self): 
         sanity = utils.askuser("YesNo","""This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""",'Are you sure?')
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
@@ -646,7 +645,7 @@ class midvatten:
         self.settingsdict = self.createsettingsdict()    # calling for the method that defines an empty dictionary of settings
         self.saveSettings()        # the empty settings dictionary is stored
 
-    def saveSettings(self):   # settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
+    def saveSettings(self):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
         if not self.readingSettings:
             for (key, value) in self.settingsdict.items():        # For storing in project file, as Time Manager plugin
                 try: # write plugin settings to QgsProject # For storing in project file, as Time Manager plugin
@@ -654,7 +653,7 @@ class midvatten:
                 except TypeError: # For storing in project file, as Time Manager plugin
                     utils.pop_up_info("Wrong type for "+key+"!\nType: "+str(type(value))) #For storing in project file, as Time Manager plugin
         
-    def setup(self):    #
+    def setup(self):
         """Choose spatialite database and relevant table"""
         if self.settingsareloaded == False:    # If the first thing the user does is to check settings, then load settings from project file
             self.loadSettings()    
