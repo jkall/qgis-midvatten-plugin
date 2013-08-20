@@ -231,10 +231,10 @@ class midvatten:
         #filenamepath = os.path.dirname(__file__) + "/metadata.txt"
         filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
         iniText = QSettings(filenamepath , QSettings.IniFormat)
-        verno = str(iniText.value('version'))# SIP API UPDATE 2.0
-        author = str(iniText.value('author').encode('cp1252'))# SIP API UPDATE 2.0  #.encode due to encoding probs
-        email = str(iniText.value('email'))# SIP API UPDATE 2.0
-        homepage = str(iniText.value('homepage'))# SIP API UPDATE 2.0
+        verno = str(iniText.value('version'))
+        author = str(iniText.value('author').encode('cp1252'))#.encode due to encoding probs
+        email = str(iniText.value('email'))
+        homepage = str(iniText.value('homepage'))
 
         ABOUT_templatefile = os.path.join(os.sep,os.path.dirname(__file__),"about","about_template.htm")
         ABOUT_outputfile = os.path.join(os.sep,os.path.dirname(__file__),"about","about.htm")
@@ -591,7 +591,7 @@ class midvatten:
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
-            verno = str(iniText.value('version')) # SIP API UPDATE 2.0
+            verno = str(iniText.value('version')) 
             from create_db import newdb
             newdbinstance = newdb(verno)
             if not newdbinstance.dbpath=='':
@@ -760,8 +760,14 @@ class midvatten:
             self.loadSettings()    
         if not (self.settingsdict['database'] == '') and not (self.settingsdict['wqualtable']=='') and not (self.settingsdict['wqual_paramcolumn']=='')  and not (self.settingsdict['wqual_valuecolumn']==''):
             if qgis.utils.iface.activeLayer():
-                if utils.selection_check(qgis.utils.iface.activeLayer()) == 'ok':
-                    wqualreport(qgis.utils.iface.activeLayer(),self.settingsdict)            #TEMPORARY FOR GVAB
+                if utils.selection_check(qgis.utils.iface.activeLayer()) == 'ok':#there is a field obsid and at least one object is selected
+                    fail = 0
+                    for k in utils.getselectedobjectnames():#all selected objects
+                        if not utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.settingsdict['wqualtable'],str(k))):#if there is a selected object withou water quality data
+                            self.iface.messageBar().pushMessage("Error","No water quality data for %s"%str(k), 2)
+                            fail = 1
+                    if not fail == 1:#only if all objects has data
+                        wqualreport(qgis.utils.iface.activeLayer(),self.settingsdict)            #TEMPORARY FOR GVAB
             else:
                 utils.pop_up_info("You have to select a layer and the object with water quality first!")
         else: 

@@ -47,7 +47,7 @@ class loadlayers():
                 
         """ THEN remove old group """
         while 'Midvatten_OBS_DB' in self.legend.groups():
-            group_index = self.legend.groups().index('Midvatten_OBS_DB')      # SIP API UPDATE 2.0
+            group_index = self.legend.groups().index('Midvatten_OBS_DB') 
             self.legend.removeGroup(group_index)
 
     def addlayers(self):
@@ -64,12 +64,11 @@ class loadlayers():
                 utils.pop_up_info("failed to load layer " + tablename) #debugging
             else:
                 QgsMapLayerRegistry.instance().addMapLayers([layer])
-                group_index = self.legend.groups().index('Midvatten_OBS_DB')    # SIP API UPDATE 2.0 
+                group_index = self.legend.groups().index('Midvatten_OBS_DB') 
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
                 if tablename in ('w_levels','w_flow','stratigraphy'):
                     filename = tablename + ".qml"       #  load styles
                     stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",filename)
-                    #utils.pop_up_info(stylefile)  # for debugging
                     layer.loadNamedStyle(stylefile)
                     if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
                         filename = tablename + ".ui"

@@ -11,25 +11,25 @@ def formOpen(dialog,layerid,featureid):
     myDialog = dialog
     obsid_FieldTextChanged()
     
-    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) ==0) or not (obsidexists(myDialog.findChild(QLineEdit,"obsid").text())):# SIP API UPDATE 2.0
+    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) ==0) or not (obsidexists(myDialog.findChild(QLineEdit,"obsid").text())):
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
     dialog.findChild(QLineEdit,"obsid").textChanged.connect(obsid_FieldTextChanged)
 
-    if (myDialog.findChild(QLineEdit,"stratid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"stratid").text()) == 0) or (utils.isinteger(myDialog.findChild(QLineEdit,"stratid").text())==False):# SIP API UPDATE 2.0
+    if (myDialog.findChild(QLineEdit,"stratid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"stratid").text()) == 0) or (utils.isinteger(myDialog.findChild(QLineEdit,"stratid").text())==False):
         myDialog.findChild(QLineEdit,"stratid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"stratid").setStyleSheet("")
     dialog.findChild(QLineEdit,"stratid").textChanged.connect(stratid_FieldTextChanged)
 
-    if (myDialog.findChild(QLineEdit,"depthtop").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"depthtop").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"depthtop").text())==False):# SIP API UPDATE 2.0
+    if (myDialog.findChild(QLineEdit,"depthtop").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"depthtop").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"depthtop").text())==False):
         myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("")  
     dialog.findChild(QLineEdit,"depthtop").textChanged.connect(depthtop_FieldTextChanged)
         
-    if (myDialog.findChild(QLineEdit,"depthbot").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"depthbot").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"depthbot").text())==False):# SIP API UPDATE 2.0
+    if (myDialog.findChild(QLineEdit,"depthbot").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"depthbot").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"depthbot").text())==False):
         myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("")     
@@ -65,20 +65,20 @@ def obsid_FieldTextChanged():
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
 
 def stratid_FieldTextChanged():
-    if (myDialog.findChild(QLineEdit,"stratid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"stratid").text()) == 0) or (utils.isinteger(myDialog.findChild(QLineEdit,"stratid").text())==False): # SIP API UPDATE 2.0
+    if (myDialog.findChild(QLineEdit,"stratid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"stratid").text()) == 0) or (utils.isinteger(myDialog.findChild(QLineEdit,"stratid").text())==False): 
         myDialog.findChild(QLineEdit,"stratid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"stratid").setStyleSheet("")  
 
 def depthtop_FieldTextChanged():
-    if (myDialog.findChild(QLineEdit,"depthtop").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"depthtop").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"depthtop").text())==False):# SIP API UPDATE 2.0
+    if (myDialog.findChild(QLineEdit,"depthtop").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"depthtop").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"depthtop").text())==False):
         myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
 
     else:
         myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("")  
 
 def depthbot_FieldTextChanged():
-    if (myDialog.findChild(QLineEdit,"depthbot").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"depthbot").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"depthbot").text())==False):# SIP API UPDATE 2.0
+    if (myDialog.findChild(QLineEdit,"depthbot").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"depthbot").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"depthbot").text())==False):
         myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("")  
@@ -95,7 +95,7 @@ def validate():  # Make sure mandatory fields are not empty.
     elif not (len(myDialog.findChild(QLineEdit,"obsid").text()) > 0 and 
             len(myDialog.findChild(QLineEdit,"stratid").text()) > 0 and 
             len(myDialog.findChild(QLineEdit,"depthtop").text()) > 0 and 
-            len(myDialog.findChild(QLineEdit,"depthbot").text()) > 0):# SIP API UPDATE 2.0
+            len(myDialog.findChild(QLineEdit,"depthbot").text()) > 0):
         utils.pop_up_info("obsid, stratid, depthtop and depthbot must not be empty!")
     elif (myDialog.findChild(QLineEdit,"obsid").text()=='NULL' or
                 myDialog.findChild(QLineEdit,"stratid").text()=='NULL' or 

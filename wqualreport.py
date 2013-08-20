@@ -45,16 +45,12 @@ class wqualreport():        # extracts water quality data for selected objects, 
         f.write(rpt2)
 
         for object in observations:
-            #<CHANGE FOR QGIS 2.0>:
-            if hasattr(observations[i], "attributeMap"): #duck typing scheme to test depreceated method, see http://hub.qgis.org/wiki/quantum-gis/API_changes_for_version_20
-                attributes=observations[i].attributeMap() #Copy attributes, for the i:th object, to a list
-            else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
-                attributes = observations[i]
-            #</CHANGE FOR QGIS 2.0>:                        
-            obsid = str(attributes[kolumnindex])    # NOTE! obsid WAS a QString!!  # SIP API UPDATE 2.0
+            attributes = observations[i]
+            obsid = str(attributes[kolumnindex])    # NOTE! obsid WAS a QString!! 
             ReportData = self.GetData(str(self.settingsdict['database']).encode(locale.getdefaultlocale()[1]), obsid)   # one observation at a time
             #ReportData.append(self.GetData(str(self.settingsdict['database']).encode('latin-1'), obsid))  # does not work as expected
-            self.WriteHTMLReport(ReportData, f)
+            if ReportData:
+                self.WriteHTMLReport(ReportData, f)
             i = i+1
 
         #write some finishing html and close the file
@@ -63,12 +59,9 @@ class wqualreport():        # extracts water quality data for selected objects, 
 
         if ReportData:
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
-            #wqual_dlg = HtmlDialog("titel ska vara har",QUrl.fromLocalFile(reportpath))
-            #wqual_dlg.exec_()
 
     def GetData(self, dbPath='', obsid = ''):            # GetData method that returns a table with water quality data
         conn = sqlite.connect(dbPath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-        #conn.text_factory = str         # To make this connection override default connection behaviour: decodes all strings to Unicode, assuming UTF-8 encoding 
         # skapa en cursor
         curs = conn.cursor()
 
@@ -88,7 +81,7 @@ class wqualreport():        # extracts water quality data for selected objects, 
         parameters = parameters_cursor.fetchall()
         if not parameters:
             QMessageBox.information(None,"Info", "Something is wrong, no parameters are found in table w_qual_lab for "+ str(obsid).encode('utf-8')) #debugging
-            return
+            return False
 
         # Load all date_times, stored in two result columns: reportnr, date_time
         if not (str(self.settingsdict['wqual_sortingcolumn']).encode(locale.getdefaultlocale()[1]) == ''):          #If there is a a specific reportnr 

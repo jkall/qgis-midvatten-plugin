@@ -10,7 +10,7 @@ def formOpen(dialog,layerid,featureid):
     global myDialog        #
     myDialog = dialog
 
-    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) == 0)  or not (obsidexists(myDialog.findChild(QLineEdit,"obsid").text())): # SIP API UPDATE 2.0
+    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) == 0)  or not (obsidexists(myDialog.findChild(QLineEdit,"obsid").text())):
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
@@ -40,7 +40,7 @@ def formOpen(dialog,layerid,featureid):
     buttonBox.rejected.connect(myDialog.reject)
 
 def obsid_FieldTextChanged():
-    if not obsidexists(myDialog.findChild(QLineEdit,"obsid").text()):# SIP API UPDATE 2.0
+    if not obsidexists(myDialog.findChild(QLineEdit,"obsid").text()):
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
@@ -52,7 +52,7 @@ def date_time_FieldTextChanged():
         myDialog.findChild(QLineEdit,"date_time").setStyleSheet("")        
 
 def level_masl_FieldTextChanged():
-    if (myDialog.findChild(QLineEdit,"level_masl").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"level_masl").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"level_masl").text())==False): # SIP API UPDATE 2.0
+    if (myDialog.findChild(QLineEdit,"level_masl").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"level_masl").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"level_masl").text())==False): 
         myDialog.findChild(QLineEdit,"level_masl").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"level_masl").setStyleSheet("")        
@@ -66,7 +66,7 @@ def obsidexists(obsid):  # Check if obsid exists in database.
 def validate():  # Make sure mandatory fields are not empty.
     if not (len(myDialog.findChild(QLineEdit,"obsid").text()) > 0 and 
             len(myDialog.findChild(QLineEdit,"date_time").text()) > 0 and 
-            len(myDialog.findChild(QLineEdit,"level_masl").text()) > 0): # SIP API UPDATE 2.0
+            len(myDialog.findChild(QLineEdit,"level_masl").text()) > 0): 
         utils.pop_up_info("obsid, date_time and level_masl must not be empty!")
     elif (myDialog.findChild(QLineEdit,"obsid").text()=='NULL' or
                 myDialog.findChild(QLineEdit,"date_time").text()=='NULL' or 

@@ -45,13 +45,10 @@ class newdb():
         #uitls.pop_up_info(str(EPSGID[0]))
         if EPSGID[0]==0 or not EPSGID:
             utils.pop_up_info("Cancelling...")
-        else:
-            # If a CRS is selectd, go on and create the database
+        else: # If a CRS is selectd, go on and create the database
             #path and name of new db
             self.dbpath = PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","Midv_obsdb.sqlite","Spatialite (*.sqlite)")
-            #utils.pop_up_info(self.dbpath + " was returned from getsavefilename") #debugging
-            #if self.dbpath.isEmpty(): # REMOVED DUE TO SIP API UPDATE 2.0
-            if not self.dbpath: # SIP API UPDATE 2.0
+            if not self.dbpath: 
                 return ''
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
             #create Spatialite database

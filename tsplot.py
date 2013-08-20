@@ -59,13 +59,7 @@ class TimeSeriesPlot:
                 
                 i=0
                 for k in ob:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
-                    #<CHANGE FOR QGIS 2.0>:
-                    if hasattr(ob[i], "attributeMap"): #duck typing scheme to test depreceated method, see http://hub.qgis.org/wiki/quantum-gis/API_changes_for_version_20
-                        attributes=ob[i].attributeMap() #Copy attributes, for the i:th object, to a list 
-                        obsid = str(attributes[kolumnindex]) # Copy value in column obsid in the attribute list # SIP API UPDATE 2.0
-                    else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
-                        obsid = str(ob[i][kolumnindex]) # SIP API UPDATE 2.0
-                    #</CHANGE FOR QGIS 2.0>:
+                    obsid = str(ob[i][kolumnindex]) 
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
                     sql =r"""SELECT date_time as 'date [datetime]', """
                     sql += str(self.settingsdict['tscolumn']).encode(locale.getdefaultlocale()[1])
@@ -75,8 +69,6 @@ class TimeSeriesPlot:
                     sql += obsid   # The result has format 'Qstring' - no good
                     sql += """' ORDER BY date_time """
                     sql2 = str(sql).encode(locale.getdefaultlocale()[1])  #To get back to uniciode-string
-                    #QMessageBox.information(qgis.utils.iface.mainWindow(),"Information", sql2)
-                    #utils.pop_up_info(sql2)
                     rs = curs.execute(sql2) #Send SQL-syntax to cursor
                     recs = rs.fetchall()  # All data are stored in recs
                     """Transform data to a numpy.recarray"""
@@ -91,7 +83,6 @@ class TimeSeriesPlot:
                         myTimestring.append(table2.date_time[j])
                         j = j + 1
                     numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
-                    #QMessageBox.information(self.iface.mainWindow(),"Information", str(self.CheckBoxStatus).encode('latin-1'))
                     if str(self.settingsdict['tsdotmarkers']).encode(locale.getdefaultlocale()[1])=='2':            # If the checkbox is checked - markers will be plotted
                         if str(self.settingsdict['tsstepplot']).encode(locale.getdefaultlocale()[1])=='2':    # If the checkbox is checked - draw a step plot
                             p[i], = ax.plot_date(numtime, table2.values, marker = 'o', linestyle = '-',  drawstyle='steps-pre', label=obsid)    # PLOT!!

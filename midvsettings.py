@@ -223,9 +223,7 @@ class midvsettings(QDialog, Ui_Dialog):     #THE CLASS IS ONLY TO DEAL WITH THE 
     
     def selectFile(self):    # klar
         """ Open a dialog to locate the sqlite file and some more..."""        
-        path = QFileDialog.getOpenFileName(None,str("Select database:"),"*.sqlite") # SIP API UPDATE 2.0
-        #path = QFileDialog.getOpenFileName(None,QString.fromLocal8Bit("Select database:"),"*.sqlite") # BEFORE SIP API UPDATE 2.0
-        #path = QFileDialog.getOpenFileName(None,QString.fromLocal8Bit("Select database:"),"sqlite db (*.sqlite)")
+        path = QFileDialog.getOpenFileName(None,str("Select database:"),"*.sqlite")
         if path: 
             self.database = path # To make possible cancel the FileDialog and continue loading a predefined db
         self.openDBFile()
@@ -252,7 +250,6 @@ class midvsettings(QDialog, Ui_Dialog):     #THE CLASS IS ONLY TO DEAL WITH THE 
 
     def loadTablesFromDB(self):    # klar    # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
-        
         # start with cleaning comboboxes before filling with new entries
         self.ListOfTables.clear()    
         self.ListOfTables_2.clear()    

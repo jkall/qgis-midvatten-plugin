@@ -369,7 +369,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + locale.getdefaultlocale()[1] + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
         if charsetchoosen and not (charsetchoosen[0]==0 or charsetchoosen[0]==''):
             self.csvpath = PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")
-            if not self.csvpath or self.csvpath=='': # SIP API UPDATE 2.0
+            if not self.csvpath or self.csvpath=='': 
                 return
             else:
                 csvlayer = QgsVectorLayer(self.csvpath, "temporary_csv_layer", "ogr")
@@ -505,9 +505,7 @@ class wlvlloggimportclass():
         charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\nutf-8, cp1250, cp1252 or iso-8859-15.\n\nOn your computer " + locale.getdefaultlocale()[1] + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
         if charsetchoosen and not (charsetchoosen[0]==0 or charsetchoosen[0]==''):
             self.csvpath = PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")
-            #utils.pop_up_info(self.csvpath) #debugging
-            #if self.csvpath.isEmpty() or self.csvpath=='':
-            if not self.csvpath or self.csvpath=='': # SIP API UPDATE 2.0
+            if not self.csvpath or self.csvpath=='': 
                 return
             else:
                 csvlayer = QgsVectorLayer(self.csvpath, "temporary_csv_layer", "ogr")
@@ -537,7 +535,7 @@ class wlvlloggimportclass():
         fields=[]
         fieldsNames=[]
 
-        for name in provider.fields(): # SIP API UPDATE 2.0
+        for name in provider.fields(): 
             fldName=unicode(name.name()).replace("'"," ").replace('"'," ")
             #Avoid two cols with same name:
             while fldName.upper() in fieldsNames:
@@ -568,12 +566,12 @@ class wlvlloggimportclass():
         curs = conn.cursor()
         curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
         # Retreive every feature 
-        for feature in self.csvlayer.getFeatures(): #SIP API UDPDATE 2.0
+        for feature in self.csvlayer.getFeatures(): 
             # attrs is a dictionary: key = field index, value = QgsFeatureAttribute
             # show all attributes and their values
             values_perso=[]
-            for attr in feature.attributes(): #SIP API UDPDATE 2.0
-                values_perso.append(str(attr)) # SIP API UPDATE 2.0
+            for attr in feature.attributes():
+                values_perso.append(str(attr)) 
             
             #Create line in DB table
             if len(fields)>0:   # NOTE CANNOT USET utils.sql_alter_db() SINCE THE OPTION OF SENDING 2 ARGUMENTS TO .execute IS USED BELOW

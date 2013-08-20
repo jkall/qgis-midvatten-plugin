@@ -75,13 +75,8 @@ class XYPlot:
                 i=0
                 j=0
                 for k in ob:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
-                    #<CHANGE FOR QGIS 2.0>:
-                    if hasattr(ob[i], "attributeMap"): #duck typing scheme to test depreceated method, see http://hub.qgis.org/wiki/quantum-gis/API_changes_for_version_20
-                        attributes=ob[i].attributeMap() #Copy attributes, for the i:th object, to a list
-                    else: #new method since API change http://lists.osgeo.org/pipermail/qgis-developer/2013-February/024278.html
-                        attributes = ob[i]
-                    #</CHANGE FOR QGIS 2.0>
-                    obsid = str(attributes[kolumnindex]) # Copy value in column obsid in the attribute list # SIP API UPDATE 2.0
+                    attributes = ob[i]
+                    obsid = str(attributes[kolumnindex]) # Copy value in column obsid in the attribute list 
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
                     sql =r"""SELECT """ 
                     sql += str(self.xcol).encode(locale.getdefaultlocale()[1])

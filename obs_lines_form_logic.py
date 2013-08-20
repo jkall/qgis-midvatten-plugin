@@ -15,7 +15,7 @@ def formOpen(dialog,layerid,featureid):
 
     if obsidexists(myDialog.findChild(QLineEdit,"obsid").text()):#if it is an obsid which already exists in database, then no particular highlightning
          myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
-    elif (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) == 0):# SIP API UPDATE 2.0
+    elif (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) == 0):
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:#If not empty nor null and obsid not in db - then it must be a new one, not yet saved
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
@@ -32,7 +32,7 @@ def formOpen(dialog,layerid,featureid):
     buttonBox.rejected.connect(myDialog.reject)
 
 def validate():  # Make sure mandatory fields are not empty.
-    if not (len(myDialog.findChild(QLineEdit,"obsid").text()) > 0): # SIP API UPDATE 2.0
+    if not (len(myDialog.findChild(QLineEdit,"obsid").text()) > 0): 
         utils.pop_up_info("obsid must not be empty!")
     elif myDialog.findChild(QLineEdit,"obsid").text()=='NULL':
         utils.pop_up_info("obsid must not be NULL!")
@@ -49,7 +49,7 @@ def obsidexists(obsid):  # Both to see if a new obsid already exists in database
         
 def obsid_FieldTextChanged():
     #qgis.utils.iface.messageBar().pushMessage("Debug",myDialog.findChild(QLineEdit,"obsid").text(),0)#debug
-    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or len(myDialog.findChild(QLineEdit,"obsid").text()) ==0:# SIP API UPDATE 2.0
+    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or len(myDialog.findChild(QLineEdit,"obsid").text()) ==0:
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     elif obsidexists(myDialog.findChild(QLineEdit,"obsid").text()):
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
