@@ -516,10 +516,7 @@ class wlvlloggimportclass():
                     return False
                 #Set Layer Encoding
                 csvlayer.setProviderEncoding(str(charsetchoosen[0]))
-                #utils.pop_up_info(str(charsetchoosen[0]))      # only for debugging
-                #QgsMapLayerRegistry.instance().addMapLayer(csvlayer)      # only for debugging
                 return csvlayer
-
         
     def uploadLoggerdataToSplite(self):
         self.status = 'False'
@@ -539,7 +536,7 @@ class wlvlloggimportclass():
         provider=self.csvlayer.dataProvider()       # The loaded csv-file
         fields=[]
         fieldsNames=[]
-        #for id,name in provider.fields().iteritems():
+
         for name in provider.fields(): # SIP API UPDATE 2.0
             fldName=unicode(name.name()).replace("'"," ").replace('"'," ")
             #Avoid two cols with same name:
@@ -559,11 +556,7 @@ class wlvlloggimportclass():
             fields.append(""" "%s" %s """%(fldName,fldType))
             fieldsNames.append(fldName.upper())
         
-        #select attributes to import :
-        #allAttrs = provider.attributeIndexes() # REMOVED DUE TO SIP API UPDATE 2.0
-        #provider.select(allAttrs) # REMOVED DUE TO SIP API UPDATE 2.0
-        
-        #Create new table in BD
+        #Create new table in DB
         fields=','.join(fields) 
         fields = ''.join([x for x in fields if ord(x) < 128])    # Just get rid of all non-ascii, the column names are not important anyway
         sql = """CREATE table "%s" (%s)"""%(self.temptableName, fields)
@@ -575,15 +568,11 @@ class wlvlloggimportclass():
         curs = conn.cursor()
         curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
         # Retreive every feature 
-        #feat = QgsFeature()  # REMOVED DUE TO SIP API UPDATE 2.0
         for feature in self.csvlayer.getFeatures(): #SIP API UDPDATE 2.0
-        #while provider.nextFeature(feat): # REMOVED DUE TO SIP API UPDATE 2.0
-            #attrs = feat.attributeMap()  # REMOVED DUE TO SIP API UPDATE 2.0
             # attrs is a dictionary: key = field index, value = QgsFeatureAttribute
             # show all attributes and their values
             values_perso=[]
             for attr in feature.attributes(): #SIP API UDPDATE 2.0
-            #for (k,attr) in attrs.iteritems():  # REMOVED DUE TO SIP API UPDATE 2.0
                 values_perso.append(str(attr)) # SIP API UPDATE 2.0
             
             #Create line in DB table

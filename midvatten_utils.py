@@ -24,6 +24,7 @@ from qgis.gui import *
 import qgis.utils
 import sys
 from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialite-specific sql clauses may be sent by sql_alter_db and sql_load_fr_db
+import time
 
 class askuser(QtGui.QDialog):
     def __init__(self, question="YesNo", msg = '', dialogtitle='User input needed', parent=None):
@@ -94,7 +95,18 @@ def isinteger(str):
     try: int(str)
     except ValueError: return False
     return True
-    
+
+def isdate(str):
+    result = False
+    formats = ['%Y-%m-%d','%Y-%m-%d %H','%Y-%m-%d %H:%M','%Y-%m-%d %H:%M:%S']
+    for fmt in formats:
+        try:
+            time.strptime(str, fmt)
+            result = True
+        except ValueError:
+            pass
+    return result
+
 def pop_up_info(msg='',title='Information',parent=None):
     """Display an info message via Qt box"""
     QtGui.QMessageBox.information(parent, title, '%s' % (msg))

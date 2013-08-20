@@ -8,24 +8,20 @@ import midvatten_utils as utils        # Whenever some global midvatten_utilitie
 myDialog = None
 
 def formOpen(dialog,layerid,featureid):
-    global myDialog, possibleflowtypes, possibleobsids        #
+    global myDialog        #
     myDialog = dialog
-    possibleflowtypes = utils.sql_load_fr_db('select distinct type from zz_flowtype')
-    possibleobsids = utils.sql_load_fr_db('select distinct obsid from obs_points')
     
-    #reading_FIELD = dialog.findChild(QLineEdit,"reading")
-    #reading_FIELD.setText("0")
     # Disconnect the signal that QGIS has wired up for the dialog to the button box.
     buttonBox = dialog.findChild(QDialogButtonBox,"buttonBox")
     buttonBox.accepted.disconnect(myDialog.accept)
 
-    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) == 0): # SIP API UPDATE 2.0
+    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) ==0) or not (obsidexists(myDialog.findChild(QLineEdit,"obsid").text())):# SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
     dialog.findChild(QLineEdit,"obsid").textChanged.connect(obsid_FieldTextChanged)
     
-    if (myDialog.findChild(QLineEdit,"date_time").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"date_time").text()) == 0): # SIP API UPDATE 2.0
+    if utils.isdate(myDialog.findChild(QLineEdit,"date_time").text())==False:
         myDialog.findChild(QLineEdit,"date_time").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"date_time").setStyleSheet("")
@@ -37,7 +33,7 @@ def formOpen(dialog,layerid,featureid):
         myDialog.findChild(QLineEdit,"instrumentid").setStyleSheet("")
     dialog.findChild(QLineEdit,"instrumentid").textChanged.connect(instrumentid_FieldTextChanged)
 
-    if (myDialog.findChild(QLineEdit,"flowtype").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"flowtype").text()) == 0):
+    if (myDialog.findChild(QLineEdit,"flowtype").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"flowtype").text()) == 0) or not (flowtypeexists(myDialog.findChild(QLineEdit,"flowtype").text())):
         myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("")
@@ -60,17 +56,13 @@ def formOpen(dialog,layerid,featureid):
     buttonBox.rejected.connect(myDialog.reject)
 
 def obsid_FieldTextChanged():
-    obsidisok = 0
-    for id in possibleobsids:
-            if str(myDialog.findChild(QLineEdit,"obsid").text())==str(id[0]).encode('utf-8'):
-                obsidisok= 1
-    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) ==0) or not (obsidisok==1):# SIP API UPDATE 2.0
+    if not obsidexists(myDialog.findChild(QLineEdit,"obsid").text()):# SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
 
 def date_time_FieldTextChanged():
-    if (myDialog.findChild(QLineEdit,"date_time").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"date_time").text()) ==0): # SIP API UPDATE 2.0
+    if (myDialog.findChild(QLineEdit,"date_time").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"date_time").text()) ==0) or utils.isdate(myDialog.findChild(QLineEdit,"date_time").text())==False: # SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"date_time").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"date_time").setStyleSheet("")        
@@ -82,11 +74,7 @@ def instrumentid_FieldTextChanged():
         myDialog.findChild(QLineEdit,"instrumentid").setStyleSheet("")        
 
 def flowtype_FieldTextChanged():
-    typeisok = 0
-    for type in possibleflowtypes:
-            if str(myDialog.findChild(QLineEdit,"flowtype").text())==str(type[0]).encode('utf-8'):
-                typeisok= 1
-    if (myDialog.findChild(QLineEdit,"flowtype").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"flowtype").text()) ==0) or not (typeisok==1): # SIP API UPDATE 2.0
+    if not flowtypeexists(myDialog.findChild(QLineEdit,"flowtype").text()): # SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("")        
@@ -97,15 +85,35 @@ def reading_FieldTextChanged():
     else:
         myDialog.findChild(QLineEdit,"reading").setStyleSheet("")  
         
-
 def unit_FieldTextChanged():
     if (myDialog.findChild(QLineEdit,"unit").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"unit").text()) ==0):
         myDialog.findChild(QLineEdit,"unit").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"unit").setStyleSheet("") 
-        
+
+def obsidexists(obsid):  # Check if obsid exists in database.
+    sql = r"""SELECT obsid FROM obs_points where obsid = '""" + obsid + """'"""
+    result = utils.sql_load_fr_db(sql)
+    if len(result)>0:
+        return 'True'
+                
+def flowtypeexists(flowtype):  # Check if obsid exists in database.
+    sql = r"""SELECT type FROM zz_flowtype where type = '""" + flowtype + """'"""
+    result = utils.sql_load_fr_db(sql)
+    if len(result)>0:
+        return 'True'
+                        
 def validate():  # Make sure mandatory fields are not empty.
-    if not (len(myDialog.findChild(QLineEdit,"obsid").text()) > 0 and 
+
+    if not (obsidexists(myDialog.findChild(QLineEdit,"obsid").text())):
+        utils.pop_up_info("obsid must exist in database table obs_points!")
+    elif utils.isdate(myDialog.findChild(QLineEdit,"date_time").text())==False:
+        utils.pop_up_info("Invalid date!")
+    elif not (flowtypeexists(myDialog.findChild(QLineEdit,"flowtype").text())):
+        utils.pop_up_info("flowtype must exist in database table zz_flowtypes!")
+    elif not utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==True:
+        utils.pop_up_info("reading must be a floating-point number!")
+    elif not (len(myDialog.findChild(QLineEdit,"obsid").text()) > 0 and 
             len(myDialog.findChild(QLineEdit,"instrumentid").text()) > 0 and 
             len(myDialog.findChild(QLineEdit,"flowtype").text()) > 0 and 
             len(myDialog.findChild(QLineEdit,"date_time").text()) > 0 and 
@@ -120,11 +128,4 @@ def validate():  # Make sure mandatory fields are not empty.
             myDialog.findChild(QLineEdit,"unit").text()=='NULL'):
         utils.pop_up_info("obsid, instrumentid, flowtype, date_time, reading and unit must not be NULL!")
     else:
-        # make sure flowtype is within allowed data domain
-        for type in possibleflowtypes:
-            #utils.pop_up_info(str(myDialog.findChild(QLineEdit,"flowtype").text())) #debugging
-            #utils.pop_up_info(str(type[0]).encode('utf-8')) #debugging
-            if str(myDialog.findChild(QLineEdit,"flowtype").text())==str(type[0]).encode('utf-8'):
-                # Return the form as accpeted to QGIS.
-                #utils.pop_up_info("yes")    #debugging
-                myDialog.accept()
+        myDialog.accept()

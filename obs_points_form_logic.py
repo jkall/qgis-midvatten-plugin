@@ -5,6 +5,8 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from sqlite3 import dbapi2 as sqlite
 import midvatten_utils as utils        # Whenever some global midvatten_utilities are needed
+import qgis.utils # for error/debug messages to messagebar
+
 
 myDialog = None
 
@@ -17,14 +19,15 @@ def formOpen(dialog,layerid,featureid):
     global myDialog        
     myDialog = dialog
 
-    if not(myDialog.findChild(QLineEdit,"obsid").text()=='NULL'):
+    if obsidexists(myDialog.findChild(QLineEdit,"obsid").text()):#if it is an obsid which already exists in database, then fill wmeas_yn and wlogg_yn fields
         sql = r"""SELECT wmeas_yn FROM obs_points where obsid = '"""
         sql += myDialog.findChild(QLineEdit,"obsid").text()
         sql += """'"""
         result = utils.sql_load_fr_db(sql)
-        if str(result[0][0]) == '1':
-            wmeas_yn_field = dialog.findChild(QCheckBox,"wmeas_yn")
-            wmeas_yn_field.setChecked(True)
+        if result:
+            if str(result[0][0]) == '1':
+                wmeas_yn_field = dialog.findChild(QCheckBox,"wmeas_yn")
+                wmeas_yn_field.setChecked(True)
         sql = r"""SELECT wlogg_yn FROM obs_points where obsid = '"""
         sql += myDialog.findChild(QLineEdit,"obsid").text()
         sql += """'"""
@@ -32,24 +35,12 @@ def formOpen(dialog,layerid,featureid):
         if str(result[0][0]) == '1':
             wlogg_yn_field = dialog.findChild(QCheckBox,"wlogg_yn")
             wlogg_yn_field.setChecked(True)
-    
-    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) == 0):# SIP API UPDATE 2.0
+    elif (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) == 0):#RED bg if NULL or empty # SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    else:
-        myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
+    else:#If not empty nor null and obsid not in db - then it must be a new one, not yet saved
+        myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+        #utils.pop_up_info("obsid is not null nor empty - but it also is not in db!")#debug
     dialog.findChild(QLineEdit,"obsid").textChanged.connect(obsid_FieldTextChanged)
-    
-    #    myDialog.findChild(QLineEdit,"h_gs").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-
-
-    #if (myDialog.findChild(QLineEdit,"h_gs").text()=='NULL') or (myDialog.findChild(QLineEdit,"h_gs").text().length() == 0) or utils.isfloat(myDialog.findChild(QLineEdit,"h_gs").text())==False:
-    #    myDialog.findChild(QLineEdit,"h_gs").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    #else:
-    #    myDialog.findChild(QLineEdit,"h_gs").setStyleSheet("")
-    #dialog.findChild(QLineEdit,"h_gs").textChanged.connect(h_gs_FieldTextChanged)
-    
-    #h_gs_field = dialog.findChild(QLineEdit,"h_gs")        # Does not work as expected when viewing feature form
-    #h_gs_field.setText("0")
     
     # Disconnect the signal that QGIS has wired up for the dialog to the button box.
     buttonBox = dialog.findChild(QDialogButtonBox,"buttonBox")
@@ -64,25 +55,22 @@ def validate():  # Make sure mandatory fields are not empty.
         utils.pop_up_info("obsid must not be empty!")
     elif myDialog.findChild(QLineEdit,"obsid").text()=='NULL': # or myDialog.findChild(QLineEdit,"h_gs").text()=='NULL'):
         utils.pop_up_info("obsid must not be NULL!")
-#    elif (myDialog.findChild(QLineEdit,"h_gs").text().length() == 0) or utils.isfloat(myDialog.findChild(QLineEdit,"h_gs").text())==False: #If h_gs is empty or non-real number
-#        sanity = utils.askuser("YesNo","h_gs must be real number!\nSet h_gs=0?")
-#        if sanity.result == 1:
-#            h_gs_field = myDialog.findChild(QLineEdit,"h_gs")
-#            h_gs_field.setText("0")
-#            #utils.pop_up_info("user accepted") #debugging
     else:
-        # Return the form as accpeted to QGIS.
-        myDialog.accept()
+        myDialog.accept()# Return the form as accepted to QGIS.
         
+def obsidexists(obsid):  # Both to see if a new obsid already exists in database but also, in case of opening form for an already exising obs_point, to see if form logics should load some data for the obsid.
+    sql = r"""SELECT obsid FROM obs_points where obsid = '""" + obsid + """'"""
+    result = utils.sql_load_fr_db(sql)
+    if len(result)>0:
+        return 'True'
 
+        
 def obsid_FieldTextChanged():
+    #qgis.utils.iface.messageBar().pushMessage("Debug",myDialog.findChild(QLineEdit,"obsid").text(),0)#debug
     if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or len(myDialog.findChild(QLineEdit,"obsid").text()) ==0:# SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+    elif obsidexists(myDialog.findChild(QLineEdit,"obsid").text()):
+        myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+        qgis.utils.iface.messageBar().pushMessage("Warning",myDialog.findChild(QLineEdit,"obsid").text()+" alredy exists!",1)
     else:
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
-
-#def h_gs_FieldTextChanged():
-#    if (myDialog.findChild(QLineEdit,"h_gs").text()=='NULL') or myDialog.findChild(QLineEdit,"h_gs").text().length() ==0 or utils.isfloat(myDialog.findChild(QLineEdit,"h_gs").text())==False:
-#        myDialog.findChild(QLineEdit,"h_gs").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-#    else:
-#        myDialog.findChild(QLineEdit,"h_gs").setStyleSheet("")

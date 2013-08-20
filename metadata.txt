@@ -20,5 +20,5 @@ deprecated=False
 changelog=
         - Fixes due to SIP API update for QGIS 2.0
         - Updates due to SpatiaLite 4.x (new db - lower case geometry columns and more)
-        - Minor bugfixes and enhancements (data importer, labelling of default layers, text in stratigraphy plots etc.)
+        - Bugfixes and enhancements (data importer, form logics, labelling of default layers, stratigraphy plots etc.)
         - Added english terms and abbreviations for soils (geoshort in stratigraphy) 

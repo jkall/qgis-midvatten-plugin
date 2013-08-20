@@ -25,7 +25,7 @@ from qgis.gui import *
 
 import os
 import locale
-from pyspatialite import dbapi2 as sqlite
+from pyspatialite import dbapi2 as sqlite# pyspatialite is absolutely necessary (sqlite3 not enough) due to InitSpatialMetaData()
 import midvatten_utils as utils    
 
 class newdb():
@@ -41,6 +41,7 @@ class newdb():
         if locale.getdefaultlocale()[0]=='sv_SE':
             default_crs = 3006
         EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, "Select CRS", "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:",default_crs)
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         #uitls.pop_up_info(str(EPSGID[0]))
         if EPSGID[0]==0 or not EPSGID:
             utils.pop_up_info("Cancelling...")
@@ -52,6 +53,7 @@ class newdb():
             #if self.dbpath.isEmpty(): # REMOVED DUE TO SIP API UPDATE 2.0
             if not self.dbpath: # SIP API UPDATE 2.0
                 return ''
+                PyQt4.QtGui.QApplication.restoreOverrideCursor()
             #create Spatialite database
             else:
                 try:
@@ -63,6 +65,7 @@ class newdb():
                 except:
                     utils.pop_up_info("Impossible to connect to selected DataBase")
                     return ''
+                    PyQt4.QtGui.QApplication.restoreOverrideCursor()
                 #First, find spatialite version
                 versionstext = utils.sql_load_fr_db('select spatialite_version()')
                 # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
@@ -89,3 +92,4 @@ class newdb():
                 settings.setValue(u'%s/sqlitepath'%os.path.basename(str(self.dbpath)),'%s'%self.dbpath)
                 #settings.setValue(u'%s/sqlitepath'%os.path.basename(str(path)),'%s'%path)
                 settings.endGroup()
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()

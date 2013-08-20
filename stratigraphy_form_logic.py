@@ -3,21 +3,15 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import midvatten_utils as utils        # Whenever some global midvatten_utilities are needed
+import qgis.utils # for debug messages to messagebar
 myDialog = None
 
 def formOpen(dialog,layerid,featureid):
-    global myDialog, possibleobsids        
+    global myDialog
     myDialog = dialog
-    possibleobsids = utils.sql_load_fr_db('select distinct obsid from obs_points')
+    obsid_FieldTextChanged()
     
-    #stratid_field = dialog.findChild(QLineEdit,"stratid")
-    #stratid_field.setText("1")
-    #depthtop_FIELD = dialog.findChild(QLineEdit,"depthtop")
-    #depthtop_FIELD.setText("0")
-    #depthbot_FIELD = dialog.findChild(QLineEdit,"depthbot")
-    #depthbot_FIELD.setText("0")
-
-    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) ==0) or not (obsidisok==1):# SIP API UPDATE 2.0
+    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) ==0) or not (obsidexists(myDialog.findChild(QLineEdit,"obsid").text())):# SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
@@ -50,33 +44,25 @@ def formOpen(dialog,layerid,featureid):
     buttonBox.rejected.connect(myDialog.reject)
 
 def obsid_FieldTextChanged():
-    obsidisok = 0
-    for id in possibleobsids:
-        if str(myDialog.findChild(QLineEdit,"obsid").text())==str(id[0]).encode('utf-8'):
-            obsidisok= 1
-            sql = r"""select max(stratid) from stratigraphy WHERE obsid = '"""
-            sql += str(id[0]).encode('utf-8')
-            sql += r"""'"""
-            maxstratid = utils.sql_load_fr_db(sql)
-            #utils.pop_up_info(str(maxstratid[0][0]).encode('utf-8'))   # DEBUGGING
-            if utils.isinteger(str(maxstratid[0][0]).encode('utf-8'))==True:
-                myDialog.findChild(QLineEdit,"stratid").setText(str(int(maxstratid[0][0])+1).encode('utf-8'))
-                
-                sql = r"""select max(depthbot) from stratigraphy WHERE obsid = '"""
-                sql += str(id[0]).encode('utf-8')
-                sql += r"""'"""
-                maxdepthbot = utils.sql_load_fr_db(sql)
-                #utils.pop_up_info(str(maxdepthbot[0][0]).encode('utf-8'))   # DEBUGGING
-                if utils.isfloat(str(maxdepthbot[0][0]).encode('utf-8'))==True:
-                    myDialog.findChild(QLineEdit,"depthtop").setText(str(maxdepthbot[0][0]).encode('utf-8'))                                   
-            else:
-                myDialog.findChild(QLineEdit,"stratid").setText("1")
-                myDialog.findChild(QLineEdit,"depthtop").setText("0") 
-
-    if (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) ==0) or not (obsidisok==1):# SIP API UPDATE 2.0
-        myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    else:
+    if obsidexists(myDialog.findChild(QLineEdit,"obsid").text()):
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
+        sql = r"""select max(stratid) from stratigraphy WHERE obsid = '"""
+        sql += str(myDialog.findChild(QLineEdit,"obsid").text()).encode('utf-8')
+        sql += r"""'"""
+        maxstratid = utils.sql_load_fr_db(sql)
+        if utils.isinteger(str(maxstratid[0][0]).encode('utf-8'))==True:
+            myDialog.findChild(QLineEdit,"stratid").setText(str(int(maxstratid[0][0])+1).encode('utf-8'))            
+            sql = r"""select max(depthbot) from stratigraphy WHERE obsid = '"""
+            sql += str(myDialog.findChild(QLineEdit,"obsid").text()).encode('utf-8')
+            sql += r"""'"""
+            maxdepthbot = utils.sql_load_fr_db(sql)
+            if utils.isfloat(str(maxdepthbot[0][0]).encode('utf-8'))==True:
+                myDialog.findChild(QLineEdit,"depthtop").setText(str(maxdepthbot[0][0]).encode('utf-8'))                                   
+        else:
+            myDialog.findChild(QLineEdit,"stratid").setText("1")
+            myDialog.findChild(QLineEdit,"depthtop").setText("0") 
+    else:
+        myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
 
 def stratid_FieldTextChanged():
     if (myDialog.findChild(QLineEdit,"stratid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"stratid").text()) == 0) or (utils.isinteger(myDialog.findChild(QLineEdit,"stratid").text())==False): # SIP API UPDATE 2.0
@@ -87,6 +73,7 @@ def stratid_FieldTextChanged():
 def depthtop_FieldTextChanged():
     if (myDialog.findChild(QLineEdit,"depthtop").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"depthtop").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"depthtop").text())==False):# SIP API UPDATE 2.0
         myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+
     else:
         myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("")  
 
@@ -95,9 +82,17 @@ def depthbot_FieldTextChanged():
         myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
     else:
         myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("")  
-        
+
+def obsidexists(obsid):  # Check if obsid exists in database.
+    sql = r"""SELECT obsid FROM obs_points where obsid = '""" + obsid + """'"""
+    result = utils.sql_load_fr_db(sql)
+    if len(result)>0:
+        return 'True'
+                
 def validate():  # Make sure mandatory fields are not empty.
-    if not (len(myDialog.findChild(QLineEdit,"obsid").text()) > 0 and 
+    if not (obsidexists(myDialog.findChild(QLineEdit,"obsid").text())):
+        utils.pop_up_info("obsid must exist in database table obs_points!")
+    elif not (len(myDialog.findChild(QLineEdit,"obsid").text()) > 0 and 
             len(myDialog.findChild(QLineEdit,"stratid").text()) > 0 and 
             len(myDialog.findChild(QLineEdit,"depthtop").text()) > 0 and 
             len(myDialog.findChild(QLineEdit,"depthbot").text()) > 0):# SIP API UPDATE 2.0
@@ -107,6 +102,12 @@ def validate():  # Make sure mandatory fields are not empty.
                 myDialog.findChild(QLineEdit,"depthtop").text()=='NULL' or 
                 myDialog.findChild(QLineEdit,"depthbot").text()=='NULL'):
         utils.pop_up_info("obsid, stratid, depthtop and depthbot must not be NULL!")
+    elif not utils.isinteger(myDialog.findChild(QLineEdit,"stratid").text())==True:
+        utils.pop_up_info("stratid must be an integer!")
+    elif not (utils.isfloat(myDialog.findChild(QLineEdit,"depthtop").text())==True and utils.isfloat(myDialog.findChild(QLineEdit,"depthbot").text())==True):
+        utils.pop_up_info("both depthtop and depthbot must be a floating-point numbers!")
+    elif not (float(myDialog.findChild(QLineEdit,"depthtop").text()) < float(myDialog.findChild(QLineEdit,"depthbot").text())):
+        utils.pop_up_info("depthbot must be greater than depthtop!")
     else:
         # Return the form as accpeted to QGIS.
         myDialog.accept()

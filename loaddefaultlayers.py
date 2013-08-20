@@ -18,8 +18,8 @@
  ***************************************************************************/
 """
 # Import the PyQt libraries
-from PyQt4.QtCore import *  #Not necessary?
-from PyQt4.QtGui import *  #Not necessary?
+from PyQt4.QtCore import *  
+from PyQt4.QtGui import *  
 from qgis.core import *   # Necessary for the QgsFeature()
 from qgis.gui import *
 import os
@@ -43,23 +43,12 @@ class loadlayers():
         for lyr in ALL_LAYERS:         
             name = lyr.name()
             if (name in self.default_layers) or (name in self.default_nonspatlayers):
-                try:#this is the new method from qgis version 2.0, remove try-clause and only keep this method when adopting plugin for qgis version 2.0
-                    QgsMapLayerRegistry.instance().removeMapLayers( [lyr.id()] )
-                except (AttributeError, TypeError):
-                    QgsMapLayerRegistry.instance().removeMapLayer( lyr.id() )# deprecated method, removed in qgis master before 2012-12-23
-                    utils.pop_up_info("Warning, falling back to old method of registering layers!\nThis indicates that you use a deprecated version of QGIS.")
-                #utils.pop_up_info("removed "+ lyr.name())    # debugging
-            #if :
-            #    QgsMapLayerRegistry.instance().removeMapLayer( lyr.id() )
-                #utils.pop_up_info("removed "+ lyr.name())    # debugging    
+                QgsMapLayerRegistry.instance().removeMapLayers( [lyr.id()] )
                 
         """ THEN remove old group """
         while 'Midvatten_OBS_DB' in self.legend.groups():
             group_index = self.legend.groups().index('Midvatten_OBS_DB')      # SIP API UPDATE 2.0
-            #group_index = self.legend.groups().indexOf('Midvatten_OBS_DB')    # this method is correct from QGIS version 1.9.0-65!!!
-            #group_index = self.getGroupIndex(self.iface, 'Midvatten_OBS_DB')   # This method is to be used for QGIS version < 1.9.0-65!!!!
             self.legend.removeGroup(group_index)
-            #utils.pop_up_info("found and removed Midvatten_OBS_DB group at index " + str(group_index)) #debugging
 
     def addlayers(self):
         try:    #newstyle
@@ -70,19 +59,12 @@ class loadlayers():
         uri.setDatabase(str(self.settingsdict['database']).encode(locale.getdefaultlocale()[1]))
         for tablename in self.default_nonspatlayers:    # first the non-spatial tables, THEY DO NOT ALL HAVE CUSTOM UI FORMS
             firststring= 'dbname="' + str(self.settingsdict['database']).encode(locale.getdefaultlocale()[1]) + '" table="' + tablename + '"'
-            #utils.pop_up_info(firststring) #debugging
             layer = QgsVectorLayer(firststring,tablename, 'spatialite')   # Adding the layer as 'spatialite' and not ogr vector layer is preferred
             if not layer.isValid():
                 utils.pop_up_info("failed to load layer " + tablename) #debugging
             else:
-                try: #this is the new method from qgis version 2.0, remove try-clause and only keep this method when adopting plugin for qgis version 2.0
-                    QgsMapLayerRegistry.instance().addMapLayers([layer])
-                except (AttributeError, TypeError):
-                    QgsMapLayerRegistry.instance().addMapLayer(layer) # deprecated method, removed in qgis master before 2012-12-23
-                    utils.pop_up_info("Warning, falling back to old method of registering layers!\nThis indicates that you use a deprecated version of QGIS.")
+                QgsMapLayerRegistry.instance().addMapLayers([layer])
                 group_index = self.legend.groups().index('Midvatten_OBS_DB')    # SIP API UPDATE 2.0 
-                #group_index = self.legend.groups().indexOf('Midvatten_OBS_DB')    # this method is correct from QGIS version 1.9.0-65!!!
-                #group_index = self.getGroupIndex(self.iface, 'Midvatten_OBS_DB')           # This method is to be used for QGIS version < 1.9.0-65!!!!
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
                 if tablename in ('w_levels','w_flow','stratigraphy'):
                     filename = tablename + ".qml"       #  load styles
@@ -124,16 +106,8 @@ class loadlayers():
                     if tablename in ('obs_points','obs_lines'):
                         formlogic = tablename + "_form_logic.formOpen"      
                         layer.setEditFormInit(formlogic)     
-                try: #this is the new method from qgis version 2.0, remove try-clause and only keep this method when adopting plugin for qgis version 2.0
-                    QgsMapLayerRegistry.instance().addMapLayers([layer])
-                except (AttributeError, TypeError):
-                    QgsMapLayerRegistry.instance().addMapLayer(layer) # deprecated method, removed in qgis master before 2012-12-23
-                    utils.pop_up_info("Warning, falling back to old method of registering layers!\nThis indicates that you use a deprecated version of QGIS.")
-                #utils.pop_up_info(self.legend.layers()[0].name())  # for debugging
-                #utils.pop_up_info(MyGroup)  # for debugging
+                QgsMapLayerRegistry.instance().addMapLayers([layer])
                 group_index = self.legend.groups().index('Midvatten_OBS_DB')   # SIPAPI UPDATE 2.0
-                #group_index = self.legend.groups().indexOf('Midvatten_OBS_DB')    # this method is correct from QGIS version 1.9.0-65!!!
-                #group_index = self.getGroupIndex(self.iface, 'Midvatten_OBS_DB')           # This method is to be used for QGIS version < 1.9.0-65!!!!
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
 
     def getGroupIndex(self, iface, groupName):      #This function only due to old limitations in qgis version <1.9.0-65  No longer used!!
