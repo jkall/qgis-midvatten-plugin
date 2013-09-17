@@ -171,17 +171,20 @@ class SurveyStore:
 
     def _getDataStep2(self, surveys):    # _CHANGE_ 
         """ STEP 2: get strata information for every point """
-        conn = sqlite.connect(str(self.path).encode(locale.getdefaultlocale()[1]),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        #conn = sqlite.connect(str(self.path).encode(locale.getdefaultlocale()[1]),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        conn = sqlite.connect(unicode(self.path),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES) #MacOSX fix1
         # skapa en cursor
         curs = conn.cursor()
         
         for (obsid, survey) in surveys.iteritems(): # _CHANGE_
             sql =r"""SELECT stratid, depthtop, depthbot, geology, geoshort, capacity, comment, development FROM """
-            sql += str(self.stratitable).encode(locale.getdefaultlocale()[1])
+            #sql += str(self.stratitable).encode(locale.getdefaultlocale()[1])
+            sql += unicode(self.stratitable) #MacOSX fix1
             sql += r""" WHERE obsid = '"""    
             sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRAIGRAPHY FOR CHOOSEN obsid
             sql += """' ORDER BY stratid"""
-            sql2 = str(sql).encode(locale.getdefaultlocale()[1])  #To get back to uniciode-string
+            #sql2 = str(sql).encode(locale.getdefaultlocale()[1])  #To get back to uniciode-string
+            sql2 = unicode(sql)  #To get back to unicode-string #MacOSX fix1
             rs = curs.execute(sql2) #Send SQL-syntax to cursor
             recs = rs.fetchall()  # All data are stored in recs            
             # parse attributes

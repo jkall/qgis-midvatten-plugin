@@ -18,13 +18,13 @@ from qgis.gui import *
 
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency  
 import os.path
+import qgis.utils
 from functools import partial # only to get combobox signals to work
-
-from ui.midvsettingsdialog_ui import Ui_Dialog        # Remember to create midvsettingsdialog_ui.py from midvsettingsdialog.ui
-import midvatten_utils as utils   
+from ui.midvsettingsdialog_ui import Ui_Dialog
+#import midvatten_utils as utils   #only during developing
 import locale
 
-class midvsettings(QDialog, Ui_Dialog):     #THE CLASS IS ONLY TO DEAL WITH THE SETTINGS DIALOG     Are QDialog and Ui_Dialog needed as arguments to the class?
+class midvsettings(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH THE SETTINGS DIALOG
     def __init__(self, parent, s_dict):
         QDialog.__init__(self)  
         self.setupUi(self) # Required by Qt4 to initialize the UI
@@ -34,6 +34,8 @@ class midvsettings(QDialog, Ui_Dialog):     #THE CLASS IS ONLY TO DEAL WITH THE 
         self.btnAccept.setEnabled( True )  # It  must be possbile to store empty values as well
 
         self.s_dict = s_dict    # The dictionary with all settings
+
+        #qgis.utils.iface.messageBar().pushMessage("Debug","""settings dictionary %s!"""%str(self.s_dict),0)#DEBUG
 
         # Some  instance helper variables
         self.database = '' # a string is stored whenever len(s_dict['database']), see below
@@ -45,27 +47,34 @@ class midvsettings(QDialog, Ui_Dialog):     #THE CLASS IS ONLY TO DEAL WITH THE 
         self.ListOfTables_3.clear()
         self.ListOfTables_WQUAL.clear()
 
-        self.tabWidget.setCurrentIndex(int(str(self.s_dict['tabwidget']).encode(locale.getdefaultlocale()[1])))    # widget is opened with the last choosen tab        
+        #self.tabWidget.setCurrentIndex(int(str(self.s_dict['tabwidget']).encode(locale.getdefaultlocale()[1])))# widget is opened with the last choosen tab
+        self.tabWidget.setCurrentIndex(int(self.s_dict['tabwidget']))# widget is opened with the last choosen tab #MacOSX fix1
 
-        if len(str(self.s_dict['database']).encode(locale.getdefaultlocale()[1]))>0:    # SEEMS OK  If there is a stored database, show it and fill the table-comboboxes with a list of all tables
-            self.database = str(self.s_dict['database']).encode(locale.getdefaultlocale()[1])
+        #if len(str(self.s_dict['database']).encode(locale.getdefaultlocale()[1]))>0:    # SEEMS OK  If there is a stored database, show it and fill the table-comboboxes with a list of all tables
+        if len(unicode(self.s_dict['database']))>0:    # SEEMS OK  If there is a stored database, show it and fill the table-comboboxes with a list of all tables #MacOSX fix1
+            #self.database = str(self.s_dict['database']).encode(locale.getdefaultlocale()[1])
+            self.database = unicode(self.s_dict['database']) #MacOSX fix1
             self.txtpath.setText(self.database)
             self.loadTablesFromDB()        # All ListOfTables are filled with relevant information
 
-        if len(str(self.s_dict['tstable']).encode(locale.getdefaultlocale()[1])):        # SEEMS OK If there is a last selected tstable.
+        #if len(str(self.s_dict['tstable']).encode(locale.getdefaultlocale()[1])):  # If there is a last selected tstable.
+        if len(unicode(self.s_dict['tstable'])):#If there is a last selected tstable. #MacOSX fix1
             notfound=0 
             i=0
             while notfound==0:    # Loop until the last selected tstable is found
                 self.ListOfTables.setCurrentIndex(i)
-                if self.ListOfTables.currentText() == str(self.s_dict['tstable']).encode(locale.getdefaultlocale()[1]):    #The index count stops when last selected table is found
+                #if self.ListOfTables.currentText() == str(self.s_dict['tstable']).encode(locale.getdefaultlocale()[1]):#The index count stops when last selected table is found
+                if self.ListOfTables.currentText() == unicode(self.s_dict['tstable']):#The index count stops when last selected table is found #MacOSX fix1
                     notfound=1
                     self.TSTableUpdated()        # Fill the given combobox with columns from the given table and also perform a sanity check of table
-                    if len(str(self.s_dict['tscolumn']).encode(locale.getdefaultlocale()[1])):        # If there is a last selected tsColumn, 
+                    #if len(str(self.s_dict['tscolumn']).encode(locale.getdefaultlocale()[1])):#If there is a last selected tsColumn
+                    if len(unicode(self.s_dict['tscolumn'])):#If there is a last selected tsColumn #MacOSX fix1
                         notfound2=0 
                         j=0
                         while notfound2==0:    # loop until the last selected tscolumn is found
                             self.ListOfColumns.setCurrentIndex(j)
-                            if self.ListOfColumns.currentText() == str(self.s_dict['tscolumn']).encode(locale.getdefaultlocale()[1]):     # index count stops when column found
+                            #if self.ListOfColumns.currentText() == str(self.s_dict['tscolumn']).encode(locale.getdefaultlocale()[1]):     # index count stops when column found
+                            if self.ListOfColumns.currentText() == unicode(self.s_dict['tscolumn']):# index count stops when column found #MacOSX fix1
                                 notfound2=1
                             elif j> len(self.ListOfColumns):
                                 notfound2=1
@@ -74,63 +83,72 @@ class midvsettings(QDialog, Ui_Dialog):     #THE CLASS IS ONLY TO DEAL WITH THE 
                     notfound=1
                 i = i + 1
             
-
-            
-        if str(self.s_dict['tsdotmarkers']).encode(locale.getdefaultlocale()[1])=='2':        # SEEMS OK If the TSPlot dot markers checkbox was checked last time it will be so now
+        #if str(self.s_dict['tsdotmarkers']).encode(locale.getdefaultlocale()[1])=='2':#If the TSPlot dot markers checkbox was checked last time it will be so now
+        if unicode(self.s_dict['tsdotmarkers'])=='2':#If the TSPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
             self.checkBoxDataPoints.setChecked(True)
         else:
             self.checkBoxDataPoints.setChecked(False)
-        if str(self.s_dict['tsstepplot']).encode(locale.getdefaultlocale()[1])=='2':        # SEEMS OK If the TSPlot stepplot checkbox was checked last time it will be so now
+        #if str(self.s_dict['tsstepplot']).encode(locale.getdefaultlocale()[1])=='2': #If the TSPlot stepplot checkbox was checked last time it will be so now
+        if unicode(self.s_dict['tsstepplot'])=='2': #If the TSPlot stepplot checkbox was checked last time it will be so now #MacOSX fix1
             self.checkBoxStepPlot.setChecked(True)
         else:
             self.checkBoxStepPlot.setChecked(False)
 
-        if len(str(self.s_dict['xytable']).encode(locale.getdefaultlocale()[1])):        #  SEEMS OK in VERSION 0.3.1, earlier had PROBLEMS WITH y1, y2 and y3-column, sometimes they get mixed up and dont reload from settings   If there is a last selected xytable
+        #if len(str(self.s_dict['xytable']).encode(locale.getdefaultlocale()[1])):#If there is a last selected xytable
+        if len(unicode(self.s_dict['xytable'])):#If there is a last selected xytable #MacOSX fix1
             notfound=0 
             i=0
             while notfound==0: #looping through ListOfTables_2 looking for last selected xytable
                 self.ListOfTables_2.setCurrentIndex(i)
-                if self.ListOfTables_2.currentText() == str(self.s_dict['xytable']).encode(locale.getdefaultlocale()[1]):    #when last selected xytable found, it is selected in list and a lot of columns is searced for                
+                #if self.ListOfTables_2.currentText() == str(self.s_dict['xytable']).encode(locale.getdefaultlocale()[1]):    #when last selected xytable found, it is selected in list and a lot of columns is searced for
+                if self.ListOfTables_2.currentText() == unicode(self.s_dict['xytable']):    #when last selected xytable found, it is selected in list and a lot of columns is searced for #MacOSX fix1
                     notfound=1
                     self.XYTableUpdated()    # Fill the given combobox with columns from the given table and performs a test
-                    if len(str(self.s_dict['xy_xcolumn']).encode(locale.getdefaultlocale()[1])):        # Show the last selected xyplot x-column in the ListOfColumns_2
+                    #if len(str(self.s_dict['xy_xcolumn']).encode(locale.getdefaultlocale()[1])):# Show the last selected xyplot x-column in the ListOfColumns_2
+                    if len(unicode(self.s_dict['xy_xcolumn'])):# Show the last selected xyplot x-column in the ListOfColumns_2 #MacOSX fix1
                         notfound2=0 
                         j=0
                         while notfound2==0:
                             self.ListOfColumns_2.setCurrentIndex(j)
-                            if self.ListOfColumns_2.currentText() == str(self.s_dict['xy_xcolumn']).encode(locale.getdefaultlocale()[1]):
+                            #if self.ListOfColumns_2.currentText() == str(self.s_dict['xy_xcolumn']).encode(locale.getdefaultlocale()[1]):
+                            if self.ListOfColumns_2.currentText() == unicode(self.s_dict['xy_xcolumn']):#MacOSX fix1
                                 notfound2=1
                             elif j> len(self.ListOfColumns_2):
                                 notfound2=1
                             j = j + 1
-                    if len(str(self.s_dict['xy_y1column']).encode(locale.getdefaultlocale()[1])):        # Show the last selected xyplot y1-column in the ListOfColumns_3
+                    #if len(str(self.s_dict['xy_y1column']).encode(locale.getdefaultlocale()[1])):# Show the last selected xyplot y1-column in the ListOfColumns_3
+                    if len(unicode(self.s_dict['xy_y1column'])):# Show the last selected xyplot y1-column in the ListOfColumns_3 #MacOSX fix1
                         notfound2=0 
                         j=0
                         while notfound2==0:
                             self.ListOfColumns_3.setCurrentIndex(j)
-                            if self.ListOfColumns_3.currentText() == str(self.s_dict['xy_y1column']).encode(locale.getdefaultlocale()[1]):
+                            #if self.ListOfColumns_3.currentText() == str(self.s_dict['xy_y1column']).encode(locale.getdefaultlocale()[1]):
+                            if self.ListOfColumns_3.currentText() == unicode(self.s_dict['xy_y1column']): #MacOSX fix1
                                 notfound2=1
                             elif j> len(self.ListOfColumns_3):
                                 notfound2=1
                             j = j + 1
-                    if len(str(self.s_dict['xy_y2column']).encode(locale.getdefaultlocale()[1])):        # Show the last selected xyplot y2-column in the ListOfColumns_4
+                    #if len(str(self.s_dict['xy_y2column']).encode(locale.getdefaultlocale()[1])):# Show the last selected xyplot y2-column in the ListOfColumns_4
+                    if len(unicode(self.s_dict['xy_y2column'])):# Show the last selected xyplot y2-column in the ListOfColumns_4 #MacOSX fix1
                         notfound2=0 
                         j=0
                         while notfound2==0:
                             self.ListOfColumns_4.setCurrentIndex(j)
-                            if self.ListOfColumns_4.currentText() == str(self.s_dict['xy_y2column']).encode(locale.getdefaultlocale()[1]):
+                            #if self.ListOfColumns_4.currentText() == str(self.s_dict['xy_y2column']).encode(locale.getdefaultlocale()[1]):
+                            if self.ListOfColumns_4.currentText() == unicode(self.s_dict['xy_y2column']):#MacOSX fix1
                                 notfound2=1
                             elif j> len(self.ListOfColumns_4):
                                 notfound2=1
                             j = j + 1
-                    if len(str(self.s_dict['xy_y3column']).encode(locale.getdefaultlocale()[1])):        # PROBLEMS HERE  Show the last selected xyplot y3-column in the ListOfColumns_5
+                    #if len(str(self.s_dict['xy_y3column']).encode(locale.getdefaultlocale()[1])):#Show the last selected xyplot y3-column in the ListOfColumns_5
+                    if len(unicode(self.s_dict['xy_y3column'])):#MacOSX fix1
                         notfound2=0 
                         j=0
                         while notfound2==0:
                             self.ListOfColumns_5.setCurrentIndex(j)
-                            if self.ListOfColumns_5.currentText() == str(self.s_dict['xy_y3column']).encode(locale.getdefaultlocale()[1]):
+                            #if self.ListOfColumns_5.currentText() == str(self.s_dict['xy_y3column']).encode(locale.getdefaultlocale()[1]):
+                            if self.ListOfColumns_5.currentText() == unicode(self.s_dict['xy_y3column']):#MacOSX fix1
                                 notfound2=1
-                                #QMessageBox.information(None, "info", "the stored value was " + str(self.s_dict['xy_y3column']).encode('latin-1'))  #DEBUGGING
                             elif j> len(self.ListOfColumns_5):
                                 notfound2=1
                             j = j + 1
@@ -138,68 +156,80 @@ class midvsettings(QDialog, Ui_Dialog):     #THE CLASS IS ONLY TO DEAL WITH THE 
                     notfound=1
                 i = i + 1
 
-        if str(self.s_dict['xydotmarkers']).encode(locale.getdefaultlocale()[1])=='2':            # If the XYPlot dot markers checkbox was checked last time it will be so now
+        #if str(self.s_dict['xydotmarkers']).encode(locale.getdefaultlocale()[1])=='2':# If the XYPlot dot markers checkbox was checked last time it will be so now
+        if unicode(self.s_dict['xydotmarkers'])=='2':# If the XYPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
             self.checkBoxDataPoints_2.setChecked(True)
         else:
             self.checkBoxDataPoints_2.setChecked(False)
                 
-        if len(str(self.s_dict['stratigraphytable']).encode(locale.getdefaultlocale()[1])):    # SEEMS OK  If there is a last selected stratigraphytable, then it is selected again in the combobox ListOfTables
+        #if len(str(self.s_dict['stratigraphytable']).encode(locale.getdefaultlocale()[1])):#If there is a last selected stratigraphytable, then it is selected again in the combobox ListOfTables
+        if len(unicode(self.s_dict['stratigraphytable'])):#If there is a last selected stratigraphytable, then it is selected again in the combobox ListOfTables #MacOSX fix1
             notfound=0 
             i=0
             while notfound==0:
                 self.ListOfTables_3.setCurrentIndex(i)
-                if self.ListOfTables_3.currentText() == str(self.s_dict['stratigraphytable']).encode(locale.getdefaultlocale()[1]):
+                #if self.ListOfTables_3.currentText() == str(self.s_dict['stratigraphytable']).encode(locale.getdefaultlocale()[1]):
+                if self.ListOfTables_3.currentText() == unicode(self.s_dict['stratigraphytable']):#MacOSX fix1
                     self.StratigraphyTableUpdated()        # Perform a sanity check of the table
                     notfound=1
                 elif i> len(self.ListOfTables_3):
                     notfound=1
                 i = i + 1
-
                 
-        if len(str(self.s_dict['wqualtable']).encode(locale.getdefaultlocale()[1])):    # SEEMS OK  If there is a last selected table, then it is selected again in the combobox ListOfTables
+        #if len(str(self.s_dict['wqualtable']).encode(locale.getdefaultlocale()[1])):# If there is a last selected table, then it is selected again in the combobox ListOfTables
+        if len(unicode(self.s_dict['wqualtable'])):# If there is a last selected table, then it is selected again in the combobox ListOfTables #MacOSX fix1
             notfound=0 
             i=0
             while notfound==0:
                 self.ListOfTables_WQUAL.setCurrentIndex(i)
-                if self.ListOfTables_WQUAL.currentText() == str(self.s_dict['wqualtable']).encode(locale.getdefaultlocale()[1]):
+                #if self.ListOfTables_WQUAL.currentText() == str(self.s_dict['wqualtable']).encode(locale.getdefaultlocale()[1]):
+                if self.ListOfTables_WQUAL.currentText() == unicode(self.s_dict['wqualtable']):#MacOSX fix1
                     notfound=1
                     self.WQUALTableUpdated()    # Fill the given combobox with columns from the given table and performs a test
-                    if len(str(self.s_dict['wqual_paramcolumn']).encode(locale.getdefaultlocale()[1])):        
+                    #if len(str(self.s_dict['wqual_paramcolumn']).encode(locale.getdefaultlocale()[1])):
+                    if len(unicode(self.s_dict['wqual_paramcolumn'])):#MacOSX fix1
                         notfound2=0 
                         j=0
                         while notfound2==0:
                             self.ListOfColumns_WQUALPARAM.setCurrentIndex(j)
-                            if self.ListOfColumns_WQUALPARAM.currentText() == str(self.s_dict['wqual_paramcolumn']).encode(locale.getdefaultlocale()[1]):
+                            #if self.ListOfColumns_WQUALPARAM.currentText() == str(self.s_dict['wqual_paramcolumn']).encode(locale.getdefaultlocale()[1]):
+                            if self.ListOfColumns_WQUALPARAM.currentText() == unicode(self.s_dict['wqual_paramcolumn']):#MacOSX fix1
                                 notfound2=1
                             elif j> len(self.ListOfColumns_WQUALPARAM):
                                 notfound2=1
                             j = j + 1
-                    if len(str(self.s_dict['wqual_valuecolumn']).encode(locale.getdefaultlocale()[1])):        # Show the last selected xyplot y2-column in the ListOfColumns_4
+                    #if len(str(self.s_dict['wqual_valuecolumn']).encode(locale.getdefaultlocale()[1])):# Show the last selected xyplot y2-column in the ListOfColumns_4
+                    if len(unicode(self.s_dict['wqual_valuecolumn'])):# Show the last selected xyplot y2-column in the ListOfColumns_4 #MacOSX fix1
                         notfound2=0 
                         j=0
                         while notfound2==0:
                             self.ListOfColumns_WQUALVALUE.setCurrentIndex(j)
-                            if self.ListOfColumns_WQUALVALUE.currentText() == str(self.s_dict['wqual_valuecolumn']).encode(locale.getdefaultlocale()[1]):
+                            #if self.ListOfColumns_WQUALVALUE.currentText() == str(self.s_dict['wqual_valuecolumn']).encode(locale.getdefaultlocale()[1]):
+                            if self.ListOfColumns_WQUALVALUE.currentText() == unicode(self.s_dict['wqual_valuecolumn']):#MacOSX fix1
                                 notfound2=1
                             elif j> len(self.ListOfColumns_WQUALVALUE):
                                 notfound2=1
                             j = j + 1
-                    if len(str(self.s_dict['wqual_unitcolumn']).encode(locale.getdefaultlocale()[1])):        #
+                    #if len(str(self.s_dict['wqual_unitcolumn']).encode(locale.getdefaultlocale()[1])):
+                    if len(unicode(self.s_dict['wqual_unitcolumn'])):#MacOSX fix1
                         notfound2=0 
                         j=0
                         while notfound2==0:
                             self.ListOfColumns_WQUALUNIT.setCurrentIndex(j)
-                            if self.ListOfColumns_WQUALUNIT.currentText() == str(self.s_dict['wqual_unitcolumn']).encode(locale.getdefaultlocale()[1]):
+                            #if self.ListOfColumns_WQUALUNIT.currentText() == str(self.s_dict['wqual_unitcolumn']).encode(locale.getdefaultlocale()[1]):
+                            if self.ListOfColumns_WQUALUNIT.currentText() == unicode(self.s_dict['wqual_unitcolumn']):#MacOSX fix1
                                 notfound2=1
                             elif j> len(self.ListOfColumns_WQUALUNIT):
                                 notfound2=1
                             j = j + 1
-                    if len(str(self.s_dict['wqual_sortingcolumn']).encode(locale.getdefaultlocale()[1])):        # PROBLEMS HERE  Show the last selected xyplot y3-column in the ListOfColumns_5
+                    #if len(str(self.s_dict['wqual_sortingcolumn']).encode(locale.getdefaultlocale()[1])):# Show the last selected xyplot y3-column in the ListOfColumns_5
+                    if len(unicode(self.s_dict['wqual_sortingcolumn'])):# Show the last selected xyplot y3-column in the ListOfColumns_5 #MacOSX fix1
                         notfound2=0 
                         j=0
                         while notfound2==0:
                             self.ListOfColumns_WQUALSORTING.setCurrentIndex(j)
-                            if self.ListOfColumns_WQUALSORTING.currentText() == str(self.s_dict['wqual_sortingcolumn']).encode(locale.getdefaultlocale()[1]):
+                            #if self.ListOfColumns_WQUALSORTING.currentText() == str(self.s_dict['wqual_sortingcolumn']).encode(locale.getdefaultlocale()[1]):
+                            if self.ListOfColumns_WQUALSORTING.currentText() == unicode(self.s_dict['wqual_sortingcolumn']): #MacOSX fix1
                                 notfound2=1
                             elif j> len(self.ListOfColumns_WQUALSORTING):
                                 notfound2=1
@@ -207,7 +237,6 @@ class midvsettings(QDialog, Ui_Dialog):     #THE CLASS IS ONLY TO DEAL WITH THE 
                 elif i> len(self.ListOfTables_WQUAL):
                     notfound=1
                 i = i + 1
-
                 
         # SIGNALS
         self.connect(self.btnSetDB, SIGNAL("clicked()"), self.selectFile)
@@ -219,16 +248,15 @@ class midvsettings(QDialog, Ui_Dialog):     #THE CLASS IS ONLY TO DEAL WITH THE 
         self.connect(self.ListOfTables_WQUAL, SIGNAL("currentIndexChanged(int)"), partial(self.WQUALTableUpdated))  
         QObject.connect( self.buttonBox, SIGNAL( "accepted()" ), self.accept)
         QObject.connect( self.buttonBox, SIGNAL( "rejected()" ), self.reject)
-
     
-    def selectFile(self):    # klar
+    def selectFile(self):
         """ Open a dialog to locate the sqlite file and some more..."""        
         path = QFileDialog.getOpenFileName(None,str("Select database:"),"*.sqlite")
         if path: 
             self.database = path # To make possible cancel the FileDialog and continue loading a predefined db
         self.openDBFile()
 
-    def openDBFile( self ):    # klar
+    def openDBFile( self ):
         """ Open the SpatiaLite file to extract info about tables 
             and populate the table-QComboBoxes with all the tables"""
         if os.path.isfile( unicode( self.database ) ):
@@ -248,7 +276,181 @@ class midvsettings(QDialog, Ui_Dialog):     #THE CLASS IS ONLY TO DEAL WITH THE 
             self.ListOfColumns_WQUALSORTING.clear()
             self.loadTablesFromDB()
 
-    def loadTablesFromDB(self):    # klar    # This method populates all table-comboboxes with the tables inside the database
+            if len(unicode(self.s_dict['tstable'])):#If there is a last selected tstable. #MacOSX fix1
+                notfound=0 
+                i=0
+                while notfound==0:    # Loop until the last selected tstable is found
+                    self.ListOfTables.setCurrentIndex(i)
+                    #if self.ListOfTables.currentText() == str(self.s_dict['tstable']).encode(locale.getdefaultlocale()[1]):#The index count stops when last selected table is found
+                    if self.ListOfTables.currentText() == unicode(self.s_dict['tstable']):#The index count stops when last selected table is found #MacOSX fix1
+                        notfound=1
+                        self.TSTableUpdated()        # Fill the given combobox with columns from the given table and also perform a sanity check of table
+                        #if len(str(self.s_dict['tscolumn']).encode(locale.getdefaultlocale()[1])):#If there is a last selected tsColumn
+                        if len(unicode(self.s_dict['tscolumn'])):#If there is a last selected tsColumn #MacOSX fix1
+                            notfound2=0 
+                            j=0
+                            while notfound2==0:    # loop until the last selected tscolumn is found
+                                self.ListOfColumns.setCurrentIndex(j)
+                                #if self.ListOfColumns.currentText() == str(self.s_dict['tscolumn']).encode(locale.getdefaultlocale()[1]):     # index count stops when column found
+                                if self.ListOfColumns.currentText() == unicode(self.s_dict['tscolumn']):# index count stops when column found #MacOSX fix1
+                                    notfound2=1
+                                elif j> len(self.ListOfColumns):
+                                    notfound2=1
+                                j = j + 1
+                    elif i> len(self.ListOfTables):
+                        notfound=1
+                    i = i + 1
+                
+            if unicode(self.s_dict['tsdotmarkers'])=='2':#If the TSPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
+                self.checkBoxDataPoints.setChecked(True)
+            else:
+                self.checkBoxDataPoints.setChecked(False)
+            if unicode(self.s_dict['tsstepplot'])=='2': #If the TSPlot stepplot checkbox was checked last time it will be so now #MacOSX fix1
+                self.checkBoxStepPlot.setChecked(True)
+            else:
+                self.checkBoxStepPlot.setChecked(False)
+
+            if len(unicode(self.s_dict['xytable'])):#If there is a last selected xytable #MacOSX fix1
+                notfound=0 
+                i=0
+                while notfound==0: #looping through ListOfTables_2 looking for last selected xytable
+                    self.ListOfTables_2.setCurrentIndex(i)
+                    #if self.ListOfTables_2.currentText() == str(self.s_dict['xytable']).encode(locale.getdefaultlocale()[1]):    #when last selected xytable found, it is selected in list and a lot of columns is searced for
+                    if self.ListOfTables_2.currentText() == unicode(self.s_dict['xytable']):    #when last selected xytable found, it is selected in list and a lot of columns is searced for #MacOSX fix1
+                        notfound=1
+                        self.XYTableUpdated()    # Fill the given combobox with columns from the given table and performs a test
+                        #if len(str(self.s_dict['xy_xcolumn']).encode(locale.getdefaultlocale()[1])):# Show the last selected xyplot x-column in the ListOfColumns_2
+                        if len(unicode(self.s_dict['xy_xcolumn'])):# Show the last selected xyplot x-column in the ListOfColumns_2 #MacOSX fix1
+                            notfound2=0 
+                            j=0
+                            while notfound2==0:
+                                self.ListOfColumns_2.setCurrentIndex(j)
+                                #if self.ListOfColumns_2.currentText() == str(self.s_dict['xy_xcolumn']).encode(locale.getdefaultlocale()[1]):
+                                if self.ListOfColumns_2.currentText() == unicode(self.s_dict['xy_xcolumn']):#MacOSX fix1
+                                    notfound2=1
+                                elif j> len(self.ListOfColumns_2):
+                                    notfound2=1
+                                j = j + 1
+                        #if len(str(self.s_dict['xy_y1column']).encode(locale.getdefaultlocale()[1])):# Show the last selected xyplot y1-column in the ListOfColumns_3
+                        if len(unicode(self.s_dict['xy_y1column'])):# Show the last selected xyplot y1-column in the ListOfColumns_3 #MacOSX fix1
+                            notfound2=0 
+                            j=0
+                            while notfound2==0:
+                                self.ListOfColumns_3.setCurrentIndex(j)
+                                #if self.ListOfColumns_3.currentText() == str(self.s_dict['xy_y1column']).encode(locale.getdefaultlocale()[1]):
+                                if self.ListOfColumns_3.currentText() == unicode(self.s_dict['xy_y1column']): #MacOSX fix1
+                                    notfound2=1
+                                elif j> len(self.ListOfColumns_3):
+                                    notfound2=1
+                                j = j + 1
+                        #if len(str(self.s_dict['xy_y2column']).encode(locale.getdefaultlocale()[1])):# Show the last selected xyplot y2-column in the ListOfColumns_4
+                        if len(unicode(self.s_dict['xy_y2column'])):# Show the last selected xyplot y2-column in the ListOfColumns_4 #MacOSX fix1
+                            notfound2=0 
+                            j=0
+                            while notfound2==0:
+                                self.ListOfColumns_4.setCurrentIndex(j)
+                                #if self.ListOfColumns_4.currentText() == str(self.s_dict['xy_y2column']).encode(locale.getdefaultlocale()[1]):
+                                if self.ListOfColumns_4.currentText() == unicode(self.s_dict['xy_y2column']):#MacOSX fix1
+                                    notfound2=1
+                                elif j> len(self.ListOfColumns_4):
+                                    notfound2=1
+                                j = j + 1
+                        #if len(str(self.s_dict['xy_y3column']).encode(locale.getdefaultlocale()[1])):#Show the last selected xyplot y3-column in the ListOfColumns_5
+                        if len(unicode(self.s_dict['xy_y3column'])):#MacOSX fix1
+                            notfound2=0 
+                            j=0
+                            while notfound2==0:
+                                self.ListOfColumns_5.setCurrentIndex(j)
+                                #if self.ListOfColumns_5.currentText() == str(self.s_dict['xy_y3column']).encode(locale.getdefaultlocale()[1]):
+                                if self.ListOfColumns_5.currentText() == unicode(self.s_dict['xy_y3column']):#MacOSX fix1
+                                    notfound2=1
+                                elif j> len(self.ListOfColumns_5):
+                                    notfound2=1
+                                j = j + 1
+                    elif i> len(self.ListOfTables_2):
+                        notfound=1
+                    i = i + 1
+
+            if unicode(self.s_dict['xydotmarkers'])=='2':# If the XYPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
+                self.checkBoxDataPoints_2.setChecked(True)
+            else:
+                self.checkBoxDataPoints_2.setChecked(False)
+                
+            if len(unicode(self.s_dict['stratigraphytable'])):#If there is a last selected stratigraphytable, then it is selected again in the combobox ListOfTables #MacOSX fix1
+                notfound=0 
+                i=0
+                while notfound==0:
+                    self.ListOfTables_3.setCurrentIndex(i)
+                    #if self.ListOfTables_3.currentText() == str(self.s_dict['stratigraphytable']).encode(locale.getdefaultlocale()[1]):
+                    if self.ListOfTables_3.currentText() == unicode(self.s_dict['stratigraphytable']):#MacOSX fix1
+                        self.StratigraphyTableUpdated()        # Perform a sanity check of the table
+                        notfound=1
+                    elif i> len(self.ListOfTables_3):
+                        notfound=1
+                    i = i + 1
+                
+            if len(unicode(self.s_dict['wqualtable'])):# If there is a last selected table, then it is selected again in the combobox ListOfTables #MacOSX fix1
+                notfound=0 
+                i=0
+                while notfound==0:
+                    self.ListOfTables_WQUAL.setCurrentIndex(i)
+                    #if self.ListOfTables_WQUAL.currentText() == str(self.s_dict['wqualtable']).encode(locale.getdefaultlocale()[1]):
+                    if self.ListOfTables_WQUAL.currentText() == unicode(self.s_dict['wqualtable']):#MacOSX fix1
+                        notfound=1
+                        self.WQUALTableUpdated()    # Fill the given combobox with columns from the given table and performs a test
+                        #if len(str(self.s_dict['wqual_paramcolumn']).encode(locale.getdefaultlocale()[1])):
+                        if len(unicode(self.s_dict['wqual_paramcolumn'])):#MacOSX fix1
+                            notfound2=0 
+                            j=0
+                            while notfound2==0:
+                                self.ListOfColumns_WQUALPARAM.setCurrentIndex(j)
+                                #if self.ListOfColumns_WQUALPARAM.currentText() == str(self.s_dict['wqual_paramcolumn']).encode(locale.getdefaultlocale()[1]):
+                                if self.ListOfColumns_WQUALPARAM.currentText() == unicode(self.s_dict['wqual_paramcolumn']):#MacOSX fix1
+                                    notfound2=1
+                                elif j> len(self.ListOfColumns_WQUALPARAM):
+                                    notfound2=1
+                                j = j + 1
+                        #if len(str(self.s_dict['wqual_valuecolumn']).encode(locale.getdefaultlocale()[1])):# Show the last selected xyplot y2-column in the ListOfColumns_4
+                        if len(unicode(self.s_dict['wqual_valuecolumn'])):# Show the last selected xyplot y2-column in the ListOfColumns_4 #MacOSX fix1
+                            notfound2=0 
+                            j=0
+                            while notfound2==0:
+                                self.ListOfColumns_WQUALVALUE.setCurrentIndex(j)
+                                #if self.ListOfColumns_WQUALVALUE.currentText() == str(self.s_dict['wqual_valuecolumn']).encode(locale.getdefaultlocale()[1]):
+                                if self.ListOfColumns_WQUALVALUE.currentText() == unicode(self.s_dict['wqual_valuecolumn']):#MacOSX fix1
+                                    notfound2=1
+                                elif j> len(self.ListOfColumns_WQUALVALUE):
+                                    notfound2=1
+                                j = j + 1
+                        #if len(str(self.s_dict['wqual_unitcolumn']).encode(locale.getdefaultlocale()[1])):
+                        if len(unicode(self.s_dict['wqual_unitcolumn'])):#MacOSX fix1
+                            notfound2=0 
+                            j=0
+                            while notfound2==0:
+                                self.ListOfColumns_WQUALUNIT.setCurrentIndex(j)
+                                #if self.ListOfColumns_WQUALUNIT.currentText() == str(self.s_dict['wqual_unitcolumn']).encode(locale.getdefaultlocale()[1]):
+                                if self.ListOfColumns_WQUALUNIT.currentText() == unicode(self.s_dict['wqual_unitcolumn']):#MacOSX fix1
+                                    notfound2=1
+                                elif j> len(self.ListOfColumns_WQUALUNIT):
+                                    notfound2=1
+                                j = j + 1
+                        #if len(str(self.s_dict['wqual_sortingcolumn']).encode(locale.getdefaultlocale()[1])):# Show the last selected xyplot y3-column in the ListOfColumns_5
+                        if len(unicode(self.s_dict['wqual_sortingcolumn'])):# Show the last selected xyplot y3-column in the ListOfColumns_5 #MacOSX fix1
+                            notfound2=0 
+                            j=0
+                            while notfound2==0:
+                                self.ListOfColumns_WQUALSORTING.setCurrentIndex(j)
+                                #if self.ListOfColumns_WQUALSORTING.currentText() == str(self.s_dict['wqual_sortingcolumn']).encode(locale.getdefaultlocale()[1]):
+                                if self.ListOfColumns_WQUALSORTING.currentText() == unicode(self.s_dict['wqual_sortingcolumn']): #MacOSX fix1
+                                    notfound2=1
+                                elif j> len(self.ListOfColumns_WQUALSORTING):
+                                    notfound2=1
+                                j = j + 1
+                    elif i> len(self.ListOfTables_WQUAL):
+                        notfound=1
+                    i = i + 1
+
+    def loadTablesFromDB(self): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
         # start with cleaning comboboxes before filling with new entries
         self.ListOfTables.clear()    
@@ -256,9 +458,10 @@ class midvsettings(QDialog, Ui_Dialog):     #THE CLASS IS ONLY TO DEAL WITH THE 
         self.ListOfTables_3.clear()    
         self.ListOfTables_WQUAL.clear()    
 
-        conn = sqlite.connect( str(self.database) )
+        #conn = sqlite.connect( str(self.database) )
+        conn = sqlite.connect(unicode(self.database))#encoding cleanup
         cursor = conn.cursor()
-        rs=cursor.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""" )  #SQL statement to get the relevant tables in the spatialite database
+        rs=cursor.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in('geom_cols_ref_sys','geometry_columns','geometry_columns_auth','spatial_ref_sys','spatialite_history','sqlite_sequence','sqlite_stat1','views_geometry_columns','virts_geometry_columns','geometry_columns_statistics','views_geometry_columns_statistics','virts_geometry_columns_statistics' ,'geometry_columns','spatialindex','SpatialIndex','geometry_columns_fields_infos','geometry_columns_time','sql_statements_log','vector_layers','vector_layers_auth','vector_layers_field_infos','vector_layers_statistics','views_geometry_columns_auth','views_geometry_columns_field_infos','geometry_columns_field_infos','virts_geometry_columns_auth','virts_geometry_columns_field_infos' )) ORDER BY tbl_name""" )  #SQL statement to get the relevant tables in the spatialite database
         #self.dbTables = {} 
         self.ListOfTables.addItem('')
         self.ListOfTables_2.addItem('')
@@ -376,13 +579,15 @@ class midvsettings(QDialog, Ui_Dialog):     #THE CLASS IS ONLY TO DEAL WITH THE 
         """ This method returns a list with all the columns in the table"""
         if len(table)>0 and len(self.database)>0:            # Should not be needed since the function never should be called without existing table...
             #QMessageBox.information(None, "info", "now going for columns in table "+  str(table))    # DEBUGGING
-            conn = sqlite.connect(str(self.database))  
+            #conn = sqlite.connect(str(self.database))
+            conn = sqlite.connect(unicode(self.database)) #encoding cleanup
             curs = conn.cursor()
             #sql = r"""PRAGMA table_info('"""  + str(self.Table) + """')""" #Did not really work as expected
             sql = r"""SELECT * FROM '"""
             sql += str(table)
             sql += """'"""     
-            sql2 = str(sql).encode(locale.getdefaultlocale()[1])  #To get back to uniciode-string        
+            #sql2 = str(sql).encode(locale.getdefaultlocale()[1])  #To get back to uniciode-string
+            sql2 = unicode(sql)#To get back to uniciode-string #MacOSX fix1
             rs = curs.execute(sql2)  #Send the SQL statement to get the columns in the table            
             columns = {} 
             columns = [tuple[0] for tuple in curs.description]

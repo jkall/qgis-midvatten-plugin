@@ -48,7 +48,7 @@ class drillreport():        # general observation point info for the selected ob
         else:
             rpt += r"""</h3><img src="for_general_report.png" /><br><img src='"""
         rpt += logopath
-        rpt +="""' /></TD><TD WIDTH=85%><TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-before: always"><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>""" 
+        rpt +="""' /></TD><TD WIDTH=85%><TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-before: always"><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
         if  locale.getdefaultlocale()[0] == 'sv_SE':
             rpt += u'Allmän information' 
         else:
@@ -58,7 +58,8 @@ class drillreport():        # general observation point info for the selected ob
         f.write(rpt2)
         
         # GENERAL DATA UPPER LEFT QUADRANT
-        GeneralData = self.GetData(str(settingsdict['database']).encode(locale.getdefaultlocale()[1]), obsid, 'obs_points', 'n')
+        #GeneralData = self.GetData(str(settingsdict['database']).encode(locale.getdefaultlocale()[1]), obsid, 'obs_points', 'n')
+        GeneralData = self.GetData(unicode(settingsdict['database']), obsid, 'obs_points', 'n')#MacOSX fix1
         CRS = self.returnunicode(utils.sql_load_fr_db(r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""")[0][0]) #1st we need crs
         CRSname = self.returnunicode(utils.sql_load_fr_db(r"""SELECT ref_sys_name FROM spatial_ref_sys where srid =""" + CRS)[0][0]) # and crs name
         if  locale.getdefaultlocale()[0] == 'sv_SE':
@@ -68,7 +69,7 @@ class drillreport():        # general observation point info for the selected ob
         rpt2 = reportdata_1.encode("utf-8")
         f.write(rpt2)
 
-        rpt = r"""</TABLE></TD><TD WIDTH=50%><P><U><B>""" 
+        rpt = r"""</TABLE></TD><TD WIDTH=50%><P><U><B>"""
         if  locale.getdefaultlocale()[0] == 'sv_SE':
             rpt += u'Lagerföljd' 
         else:
@@ -78,7 +79,8 @@ class drillreport():        # general observation point info for the selected ob
         f.write(rpt2)        
 
         # STRATIGRAPHY DATA UPPER RIGHT QUADRANT
-        StratData = self.GetData(str(settingsdict['database']).encode(locale.getdefaultlocale()[1]), obsid, 'stratigraphy', 'n')
+        #StratData = self.GetData(str(settingsdict['database']).encode(locale.getdefaultlocale()[1]), obsid, 'stratigraphy', 'n')
+        StratData = self.GetData(unicode(settingsdict['database']), obsid, 'stratigraphy', 'n') #MacOSX fix1
         if  locale.getdefaultlocale()[0] == 'sv_SE':
             reportdata_2 = self.rpt_upper_right_sv(StratData)
         else:
@@ -110,7 +112,8 @@ class drillreport():        # general observation point info for the selected ob
         f.write(rpt2)
 
         # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
-        statistics = self.GetStatistics(str(settingsdict['database']).encode(locale.getdefaultlocale()[1]), obsid)
+        #statistics = self.GetStatistics(str(settingsdict['database']).encode(locale.getdefaultlocale()[1]), obsid)
+        statistics = self.GetStatistics(unicode(settingsdict['database']), obsid)#MacOSX fix1
         if  locale.getdefaultlocale()[0] == 'sv_SE':
             reportdata_4 = self.rpt_lower_right_sv(statistics)
         else:

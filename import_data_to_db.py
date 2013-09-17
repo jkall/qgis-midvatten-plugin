@@ -42,6 +42,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.recstoimport = 0
         self.recsinfile = 0
         self.temptablename = ''
+        self.charsetchoosen = ('','')
         
     def obslines_import(self): 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
@@ -305,7 +306,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         obsidstobeimported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[idcol][1],self.temptableName))
         for id in obsidstobeimported:
             if id in possibleobsids:
-                qgis.utils.iface.messageBar().pushMessage("Warning","""obsid=%s do already exist in the database and will not be imported again!"""%str(id[0]),1)
+                qgis.utils.iface.messageBar().pushMessage("Warning","""obsid=%s do already exist in the database and will not be imported again!"""%str(id[0]),1,duration=10)
 
     def MultipleFieldDuplicates(self,NoCols,GoalTable,sqlremove,MajorTable,sqlNoOfdistinct): #For secondary tables linking to obs_points and obs_lines: Sanity checks and removes duplicates
         """perform some sanity checks of the imported data and removes duplicates and empty records"""
@@ -366,8 +367,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
     def selectcsv(self): # general importer
         """Select the csv file, user must also tell what charset to use"""
-        charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + locale.getdefaultlocale()[1] + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
-        if charsetchoosen and not (charsetchoosen[0]==0 or charsetchoosen[0]==''):
+        try:#MacOSX fix2
+            localencoding = locale.getdefaultlocale()[1]
+            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
+        except:
+            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal,'utf-8')
+        if self.charsetchoosen and not (self.charsetchoosen[0]==0 or self.charsetchoosen[0]==''):
             self.csvpath = PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")
             if not self.csvpath or self.csvpath=='': 
                 return
@@ -376,7 +381,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 if not csvlayer.isValid():
                     qgis.utils.iface.messageBar().pushMessage("Failure","Impossible to Load File in QGis:\n" + str(self.csvpath), 2)
                     return False
-                csvlayer.setProviderEncoding(str(charsetchoosen[0]))                 #Set the Layer Encoding
+                csvlayer.setProviderEncoding(str(self.charsetchoosen[0]))                 #Set the Layer Encoding
                 return csvlayer
 
     def qgiscsv2sqlitetable(self): # general importer
@@ -386,7 +391,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         ExistingNames=utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""")
         for existingname in ExistingNames:  #this should only be needed if an earlier import failed
             if str(existingname[0]) == str(self.temptableName): #if so, propose to rename the temporary import-table
-                reponse=PyQt4.QtGui.QMessageBox.question(None, "Warning - Table name confusion!",'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your w_qual_lab table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''%(self.temptableName,self.temptableName,self.temptableName), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
+                reponse=PyQt4.QtGui.QMessageBox.question(None, "Warning - Table name confusion!",'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''%(self.temptableName,self.temptableName,self.temptableName), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
                 if reponse==PyQt4.QtGui.QMessageBox.Yes:
                     self.temptableName='%s_2'%self.temptableName
                 else:
@@ -427,11 +432,16 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         # Retreive every feature from temporary .csv qgis csvlayer and write it to the temporary table in sqlite (still only text fields unless user specified a .csvt file)
         for feature in self.csvlayer.getFeatures(): 
             values_perso=[]
-            for attr in feature.attributes(): 
-                values_perso.append(str(attr)) 
+            for attr in feature.attributes():
+                values_perso.append(attr) # attr is supposed to be unicode and should be kept like that, sometimes though it ends up being a byte string, do not know why....
             #Create line in DB table
             if len(fields)>0:   # NOTE CANNOT USE utils.sql_alter_db() SINCE THE OPTION OF SENDING 2 ARGUMENTS TO .execute IS USED BELOW
-                curs.execute("""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso])) 
+                #please note the usage of ? for parameter substitution - highly recommended
+                #curs.execute("""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso]))
+                try:
+                    curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([value for value in values_perso])) # Assuming value is unicode, send it as such to sqlite
+                except:
+                    curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso])) #in case of errors, the value must be a byte string, then try to convert to unicode
                 self.status = 'True'
             else: #no attribute Datas
                 qgis.utils.iface.messageBar().pushMessage("No data found!!","No data will be imported!!", 2)
@@ -449,6 +459,7 @@ class wlvlloggimportclass():
         self.temptableName = 'temporary_logg_lvl'
         self.status = 'False' #Changed to True if uploadQgisVectorLayer succeeds
         self.columns=[]
+        self.charsetchoosen = ('','')
 
         # Find obsid for the selected object
         self.obsid = utils.getselectedobjectnames()     #A list of length 1! To get the acutal ID, call self.obsid[0]
@@ -502,8 +513,12 @@ class wlvlloggimportclass():
     def selectcsv(self):     
         """Select the csv file"""
         # USER MUST ALSO TELL WHAT CHARSET TO USE!! 
-        charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\nutf-8, cp1250, cp1252 or iso-8859-15.\n\nOn your computer " + locale.getdefaultlocale()[1] + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
-        if charsetchoosen and not (charsetchoosen[0]==0 or charsetchoosen[0]==''):
+        try:#MacOSX fix2
+            localencoding = locale.getdefaultlocale()[1]
+            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
+        except:
+            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal,'utf-8')
+        if self.charsetchoosen and not (self.charsetchoosen[0]==0 or self.charsetchoosen[0]==''):
             self.csvpath = PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")
             if not self.csvpath or self.csvpath=='': 
                 return
@@ -513,7 +528,7 @@ class wlvlloggimportclass():
                     utils.pop_up_info("Impossible to Load File in QGis:\n" + str(self.csvpath))
                     return False
                 #Set Layer Encoding
-                csvlayer.setProviderEncoding(str(charsetchoosen[0]))
+                csvlayer.setProviderEncoding(str(self.charsetchoosen[0]))
                 return csvlayer
         
     def uploadLoggerdataToSplite(self):

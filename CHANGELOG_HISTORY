@@ -7,6 +7,12 @@ THIS FILE ONLY FOR HISTORICAL RESONS, IF I NEED TO PICK UP A PARTICULAR VERSION 
 [+] add
 [-] remove/bugfix
 
+21.08.2013 - version 1.0.0
+        - Fixes due to SIP API update for QGIS 2.0
+        - Updates due to SpatiaLite 4.x (new db - lower case geometry columns and more)
+        - Bugfixes and enhancements (data importer, form logics, labelling of default layers, stratigraphy plots etc. etc.)
+        - Added english terms and abbreviations for soils (geoshort in stratigraphy) 
+
 01.03.2013 - version 0.7.8
     [!] Production use version for qgis version >1.9.0-130  (Please note, only from qgis build december 2012 and up.)
     [*] Small Qt UI fix. Also smaller cleanup of modules.

@@ -31,10 +31,11 @@ from xyplot import XYPlot
 from wqualreport import wqualreport
 from loaddefaultlayers import loadlayers
 import midvatten_utils as utils         # Whenever some global midvatten_utilities are needed
-from definitions import midvatten_defs as defs
+from definitions import midvatten_defs
 #from about.AboutDialog import AboutDialog
 from HtmlDialog import HtmlDialog
 import sys
+
 #sys.path.append(os.path.dirname(os.path.abspath(__file__))) # To enable loading of modules from inside the plugin directory
 
 class midvatten:
@@ -43,9 +44,9 @@ class midvatten:
         self.iface = iface
         # settings...
         self.readingSettings = False # To enable resetsettings
-        self.settingsdict = self.createsettingsdict()# calling for thee method that defines an empty dictionary of settings
+        self.settingsdict = self.createsettingsdict()# calling for the method that defines an empty dictionary of settings
         #self.loadSettings()    # stored settings are loaded  NOTE: From ver 0.3.2 it is no longer possible to load settings here
-        #The settings are stored in the qgis project file and thus cannot be loaded when qgis is starting (and plugni initialized) 
+        #The settings are stored in the qgis project file and thus cannot be loaded when qgis is starting (and plugin initialized) 
         #The settings must be loaded after the qgis project is loaded - thus settings is loaded when needed (and this is checked in several methods below)
         self.settingsareloaded = False # To make sure settings are loaded once and only once
         
@@ -203,6 +204,10 @@ class midvatten:
         #self.iface.addPluginToMenu("&Midvatten", self.actionabout)
         menuBar = self.iface.mainWindow().menuBar()
         menuBar.addMenu(self.menu)
+
+        # QGIS iface connections
+        self.iface.projectRead.connect(self.loadSettings)
+        self.iface.newProjectCreated.connect(self.resetSettings)
         
     def unload(self):    
         # Remove the plugin menu items and icons
@@ -230,9 +235,9 @@ class midvatten:
     def about(self):   
         #filenamepath = os.path.dirname(__file__) + "/metadata.txt"
         filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
-        iniText = QSettings(filenamepath , QSettings.IniFormat)
+        iniText = QSettings(filenamepath , QSettings.IniFormat)#This method seems to return a list of unicode strings BUT it seems as if the encoding from the byte strings in the file is not utf-8, hence there is need for special encoding, see below
         verno = str(iniText.value('version'))
-        author = str(iniText.value('author').encode('cp1252'))#.encode due to encoding probs
+        author = iniText.value('author').encode('cp1252')#.encode due to encoding probs
         email = str(iniText.value('email'))
         homepage = str(iniText.value('homepage'))
 
@@ -260,7 +265,7 @@ class midvatten:
         utils.pop_up_info("not yet implemented") #for debugging
 
     def createsettingsdict(self):# Here is where an empty settings dictionary is defined
-        dictionary = defs.settingsdict()
+        dictionary = midvatten_defs.settingsdict()
         return dictionary
 
     def drillreport(self):             
@@ -549,6 +554,7 @@ class midvatten:
             
     def loadSettings(self):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
         """read plugin settings from QgsProject instance"""
+        self.settingsdict = self.createsettingsdict()
         self.readingSettings = True  
         # map data types to function names
         prj = QgsProject.instance()
@@ -567,10 +573,12 @@ class midvatten:
             try:
                 func = functions[dataType]
                 output[key] = func("Midvatten", key)
+                self.settingsdict[key] = output[key][0]
             except KeyError:
-                utils.pop_up_info("Settings key does not exist: "+key)        
-        for (key, value) in output.items():
-            self.settingsdict[key] = output[key][0]
+                self.iface.messageBar().pushMessage("Info","Settings key %s does not exist in project file."%str(key), 0,duration=30)
+                #utils.pop_up_info("Settings key does not exist: "+key)        
+        #for (key, value) in output.items():
+        #    self.settingsdict[key] = output[key][0]
             #utils.pop_up_info("in self.settingsdict is loaded Key: "+key+"\n and value : "+str(output[key]))        # DEBUGGING
         self.readingSettings = False
         self.settingsareloaded = True
@@ -657,7 +665,7 @@ class midvatten:
         """Choose spatialite database and relevant table"""
         if self.settingsareloaded == False:    # If the first thing the user does is to check settings, then load settings from project file
             self.loadSettings()    
-        dlg = midvsettings(self.iface.mainWindow(), self.settingsdict)  # dlg is an instance of midvsettings (Probably not needed to send QDialog and Ui_Dialog as arguments)
+        dlg = midvsettings(self.iface.mainWindow(), self.settingsdict)  # dlg is an instance of midvsettings
         if dlg.exec_() == QDialog.Accepted:      # When the settins dialog is closed, all settings are stored in the dictionary
             self.settingsdict['database'] = dlg.txtpath.text()    
             self.settingsdict['tstable'] = dlg.ListOfTables.currentText()
@@ -690,26 +698,24 @@ class midvatten:
         else:
             if not (self.settingsdict['database'] == ''):
                 layer = qgis.utils.iface.activeLayer()
-                if str(layer.name()).encode('utf-8')=='obs_points':     #IF LAYER obs_points IS SELECTED
+                if layer.name()==u'obs_points':     #IF LAYER obs_points IS SELECTED
                     sanity = utils.askuser("AllSelected","""Do you want to update coordinates\nfor All or Selected objects?""")
                     if sanity.result == 0:      #IF USER WANT ALL OBJECTS TO BE UPDATED
                         sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor ALL objects in the obs_points table.\nProceed?""")
                         if sanity.result==1:
-                            ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")
+                            ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")#a list of unicode strings is returned
                             observations = [None]*len(ALL_OBS)
                             i = 0
                             for obs in ALL_OBS:
-                                observations[i] = str(obs[0]).encode('utf-8')
-                                #utils.pop_up_info(str(observations[i])) #DEBUGGING
+                                observations[i] = obs[0]
                                 i+=1
-                            #utils.pop_up_info(str(observations)) #DEBUGGING
                             from coords_and_position import updatecoordinates
                             updatecoordinates(observations)
                     elif sanity.result == 1:    #IF USER WANT ONLY SELECTED OBJECTS TO BE UPDATED
                         sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor SELECTED objects in the obs_points table.\nProceed?""")
                         if sanity.result==1:
                             if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!
-                                observations = utils.getselectedobjectnames()
+                                observations = utils.getselectedobjectnames()#a list of unicode strings is returned
                                 from coords_and_position import updatecoordinates
                                 updatecoordinates(observations)                        
                 else:
@@ -728,7 +734,7 @@ class midvatten:
         else:
             if not (self.settingsdict['database'] == ''):
                 layer = qgis.utils.iface.activeLayer()
-                if str(layer.name()).encode('utf-8')=='obs_points':     #IF LAYER obs_points IS SELECTED
+                if layer.name()==u'obs_points':     #IF LAYER obs_points IS SELECTED
                     sanity = utils.askuser("AllSelected","""Do you want to update position\nfor All or Selected objects?""")
                     if sanity.result == 0:      #IF USER WANT ALL OBJECTS TO BE UPDATED
                         sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nALL objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")
@@ -737,10 +743,8 @@ class midvatten:
                             observations = [None]*len(ALL_OBS)
                             i = 0
                             for obs in ALL_OBS:
-                                observations[i] = str(obs[0]).encode('utf-8')
-                                #utils.pop_up_info(str(observations[i])) #DEBUGGING
+                                observations[i] = obs[0]
                                 i+=1
-                            #utils.pop_up_info(str(observations)) #DEBUGGING
                             from coords_and_position import updateposition
                             updateposition(observations)
                     elif sanity.result == 1:    #IF USER WANT ONLY SELECTED OBJECTS TO BE UPDATED

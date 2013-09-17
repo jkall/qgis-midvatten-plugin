@@ -58,7 +58,7 @@ def find_layer(layer_name):
 
     return None
 
-def getselectedobjectnames():
+def getselectedobjectnames():#returns a list of obsid (as unicode)
     selectedobs = qgis.utils.iface.activeLayer().selectedFeatures()
     kolumnindex = qgis.utils.iface.activeLayer().dataProvider().fieldNameIndex('obsid')  #OGR data provier is used to find index for column named 'obsid'
     if kolumnindex == -1:
@@ -67,7 +67,7 @@ def getselectedobjectnames():
     i=0
     for k in selectedobs:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
         attributes = selectedobs[i]
-        observations[i] = str(attributes[kolumnindex]) # Copy value in column obsid in the attribute list
+        observations[i] = attributes[kolumnindex] # value in column obsid is stored as unicode
         i+=1
     return observations
     
@@ -105,13 +105,12 @@ def pop_up_info(msg='',title='Information',parent=None):
     """Display an info message via Qt box"""
     QtGui.QMessageBox.information(parent, title, '%s' % (msg))
 
-def sql_load_fr_db(sql=''):
+def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
+    #qgis.utils.iface.messageBar().pushMessage("Debug",sql, 0,duration=30)#debug
     dbpath = QgsProject.instance().readEntry("Midvatten","database")
-    #utils.pop_up_info(str(dbpath[0]))   # debugging
-    conn = sqlite.connect(str(dbpath[0]),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+    conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)#dbpath[0] is unicode already #MacOSC fix1 
     curs = conn.cursor()
-    sql2 = str(sql).encode('utf-8') 
-    resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
+    resultfromsql = curs.execute(sql) #Send SQL-syntax to cursor #MacOSX fix1
     result = resultfromsql.fetchall()
     resultfromsql.close()
     conn.close()
@@ -122,7 +121,7 @@ def sql_alter_db(sql=''):
     #utils.pop_up_info(str(dbpath[0]))   # debugging
     conn = sqlite.connect(str(dbpath[0]),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
     curs = conn.cursor()
-    sql2 = str(sql).encode('utf-8') 
+    sql2 = sql 
     curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
     resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
     result = resultfromsql.fetchall()

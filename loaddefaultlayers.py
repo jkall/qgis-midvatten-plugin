@@ -56,9 +56,9 @@ class loadlayers():
         except: #olddstyle
             MyGroup = self.legend.addGroup ("Midvatten_OBS_DB")
         uri = QgsDataSourceURI()
-        uri.setDatabase(str(self.settingsdict['database']).encode(locale.getdefaultlocale()[1]))
+        uri.setDatabase(self.settingsdict['database'])#MacOSX fix1 #earlier sent byte string, now intending to send unicode string
         for tablename in self.default_nonspatlayers:    # first the non-spatial tables, THEY DO NOT ALL HAVE CUSTOM UI FORMS
-            firststring= 'dbname="' + str(self.settingsdict['database']).encode(locale.getdefaultlocale()[1]) + '" table="' + tablename + '"'
+            firststring= 'dbname="' + self.settingsdict['database'] + '" table="' + tablename + '"'#MacOSX fix1  #earlier sent byte string, now unicode
             layer = QgsVectorLayer(firststring,tablename, 'spatialite')   # Adding the layer as 'spatialite' and not ogr vector layer is preferred
             if not layer.isValid():
                 utils.pop_up_info("failed to load layer " + tablename) #debugging
@@ -108,6 +108,8 @@ class loadlayers():
                 QgsMapLayerRegistry.instance().addMapLayers([layer])
                 group_index = self.legend.groups().index('Midvatten_OBS_DB')   # SIPAPI UPDATE 2.0
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
+                if tablename == 'w_lvls_last_geom':#we do not want w_lvls_last_geom to be visible by default
+                    self.legend.setLayerVisible(layer,False)
 
     def getGroupIndex(self, iface, groupName):      #This function only due to old limitations in qgis version <1.9.0-65  No longer used!!
         relationList = iface.legendInterface().groupLayerRelationship()

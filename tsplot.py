@@ -44,7 +44,8 @@ class TimeSeriesPlot:
         if(layer):
             nF = layer.selectedFeatureCount()
             if (nF > 0):
-                conn = sqlite.connect(str(self.settingsdict['database']).encode(locale.getdefaultlocale()[1]),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+                #conn = sqlite.connect(str(self.settingsdict['database']).encode(locale.getdefaultlocale()[1]),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+                conn = sqlite.connect(unicode(self.settingsdict['database']),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES) #MacOSX fix1
                 # skapa en cursor
                 curs = conn.cursor()
                 # Load all selected observation points
@@ -62,13 +63,16 @@ class TimeSeriesPlot:
                     obsid = str(ob[i][kolumnindex]) 
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
                     sql =r"""SELECT date_time as 'date [datetime]', """
-                    sql += str(self.settingsdict['tscolumn']).encode(locale.getdefaultlocale()[1])
+                    #sql += str(self.settingsdict['tscolumn']).encode(locale.getdefaultlocale()[1])
+                    sql += unicode(self.settingsdict['tscolumn']) #MacOSX fix1
                     sql += """ FROM """
-                    sql += str(self.settingsdict['tstable']).encode(locale.getdefaultlocale()[1])
+                    #sql += str(self.settingsdict['tstable']).encode(locale.getdefaultlocale()[1])
+                    sql += unicode(self.settingsdict['tstable']) #MacOSX fix1
                     sql += r""" WHERE obsid = '"""    
                     sql += obsid   # The result has format 'Qstring' - no good
                     sql += """' ORDER BY date_time """
-                    sql2 = str(sql).encode(locale.getdefaultlocale()[1])  #To get back to uniciode-string
+                    #sql2 = str(sql).encode(locale.getdefaultlocale()[1])  #To get back to uniciode-string
+                    sql2 = unicode(sql)  #To get back to uniciode-string #MacOSX fix1
                     rs = curs.execute(sql2) #Send SQL-syntax to cursor
                     recs = rs.fetchall()  # All data are stored in recs
                     """Transform data to a numpy.recarray"""
@@ -83,13 +87,16 @@ class TimeSeriesPlot:
                         myTimestring.append(table2.date_time[j])
                         j = j + 1
                     numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
-                    if str(self.settingsdict['tsdotmarkers']).encode(locale.getdefaultlocale()[1])=='2':            # If the checkbox is checked - markers will be plotted
-                        if str(self.settingsdict['tsstepplot']).encode(locale.getdefaultlocale()[1])=='2':    # If the checkbox is checked - draw a step plot
+                    #if str(self.settingsdict['tsdotmarkers']).encode(locale.getdefaultlocale()[1])=='2': # If the checkbox is checked - markers will be plotted
+                    if unicode(self.settingsdict['tsdotmarkers'])=='2': # If the checkbox is checked - markers will be plotted #MacOSX fix1
+                        #if str(self.settingsdict['tsstepplot']).encode(locale.getdefaultlocale()[1])=='2': # If the checkbox is checked - draw a step plot
+                        if unicode(self.settingsdict['tsstepplot'])=='2': # If the checkbox is checked - draw a step plot #MacOSX fix1
                             p[i], = ax.plot_date(numtime, table2.values, marker = 'o', linestyle = '-',  drawstyle='steps-pre', label=obsid)    # PLOT!!
                         else:
                             p[i], = ax.plot_date(numtime, table2.values, 'o-',  label=obsid)
                     else:                                                                        # NO markers wil be plotted, , just a line
-                        if str(self.settingsdict['tsstepplot']).encode(locale.getdefaultlocale()[1])=='2':    # If the checkbox is checked - draw a step plot
+                        #if str(self.settingsdict['tsstepplot']).encode(locale.getdefaultlocale()[1])=='2': # If the checkbox is checked - draw a step plot
+                        if unicode(self.settingsdict['tsstepplot'])=='2': # If the checkbox is checked - draw a step plot #MacOSX fix1
                             #utils.pop_up_info("stepplot")        #debugging
                             p[i], = ax.plot_date(numtime, table2.values, marker = 'None', linestyle = '-',  drawstyle='steps-pre', label=obsid)    # PLOT!!
                         else:
@@ -107,8 +114,10 @@ class TimeSeriesPlot:
                 ax.grid(True)
                 ax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
                 fig.autofmt_xdate()
-                ax.set_ylabel(str(self.settingsdict['tscolumn']).encode(locale.getdefaultlocale()[1]))
-                ax.set_title(str(self.settingsdict['tstable']).encode(locale.getdefaultlocale()[1]))  
+                #ax.set_ylabel(str(self.settingsdict['tscolumn']).encode(locale.getdefaultlocale()[1]))
+                ax.set_ylabel(unicode(self.settingsdict['tscolumn'])) #MacOSX fix1
+                #ax.set_title(str(self.settingsdict['tstable']).encode(locale.getdefaultlocale()[1]))
+                ax.set_title(unicode(self.settingsdict['tstable']))#MacOSX fix1
                 leg = fig.legend(p, plabel, 'right')
                 frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
                 frame.set_facecolor('0.80')    # set the frame face color to light gray

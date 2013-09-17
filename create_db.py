@@ -37,9 +37,10 @@ class newdb():
     def CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
         # USER MUST SELECT CRS FIRST!! 
-        default_crs = 4326
         if locale.getdefaultlocale()[0]=='sv_SE':
             default_crs = 3006
+        else:
+            default_crs = 4326
         EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, "Select CRS", "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:",default_crs)
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         #uitls.pop_up_info(str(EPSGID[0]))
