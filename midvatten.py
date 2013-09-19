@@ -44,7 +44,7 @@ class midvatten:
         self.iface = iface
         # settings...
         self.readingSettings = False # To enable resetsettings
-        self.settingsdict = self.createsettingsdict()# calling for the method that defines an empty dictionary of settings
+        self.settingsdict = self.createsettingsdict()# calling for the method that defines an empty dictionary of settings NOTE!! byte strings in dict
         #self.loadSettings()    # stored settings are loaded  NOTE: From ver 0.3.2 it is no longer possible to load settings here
         #The settings are stored in the qgis project file and thus cannot be loaded when qgis is starting (and plugin initialized) 
         #The settings must be loaded after the qgis project is loaded - thus settings is loaded when needed (and this is checked in several methods below)
@@ -264,7 +264,7 @@ class midvatten:
             self.loadSettings()    
         utils.pop_up_info("not yet implemented") #for debugging
 
-    def createsettingsdict(self):# Here is where an empty settings dictionary is defined
+    def createsettingsdict(self):# Here is where an empty settings dictionary is defined, NOTE! byte strings in dictionary
         dictionary = midvatten_defs.settingsdict()
         return dictionary
 
@@ -747,13 +747,15 @@ class midvatten:
                                 i+=1
                             from coords_and_position import updateposition
                             updateposition(observations)
+                            layer.updateExtents()
                     elif sanity.result == 1:    #IF USER WANT ONLY SELECTED OBJECTS TO BE UPDATED
                         sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nSELECTED objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")
                         if sanity.result==1:
                             if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!
                                 observations = utils.getselectedobjectnames()
                                 from coords_and_position import updateposition
-                                updateposition(observations)                        
+                                updateposition(observations)
+                                layer.updateExtents()
                 else:
                     utils.pop_up_info("You have to select/activate obs_points layer!")
             else:

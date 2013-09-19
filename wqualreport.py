@@ -25,6 +25,7 @@ from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2
 import os
 import locale
 import midvatten_utils as utils  
+import codecs
 
 class wqualreport():        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     def __init__(self,layer, settingsdict = {}):
@@ -34,21 +35,21 @@ class wqualreport():        # extracts water quality data for selected objects, 
         observations = layer.selectedFeatures()
         i = 0
         reportpath = os.path.join(os.sep,os.path.dirname(__file__),"reports","w_qual_report.html")
-        f = open(reportpath, "wb" )
-        #f = codecs.open(reportpath, "wb", "utf-8")     # Check later...
+        #f = open(reportpath, "wb" )
+        f = codecs.open(reportpath, "wb", "utf-8")
 
         #write some initiating html
         #rpt = r""" <meta http-equiv="content-type" content="text/html; charset=latin-1" />"""  # NOTE, 'latin-1' is due to use on win machines
         rpt = r""" <meta http-equiv="content-type" content="text/html; charset=utf-8" />""" #NOTE, all report data must be in 'utf-8'
         rpt += "<html><body>"
         #rpt += "<table width=\"100%\" border=\"1\">\n"
-        rpt2 = rpt.encode("utf-8")
-        f.write(rpt2)
+        #rpt2 = rpt.encode("utf-8")
+        f.write(rpt)
 
         for object in observations:
             attributes = observations[i]
-            obsid = str(attributes[kolumnindex])
-            ReportData = self.GetData(unicode(self.settingsdict['database']), obsid)   # one observation at a time
+            obsid = attributes[kolumnindex]
+            ReportData = self.GetData(self.settingsdict['database'], obsid)   # one observation at a time
             if ReportData:
                 self.WriteHTMLReport(ReportData, f)
             i = i+1
@@ -68,41 +69,39 @@ class wqualreport():        # extracts water quality data for selected objects, 
         # Load all water quality parameters stored in two result columns: parameter, unit
         if not(unicode(self.settingsdict['wqual_unitcolumn']) ==''):          #If there is a a given column for unit 
             sql =r"""select distinct parameter, """
-            sql += unicode(self.settingsdict['wqual_unitcolumn'])
+            sql += self.settingsdict['wqual_unitcolumn']
             sql +=r""" from """
         else:                              # IF no specific column exist for unit
             sql =r"""select distinct parameter, parameter from """  # The twice selection of parameter is a dummy to keep same structure (2 cols) of sql-answer as if a unit column exists
-        sql += unicode(self.settingsdict['wqualtable'])
+        sql += self.settingsdict['wqualtable']
         sql += r""" where obsid = '"""
         sql += obsid  
         sql += r"""' ORDER BY parameter"""
         #sql2 = str(sql).encode('utf-8')  #To get back to unicode-string
-        sql2 = unicode(sql)  #To get back to unicode-string
-        parameters_cursor = curs.execute(sql2) #Send SQL-syntax to cursor
+        #sql2 = unicode(sql)  #To get back to unicode-string
+        parameters_cursor = curs.execute(sql) #Send SQL-syntax to cursor
         parameters = parameters_cursor.fetchall()
         if not parameters:
-            qgis.utils.iface.messageBar().pushMessage("Debug","Something is wrong, no parameters are found in table w_qual_lab for "+ unicode(obsid), 0 ,duration=10)#DEBUG
-            #QMessageBox.information(None,"Info", "Something is wrong, no parameters are found in table w_qual_lab for "+ str(obsid).encode('utf-8')) #debugging
+            qgis.utils.iface.messageBar().pushMessage("Debug","Something is wrong, no parameters are found in table w_qual_lab for "+ obsid, 0 ,duration=10)#DEBUG
             return False
 
         # Load all date_times, stored in two result columns: reportnr, date_time
-        if not (unicode(self.settingsdict['wqual_sortingcolumn']) == ''):          #If there is a a specific reportnr 
+        if not (self.settingsdict['wqual_sortingcolumn'] == ''):          #If there is a a specific reportnr 
             sql =r"""select distinct """
-            sql += unicode(self.settingsdict['wqual_sortingcolumn'])
+            sql += self.settingsdict['wqual_sortingcolumn']
             sql += r""", date_time from """      #including parameters
         else:                     # IF no specific column exist for report
             sql =r"""select distinct date_time, date_time from """      # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
-        sql += unicode(self.settingsdict['wqualtable'])
+        sql += self.settingsdict['wqualtable']
         sql += """ where obsid = '"""
         sql += obsid 
         sql += """' ORDER BY date_time"""
-        sql2 = unicode(sql) #To get back to unicode-string
-        date_times_cursor = curs.execute(sql2) #Send SQL-syntax to cursor,
+        #sql2 = unicode(sql) #To get back to unicode-string
+        date_times_cursor = curs.execute(sql) #Send SQL-syntax to cursor,
         date_times = date_times_cursor.fetchall()
 
         if not date_times:
-            qgis.utils.iface.messageBar().pushMessage("Debug","Something is wrong, no parameters are found in table w_qual_lab for "+ unicode(obsid), 0 ,duration=10)#DEBUG
-            #QMessageBox.information(None,"Info", "Something is wrong, no analyses are found in table w_qual_lab for " + str(obsid).encode('utf-8')) #debugging
+            qgis.utils.iface.messageBar().pushMessage("Debug","Something is wrong, no parameters are found in table w_qual_lab for "+ obsid, 0 ,duration=10)#DEBUG
             return
 
         ReportTable = ['']*(len(parameters)+2)    # Define size of ReportTable
@@ -112,45 +111,44 @@ class wqualreport():        # extracts water quality data for selected objects, 
         #Populate First 'column' w parameters
         parametercounter = 2    #First two rows are for obsid and date_time    
         for p, u in parameters:
-            if not(unicode(self.settingsdict['wqual_unitcolumn'])==''):
-                #utils.pop_up_info(p + " " + u)  #DEBUG
+            if not(self.settingsdict['wqual_unitcolumn']==''):
                 if u:
                     #ReportTable[parametercounter][0] = p.encode(locale.getdefaultlocale()[1]) + ", " +  u.encode(locale.getdefaultlocale()[1])
-                    ReportTable[parametercounter][0] = p.encode('utf-8') + ", " +  u.encode('utf-8')
+                    ReportTable[parametercounter][0] = p + ", " +  u
                 else: 
                     #ReportTable[parametercounter][0] = p.encode(locale.getdefaultlocale()[1])
-                    ReportTable[parametercounter][0] = p.encode('utf-8')
+                    ReportTable[parametercounter][0] = p
             else:
                 #ReportTable[parametercounter][0] = p.encode(locale.getdefaultlocale()[1])
-                ReportTable[parametercounter][0] = p.encode('utf-8')
+                ReportTable[parametercounter][0] = p
             parametercounter = parametercounter + 1
 
         #Populate First 'row' w obsid
         datecounter = 1    #First col is 'parametercolumn'
         for r, d in date_times: #date_times includes both report and date_time (or possibly date_time and date_time if there is no reportnr)
-            ReportTable[0][datecounter]=str(obsid).encode('utf-8') 
+            ReportTable[0][datecounter]=obsid 
             datecounter += 1
         
         datecounter=1    # first 'column' is for parameter names
         for k, v in date_times:    # Loop through all report    
             #if datecounter < 3: #debug
             parametercounter = 1    # first row is for obsid    
-            ReportTable[parametercounter][datecounter] = str(v).encode('utf-8') # v is date_time
+            ReportTable[parametercounter][datecounter] = v # v is date_time
             for p, u in parameters:
                 parametercounter = parametercounter + 1 # one 'row' down after date was stored
                 sql =r"""SELECT """
-                sql += unicode(self.settingsdict['wqual_valuecolumn'])
+                sql += self.settingsdict['wqual_valuecolumn']
                 sql += r""" from """
-                sql += unicode(self.settingsdict['wqualtable'])
+                sql += self.settingsdict['wqualtable']
                 sql += """ where obsid = '"""
-                sql += str(obsid).encode('utf-8')    # The string encoding  since obsid is QString 
+                sql += obsid
                 sql += """' and date_time = '"""
-                sql += str(v).encode('utf-8')        # v - date_time         This sql syntax is built up on a return from sqlite driver, thus we have to interpret it as utf-8 
-                if not(unicode(self.settingsdict['wqual_unitcolumn']) == '') and u:
+                sql += v 
+                if not(self.settingsdict['wqual_unitcolumn'] == '') and u:
                     sql += """' and parameter = '"""
                     sql += p
                     sql += """' and """
-                    sql += unicode(self.settingsdict['wqual_unitcolumn'])
+                    sql += self.settingsdict['wqual_unitcolumn']
                     sql += """ = '"""
                     sql += u
                     sql += """'"""
@@ -162,12 +160,14 @@ class wqualreport():        # extracts water quality data for selected objects, 
                 recs = rs.fetchall()  # All data are stored in recs
                 if recs:
                     try:
-                        the_value = str(recs[0][0]).encode('utf-8') # it should be utf-8 since that is default for sqlite db
+                        the_value = recs[0][0] #unicode should be return from pysqlite
                     except UnicodeError:
                         try:
-                            the_value = unicode(recs[0][0])
+                            the_value = unicode(recs[0][0])# if not, try converting to unicode
+                            qgis.utils.iface.messageBar().pushMessage("Note!","""Your db may contain characters with non-utf encoding, check the value %s which had to be converted to unicode!"""%the_value,0,duration=3)#debug
                         except UnicodeError:
-                            the_value = recs[0][0]  # last desperate attempt to read from db
+                            the_value = recs[0][0].encode('utf-8') #if still encoding problems, try convert to byte string 
+                            qgis.utils.iface.messageBar().pushMessage("Note!","""Your db may contain characters with non-utf encoding, check the value %s which had to be converted to utf-8 byte string!"""%the_value,0,duration=3)#debug
                         else: 
                             the_value = 'Value could not be loaded, check database!'    # if it fails, load this string to let user know
                     ReportTable[parametercounter][datecounter] =the_value
@@ -184,10 +184,10 @@ class wqualreport():        # extracts water quality data for selected objects, 
     def WriteHTMLReport(self, ReportData, f):            
         tabellbredd = 180 + 75*self.htmlcols
         rpt = "<table width=\""
-        rpt += str(tabellbredd).encode("utf-8") # set table total width from no of water quality analyses
+        rpt += str(tabellbredd) # set table total width from no of water quality analyses
         rpt += "\" border=\"1\">\n"
-        rpt2 = str(rpt).encode("utf-8")
-        f.write(rpt2)
+        #rpt2 = str(rpt).encode("utf-8")
+        f.write(rpt)
         counter = 0
         for sublist in ReportData:
             if counter <2:

@@ -27,7 +27,7 @@ from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2
 import os
 import locale
 import midvatten_utils as utils  
-#import codecs
+import codecs
 
 class drillreport():        # general observation point info for the selected object
     
@@ -35,8 +35,8 @@ class drillreport():        # general observation point info for the selected ob
          #open connection to report file
         reportpath = os.path.join(os.sep,os.path.dirname(__file__),"reports","drill_report.html")
         logopath = os.path.join(os.sep,os.path.dirname(__file__),"about","midvatten_logga.png")
-        f = open(reportpath, "wb" )
-        #f = codecs.open(reportpath, "wb", "utf-8")
+        #f = open(reportpath, "wb" )
+        f = codecs.open(reportpath, "wb", "utf-8")
         
         #write some initiating html, header and also 
         rpt = r"""<meta http-equiv="content-type" content="text/html; charset=utf-8" />"""  # NOTE, perhaps 'latin-1' due to use on win machines??
@@ -54,20 +54,19 @@ class drillreport():        # general observation point info for the selected ob
         else:
             rpt += u'General information' 
         rpt += r"""</B></U></P><TABLE style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*>"""
-        rpt2 = rpt.encode("utf-8")
-        f.write(rpt2)
+        #rpt2 = rpt.encode("utf-8")
+        f.write(rpt)
         
         # GENERAL DATA UPPER LEFT QUADRANT
-        #GeneralData = self.GetData(str(settingsdict['database']).encode(locale.getdefaultlocale()[1]), obsid, 'obs_points', 'n')
-        GeneralData = self.GetData(unicode(settingsdict['database']), obsid, 'obs_points', 'n')#MacOSX fix1
+        GeneralData = self.GetData(obsid, 'obs_points', 'n')#MacOSX fix1
         CRS = self.returnunicode(utils.sql_load_fr_db(r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""")[0][0]) #1st we need crs
         CRSname = self.returnunicode(utils.sql_load_fr_db(r"""SELECT ref_sys_name FROM spatial_ref_sys where srid =""" + CRS)[0][0]) # and crs name
         if  locale.getdefaultlocale()[0] == 'sv_SE':
             reportdata_1 = self.rpt_upper_left_sv(GeneralData, CRS, CRSname)
         else:
             reportdata_1 = self.rpt_upper_left(GeneralData, CRS, CRSname)
-        rpt2 = reportdata_1.encode("utf-8")
-        f.write(rpt2)
+        #rpt2 = reportdata_1.encode("utf-8")
+        f.write(reportdata_1)
 
         rpt = r"""</TABLE></TD><TD WIDTH=50%><P><U><B>"""
         if  locale.getdefaultlocale()[0] == 'sv_SE':
@@ -75,18 +74,17 @@ class drillreport():        # general observation point info for the selected ob
         else:
             rpt += u'Stratigraphy' 
         rpt += r"""</B></U></P><TABLE style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*>"""
-        rpt2 = rpt.encode("utf-8")
-        f.write(rpt2)        
+        #rpt2 = rpt.encode("utf-8")
+        f.write(rpt)        
 
         # STRATIGRAPHY DATA UPPER RIGHT QUADRANT
-        #StratData = self.GetData(str(settingsdict['database']).encode(locale.getdefaultlocale()[1]), obsid, 'stratigraphy', 'n')
-        StratData = self.GetData(unicode(settingsdict['database']), obsid, 'stratigraphy', 'n') #MacOSX fix1
+        StratData = self.GetData(obsid, 'stratigraphy', 'n') #MacOSX fix1
         if  locale.getdefaultlocale()[0] == 'sv_SE':
             reportdata_2 = self.rpt_upper_right_sv(StratData)
         else:
             reportdata_2 = self.rpt_upper_right(StratData)
-        rpt2 = reportdata_2.encode("utf-8")
-        f.write(rpt2)
+        #rpt2 = reportdata_2.encode("utf-8")
+        f.write(reportdata_2)
 
         rpt = r"""</TABLE></TD></TR><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>""" 
         if  locale.getdefaultlocale()[0] == 'sv_SE':
@@ -94,13 +92,13 @@ class drillreport():        # general observation point info for the selected ob
         else:
             rpt += u'Comments' 
         rpt += r"""</B></U></P>"""
-        rpt2 = rpt.encode("utf-8")
-        f.write(rpt2)        
+        #rpt2 = rpt.encode("utf-8")
+        f.write(rpt)        
 
         # COMMENTS LOWER LEFT QUADRANT
         reportdata_3 = self.rpt_lower_left(GeneralData)
-        rpt2 = reportdata_3.encode("utf-8")
-        f.write(rpt2)
+        #rpt2 = reportdata_3.encode("utf-8")
+        f.write(reportdata_3)
 
         rpt = r"""</TD><TD WIDTH=50%><P><U><B>""" 
         if  locale.getdefaultlocale()[0] == 'sv_SE':
@@ -108,8 +106,8 @@ class drillreport():        # general observation point info for the selected ob
         else:
             rpt += u'Water levels' 
         rpt += r"""</B></U></P>"""
-        rpt2 = rpt.encode("utf-8")
-        f.write(rpt2)
+        #rpt2 = rpt.encode("utf-8")
+        f.write(rpt)
 
         # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
         #statistics = self.GetStatistics(str(settingsdict['database']).encode(locale.getdefaultlocale()[1]), obsid)
@@ -118,8 +116,8 @@ class drillreport():        # general observation point info for the selected ob
             reportdata_4 = self.rpt_lower_right_sv(statistics)
         else:
             reportdata_4 = self.rpt_lower_right(statistics)
-        rpt2 = reportdata_4.encode("utf-8")
-        f.write(rpt2)
+        #rpt2 = reportdata_4.encode("utf-8")
+        f.write(reportdata_4)
         
         f.write(r"""</TD></TR></TABLE></TD></TR></TABLE>""")    
         f.write("\n</p></body></html>")        
@@ -307,7 +305,7 @@ class drillreport():        # general observation point info for the selected ob
         rpt += r"""</p>"""
         return rpt
 
-    def GetData(self, dbPath='', obsid = '', tablename='', debug = 'n'):            # GetData method that returns a table with water quality data
+    def GetData(self, obsid = '', tablename='', debug = 'n'):            # GetData method that returns a table with water quality data
         # Load all data in obs_points table
         sql = r"""select * from """
         sql += tablename
@@ -321,7 +319,7 @@ class drillreport():        # general observation point info for the selected ob
         data = utils.sql_load_fr_db(sql)
         return data
 
-    def GetStatistics(self, dbPath='', obsid = ''):            # GetData method that returns a table with water quality data
+    def GetStatistics(self, dbPath='', obsid = ''): 
         Statistics_list = [0]*4
         
         sql = r"""select min(meas) from w_levels where obsid = '"""

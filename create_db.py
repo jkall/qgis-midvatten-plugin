@@ -43,7 +43,6 @@ class newdb():
             default_crs = 4326
         EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, "Select CRS", "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:",default_crs)
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        #uitls.pop_up_info(str(EPSGID[0]))
         if EPSGID[0]==0 or not EPSGID:
             utils.pop_up_info("Cancelling...")
         else: # If a CRS is selectd, go on and create the database
@@ -56,7 +55,7 @@ class newdb():
             else:
                 try:
                     # creating/connecting the test_db
-                    conn = sqlite.connect(str(self.dbpath)) 
+                    conn = sqlite.connect(self.dbpath) 
                     # creating a Cursor
                     cur = conn.cursor()
                     cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
@@ -88,6 +87,5 @@ class newdb():
                 settings=PyQt4.QtCore.QSettings()
                 settings.beginGroup('/SpatiaLite/connections')
                 settings.setValue(u'%s/sqlitepath'%os.path.basename(str(self.dbpath)),'%s'%self.dbpath)
-                #settings.setValue(u'%s/sqlitepath'%os.path.basename(str(path)),'%s'%path)
                 settings.endGroup()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()

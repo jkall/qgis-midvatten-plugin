@@ -42,7 +42,7 @@ class updatecoordinates():
         if len(result)==0:
             self.doit()
         else:
-            utils.pop_up_info("Positions (geometries) are missing for\n" + str(result) + "\nCoordinates will not be updated.")
+            utils.pop_up_info("Positions (geometries) are missing for\n" + result[0][0] + "\nCoordinates will not be updated.")
         
     def doit(self):
         """Update coordinates for all observations in self.observations"""
@@ -67,7 +67,7 @@ class updateposition():
         if len(result)==0:
             self.doit()
         else:
-            utils.pop_up_info("Coordinates are missing for\n" + str(result) + "\nPositions (geometry) will not be updated.")
+            utils.pop_up_info("Coordinates are missing for\n" + result[0][0] + "\nPositions (geometry) will not be updated.")
         
     def doit(self):
         """Update positions for all observations in self.observations"""
