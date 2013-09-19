@@ -81,12 +81,17 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
             self.close()
             
     def calcselected(self):
-        observations = utils.getselectedobjectnames()
+        obsar = utils.getselectedobjectnames()
+        observations = obsar
+        i=0
+        for obs in obsar:
+                observations[i] = obs.encode('utf-8') #turn into a list of python byte strings
+                i += 1        
         fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
         to_d_t = self.ToDateTime.dateTime().toPyDateTime()
 
-        sanity1 = utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.obsid IN """ + str(observations).replace('[','(').replace(']',')'))
-        sanity2 = utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.h_toc NOT NULL  AND obs_points.obsid IN """ + str(observations).replace('[','(').replace(']',')'))
+        sanity1 = utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.obsid IN """ + (str(observations)).encode('utf-8').replace('[','(').replace(']',')'))
+        sanity2 = utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.h_toc NOT NULL  AND obs_points.obsid IN """ + (str(observations)).encode('utf-8').replace('[','(').replace(']',')'))
 
         if len(sanity1) == len(sanity2): #only if h_toc exists for all objects
             sql1 = """UPDATE OR IGNORE w_levels SET h_toc = (SELECT obs_points.h_toc FROM obs_points WHERE w_levels.obsid = obs_points.obsid) WHERE obsid IN """
