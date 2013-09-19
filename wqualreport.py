@@ -77,8 +77,6 @@ class wqualreport():        # extracts water quality data for selected objects, 
         sql += r""" where obsid = '"""
         sql += obsid  
         sql += r"""' ORDER BY parameter"""
-        #sql2 = str(sql).encode('utf-8')  #To get back to unicode-string
-        #sql2 = unicode(sql)  #To get back to unicode-string
         parameters_cursor = curs.execute(sql) #Send SQL-syntax to cursor
         parameters = parameters_cursor.fetchall()
         if not parameters:
@@ -186,7 +184,6 @@ class wqualreport():        # extracts water quality data for selected objects, 
         rpt = "<table width=\""
         rpt += str(tabellbredd) # set table total width from no of water quality analyses
         rpt += "\" border=\"1\">\n"
-        #rpt2 = str(rpt).encode("utf-8")
         f.write(rpt)
         counter = 0
         for sublist in ReportData:

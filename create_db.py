@@ -86,6 +86,7 @@ class newdb():
                 #create SpatiaLite Connection in QGIS QSettings
                 settings=PyQt4.QtCore.QSettings()
                 settings.beginGroup('/SpatiaLite/connections')
-                settings.setValue(u'%s/sqlitepath'%os.path.basename(str(self.dbpath)),'%s'%self.dbpath)
+                #settings.setValue(u'%s/sqlitepath'%os.path.basename(str(self.dbpath)),'%s'%self.dbpath)
+                settings.setValue(u'%s/sqlitepath'%os.path.basename(self.dbpath),'%s'%self.dbpath)
                 settings.endGroup()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()

@@ -19,5 +19,5 @@ deprecated=False
 
 changelog=
         - the plugin settings are now loaded when a project is opened
-        - fix for encoding bug identified on Mac OS X
-        - additional encoding cleanup 
+        - obs_points extents updated when new geometries created
+        - several minor bug fixes related to encoding

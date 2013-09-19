@@ -47,7 +47,7 @@ class midvatten:
         self.settingsdict = self.createsettingsdict()# calling for the method that defines an empty dictionary of settings NOTE!! byte strings in dict
         #self.loadSettings()    # stored settings are loaded  NOTE: From ver 0.3.2 it is no longer possible to load settings here
         #The settings are stored in the qgis project file and thus cannot be loaded when qgis is starting (and plugin initialized) 
-        #The settings must be loaded after the qgis project is loaded - thus settings is loaded when needed (and this is checked in several methods below)
+        #The settings are loaded each time a new qgis project is loaded (and several methods below do check that settings really are loaded)
         self.settingsareloaded = False # To make sure settings are loaded once and only once
         
     def initGui(self): # Creates actions that will start plugin configuration
@@ -490,8 +490,8 @@ class midvatten:
                         obsid = utils.getselectedobjectnames()                    
                         longmessage = """You are about to import water head data, recorded with a\nLevel Logger (e.g. Diver), for """
                         longmessage += obsid[0]
-                        longmessage +=""".\nData is supposed to be imported from a semicolon or comma\nseparated ascii text file. The text file must have one header row\nand columns:\n\nDate/time,Water head[cm],Temperature[°C]\nor\nDate/time,Water head[cm],Temperature[°C],1:Conductivity[mS/cm]\n\nColumn names are unimportant although column order is.\nAlso, date-time must have format yyyy-mm-dd hh:mm(:ss) and\nthe other columns must be real numbers with point(.) as decimal\nseparator and no separator for thousands.\nRemember to not use comma in the comment field!\n\nContinue?"""
-                        sanity = utils.askuser("YesNo",unicode(longmessage,'utf-8'),'Are you sure?')
+                        longmessage +=u""".\nData is supposed to be imported from a semicolon or comma\nseparated ascii text file. The text file must have one header row and columns:\n\nDate/time,Water head[cm],Temperature[°C]\nor\nDate/time,Water head[cm],Temperature[°C],1:Conductivity[mS/cm]\n\nColumn names are unimportant although column order is.\nAlso, date-time must have format yyyy-mm-dd hh:mm(:ss) and\nthe other columns must be real numbers with point(.) as decimal separator and no separator for thousands.\nRemember to not use comma in the comment field!\n\nAlso, records where any fields are empty will be excluded from the report!\n\nContinue?"""
+                        sanity = utils.askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
                         if sanity.result == 1:
                             from import_data_to_db import wlvlloggimportclass
                             importinstance = wlvlloggimportclass()
@@ -576,10 +576,6 @@ class midvatten:
                 self.settingsdict[key] = output[key][0]
             except KeyError:
                 self.iface.messageBar().pushMessage("Info","Settings key %s does not exist in project file."%str(key), 0,duration=30)
-                #utils.pop_up_info("Settings key does not exist: "+key)        
-        #for (key, value) in output.items():
-        #    self.settingsdict[key] = output[key][0]
-            #utils.pop_up_info("in self.settingsdict is loaded Key: "+key+"\n and value : "+str(output[key]))        # DEBUGGING
         self.readingSettings = False
         self.settingsareloaded = True
 
@@ -590,7 +586,8 @@ class midvatten:
             sanity = utils.askuser("YesNo","""This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""",'Warning!')
             if sanity.result == 1:
                 loadlayers(qgis.utils.iface, self.settingsdict)
-                self.iface.mapCanvas().refresh()  # to redraw after loaded symbology
+                self.iface.mapCanvas().zoomToFullExtent()#zoom to full extent to let user see what was loaded
+                #self.iface.mapCanvas().refresh()  # to redraw after loaded symbology
         else:   
             utils.pop_up_info("You have to select a database in Midvatten settings first!")
 

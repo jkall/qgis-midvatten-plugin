@@ -83,7 +83,6 @@ class TimeSeriesPlot:
                         j = j + 1
                     numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
                     if self.settingsdict['tsdotmarkers']==2: # If the checkbox is checked - markers will be plotted #MacOSX fix1
-                        #if str(self.settingsdict['tsstepplot']).encode(locale.getdefaultlocale()[1])=='2': # If the checkbox is checked - draw a step plot
                         if self.settingsdict['tsstepplot']==2: # If the checkbox is checked - draw a step plot #MacOSX fix1
                             p[i], = ax.plot_date(numtime, table2.values, marker = 'o', linestyle = '-',  drawstyle='steps-pre', label=obsid)    # PLOT!!
                         else:

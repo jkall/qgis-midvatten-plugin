@@ -35,8 +35,6 @@ class midvsettings(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH THE SETT
 
         self.s_dict = s_dict    # The dictionary with all settings
 
-        #qgis.utils.iface.messageBar().pushMessage("Debug","""settings dictionary %s!"""%str(self.s_dict),0)#DEBUG
-
         # Some  instance helper variables
         self.database = '' # a string is stored whenever len(s_dict['database']), see below
         self.dbTables = {} # the list is filled with databasetables whenever len(s_dict['database']), see below

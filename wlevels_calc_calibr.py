@@ -153,7 +153,7 @@ class calibrlogger(PyQt4.QtGui.QDialog, Calibr_Ui_Dialog): # An instance of the 
 
     def CalibrationPlot(self,obsid):            # 
         dbPath = QgsProject.instance().readEntry("Midvatten","database")
-        conn = sqlite.connect(str(dbPath[0]),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        conn = sqlite.connect(dbPath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
         # skapa en cursor
         curs = conn.cursor()
         # Create a plot window with one single subplot

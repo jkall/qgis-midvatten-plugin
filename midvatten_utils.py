@@ -118,8 +118,7 @@ def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list
 
 def sql_alter_db(sql=''):
     dbpath = QgsProject.instance().readEntry("Midvatten","database")
-    #utils.pop_up_info(str(dbpath[0]))   # debugging
-    conn = sqlite.connect(str(dbpath[0]),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+    conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
     curs = conn.cursor()
     sql2 = sql 
     curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
@@ -132,7 +131,6 @@ def sql_alter_db(sql=''):
     
 def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatures=0 is for a check if any features are selected at all, the number is unimportant
     if layer.dataProvider().fieldNameIndex('obsid')  > -1 or layer.dataProvider().fieldNameIndex('OBSID')  > -1: # 'OBSID' to get backwards compatibility
-        #pop_up_info(" It should be  = " + str(selectedfeatures) + " and it is " + str(layer.selectedFeatureCount()))    #DEBUG
         if selectedfeatures == 0 and layer.selectedFeatureCount() > 0:
             return 'ok'        
         elif not(selectedfeatures==0) and layer.selectedFeatureCount()==selectedfeatures:
@@ -150,4 +148,18 @@ def strat_selection_check(layer=''):
     else:
         pop_up_info("Select a qgis layer with field h_gs!")
 
-        
+def returnunicode(anything): #takes an input and tries to return it as unicode
+    if type(anything) == type(None):
+        text = unicode('')
+    elif type(anything) == type(unicode('unicodetextstring')):
+        text = anything 
+    #elif (type(anything) == type (1)) or (type(anything) == type (1.1)):
+    #    text = unicode(str(anything))
+    #elif type(anything) == type('ordinary_textstring'):
+    #    text = unicode(anything)
+    else:
+        try:
+            text = unicode(str(anything))
+        except:
+            text = unicode('data type unknown, check database')
+    return text 

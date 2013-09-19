@@ -22,6 +22,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *  
 from qgis.core import *   # Necessary for the QgsFeature()
 from qgis.gui import *
+import qgis.utils
 import os
 import locale
 import midvatten_utils as utils
@@ -108,7 +109,9 @@ class loadlayers():
                 QgsMapLayerRegistry.instance().addMapLayers([layer])
                 group_index = self.legend.groups().index('Midvatten_OBS_DB')   # SIPAPI UPDATE 2.0
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
-                if tablename == 'w_lvls_last_geom':#we do not want w_lvls_last_geom to be visible by default
+                if tablename == 'obs_points':#zoom to obs_points extent
+                    qgis.utils.iface.mapCanvas().setExtent(layer.extent())
+                elif tablename == 'w_lvls_last_geom':#we do not want w_lvls_last_geom to be visible by default
                     self.legend.setLayerVisible(layer,False)
 
     def getGroupIndex(self, iface, groupName):      #This function only due to old limitations in qgis version <1.9.0-65  No longer used!!

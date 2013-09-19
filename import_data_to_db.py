@@ -425,7 +425,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         utils.sql_alter_db("""CREATE table "%s" (%s)"""%(self.temptableName, fields)) # Create a temporary table with only text columns (unless a .csvt file was defined by user parallell to the .csv file)
         #create connection and cursor
         dbpath = QgsProject.instance().readEntry("Midvatten","database")
-        conn = sqlite.connect(str(dbpath[0]),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
         curs = conn.cursor()
         curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
 
@@ -577,7 +577,7 @@ class wlvlloggimportclass():
         utils.sql_alter_db(sql) #NO PKUID, Number of fields exactly the same as imported csv file
         #create connection and cursor
         dbpath = QgsProject.instance().readEntry("Midvatten","database")
-        conn = sqlite.connect(str(dbpath[0]),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
         curs = conn.cursor()
         curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
         # Retreive every feature 
@@ -586,7 +586,7 @@ class wlvlloggimportclass():
             # show all attributes and their values
             values_perso=[]
             for attr in feature.attributes():
-                values_perso.append(str(attr)) 
+                values_perso.append(attr) # attr is supposed to be unicode and should be kept like that, sometimes though it ends up being a byte string, do not know why....
             
             #Create line in DB table
             if len(fields)>0:   # NOTE CANNOT USET utils.sql_alter_db() SINCE THE OPTION OF SENDING 2 ARGUMENTS TO .execute IS USED BELOW
@@ -608,7 +608,6 @@ class wlvlloggimportclass():
             #And then simply remove all empty records
             for column in self.columns:      #This method is quite cruel since it removes every record where any of the fields are empty
                 utils.sql_alter_db("""DELETE FROM "%s" where "%s" in('',' ') or "%s" is null"""%(self.temptableName,column[1],column[1]))
-            #utils.pop_up_info(str(self.columns[0][1])) # Big Debugski
             #THE METHOD ABOVE NEEDS REVISON
 
             #Fix date_time format from "yyyy/mm/dd hh:mm:ss" to "yyyy-mm-dd hh:mm:ss"
@@ -624,7 +623,6 @@ class wlvlloggimportclass():
             
             #Some statistics
             self.RecordsBefore = utils.sql_load_fr_db("""SELECT Count(*) FROM w_levels_logger""")
-            #utils.pop_up_info("""SELECT Count(*) FROM (SELECT DISTINCT "%s" FROM %s)"""%(self.columns[0][1],self.temptableName)) #debug
             self.RecordsToImport = utils.sql_load_fr_db("""SELECT Count(*) FROM (SELECT DISTINCT "%s" FROM %s)"""%(self.columns[0][1],self.temptableName))
             self.RecordsInFile = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%self.temptableName)
             utils.pop_up_info("The import file has " + str(self.RecordsInFile[0][0]) + " non-empty records\n" + "and among these are found " + str(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]) + " duplicates.")   # debug

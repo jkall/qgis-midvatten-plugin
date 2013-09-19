@@ -51,13 +51,13 @@ def obsid_FieldTextChanged():
         sql += r"""'"""
         maxstratid = utils.sql_load_fr_db(sql)
         if utils.isinteger(str(maxstratid[0][0]).encode('utf-8'))==True:
-            myDialog.findChild(QLineEdit,"stratid").setText((int(maxstratid[0][0])+1).encode('utf-8'))            
+            myDialog.findChild(QLineEdit,"stratid").setText(str(int(maxstratid[0][0])+1))            
             sql = r"""select max(depthbot) from stratigraphy WHERE obsid = '"""
-            sql +=myDialog.findChild(QLineEdit,"obsid").text())
+            sql +=myDialog.findChild(QLineEdit,"obsid").text()
             sql += r"""'"""
             maxdepthbot = utils.sql_load_fr_db(sql)
             if utils.isfloat(str(maxdepthbot[0][0]).encode('utf-8'))==True:
-                myDialog.findChild(QLineEdit,"depthtop").setText(maxdepthbot[0][0].encode('utf-8'))                                   
+                myDialog.findChild(QLineEdit,"depthtop").setText(str(maxdepthbot[0][0]))                                   
         else:
             myDialog.findChild(QLineEdit,"stratid").setText("1")
             myDialog.findChild(QLineEdit,"depthtop").setText("0") 
