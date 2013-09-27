@@ -3,7 +3,7 @@
 name=Midvatten
 qgisMinimumVersion=2.0
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db. Partly based on the ARPAT plugin.
-version=Version 1.0.1
+version=Version 1.0.2
 author=Josef Källgården
 email=groundwatergis@gmail.com
 
@@ -18,6 +18,5 @@ experimental=False
 deprecated=False
 
 changelog=
-        - the plugin settings are now loaded when a project is opened
-        - obs_points extents updated when new geometries created
-        - several minor bug fixes related to encoding
+        - make git update to see what has been changed! 
+        - minor bug fix in obs_lines custom form logics 
