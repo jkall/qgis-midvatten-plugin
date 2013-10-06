@@ -62,15 +62,15 @@ class loadlayers():
             firststring= 'dbname="' + self.settingsdict['database'] + '" table="' + tablename + '"'#MacOSX fix1  #earlier sent byte string, now unicode
             layer = QgsVectorLayer(firststring,tablename, 'spatialite')   # Adding the layer as 'spatialite' and not ogr vector layer is preferred
             if not layer.isValid():
-                utils.pop_up_info("failed to load layer " + tablename) #debugging
+                qgis.utils.iface.messageBar().pushMessage("Error","""Failed to load layer %s!"""%tablename,2)
             else:
                 QgsMapLayerRegistry.instance().addMapLayers([layer])
                 group_index = self.legend.groups().index('Midvatten_OBS_DB') 
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
+                filename = tablename + ".qml"       #  load styles
+                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",filename)
+                layer.loadNamedStyle(stylefile)
                 if tablename in ('w_levels','w_flow','stratigraphy'):
-                    filename = tablename + ".qml"       #  load styles
-                    stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",filename)
-                    layer.loadNamedStyle(stylefile)
                     if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
                         filename = tablename + ".ui"
                     else:
@@ -87,7 +87,7 @@ class loadlayers():
             uri.setDataSource('',tablename, 'Geometry')
             layer = QgsVectorLayer(uri.uri(), tablename, 'spatialite') # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
             if not layer.isValid():
-                utils.pop_up_info("failed to load layer " + tablename) #debugging
+                qgis.utils.iface.messageBar().pushMessage("Error","""Failed to load layer %s!"""%tablename,2)                
             else:
                 filename = tablename + ".qml"
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",filename)

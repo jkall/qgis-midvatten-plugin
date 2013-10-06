@@ -14,6 +14,7 @@
   </edittypes>
   <editform></editform>
   <editforminit></editforminit>
+  <featformsuppress>1</featformsuppress>
   <annotationform></annotationform>
   <attributeactions/>
   <overlay display="false" type="diagram">

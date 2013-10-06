@@ -47,11 +47,10 @@ insert into about_db values('obs_lines', 'Geometry', '', '', 'The geometry of OG
 insert into about_db values('seismic_data', '*', '', '', 'Interpreted data from seismic measurements')
 insert into about_db values('seismic_data', 'obsid', '', '', 'obsid linked to obs_lines.obsid')
 insert into about_db values('seismic_data', 'length', '', '', 'Length along line')
-insert into about_db values('seismic_data', 'east', '', '', 'Eastern coordinate (in the corresponding CRS)')
-insert into about_db values('seismic_data', 'north', '', '', 'Northern coordinate (in the corresponding CRS)')
 insert into about_db values('seismic_data', 'ground', '', '', 'Ground surface level')
 insert into about_db values('seismic_data', 'bedrock', '', '', 'Interpreted level for bedrock surface')
 insert into about_db values('seismic_data', 'gw_table', '', '', 'Interpreted level for limit between unsaturated/saturated conditions')
+insert into about_db values('seismic_data', 'comment', '', '', 'Additional info')
 insert into about_db values('stratigraphy', '*', '', '', 'stratigraphy information from drillings, probings etc')
 insert into about_db values('stratigraphy', 'obsid', '', '', 'obsid linked to obs_points.obsid')
 insert into about_db values('stratigraphy', 'stratid', '', '', 'Stratigraphy layer ID for the OBSID, starts with layer 1 from ground surface and increases below')
@@ -65,10 +64,9 @@ insert into about_db values('stratigraphy', 'comment', '', '', 'Comment')
 insert into about_db values('vlf_data', '*', '', '', 'Raw data from VLF measurements')
 insert into about_db values('vlf_data', 'obsid', '', '', 'obsid linked to obs_lines.obsid')
 insert into about_db values('vlf_data', 'length', '', '', 'Length along line')
-insert into about_db values('vlf_data', 'east', '', '', 'Eastern coordinate (in the corresponding CRS)')
-insert into about_db values('vlf_data', 'north', '', '', 'Northern coordinate (in the corresponding CRS)')
 insert into about_db values('vlf_data', 'real_comp', '', '', 'Raw data real component (in-phase(%))')
 insert into about_db values('vlf_data', 'imag_comp', '', '', 'Raw data imaginary component')
+insert into about_db values('vlf_data', 'comment', '', '', 'Additional info')
 insert into about_db values('w_flow', '*', '', '', 'Water flow')
 insert into about_db values('w_flow', 'obsid', '', '', 'obsid linked to obs_points.obsid')
 insert into about_db values('w_flow', 'instrumentid', '', '', 'Instrument Id, may use several flowmeters at same borehole')
@@ -128,8 +126,8 @@ create table "w_levels_logger" ("obsid" text not null, "date_time" text not null
 create table "stratigraphy" (obsid text not null, stratid integer not null, depthtop double, depthbot double, geology text, geoshort text, capacity text, development text,  comment text, primary key (obsid, stratid), foreign key(obsid) references obs_points(obsid));
 create table "w_qual_field" (obsid text not null, staff text, date_time text not null, instrument text, parameter text not null, reading_num double, reading_txt text, unit text, flow_lpm double, comment text, primary key(obsid, date_time, parameter), foreign key(obsid) references obs_points(obsid) );
 create table "w_qual_lab" ("obsid" text not null, "depth" double, "report" text not null, "project" text, "staff" text, "date_time" text, "anameth" text, "parameter" text not null, "reading_num" double, "reading_txt" text, "unit" text, "comment" text, primary key(report, parameter), foreign key(obsid) references obs_points(obsid));
-create table "seismic_data" (obsid text not null, length double not null, east double, north double, ground double, bedrock double, gw_table double, primary key (obsid, Length), foreign key (obsid) references obs_lines(obsid));
-create table "vlf_data" (obsid text not null, length double not null, east double, north double, real_comp double, imag_comp double, primary key (obsid, Length), foreign key (obsid) references obs_lines(obsid));
+create table "seismic_data" (obsid text not null, length double not null, ground double, bedrock double, gw_table double, comment text, primary key (obsid, Length), foreign key (obsid) references obs_lines(obsid));
+create table "vlf_data" (obsid text not null, length double not null, real_comp double, imag_comp double, comment text, primary key (obsid, Length), foreign key (obsid) references obs_lines(obsid));
 create table "zz_flowtype" (type text not null,explanation text, primary key(type));
 insert into zz_flowtype(type, explanation) values("Accvol", "Accumulated volume");
 insert into zz_flowtype(type, explanation) values("Momflow", "Momentary flow rate");

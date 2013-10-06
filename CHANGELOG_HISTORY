@@ -7,6 +7,11 @@ THIS FILE ONLY FOR HISTORICAL RESONS, IF I NEED TO PICK UP A PARTICULAR VERSION 
 [+] add
 [-] remove/bugfix
 
+19.09.2013 - version 1.0.1
+        - the plugin settings are now loaded when a project is opened
+        - obs_points extents updated when new geometries created
+        - several minor bug fixes related to encoding
+
 21.08.2013 - version 1.0.0
         - Fixes due to SIP API update for QGIS 2.0
         - Updates due to SpatiaLite 4.x (new db - lower case geometry columns and more)

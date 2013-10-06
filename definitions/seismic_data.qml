@@ -3,15 +3,15 @@
   <transparencyLevelInt>255</transparencyLevelInt>
   <edittypes>
     <edittype type="0" name="bedrock"/>
-    <edittype type="0" name="east"/>
     <edittype type="0" name="ground"/>
     <edittype type="0" name="gw_table"/>
     <edittype type="0" name="length"/>
-    <edittype type="0" name="north"/>
+    <edittype type="0" name="comment"/>
     <edittype allowNull="false" type="0" name="obsid"/>
   </edittypes>
   <editform></editform>
   <editforminit></editforminit>
+  <featformsuppress>1</featformsuppress>
   <annotationform></annotationform>
   <attributeactions/>
   <overlay display="false" type="diagram">

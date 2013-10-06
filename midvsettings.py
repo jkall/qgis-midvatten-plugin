@@ -218,14 +218,14 @@ class midvsettings(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH THE SETT
     def selectFile(self):
         """ Open a dialog to locate the sqlite file and some more..."""        
         path = QFileDialog.getOpenFileName(None,str("Select database:"),"*.sqlite")
-        if path: 
-            self.database = path # To make possible cancel the FileDialog and continue loading a predefined db
+        if path: #Only get new db name if not cancelling the FileDialog
+            self.database = path #
         self.openDBFile()
 
     def openDBFile( self ):
         """ Open the SpatiaLite file to extract info about tables 
             and populate the table-QComboBoxes with all the tables"""
-        if os.path.isfile( self.database ):
+        if os.path.isfile( self.database ):#absolute path
             self.txtpath.setText( self.database)
             self.ListOfTables.clear()
             self.ListOfTables_2.clear()

@@ -359,7 +359,7 @@ class midvatten:
                     errorsignal = 1
 
         if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
-            sanity = utils.askuser("YesNo","""You are about to import interpreted seismic data, from a text file which must have one header row and 7 columns:\n\nobsid,length,east,north,ground,bedrock,gw_table\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nEmpty or null values are not allowed for obsid or length.\nEach combination of obsid and length must be unique.\n\nContinue?""",'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import interpreted seismic data, from a text file which must have one header row and 6 columns:\n\nobsid, length, ground, bedrock, gw_table, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nEmpty or null values are not allowed for obsid or length.\nEach combination of obsid and length must be unique.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
@@ -409,7 +409,7 @@ class midvatten:
                     errorsignal = 1
 
         if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
-            sanity = utils.askuser("YesNo","""You are about to import raw data from vlf measurements, from a text file which must have one header row and 6 columns:\n\nobsid;length;east;north;real_comp;imag_comp\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nEmpty or null values are not allowed for obsid or length.\nEach combination of obsid and length must be unique.\n\nContinue?""",'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import raw data from vlf measurements, from a text file which must have one header row and 5 columns:\n\nobsid; length; real_comp; imag_comp, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nEmpty or null values are not allowed for obsid or length.\nEach combination of obsid and length must be unique.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
