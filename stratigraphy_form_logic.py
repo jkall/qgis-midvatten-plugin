@@ -43,21 +43,23 @@ def formOpen(dialog,layerid,featureid):
     buttonBox.accepted.connect(validate)
     buttonBox.rejected.connect(myDialog.reject)
 
-def obsid_FieldTextChanged():
-    if obsidexists(myDialog.findChild(QLineEdit,"obsid").text()):
+def obsid_FieldTextChanged():#whenever a new obsid is given, then preset stratid to next number and preset depthtop to latest depthbot.
+    """ Must find another trigger: new feature/object/record!"""
+    """ no no, just check if stratid field is empty, then it is considered a new feature and a default value should be added!!"""
+    if obsidexists(myDialog.findChild(QLineEdit,"obsid").text()) and (len(myDialog.findChild(QLineEdit,"stratid").text()) == 0): #if stratid is empty, then it is considered to be a new record and preset values should be suggested, otherwise, do not suggest anything!
         myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
         sql = r"""select max(stratid) from stratigraphy WHERE obsid = '"""
         sql += myDialog.findChild(QLineEdit,"obsid").text()
         sql += r"""'"""
         maxstratid = utils.sql_load_fr_db(sql)
         if utils.isinteger(str(maxstratid[0][0]).encode('utf-8'))==True:
-            myDialog.findChild(QLineEdit,"stratid").setText(str(int(maxstratid[0][0])+1))            
+            myDialog.findChild(QLineEdit,"stratid").setText(str(int(maxstratid[0][0])+1)) #form stratid is preset to max(stratid) + 1 in db
             sql = r"""select max(depthbot) from stratigraphy WHERE obsid = '"""
             sql +=myDialog.findChild(QLineEdit,"obsid").text()
             sql += r"""'"""
             maxdepthbot = utils.sql_load_fr_db(sql)
             if utils.isfloat(str(maxdepthbot[0][0]).encode('utf-8'))==True:
-                myDialog.findChild(QLineEdit,"depthtop").setText(str(maxdepthbot[0][0]))                                   
+                myDialog.findChild(QLineEdit,"depthtop").setText(str(maxdepthbot[0][0])) #form depthtop is preset to max(depthbot) in db
         else:
             myDialog.findChild(QLineEdit,"stratid").setText("1")
             myDialog.findChild(QLineEdit,"depthtop").setText("0") 

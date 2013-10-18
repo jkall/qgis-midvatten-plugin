@@ -3,7 +3,7 @@
 name=Midvatten
 qgisMinimumVersion=2.0
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db. Partly based on the ARPAT plugin.
-version=Version 1.0.2
+version=Version 1.0.3
 author=Josef Källgården
 email=groundwatergis@gmail.com
 
@@ -18,6 +18,4 @@ experimental=False
 deprecated=False
 
 changelog=
-        - Important: removed fields east and north from database tables vlf_data and seismic_data
-        - minor bug fixes: obs_lines custom form logics, encoding in class calclvl
-        - minor new features: forms for w_qual_field and w_qual_lab, suppress pop-up-dialog for non-spatial tables (only in QGIS-master)
+        - bug fix for stratigraphy form logics in attribute table "feature list"

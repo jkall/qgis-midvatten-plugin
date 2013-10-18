@@ -7,6 +7,11 @@ THIS FILE ONLY FOR HISTORICAL RESONS, IF I NEED TO PICK UP A PARTICULAR VERSION 
 [+] add
 [-] remove/bugfix
 
+06.10.2013 - version 1.0.2
+        - Important: removed fields east and north from database tables vlf_data and seismic_data
+        - minor bug fixes: obs_lines custom form logics, encoding in class calclvl
+        - minor new features: forms for w_qual_field and w_qual_lab, suppress pop-up-dialog for non-spatial tables (only in QGIS-master)
+
 19.09.2013 - version 1.0.1
         - the plugin settings are now loaded when a project is opened
         - obs_points extents updated when new geometries created
