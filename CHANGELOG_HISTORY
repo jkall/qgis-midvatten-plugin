@@ -7,6 +7,9 @@ THIS FILE ONLY FOR HISTORICAL RESONS, IF I NEED TO PICK UP A PARTICULAR VERSION 
 [+] add
 [-] remove/bugfix
 
+18.10.2013 - version 1.0.3
+        - bug fix for stratigraphy form logics in attribute table "feature list"
+
 06.10.2013 - version 1.0.2
         - Important: removed fields east and north from database tables vlf_data and seismic_data
         - minor bug fixes: obs_lines custom form logics, encoding in class calclvl

@@ -404,7 +404,35 @@ class midvsettings(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH THE SETT
 
         conn = sqlite.connect(self.database)#encoding cleanup
         cursor = conn.cursor()
-        rs=cursor.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in('geom_cols_ref_sys','geometry_columns','geometry_columns_auth','spatial_ref_sys','spatialite_history','sqlite_sequence','sqlite_stat1','views_geometry_columns','virts_geometry_columns','geometry_columns_statistics','views_geometry_columns_statistics','virts_geometry_columns_statistics' ,'geometry_columns','spatialindex','SpatialIndex','geometry_columns_fields_infos','geometry_columns_time','sql_statements_log','vector_layers','vector_layers_auth','vector_layers_field_infos','vector_layers_statistics','views_geometry_columns_auth','views_geometry_columns_field_infos','geometry_columns_field_infos','virts_geometry_columns_auth','virts_geometry_columns_field_infos' )) ORDER BY tbl_name""" )  #SQL statement to get the relevant tables in the spatialite database
+        rs=cursor.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in('geom_cols_ref_sys',
+        'geometry_columns',
+        'geometry_columns_time',
+        'spatial_ref_sys',
+        'spatialite_history',
+        'vector_layers',
+        'views_geometry_columns',
+        'virts_geometry_columns',
+        'geometry_columns_auth',
+        'geometry_columns_fields_infos',
+        'geometry_columns_statistics',
+        'sql_statements_log',
+        'layer_statistics',
+        'sqlite_sequence',
+        'sqlite_stat1' ,
+        'views_layer_statistics',
+        'virts_layer_statistics',
+        'vector_layers_auth',
+        'vector_layers_field_infos',
+        'vector_layers_statistics',
+        'views_geometry_columns_auth',
+        'views_geometry_columns_field_infos',
+        'views_geometry_columns_statistics',
+        'virts_geometry_columns_auth',
+        'virts_geometry_columns_field_infos',
+        'virts_geometry_columns_statistics' ,
+        'geometry_columns',
+        'spatialindex',
+        'SpatialIndex')) ORDER BY tbl_name""" )  #SQL statement to get the relevant tables in the spatialite database
         #self.dbTables = {} 
         self.ListOfTables.addItem('')
         self.ListOfTables_2.addItem('')

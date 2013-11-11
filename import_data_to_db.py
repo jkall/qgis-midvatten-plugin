@@ -310,12 +310,18 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
     def MultipleFieldDuplicates(self,NoCols,GoalTable,sqlremove,MajorTable,sqlNoOfdistinct): #For secondary tables linking to obs_points and obs_lines: Sanity checks and removes duplicates
         """perform some sanity checks of the imported data and removes duplicates and empty records"""
-        if not len(self.columns)==NoCols:
-            qgis.utils.iface.messageBar().pushMessage("Import failure","Import file must have exactly " + str(NoCols) + " columns!\nCheck your data and try again.",2)
+        if len(self.columns)<NoCols: 
+            qgis.utils.iface.messageBar().pushMessage("Import failure","Import file must have at least " + str(NoCols) + " columns!\nCheck your data and try again.",2)
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             self.status = 'False'
             return 0 #only to stop function
         else:    #If correct number of columns, remove empty records
+            if len(self.columns) > NoCols:#Here is where the user may interrupt if there are more columns than needed for w_levels
+                ManyColsQuestion = utils.askuser("YesNo", """Please note!\nThere are %s columns in your csv file which may be perfectly fine if the first %s corresponds to those needed.\n\nDo you want to proceed with the import?"""%(str(len(self.columns)),str(NoCols)),"Warning!")
+                if ManyColsQuestion.result == 0:      # if the user wants to abort
+                    self.status = 'False'
+                    PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                    return 0   # return simply to stop this function
             utils.sql_alter_db(sqlremove)
             #Then verify that obsid exists in MajorTable and perform statistics
             verifyok = self.VerifyIDInMajorTable(MajorTable) #Verify that all ID's exist in major table (obs_points or obs_lines)
