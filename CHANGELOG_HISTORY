@@ -7,6 +7,10 @@ THIS FILE ONLY FOR HISTORICAL RESONS, IF I NEED TO PICK UP A PARTICULAR VERSION 
 [+] add
 [-] remove/bugfix
 
+ 
+23.10.2013 - version 1.0.4
+        - Now csv files with more columns than needed will not interrupt import. Additional columns only neglected during import.
+
 18.10.2013 - version 1.0.3
         - bug fix for stratigraphy form logics in attribute table "feature list"
 

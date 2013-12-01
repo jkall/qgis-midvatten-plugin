@@ -58,12 +58,12 @@ def find_layer(layer_name):
 
     return None
 
-def getselectedobjectnames():#returns a list of obsid (as unicode)
-    selectedobs = qgis.utils.iface.activeLayer().selectedFeatures()
-    kolumnindex = qgis.utils.iface.activeLayer().dataProvider().fieldNameIndex('obsid')  #OGR data provier is used to find index for column named 'obsid'
+def getselectedobjectnames(thelayer = qgis.utils.iface.activeLayer()):#returns a list of obsid (as unicode) - thelayer is an optional argument, if not given then activelayer is used
+    selectedobs = thelayer.selectedFeatures()
+    kolumnindex = thelayer.dataProvider().fieldNameIndex('obsid')  #OGR data provier is used to find index for column named 'obsid'
     if kolumnindex == -1:
-            kolumnindex = qgis.utils.iface.activeLayer().dataProvider().fieldNameIndex('OBSID')  #backwards compatibility
-    observations = [None]*(qgis.utils.iface.activeLayer().selectedFeatureCount())
+            kolumnindex = thelayer.dataProvider().fieldNameIndex('OBSID')  #backwards compatibility
+    observations = [None]*(thelayer.selectedFeatureCount())
     i=0
     for k in selectedobs:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
         attributes = selectedobs[i]

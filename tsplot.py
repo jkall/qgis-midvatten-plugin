@@ -30,8 +30,7 @@ import locale
 
 class TimeSeriesPlot:
 
-    def __init__(self, iface, layer=None, settingsdict={}):    # Might need revision of variables and method for loading default variables
-        self.iface = iface
+    def __init__(self, layer=None, settingsdict={}):    # Might need revision of variables and method for loading default variables
         self.settingsdict = settingsdict
         self.showtheplot(layer)
 

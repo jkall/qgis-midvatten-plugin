@@ -57,7 +57,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>4</number>
      </property>
      <widget class="QWidget" name="TAB_TSPLOT">
       <attribute name="title">
@@ -481,6 +481,11 @@
         </spacer>
        </item>
       </layout>
+     </widget>
+     <widget class="QWidget" name="TAB_PIPER">
+      <attribute name="title">
+       <string>Piper Diagram</string>
+      </attribute>
      </widget>
     </widget>
    </item>

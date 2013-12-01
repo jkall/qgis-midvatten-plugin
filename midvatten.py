@@ -24,6 +24,7 @@ from qgis.core import *
 import qgis.utils
 import resources  # Initialize Qt resources from file resources.py
 import os.path # Just to be able to read from metadata.txt in the same directory
+import sys
 from midvsettings import midvsettings
 from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
@@ -34,7 +35,8 @@ import midvatten_utils as utils         # Whenever some global midvatten_utiliti
 from definitions import midvatten_defs
 #from about.AboutDialog import AboutDialog
 from HtmlDialog import HtmlDialog
-import sys
+from sectionplot import sectionplot
+
 
 #sys.path.append(os.path.dirname(os.path.abspath(__file__))) # To enable loading of modules from inside the plugin directory
 
@@ -140,6 +142,11 @@ class midvatten:
         self.iface.registerMainWindowAction(self.actionwqualreport, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionwqualreport, SIGNAL("triggered()"), self.waterqualityreport)
 
+        self.actionPlotSection = QAction(QIcon(":/plugins/midvatten/icons/PlotSection.png"), "Plot Section", self.iface.mainWindow())
+        self.actionPlotSection.setWhatsThis("Plot a section with stratigraphy and water levels")
+        #self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
+        QObject.connect(self.actionPlotSection, SIGNAL("triggered()"), self.PlotSection)
+        
         self.actionChartMaker = QAction(QIcon(":/plugins/midvatten/icons/ChartMakerSQLite.png"), "ChartMaker for Midvatten DB", self.iface.mainWindow())
         self.actionChartMaker.setWhatsThis("Start ChartMaker for SQLite data")
         #self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
@@ -152,6 +159,7 @@ class midvatten:
         self.toolBar.addAction(self.actionPlotTS)
         self.toolBar.addAction(self.actionPlotXY)
         self.toolBar.addAction(self.actionPlotStratigraphy)
+        self.toolBar.addAction(self.actionPlotSection)
         self.toolBar.addAction(self.actiondrillreport)
         self.toolBar.addAction(self.actionwqualreport)
         #self.toolBar.addAction(self.actionChartMaker)
@@ -186,6 +194,7 @@ class midvatten:
         self.menu.plot_data_menu.addAction(self.actionPlotTS) 
         self.menu.plot_data_menu.addAction(self.actionPlotXY)
         self.menu.plot_data_menu.addAction(self.actionPlotStratigraphy)
+        self.menu.plot_data_menu.addAction(self.actionPlotSection)        
         #self.menu.plot_data_menu.addAction(self.actionChartMaker)          #Not until implemented!
 
         self.menu.report_menu = QMenu(QCoreApplication.translate("Midvatten", "&View report"))
@@ -612,7 +621,7 @@ class midvatten:
             layer = qgis.utils.iface.activeLayer()
             if layer:
                 if utils.selection_check(layer) == 'ok':
-                    dlg = TimeSeriesPlot(self.iface, layer, self.settingsdict)
+                    dlg = TimeSeriesPlot(layer, self.settingsdict)
             else:
                 utils.pop_up_info("You have to select a layer first!")
         else:
@@ -633,6 +642,40 @@ class midvatten:
         else: 
             utils.pop_up_info("Check Midvatten settings! \nYou have to select database and stratigraphy table first!")
 
+    def PlotSection(self):
+        wlvlDate = ['2013-07','2013-11']
+        ann = 'geology'
+        SectionLineLayer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
+        msg = None
+        if SectionLineLayer.selectedFeatureCount()==1:#First verify only one feature is selected in the active layer...
+            for feat in SectionLineLayer.getFeatures():
+                geom = feat.geometry()
+                if geom.wkbType() == QGis.WKBLineString:#...and that the active layer is a line vector layer
+                    pass
+                else:
+                    msg = 'You must activate the vector line layer that defines the section.'
+        else:
+            msg = 'You must activate the vector line layer and select exactly one feature that defines the section'
+        
+        #Then verify that at least one feature is selected in obs_points layer, and get a list (OBSID) of selected obs_points
+        obs_points_layer = utils.find_layer('obs_points')
+        selectedobspoints = utils.getselectedobjectnames(obs_points_layer)
+        obsidlist = []
+        if len(selectedobspoints)>0:
+            i=0
+            for id in selectedobspoints:
+                obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
+                i+=1
+            OBSID = tuple(obsidlist)#because module sectionplot depends on obsid being a tuple
+        else:
+            msg = 'You must select at least one object in the obs_points layer'
+        
+        if msg:#if something went wrong
+            self.iface.messageBar().pushMessage("Error",msg, 2)
+        else:#otherwise go
+            myplot = sectionplot(self.iface.mainWindow(),OBSID,SectionLineLayer,ann,2,wlvlDate)#second last argument is bar width in percent of xmax-xmin
+            myplot.exec_()
+            
     def PlotXY(self):            
         if self.settingsareloaded == False:    # If the first thing the user does is to plot xy data, then load settings from project file
             self.loadSettings()    
@@ -640,7 +683,7 @@ class midvatten:
             layer = qgis.utils.iface.activeLayer()
             if layer:
                 if utils.selection_check(layer) == 'ok':
-                    dlg = XYPlot(self.iface, layer, self.settingsdict)
+                    dlg = XYPlot(layer, self.settingsdict)
             else:
                 utils.pop_up_info("You have to select a layer first!")
         else:
