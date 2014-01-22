@@ -108,7 +108,10 @@ def pop_up_info(msg='',title='Information',parent=None):
 def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
     #qgis.utils.iface.messageBar().pushMessage("Debug",sql, 0,duration=30)#debug
     dbpath = QgsProject.instance().readEntry("Midvatten","database")
-    conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)#dbpath[0] is unicode already #MacOSC fix1 
+    try:
+        conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)#dbpath[0] is unicode already #MacOSC fix1 
+    except:
+        pop_up_info("Could not connect to the database, please check Midvatten settings!\n Perhaps you need to reset settings first?")
     curs = conn.cursor()
     resultfromsql = curs.execute(sql) #Send SQL-syntax to cursor #MacOSX fix1
     result = resultfromsql.fetchall()

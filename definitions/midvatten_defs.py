@@ -40,7 +40,14 @@ def settingsdict():    #These are the default settings, they shall not be change
             'wqual_valuecolumn' : 'reading_txt',
             'wqual_unitcolumn' : 'unit',
             'wqual_sortingcolumn' : 'report',
-            'tabwidget' : 0}
+            'tabwidget' : 0,
+            'secplotwlvltab' : 'w_levels',
+            'secplotdates' : [],
+            'secplottext' : '',
+            'secplotcolor':'geoshort',
+            'secplotdrillstop':'',
+            'secplotbw':2
+            }
     return dictionary
     
 def default_layers ():        #These may be changed

@@ -32,6 +32,7 @@ import qgis.utils
 import locale
 import os
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt   
 from matplotlib.dates import datestr2num
 import datetime
@@ -81,7 +82,7 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
             self.close()
             
     def calcselected(self):
-        obsar = utils.getselectedobjectnames()
+        obsar = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
         observations = obsar
         i=0
         for obs in obsar:

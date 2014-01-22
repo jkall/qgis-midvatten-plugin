@@ -290,7 +290,7 @@ class midvatten:
         if not (self.settingsdict['database'] == ''):
             if qgis.utils.iface.activeLayer():
                 if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok': #only one selected object
-                    obsid = utils.getselectedobjectnames()  # selected obs_point is now found in obsid[0]
+                    obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())  # selected obs_point is now found in obsid[0]
                     from drillreport import drillreport
                     drillreport(obsid[0],self.settingsdict) 
                 else:
@@ -298,8 +298,8 @@ class midvatten:
             else:
                 utils.pop_up_info("You have to select the obs_points layer and the observation point (just one!) for which to generate a general report!", "Attention")
         else: 
-            utils.pop_up_info("Check settings! \nYou have to select database first!")
-        
+            self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select a database! Reset if needed.", 2)
+
     def import_obs_lines(self):
         errorsignal = 0
         if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
@@ -496,7 +496,7 @@ class midvatten:
             if not (self.settingsdict['database'] == ''):
                 if qgis.utils.iface.activeLayer():
                     if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':                
-                        obsid = utils.getselectedobjectnames()                    
+                        obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())                    
                         longmessage = """You are about to import water head data, recorded with a\nLevel Logger (e.g. Diver), for """
                         longmessage += obsid[0]
                         longmessage +=u""".\nData is supposed to be imported from a semicolon or comma\nseparated text file. The text file must have one header row and columns:\n\nDate/time,Water head[cm],Temperature[°C]\nor\nDate/time,Water head[cm],Temperature[°C],1:Conductivity[mS/cm]\n\nColumn names are unimportant although column order is.\nAlso, date-time must have format yyyy-mm-dd hh:mm(:ss) and\nthe other columns must be real numbers with point(.) as decimal separator and no separator for thousands.\nRemember to not use comma in the comment field!\n\nAlso, records where any fields are empty will be excluded from the report!\n\nContinue?"""
@@ -584,7 +584,7 @@ class midvatten:
                 output[key] = func("Midvatten", key)
                 self.settingsdict[key] = output[key][0]
             except KeyError:
-                self.iface.messageBar().pushMessage("Info","Settings key %s does not exist in project file."%str(key), 0,duration=30)
+                self.iface.messageBar().pushMessage("Info","Settings key %s does not exist in project file. Maybe this file was last used with old Midvatten plugin?"%str(key), 0,duration=30)
         self.readingSettings = False
         self.settingsareloaded = True
 
@@ -625,7 +625,7 @@ class midvatten:
             else:
                 utils.pop_up_info("You have to select a layer first!")
         else:
-            utils.pop_up_info("Check Midvatten settings! \nSelect database, table and column for time series plot!")
+            self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database, table and column for time series plot. Reset if needed.", 2)
             
     def PlotStratigraphy(self):            
         if self.settingsareloaded == False:    # If the first thing the user does is to plot stratigraphy, then load settings from project file
@@ -640,11 +640,13 @@ class midvatten:
             else:
                 utils.pop_up_info("You have to select a layer first!")
         else: 
-            utils.pop_up_info("Check Midvatten settings! \nYou have to select database and stratigraphy table first!")
+            self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database and stratigraphy table. Reset if needed.", 2)
 
     def PlotSection(self):
-        wlvlDate = ['2013-07','2013-11']
-        ann = 'geology'
+        self.loadSettings()    #always do this to get last plotsection settings
+        if self.settingsdict['database'] == '':#perhaps there is no database defined
+            self.iface.messageBar().pushMessage("Error","No database found. Please check your Midvatten Settings. Reset if needed.", 2)
+            return
         SectionLineLayer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
         msg = None
         if SectionLineLayer.selectedFeatureCount()==1:#First verify only one feature is selected in the active layer...
@@ -673,8 +675,9 @@ class midvatten:
         if msg:#if something went wrong
             self.iface.messageBar().pushMessage("Error",msg, 2)
         else:#otherwise go
-            myplot = sectionplot(self.iface.mainWindow(),OBSID,SectionLineLayer,ann,2,wlvlDate)#second last argument is bar width in percent of xmax-xmin
+            myplot = sectionplot(self,self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
             myplot.exec_()
+            #myplot.show_()#why not this instead?
             
     def PlotXY(self):            
         if self.settingsareloaded == False:    # If the first thing the user does is to plot xy data, then load settings from project file
@@ -687,7 +690,7 @@ class midvatten:
             else:
                 utils.pop_up_info("You have to select a layer first!")
         else:
-            utils.pop_up_info("Check Midvatten settings! \nSelect database, table and columns for x and y data!")
+            self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database, table and columns for x and y data!. Reset if needed.", 2)
 
     def resetSettings(self):    
         self.settingsdict = self.createsettingsdict()    # calling for the method that defines an empty dictionary of settings
@@ -755,7 +758,7 @@ class midvatten:
                         sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor SELECTED objects in the obs_points table.\nProceed?""")
                         if sanity.result==1:
                             if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!
-                                observations = utils.getselectedobjectnames()#a list of unicode strings is returned
+                                observations = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())#a list of unicode strings is returned
                                 from coords_and_position import updatecoordinates
                                 updatecoordinates(observations)                        
                 else:
@@ -792,7 +795,7 @@ class midvatten:
                         sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nSELECTED objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")
                         if sanity.result==1:
                             if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!
-                                observations = utils.getselectedobjectnames()
+                                observations = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
                                 from coords_and_position import updateposition
                                 updateposition(observations)
                                 layer.updateExtents()
@@ -808,7 +811,7 @@ class midvatten:
             if qgis.utils.iface.activeLayer():
                 if utils.selection_check(qgis.utils.iface.activeLayer()) == 'ok':#there is a field obsid and at least one object is selected
                     fail = 0
-                    for k in utils.getselectedobjectnames():#all selected objects
+                    for k in utils.getselectedobjectnames(qgis.utils.iface.activeLayer()):#all selected objects
                         if not utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.settingsdict['wqualtable'],str(k))):#if there is a selected object withou water quality data
                             self.iface.messageBar().pushMessage("Error","No water quality data for %s"%str(k), 2)
                             fail = 1
@@ -878,7 +881,7 @@ class midvatten:
             if not (self.settingsdict['database'] == ''):
                 if qgis.utils.iface.activeLayer():
                     if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':
-                        obsid = utils.getselectedobjectnames()
+                        obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
                         sanity1sql = """select count(obsid) from w_levels_logger where obsid = '""" +  obsid[0] + """'"""
                         sanity2sql = """select count(obsid) from w_levels_logger where head_cm not null and head_cm !='' and obsid = '""" +  obsid[0] + """'"""
                         if utils.sql_load_fr_db(sanity1sql) == utils.sql_load_fr_db(sanity2sql): # This must only be done if head_cm exists for all data

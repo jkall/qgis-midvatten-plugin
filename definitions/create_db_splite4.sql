@@ -9,6 +9,15 @@ insert into about_db values('about_db', 'column', '', '', 'Name of column')
 insert into about_db values('about_db', 'upd_date', '', '', 'Date for last update')
 insert into about_db values('about_db', 'upd_sign', '', '', 'Person responsible for update')
 insert into about_db values('about_db', 'contents', '', '', 'Contents')
+insert into about_db values('meteo', '*', '', '', 'meteorological observations')
+insert into about_db values('meteo', 'obsid', '', '', 'obsid linked to obs_points.obsid')
+insert into about_db values('meteo', 'instrumentid', '', '', 'Instrument Id, may use several different temperature sensors or precipitaion meters at same station')
+insert into about_db values('meteo', 'parameter', '', '', 'The meteorological parameter, e.g. precipitation, temperature etc')
+insert into about_db values('meteo', 'date_time', '', '', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss')
+insert into about_db values('meteo', 'reading_num', '', '', 'Value (real number) reading for the parameter')
+insert into about_db values('meteo', 'reading_txt', '', '', 'Value (text string) reading for the parameter')
+insert into about_db values('meteo', 'unit', '', '', 'Unit corresponding to the value reading')
+insert into about_db values('meteo', 'comment', '', '', 'Comment')
 insert into about_db values('obs_points', '*', '', '', 'One of the two main tables. This table holds all point observation objects.')
 insert into about_db values('obs_points', 'obsid', '', '', 'ID for the observation point, eg Well01, Br1201, Rb1201')
 insert into about_db values('obs_points', 'name', '', '', 'Ordinary name for the observation, e.g. Pumping well no 1, Brunn 123, Flow gauge A, pegel 3 etc ')
@@ -117,6 +126,9 @@ insert into about_db values('w_qual_lab', 'comment', '', '', 'Comments')
 insert into about_db values('zz_flowtype', '*', '', '', 'Possible Flowtypes in table w_flow')
 insert into about_db values('zz_flowtype', 'type', '', '', 'Existing types of measurements related to water flow')
 insert into about_db values('zz_flowtype', 'explanation', '', '', 'Explanation of the flowtypes')
+insert into about_db values('zz_meteoparam', '*', '', '', 'Possible meteorological parameters in meteo')
+insert into about_db values('zz_meteoparam', 'parameter', '', '', 'Existing types of parameter related to meteorological observations')
+insert into about_db values('zz_meteoparam', 'explanation', '', '', 'Explanation of the parameters')
 create table "obs_points" ( "obsid" text not null, "name" text, "place" text, "type" text, "length" double, "drillstop" text, "diam" double, "material" text, "screen" text, "capacity" text, "drilldate" text, "wmeas_yn" integer, "wlogg_yn" integer, "east" double, "north" double, "ne_accur" double, "ne_source" text,  "h_toc" double, "h_tocags" double, "h_gs" double, "h_accur" double, "h_syst" text, "h_source" text, "source" text, "com_onerow" text, "com_html" text, primary key (obsid));
 SELECT AddGeometryColumn("obs_points", "geometry", CHANGETORELEVANTEPSGID, "POINT", "XY", 0);
 create table "obs_lines" ("obsid" text  not null, name text, place text, type text, source text, primary key (obsid));
@@ -133,6 +145,8 @@ insert into zz_flowtype(type, explanation) values("Accvol", "Accumulated volume"
 insert into zz_flowtype(type, explanation) values("Momflow", "Momentary flow rate");
 insert into zz_flowtype(type, explanation) values("Aveflow", "Average flow since last reading");
 create table "w_flow" (obsid text not null, instrumentid text not null, flowtype text not null, date_time text not null, reading double, unit text, comment text, primary key (obsid, instrumentid, flowtype, date_time), foreign key(obsid) references obs_points(obsid), foreign key (flowtype) references zz_flowtype(type));
+CREATE TABLE "zz_meteoparam" (parameter text not null,explanation text, primary key(parameter));
+CREATE TABLE "meteo" (obsid text not null, instrumentid text not null, parameter text not null, date_time text not null, reading_num double, reading_txt text, unit text, comment text, primary key (obsid, instrumentid, parameter, date_time), foreign key(obsid) references obs_points(obsid), foreign key (parameter) references zz_meteoparam(parameter));
 create view obs_p_w_qual_field as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "w_qual_field" as "b" using ("obsid");
 insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) values ('obs_p_w_qual_field', 'geometry', 'rowid', 'obs_points', 'geometry',1);
 create view obs_p_w_qual_lab as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "w_qual_lab" as "b" using ("obsid");

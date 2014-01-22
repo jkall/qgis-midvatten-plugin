@@ -468,7 +468,7 @@ class wlvlloggimportclass():
         self.charsetchoosen = ('','')
 
         # Find obsid for the selected object
-        self.obsid = utils.getselectedobjectnames()     #A list of length 1! To get the acutal ID, call self.obsid[0]
+        self.obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())     #A list of length 1! To get the acutal ID, call self.obsid[0]
         # Import the csv file as a ogr csvlayer
         self.csvlayer = self.selectcsv()
         if self.csvlayer:
