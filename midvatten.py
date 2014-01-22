@@ -117,6 +117,9 @@ class midvatten:
         self.actionimport_wflow = QAction(QIcon(":/plugins/midvatten/icons/import_wflow.png"), "Import w flow measurements", self.iface.mainWindow())
         QObject.connect(self.actionimport_wflow, SIGNAL("triggered()"), self.import_wflow)
         
+        self.actionimport_meteo = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import meteorological observations", self.iface.mainWindow())
+        QObject.connect(self.actionimport_meteo, SIGNAL("triggered()"), self.import_meteo)
+        
         self.actionPlotTS = QAction(QIcon(":/plugins/midvatten/icons/PlotTS.png"), "Time series plot", self.iface.mainWindow())
         self.actionPlotTS.setWhatsThis("Plot time series for selected objects")
         self.iface.registerMainWindowAction(self.actionPlotTS, "F8")   # The function should also be triggered by the F8 key
@@ -175,7 +178,8 @@ class midvatten:
         self.menu.import_data_menu.addAction(self.actionimport_wqual_lab)
         self.menu.import_data_menu.addAction(self.actionimport_wqual_field)   
         self.menu.import_data_menu.addAction(self.action_import_wflow)   
-        self.menu.import_data_menu.addAction(self.actionimport_stratigraphy)   
+        self.menu.import_data_menu.addAction(self.actionimport_stratigraphy)
+        self.menu.import_data_menu.addAction(self.actionimport_meteo)
         self.menu.import_data_menu.addAction(self.action_import_obs_lines)   
         self.menu.import_data_menu.addAction(self.action_import_seismics)   
         self.menu.import_data_menu.addAction(self.action_import_vlf)   
@@ -443,7 +447,7 @@ class midvatten:
                     errorsignal = 1
 
         if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
-            sanity = utils.askuser("YesNo","""You are about to import water flow reading, from a text file which must have one header row and 7 columns:\n\n1. obsid\n2. instrumentid\n3. flowtype\n4. date_time\n5. reading\n6. unit\n7. comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of flowtypes since all new flowtypes will silently be added to the database table zz_flowtype during import.\nEmpty or null values are not allowed for obsid, instrumentid, flowtype or date_time.\nEach combination of obsid, instrumentid, flowtype or date_time must be unique.\n\nContinue?""",'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import water flow reading, from a text file which must have one header row and 7 columns:\n\n1. obsid\n2. instrumentid\n3. flowtype\n4. date_time\n5. reading\n6. unit\n7. comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of flowtypes since all new flowtypes will silently be added to the database table zz_flowtype during import.\nEmpty or null values are not allowed for obsid, instrumentid, flowtype or date_time.\nEach combination of obsid, instrumentid, flowtype and date_time must be unique.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
@@ -560,6 +564,33 @@ class midvatten:
                     self.iface.messageBar().pushMessage("Info","%s water quality parameters were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
                 #else:  
                 #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+
+    def import_meteo(self):
+        errorsignal = 0
+        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.loadSettings()
+
+        if len(utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'"""))==0: #verify there actually is a meteo table (introduced in midv plugin version 1.1)
+            errorsignal = 1
+            self.iface.messageBar().pushMessage("Warning","There is no table for meteorological data in your database!", 1)
+        
+        allcritical_layers = ('obs_points')     #Check that none of these layers are in editing mode
+        for layername in allcritical_layers:
+            layerexists = utils.find_layer(str(layername))
+            if layerexists:
+                if layerexists.isEditable():
+                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
+                    errorsignal = 1
+
+        if errorsignal == 0:        # unless none of the critical layers are in editing mode or the database is so old no meteo table exist
+            sanity = utils.askuser("YesNo","""You are about to import meteorological data from, from a text file which must have one header row and 8 columns:\n\n"obsid", "instrumentid", "parameter", "date_time", "reading_num", "reading_txt", "unit", "comment"\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of parameters since all new parameters will silently be added to the database table zz_meteoparam during import.\nEmpty or null values are not allowed for obsid, instrumentid, parameter or date_time.\nEach combination of obsid, instrumentid, parameter and date_time must be unique.\n\nContinue?""",'Are you sure?')
+            #utils.pop_up_info(sanity.result)   #debugging
+            if sanity.result == 1:
+                from import_data_to_db import midv_data_importer
+                importinstance = midv_data_importer()
+                importinstance.meteo_import()
+                if importinstance.status=='True':      # 
+                    self.iface.messageBar().pushMessage("Info","%s meteorological readings were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
             
     def loadSettings(self):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
         """read plugin settings from QgsProject instance"""

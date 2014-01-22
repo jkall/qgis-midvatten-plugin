@@ -19,6 +19,8 @@ deprecated=False
 
 changelog=
         - Warning! This is an unstable experimental release
-        - New database design: a table for storing meteorological data is added
+        - New feature _and_ database design: import of meteorological data into a new table for storing meteorological data
+        - Minor database design changes: now "w_levels"."level_masl" may be null and is no longer -999 by default
+        - New behaviour during imports - empty readings (real number) are from now on imported as null instead of zero
         - New feature: Section plot!
         - Working on a new feature (see code): Piper diagram!

@@ -133,7 +133,7 @@ create table "obs_points" ( "obsid" text not null, "name" text, "place" text, "t
 SELECT AddGeometryColumn("obs_points", "geometry", CHANGETORELEVANTEPSGID, "POINT", "XY", 0);
 create table "obs_lines" ("obsid" text  not null, name text, place text, type text, source text, primary key (obsid));
 SELECT AddGeometryColumn("obs_lines", "geometry", CHANGETORELEVANTEPSGID, "LINESTRING", "XY", 0);
-create table "w_levels" ("obsid" text not null, "date_time" text not null, "meas" double, "h_toc" double, "level_masl" double not null default -999, "comment" text, primary key (obsid, date_time),  foreign key(obsid) references obs_points(obsid));
+create table "w_levels" ("obsid" text not null, "date_time" text not null, "meas" double, "h_toc" double, "level_masl" double, "comment" text, primary key (obsid, date_time),  foreign key(obsid) references obs_points(obsid));
 create table "w_levels_logger" ("obsid" text not null, "date_time" text not null, "head_cm" double, "temp_degc" double, "cond_mscm" double, "level_masl" double not null default -999, "comment" text, primary key (obsid, date_time),  foreign key(obsid) references obs_points(obsid));
 create table "stratigraphy" (obsid text not null, stratid integer not null, depthtop double, depthbot double, geology text, geoshort text, capacity text, development text,  comment text, primary key (obsid, stratid), foreign key(obsid) references obs_points(obsid));
 create table "w_qual_field" (obsid text not null, staff text, date_time text not null, instrument text, parameter text not null, reading_num double, reading_txt text, unit text, flow_lpm double, comment text, primary key(obsid, date_time, parameter), foreign key(obsid) references obs_points(obsid) );
@@ -146,6 +146,8 @@ insert into zz_flowtype(type, explanation) values("Momflow", "Momentary flow rat
 insert into zz_flowtype(type, explanation) values("Aveflow", "Average flow since last reading");
 create table "w_flow" (obsid text not null, instrumentid text not null, flowtype text not null, date_time text not null, reading double, unit text, comment text, primary key (obsid, instrumentid, flowtype, date_time), foreign key(obsid) references obs_points(obsid), foreign key (flowtype) references zz_flowtype(type));
 CREATE TABLE "zz_meteoparam" (parameter text not null,explanation text, primary key(parameter));
+insert into zz_meteoparam(parameter, explanation) values("precip", "Precipitation");
+insert into zz_meteoparam(parameter, explanation) values("temp", "Air temperature");
 CREATE TABLE "meteo" (obsid text not null, instrumentid text not null, parameter text not null, date_time text not null, reading_num double, reading_txt text, unit text, comment text, primary key (obsid, instrumentid, parameter, date_time), foreign key(obsid) references obs_points(obsid), foreign key (parameter) references zz_meteoparam(parameter));
 create view obs_p_w_qual_field as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "w_qual_field" as "b" using ("obsid");
 insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) values ('obs_p_w_qual_field', 'geometry', 'rowid', 'obs_points', 'geometry',1);
