@@ -96,6 +96,9 @@ class midvatten:
         self.action_wlvlcalculate = QAction(QIcon(":/plugins/midvatten/icons/calc_level_masl.png"), "Calculate w level above sea level", self.iface.mainWindow())
         QObject.connect(self.action_wlvlcalculate , SIGNAL("triggered()"), self.wlvlcalculate)
         
+        self.action_aveflowcalculate = QAction(QIcon(":/plugins/midvatten/icons/import_wflow.png"), "Calculate Aveflow from Accvol", self.iface.mainWindow())
+        QObject.connect(self.action_aveflowcalculate , SIGNAL("triggered()"), self.aveflowcalculate)
+        
         self.action_import_wlvllogg = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), "Import w level from logger", self.iface.mainWindow())
         QObject.connect(self.action_import_wlvllogg , SIGNAL("triggered()"), self.import_wlvllogg)
         
@@ -126,7 +129,7 @@ class midvatten:
         QObject.connect(self.actionPlotTS, SIGNAL("triggered()"), self.PlotTS)
         
         self.actionPlotXY = QAction(QIcon(":/plugins/midvatten/icons/PlotXY.png"), "Scatter plot", self.iface.mainWindow())
-        self.actionPlotXY.setWhatsThis("Plot XY scatter data (e.g. seismic profiel) for the selected objects")
+        self.actionPlotXY.setWhatsThis("Plot XY scatter data (e.g. seismic profile) for the selected objects")
         self.iface.registerMainWindowAction(self.actionPlotXY, "F9")   # The function should also be triggered by the F9 key
         QObject.connect(self.actionPlotXY, SIGNAL("triggered()"), self.PlotXY)
         
@@ -191,6 +194,7 @@ class midvatten:
         self.menu.add_data_menu.addAction(self.action_wlvlloggcalibrate)   
         self.menu.add_data_menu.addAction(self.actionupdatecoord)   
         self.menu.add_data_menu.addAction(self.actionupdateposition)   
+        self.menu.add_data_menu.addAction(self.action_aveflowcalculate)   
 
         self.menu.plot_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&View plot"))
         #self.iface.addPluginToMenu("&Midvatten", self.menu.plot_data_menu.menuAction())
@@ -572,7 +576,7 @@ class midvatten:
 
         if len(utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'"""))==0: #verify there actually is a meteo table (introduced in midv plugin version 1.1)
             errorsignal = 1
-            self.iface.messageBar().pushMessage("Warning","There is no table for meteorological data in your database!", 1)
+            utils.pop_up_info("There is no table for meteorological data in your database! Perhaps your database was created with a previous version of Midvatten plugin? Contact plugin author for advice!", "Error")
         
         allcritical_layers = ('obs_points')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
@@ -925,3 +929,36 @@ class midvatten:
                     utils.pop_up_info("You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!")
             else: 
                 utils.pop_up_info("Check settings! \nYou have to select database first!")
+
+    def aveflowcalculate(self):#not at all ready             
+        errorsignal = 0
+        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.loadSettings()    
+            
+        allcritical_layers = ('obs_points', 'w_flow')     #Check that none of these layers are in editing mode
+        for layername in allcritical_layers:
+            layerexists = utils.find_layer(str(layername))
+            if layerexists:
+                if layerexists.isEditable():
+                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calculating water level.", "Warning")
+                    errorsignal = 1
+
+        if self.settingsdict['database'] == '': #Check that database is selected
+            utils.pop_up_info("Check settings! \nSelect database first!")        
+            errorsignal = 1
+
+        layer = qgis.utils.iface.activeLayer()
+        if layer:
+            if utils.selection_check(layer) == 'ok':
+                pass
+            else:
+                errorsignal = 1
+        else:
+            utils.pop_up_info("You have to select a relevant layer!")
+            errorsignal = 1
+
+        if not(errorsignal == 1):     
+            from w_flow_calc_aveflow import calcave
+            dlg = calcave(self.iface.mainWindow()) 
+            dlg.exec_()
+
