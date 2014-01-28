@@ -11,6 +11,10 @@
  ***************************************************************************/
 """
 """
+Major parts of the code is re-used from the profiletool plugin:
+# Copyright (C) 2008  Borys Jurgiel
+# Copyright (C) 2012  Patrice Verchere 
+
 SAKNAS:
 1. input för water level dates
 2. input för floating bar width 
@@ -20,7 +24,6 @@ Sen bör man göra nån smart "re-plot" från plot-fönstret så man slipper gö
 """
 import PyQt4.QtCore
 import PyQt4.QtGui
-#from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 import numpy as np
@@ -32,20 +35,29 @@ import matplotlib.ticker as tick
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import pyspatialite.dbapi2 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
-#import PyQt4.uic
 import midvatten_utils as utils
-from ui.secplotdialog_ui import Ui_SecPlotWindow
+from ui.secplotdockwidget_ui import Ui_SecPlotDock
 
-class sectionplot(PyQt4.QtGui.QDialog, Ui_SecPlotWindow):#the Ui_SecPlotWindow  is created instantaniously as this is created
-    def __init__(self,parent,s_dict,OBSIDtuplein,SectionLineLayer):#Please note, self.selected_obsids must be a tuple
-        self.s_dict=s_dict
+class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
+    def __init__(self, parent1, iface1, mdl1):#Please note, self.selected_obsids must be a tuple
         #super(sectionplot, self).saveSettings()
-        PyQt4.QtGui.QDialog.__init__(self)
-        #Ui_SecPlotWindow.__init__(self)
-        self.setupUi(self) # Required by Qt4 to initialize the UI
-        self.setWindowTitle("Midvatten plugin - section plot") # Set the title for the dialog
-        self.initUI()
+        PyQt4.QtGui.QDockWidget.__init__(self, parent1)
+        #Ui_SecPlotDock.__init__(self)
+        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
 
+        self.location = PyQt4.QtCore.Qt.BottomDockWidgetArea#should be loaded from settings instead
+        self.parent = parent1
+        self.iface = iface1
+        self.connect(self, PyQt4.QtCore.SIGNAL("dockLocationChanged(Qt::DockWidgetArea)"), self.setLocation)#not really implemented yet
+
+        self.setupUi(self) # Required by Qt4 to initialize the UI
+        #self.setWindowTitle("Midvatten plugin - section plot") # Set the title for the dialog
+        self.initUI()
+        self.mdl = mdl1
+        #self.showed = False
+
+    def doit(self,s_dict,OBSIDtuplein,SectionLineLayer):
+        self.s_dict=s_dict
         self.FillComboBoxes()        # Comboboxes are filled with relevant information
 
         self.show()
@@ -58,7 +70,7 @@ class sectionplot(PyQt4.QtGui.QDialog, Ui_SecPlotWindow):#the Ui_SecPlotWindow  
         self.x_txt = [] #created by self.PlotGeology and used by self.WriteAnnotation
         self.z_txt = []#created by self.PlotGeology and used by self.WriteAnnotation
         self.temptableName = 'temporary_section_line'
-        self.sectionlinelayer = SectionLineLayer        
+        self.sectionlinelayer = SectionLineLayer       
         
         
         #upload vector line layer as temporary table in sqlite db
@@ -97,6 +109,9 @@ class sectionplot(PyQt4.QtGui.QDialog, Ui_SecPlotWindow):#the Ui_SecPlotWindow  
         self.mpltoolbar.removeAction( lstActions[ 7 ] )
         self.mplplotlayout.addWidget( self.canvas )
         self.mplplotlayout.addWidget( self.mpltoolbar )
+        #Draw the widget
+        self.iface.addDockWidget(self.location, self)
+        self.iface.mapCanvas().setRenderFlag(True)
 
     def FillComboBoxes(self): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
@@ -278,11 +293,11 @@ class sectionplot(PyQt4.QtGui.QDialog, Ui_SecPlotWindow):#the Ui_SecPlotWindow  
                         #lists for plotting annotation 
                         self.x_txt.append(x[i]+ self.barwidth/2)
                         self.z_txt.append(Bottom[i] + recs[j][0]/2)
-                        self.geology_txt.append(self.returnunicode(recs[j][2]))
-                        self.geoshort_txt.append(self.returnunicode(recs[j][3]))
-                        self.capacity_txt.append(self.returnunicode(recs[j][4]))
-                        self.development_txt.append(self.returnunicode(recs[j][5]))
-                        self.comment_txt.append(self.returnunicode(recs[j][6]))
+                        self.geology_txt.append(utils.returnunicode(recs[j][2]))
+                        self.geoshort_txt.append(utils.returnunicode(recs[j][3]))
+                        self.capacity_txt.append(utils.returnunicode(recs[j][4]))
+                        self.development_txt.append(utils.returnunicode(recs[j][5]))
+                        self.comment_txt.append(utils.returnunicode(recs[j][6]))
                         #print obs + " " + Typ + " " + self.geology_txt[l] + " " + self.geoshort_txt[l] + " " + self.capacity_txt[l] + " " + self.development_txt[l] + " " + self.comment_txt[l]
                         
                         i +=1
@@ -672,22 +687,6 @@ class sectionplot(PyQt4.QtGui.QDialog, Ui_SecPlotWindow):#the Ui_SecPlotWindow  
             "Peat" : u"+",
             "Fill":u"+"}
         return Dict
-        
-    def returnunicode(self,anything): #takes an input and tries to return it as unicode
-        if type(anything) == type(None):
-            text = unicode('')
-        elif type(anything) == type(unicode('unicodetextstring')):
-            text = anything 
-        elif (type(anything) == type (1)) or (type(anything) == type (1.1)):
-            text = unicode(str(anything))
-        elif type(anything) == type('ordinary_textstring'):
-            text = unicode(anything)
-        else:
-            try:
-                text = unicode(str(anything))
-            except:
-                text = unicode('data type unknown, check database')
-        return text 
 
     def saveSettings(self):# settingsdict is a dictionary belonging to instance midvatten. This is a quick-fix, should call parent method instead.
         QgsProject.instance().writeEntry("Midvatten",'secplotwlvltab', self.s_dict['secplotwlvltab'] )
@@ -696,3 +695,8 @@ class sectionplot(PyQt4.QtGui.QDialog, Ui_SecPlotWindow):#the Ui_SecPlotWindow  
         QgsProject.instance().writeEntry("Midvatten",'secplotcolor', self.s_dict['secplotcolor'] )
         QgsProject.instance().writeEntry("Midvatten",'secplotdrillstop', self.s_dict['secplotdrillstop'] )
         QgsProject.instance().writeEntry("Midvatten",'secplotbw', self.s_dict['secplotbw'] )
+
+    def setLocation(self):#not ready
+        self.location=self.parent.dockWidgetArea(self)
+        #should be stored in settings
+        #print self.location

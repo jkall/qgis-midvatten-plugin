@@ -3,7 +3,7 @@
 name=Midvatten
 qgisMinimumVersion=2.0
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db. Partly based on the ARPAT plugin.
-version=Version 1.0.99e
+version=Version 1.0.99f
 author=Josef Källgården
 email=groundwatergis@gmail.com
 
@@ -19,9 +19,11 @@ deprecated=False
 
 changelog=
         - Warning! This is an unstable experimental release
+        - Fix slow/erroneous creation of spatialite databases under splite 4 (InitSpatialMetadata(1))
         - New feature _and_ database design: import of meteorological data into a new table "meteo" in database
         - New feature for calculating average water flow from accumulated water volume
         - Minor database design changes: now "w_levels"."level_masl" may be null and is no longer -999 by default
         - New behaviour during imports - empty readings (real number) are from now on imported as null instead of zero
         - New feature: Section plot!
         - Working on a new feature (see code): Piper diagram!
+        - some code cleanup

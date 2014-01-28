@@ -23,7 +23,7 @@ from PyQt4.QtGui import *
 from qgis.core import *
 import qgis.utils
 import resources  # Initialize Qt resources from file resources.py
-import os.path # Just to be able to read from metadata.txt in the same directory
+import os.path
 import sys
 from midvsettings import midvsettings
 from tsplot import TimeSeriesPlot
@@ -31,14 +31,9 @@ from stratigraphy import Stratigraphy
 from xyplot import XYPlot
 from wqualreport import wqualreport
 from loaddefaultlayers import loadlayers
-import midvatten_utils as utils         # Whenever some global midvatten_utilities are needed
+import midvatten_utils as utils 
 from definitions import midvatten_defs
-#from about.AboutDialog import AboutDialog
-from HtmlDialog import HtmlDialog
 from sectionplot import sectionplot
-
-
-#sys.path.append(os.path.dirname(os.path.abspath(__file__))) # To enable loading of modules from inside the plugin directory
 
 class midvatten:
     def __init__(self, iface): # Might need revision of variables and method for loading default variables
@@ -225,16 +220,13 @@ class midvatten:
         # QGIS iface connections
         self.iface.projectRead.connect(self.loadSettings)
         self.iface.newProjectCreated.connect(self.resetSettings)
+
+        self.secplotdockOpened = False		#remember for not reopening section plot dock if there's already one opened
         
     def unload(self):    
         # Remove the plugin menu items and icons
         self.menu.deleteLater()
-        #self.iface.removePluginMenu("&Midvatten", self.add_data_menu.menuAction())
-        #self.iface.removePluginMenu("&Midvatten", self.plot_data_menu.menuAction())
-        #self.iface.removePluginMenu("&Midvatten", self.actionsetup)
-        #self.iface.removePluginMenu("&Midvatten", self.actionresetSettings)
-        #self.iface.removePluginMenu("&Midvatten", self.actionabout)
-        
+
         # remove tool bar
         del self.toolBar
         
@@ -267,13 +259,7 @@ class midvatten:
         f_out.write(changedfile)
         f_in.close()
         f_out.close()
-        #infoString = QString("This is the Midvatten toolset for QGIS. ")
-        #infoString = infoString.append(QString("\n<a href=\'" + homepage + "'></a>"))
-        #infoString = infoString.append("\n\n" + verno)
-        #infoString = infoString.append("\nAuthor: " + author)
-        #infoString = infoString.append("\nEmail: " + email)
-        #QMessageBox.information(self.iface.mainWindow(), "About the Midvatten toolset", infoString)
-        dlg = HtmlDialog("About Midvatten plugin for QGIS",QUrl.fromLocalFile(ABOUT_outputfile))
+        dlg = utils.HtmlDialog("About Midvatten plugin for QGIS",QUrl.fromLocalFile(ABOUT_outputfile))
         dlg.exec_()
 
     def ChartMaker(self): #  - Not ready - 
@@ -678,7 +664,9 @@ class midvatten:
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database and stratigraphy table. Reset if needed.", 2)
 
     def PlotSection(self):
-        self.loadSettings()    #always do this to get last plotsection settings
+        if self.settingsareloaded == False:    # Perhaps settings should always be loaded, to 
+            self.loadSettings()
+            
         if self.settingsdict['database'] == '':#perhaps there is no database defined
             self.iface.messageBar().pushMessage("Error","No database found. Please check your Midvatten Settings. Reset if needed.", 2)
             return
@@ -710,10 +698,21 @@ class midvatten:
         if msg:#if something went wrong
             self.iface.messageBar().pushMessage("Error",msg, 2)
         else:#otherwise go
-            myplot = sectionplot(self,self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
-            myplot.exec_()
+            try:
+                print self.myplot
+            except:
+                print 'why is there no instance'
+            try:
+                self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
+                print 'found it and reused it'
+            except:
+                self.mdl = QStandardItemModel(0, 5)
+                self.myplot = sectionplot(self.iface.mainWindow(), self.iface, self.mdl)
+                #QObject.connect(self.myplot, SIGNAL( "closed(PyQt_PyObject)" ), self.cleaning2)
+                self.secplotdockOpened = True
+                self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
+            #myplot.exec_()
             #myplot.show_()#why not this instead?
-            
     def PlotXY(self):            
         if self.settingsareloaded == False:    # If the first thing the user does is to plot xy data, then load settings from project file
             self.loadSettings()    
@@ -763,7 +762,8 @@ class midvatten:
             self.settingsdict['wqual_sortingcolumn'] = dlg.ListOfColumns_WQUALSORTING.currentText()
             self.settingsdict['stratigraphytable'] = dlg.ListOfTables_3.currentText()
             self.settingsdict['tabwidget'] = dlg.tabWidget.currentIndex()
-            self.saveSettings()            # Since the SelectTSDialog has saved all settings they should be reached by loading them here...
+            self.saveSettings()
+            self.settingsareloaded = True
 
     def updatecoord(self):
         if self.settingsareloaded == False:    # If the first thing the user does is to update coordinates, then load settings from project file    
@@ -962,3 +962,8 @@ class midvatten:
             dlg = calcave(self.iface.mainWindow()) 
             dlg.exec_()
 
+    def cleaning2(self):        #clean up after closing section plot Dock dialog          --------------THIS NEVER HAPPENS!!!
+                print 'cleaning the dock house'
+                self.mdl = None
+                self.secplotdockOpened = False
+                self.wdg = None

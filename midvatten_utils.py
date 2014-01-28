@@ -18,11 +18,12 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore, QtGui, QtWebKit
 from qgis.core import *
 from qgis.gui import *
 import qgis.utils
 import sys
+import os
 from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialite-specific sql clauses may be sent by sql_alter_db and sql_load_fr_db
 import time
 
@@ -50,6 +51,38 @@ class askuser(QtGui.QDialog):
             msgBox.addButton(QtGui.QMessageBox.Cancel)
             reply = msgBox.exec_()
             self.result = reply # ALL=0, SELECTED=1
+
+class HtmlDialog(QtGui.QDialog):
+
+    def __init__(self, title='', filepath=''):
+        QtGui.QDialog.__init__(self)
+        self.setModal(True)
+        self.setupUi(title, filepath)
+
+    def setupUi(self, title, filepath):
+        self.resize(600, 500)
+        self.webView = QtWebKit.QWebView()
+        self.setWindowTitle(title)
+        self.verticalLayout= QtGui.QVBoxLayout()
+        self.verticalLayout.setSpacing(2)
+        self.verticalLayout.setMargin(0)
+        self.verticalLayout.addWidget(self.webView)
+        self.closeButton = QtGui.QPushButton()
+        self.closeButton.setText("Close")
+        self.closeButton.setMaximumWidth(150)
+        self.horizontalLayout= QtGui.QHBoxLayout()
+        self.horizontalLayout.setSpacing(2)
+        self.horizontalLayout.setMargin(0)
+        self.horizontalLayout.addStretch(1000)
+        self.horizontalLayout.addWidget(self.closeButton)
+        QtCore.QObject.connect(self.closeButton, QtCore.SIGNAL("clicked()"), self.closeWindow)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.setLayout(self.verticalLayout)
+        url = QtCore.QUrl(filepath)
+        self.webView.load(url)
+
+    def closeWindow(self):
+        self.close()
     
 def find_layer(layer_name):
     for name, search_layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():
@@ -156,13 +189,13 @@ def returnunicode(anything): #takes an input and tries to return it as unicode
         text = unicode('')
     elif type(anything) == type(unicode('unicodetextstring')):
         text = anything 
-    #elif (type(anything) == type (1)) or (type(anything) == type (1.1)):
-    #    text = unicode(str(anything))
-    #elif type(anything) == type('ordinary_textstring'):
-    #    text = unicode(anything)
+    elif (type(anything) == type (1)) or (type(anything) == type (1.1)):
+        text = unicode(str(anything))
+    elif type(anything) == type('ordinary_textstring'):
+        text = unicode(anything)
     else:
         try:
             text = unicode(str(anything))
         except:
             text = unicode('data type unknown, check database')
-    return text 
+    return text

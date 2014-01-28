@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'secplotdialog_ui.ui'
 #
-# Created: Mon Dec  2 23:43:28 2013
+# Created: Mon Jan 27 22:10:07 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_SecPlotWindow(object):
     def setupUi(self, SecPlotWindow):
         SecPlotWindow.setObjectName(_fromUtf8("SecPlotWindow"))
-        SecPlotWindow.setWindowModality(QtCore.Qt.WindowModal)
+        SecPlotWindow.setWindowModality(QtCore.Qt.NonModal)
         SecPlotWindow.resize(698, 445)
         self.gridLayout_3 = QtGui.QGridLayout(SecPlotWindow)
         self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
