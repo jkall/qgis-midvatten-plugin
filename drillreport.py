@@ -38,8 +38,8 @@ class drillreport():        # general observation point info for the selected ob
         f = codecs.open(reportpath, "wb", "utf-8")
         
         #write some initiating html, header and also 
-        rpt = r"""<meta http-equiv="content-type" content="text/html; charset=utf-8" />"""  # NOTE, perhaps 'latin-1' due to use on win machines??
-        rpt += r"""<head><title>Midvatten plugin for QGIS - general report</title></head>"""
+        rpt = r"""<meta http-equiv="content-type" content="text/html; charset=utf-8" />""" 
+        rpt += r"""<head><title>%s General report from Midvatten plugin for QGIS</title></head>"""%obsid
         rpt += r"""<html><TABLE WIDTH=100% BORDER=0 CELLPADDING=1 CELLSPACING=1 STYLE="page-break-before: always"><TR VALIGN=TOP><TD WIDTH=15%><h3 style="font-family:'arial';font-size:18pt; font-weight:600">"""
         rpt += obsid
         if  locale.getdefaultlocale()[0] == 'sv_SE':

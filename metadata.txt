@@ -26,4 +26,5 @@ changelog=
         - New behaviour during imports - empty readings (real number) are from now on imported as null instead of zero
         - New feature: Section plot!
         - Working on a new feature (see code): Piper diagram!
+        - minor html report changes
         - some code cleanup

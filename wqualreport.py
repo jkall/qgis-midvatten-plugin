@@ -39,8 +39,8 @@ class wqualreport():        # extracts water quality data for selected objects, 
         f = codecs.open(reportpath, "wb", "utf-8")
 
         #write some initiating html
-        #rpt = r""" <meta http-equiv="content-type" content="text/html; charset=latin-1" />"""  # NOTE, 'latin-1' is due to use on win machines
-        rpt = r""" <meta http-equiv="content-type" content="text/html; charset=utf-8" />""" #NOTE, all report data must be in 'utf-8'
+        rpt = r"""<head><title>water quality report from Midvatten plugin for QGIS</title></head>"""
+        rpt += r""" <meta http-equiv="content-type" content="text/html; charset=utf-8" />""" #NOTE, all report data must be in 'utf-8'
         rpt += "<html><body>"
         #rpt += "<table width=\"100%\" border=\"1\">\n"
         #rpt2 = rpt.encode("utf-8")
