@@ -24,6 +24,7 @@ changelog=
         - New feature for calculating average water flow from accumulated water volume
         - Minor database design changes: now "w_levels"."level_masl" may be null and is no longer -999 by default
         - New behaviour during imports - empty readings (real number) are from now on imported as null instead of zero
+        - Fixed backend handling in time series plots to avoid blocking qgis on specific platform/backend combinations  - BUT THIS PREVENTS MULTIPLE PLOTS
         - New feature: Section plot!
         - Working on a new feature (see code): Piper diagram!
         - minor html report changes
