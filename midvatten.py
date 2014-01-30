@@ -26,7 +26,7 @@ import resources  # Initialize Qt resources from file resources.py
 import os.path
 import sys
 from midvsettings import midvsettings
-from tsplot import TimeSeriesPlot
+from tsplot2 import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
 from wqualreport import wqualreport
@@ -642,7 +642,8 @@ class midvatten:
             layer = qgis.utils.iface.activeLayer()
             if layer:
                 if utils.selection_check(layer) == 'ok':
-                    dlg = TimeSeriesPlot(layer, self.settingsdict)
+                    self.dlg = TimeSeriesPlot(layer, self.settingsdict)
+                    self.dlg.show()
             else:
                 utils.pop_up_info("You have to select a layer first!")
         else:
