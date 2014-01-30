@@ -26,7 +26,8 @@ import resources  # Initialize Qt resources from file resources.py
 import os.path
 import sys
 from midvsettings import midvsettings
-from tsplot2 import TimeSeriesPlot
+#from tsplot2 import TimeSeriesPlot #One some combinations of platform/backend/graphics this may be better to avoid pyplot plot windows from blocking the qgis window
+from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
 from wqualreport import wqualreport
@@ -642,8 +643,9 @@ class midvatten:
             layer = qgis.utils.iface.activeLayer()
             if layer:
                 if utils.selection_check(layer) == 'ok':
-                    self.dlg = TimeSeriesPlot(layer, self.settingsdict)
-                    self.dlg.show()
+                    dlg = TimeSeriesPlot(layer, self.settingsdict)
+                    #self.dlg = TimeSeriesPlot(layer, self.settingsdict)#when using tsplot2
+                    #self.dlg.show()#when using tsplot2
             else:
                 utils.pop_up_info("You have to select a layer first!")
         else:
