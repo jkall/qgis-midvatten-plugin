@@ -41,9 +41,9 @@ from ui.secplotdockwidget_ui import Ui_SecPlotDock
 class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
     def __init__(self, parent1, iface1, mdl1):#Please note, self.selected_obsids must be a tuple
         #super(sectionplot, self).saveSettings()
-        PyQt4.QtGui.QDockWidget.__init__(self, parent1)
+        PyQt4.QtGui.QDockWidget.__init__(self, parent1) #, PyQt4.QtCore.Qt.WindowFlags(PyQt4.QtCore.Qt.WA_DeleteOnClose))
         #Ui_SecPlotDock.__init__(self)
-        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+        #self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
 
         self.location = PyQt4.QtCore.Qt.BottomDockWidgetArea#should be loaded from settings instead
         self.parent = parent1
@@ -369,7 +369,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         del x_id, z_id, q
 
     def FinishPlot(self):
-        leg = self.secax.legend(self.p, self.Labels )
+        leg = self.secax.legend(self.p, self.Labels,loc=0 )
         leg.draggable(state=True)
         frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
         frame.set_facecolor('1')    # set the frame face color to white                
@@ -531,7 +531,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
     
         #Commit DB connection:
         self.connectionObject.commit()
-        self.connectionObject.close()#THIS WAS NOT IN QSPATIALITE CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #self.connectionObject.close()#THIS WAS NOT IN QSPATIALITE CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # reload tables
         return True
 

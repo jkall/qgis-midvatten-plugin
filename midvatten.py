@@ -705,17 +705,18 @@ class midvatten:
                 print self.myplot
             except:
                 print 'why is there no instance'
-            try:
+            if self.secplotdockOpened==True:
+                print 'found it and will try to reus it'
                 self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
-                print 'found it and reused it'
-            except:
+            elif self.secplotdockOpened==False:
                 self.mdl = QStandardItemModel(0, 5)
                 self.myplot = sectionplot(self.iface.mainWindow(), self.iface, self.mdl)
-                #QObject.connect(self.myplot, SIGNAL( "closed(PyQt_PyObject)" ), self.cleaning2)
+                QObject.connect(self.myplot, SIGNAL( "closed(PyQt_PyObject)" ), self.cleaning2)
                 self.secplotdockOpened = True
                 self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
             #myplot.exec_()
-            #myplot.show_()#why not this instead?
+            #self.myplot.show()#why not this instead?
+
     def PlotXY(self):            
         if self.settingsareloaded == False:    # If the first thing the user does is to plot xy data, then load settings from project file
             self.loadSettings()    
