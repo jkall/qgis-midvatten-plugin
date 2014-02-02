@@ -25,7 +25,7 @@ Sen bör man göra nån smart "re-plot" från plot-fönstret så man slipper gö
 import PyQt4.QtCore
 import PyQt4.QtGui
 from qgis.core import *
-from qgis.gui import *
+
 import numpy as np
 import sys
 import locale

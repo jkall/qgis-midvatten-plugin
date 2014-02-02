@@ -21,12 +21,13 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
+
 import qgis.utils
 import resources  # Initialize Qt resources from file resources.py
 import os.path
 import sys
 from midvsettings import midvsettings
-#from tsplot2 import TimeSeriesPlot #One some combinations of platform/backend/graphics this may be better to avoid pyplot plot windows from blocking the qgis window
+#from tsplot2 import TimeSeriesPlot #On some combinations of platform/backend/graphics this may be better to avoid pyplot plot windows from blocking the qgis window
 from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
@@ -890,7 +891,7 @@ class midvatten:
 
         if not(errorsignal == 1):     
             from wlevels_calc_calibr import calclvl
-            dlg = calclvl(self.iface.mainWindow())  # dock is an instance of calibrlogger
+            dlg = calclvl(self.iface.mainWindow(),qgis.utils.iface.activeLayer())  # dock is an instance of calibrlogger
             dlg.exec_()
 
     def wlvlloggcalibrate(self):             
@@ -925,7 +926,7 @@ class midvatten:
                         sanity2sql = """select count(obsid) from w_levels_logger where head_cm not null and head_cm !='' and obsid = '""" +  obsid[0] + """'"""
                         if utils.sql_load_fr_db(sanity1sql) == utils.sql_load_fr_db(sanity2sql): # This must only be done if head_cm exists for all data
                             from wlevels_calc_calibr import calibrlogger
-                            dlg = calibrlogger(self.iface.mainWindow(),obsid)  # dock is an instance of calibrlogger
+                            dlg = calibrlogger(self.iface.mainWindow(),obsid, self.settingsdict)  # dock is an instance of calibrlogger
                             dlg.exec_()
                         else:
                             utils.pop_up_info("""There must not be empty cells or null values in the 'head_cm' column!\nFix head_cm data problem and try again.""", "Error") 

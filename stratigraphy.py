@@ -38,11 +38,10 @@
  *                                                                         *
  ***************************************************************************/
 """
-# Import necessary libraries for the stratigraphy part of ARPAT plugin 
-from PyQt4.QtCore import * #For some reason both qtcore imports are necessary
-from PyQt4 import QtCore #For some reason both qtcore imports are necessary
-from PyQt4.QtGui import * #For some reason both qtgui imports are necessary
-from PyQt4 import QtGui #For some reason both qtgui imports are necessary
+
+import PyQt4.QtCore
+import PyQt4.QtGui
+
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import unicodedata  # To normalize some special national characters to regular international characters
 from functools import partial # only to get combobox signals to work
@@ -78,14 +77,14 @@ class Stratigraphy:
             return
         # initiate the datastore if not yet done   
         self.initStore()   
-        QApplication.setOverrideCursor(Qt.WaitCursor)  # Sets the mouse cursor to wait symbol
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)  # Sets the mouse cursor to wait symbol
         try:  # return from store.getData is stored in data only if no object belonging to DataSanityError class is created
             data = self.store.getData(ids, lyr)    # added lyr as an argument!!!
         except DataSanityError, e: # if an object 'e' belonging to DataSanityError is created, then do following
-            QApplication.restoreOverrideCursor()
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
             utils.pop_up_info("Data sanity problem, obsid: %s\n%s" % (e.sond_id, e.message))
             return
-        QApplication.restoreOverrideCursor()  # Restores the mouse cursor to normal symbol
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()  # Restores the mouse cursor to normal symbol
         # show widget
         w = SurveyDialog()
         #w.widget.setData2_nosorting(data)  #THIS IS IF DATA IS NOT TO BE SORTED!!
@@ -242,11 +241,11 @@ class SurveyStore:
                 top1 = strato.depthTop
                 bed1 = strato.depthBot
 
-class SurveyWidget(QtGui.QFrame):
+class SurveyWidget(PyQt4.QtGui.QFrame):
 
     def __init__(self, parent = None):
-        QtGui.QFrame.__init__(self, parent)
-        self.setFrameShape(QtGui.QFrame.StyledPanel)
+        PyQt4.QtGui.QFrame.__init__(self, parent)
+        self.setFrameShape(PyQt4.QtGui.QFrame.StyledPanel)
         self.setLineWidth(3)
         self.sondaggio = {}
         # In the original ARPAT plugin the following convention was used F = points, T = vertical lines and  C = horizontal lines
@@ -327,15 +326,15 @@ class SurveyWidget(QtGui.QFrame):
     def paintEvent(self, event):
         """ redraws the whole widget's area """
         
-        QtGui.QFrame.paintEvent(self,event)
+        PyQt4.QtGui.QFrame.paintEvent(self,event)
 
         # check whether there's a survey to show
         if len(self.sondaggio) == 0:
-            p = QtGui.QPainter(self)
-            p.drawText(self.rect(), QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter, "No data to display")
+            p = PyQt4.QtGui.QPainter(self)
+            p.drawText(self.rect(), PyQt4.QtCore.Qt.AlignCenter | PyQt4.QtCore.Qt.AlignVCenter, "No data to display")
             return
 
-        painter = QtGui.QPainter(self)
+        painter = PyQt4.QtGui.QPainter(self)
 
         self.drawSurveys(self.rect(), painter)
 
@@ -361,7 +360,7 @@ class SurveyWidget(QtGui.QFrame):
             
         # draw surveys
         for survey in self.order:
-            r = QtCore.QRect(x + margin, 0 + margin, surveyWidth - 2*margin, surveyHeight - 2*margin)
+            r = PyQt4.QtCore.QRect(x + margin, 0 + margin, surveyWidth - 2*margin, surveyHeight - 2*margin)
             x += surveyWidth
             sond = self.sondaggio[survey.obsid]
             # draw the survey
@@ -373,13 +372,13 @@ class SurveyWidget(QtGui.QFrame):
         depthTop = sond.top_lvl
         depthBot = depthTop - sond.strata[-1].depthBot
         
-        fm = QtGui.QFontMetrics(p.font())
+        fm = PyQt4.QtGui.QFontMetrics(p.font())
         nameHeight = fm.height()
         depthHeight = fm.height()
         
         # draw obsid 'name'
-        labelRect = QtCore.QRect(sRect.left(),sRect.top(),sRect.width(),nameHeight)
-        p.drawText(labelRect, QtCore.Qt.AlignVCenter, sond.obsid)
+        labelRect = PyQt4.QtCore.QRect(sRect.left(),sRect.top(),sRect.width(),nameHeight)
+        p.drawText(labelRect, PyQt4.QtCore.Qt.AlignVCenter, sond.obsid)
         
         scale = (sRect.height() - nameHeight - depthHeight*2) / (interval[1]-interval[0])
         
@@ -388,16 +387,16 @@ class SurveyWidget(QtGui.QFrame):
         yBed = top + (interval[1]-depthBot)*scale
         
         # top depth
-        depthRect = QtCore.QRect(sRect.left(),yTop-depthHeight,sRect.width(),depthHeight)
-        p.drawText(depthRect, QtCore.Qt.AlignVCenter, "%.1f m" % depthTop)
+        depthRect = PyQt4.QtCore.QRect(sRect.left(),yTop-depthHeight,sRect.width(),depthHeight)
+        p.drawText(depthRect, PyQt4.QtCore.Qt.AlignVCenter, "%.1f m" % depthTop)
         
         # bed depth
-        depthRect = QtCore.QRect(sRect.left(),yBed+1,sRect.width(),depthHeight)
-        p.drawText(depthRect, QtCore.Qt.AlignVCenter, "%.1f m" % depthBot)
+        depthRect = PyQt4.QtCore.QRect(sRect.left(),yBed+1,sRect.width(),depthHeight)
+        p.drawText(depthRect, PyQt4.QtCore.Qt.AlignVCenter, "%.1f m" % depthBot)
         
         
-        dRect = QtCore.QRect(QtCore.QPoint(sRect.left(), yTop),
-                             QtCore.QPoint(sRect.left()+columnWidth, yBed))
+        dRect = PyQt4.QtCore.QRect(PyQt4.QtCore.QPoint(sRect.left(), yTop),
+                             PyQt4.QtCore.QPoint(sRect.left()+columnWidth, yBed))
     
         p.drawRect(dRect)
     
@@ -408,12 +407,12 @@ class SurveyWidget(QtGui.QFrame):
             y2 = (layer.depthBot - layer.depthTop) * scale
 
             # column rectangle
-            cRect = QtCore.QRect(QtCore.QPoint(dRect.left(), y),
-                                 QtCore.QPoint(dRect.right(), y+y2-1))
+            cRect = PyQt4.QtCore.QRect(PyQt4.QtCore.QPoint(dRect.left(), y),
+                                 PyQt4.QtCore.QPoint(dRect.right(), y+y2-1))
 
             # text rectangle
-            tRect = QtCore.QRect(QtCore.QPoint(dRect.right()+10, y),
-                                 QtCore.QPoint(sRect.right(), y+y2))
+            tRect = PyQt4.QtCore.QRect(PyQt4.QtCore.QPoint(dRect.right()+10, y),
+                                 PyQt4.QtCore.QPoint(sRect.right(), y+y2))
             
             bType = self.geoToSymbol(layer.geo_short)  # select brush pattern depending on the geo_short 
             # select brush pattern depending on usage of geo or hydro
@@ -427,21 +426,21 @@ class SurveyWidget(QtGui.QFrame):
             p.drawRect(cRect)
 
             # draw column with specified hatch
-            p.setBrush(QtGui.QBrush(QtCore.Qt.black, bType))
+            p.setBrush(PyQt4.QtGui.QBrush(PyQt4.QtCore.Qt.black, bType))
             p.drawRect(cRect)
 
             # draw associated text
             if self.showDesc:
                 if self.GeoOrComment == "geology":
-                    p.drawText(tRect, QtCore.Qt.AlignVCenter, layer.geology)
+                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, layer.geology)
                 elif self.GeoOrComment == "comment":
-                    p.drawText(tRect, QtCore.Qt.AlignVCenter, layer.comment)
+                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, layer.comment)
                 elif self.GeoOrComment == "geoshort":
-                    p.drawText(tRect, QtCore.Qt.AlignVCenter, layer.geo_short)
+                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, layer.geo_short)
                 elif self.GeoOrComment == "hydro":
-                    p.drawText(tRect, QtCore.Qt.AlignVCenter, layer.hydro)
+                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, layer.hydro)
                 else:
-                    p.drawText(tRect, QtCore.Qt.AlignVCenter, layer.development)
+                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, layer.development)
 
             y += y2
 
@@ -449,39 +448,39 @@ class SurveyWidget(QtGui.QFrame):
         """ returns QColor from the specified text """
         if type == 'hydro':
             if id in self.hydroColors:
-                #return eval("QtCore.Qt" + self.hydroColors[id][2])    # Less sofisticated method to create a function call from a string (function syntax is in the string)
-                return getattr(QtCore.Qt, self.hydroColors[id][1])  # getattr is to combine a function and a string to a combined function
+                #return eval("PyQt4.QtCore.Qt" + self.hydroColors[id][2])    # Less sofisticated method to create a function call from a string (function syntax is in the string)
+                return getattr(PyQt4.QtCore.Qt, self.hydroColors[id][1])  # getattr is to combine a function and a string to a combined function
             else:
-                return QtCore.Qt.white
+                return PyQt4.QtCore.Qt.white
         elif type == 'geo':
             if id in self.geoColorSymbols:
-                return getattr(QtCore.Qt, self.geoColorSymbols[id][1])
+                return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id][1])
             else:
-                return QtCore.Qt.white
+                return PyQt4.QtCore.Qt.white
 
     def geoToSymbol(self, id=''):    # A function to return fill type for the box representing the stratigraphy layer
         """ returns Symbol from the specified text """
         if id in self.geoColorSymbols:
-            return getattr(QtCore.Qt, self.geoColorSymbols[id][0])   # Or possibly [0]?
+            return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id][0])   # Or possibly [0]?
         else:
-            return QtCore.Qt.NoBrush
+            return PyQt4.QtCore.Qt.NoBrush
         
     def printDiagram(self):
         """ outputs the diagram to the printer (or PDF) """
-        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
+        printer = PyQt4.QtGui.QPrinter(PyQt4.QtGui.QPrinter.HighResolution)
         
         # set defaults
-        printer.setOrientation(QtGui.QPrinter.Landscape)
+        printer.setOrientation(PyQt4.QtGui.QPrinter.Landscape)
 
     # setting output file name results in not opening print dialog on Win
         #printer.setOutputFileName("arpat.pdf")
         
         # show print dialog
-        dlg = QtGui.QPrintDialog(printer, self)
-        if dlg.exec_() != QtGui.QDialog.Accepted:
+        dlg = PyQt4.QtGui.QPrintDialog(printer, self)
+        if dlg.exec_() != PyQt4.QtGui.QDialog.Accepted:
             return
         
-        p = QtGui.QPainter()
+        p = PyQt4.QtGui.QPainter()
         p.begin(printer)
         
         rect = printer.pageRect()
@@ -491,38 +490,38 @@ class SurveyWidget(QtGui.QFrame):
         
         p.end()
 
-class SurveyDialog(QtGui.QDialog):
+class SurveyDialog(PyQt4.QtGui.QDialog):
     
     def __init__(self, parent=None):
-        QtGui.QDialog.__init__(self, parent)
+        PyQt4.QtGui.QDialog.__init__(self, parent)
         
-        self.resize(QtCore.QSize(500,250))
+        self.resize(PyQt4.QtCore.QSize(500,250))
         
         self.setWindowTitle("Identify Results")
         
-        self.layout = QtGui.QVBoxLayout(self)
+        self.layout = PyQt4.QtGui.QVBoxLayout(self)
         self.layout.setMargin(5)
         
-        self.layout2 = QtGui.QHBoxLayout()
+        self.layout2 = PyQt4.QtGui.QHBoxLayout()
         
         self.widget = SurveyWidget()
         self.layout.addWidget(self.widget)
         
-        self.radGeo = QtGui.QRadioButton("Geo")
+        self.radGeo = PyQt4.QtGui.QRadioButton("Geo")
         self.radGeo.setChecked(True)    #Default is to show colors as per geo
         self.layout2.addWidget(self.radGeo)
-        self.radHydro = QtGui.QRadioButton("Hydro")
+        self.radHydro = PyQt4.QtGui.QRadioButton("Hydro")
         #self.radHydro.setChecked(False)  #Default is NOT to show colors as per hydro
         self.layout2.addWidget(self.radHydro)
         
-        spacerItem = QtGui.QSpacerItem(100,0)
+        spacerItem = PyQt4.QtGui.QSpacerItem(100,0)
         self.layout2.addItem(spacerItem)
         
-        self.chkShowDesc = QtGui.QCheckBox("Show text")
+        self.chkShowDesc = PyQt4.QtGui.QCheckBox("Show text")
         self.chkShowDesc.setChecked(True)
         self.layout2.addWidget(self.chkShowDesc)
 
-        self.GeologyOrCommentCBox = QtGui.QComboBox(self)
+        self.GeologyOrCommentCBox = PyQt4.QtGui.QComboBox(self)
         self.GeologyOrCommentCBox.addItem('geology')
         self.GeologyOrCommentCBox.addItem('comment')
         self.GeologyOrCommentCBox.addItem('geoshort')
@@ -532,20 +531,20 @@ class SurveyDialog(QtGui.QDialog):
         
 
 
-        self.btnPrint = QtGui.QPushButton("Print")
+        self.btnPrint = PyQt4.QtGui.QPushButton("Print")
         self.layout2.addWidget(self.btnPrint)
         
-        self.btnClose = QtGui.QPushButton("Close")
+        self.btnClose = PyQt4.QtGui.QPushButton("Close")
         self.layout2.addWidget(self.btnClose)
         
         self.layout.addLayout(self.layout2)
         
-        self.connect(self.btnClose, QtCore.SIGNAL("clicked()"), self.close)
-        self.connect(self.btnPrint, QtCore.SIGNAL("clicked()"), self.widget.printDiagram)
-        self.connect(self.radGeo, QtCore.SIGNAL("toggled(bool)"), self.typeToggled)
-        self.connect(self.radHydro, QtCore.SIGNAL("toggled(bool)"), self.typeToggled)
-        self.connect(self.chkShowDesc, QtCore.SIGNAL("toggled(bool)"), self.widget.setShowDesc)
-        self.connect(self.GeologyOrCommentCBox, SIGNAL("currentIndexChanged(int)"), partial(self.ComboBoxUpdated)) 
+        self.connect(self.btnClose, PyQt4.QtCore.SIGNAL("clicked()"), self.close)
+        self.connect(self.btnPrint, PyQt4.QtCore.SIGNAL("clicked()"), self.widget.printDiagram)
+        self.connect(self.radGeo, PyQt4.QtCore.SIGNAL("toggled(bool)"), self.typeToggled)
+        self.connect(self.radHydro, PyQt4.QtCore.SIGNAL("toggled(bool)"), self.typeToggled)
+        self.connect(self.chkShowDesc, PyQt4.QtCore.SIGNAL("toggled(bool)"), self.widget.setShowDesc)
+        self.connect(self.GeologyOrCommentCBox, PyQt4.QtCore.SIGNAL("currentIndexChanged(int)"), partial(self.ComboBoxUpdated)) 
         # whenever the combobox is changed, function partial is used due to problems with currentindexChanged and Combobox)
         
     def close(self):

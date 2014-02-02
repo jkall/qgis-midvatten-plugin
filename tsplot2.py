@@ -17,7 +17,10 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import *    # Needed for QMessageBox
+
+# THIS MODULE IS A TEMPORARY ATTEMPT TO OVERCOME ISSUES WITH PYPLOT PLOTS BLOCKING THE QGIS WINDOW
+# THESE ISSUES ONLY OCCUR ON A FEW MACHINES, THE MODULE IS NOT TO BE INCLUDED IN FUTURE RELEASES OF MIDVATTEN PLUGIN
+
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import matplotlib
 import matplotlib.pyplot as plt 

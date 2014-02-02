@@ -24,6 +24,7 @@ import PyQt4.QtGui
 
 from qgis.core import *
 from qgis.gui import *
+
 import qgis.utils
 import locale
 import os

@@ -18,13 +18,8 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+
 """
-import PyQt4.QtCore
-import PyQt4.QtGui
-
-from qgis.core import *
-from qgis.gui import *
-
 import midvatten_utils as utils    
 
 class updatecoordinates():

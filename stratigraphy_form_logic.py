@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+
 import midvatten_utils as utils        # Whenever some global midvatten_utilities are needed
 import qgis.utils # for debug messages to messagebar
 myDialog = None

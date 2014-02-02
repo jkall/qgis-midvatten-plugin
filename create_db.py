@@ -19,9 +19,7 @@
 """
 import PyQt4.QtCore
 import PyQt4.QtGui
-
-from qgis.core import *
-from qgis.gui import *
+from qgis.core import QGis
 
 import os
 import locale

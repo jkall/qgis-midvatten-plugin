@@ -23,12 +23,6 @@
 import PyQt4.QtCore
 import PyQt4.QtGui
 
-from qgis.core import *
-from qgis.gui import *
-import qgis.utils
-
-#import csv
-#import codecs
 import locale
 import os
 import numpy as np
@@ -44,7 +38,7 @@ from ui.calc_lvl_dialog import Ui_Dialog as Calc_Ui_Dialog
    
 class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
 
-    def __init__(self, parent):
+    def __init__(self, parent,layerin):
         PyQt4.QtGui.QDialog.__init__(self)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.obsid = utils.getselectedobjectnames()
@@ -52,6 +46,7 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
         self.connect(self.pushButton_All, PyQt4.QtCore.SIGNAL("clicked()"), self.calcall)
         self.connect(self.pushButton_Selected, PyQt4.QtCore.SIGNAL("clicked()"), self.calcselected)
         self.connect(self.pushButton_Cancel, PyQt4.QtCore.SIGNAL("clicked()"), self.close)
+        self.layer = layerin
 
     def calcall(self):
         fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
@@ -82,7 +77,7 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
             self.close()
             
     def calcselected(self):
-        obsar = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
+        obsar = utils.getselectedobjectnames(self.layer)
         observations = obsar
         i=0
         for obs in obsar:
@@ -118,7 +113,8 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
         
 class calibrlogger(PyQt4.QtGui.QDialog, Calibr_Ui_Dialog): # An instance of the class Calibr_Ui_Dialog is created same time as instance of calibrlogger is created
 
-    def __init__(self, parent, obsid=''):
+    def __init__(self, parent, obsid='', settingsdict1={}):
+        self.settingsdict = settingsdict1
         PyQt4.QtGui.QDialog.__init__(self)
         self.obsid = obsid
         self.setupUi(self) # Required by Qt4 to initialize the UI
@@ -158,8 +154,7 @@ class calibrlogger(PyQt4.QtGui.QDialog, Calibr_Ui_Dialog): # An instance of the 
         self.getlastcalibration()
 
     def CalibrationPlot(self,obsid):            # 
-        dbPath = QgsProject.instance().readEntry("Midvatten","database")
-        conn = sqlite.connect(dbPath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        conn = sqlite.connect(self.settingsdict['database'],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
         # skapa en cursor
         curs = conn.cursor()
         # Create a plot window with one single subplot

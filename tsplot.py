@@ -16,8 +16,11 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+
+from PyQt4.QtGui import *
+from qgis.core import *
+from qgis.gui import *
 """
-from PyQt4.QtGui import *    # Needed for QMessageBox
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import numpy as np
 import matplotlib
@@ -106,9 +109,12 @@ class TimeSeriesPlot:
                 fig.autofmt_xdate()
                 ax.set_ylabel(self.settingsdict['tscolumn']) #MacOSX fix1
                 ax.set_title(self.settingsdict['tstable'])#MacOSX fix1
-                leg = fig.legend(p, plabel, 'right')
+                leg = fig.legend(p, plabel, loc=0)#leg = fig.legend(p, plabel, 'right')
+                leg.draggable(state=True)
                 frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
                 frame.set_facecolor('0.80')    # set the frame face color to light gray
+                frame.set_fill(False)    # set the frame face color transparent                
+                
                 for t in leg.get_texts():
                     t.set_fontsize(10)    # the legend text fontsize
                 for label in ax.xaxis.get_ticklabels():

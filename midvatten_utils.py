@@ -21,6 +21,7 @@
 from PyQt4 import QtCore, QtGui, QtWebKit
 from qgis.core import *
 from qgis.gui import *
+
 import qgis.utils
 import sys
 import os

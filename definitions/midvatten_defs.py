@@ -17,10 +17,6 @@
  *                                                                         *
  ***************************************************************************/
 """
-#from PyQt4 import QtCore, QtGui
-#from qgis.core import *
-#from qgis.gui import *
-#import sys
 
 def settingsdict():    #These are the default settings, they shall not be changed!!!
     dictionary = { 'database' : '',

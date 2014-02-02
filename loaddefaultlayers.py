@@ -17,11 +17,12 @@
  *                                                                         *
  ***************************************************************************/
 """
-# Import the PyQt libraries
+
 from PyQt4.QtCore import *  
 from PyQt4.QtGui import *  
-from qgis.core import *   # Necessary for the QgsFeature()
+from qgis.core import *  
 from qgis.gui import *
+
 import qgis.utils
 import os
 import locale

@@ -2,7 +2,6 @@
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from qgis.core import *
 import midvatten_utils as utils        # Whenever some global midvatten_utilities are needed
 
 myDialog = None

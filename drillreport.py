@@ -18,11 +18,9 @@
  *                                                                         *
  ***************************************************************************/
 """
-# Import the PyQt libraries
-from PyQt4.QtCore import *  #Not necessary?
-from PyQt4.QtGui import *  #Not necessary?
-from qgis.core import *   # Necessary for the QgsFeature()
-from qgis.gui import *
+from PyQt4.QtCore import QUrl
+from PyQt4.QtGui import QDesktopServices
+
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import os
 import locale

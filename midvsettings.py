@@ -13,15 +13,12 @@
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from qgis.core import *
-from qgis.gui import *
 
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency  
 import os.path
 import qgis.utils
 from functools import partial # only to get combobox signals to work
 from ui.midvsettingsdialog_ui import Ui_Dialog
-#import midvatten_utils as utils   #only during developing
 import locale
 
 class midvsettings(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH THE SETTINGS DIALOG

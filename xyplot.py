@@ -17,12 +17,9 @@
  *                                                                         *
  ***************************************************************************/
 """
-# Import necessary libraries for TimeSeriesPlot plugin 
-#from PyQt4.QtCore import *
-from PyQt4.QtGui import *    # Needed for QMessageBox
-#from qgis.core import *
+
 import qgis.utils
-from pyspatialite import dbapi2 as sqlite   # With the inititaion of class TimeSeriesPlot instead
+from pyspatialite import dbapi2 as sqlite  
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt  # THIS LINE may cause conflict with plugins "statist" and "chartmaker"  - THE ISSUE IS NOT SOLVED. May be due to matplotlib.pyplot assumes other backend by default  
@@ -143,9 +140,11 @@ class XYPlot:
                 ylabel = unicode(self.y1col) + ", \n" + unicode(self.y2col) + ", \n" + unicode(self.y3col) #MacOSX fix1
                 ax.set_ylabel(ylabel)
                 ax.set_title(self.settingsdict['xytable']) #MacOSX fix1
-                leg = fig.legend(p, plabel, 'right')
+                leg = fig.legend(p, plabel, loc=0)
+                leg.draggable(state=True)
                 frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
                 frame.set_facecolor('0.80')    # set the frame face color to light gray
+                frame.set_fill(False)    # set the frame face color transparent                
                 for t in leg.get_texts():
                     t.set_fontsize(10)    # the legend text fontsize
                 for label in ax.xaxis.get_ticklabels():
