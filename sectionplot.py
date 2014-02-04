@@ -37,6 +37,7 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as Naviga
 import pyspatialite.dbapi2 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
 import midvatten_utils as utils
 from ui.secplotdockwidget_ui import Ui_SecPlotDock
+import definitions.midvatten_defs as defs
 
 class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
     def __init__(self, parent1, iface1, mdl1):#Please note, self.selected_obsids must be a tuple
@@ -67,8 +68,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.capacity_txt = []
         self.development_txt = []
         self.comment_txt = []
-        self.x_txt = [] #created by self.PlotGeology and used by self.WriteAnnotation
-        self.z_txt = []#created by self.PlotGeology and used by self.WriteAnnotation
         self.temptableName = 'temporary_section_line'
         self.sectionlinelayer = SectionLineLayer       
         
@@ -76,10 +75,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #upload vector line layer as temporary table in sqlite db
         crs = self.sectionlinelayer.crs()
         ok = self.uploadQgisVectorLayer(self.sectionlinelayer, crs.postgisSrid(), True, False)#loads qgis polyline layer into sqlite table
-        if ok==True:
-            print 'ok'#debug
-        else:
-            print 'something went wrong with the line layer import'#debug
         # get sorted obsid and distance along section from sqlite db
         nF = len(OBSIDtuplein)#number of Features
         LengthAlongTable = self.GetLengthAlong(OBSIDtuplein)#GetLengthAlong returns a numpy view, values are returned by LengthAlongTable.obs_id or LengthAlongTable.length
@@ -92,7 +87,8 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         sql = r"""DELETE FROM geometry_columns WHERE "f_table_name"='%s'"""%self.temptableName
         ok = utils.sql_alter_db(sql)
         
-        
+        #get PlotData
+        self.GetPlotData()
         #draw plot
         self.DrawPlot()
 
@@ -177,17 +173,16 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         coloritems=['geoshort','capacity']
         for item in coloritems:
             self.colorComboBox.addItem(item)
-        textitems=['geology','geoshort','capacity','development','comment']
+        textitems=['','geology','geoshort','capacity','development','comment']
         for item in textitems:
             self.textcolComboBox.addItem(item)
         self.drillstoplineEdit.setText(self.s_dict['secplotdrillstop'])
         #FILL THE LIST OF DATES AS WELL
         for datum in self.s_dict['secplotdates']:
-            print 'loading ' + datum
+            #print 'loading ' + datum#debug
             self.datetimetextEdit.append(datum)
 
         #then select what was selected last time (according to midvatten settings)
-        
         """
         MUST FIX
 
@@ -223,24 +218,86 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 elif i> len(self.textcolComboBox):
                     notfound=1
                 i = i + 1
-        print self.s_dict['secplotbw']
         if self.s_dict['secplotbw'] !=0:
             self.barwidthdoubleSpinBox.setValue(self.s_dict['secplotbw'])            
         else:
             self.barwidthdoubleSpinBox.setValue(2)
         self.drillstoplineEdit.setText(self.s_dict['secplotdrillstop']) 
         
+    def GetPlotData(self):
+        self.plotx = {}
+        self.plotbottom = {}
+        self.plotbarlength = {}
+        l=0 #counter fro unique obs, stratid and typ
+        self.x_txt = [] #used by self.WriteAnnotation
+        self.z_txt = []#used by self.WriteAnnotation
+        self.PlotTypes = defs.PlotTypesDict()
+        self.ExistingPlotTypes = []
+        self.Hatches = defs.PlotHatchDict()
+        self.Colors = defs.PlotColorDict()
+
+        #self.s_dict['secplotbw'] = self.barwidthdoubleSpinBox.value()
+        ##fix Floating Bar Width in percents of xmax - xmin
+        #xmax, xmin =float(max(self.LengthAlong)), float(min(self.LengthAlong))
+        #self.barwidth = (self.s_dict['secplotbw']/100.0)*(xmax -xmin)
+        
+        for Typ in self.PlotTypes:#Adding a plot for each "geoshort" that is identified
+            i=0 #counter for unique obs and stratid
+            k=0 #counter for unique Typ 
+            x = []
+            z_gs=[]
+            BarLength=[]
+            Bottom = []
+            for obs in self.selected_obsids:
+                sql=u'select "depthbot"-"depthtop", stratid, geology, geoshort, capacity, development, comment from stratigraphy where obsid = "' + obs + u'" and lower(geoshort) ' + self.PlotTypes[Typ] + u" order by stratid"
+                if utils.sql_load_fr_db(sql):
+                    recs = utils.sql_load_fr_db(sql)#[0][0]
+                    for rec in recs:
+                        BarLength.append(rec[0])
+                    j=0#counter for unique stratid
+                    while j < len(recs):
+                        x.append(float(self.LengthAlong[k]))# - self.barwidth/2)
+                        if utils.sql_load_fr_db(u'select "h_gs" from obs_points where obsid = "' + obs + u'"')[0][0]>0:
+                            z_gs.append(utils.sql_load_fr_db(u'select "h_gs" from obs_points where obsid = "' + obs + u'"')[0][0])
+                        elif utils.sql_load_fr_db(u'select "h_toc" from obs_points where obsid = "' + obs + u'"')[0][0]>0:
+                            z_gs.append(utils.sql_load_fr_db(u'select "h_toc" from obs_points where obsid = "' + obs + u'"')[0][0])
+                        else:
+                            z_gs.append(0)
+                        Bottom.append(z_gs[i]- utils.sql_load_fr_db(u'select "depthbot" from stratigraphy where obsid = "' + obs + u'" and stratid = ' + str(recs[j][1])+ u' and lower(geoshort) ' + self.PlotTypes[Typ])[0][0])
+                        #lists for plotting annotation 
+                        self.x_txt.append(x[i])#+ self.barwidth/2)#x-coord for text
+                        self.z_txt.append(Bottom[i] + recs[j][0]/2)#Z-value for text
+                        self.geology_txt.append(utils.returnunicode(recs[j][2]))
+                        self.geoshort_txt.append(utils.returnunicode(recs[j][3]))
+                        self.capacity_txt.append(utils.returnunicode(recs[j][4]))
+                        self.development_txt.append(utils.returnunicode(recs[j][5]))
+                        self.comment_txt.append(utils.returnunicode(recs[j][6]))
+                        #print obs + " " + Typ + " " + self.geology_txt[l] + " " + self.geoshort_txt[l] + " " + self.capacity_txt[l] + " " + self.development_txt[l] + " " + self.comment_txt[l]#debug
+                        
+                        i +=1
+                        j +=1
+                        l +=1
+                        print l #debug
+                    del recs
+                k +=1
+            if len(x)>0:
+                self.ExistingPlotTypes.append(Typ)
+                self.plotx[Typ] = x
+                self.plotbottom[Typ] = Bottom
+                self.plotbarlength[Typ] = BarLength
+
     def DrawPlot(self):
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
+        try:
+            self.annotationtext.remove()
+            print 'removed it'#debug
+        except:
+            pass
         self.secax.clear()
-        self.p=[]
-        self.Labels = []
         #load user settings from the ui
         self.s_dict['secplotwlvltab'] = unicode(self.wlvltableComboBox.currentText())
         temporarystring = self.datetimetextEdit.toPlainText() #this needs some cleanup
         self.s_dict['secplotdates']=temporarystring.split()
-        print type(self.s_dict['secplotdates'])#debug
-        print self.s_dict['secplotdates']#debug
         self.s_dict['secplotcolor']=self.colorComboBox.currentText()
         self.s_dict['secplottext'] = self.textcolComboBox.currentText()
         self.s_dict['secplotbw'] = self.barwidthdoubleSpinBox.value()
@@ -252,7 +309,8 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #PLOT ALL MAIN GEOLOGY TYPES AS SINGLE FLOATING BAR SERIES
         self.PlotGeology()
         #WRITE TEXT BY ALL GEOLOGY TYPES, ADJACENT TO FLOATING BAR SERIES
-        self.WriteAnnotation()
+        if len(self.s_dict['secplottext'])>0:
+            self.WriteAnnotation()
         #PLOT Water Levels
         self.PlotWaterLevel()
         #write obsid at top of each stratigraphy floating bar plot
@@ -263,56 +321,18 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def PlotGeology(self):
-        l=0 #counter fro unique obs, stratid and typ
-        PlotTypes = self.PlotTypesDict()
-        Hatches = self.PlotHatchDict()
-        Colors = self.PlotColorDict()
-        for Typ in PlotTypes:#Adding a plot for each "geoshort" that is identified
-            i=0 #counter for unique obs and stratid
-            k=0 #counter for unique Typ 
-            x = []
-            z_gs=[]
-            BarLength=[]
-            Bottom = []
-            for obs in self.selected_obsids:
-                sql=u'select "depthbot"-"depthtop", stratid, geology, geoshort, capacity, development, comment from stratigraphy where obsid = "' + obs + u'" and geoshort ' + PlotTypes[Typ] + u" order by stratid"
-                if utils.sql_load_fr_db(sql):
-                    recs = utils.sql_load_fr_db(sql)#[0][0]
-                    for rec in recs:
-                        BarLength.append(rec[0])
-                    j=0#counter for unique stratid
-                    while j < len(recs):
-                        x.append(float(self.LengthAlong[k]) - self.barwidth/2)
-                        if utils.sql_load_fr_db(u'select "h_gs" from obs_points where obsid = "' + obs + u'"')[0][0]>0:
-                            z_gs.append(utils.sql_load_fr_db(u'select "h_gs" from obs_points where obsid = "' + obs + u'"')[0][0])
-                        elif utils.sql_load_fr_db(u'select "h_toc" from obs_points where obsid = "' + obs + u'"')[0][0]>0:
-                            z_gs.append(utils.sql_load_fr_db(u'select "h_toc" from obs_points where obsid = "' + obs + u'"')[0][0])
-                        else:
-                            z_gs.append(0)
-                        Bottom.append(z_gs[i]- utils.sql_load_fr_db(u'select "depthbot" from stratigraphy where obsid = "' + obs + u'" and stratid = ' + str(recs[j][1])+ u' and geoshort ' + PlotTypes[Typ])[0][0])
-                        #lists for plotting annotation 
-                        self.x_txt.append(x[i]+ self.barwidth/2)
-                        self.z_txt.append(Bottom[i] + recs[j][0]/2)
-                        self.geology_txt.append(utils.returnunicode(recs[j][2]))
-                        self.geoshort_txt.append(utils.returnunicode(recs[j][3]))
-                        self.capacity_txt.append(utils.returnunicode(recs[j][4]))
-                        self.development_txt.append(utils.returnunicode(recs[j][5]))
-                        self.comment_txt.append(utils.returnunicode(recs[j][6]))
-                        #print obs + " " + Typ + " " + self.geology_txt[l] + " " + self.geoshort_txt[l] + " " + self.capacity_txt[l] + " " + self.development_txt[l] + " " + self.comment_txt[l]
-                        
-                        i +=1
-                        j +=1
-                        l +=1
-                    del recs
-                k +=1
-                    
-            if len(x)>0:
-                #print Typ,Colors[Typ], Hatches[Typ]
-                #print x, BarLength, Bottom
-                self.p.append(self.secax.bar(x,BarLength, color=Colors[Typ], edgecolor='black', hatch=Hatches[Typ], width = self.barwidth, bottom=Bottom))
-                self.Labels.append(Typ)
+        self.p=[]
+        self.Labels=[]
+        for Typ in self.ExistingPlotTypes:#Adding a plot for each "geoshort" that is identified
+            print 'plotting ' + str(Typ)
+            plotxleftbarcorner = [i - self.barwidth/2 for i in self.plotx[Typ]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
+            self.p.append(self.secax.bar(plotxleftbarcorner,self.plotbarlength[Typ], color=self.Colors[Typ], edgecolor='black', hatch=self.Hatches[Typ], width = self.barwidth, bottom=self.plotbottom[Typ]))
+            self.Labels.append(Typ)
+            print self.p
+            print self.Labels
 
     def WriteAnnotation(self):
+        print len(self.x_txt)
         if self.s_dict['secplottext'] == 'geology':
             annotate_txt = self.geology_txt
         elif self.s_dict['secplottext'] == 'geoshort':
@@ -324,18 +344,11 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         else:
             annotate_txt = self.comment_txt
         for m,n,o in zip(self.x_txt,self.z_txt,annotate_txt):#change last arg to the one to be written in plot
-            self.secax.annotate(o,xy=(m,n),xytext=(3*self.barwidth/4,0), textcoords='offset points',ha = 'left', va = 'center',bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.45))
+            self.annotationtext = self.secax.annotate(o,xy=(m,n),xytext=(5,0), textcoords='offset points',ha = 'left', va = 'center',bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.45))#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
 
     def PlotWaterLevel(self):
         if self.s_dict['secplotdates'] and len(self.s_dict['secplotdates'])>0:    # Adding a plot for each water level date identified
-            #datumlista = str(self.s_dict['secplotdates']).splitlines
-            #print datumlista
-            #print type(datumlista)
-            #for datum in datumlista:
-            #    print datum
             for datum in self.s_dict['secplotdates']:
-            #for datum in self.s_dict['secplotdates'].split('\n')
-                print datum
                 WL = []
                 x_wl=[]
                 k=0
@@ -355,7 +368,8 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         q=0# a new counter per self.selected_obsids
         for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
             x_id.append(float(self.LengthAlong[q]))
-            recs = utils.sql_load_fr_db(u'select h_toc, h_gs from obs_points where obsid = "' + obs + u'"')
+            sql = u'select h_toc, h_gs from obs_points where obsid = "' + obs + u'"'
+            recs = utils.sql_load_fr_db(sql)
             if recs[0][1]>0:
                 z_id.append(recs[0][1])
             elif recs[0][0]>0:
@@ -479,7 +493,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
         self.connection()
         query="""CREATE TABLE "%s" ( PKUID INTEGER PRIMARY KEY AUTOINCREMENT %s )"""%(self.temptableName, fields)
-        print query#debug
         header,data=self.executeQuery(query)
         if self.queryPb:
             return
@@ -487,7 +500,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #Recover Geometry Column:
         if geometry:
             header,data=self.executeQuery("""SELECT RecoverGeometryColumn("%s",'Geometry',%s,'%s',2)"""%(self.temptableName,srid,geometry,))
-            print 'recovered geometry'#debug
         
         # Retreive every feature
         for feat in layer.getFeatures():
@@ -513,18 +525,18 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             if Attributes == True:
                 if len(fields)>0:
                     query="""INSERT INTO "%s" VALUES (%s,%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]),','.join('?'*len(values_perso)))
-                    #print 'attr datas'
-                    #print query
+                    #print 'attr datas'#debug
+                    #print query#debug
                     header,data=self.executeQuery(query,tuple([unicode(value) for value in values_perso]))
                 else: #no attribute Datas
                     query="""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]))
                     header,data=self.executeQuery(query)
-                    #print 'no attr datas'
-                    #print query
+                    #print 'no attr datas'#debug
+                    #print query#debug
             else:
                 query="""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]))
-                #print 'no attr datas'
-                #print query
+                #print 'no attr datas'#debug
+                #print query#debug
                 header,data=self.executeQuery(query)
         for date in mapinfoDAte: #mapinfo compatibility: convert date in SQLITE format (2010/02/11 -> 2010-02-11 ) or rollback if any error
             header,data=self.executeQuery("""UPDATE OR ROLLBACK "%s" set '%s'=replace( "%s", '/' , '-' )  """%(self.temptableName,date[1],date[1]))
@@ -563,7 +575,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 self.connectionObject.commit()
         except sqlite.OperationalError, Msg:
             self.connectionObject.rollback()
-            #print "An error occured while executing query :\n",query,"\nError:\n",Msg
             utils.pop_up_info("The SQL query\n %s\n seems to be invalid.\n\n%s" %(query,Msg),None)
             self.queryPb=True #Indicates pb with current query
             
@@ -576,117 +587,11 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         FROM %s AS l, (select * from obs_points where obsid in %s) AS p
         GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptableName,obsidtuple)
         data = utils.sql_load_fr_db(sql)
-        My_format = [('obs_id', np.str_, 16),('length', float)] 
+        My_format = [('obs_id', np.str_, 32),('length', float)] #note that here is a limit of maximum 32 characters in obsid
         npdata = np.array(data, dtype=My_format)  #NDARRAY
-        LengthAlongTable=npdata.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write self.LengthAlong.obs_id and self.LengthAlong.length
+        LengthAlongTable=npdata.view(np.recarray)   # RECARRAY   Makes the two columns into callable objects, i.e. write self.LengthAlong.obs_id and self.LengthAlong.length
         del data, npdata
         return LengthAlongTable
-
-    def PlotTypesDict(self):
-        if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
-            Dict = {u"Okänt" : u"not in ('berg','Berg','BERG','B','Rock','rock','Ro','ro','grovgrus','Grovgrus','Grg','grg','Coarse Gravel','coarse Gravel','coarse gravel','CGr','Cgr','cGr','cgr','grus','Grus','GRUS','Gr','gr','Gravel','gravel','mellangrus','Mellangrus','MELLANGRUS','Grm','grm','Medium Gravel','medium Gravel','medium gravel','MGr','mGr','Mgr','mgr','fingrus','Fingrus','FINGRUS','Grf','grf','Fine Gravel','fine Gravel','fine gravel','FGr','Fgr','fGr','fgr','grovsand','Grovsand','GROVSAND','Sag','sag','Coarse Sand','coarse Sand','coarse sand','CSa','Csa','cSa','csa','sand','Sand','SAND','Sa','sa','SA','mellansand','Mellansand','MELLANSAND','Sam','sam','Medium Sand','medium Sand','medium sand','MSa','Msa','msa','mSa','finsand','Finsand','FINSAND','Saf','saf','Fine Sand','fine Sand','fine Sand','FSa','Fsa','fSa','fsa','silt','Silt','SILT','Si','si','lera','Lera','LERA','Le','le','Clay','clay','Cl','cl','moran','Moran','MORAN','Mn','mn','Till','till','Ti','ti','torv','Torv','TORV','T','Peat','peat','Pt','pt','t','fyll','Fyll','FYLL','fyllning','Fyllning','FYLLNING','F','f','Made Ground','Made ground','mage ground','MG','Mg','mg')",
-            "Berg"  : u"in ('berg','Berg','BERG','B','Rock','rock','Ro','ro')",
-            "Grovgrus" : u"in ('grovgrus','Grovgrus','Grg','grg','Coarse Gravel','coarse Gravel','coarse gravel','CGr','Cgr','cGr','cgr')",
-            "Grus" : u"in ('grus','Grus','GRUS','Gr','gr','Gravel','gravel')",
-            "Mellangrus" : u"in ('mellangrus','Mellangrus','MELLANGRUS','Grm','grm','Medium Gravel','medium Gravel','medium gravel','MGr','mGr','Mgr','mgr')",
-            "Fingrus" : u"in ('fingrus','Fingrus','FINGRUS','Grf','grf','Fine Gravel','fine Gravel','fine gravel','FGr','Fgr','fGr','fgr')",
-            "Grovsand" : u"in ('grovsand','Grovsand','GROVSAND','Sag','sag','Coarse Sand','coarse Sand','coarse sand','CSa','Csa','cSa','csa')",
-            "Sand" : u"in ('sand','Sand','SAND','Sa','sa','SA')",
-            "Mellansand" : u"in ('mellansand','Mellansand','MELLANSAND','Sam','sam','Medium Sand','medium Sand','medium sand','MSa','Msa','msa','mSa')",
-            "Finsand" : u"in ('finsand','Finsand','FINSAND','Saf','saf','Fine Sand','fine Sand','fine Sand','FSa','Fsa','fSa','fsa')",
-            "Silt" : u"in ('silt','Silt','SILT','Si','si')",
-            "Lera" : u"in ('lera','Lera','LERA','Le','le','Clay','clay','Cl','cl')",
-            "Moran" : u"in ('moran','Moran','MORAN','Mn','mn','Till','till','Ti','ti')",
-            "Torv" : u"in ('torv','Torv','TORV','T','Peat','peat','Pt','pt','t')",
-            "Fyll":u"in ('fyll','Fyll','FYLL','fyllning','Fyllning','FYLLNING','F','f','Made Ground','Made ground','mage ground','MG','Mg','mg')"}
-        else:
-            Dict = {u"Unknown" : u"not in ('berg','Berg','BERG','B','Rock','rock','Ro','ro','grovgrus','Grovgrus','Grg','grg','Coarse Gravel','coarse Gravel','coarse gravel','CGr','Cgr','cGr','cgr','grus','Grus','GRUS','Gr','gr','Gravel','gravel','mellangrus','Mellangrus','MELLANGRUS','Grm','grm','Medium Gravel','medium Gravel','medium gravel','MGr','mGr','Mgr','mgr','fingrus','Fingrus','FINGRUS','Grf','grf','Fine Gravel','fine Gravel','fine gravel','FGr','Fgr','fGr','fgr','grovsand','Grovsand','GROVSAND','Sag','sag','Coarse Sand','coarse Sand','coarse sand','CSa','Csa','cSa','csa','sand','Sand','SAND','Sa','sa','SA','mellansand','Mellansand','MELLANSAND','Sam','sam','Medium Sand','medium Sand','medium sand','MSa','Msa','msa','mSa','finsand','Finsand','FINSAND','Saf','saf','Fine Sand','fine Sand','fine Sand','FSa','Fsa','fSa','fsa','silt','Silt','SILT','Si','si','lera','Lera','LERA','Le','le','Clay','clay','Cl','cl','moran','Moran','MORAN','Mn','mn','Till','till','Ti','ti','torv','Torv','TORV','T','Peat','peat','Pt','pt','t','fyll','Fyll','FYLL','fyllning','Fyllning','FYLLNING','F','f','Made Ground','Made ground','mage ground','MG','Mg','mg')",
-            "Rock"  : u"in ('berg','Berg','BERG','B','Rock','rock','Ro','ro')",
-            "Coarse gravel" : u"in ('grovgrus','Grovgrus','Grg','grg','Coarse Gravel','coarse Gravel','coarse gravel','CGr','Cgr','cGr','cgr')",
-            "Gravel" : u"in ('grus','Grus','GRUS','Gr','gr','Gravel','gravel')",
-            "Medium gravel" : u"in ('mellangrus','Mellangrus','MELLANGRUS','Grm','grm','Medium Gravel','medium Gravel','medium gravel','MGr','mGr','Mgr','mgr')",
-            "Fine gravel" : u"in ('fingrus','Fingrus','FINGRUS','Grf','grf','Fine Gravel','fine Gravel','fine gravel','FGr','Fgr','fGr','fgr')",
-            "Coarse sand" : u"in ('grovsand','Grovsand','GROVSAND','Sag','sag','Coarse Sand','coarse Sand','coarse sand','CSa','Csa','cSa','csa')",
-            "Sand" : u"in ('sand','Sand','SAND','Sa','sa','SA')",
-            "Medium sand" : u"in ('mellansand','Mellansand','MELLANSAND','Sam','sam','Medium Sand','medium Sand','medium sand','MSa','Msa','msa','mSa')",
-            "Fine sand" : u"in ('finsand','Finsand','FINSAND','Saf','saf','Fine Sand','fine Sand','fine Sand','FSa','Fsa','fSa','fsa')",
-            "Silt" : u"in ('silt','Silt','SILT','Si','si')",
-            "Clay" : u"in ('lera','Lera','LERA','Le','le','Clay','clay','Cl','cl')",
-            "Till" : u"in ('moran','Moran','MORAN','Mn','mn','Till','till','Ti','ti')",
-            "Peat" : u"in ('torv','Torv','TORV','T','Peat','peat','Pt','pt','t')",
-            "Fill":u"in ('fyll','Fyll','FYLL','fyllning','Fyllning','FYLLNING','F','f','Made Ground','Made ground','mage ground','MG','Mg','mg')"}
-        return Dict
-
-    def PlotColorDict(self):
-        if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
-            Dict = {u"Okänt" : u"white",
-            "Berg"  : u"red",
-            "Grovgrus" : u"DarkGreen",
-            "Grus" : u"DarkGreen",
-            "Mellangrus" : u"DarkGreen",
-            "Fingrus" : u"DarkGreen",
-            "Grovsand" : u"green",
-            "Sand" : u"green",
-            "Mellansand" : u"green",
-            "Finsand" : u"yellow",
-            "Silt" : u"yellow",
-            "Lera" : u"DarkOrange",
-            "Moran" : u"cyan",
-            "Torv" : u"DarkGray",
-            "Fyll":u"white"}
-        else:
-            Dict = {u"Unknown" : u"white",
-            "Rock"  : u"red",
-            "Coarse gravel" : u"DarkGreen",
-            "Gravel" : u"DarkGreen",
-            "Medium gravel" : u"DarkGreen",
-            "Fine gravel" : u"DarkGreen",
-            "Coarse sand" : u"green",
-            "Sand" : u"green",
-            "Medium sand" : u"green",
-            "Fine sand" : u"yellow",
-            "Silt" : u"yellow",
-            "Clay" : u"DarkOrange",
-            "Till" : u"cyan",
-            "Peat" : u"DarkGray",
-            "Fill":u"white"}            
-        return Dict
-
-    def PlotHatchDict(self):
-        # hatch patterns : ('-', '+', 'x', '\\', '*', 'o', 'O', '.','/')
-        if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
-            Dict = {u"Okänt" : u"",
-            "Berg"  : u"x",
-            "Grovgrus" : u"O",
-            "Grus" : u"O",
-            "Mellangrus" : u"o",
-            "Fingrus" : u"o",
-            "Grovsand" : u"*",
-            "Sand" : u"*",
-            "Mellansand" : u".",
-            "Finsand" : u".",
-            "Silt" : u"\\",
-            "Lera" : u"-",
-            "Moran" : u"/",
-            "Torv" : u"+",
-            "Fyll":u"+"}
-        else:
-            Dict = {u"Unknown" : u"",
-            "Rock"  : u"x",
-            "Coarse gravel" : u"O",
-            "Gravel" : u"O",
-            "Medium gravel" : u"o",
-            "Fine gravel" : u"o",
-            "Coarse sand" : u"*",
-            "Sand" : u"*",
-            "Medium sand" : u".",
-            "Fine sand" : u".",
-            "Silt" : u"\\",
-            "Clay" : u"-",
-            "Till" : u"/",
-            "Peat" : u"+",
-            "Fill":u"+"}
-        return Dict
 
     def saveSettings(self):# settingsdict is a dictionary belonging to instance midvatten. This is a quick-fix, should call parent method instead.
         QgsProject.instance().writeEntry("Midvatten",'secplotwlvltab', self.s_dict['secplotwlvltab'] )
@@ -699,4 +604,4 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
     def setLocation(self):#not ready
         self.location=self.parent.dockWidgetArea(self)
         #should be stored in settings
-        #print self.location
+        #print self.location#

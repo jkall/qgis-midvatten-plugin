@@ -18,6 +18,8 @@
  ***************************************************************************/
 """
 
+import locale
+
 def settingsdict():    #These are the default settings, they shall not be changed!!!
     dictionary = { 'database' : '',
             'tstable' : 'w_levels',
@@ -58,7 +60,7 @@ def default_layers_w_ui():
     list = ['obs_lines', 'obs_points', 'w_lvls_last_geom']
     return list
     
-def geocolorsymbols():    # THIS IS WHERE YOU SHALL CHANGE TO YOUR OWN GEOLOGIC CODES, SYMBOLS AND COLORS
+def geocolorsymbols():    # STRATIGRAPHY PLOT - THIS IS WHERE YOU SHALL CHANGE TO YOUR OWN GEOLOGIC CODES, SYMBOLS AND COLORS
     dictionary  = { '': ('NoBrush', 'white'),
                 ' ': ('NoBrush', 'white'),
                 'berg': ('DiagCrossPattern', 'red'),
@@ -202,7 +204,7 @@ def geocolorsymbols():    # THIS IS WHERE YOU SHALL CHANGE TO YOUR OWN GEOLOGIC 
                 }
     return dictionary
     
-def hydrocolors(): # THIS IS WHERE YOU SHALL CHANGE TO YOUR OWN capacity CODES AND COLORS
+def hydrocolors(): # STRATIGRAPHY PLOT - THIS IS WHERE YOU SHALL CHANGE TO YOUR OWN capacity CODES AND COLORS
     dictionary = { '': ('okant', 'gray'),
                   ' ': ('okant', 'gray'),
                   '0': ('okant', 'gray'),
@@ -232,3 +234,109 @@ def hydrocolors(): # THIS IS WHERE YOU SHALL CHANGE TO YOUR OWN capacity CODES A
 
 def stratitable(): # THIS IS THE NAME OF THE table WITH stratigraphy _ MUST NOT BE CHANGED
     return 'stratigraphy'
+
+def PlotTypesDict():#sectionplot - dictionary for possible geoshorts
+    if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
+        Dict = {u"Okänt" : u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')",
+        "Berg"  : u"in ('berg','b','rock','ro')",
+        "Grovgrus" : u"in ('grovgrus','grg','coarse gravel','cgr')",
+        "Grus" : u"in ('grus','gr','gravel')",
+        "Mellangrus" : u"in ('mellangrus','grm','medium gravel','mgr')",
+        "Fingrus" : u"in ('fingrus','grf','fine gravel','fgr')",
+        "Grovsand" : u"in ('grovsand','sag','coarse sand','csa')",
+        "Sand" : u"in ('sand','sa')",
+        "Mellansand" : u"in ('mellansand','sam','medium sand','msa')",
+        "Finsand" : u"in ('finsand','saf','fine sand','fsa')",
+        "Silt" : u"in ('silt','si')",
+        "Lera" : u"in ('lera','ler','le','clay','cl')",
+        "Morän" : u"in ('morän','moran','mn','till','ti')",
+        "Torv" : u"in ('torv','t','peat','pt')",
+        "Fyll":u"in ('fyll','fyllning','f','made ground','mg','land fill')"}
+    else:
+        Dict = {u"Unknown" : u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')",
+        "Rock"  : u"in ('berg','b','rock','ro')",
+        "Coarse gravel" : u"in ('grovgrus','grg','coarse gravel','cgr')",
+        "Gravel" : u"in ('grus','gr','gravel')",
+        "Medium gravel" : u"in ('mellangrus','grm','medium gravel','mgr')",
+        "Fine gravel" : u"in ('fingrus','grf','fine gravel','fgr')",
+        "Coarse sand" : u"in ('grovsand','sag','coarse sand','csa')",
+        "Sand" : u"in ('sand','sa')",
+        "Medium sand" : u"in ('mellansand','sam','medium sand','msa')",
+        "Fine sand" : u"in ('finsand','saf','fine sand','fsa')",
+        "Silt" : u"in ('silt','si')",
+        "Clay" : u"in ('lera','ler','le','clay','cl')",
+        "Till" : u"in ('morän','moran','mn','till','ti')",
+        "Peat" : u"in ('torv','t','peat','pt')",
+        "Fill":u"in ('fyll','fyllning','f','made ground','mg','land fill')"}
+    return Dict
+
+def PlotColorDict():#sectionplot - dictionary for geoshort-colors 
+    if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
+        Dict = {u"Okänt" : u"white",
+        "Berg"  : u"red",
+        "Grovgrus" : u"DarkGreen",
+        "Grus" : u"DarkGreen",
+        "Mellangrus" : u"DarkGreen",
+        "Fingrus" : u"DarkGreen",
+        "Grovsand" : u"green",
+        "Sand" : u"green",
+        "Mellansand" : u"green",
+        "Finsand" : u"yellow",
+        "Silt" : u"yellow",
+        "Lera" : u"DarkOrange",
+        "Morän" : u"cyan",
+        "Torv" : u"DarkGray",
+        "Fyll":u"white"}
+    else:
+        Dict = {u"Unknown" : u"white",
+        "Rock"  : u"red",
+        "Coarse gravel" : u"DarkGreen",
+        "Gravel" : u"DarkGreen",
+        "Medium gravel" : u"DarkGreen",
+        "Fine gravel" : u"DarkGreen",
+        "Coarse sand" : u"green",
+        "Sand" : u"green",
+        "Medium sand" : u"green",
+        "Fine sand" : u"yellow",
+        "Silt" : u"yellow",
+        "Clay" : u"DarkOrange",
+        "Till" : u"cyan",
+        "Peat" : u"DarkGray",
+        "Fill":u"white"}
+    return Dict
+
+def PlotHatchDict():#sectionplot - dictionary for geoshort-hatch
+    # hatch patterns : ('-', '+', 'x', '\\', '*', 'o', 'O', '.','/')
+    if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
+        Dict = {u"Okänt" : u"",
+        "Berg"  : u"x",
+        "Grovgrus" : u"O",
+        "Grus" : u"O",
+        "Mellangrus" : u"o",
+        "Fingrus" : u"o",
+        "Grovsand" : u"*",
+        "Sand" : u"*",
+        "Mellansand" : u".",
+        "Finsand" : u".",
+        "Silt" : u"\\",
+        "Lera" : u"-",
+        "Morän" : u"/",
+        "Torv" : u"+",
+        "Fyll":u"+"}
+    else:
+        Dict = {u"Unknown" : u"",
+        "Rock"  : u"x",
+        "Coarse gravel" : u"O",
+        "Gravel" : u"O",
+        "Medium gravel" : u"o",
+        "Fine gravel" : u"o",
+        "Coarse sand" : u"*",
+        "Sand" : u"*",
+        "Medium sand" : u".",
+        "Fine sand" : u".",
+        "Silt" : u"\\",
+        "Clay" : u"-",
+        "Till" : u"/",
+        "Peat" : u"+",
+        "Fill":u"+"}
+    return Dict
