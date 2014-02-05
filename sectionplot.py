@@ -400,6 +400,8 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         for label in self.secax.yaxis.get_ticklabels():
             label.set_fontsize(10)
         self.canvas.draw()
+        #the plot is shown in the canvas. Now close the figure to prevent it from being plotted again by plt.show() when choosing tsplot or xyplot
+        plt.close(self.secfig)#this closes reference to self.secfig and it will not be plotted by plt.show() - but the plot exists in self.canvas
         
     def uploadQgisVectorLayer(self, layer, srid=None,selected=False, mapinfo=True,Attributes=False): #from qspatialite, with a few  changes LAST ARGUMENT IS USED TO SKIP ARGUMENTS SINCE WE ONLY WANT THE GEOMETRY TO CALCULATE DISTANCES
         """Upload layer (QgsMapLayer) (optionnaly only selected values ) into current DB, in self.temptableName (string) with desired SRID (default layer srid if None) - user can desactivate mapinfo compatibility Date importation. Return True if operation succesfull or false in all other cases"""

@@ -27,7 +27,7 @@ import resources  # Initialize Qt resources from file resources.py
 import os.path
 import sys
 from midvsettings import midvsettings
-#from tsplot2 import TimeSeriesPlot #On some combinations of platform/backend/graphics this may be better to avoid pyplot plot windows from blocking the qgis window
+#from tsplot2 import TimeSeriesPlot #On some platform/backend/graphics-combos this may be better to avoid pyplot plot windows from blocking the qgis window
 from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
@@ -686,33 +686,29 @@ class midvatten:
         else:
             msg = 'You must activate the vector line layer and select exactly one feature that defines the section'
         
-        #Then verify that at least one feature is selected in obs_points layer, and get a list (OBSID) of selected obs_points
+        #Then verify that at least two feature is selected in obs_points layer, and get a list (OBSID) of selected obs_points
         obs_points_layer = utils.find_layer('obs_points')
         selectedobspoints = utils.getselectedobjectnames(obs_points_layer)
         obsidlist = []
-        if len(selectedobspoints)>0:
+        if len(selectedobspoints)>1:
             i=0
             for id in selectedobspoints:
                 obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
                 i+=1
             OBSID = tuple(obsidlist)#because module sectionplot depends on obsid being a tuple
         else:
-            msg = 'You must select at least one object in the obs_points layer'
+            msg = 'You must select at least two objects in the obs_points layer'
         
         if msg:#if something went wrong
             self.iface.messageBar().pushMessage("Error",msg, 2)
         else:#otherwise go
-            try:
-                print self.myplot
-            except:
-                print 'why is there no instance'
             if self.secplotdockOpened==True:
-                print 'found it and will try to reus it'
+                print 'found it and will try to reuse it'
                 self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
             elif self.secplotdockOpened==False:
                 self.mdl = QStandardItemModel(0, 5)
                 self.myplot = sectionplot(self.iface.mainWindow(), self.iface, self.mdl)
-                QObject.connect(self.myplot, SIGNAL( "closed(PyQt_PyObject)" ), self.cleaning2)
+                #QObject.connect(self.myplot, SIGNAL( "closed(PyQt_PyObject)" ), self.cleaning2)
                 self.secplotdockOpened = True
                 self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
             #myplot.exec_()

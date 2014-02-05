@@ -20,6 +20,7 @@
 
 # THIS MODULE IS A TEMPORARY ATTEMPT TO OVERCOME ISSUES WITH PYPLOT PLOTS BLOCKING THE QGIS WINDOW
 # THESE ISSUES ONLY OCCUR ON A FEW MACHINES, THE MODULE IS NOT TO BE INCLUDED IN FUTURE RELEASES OF MIDVATTEN PLUGIN
+import PyQt4.QtGui
 
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import matplotlib
@@ -38,7 +39,7 @@ import matplotlib.ticker as tick
 import midvatten_utils as utils        # Whenever some global midvatten_utilities are needed
 import locale
 
-class TimeSeriesPlot(QDialog, Ui_Dialog):
+class TimeSeriesPlot(PyQt4.QtGui.QDialog, Ui_Dialog):
     def __init__(self, layer=None, settingsdict={}):
         self.settingsdict = settingsdict
         provider = layer.dataProvider()  #Something with OGR
@@ -50,7 +51,7 @@ class TimeSeriesPlot(QDialog, Ui_Dialog):
             if (nF > 0):
                 #self.mpl = PlotMplQt(nF,kolumnindex,layer,self.settingsdict)
                 #self.mpl.show()
-                QDialog.__init__(self)
+                PyQt4.QtGui.QDialog.__init__(self)
                 self.setupUi(self)
                 self.setWindowTitle("Midvatten time series plot")
                 self.settingsdict = settingsdict
