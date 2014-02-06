@@ -16,11 +16,8 @@ Major parts of the code is re-used from the profiletool plugin:
 # Copyright (C) 2012  Patrice Verchere 
 
 SAKNAS:
-1. input för water level dates
-2. input för floating bar width 
-3. (input och plottning av seismik, vlf etc längs med linjen) - efter release alpha
-3. ((input och plottning av markyta från DEM)) - efter release beta
-Sen bör man göra nån smart "re-plot" från plot-fönstret så man slipper göra om allt hela tiden, elle så sk-ter man i det för att tiden inte finns.
+1. (input och plottning av seismik, vlf etc längs med linjen) - efter release alpha
+2. ((input och plottning av markyta från DEM)) - efter release beta
 """
 import PyQt4.QtCore
 import PyQt4.QtGui
@@ -58,6 +55,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #self.showed = False
 
     def doit(self,s_dict,OBSIDtuplein,SectionLineLayer):
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
         self.s_dict=s_dict
         self.FillComboBoxes()        # Comboboxes are filled with relevant information
 
@@ -87,6 +85,8 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         sql = r"""DELETE FROM geometry_columns WHERE "f_table_name"='%s'"""%self.temptableName
         ok = utils.sql_alter_db(sql)
         
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+        
         #get PlotData
         self.GetPlotData()
         #draw plot
@@ -100,6 +100,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.secfig = plt.figure()
         self.secax = self.secfig.add_subplot( 111 )
         self.canvas = FigureCanvas( self.secfig )
+        
         self.mpltoolbar = NavigationToolbar( self.canvas, self.plotareawidget )
         lstActions = self.mpltoolbar.actions()
         self.mpltoolbar.removeAction( lstActions[ 7 ] )
@@ -225,6 +226,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.drillstoplineEdit.setText(self.s_dict['secplotdrillstop']) 
         
     def GetPlotData(self):
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
         self.plotx = {}
         self.plotbottom = {}
         self.plotbarlength = {}
@@ -242,6 +244,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #self.barwidth = (self.s_dict['secplotbw']/100.0)*(xmax -xmin)
         
         for Typ in self.PlotTypes:#Adding a plot for each "geoshort" that is identified
+            #print Typ.encode('latin-1')#debug
             i=0 #counter for unique obs and stratid
             k=0 #counter for unique Typ 
             x = []
@@ -257,13 +260,15 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                     j=0#counter for unique stratid
                     while j < len(recs):
                         x.append(float(self.LengthAlong[k]))# - self.barwidth/2)
-                        if utils.sql_load_fr_db(u'select "h_gs" from obs_points where obsid = "' + obs + u'"')[0][0]>0:
-                            z_gs.append(utils.sql_load_fr_db(u'select "h_gs" from obs_points where obsid = "' + obs + u'"')[0][0])
-                        elif utils.sql_load_fr_db(u'select "h_toc" from obs_points where obsid = "' + obs + u'"')[0][0]>0:
-                            z_gs.append(utils.sql_load_fr_db(u'select "h_toc" from obs_points where obsid = "' + obs + u'"')[0][0])
+                        sql01 = u'select "h_gs" from obs_points where obsid = "' + obs + u'"'
+                        sql02 = u'select "h_toc" from obs_points where obsid = "' + obs + u'"'
+                        if utils.isfloat(str(utils.sql_load_fr_db(sql01)[0][0])) and utils.sql_load_fr_db(sql01)[0][0]>0:
+                            z_gs.append(float(str(utils.sql_load_fr_db(u'select "h_gs" from obs_points where obsid = "' + obs + u'"')[0][0])))
+                        elif utils.isfloat(str(utils.sql_load_fr_db(sql02)[0][0])) and utils.sql_load_fr_db(sql02)[0][0]>0:
+                            z_gs.append(float(str(utils.sql_load_fr_db(u'select "h_toc" from obs_points where obsid = "' + obs + u'"')[0][0])))
                         else:
                             z_gs.append(0)
-                        Bottom.append(z_gs[i]- utils.sql_load_fr_db(u'select "depthbot" from stratigraphy where obsid = "' + obs + u'" and stratid = ' + str(recs[j][1])+ u' and lower(geoshort) ' + self.PlotTypes[Typ])[0][0])
+                        Bottom.append(z_gs[i]- float(str(utils.sql_load_fr_db(u'select "depthbot" from stratigraphy where obsid = "' + obs + u'" and stratid = ' + str(recs[j][1])+ u' and lower(geoshort) ' + self.PlotTypes[Typ])[0][0])))
                         #lists for plotting annotation 
                         self.x_txt.append(x[i])#+ self.barwidth/2)#x-coord for text
                         self.z_txt.append(Bottom[i] + recs[j][0]/2)#Z-value for text
@@ -277,20 +282,22 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                         i +=1
                         j +=1
                         l +=1
-                        print l #debug
+                        #print l #debug
                     del recs
                 k +=1
             if len(x)>0:
+                #print Typ.encode('latin-1')#debug
                 self.ExistingPlotTypes.append(Typ)
                 self.plotx[Typ] = x
                 self.plotbottom[Typ] = Bottom
                 self.plotbarlength[Typ] = BarLength
-
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+                
     def DrawPlot(self):
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
         try:
             self.annotationtext.remove()
-            print 'removed it'#debug
+            #print 'removed it'#debug
         except:
             pass
         self.secax.clear()
@@ -324,15 +331,12 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.p=[]
         self.Labels=[]
         for Typ in self.ExistingPlotTypes:#Adding a plot for each "geoshort" that is identified
-            print 'plotting ' + str(Typ)
             plotxleftbarcorner = [i - self.barwidth/2 for i in self.plotx[Typ]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
             self.p.append(self.secax.bar(plotxleftbarcorner,self.plotbarlength[Typ], color=self.Colors[Typ], edgecolor='black', hatch=self.Hatches[Typ], width = self.barwidth, bottom=self.plotbottom[Typ]))
             self.Labels.append(Typ)
-            print self.p
-            print self.Labels
 
     def WriteAnnotation(self):
-        print len(self.x_txt)
+        #print len(self.x_txt)#debug
         if self.s_dict['secplottext'] == 'geology':
             annotate_txt = self.geology_txt
         elif self.s_dict['secplottext'] == 'geoshort':
@@ -344,7 +348,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         else:
             annotate_txt = self.comment_txt
         for m,n,o in zip(self.x_txt,self.z_txt,annotate_txt):#change last arg to the one to be written in plot
-            self.annotationtext = self.secax.annotate(o,xy=(m,n),xytext=(5,0), textcoords='offset points',ha = 'left', va = 'center',bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.45))#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
+            self.annotationtext = self.secax.annotate(o,xy=(m,n),xytext=(5,0), textcoords='offset points',ha = 'left', va = 'center',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.6))#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
 
     def PlotWaterLevel(self):
         if self.s_dict['secplotdates'] and len(self.s_dict['secplotdates'])>0:    # Adding a plot for each water level date identified
@@ -379,7 +383,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             q +=1
             del recs
         for m,n,o in zip(x_id,z_id,self.selected_obsids):#change last arg to the one to be written in plot
-            self.secax.annotate(o,xy=(m,n),xytext=(0,10), textcoords='offset points',ha = 'center', va = 'top')#,bbox = dict(boxstyle = 'square,pad=0', fc = 'white', alpha = 0.25))
+            self.secax.annotate(o,xy=(m,n),xytext=(0,10), textcoords='offset points',ha = 'center', va = 'top',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.4))
         del x_id, z_id, q
 
     def FinishPlot(self):
@@ -400,8 +404,15 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         for label in self.secax.yaxis.get_ticklabels():
             label.set_fontsize(10)
         self.canvas.draw()
-        #the plot is shown in the canvas. Now close the figure to prevent it from being plotted again by plt.show() when choosing tsplot or xyplot
-        plt.close(self.secfig)#this closes reference to self.secfig and it will not be plotted by plt.show() - but the plot exists in self.canvas
+        """
+        The plot is shown in the canvas. 
+        Now close the figure to prevent it from being plotted again by plt.show() when choosing tsplot or xyplot
+        The plt.close(self.secfig) closes reference to self.secfig 
+        and it will not be plotted by plt.show() - but the plot exists in self.canvas
+        Please note, this do not work completely as expected under windows. 
+        """
+        plt.close(self.secfig)#this closes reference to self.secfig 
+        
         
     def uploadQgisVectorLayer(self, layer, srid=None,selected=False, mapinfo=True,Attributes=False): #from qspatialite, with a few  changes LAST ARGUMENT IS USED TO SKIP ARGUMENTS SINCE WE ONLY WANT THE GEOMETRY TO CALCULATE DISTANCES
         """Upload layer (QgsMapLayer) (optionnaly only selected values ) into current DB, in self.temptableName (string) with desired SRID (default layer srid if None) - user can desactivate mapinfo compatibility Date importation. Return True if operation succesfull or false in all other cases"""

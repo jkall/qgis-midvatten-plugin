@@ -703,7 +703,7 @@ class midvatten:
             self.iface.messageBar().pushMessage("Error",msg, 2)
         else:#otherwise go
             if self.secplotdockOpened==True:
-                print 'found it and will try to reuse it'
+                #print 'found it and will try to reuse it'#debug
                 self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
             elif self.secplotdockOpened==False:
                 self.mdl = QStandardItemModel(0, 5)

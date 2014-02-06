@@ -19,6 +19,7 @@
 """
 
 import locale
+from collections import OrderedDict
 
 def settingsdict():    #These are the default settings, they shall not be changed!!!
     dictionary = { 'database' : '',
@@ -237,6 +238,7 @@ def stratitable(): # THIS IS THE NAME OF THE table WITH stratigraphy _ MUST NOT 
 
 def PlotTypesDict():#sectionplot - dictionary for possible geoshorts
     if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
+        """
         Dict = {u"Okänt" : u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')",
         "Berg"  : u"in ('berg','b','rock','ro')",
         "Grovgrus" : u"in ('grovgrus','grg','coarse gravel','cgr')",
@@ -249,10 +251,27 @@ def PlotTypesDict():#sectionplot - dictionary for possible geoshorts
         "Finsand" : u"in ('finsand','saf','fine sand','fsa')",
         "Silt" : u"in ('silt','si')",
         "Lera" : u"in ('lera','ler','le','clay','cl')",
-        "Morän" : u"in ('morän','moran','mn','till','ti')",
+        u"Morän" : u"in ('morän','moran','mn','till','ti')",
         "Torv" : u"in ('torv','t','peat','pt')",
         "Fyll":u"in ('fyll','fyllning','f','made ground','mg','land fill')"}
+        """
+        Dict = OrderedDict([(u"Okänt" , u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')"),
+        ("Berg"  , u"in ('berg','b','rock','ro')"),
+        ("Grovgrus" , u"in ('grovgrus','grg','coarse gravel','cgr')"),
+        ("Grus" , u"in ('grus','gr','gravel')"),
+        ("Mellangrus" , u"in ('mellangrus','grm','medium gravel','mgr')"),
+        ("Fingrus" , u"in ('fingrus','grf','fine gravel','fgr')"),
+        ("Grovsand" , u"in ('grovsand','sag','coarse sand','csa')"),
+        ("Sand" , u"in ('sand','sa')"),
+        ("Mellansand" , u"in ('mellansand','sam','medium sand','msa')"),
+        ("Finsand" , u"in ('finsand','saf','fine sand','fsa')"),
+        ("Silt" , u"in ('silt','si')"),
+        ("Lera" , u"in ('lera','ler','le','clay','cl')"),
+        (u"Morän" , u"in ('morän','moran','mn','till','ti')"),
+        ("Torv" , u"in ('torv','t','peat','pt')"),
+        ("Fyll",u"in ('fyll','fyllning','f','made ground','mg','land fill')")])
     else:
+        """
         Dict = {u"Unknown" : u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')",
         "Rock"  : u"in ('berg','b','rock','ro')",
         "Coarse gravel" : u"in ('grovgrus','grg','coarse gravel','cgr')",
@@ -268,6 +287,22 @@ def PlotTypesDict():#sectionplot - dictionary for possible geoshorts
         "Till" : u"in ('morän','moran','mn','till','ti')",
         "Peat" : u"in ('torv','t','peat','pt')",
         "Fill":u"in ('fyll','fyllning','f','made ground','mg','land fill')"}
+        """
+        Dict = OrderedDict([("Unknown" , u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')"),
+        ("Rock"  , u"in ('berg','b','rock','ro')"),
+        ("Coarse gravel" , u"in ('grovgrus','grg','coarse gravel','cgr')"),
+        ("Gravel" , u"in ('grus','gr','gravel')"),
+        ("Medium gravel" , u"in ('mellangrus','grm','medium gravel','mgr')"),
+        ("Fine gravel" , u"in ('fingrus','grf','fine gravel','fgr')"),
+        ("Coarse sand" , u"in ('grovsand','sag','coarse sand','csa')"),
+        ("Sand" , u"in ('sand','sa')"),
+        ("Medium sand" , u"in ('mellansand','sam','medium sand','msa')"),
+        ("Fine sand" , u"in ('finsand','saf','fine sand','fsa')"),
+        ("Silt" , u"in ('silt','si')"),
+        ("Clay" , u"in ('lera','ler','le','clay','cl')"),
+        ("Till" , u"in ('morän','moran','mn','till','ti')"),
+        ("Peat" , u"in ('torv','t','peat','pt')"),
+        ("Fill",u"in ('fyll','fyllning','f','made ground','mg','land fill')")])
     return Dict
 
 def PlotColorDict():#sectionplot - dictionary for geoshort-colors 
@@ -284,7 +319,7 @@ def PlotColorDict():#sectionplot - dictionary for geoshort-colors
         "Finsand" : u"yellow",
         "Silt" : u"yellow",
         "Lera" : u"DarkOrange",
-        "Morän" : u"cyan",
+        u"Morän" : u"cyan",
         "Torv" : u"DarkGray",
         "Fyll":u"white"}
     else:
@@ -320,7 +355,7 @@ def PlotHatchDict():#sectionplot - dictionary for geoshort-hatch
         "Finsand" : u".",
         "Silt" : u"\\",
         "Lera" : u"-",
-        "Morän" : u"/",
+        u"Morän" : u"/",
         "Torv" : u"+",
         "Fyll":u"+"}
     else:

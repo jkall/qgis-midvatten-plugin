@@ -3,7 +3,7 @@
 name=Midvatten
 qgisMinimumVersion=2.0
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db. Partly based on the ARPAT plugin.
-version=Version 1.0.99g
+version=Version 1.0.99h
 author=Josef Källgården
 email=groundwatergis@gmail.com
 
@@ -24,7 +24,7 @@ changelog=
         - New feature for calculating average water flow from accumulated water volume
         - Minor database design changes: now "w_levels"."level_masl" may be null and is no longer -999 by default
         - New behaviour during imports - empty readings (real number) are from now on imported as null instead of zero
-        - Fixed backend handling in time series plots to avoid blocking qgis on specific platform/backend combinations  - BUT THIS PREVENTS MULTIPLE PLOTS
+        - Alternative backend handling included in code (tsplot2.py) - to avoid time series plots from blocking qgis on specific platform/backend combinations  - But this is not implemented sincce it prevents multiple plots
         - New feature: Section plot!
         - Working on a new feature (see code): Piper diagram!
         - minor html report changes
