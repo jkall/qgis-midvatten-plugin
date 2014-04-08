@@ -408,12 +408,21 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
         self.secax.grid(b=True, which='both', color='0.65',linestyle='-')
         self.secax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
+        self.secax.xaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
         self.secax.set_ylabel(unicode("Level, masl",'utf-8'))  #This is the method - can now write 'åäö' in console and it works (since console is in utf-8 I guess)
         self.secax.set_xlabel(unicode("Distance along section",'utf-8'))  #This is the method - can now write 'åäö' in console and it works (since console is in utf-8 I guess)
         for label in self.secax.xaxis.get_ticklabels():
             label.set_fontsize(10)
         for label in self.secax.yaxis.get_ticklabels():
             label.set_fontsize(10)
+        """
+        if there is no stratigraphy data and no borehole lenght for first or last observations,
+        then autscaling will fail silently since it does not consider axes.annotate (which is used for printing obsid)
+        hence this special treatment to check if xlim are less than expected from lengthalong
+        """
+        #self.secax.autoscale(enable=True, axis='both', tight=None)
+        xmin, xmax = self.secax.get_xlim()
+        self.secax.set_xlim(min(float(min(self.LengthAlong))-self.barwidth,xmin), max(float(max(self.LengthAlong))+self.barwidth,xmax))
         self.canvas.draw()
         """
         The plot is shown in the canvas. 
