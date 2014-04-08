@@ -8,12 +8,12 @@ author=Josef Källgården
 email=groundwatergis@gmail.com
 
 ;optional metadata entries
-tags=hydrogeology,time series,stratigraphy
+tags=hydrogeology,groundwater,time series,stratigraphy
 icon=icons/MidvSettings.png
 homepage=http://sites.google.com/site/midvattenpluginforqgis/
 authorName=Josef Källgården
-tracker=http://code.google.com/p/midvatten-plugin-for-qgis/issues/list
-repository=http://code.google.com/p/midvatten-plugin-for-qgis/source/checkout
+tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
+repository=https://github.com/jkall/qgis-midvatten-plugin
 experimental=True
 deprecated=False
 
@@ -29,3 +29,9 @@ changelog=
         - Working on a new feature (see code): Piper diagram!
         - minor html report changes
         - some code cleanup
+
+;for the new plugin repo		
+about=The plugin is intended to be a toolset for using QGIS to manage data from hydrogeological investigations. A spatial-enabled SQLite database (i.e. spatialite) is used for storing data. The toolset is developed to be used on Windows but may be useful on other platforms as well.
+
+; change icon...
+icon=icons/MidvSettings.png
