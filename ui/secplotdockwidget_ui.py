@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'secplotdockwidget_ui.ui'
 #
-# Created: Tue Jan 28 23:22:32 2014
+# Created: Tue Apr  8 23:21:46 2014
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -56,18 +56,24 @@ class Ui_SecPlotDock(object):
         self.formLayout_2 = QtGui.QFormLayout()
         self.formLayout_2.setObjectName(_fromUtf8("formLayout_2"))
         self.label_2 = QtGui.QLabel(self.frame)
+        self.label_2.setEnabled(False)
         self.label_2.setObjectName(_fromUtf8("label_2"))
         self.formLayout_2.setWidget(0, QtGui.QFormLayout.LabelRole, self.label_2)
         self.drillstoplineEdit = QtGui.QLineEdit(self.frame)
+        self.drillstoplineEdit.setEnabled(False)
+        self.drillstoplineEdit.setToolTip(_fromUtf8(""))
         self.drillstoplineEdit.setObjectName(_fromUtf8("drillstoplineEdit"))
         self.formLayout_2.setWidget(0, QtGui.QFormLayout.FieldRole, self.drillstoplineEdit)
         self.verticalLayout_2.addLayout(self.formLayout_2)
         self.formLayout_4 = QtGui.QFormLayout()
         self.formLayout_4.setObjectName(_fromUtf8("formLayout_4"))
         self.label_4 = QtGui.QLabel(self.frame)
+        self.label_4.setEnabled(False)
         self.label_4.setObjectName(_fromUtf8("label_4"))
         self.formLayout_4.setWidget(0, QtGui.QFormLayout.LabelRole, self.label_4)
         self.colorComboBox = QtGui.QComboBox(self.frame)
+        self.colorComboBox.setEnabled(False)
+        self.colorComboBox.setToolTip(_fromUtf8(""))
         self.colorComboBox.setObjectName(_fromUtf8("colorComboBox"))
         self.formLayout_4.setWidget(0, QtGui.QFormLayout.FieldRole, self.colorComboBox)
         self.verticalLayout_2.addLayout(self.formLayout_4)

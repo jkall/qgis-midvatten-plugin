@@ -80,6 +80,9 @@
         <layout class="QFormLayout" name="formLayout_2">
          <item row="0" column="0">
           <widget class="QLabel" name="label_2">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>drillstop:</string>
            </property>
@@ -89,7 +92,14 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="drillstoplineEdit"/>
+          <widget class="QLineEdit" name="drillstoplineEdit">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string extracomment="not yet implemented"/>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -97,6 +107,9 @@
         <layout class="QFormLayout" name="formLayout_4">
          <item row="0" column="0">
           <widget class="QLabel" name="label_4">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>color:</string>
            </property>
@@ -106,7 +119,14 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QComboBox" name="colorComboBox"/>
+          <widget class="QComboBox" name="colorComboBox">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string extracomment="not yet implemented"/>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
