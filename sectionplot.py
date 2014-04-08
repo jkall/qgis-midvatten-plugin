@@ -255,10 +255,12 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 sql=u'select "depthbot"-"depthtop", stratid, geology, geoshort, capacity, development, comment from stratigraphy where obsid = "' + obs + u'" and lower(geoshort) ' + self.PlotTypes[Typ] + u" order by stratid"
                 if utils.sql_load_fr_db(sql):
                     recs = utils.sql_load_fr_db(sql)#[0][0]
-                    for rec in recs:
-                        BarLength.append(rec[0])
+                    #for rec in recs:
+                    #    BarLength.append(rec[0])
                     j=0#counter for unique stratid
-                    while j < len(recs):
+                    #while j < len(recs):
+                    for rec in recs:#loop cleanup
+                        BarLength.append(rec[0])#loop cleanup
                         x.append(float(self.LengthAlong[k]))# - self.barwidth/2)
                         sql01 = u'select "h_gs" from obs_points where obsid = "' + obs + u'"'
                         sql02 = u'select "h_toc" from obs_points where obsid = "' + obs + u'"'
@@ -320,7 +322,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.WriteAnnotation()
         #PLOT Water Levels
         self.PlotWaterLevel()
-        #write obsid at top of each stratigraphy floating bar plot
+        #write obsid at top of each stratigraphy floating bar plot, also plot empty bars to show drillings without stratigraphy data
         self.WriteOBSID()
         #labels, grid, legend etc.
         self.FinishPlot()
@@ -332,7 +334,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.Labels=[]
         for Typ in self.ExistingPlotTypes:#Adding a plot for each "geoshort" that is identified
             plotxleftbarcorner = [i - self.barwidth/2 for i in self.plotx[Typ]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
-            self.p.append(self.secax.bar(plotxleftbarcorner,self.plotbarlength[Typ], color=self.Colors[Typ], edgecolor='black', hatch=self.Hatches[Typ], width = self.barwidth, bottom=self.plotbottom[Typ]))
+            self.p.append(self.secax.bar(plotxleftbarcorner,self.plotbarlength[Typ], color=self.Colors[Typ], edgecolor='black', hatch=self.Hatches[Typ], width = self.barwidth, bottom=self.plotbottom[Typ]))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
             self.Labels.append(Typ)
 
     def WriteAnnotation(self):
@@ -366,13 +368,15 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 self.p.append(lineplot)
                 self.Labels.append(datum)
         
-    def WriteOBSID(self):
+    def WriteOBSID(self):#annotation, and also empty bars to show drillings without stratigraphy data
         x_id = []
         z_id=[]
+        barlengths=[]
+        bottoms=[]
         q=0# a new counter per self.selected_obsids
         for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
             x_id.append(float(self.LengthAlong[q]))
-            sql = u'select h_toc, h_gs from obs_points where obsid = "' + obs + u'"'
+            sql = u'select h_toc, h_gs, length from obs_points where obsid = "' + obs + u'"'
             recs = utils.sql_load_fr_db(sql)
             if recs[0][1]>0:
                 z_id.append(recs[0][1])
@@ -380,8 +384,15 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 z_id.append(recs[0][0])
             else:
                 z_id.append(0)
+            if utils.isfloat(str(recs[0][2])):
+                barlengths.append(recs[0][2])
+            else:
+                barlengths.append(0)
+            bottoms.append(z_id[q]-barlengths[q])
             q +=1
             del recs
+        plotxleftbarcorner = [i - self.barwidth/2 for i in x_id]#x-coord for bars at each obs
+        self.p.append(self.secax.bar(plotxleftbarcorner,barlengths, fill=False, edgecolor='black', width = self.barwidth, bottom=bottoms))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
         for m,n,o in zip(x_id,z_id,self.selected_obsids):#change last arg to the one to be written in plot
             self.secax.annotate(o,xy=(m,n),xytext=(0,10), textcoords='offset points',ha = 'center', va = 'top',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.4))
         del x_id, z_id, q
