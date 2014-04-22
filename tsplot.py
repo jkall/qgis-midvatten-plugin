@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 from matplotlib.dates import datestr2num
 import datetime
 import matplotlib.ticker as tick
-import midvatten_utils as utils        # Whenever some global midvatten_utilities are needed
+import midvatten_utils as utils
 import locale
 
 class TimeSeriesPlot:
@@ -47,83 +47,84 @@ class TimeSeriesPlot:
         if(layer):
             nF = layer.selectedFeatureCount()
             if (nF > 0):
-                conn = sqlite.connect(self.settingsdict['database'],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES) #MacOSX fix1
-                # skapa en cursor
-                curs = conn.cursor()
-                # Load all selected observation points
-                ob = layer.selectedFeatures()
+                myconnection = utils.dbconnection()
+                if myconnection.connect2db() == True:
+                    # skapa en cursor
+                    curs = myconnection.conn.cursor()
+                    # Load all selected observation points
+                    ob = layer.selectedFeatures()
 
-                # Create a plot window with one single subplot
-                fig = plt.figure()  # causes conflict with plugins "statist" and "chartmaker"
-                ax = fig.add_subplot(111)
-                
-                p=[None]*nF # List for plot objects
-                plabel=[None]*nF # List for label strings
-                
-                i=0
-                for k in ob:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
-                    obsid = unicode(ob[i][kolumnindex]) 
-                    # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
-                    sql =r"""SELECT date_time as 'date [datetime]', """
-                    sql += unicode(self.settingsdict['tscolumn']) #MacOSX fix1
-                    sql += """ FROM """
-                    sql += unicode(self.settingsdict['tstable']) #MacOSX fix1
-                    sql += r""" WHERE obsid = '"""    
-                    sql += obsid  
-                    sql += """' ORDER BY date_time """
-                    rs = curs.execute(sql) #Send SQL-syntax to cursor
-                    recs = rs.fetchall()  # All data are stored in recs
-                    """Transform data to a numpy.recarray"""
-                    My_format = [('date_time', datetime.datetime), ('values', float)] #Define format with help from function datetime
-                    table = np.array(recs, dtype=My_format)  #NDARRAY
-                    table2=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write table2.values
+                    # Create a plot window with one single subplot
+                    fig = plt.figure()  # causes conflict with plugins "statist" and "chartmaker"
+                    ax = fig.add_subplot(111)
                     
-                    """ Get help from function datestr2num to get date and time into float""" 
-                    myTimestring = []  #LIST
-                    j = 0
-                    for row in table2:
-                        myTimestring.append(table2.date_time[j])
-                        j = j + 1
-                    numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
-                    if self.settingsdict['tsdotmarkers']==2: # If the checkbox is checked - markers will be plotted #MacOSX fix1
-                        if self.settingsdict['tsstepplot']==2: # If the checkbox is checked - draw a step plot #MacOSX fix1
-                            p[i], = ax.plot_date(numtime, table2.values, marker = 'o', linestyle = '-',  drawstyle='steps-pre', label=obsid)    # PLOT!!
-                        else:
-                            p[i], = ax.plot_date(numtime, table2.values, 'o-',  label=obsid)
-                    else:                                                                        # NO markers wil be plotted, , just a line
-                        if self.settingsdict['tsstepplot']==2: # If the checkbox is checked - draw a step plot #MacOSX fix1
-                            p[i], = ax.plot_date(numtime, table2.values, marker = 'None', linestyle = '-',  drawstyle='steps-pre', label=obsid)    # PLOT!!
-                        else:
-                            p[i], = ax.plot_date(numtime, table2.values, '-',  label=obsid)
-                    plabel[i] = obsid # Label for the plot
+                    p=[None]*nF # List for plot objects
+                    plabel=[None]*nF # List for label strings
                     
-                    i = i+1
+                    i=0
+                    for k in ob:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
+                        obsid = unicode(ob[i][kolumnindex]) 
+                        # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
+                        sql =r"""SELECT date_time as 'date [datetime]', """
+                        sql += unicode(self.settingsdict['tscolumn']) #MacOSX fix1
+                        sql += """ FROM """
+                        sql += unicode(self.settingsdict['tstable']) #MacOSX fix1
+                        sql += r""" WHERE obsid = '"""    
+                        sql += obsid  
+                        sql += """' ORDER BY date_time """
+                        rs = curs.execute(sql) #Send SQL-syntax to cursor
+                        recs = rs.fetchall()  # All data are stored in recs
+                        """Transform data to a numpy.recarray"""
+                        My_format = [('date_time', datetime.datetime), ('values', float)] #Define format with help from function datetime
+                        table = np.array(recs, dtype=My_format)  #NDARRAY
+                        table2=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write table2.values
+                        
+                        """ Get help from function datestr2num to get date and time into float""" 
+                        myTimestring = []  #LIST
+                        j = 0
+                        for row in table2:
+                            myTimestring.append(table2.date_time[j])
+                            j = j + 1
+                        numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
+                        if self.settingsdict['tsdotmarkers']==2: # If the checkbox is checked - markers will be plotted #MacOSX fix1
+                            if self.settingsdict['tsstepplot']==2: # If the checkbox is checked - draw a step plot #MacOSX fix1
+                                p[i], = ax.plot_date(numtime, table2.values, marker = 'o', linestyle = '-',  drawstyle='steps-pre', label=obsid)    # PLOT!!
+                            else:
+                                p[i], = ax.plot_date(numtime, table2.values, 'o-',  label=obsid)
+                        else:                                                                        # NO markers wil be plotted, , just a line
+                            if self.settingsdict['tsstepplot']==2: # If the checkbox is checked - draw a step plot #MacOSX fix1
+                                p[i], = ax.plot_date(numtime, table2.values, marker = 'None', linestyle = '-',  drawstyle='steps-pre', label=obsid)    # PLOT!!
+                            else:
+                                p[i], = ax.plot_date(numtime, table2.values, '-',  label=obsid)
+                        plabel[i] = obsid # Label for the plot
+                        
+                        i = i+1
 
-                """ Close SQLite-connections """
-                rs.close() # First close the table 
-                conn.close()  # then close the database
+                    """ Close SQLite-connections """
+                    rs.close() # First close the table 
+                    myconnection.closedb()# then close the database
 
-                """ Finish plot """
-                ax.grid(True)
-                ax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
-                fig.autofmt_xdate()
-                ax.set_ylabel(self.settingsdict['tscolumn']) #MacOSX fix1
-                ax.set_title(self.settingsdict['tstable'])#MacOSX fix1
-                leg = fig.legend(p, plabel, loc=0)#leg = fig.legend(p, plabel, 'right')
-                leg.draggable(state=True)
-                frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
-                frame.set_facecolor('0.80')    # set the frame face color to light gray
-                frame.set_fill(False)    # set the frame face color transparent                
-                
-                for t in leg.get_texts():
-                    t.set_fontsize(10)    # the legend text fontsize
-                for label in ax.xaxis.get_ticklabels():
-                    label.set_fontsize(10)
-                for label in ax.yaxis.get_ticklabels():
-                    label.set_fontsize(10)
-                #plt.ion()#force interactivity to prevent the plot window from blocking the qgis app
-                plt.show() 
-                #plt.draw()
+                    """ Finish plot """
+                    ax.grid(True)
+                    ax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
+                    fig.autofmt_xdate()
+                    ax.set_ylabel(self.settingsdict['tscolumn']) #MacOSX fix1
+                    ax.set_title(self.settingsdict['tstable'])#MacOSX fix1
+                    leg = fig.legend(p, plabel, loc=0)#leg = fig.legend(p, plabel, 'right')
+                    leg.draggable(state=True)
+                    frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
+                    frame.set_facecolor('0.80')    # set the frame face color to light gray
+                    frame.set_fill(False)    # set the frame face color transparent                
+                    
+                    for t in leg.get_texts():
+                        t.set_fontsize(10)    # the legend text fontsize
+                    for label in ax.xaxis.get_ticklabels():
+                        label.set_fontsize(10)
+                    for label in ax.yaxis.get_ticklabels():
+                        label.set_fontsize(10)
+                    #plt.ion()#force interactivity to prevent the plot window from blocking the qgis app
+                    plt.show() 
+                    #plt.draw()
             else:
                 utils.pop_up_info("Please select at least one point with time series data")
         else:

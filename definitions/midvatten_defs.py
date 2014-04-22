@@ -43,7 +43,6 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplotwlvltab' : 'w_levels',
             'secplotdates' : [],
             'secplottext' : '',
-            'secplotcolor':'geoshort',
             'secplotdrillstop':'',
             'secplotbw':2
             }

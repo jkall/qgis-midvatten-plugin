@@ -82,7 +82,12 @@ class Stratigraphy:
             data = self.store.getData(ids, lyr)    # added lyr as an argument!!!
         except DataSanityError, e: # if an object 'e' belonging to DataSanityError is created, then do following
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            QMessageBox.information(None, "Information", "Sorting...") 
             utils.pop_up_info("Data sanity problem, obsid: %s\n%s" % (e.sond_id, e.message))
+            return
+        except: # if an object 'e' belonging to DataSanityError is created, then do following
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.iface.messageBar().pushMessage("Error","The stratigraphy plot failed, check Midvatten plugin settings and your data!", 2,duration=10) 
             return
         PyQt4.QtGui.QApplication.restoreOverrideCursor()  # Restores the mouse cursor to normal symbol
         # show widget
@@ -125,10 +130,12 @@ class SurveyStore:
     def getData(self, featureIds, vectorlayer):  # THIS FUNCTION IS ONLY CALLED FROM ARPATPLUGIN/SHOWSURVEY
         """ get data from databases for array of features specified by their IDs  """
         surveys = self._getDataStep1(featureIds, vectorlayer)
-        surveys = self._getDataStep2(surveys)
-        self.sanityCheck(surveys)
-        return surveys  
-        
+        DataLoadingStatus, surveys = self._getDataStep2(surveys)
+        if DataLoadingStatus == True:
+            self.sanityCheck(surveys)
+            return surveys  
+        else:
+            DataSanityError(Exception)
         
     def _getDataStep1(self, featureIds, vlayer):
         """ STEP 1: get data from selected layer"""  # _CHANGE_ Completely revised to TSPLot method
@@ -170,51 +177,59 @@ class SurveyStore:
 
     def _getDataStep2(self, surveys):    # _CHANGE_ 
         """ STEP 2: get strata information for every point """
-        conn = sqlite.connect(self.path,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES) #MacOSX fix1
-        # skapa en cursor
-        curs = conn.cursor()
-        
-        for (obsid, survey) in surveys.iteritems(): # _CHANGE_
-            sql =r"""SELECT stratid, depthtop, depthbot, geology, geoshort, capacity, comment, development FROM """
-            sql += self.stratitable #MacOSX fix1
-            sql += r""" WHERE obsid = '"""    
-            sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRAIGRAPHY FOR CHOOSEN obsid
-            sql += """' ORDER BY stratid"""
-            rs = curs.execute(sql) #Send SQL-syntax to cursor
-            recs = rs.fetchall()  # All data are stored in recs            
-            # parse attributes
-            for record in recs:
-                stratigaphy_id = record[0]  # Stratigraphy layer no
-                depthtotop = record[1]  # depth to top of stratrigraphy layer
-                depthtobot = record[2]  # depth to bottom of stratrigraphy layer
-                if record[3]: # Must check since it is not possible to print null values as text in qt widget
-                    geology = record[3]  # Geology full text 
-                else:
-                    geology = " " 
-                geo_short_txt = record[4]  # geo_short might contain national special characters
-                if geo_short_txt:   # Must not try to encode an empty field
-                    geo_short = unicodedata.normalize('NFKD', geo_short_txt).encode('ascii','ignore')  # geo_short normalized for symbols and color
-                else:  # If the field is empty, then store an empty string
-                    geo_short = ''
-                hydro = record[5] # waterloss (hydrogeo parameter) for color
-                if record[6]:  # Must check since it is not possible to print null values as text in qt widget
-                    comment = record[6] # 
-                else: 
-                    comment = " " 
-                if record[7]:  # Must check since it is not possible to print null values as text in qt widget
-                    development = record[7] # 
-                else: 
-                    development = " " 
-                st = StrataInfo(stratigaphy_id, depthtotop, depthtobot, geology, geo_short, hydro, comment, development)
-                # add strata information (in right order) 
-                insertAt = 0
-                for a in survey.strata:
-                    if a.stratid > stratigaphy_id:
-                        break
-                    insertAt += 1
-                survey.strata.insert(insertAt, st)
-        return surveys
+        myconnection = utils.dbconnection()
+        if myconnection.connect2db() == True:
+            conn = sqlite.connect(self.path,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES) #MacOSX fix1
+            # skapa en cursor
+            curs = myconnection.conn.cursor()
             
+            for (obsid, survey) in surveys.iteritems(): # _CHANGE_
+                sql =r"""SELECT stratid, depthtop, depthbot, geology, geoshort, capacity, comment, development FROM """
+                sql += self.stratitable #MacOSX fix1
+                sql += r""" WHERE obsid = '"""    
+                sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRAIGRAPHY FOR CHOOSEN obsid
+                sql += """' ORDER BY stratid"""
+                rs = curs.execute(sql) #Send SQL-syntax to cursor
+                recs = rs.fetchall()  # All data are stored in recs            
+                # parse attributes
+                for record in recs:
+                    stratigaphy_id = record[0]  # Stratigraphy layer no
+                    depthtotop = record[1]  # depth to top of stratrigraphy layer
+                    depthtobot = record[2]  # depth to bottom of stratrigraphy layer
+                    if record[3]: # Must check since it is not possible to print null values as text in qt widget
+                        geology = record[3]  # Geology full text 
+                    else:
+                        geology = " " 
+                    geo_short_txt = record[4]  # geo_short might contain national special characters
+                    if geo_short_txt:   # Must not try to encode an empty field
+                        geo_short = unicodedata.normalize('NFKD', geo_short_txt).encode('ascii','ignore')  # geo_short normalized for symbols and color
+                    else:  # If the field is empty, then store an empty string
+                        geo_short = ''
+                    hydro = record[5] # waterloss (hydrogeo parameter) for color
+                    if record[6]:  # Must check since it is not possible to print null values as text in qt widget
+                        comment = record[6] # 
+                    else: 
+                        comment = " " 
+                    if record[7]:  # Must check since it is not possible to print null values as text in qt widget
+                        development = record[7] # 
+                    else: 
+                        development = " " 
+                    st = StrataInfo(stratigaphy_id, depthtotop, depthtobot, geology, geo_short, hydro, comment, development)
+                    # add strata information (in right order) 
+                    insertAt = 0
+                    for a in survey.strata:
+                        if a.stratid > stratigaphy_id:
+                            break
+                        insertAt += 1
+                    survey.strata.insert(insertAt, st)
+            """ Close SQLite-connections """
+            rs.close() # First close the table 
+            myconnection.closedb()# then close the database
+            DataLoadingStatus = True
+            return DataLoadingStatus, surveys
+        else:
+            return False, surveys
+        
     def sanityCheck(self, surveys):
         """ does a sanity check on retreived data """
         
@@ -285,7 +300,6 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
         inf = 999999999
         (xMin, yMin, xMax, yMax) = (inf, inf, -inf, -inf)
         for s in sondaggio.itervalues():
-            #QMessageBox.information(None, "Information", "Sorting...") 
             (x, y) = (s.coord.x(), s.coord.y())
             if x < xMin: xMin = x
             if y < yMin: yMin = y

@@ -28,6 +28,31 @@ import os
 from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialite-specific sql clauses may be sent by sql_alter_db and sql_load_fr_db
 import time
 
+class dbconnection():
+    def __init__(self, db=''):
+        if db == '':
+            self.dbpath = QgsProject.instance().readEntry("Midvatten","database")[0]
+        else:
+            self.dbpath = db
+    
+    def connect2db(self):
+        if os.path.exists(self.dbpath):
+            try:#verify this is an existing sqlite database
+                self.conn = sqlite.connect(self.dbpath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+                self.conn.cursor().execute("select count(*) from sqlite_master") 
+                ConnectionOK = True
+                print "successfully connected to " + self.dbpath
+            except:
+                pop_up_info("Could not connect to  " + self.dbpath + "\nYou will have to reset Midvatten settings for this project!")
+                ConnectionOK = False
+        else:
+            pop_up_info("The file " + self.dbpath + " do not exist.\nYou will have to reset Midvatten settings for this project!")
+            ConnectionOK = False
+        return ConnectionOK
+        
+    def closedb(self):
+            self.conn.close()
+    
 class askuser(QtGui.QDialog):
     def __init__(self, question="YesNo", msg = '', dialogtitle='User input needed', parent=None):
         #pop_up_info("question = " + question + " and msg = " + msg)        #DEBUGGING
@@ -99,7 +124,7 @@ def getselectedobjectnames(thelayer = qgis.utils.iface.activeLayer()):#returns a
             kolumnindex = thelayer.dataProvider().fieldNameIndex('OBSID')  #backwards compatibility
     observations = [None]*(thelayer.selectedFeatureCount())
     i=0
-    for k in selectedobs:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
+    for k in selectedobs:
         attributes = selectedobs[i]
         observations[i] = attributes[kolumnindex] # value in column obsid is stored as unicode
         i+=1
@@ -142,16 +167,24 @@ def pop_up_info(msg='',title='Information',parent=None):
 def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
     #qgis.utils.iface.messageBar().pushMessage("Debug",sql, 0,duration=30)#debug
     dbpath = QgsProject.instance().readEntry("Midvatten","database")
-    try:
-        conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)#dbpath[0] is unicode already #MacOSC fix1 
-    except:
-        pop_up_info("Could not connect to the database, please check Midvatten settings!\n Perhaps you need to reset settings first?")
-    curs = conn.cursor()
-    resultfromsql = curs.execute(sql) #Send SQL-syntax to cursor #MacOSX fix1
-    result = resultfromsql.fetchall()
-    resultfromsql.close()
-    conn.close()
-    return result
+    if os.path.exists(dbpath[0]):
+        try:
+            conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)#dbpath[0] is unicode already #MacOSC fix1 
+            curs = conn.cursor()
+            resultfromsql = curs.execute(sql) #Send SQL-syntax to cursor #MacOSX fix1
+            result = resultfromsql.fetchall()
+            resultfromsql.close()
+            conn.close()
+            ConnectionOK = True
+        except:
+            pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
+            ConnectionOK = False
+            result = ''
+    else:
+        pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
+        ConnectionOK = False
+        result = ''
+    return ConnectionOK, result
 
 def sql_alter_db(sql=''):
     dbpath = QgsProject.instance().readEntry("Midvatten","database")

@@ -35,7 +35,7 @@ class piperplot():
         # Import observations
         # Observations are expected have meq/l units with parameters in the order: Cl, HCO3, SO4, Na, K, Ca, Mg
         sql = self.big_sql(OBSID,ParameterList)
-        obs = self.sql_load_fr_db(dbpath,sql)# a list is returned # LATER, change to utils.sql_load_fr_db and skip dbpath as arg
+        obs = self.sql_load_fr_db(dbpath,sql[1]# a list is returned # LATER, change to utils.sql_load_fr_db and skip dbpath as arg
         obs = np.asarray(obs)#convert to np array
         #obs=loadtxt(r"""U:\My Documents\pythoncode\scripts\ternary_plots\piper_rectangular_watersamples.txt""", delimiter='\t', comments='#') # first row with headers is skipped, matrix with data is assigned to obs (obs is a numpy array)
         #obs[obs == -9999] = NaN # if observations are missing, label them as -9999 (for example) in excel and make them Not a Number (NaN)
@@ -228,14 +228,22 @@ class piperplot():
             ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(ParameterList[0],ParameterList[1],ParameterList[2],ParameterList[3],ParameterList[4],ParameterList[5],ParameterList[6],OBSID)
         return sql
 
-    def sql_load_fr_db(self,dbpath,sql=''):#sql sent as unicode, result from db returned as list of unicode strings
-        conn = sqlite.connect(dbpath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)#dbpath[0] is unicode already #MacOSC fix1 
+def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
+    #qgis.utils.iface.messageBar().pushMessage("Debug",sql, 0,duration=30)#debug
+    dbpath = QgsProject.instance().readEntry("Midvatten","database")
+    try:
+        conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)#dbpath[0] is unicode already #MacOSC fix1 
         curs = conn.cursor()
         resultfromsql = curs.execute(sql) #Send SQL-syntax to cursor #MacOSX fix1
         result = resultfromsql.fetchall()
         resultfromsql.close()
         conn.close()
-        return result
+        ConnectionOK = True
+    except:
+        pop_up_info("Could not connect to the database, please check Midvatten settings!\n Perhaps you need to reset settings first?")
+        ConnectionOK = False
+        result = ''
+    return ConnectionOK, result
 # ---------------------------- /THE SOLUTION-----------------------------
 
 def main(dbpath, OBSID,ParameterList): #when this script is run directly or from python interpreter outside qgis

@@ -37,7 +37,7 @@ from ui.secplotdockwidget_ui import Ui_SecPlotDock
 import definitions.midvatten_defs as defs
 
 class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
-    def __init__(self, parent1, iface1, mdl1):#Please note, self.selected_obsids must be a tuple
+    def __init__(self, parent1, iface1):#Please note, self.selected_obsids must be a tuple
         #super(sectionplot, self).saveSettings()
         PyQt4.QtGui.QDockWidget.__init__(self, parent1) #, PyQt4.QtCore.Qt.WindowFlags(PyQt4.QtCore.Qt.WA_DeleteOnClose))
         #Ui_SecPlotDock.__init__(self)
@@ -51,7 +51,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.setWindowTitle("Midvatten plugin - section plot") # Set the title for the dialog
         self.initUI()
-        self.mdl = mdl1
         #self.showed = False
 
     def doit(self,s_dict,OBSIDtuplein,SectionLineLayer):
@@ -115,7 +114,8 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         # start with cleaning comboboxes before filling with new entries
         # clear comboboxes etc
         self.wlvltableComboBox.clear()  
-        self.colorComboBox.clear()  
+        #self.colorComboBox.clear()
+        self.DEMlistWidget.clear()  
         self.textcolComboBox.clear()  
         self.datetimetextEdit.clear()
         self.drillstoplineEdit.clear()
@@ -166,14 +166,11 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         'geometry_columns',
         'spatialindex',
         'SpatialIndex')) ORDER BY tbl_name""" )  #SQL statement to get the relevant tables in the spatialite database
-        tabeller = utils.sql_load_fr_db(query)
+        tabeller = utils.sql_load_fr_db(query)[1]
         #self.dbTables = {} 
         self.wlvltableComboBox.addItem('')         
         for tabell in tabeller:
             self.wlvltableComboBox.addItem(tabell[0])
-        coloritems=['geoshort','capacity']
-        for item in coloritems:
-            self.colorComboBox.addItem(item)
         textitems=['','geology','geoshort','capacity','development','comment']
         for item in textitems:
             self.textcolComboBox.addItem(item)
@@ -197,16 +194,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 if unicode(self.wlvltableComboBox.currentText()) == unicode(self.s_dict['secplotwlvltab']):#The index count stops when last selected table is found #MacOSX fix1
                     notfound=1
                 elif i> len(self.wlvltableComboBox):
-                    notfound=1
-                i = i + 1
-        if len(str(self.s_dict['secplotcolor'])):#If there is a last selected field for coloring  
-            notfound=0 
-            i=0
-            while notfound==0:    # Loop until the last selected tstable is found
-                self.colorComboBox.setCurrentIndex(i)
-                if unicode(self.colorComboBox.currentText()) == unicode(self.s_dict['secplotcolor']):#The index count stops when last selected table is found #MacOSX fix1
-                    notfound=1
-                elif i> len(self.colorComboBox):
                     notfound=1
                 i = i + 1
         if len(str(self.s_dict['secplottext'])):#If there is a last selected field for annotation in graph
@@ -253,8 +240,8 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             Bottom = []
             for obs in self.selected_obsids:
                 sql=u'select "depthbot"-"depthtop", stratid, geology, geoshort, capacity, development, comment from stratigraphy where obsid = "' + obs + u'" and lower(geoshort) ' + self.PlotTypes[Typ] + u" order by stratid"
-                if utils.sql_load_fr_db(sql):
-                    recs = utils.sql_load_fr_db(sql)#[0][0]
+                if utils.sql_load_fr_db(sql)[1]:
+                    recs = utils.sql_load_fr_db(sql)[1]#[0][0]
                     #for rec in recs:
                     #    BarLength.append(rec[0])
                     j=0#counter for unique stratid
@@ -264,13 +251,13 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                         x.append(float(self.LengthAlong[k]))# - self.barwidth/2)
                         sql01 = u'select "h_gs" from obs_points where obsid = "' + obs + u'"'
                         sql02 = u'select "h_toc" from obs_points where obsid = "' + obs + u'"'
-                        if utils.isfloat(str(utils.sql_load_fr_db(sql01)[0][0])) and utils.sql_load_fr_db(sql01)[0][0]>0:
-                            z_gs.append(float(str(utils.sql_load_fr_db(u'select "h_gs" from obs_points where obsid = "' + obs + u'"')[0][0])))
-                        elif utils.isfloat(str(utils.sql_load_fr_db(sql02)[0][0])) and utils.sql_load_fr_db(sql02)[0][0]>0:
-                            z_gs.append(float(str(utils.sql_load_fr_db(u'select "h_toc" from obs_points where obsid = "' + obs + u'"')[0][0])))
+                        if utils.isfloat(str((utils.sql_load_fr_db(sql01)[1])[0][0])) and (utils.sql_load_fr_db(sql01)[1])[0][0]>0:
+                            z_gs.append(float(str((utils.sql_load_fr_db(u'select "h_gs" from obs_points where obsid = "' + obs + u'"')[1])[0][0])))
+                        elif utils.isfloat(str((utils.sql_load_fr_db(sql02)[1])[0][0])) and (utils.sql_load_fr_db(sql02)[1])[0][0]>0:
+                            z_gs.append(float(str((utils.sql_load_fr_db(u'select "h_toc" from obs_points where obsid = "' + obs + u'"')[1])[0][0])))
                         else:
                             z_gs.append(0)
-                        Bottom.append(z_gs[i]- float(str(utils.sql_load_fr_db(u'select "depthbot" from stratigraphy where obsid = "' + obs + u'" and stratid = ' + str(recs[j][1])+ u' and lower(geoshort) ' + self.PlotTypes[Typ])[0][0])))
+                        Bottom.append(z_gs[i]- float(str((utils.sql_load_fr_db(u'select "depthbot" from stratigraphy where obsid = "' + obs + u'" and stratid = ' + str(recs[j][1])+ u' and lower(geoshort) ' + self.PlotTypes[Typ])[1])[0][0])))
                         #lists for plotting annotation 
                         self.x_txt.append(x[i])#+ self.barwidth/2)#x-coord for text
                         self.z_txt.append(Bottom[i] + recs[j][0]/2)#Z-value for text
@@ -307,7 +294,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.s_dict['secplotwlvltab'] = unicode(self.wlvltableComboBox.currentText())
         temporarystring = self.datetimetextEdit.toPlainText() #this needs some cleanup
         self.s_dict['secplotdates']=temporarystring.split()
-        self.s_dict['secplotcolor']=self.colorComboBox.currentText()
         self.s_dict['secplottext'] = self.textcolComboBox.currentText()
         self.s_dict['secplotbw'] = self.barwidthdoubleSpinBox.value()
         self.s_dict['secplotdrillstop'] = self.drillstoplineEdit.text()
@@ -360,8 +346,8 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 k=0
                 for obs in self.selected_obsids:
                     query = u'select level_masl from w_levels where obsid = "' + obs + '" and date_time like "' + datum  +'%"' 
-                    if utils.sql_load_fr_db(query):
-                        WL.append(utils.sql_load_fr_db(query)[0][0])
+                    if utils.sql_load_fr_db(query)[1]:
+                        WL.append((utils.sql_load_fr_db(query)[1])[0][0])
                         x_wl.append(float(self.LengthAlong[k]))
                     k += 1
                 lineplot,=self.secax.plot(x_wl, WL,  'v-', markersize = 6)#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
@@ -377,7 +363,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
             x_id.append(float(self.LengthAlong[q]))
             sql = u'select h_toc, h_gs, length from obs_points where obsid = "' + obs + u'"'
-            recs = utils.sql_load_fr_db(sql)
+            recs = utils.sql_load_fr_db(sql)[1]
             if recs[0][1]>0:
                 z_id.append(recs[0][1])
             elif recs[0][0]>0:
@@ -446,7 +432,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         if self.temptableName in (None,''):
             self.temptableName=layer.name()
         #Verify if self.temptableName already exists in DB
-        ExistingNames=utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""")
+        ExistingNames=utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""")[1]
         #ExistingNames=[table.name for table in self.tables]
             #Propose user to automatically rename DB
         for existingname in ExistingNames:  #this should only be needed if an earlier import failed
@@ -619,7 +605,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         GLength(l.geometry)*ST_Line_Locate_Point(l.geometry, p.geometry) AS "abs_dist"
         FROM %s AS l, (select * from obs_points where obsid in %s) AS p
         GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptableName,obsidtuple)
-        data = utils.sql_load_fr_db(sql)
+        data = utils.sql_load_fr_db(sql)[1]
         My_format = [('obs_id', np.str_, 32),('length', float)] #note that here is a limit of maximum 32 characters in obsid
         npdata = np.array(data, dtype=My_format)  #NDARRAY
         LengthAlongTable=npdata.view(np.recarray)   # RECARRAY   Makes the two columns into callable objects, i.e. write self.LengthAlong.obs_id and self.LengthAlong.length
@@ -630,7 +616,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         QgsProject.instance().writeEntry("Midvatten",'secplotwlvltab', self.s_dict['secplotwlvltab'] )
         QgsProject.instance().writeEntry("Midvatten",'secplotdates', self.s_dict['secplotdates'] )
         QgsProject.instance().writeEntry("Midvatten",'secplottext', self.s_dict['secplottext'] )
-        QgsProject.instance().writeEntry("Midvatten",'secplotcolor', self.s_dict['secplotcolor'] )
         QgsProject.instance().writeEntry("Midvatten",'secplotdrillstop', self.s_dict['secplotdrillstop'] )
         QgsProject.instance().writeEntry("Midvatten",'secplotbw', self.s_dict['secplotbw'] )
 

@@ -20,6 +20,8 @@ import qgis.utils
 from functools import partial # only to get combobox signals to work
 from ui.midvsettingsdialog_ui import Ui_Dialog
 import locale
+import midvatten_utils as utils
+
 
 class midvsettings(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH THE SETTINGS DIALOG
     def __init__(self, parent, s_dict):
@@ -46,6 +48,7 @@ class midvsettings(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH THE SETT
 
         if len(self.s_dict['database'])>0:    # If there is a stored database, show it and fill the table-comboboxes with a list of all tables #MacOSX fix1
             self.database = self.s_dict['database'] #MacOSX fix1
+            print "found db in project file, printing o ui"
             self.txtpath.setText(self.database)
             self.loadTablesFromDB()        # All ListOfTables are filled with relevant information
 
@@ -217,6 +220,9 @@ class midvsettings(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH THE SETT
         path = QFileDialog.getOpenFileName(None,str("Select database:"),"*.sqlite")
         if path: #Only get new db name if not cancelling the FileDialog
             self.database = path #
+            print "selected this file " + self.database#debug
+        else:#debug
+            print "cancelled and still using database path " + self.database #debug
         self.openDBFile()
 
     def openDBFile( self ):
@@ -224,6 +230,7 @@ class midvsettings(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH THE SETT
             and populate the table-QComboBoxes with all the tables"""
         if os.path.isfile( self.database ):#absolute path
             self.txtpath.setText( self.database)
+            print "this is the database to be opened " + self.database
             self.ListOfTables.clear()
             self.ListOfTables_2.clear()
             self.ListOfTables_3.clear()
@@ -399,59 +406,58 @@ class midvsettings(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH THE SETT
         self.ListOfTables_3.clear()    
         self.ListOfTables_WQUAL.clear()    
 
-        conn = sqlite.connect(self.database)#encoding cleanup
-        cursor = conn.cursor()
-        rs=cursor.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in('geom_cols_ref_sys',
-        'geometry_columns',
-        'geometry_columns_time',
-        'spatial_ref_sys',
-        'spatialite_history',
-        'vector_layers',
-        'views_geometry_columns',
-        'virts_geometry_columns',
-        'geometry_columns_auth',
-        'geometry_columns_fields_infos',
-        'geometry_columns_statistics',
-        'sql_statements_log',
-        'layer_statistics',
-        'sqlite_sequence',
-        'sqlite_stat1' ,
-        'views_layer_statistics',
-        'virts_layer_statistics',
-        'vector_layers_auth',
-        'vector_layers_field_infos',
-        'vector_layers_statistics',
-        'views_geometry_columns_auth',
-        'views_geometry_columns_field_infos',
-        'views_geometry_columns_statistics',
-        'virts_geometry_columns_auth',
-        'virts_geometry_columns_field_infos',
-        'virts_geometry_columns_statistics' ,
-        'geometry_columns',
-        'spatialindex',
-        'SpatialIndex')) ORDER BY tbl_name""" )  #SQL statement to get the relevant tables in the spatialite database
-        #self.dbTables = {} 
-        self.ListOfTables.addItem('')
-        self.ListOfTables_2.addItem('')
-        self.ListOfTables_3.addItem('')
-        self.ListOfTables_WQUAL.addItem('')
-        
-        for row in cursor:
-            #self.dbTables[ row[ 0 ] ] = row # Load the table info into the dictionary
-        #if len( self.dbTables ):  # If there are any tables, load them all into the comboboxes
-        #    self.ListOfTables.addItem('')
-        #    self.ListOfTables_2.addItem('')
-            self.ListOfTables.addItem(row[0])
-            self.ListOfTables_2.addItem(row[0])
-            self.ListOfTables_3.addItem(row[0])
-            self.ListOfTables_WQUAL.addItem(row[0])
-            #for tableName in self.dbTables:
-            #    self.ListOfTables.addItem(tableName)
-            #    self.ListOfTables_2.addItem(tableName)
-        #else:
-        #    QMessageBox.critical(None, "Warning", "The SQLite database \n do not contain any tables!")
-        rs.close()
-        conn.close()
+        myconnection = utils.dbconnection(self.database)
+        if myconnection.connect2db() == True:
+            cursor = myconnection.conn.cursor()
+            rs=cursor.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in('geom_cols_ref_sys',
+            'geometry_columns',
+            'geometry_columns_time',
+            'spatial_ref_sys',
+            'spatialite_history',
+            'vector_layers',
+            'views_geometry_columns',
+            'virts_geometry_columns',
+            'geometry_columns_auth',
+            'geometry_columns_fields_infos',
+            'geometry_columns_field_infos',
+            'geometry_columns_statistics',
+            'sql_statements_log',
+            'layer_statistics',
+            'sqlite_sequence',
+            'sqlite_stat1' ,
+            'views_layer_statistics',
+            'virts_layer_statistics',
+            'vector_layers_auth',
+            'vector_layers_field_infos',
+            'vector_layers_statistics',
+            'views_geometry_columns_auth',
+            'views_geometry_columns_field_infos',
+            'views_geometry_columns_statistics',
+            'virts_geometry_columns_auth',
+            'virts_geometry_columns_field_infos',
+            'virts_geometry_columns_statistics' ,
+            'geometry_columns',
+            'spatialindex',
+            'SpatialIndex')) ORDER BY tbl_name""" )  #SQL statement to get the relevant tables in the spatialite database
+            self.ListOfTables.addItem('')
+            self.ListOfTables_2.addItem('')
+            self.ListOfTables_3.addItem('')
+            self.ListOfTables_WQUAL.addItem('')
+            
+            for row in cursor:
+                self.ListOfTables.addItem(row[0])
+                self.ListOfTables_2.addItem(row[0])
+                self.ListOfTables_3.addItem(row[0])
+                self.ListOfTables_WQUAL.addItem(row[0])
+            rs.close()
+            myconnection.closedb()# then close the database
+        else:
+            self.database = ''
+            self.txtpath.setText(self.database)
+            self.ListOfTables.clear()    
+            self.ListOfTables_2.clear()    
+            self.ListOfTables_3.clear()
+            self.ListOfTables_WQUAL.clear()            
 
     def ColumnsToComboBox(self, comboboxname='', table=None):
         getattr(self, comboboxname).clear()
@@ -536,16 +542,24 @@ class midvsettings(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH THE SETT
     def LoadColumnsFromTable(self, table=''):
         """ This method returns a list with all the columns in the table"""
         if len(table)>0 and len(self.database)>0:            # Should not be needed since the function never should be called without existing table...
-            conn = sqlite.connect(self.database) #encoding cleanup
-            curs = conn.cursor()
-            sql = r"""SELECT * FROM '"""
-            sql += str(table)
-            sql += """'"""     
-            rs = curs.execute(sql)  #Send the SQL statement to get the columns in the table            
-            columns = {} 
-            columns = [tuple[0] for tuple in curs.description]
-            rs.close()
-            conn.close()
+            myconnection = utils.dbconnection(self.database)
+            if myconnection.connect2db() == True:
+                curs = myconnection.conn.cursor()
+                sql = r"""SELECT * FROM '"""
+                sql += str(table)
+                sql += """'"""     
+                rs = curs.execute(sql)  #Send the SQL statement to get the columns in the table            
+                columns = {} 
+                columns = [tuple[0] for tuple in curs.description]
+                rs.close()
+                myconnection.closedb()# then close the database
+            else:
+                self.database = ''
+                self.txtpath.setText(self.database)
+                self.ListOfTables.clear()    
+                self.ListOfTables_2.clear()    
+                self.ListOfTables_3.clear()
+                self.ListOfTables_WQUAL.clear()            
         else:
             columns = {}
         return columns        # This method returns a list with all the columns in the table

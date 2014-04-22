@@ -51,13 +51,13 @@ def obsid_FieldTextChanged():#whenever a new obsid is given, then preset stratid
         sql = r"""select max(stratid) from stratigraphy WHERE obsid = '"""
         sql += myDialog.findChild(QLineEdit,"obsid").text()
         sql += r"""'"""
-        maxstratid = utils.sql_load_fr_db(sql)
+        maxstratid = utils.sql_load_fr_db(sql)[1]
         if utils.isinteger(str(maxstratid[0][0]).encode('utf-8'))==True:
             myDialog.findChild(QLineEdit,"stratid").setText(str(int(maxstratid[0][0])+1)) #form stratid is preset to max(stratid) + 1 in db
             sql = r"""select max(depthbot) from stratigraphy WHERE obsid = '"""
             sql +=myDialog.findChild(QLineEdit,"obsid").text()
             sql += r"""'"""
-            maxdepthbot = utils.sql_load_fr_db(sql)
+            maxdepthbot = utils.sql_load_fr_db(sql)[1]
             if utils.isfloat(str(maxdepthbot[0][0]).encode('utf-8'))==True:
                 myDialog.findChild(QLineEdit,"depthtop").setText(str(maxdepthbot[0][0])) #form depthtop is preset to max(depthbot) in db
         else:
@@ -87,7 +87,7 @@ def depthbot_FieldTextChanged():
 
 def obsidexists(obsid):  # Check if obsid exists in database.
     sql = r"""SELECT obsid FROM obs_points where obsid = '""" + obsid + """'"""
-    result = utils.sql_load_fr_db(sql)
+    result = utils.sql_load_fr_db(sql)[1]
     if len(result)>0:
         return 'True'
                 

@@ -42,7 +42,7 @@ def validate():  # Make sure mandatory fields are not empty.
 
 def obsidexists(obsid):  # Both to see if a new obsid already exists in database.
     sql = r"""SELECT obsid FROM obs_lines where obsid = '""" + obsid + """'"""
-    result = utils.sql_load_fr_db(sql)
+    result = utils.sql_load_fr_db(sql)[1]
     if len(result)>0:
         return 'True'
 

@@ -562,7 +562,7 @@ class midvatten:
         if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
             self.loadSettings()
 
-        if len(utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'"""))==0: #verify there actually is a meteo table (introduced in midv plugin version 1.1)
+        if utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[0]==True and len(utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[1])==0: #verify there actually is a meteo table (introduced in midv plugin version 1.1)
             errorsignal = 1
             utils.pop_up_info("There is no table for meteorological data in your database! Perhaps your database was created with a previous version of Midvatten plugin? Contact plugin author for advice!", "Error")
         
@@ -573,6 +573,10 @@ class midvatten:
                 if layerexists.isEditable():
                     utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
                     errorsignal = 1
+
+        if utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[0]==False: 
+            errorsignal = 1
+            utils.pop_up_info("Database error! Try resetting midvatten plugin settings. Then select database again.", "Error")
 
         if errorsignal == 0:        # unless none of the critical layers are in editing mode or the database is so old no meteo table exist
             sanity = utils.askuser("YesNo","""You are about to import meteorological data from, from a text file which must have one header row and 8 columns:\n\n"obsid", "instrumentid", "parameter", "date_time", "reading_num", "reading_txt", "unit", "comment"\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of parameters since all new parameters will silently be added to the database table zz_meteoparam during import.\nEmpty or null values are not allowed for obsid, instrumentid, parameter or date_time.\nEach combination of obsid, instrumentid, parameter and date_time must be unique.\n\nContinue?""",'Are you sure?')
@@ -706,8 +710,7 @@ class midvatten:
                 #print 'found it and will try to reuse it'#debug
                 self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
             elif self.secplotdockOpened==False:
-                self.mdl = QStandardItemModel(0, 5)
-                self.myplot = sectionplot(self.iface.mainWindow(), self.iface, self.mdl)
+                self.myplot = sectionplot(self.iface.mainWindow(), self.iface)
                 #QObject.connect(self.myplot, SIGNAL( "closed(PyQt_PyObject)" ), self.cleaning2)
                 self.secplotdockOpened = True
                 self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
@@ -782,7 +785,7 @@ class midvatten:
                     if sanity.result == 0:      #IF USER WANT ALL OBJECTS TO BE UPDATED
                         sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor ALL objects in the obs_points table.\nProceed?""")
                         if sanity.result==1:
-                            ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")#a list of unicode strings is returned
+                            ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")[1]#a list of unicode strings is returned
                             observations = [None]*len(ALL_OBS)
                             i = 0
                             for obs in ALL_OBS:
@@ -818,7 +821,7 @@ class midvatten:
                     if sanity.result == 0:      #IF USER WANT ALL OBJECTS TO BE UPDATED
                         sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nALL objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")
                         if sanity.result==1:
-                            ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")
+                            ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")[1]
                             observations = [None]*len(ALL_OBS)
                             i = 0
                             for obs in ALL_OBS:
@@ -848,7 +851,7 @@ class midvatten:
                 if utils.selection_check(qgis.utils.iface.activeLayer()) == 'ok':#there is a field obsid and at least one object is selected
                     fail = 0
                     for k in utils.getselectedobjectnames(qgis.utils.iface.activeLayer()):#all selected objects
-                        if not utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.settingsdict['wqualtable'],str(k))):#if there is a selected object withou water quality data
+                        if not utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.settingsdict['wqualtable'],str(k)))[1]:#if there is a selected object without water quality data
                             self.iface.messageBar().pushMessage("Error","No water quality data for %s"%str(k), 2)
                             fail = 1
                     if not fail == 1:#only if all objects has data
@@ -920,7 +923,7 @@ class midvatten:
                         obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
                         sanity1sql = """select count(obsid) from w_levels_logger where obsid = '""" +  obsid[0] + """'"""
                         sanity2sql = """select count(obsid) from w_levels_logger where head_cm not null and head_cm !='' and obsid = '""" +  obsid[0] + """'"""
-                        if utils.sql_load_fr_db(sanity1sql) == utils.sql_load_fr_db(sanity2sql): # This must only be done if head_cm exists for all data
+                        if utils.sql_load_fr_db(sanity1sql)[1] == utils.sql_load_fr_db(sanity2sql)[1]: # This must only be done if head_cm exists for all data
                             from wlevels_calc_calibr import calibrlogger
                             dlg = calibrlogger(self.iface.mainWindow(),obsid, self.settingsdict)  # dock is an instance of calibrlogger
                             dlg.exec_()

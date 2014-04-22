@@ -92,13 +92,13 @@ def unit_FieldTextChanged():
 
 def obsidexists(obsid):  # Check if obsid exists in database.
     sql = r"""SELECT obsid FROM obs_points where obsid = '""" + obsid + """'"""
-    result = utils.sql_load_fr_db(sql)
+    result = utils.sql_load_fr_db(sql)[1]
     if len(result)>0:
         return 'True'
                 
 def flowtypeexists(flowtype):  # Check if obsid exists in database.
     sql = r"""SELECT type FROM zz_flowtype where type = '""" + flowtype + """'"""
-    result = utils.sql_load_fr_db(sql)
+    result = utils.sql_load_fr_db(sql)[1]
     if len(result)>0:
         return 'True'
                         

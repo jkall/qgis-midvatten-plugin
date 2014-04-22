@@ -54,64 +54,68 @@ class drillreport():        # general observation point info for the selected ob
         f.write(rpt)
         
         # GENERAL DATA UPPER LEFT QUADRANT
-        GeneralData = self.GetData(obsid, 'obs_points', 'n')#MacOSX fix1
-        CRS = utils.returnunicode(utils.sql_load_fr_db(r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""")[0][0]) #1st we need crs
-        CRSname = utils.returnunicode(utils.sql_load_fr_db(r"""SELECT ref_sys_name FROM spatial_ref_sys where srid =""" + CRS)[0][0]) # and crs name
-        if  locale.getdefaultlocale()[0] == 'sv_SE':
-            reportdata_1 = self.rpt_upper_left_sv(GeneralData, CRS, CRSname)
-        else:
-            reportdata_1 = self.rpt_upper_left(GeneralData, CRS, CRSname)
-        f.write(reportdata_1)
+        ConnectionOK, GeneralData = self.GetData(obsid, 'obs_points', 'n')#MacOSX fix1
+        #utils.pop_up_info(str(ConnectionOK))#debug
+        if ConnectionOK==True:
+            result2 = (utils.sql_load_fr_db(r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""")[1])[0][0]
+            CRS = utils.returnunicode(result2) #1st we need crs
+            result3 = (utils.sql_load_fr_db(r"""SELECT ref_sys_name FROM spatial_ref_sys where srid =""" + CRS)[1])[0][0]
+            CRSname = utils.returnunicode(result3) # and crs name
+            if  locale.getdefaultlocale()[0] == 'sv_SE':
+                reportdata_1 = self.rpt_upper_left_sv(GeneralData, CRS, CRSname)
+            else:
+                reportdata_1 = self.rpt_upper_left(GeneralData, CRS, CRSname)
+            f.write(reportdata_1)
 
-        rpt = r"""</TABLE></TD><TD WIDTH=50%><P><U><B>"""
-        if  locale.getdefaultlocale()[0] == 'sv_SE':
-            rpt += u'Lagerföljd' 
-        else:
-            rpt += u'Stratigraphy' 
-        rpt += r"""</B></U></P><TABLE style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*>"""
-        f.write(rpt)        
+            rpt = r"""</TABLE></TD><TD WIDTH=50%><P><U><B>"""
+            if  locale.getdefaultlocale()[0] == 'sv_SE':
+                rpt += u'Lagerföljd' 
+            else:
+                rpt += u'Stratigraphy' 
+            rpt += r"""</B></U></P><TABLE style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*>"""
+            f.write(rpt)        
 
-        # STRATIGRAPHY DATA UPPER RIGHT QUADRANT
-        StratData = self.GetData(obsid, 'stratigraphy', 'n') #MacOSX fix1
-        if  locale.getdefaultlocale()[0] == 'sv_SE':
-            reportdata_2 = self.rpt_upper_right_sv(StratData)
-        else:
-            reportdata_2 = self.rpt_upper_right(StratData)
-        f.write(reportdata_2)
+            # STRATIGRAPHY DATA UPPER RIGHT QUADRANT
+            StratData = self.GetData(obsid, 'stratigraphy', 'n')[1] #MacOSX fix1
+            if  locale.getdefaultlocale()[0] == 'sv_SE':
+                reportdata_2 = self.rpt_upper_right_sv(StratData)
+            else:
+                reportdata_2 = self.rpt_upper_right(StratData)
+            f.write(reportdata_2)
 
-        rpt = r"""</TABLE></TD></TR><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>""" 
-        if  locale.getdefaultlocale()[0] == 'sv_SE':
-            rpt += u'Kommentarer' 
-        else:
-            rpt += u'Comments' 
-        rpt += r"""</B></U></P>"""
-        f.write(rpt)        
+            rpt = r"""</TABLE></TD></TR><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>""" 
+            if  locale.getdefaultlocale()[0] == 'sv_SE':
+                rpt += u'Kommentarer' 
+            else:
+                rpt += u'Comments' 
+            rpt += r"""</B></U></P>"""
+            f.write(rpt)        
 
-        # COMMENTS LOWER LEFT QUADRANT
-        reportdata_3 = self.rpt_lower_left(GeneralData)
-        f.write(reportdata_3)
+            # COMMENTS LOWER LEFT QUADRANT
+            reportdata_3 = self.rpt_lower_left(GeneralData)
+            f.write(reportdata_3)
 
-        rpt = r"""</TD><TD WIDTH=50%><P><U><B>""" 
-        if  locale.getdefaultlocale()[0] == 'sv_SE':
-            rpt += u'Vattennivåer' 
-        else:
-            rpt += u'Water levels' 
-        rpt += r"""</B></U></P>"""
-        f.write(rpt)
+            rpt = r"""</TD><TD WIDTH=50%><P><U><B>""" 
+            if  locale.getdefaultlocale()[0] == 'sv_SE':
+                rpt += u'Vattennivåer' 
+            else:
+                rpt += u'Water levels' 
+            rpt += r"""</B></U></P>"""
+            f.write(rpt)
 
-        # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
-        statistics = self.GetStatistics(unicode(settingsdict['database']), obsid)#MacOSX fix1
-        if  locale.getdefaultlocale()[0] == 'sv_SE':
-            reportdata_4 = self.rpt_lower_right_sv(statistics)
-        else:
-            reportdata_4 = self.rpt_lower_right(statistics)
-        f.write(reportdata_4)
-        
-        f.write(r"""</TD></TR></TABLE></TD></TR></TABLE>""")    
-        f.write("\n</p></body></html>")        
-        f.close()
-        
-        QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
+            # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
+            statistics = self.GetStatistics(unicode(settingsdict['database']), obsid)#MacOSX fix1
+            if  locale.getdefaultlocale()[0] == 'sv_SE':
+                reportdata_4 = self.rpt_lower_right_sv(statistics)
+            else:
+                reportdata_4 = self.rpt_lower_right(statistics)
+            f.write(reportdata_4)
+            
+            f.write(r"""</TD></TR></TABLE></TD></TR></TABLE>""")    
+            f.write("\n</p></body></html>")        
+            f.close()
+            
+            QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
 
     def rpt_upper_left_sv(self, GeneralData, CRS='', CRSname=''):
         rpt = r"""<p style="font-family:'arial'; font-size:8pt; font-weight:400; font-style:normal;">"""
@@ -304,8 +308,8 @@ class drillreport():        # general observation point info for the selected ob
             sql += r""" order by stratid"""
         if debug == 'y':
             utils.pop_up_info(sql)
-        data = utils.sql_load_fr_db(sql)
-        return data
+        ConnectionOK, data = utils.sql_load_fr_db(sql)
+        return ConnectionOK, data
 
     def GetStatistics(self, dbPath='', obsid = ''): 
         Statistics_list = [0]*4
@@ -313,7 +317,7 @@ class drillreport():        # general observation point info for the selected ob
         sql = r"""select min(meas) from w_levels where obsid = '"""
         sql += obsid
         sql += r"""'"""
-        min_value = utils.sql_load_fr_db(sql)
+        ConnectionOK, min_value = utils.sql_load_fr_db(sql)
         if min_value:
             Statistics_list[0] = min_value[0][0]
         
@@ -322,21 +326,21 @@ class drillreport():        # general observation point info for the selected ob
         sql += r"""') as x, (select obsid, meas FROM w_levels WHERE obsid = '"""
         sql += obsid
         sql += r"""') as y GROUP BY x.meas HAVING SUM(CASE WHEN y.meas <= x.meas THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.meas >= x.meas THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
-        median_value = utils.sql_load_fr_db(sql)
+        ConnectionOK, median_value = utils.sql_load_fr_db(sql)
         if median_value:
             Statistics_list[1] = median_value[0][1]
         
         sql = r"""select Count(meas) from w_levels where obsid = '"""
         sql += obsid
         sql += r"""'"""
-        number_of_values = utils.sql_load_fr_db(sql)
+        ConnectionOK, number_of_values = utils.sql_load_fr_db(sql)
         if number_of_values:
             Statistics_list[2] = number_of_values[0][0]
         
         sql = r"""select max(meas) from w_levels where obsid = '"""
         sql += obsid
         sql += r"""'"""
-        max_value = utils.sql_load_fr_db(sql)
+        ConnectionOK, max_value = utils.sql_load_fr_db(sql)
         if max_value:
             Statistics_list[3] = max_value[0][0]
         
