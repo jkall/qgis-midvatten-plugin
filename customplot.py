@@ -35,19 +35,12 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import datetime
 import matplotlib.ticker as tick
+import midvatten_utils as utils
 
-#from PlotSQLite_MainWindow import Ui_MainWindow
 customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'customplotdialog.ui'))[0]
 
 class plotsqlitewindow(QtGui.QDialog, customplot_ui_class):
     def __init__(self, parent, settingsdict={}):
-        #QtGui.QMainWindow.__init__(self, parent)#the line below is for some reason preferred
-        #super(MainWindow, self).__init__(parent)#for some reason this is supposed to be better than line above
-        #QDialog.__init__( self ) #if not working with an application with mainwindow
-        #self.iface = iface
-
-        #self=Ui_MainWindow()#new
-         
         QtGui.QDialog.__init__(self)        
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setupUi( self )#due to initialisation of Ui_MainWindow instance
@@ -55,9 +48,10 @@ class plotsqlitewindow(QtGui.QDialog, customplot_ui_class):
         
         self.settingsdict = settingsdict
         self.maxtstep = 0
-        #self.database = ''
+        #self.database = self.settingsdict['database']
         #self.table1 = ''
         #self.database_pyqt4provider = QtSql.QSqlDatabase.addDatabase("QSQLITE","db1")
+        self.ReadFromDB()
         
     def initUI(self):
         self.table_ComboBox_1.clear()  
@@ -98,18 +92,21 @@ class plotsqlitewindow(QtGui.QDialog, customplot_ui_class):
     def drawPlot(self):
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))#show the user this may take a long time...
 
-        self.storesettings()    #db, table, x-col and y-col are saved as default values when user clicks 'plot chart'
+        #self.storesettings()    #db, table, x-col and y-col are saved as default values when user clicks 'plot chart'
         self.axes.clear()
         My_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array
         
-        conn = sqlite.connect(unicode(self.selected_database_QLineEdit.text()),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)#should be cross-platform
-        # skapa en cursor
-        curs = conn.cursor()
+        myconnection = utils.dbconnection()
+        myconnection.connect2db()
+        curs = myconnection.conn.cursor()
 
         i = 0
         nop=0# nop=number of plots
         self.p=[]
         self.plabels=[]
+        
+        self.GetPlotSettings()
+        
         if not (self.table1 == '' or self.table1==' ') and not (self.xcol1== '' or self.xcol1==' ') and not (self.ycol1== '' or self.ycol1==' '): #if anything is to be plotted from tab 1
             self.maxtstep = self.spnmaxtstep.value()   # if user selected a time step bigger than zero than thre may be discontinuous plots
             plottable1='y'
@@ -220,7 +217,7 @@ class plotsqlitewindow(QtGui.QDialog, customplot_ui_class):
                     i += 1
 
         #rs.close() # close the cursor
-        conn.close()  # close the database
+        myconnection.closedb()  # close the database
         self.refreshPlot()
         QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
@@ -329,11 +326,57 @@ class plotsqlitewindow(QtGui.QDialog, customplot_ui_class):
         self.figure.autofmt_xdate()
         self.canvas.draw()
 
-    def selectFile(self):   #Open a dialog to locate the sqlite file and some more...
-        path = QtGui.QFileDialog.getOpenFileName(None,QtCore.QString.fromLocal8Bit("Select database:"),"*.sqlite")
-        if path: 
-            self.database = path # To make possible cancel the FileDialog and continue loading a predefined db
-        self.openDBFile()
+    def ReadFromDB( self ):    # Open the SpatiaLite file to extract info about tables 
+        self.table_ComboBox_1.clear()  
+        self.table_ComboBox_2.clear()  
+        self.table_ComboBox_3.clear()  
+        for i in range (1,3):
+            self.clearthings(1)
+        myconnection = utils.dbconnection()
+        if myconnection.connect2db() == True:
+            # skapa en cursor
+            curs = myconnection.conn.cursor()
+            rs=curs.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in('geom_cols_ref_sys',
+                'geometry_columns',
+                'geometry_columns_time',
+                'spatial_ref_sys',
+                'spatialite_history',
+                'vector_layers',
+                'views_geometry_columns',
+                'virts_geometry_columns',
+                'geometry_columns_auth',
+                'geometry_columns_fields_infos',
+                'geometry_columns_statistics',
+                'sql_statements_log',
+                'layer_statistics',
+                'sqlite_sequence',
+                'sqlite_stat1' ,
+                'views_layer_statistics',
+                'virts_layer_statistics',
+                'vector_layers_auth',
+                'vector_layers_field_infos',
+                'vector_layers_statistics',
+                'views_geometry_columns_auth',
+                'views_geometry_columns_field_infos',
+                'views_geometry_columns_statistics',
+                'virts_geometry_columns_auth',
+                'virts_geometry_columns_field_infos',
+                'virts_geometry_columns_statistics' ,
+                'geometry_columns',
+                'spatialindex',
+                'SpatialIndex')) ORDER BY tbl_name"""  )  #SQL statement to get the relevant tables in the spatialite database
+            #self.dbTables = {} 
+            self.table_ComboBox_1.addItem('')
+            self.table_ComboBox_2.addItem('')
+            self.table_ComboBox_3.addItem('')
+    
+            for row in curs:
+                self.table_ComboBox_1.addItem(row[0])
+                self.table_ComboBox_2.addItem(row[0])
+                self.table_ComboBox_3.addItem(row[0])
+            
+            rs.close()
+            myconnection.closedb()        
 
     def clearthings(self,tabno=1):   #clear xcol,ycol,fukter1,filter2
         xcolcombobox = 'xcol_ComboBox_' + str(tabno)
@@ -386,17 +429,19 @@ class plotsqlitewindow(QtGui.QDialog, customplot_ui_class):
         
     def LoadColumnsFromTable(self, table=''):
         """ This method returns a list with all the columns in the table"""
-        if len(table)>0 and len(self.database)>0:            # Should not be needed since the function never should be called without existing table...
-            conn = sqlite.connect(unicode(self.database))  
-            curs = conn.cursor()
-            sql = r"""SELECT * FROM '"""
-            sql += unicode(table)
-            sql += """'"""     
-            rs = curs.execute(sql)  #Send the SQL statement to get the columns in the table            
-            columns = {} 
-            columns = [tuple[0] for tuple in curs.description]
-            rs.close()
-            conn.close()
+        if len(table)>0:            # Should not be needed since the function never should be called without existing table...
+            myconnection = utils.dbconnection()
+            if myconnection.connect2db() == True:
+                # skapa en cursor
+                curs = myconnection.conn.cursor()
+                sql = r"""SELECT * FROM '"""
+                sql += unicode(table)
+                sql += """'"""     
+                rs=curs.execute(sql)
+                columns = {} 
+                columns = [tuple[0] for tuple in curs.description]
+                rs.close()
+                myconnection.closedb()        
         else:
             #QMessageBox.information(None,"info","no table is loaded")    # DEBUGGING
             columns = {}
@@ -434,13 +479,23 @@ class plotsqlitewindow(QtGui.QDialog, customplot_ui_class):
                         
     def PopulateFilterList(self, table, QListWidgetname='', filtercolumn=None):
         sql = "select distinct " + unicode(filtercolumn) + " from " + table + " order by " + unicode(filtercolumn)
-        list_data=sql_load_fr_db(self.database, sql)
+        ConnectionOK, list_data=utils.sql_load_fr_db(sql)
         for post in list_data:
             item = QtGui.QListWidgetItem(unicode(post[0]))
             getattr(self, QListWidgetname).addItem(item)
 
+    def GetPlotSettings(self):
+        self.table1=self.table_ComboBox_1.currentText()
+        self.xcol1=self.xcol_ComboBox_1.currentText()
+        self.ycol1=self.ycol_ComboBox_1.currentText()
+        self.table2=self.table_ComboBox_2.currentText()
+        self.xcol2=self.xcol_ComboBox_2.currentText()
+        self.ycol2=self.ycol_ComboBox_2.currentText()
+        self.table3=self.table_ComboBox_3.currentText()
+        self.xcol3=self.xcol_ComboBox_3.currentText()
+        self.ycol3=self.ycol_ComboBox_3.currentText()
+
     def storesettings(self):
-        self.settings.setValue('db',self.database)
         self.settings.setValue('table1', self.table_ComboBox_1.currentText())
         self.settings.setValue('xcol1', self.xcol_ComboBox_1.currentText())
         self.settings.setValue('ycol1', self.ycol_ComboBox_1.currentText())
@@ -459,13 +514,7 @@ class plotsqlitewindow(QtGui.QDialog, customplot_ui_class):
         self.table3=self.table_ComboBox_3.currentText()
         self.xcol3=self.xcol_ComboBox_3.currentText()
         self.ycol3=self.ycol_ComboBox_3.currentText()
-                
-    def about(self):
-        version = u'0.2.4'
-        contact = u'groundwatergis@gmail.com'
-        web = u'http://sourceforge.net/projects/plotsqlite'
-        TEXT = 'This is PlotSQLite - the Midvatten plot generator.\n\nVersion: ' + version + '\nContact: ' + contact + '\nMore info: ' + web 
-        QtGui.QMessageBox.information(None, "info", TEXT) 
+
         
                 
 def sql_load_fr_db(dbpath, sql=''):
