@@ -41,7 +41,7 @@ class dbconnection():
                 self.conn = sqlite.connect(self.dbpath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
                 self.conn.cursor().execute("select count(*) from sqlite_master") 
                 ConnectionOK = True
-                print "successfully connected to " + self.dbpath
+                #print "successfully connected to " + self.dbpath#debug
             except:
                 pop_up_info("Could not connect to  " + self.dbpath + "\nYou will have to reset Midvatten settings for this project!")
                 ConnectionOK = False

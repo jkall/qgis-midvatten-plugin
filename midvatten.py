@@ -26,7 +26,7 @@ import qgis.utils
 import resources  # Initialize Qt resources from file resources.py
 import os.path
 import sys
-from midvsettings import midvsettings
+from midvsettingsdialog import midvsettingsdialog
 #from tsplot2 import TimeSeriesPlot #On some platform/backend/graphics-combos this may be better to avoid pyplot plot windows from blocking the qgis window
 from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
@@ -37,18 +37,14 @@ import midvatten_utils as utils
 from definitions import midvatten_defs
 from sectionplot import sectionplot
 import customplot
+#settings
+from midvsettings import midvsettings
 
 class midvatten:
     def __init__(self, iface): # Might need revision of variables and method for loading default variables
         sys.path.append(os.path.dirname(os.path.abspath(__file__))) #add midvatten plugin directory to pythonpath
         self.iface = iface
-        # settings...
-        self.readingSettings = False # To enable resetsettings
-        self.settingsdict = self.createsettingsdict()# calling for the method that defines an empty dictionary of settings NOTE!! byte strings in dict
-        #self.loadSettings()    # stored settings are loaded  NOTE: From ver 0.3.2 it is no longer possible to load settings here
-        #The settings are stored in the qgis project file and thus cannot be loaded when qgis is starting (and plugin initialized) 
-        #The settings are loaded each time a new qgis project is loaded (and several methods below do check that settings really are loaded)
-        self.settingsareloaded = False # To make sure settings are loaded once and only once
+        self.ms = midvsettings()#self.ms.settingsdict is created when ms is imported
         
     def initGui(self): # Creates actions that will start plugin configuration
         self.actionNewDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), "Create a new Midvatten project DB", self.iface.mainWindow())
@@ -65,7 +61,7 @@ class midvatten:
         QObject.connect(self.actionsetup, SIGNAL("activated()"), self.setup)
         
         self.actionresetSettings = QAction(QIcon(":/plugins/midvatten/icons/ResetSettings.png"), "Reset Settings", self.iface.mainWindow())
-        QObject.connect(self.actionresetSettings, SIGNAL("triggered()"), self.resetSettings)
+        QObject.connect(self.actionresetSettings, SIGNAL("triggered()"), self.ms.resetSettings)
         
         self.actionabout = QAction(QIcon(":/plugins/midvatten/icons/about.png"), "About", self.iface.mainWindow())
         QObject.connect(self.actionabout, SIGNAL("triggered()"), self.about)
@@ -226,8 +222,8 @@ class midvatten:
         menuBar.addMenu(self.menu)
 
         # QGIS iface connections
-        self.iface.projectRead.connect(self.loadSettings)
-        self.iface.newProjectCreated.connect(self.resetSettings)
+        self.iface.projectRead.connect(self.ms.loadSettings)
+        self.iface.newProjectCreated.connect(self.ms.resetSettings)
         
     def unload(self):    
         # Remove the plugin menu items and icons
@@ -269,17 +265,13 @@ class midvatten:
         dlg.exec_()
 
     def ChartMaker(self): #  - Not ready - 
-        if self.settingsareloaded == False:    # If this is the first thing the user does, then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first thing the user does, then load settings from project file
+            self.ms.loadSettings()    
         utils.pop_up_info("not yet implemented") #for debugging
 
-    def createsettingsdict(self):# Here is where an empty settings dictionary is defined, NOTE! byte strings in dictionary
-        dictionary = midvatten_defs.settingsdict()
-        return dictionary
-
     def drillreport(self):             
-        if self.settingsareloaded == False:    # If this is the first thing user does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first thing user does - then load settings from project file
+            self.ms.loadSettings()    
         allcritical_layers = ('obs_points', 'w_levels', 'w_qual_lab')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:    # A warning if some of the layers are in editing mode
             layerexists = utils.find_layer(str(layername))
@@ -287,12 +279,12 @@ class midvatten:
                 if layerexists.isEditable():
                     utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease consider exiting this mode before generating a report.", "Warning")
 
-        if not (self.settingsdict['database'] == ''):
+        if not (self.ms.settingsdict['database'] == ''):
             if qgis.utils.iface.activeLayer():
                 if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok': #only one selected object
                     obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())  # selected obs_point is now found in obsid[0]
                     from drillreport import drillreport
-                    drillreport(obsid[0],self.settingsdict) 
+                    drillreport(obsid[0],self.ms.settingsdict) 
                 else:
                     utils.pop_up_info("You have to select exactly one observation point!","Attention")
             else:
@@ -302,8 +294,8 @@ class midvatten:
 
     def import_obs_lines(self):
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()    
 
         allcritical_layers = ('obs_lines')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
@@ -329,8 +321,8 @@ class midvatten:
 
     def import_obs_points(self):
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()    
 
         allcritical_layers = ('obs_points')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
@@ -357,8 +349,8 @@ class midvatten:
 
     def import_seismics(self):
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()    
         allcritical_layers = ('obs_lines', 'seismic_data')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
             layerexists = utils.find_layer(str(layername))
@@ -381,8 +373,8 @@ class midvatten:
 
     def import_stratigraphy(self):
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()    
 
         allcritical_layers = ('obs_points', 'stratigraphy')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
@@ -406,8 +398,8 @@ class midvatten:
                     
     def import_vlf(self):
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()    
 
         allcritical_layers = ('obs_lines', 'vlf_data')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
@@ -431,8 +423,8 @@ class midvatten:
 
     def import_wflow(self):
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()    
 
         allcritical_layers = ('obs_points', 'w_flow')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
@@ -456,8 +448,8 @@ class midvatten:
 
     def import_wlvl(self):    
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()    
 
         allcritical_layers = ('obs_points', 'w_levels')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
@@ -481,8 +473,8 @@ class midvatten:
                     
     def import_wlvllogg(self):#  - should be rewritten 
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first thing user does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first thing user does - then load settings from project file
+            self.ms.loadSettings()    
 
         allcritical_layers = ('obs_points', 'w_levels_logger')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
@@ -493,7 +485,7 @@ class midvatten:
                     errorsignal = 1
 
         if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
-            if not (self.settingsdict['database'] == ''):
+            if not (self.ms.settingsdict['database'] == ''):
                 if qgis.utils.iface.activeLayer():
                     if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':                
                         obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())                    
@@ -513,8 +505,8 @@ class midvatten:
 
     def import_wqual_field(self):
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()    
 
         allcritical_layers = ('obs_points', 'w_qual_field')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
@@ -538,8 +530,8 @@ class midvatten:
                     
     def import_wqual_lab(self):
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()    
 
         allcritical_layers = ('obs_points', 'w_qual_lab')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
@@ -563,8 +555,8 @@ class midvatten:
 
     def import_meteo(self):
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()
 
         if utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[0]==True and len(utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[1])==0: #verify there actually is a meteo table (introduced in midv plugin version 1.1)
             errorsignal = 1
@@ -592,40 +584,13 @@ class midvatten:
                 if importinstance.status=='True':      # 
                     self.iface.messageBar().pushMessage("Info","%s meteorological readings were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
             
-    def loadSettings(self):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
-        """read plugin settings from QgsProject instance"""
-        self.settingsdict = self.createsettingsdict()
-        self.readingSettings = True  
-        # map data types to function names
-        prj = QgsProject.instance()
-        functions = { 'str' : prj.readEntry,
-                     'str' : prj.readEntry, # SIP API UPDATE 2.0
-                     'int' : prj.readNumEntry,
-                     'float' : prj.readDoubleEntry,
-                     'bool' : prj.readBoolEntry,
-                     'datetime' : prj.readDoubleEntry, # we converted datetimes to float in writeSetting()
-                     'list' : prj.readListEntry, # SIP API UPDATE 2.0
-                     'pyqtWrapperType' : prj.readListEntry # strange name for QStringList
-                     }
-        output = {}
-        for (key, value) in self.settingsdict.items():
-            dataType = type(value).__name__
-            try:
-                func = functions[dataType]
-                output[key] = func("Midvatten", key)
-                self.settingsdict[key] = output[key][0]
-            except KeyError:
-                self.iface.messageBar().pushMessage("Info","Settings key %s does not exist in project file. Maybe this file was last used with old Midvatten plugin?"%str(key), 0,duration=30)
-        self.readingSettings = False
-        self.settingsareloaded = True
-
     def loadthelayers(self):            
-        if self.settingsareloaded == False:    # If this is the first thing the user does, then load settings from project file
-            self.loadSettings()    
-        if not self.settingsdict['database'] == '':
+        if self.ms.settingsareloaded == False:    # If this is the first thing the user does, then load settings from project file
+            self.ms.loadSettings()    
+        if not self.ms.settingsdict['database'] == '':
             sanity = utils.askuser("YesNo","""This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""",'Warning!')
             if sanity.result == 1:
-                loadlayers(qgis.utils.iface, self.settingsdict)
+                loadlayers(qgis.utils.iface, self.ms.settingsdict)
                 self.iface.mapCanvas().zoomToFullExtent()#zoom to full extent to let user see what was loaded
                 #self.iface.mapCanvas().refresh()  # to redraw after loaded symbology
         else:   
@@ -641,19 +606,19 @@ class midvatten:
             newdbinstance = newdb(verno)
             if not newdbinstance.dbpath=='':
                 db = newdbinstance.dbpath
-                self.settingsdict['database'] = db
-                self.saveSettings()
+                self.ms.settingsdict['database'] = db
+                self.ms.saveSettings()
 
     def PlotTS(self):
-        if self.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file    
+        if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file    
             #utils.pop_up_info("reading from .qgs file")    #debugging
-            self.loadSettings()    
-        if not (self.settingsdict['database'] == '' or self.settingsdict['tstable'] =='' or self.settingsdict['tscolumn'] == ''):
+            self.ms.loadSettings()    
+        if not (self.ms.settingsdict['database'] == '' or self.ms.settingsdict['tstable'] =='' or self.ms.settingsdict['tscolumn'] == ''):
             layer = qgis.utils.iface.activeLayer()
             if layer:
                 if utils.selection_check(layer) == 'ok':
-                    dlg = TimeSeriesPlot(layer, self.settingsdict)
-                    #self.dlg = TimeSeriesPlot(layer, self.settingsdict)#when using tsplot2
+                    dlg = TimeSeriesPlot(layer, self.ms.settingsdict)
+                    #self.dlg = TimeSeriesPlot(layer, self.ms.settingsdict)#when using tsplot2
                     #self.dlg.show()#when using tsplot2
             else:
                 utils.pop_up_info("You have to select a layer first!")
@@ -661,13 +626,13 @@ class midvatten:
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database, table and column for time series plot. Reset if needed.", 2)
             
     def PlotStratigraphy(self):            
-        if self.settingsareloaded == False:    # If the first thing the user does is to plot stratigraphy, then load settings from project file
-            self.loadSettings()    
-        if not (self.settingsdict['database'] == '') and not (self.settingsdict['stratigraphytable']==''):
+        if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot stratigraphy, then load settings from project file
+            self.ms.loadSettings()    
+        if not (self.ms.settingsdict['database'] == '') and not (self.ms.settingsdict['stratigraphytable']==''):
             layer = qgis.utils.iface.activeLayer()
             if layer:
                 if utils.selection_check(layer) == 'ok' and utils.strat_selection_check(layer) == 'ok':
-                        dlg = Stratigraphy(self.iface, layer, self.settingsdict)
+                        dlg = Stratigraphy(self.iface, layer, self.ms.settingsdict)
                         dlg.showSurvey()
                         self.dlg = dlg        # only to prevent the Qdialog from closing.
             else:
@@ -676,10 +641,10 @@ class midvatten:
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database and stratigraphy table. Reset if needed.", 2)
 
     def PlotSection(self):
-        if self.settingsareloaded == False:    # Perhaps settings should always be loaded, to 
-            self.loadSettings()
+        if self.ms.settingsareloaded == False:    # Perhaps settings should always be loaded, to 
+            self.ms.loadSettings()
             
-        if self.settingsdict['database'] == '':#perhaps there is no database defined
+        if self.ms.settingsdict['database'] == '':#perhaps there is no database defined
             self.iface.messageBar().pushMessage("Error","No database found. Please check your Midvatten Settings. Reset if needed.", 2)
             return
         SectionLineLayer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
@@ -711,85 +676,73 @@ class midvatten:
             self.iface.messageBar().pushMessage("Error",msg, 2)
         else:#otherwise go
             try:
-                self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
+                self.myplot.doit(self.ms.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
             except:
                 self.myplot = sectionplot(self.iface.mainWindow(), self.iface)
-                self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
+                self.myplot.doit(self.ms.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
 
     def PlotXY(self):            
-        if self.settingsareloaded == False:    # If the first thing the user does is to plot xy data, then load settings from project file
-            self.loadSettings()    
-        if not (self.settingsdict['database'] == '' or self.settingsdict['xytable'] =='' or self.settingsdict['xy_xcolumn'] == '' or (self.settingsdict['xy_y1column'] == '' and self.settingsdict['xy_y2column'] == '' and self.settingsdict['xy_y3column'] == '')):
+        if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot xy data, then load settings from project file
+            self.ms.loadSettings()    
+        if not (self.ms.settingsdict['database'] == '' or self.ms.settingsdict['xytable'] =='' or self.ms.settingsdict['xy_xcolumn'] == '' or (self.ms.settingsdict['xy_y1column'] == '' and self.ms.settingsdict['xy_y2column'] == '' and self.ms.settingsdict['xy_y3column'] == '')):
             layer = qgis.utils.iface.activeLayer()
             if layer:
                 if utils.selection_check(layer) == 'ok':
-                    dlg = XYPlot(layer, self.settingsdict)
+                    dlg = XYPlot(layer, self.ms.settingsdict)
             else:
                 utils.pop_up_info("You have to select a layer first!")
         else:
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database, table and columns for x and y data!. Reset if needed.", 2)
 
     def PlotSQLite(self):
-        if self.settingsareloaded == False:    
-            self.loadSettings()    
-        if self.settingsdict['database'] == '':
+        if self.ms.settingsareloaded == False:    
+            self.ms.loadSettings()    
+        if self.ms.settingsdict['database'] == '':
             self.iface.messageBar().pushMessage("Error","No database found. Please check your Midvatten Settings. Reset if needed.", 2)
             return
 
         try:
             self.customplot.activateWindow()
         except:
-            self.customplot = customplot.plotsqlitewindow(self.settingsdict)
+            self.customplot = customplot.plotsqlitewindow(self.ms.settingsdict)
 
-    def resetSettings(self):    
-        self.settingsdict = self.createsettingsdict()    # calling for the method that defines an empty dictionary of settings
-        self.saveSettings()        # the empty settings dictionary is stored
-
-    def saveSettings(self):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
-        if not self.readingSettings:
-            for (key, value) in self.settingsdict.items():        # For storing in project file, as Time Manager plugin
-                try: # write plugin settings to QgsProject # For storing in project file, as Time Manager plugin
-                    QgsProject.instance().writeEntry("Midvatten",key, value ) # For storing in project file, as Time Manager plugin
-                except TypeError: # For storing in project file, as Time Manager plugin
-                    utils.pop_up_info("Wrong type for "+key+"!\nType: "+str(type(value))) #For storing in project file, as Time Manager plugin
-        
     def setup(self):
         """Choose spatialite database and relevant table"""
-        if self.settingsareloaded == False:    # If the first thing the user does is to check settings, then load settings from project file
-            self.loadSettings()    
-        dlg = midvsettings(self.iface.mainWindow(), self.settingsdict)  # dlg is an instance of midvsettings
+        if self.ms.settingsareloaded == False:    # If the first thing the user does is to check settings, then load settings from project file
+            self.ms.loadSettings()    
+        dlg = midvsettingsdialog(self.iface.mainWindow(), self.ms.settingsdict)  # dlg is an instance of midvsettings
         if dlg.exec_() == QDialog.Accepted:      # When the settins dialog is closed, all settings are stored in the dictionary
-            self.settingsdict['database'] = dlg.txtpath.text()    
-            self.settingsdict['tstable'] = dlg.ListOfTables.currentText()
-            self.settingsdict['tscolumn'] = dlg.ListOfColumns.currentText()
-            self.settingsdict['tsdotmarkers'] = dlg.checkBoxDataPoints.checkState()
-            self.settingsdict['tsstepplot'] = dlg.checkBoxStepPlot.checkState()
-            self.settingsdict['xytable']  = dlg.ListOfTables_2.currentText()
-            self.settingsdict['xy_xcolumn'] = dlg.ListOfColumns_2.currentText()
-            self.settingsdict['xy_y1column'] = dlg.ListOfColumns_3.currentText()
-            self.settingsdict['xy_y2column'] = dlg.ListOfColumns_4.currentText()
-            self.settingsdict['xy_y3column'] = dlg.ListOfColumns_5.currentText()
-            self.settingsdict['xydotmarkers'] =  dlg.checkBoxDataPoints_2.checkState()
-            self.settingsdict['wqualtable']  = dlg.ListOfTables_WQUAL.currentText()
-            self.settingsdict['wqual_paramcolumn'] = dlg.ListOfColumns_WQUALPARAM.currentText()
-            self.settingsdict['wqual_valuecolumn'] = dlg.ListOfColumns_WQUALVALUE.currentText()
-            self.settingsdict['wqual_unitcolumn'] = dlg.ListOfColumns_WQUALUNIT.currentText()
-            self.settingsdict['wqual_sortingcolumn'] = dlg.ListOfColumns_WQUALSORTING.currentText()
-            self.settingsdict['stratigraphytable'] = dlg.ListOfTables_3.currentText()
-            self.settingsdict['tabwidget'] = dlg.tabWidget.currentIndex()
-            self.saveSettings()
-            self.settingsareloaded = True
+            self.ms.settingsdict['database'] = dlg.txtpath.text()    
+            self.ms.settingsdict['tstable'] = dlg.ListOfTables.currentText()
+            self.ms.settingsdict['tscolumn'] = dlg.ListOfColumns.currentText()
+            self.ms.settingsdict['tsdotmarkers'] = dlg.checkBoxDataPoints.checkState()
+            self.ms.settingsdict['tsstepplot'] = dlg.checkBoxStepPlot.checkState()
+            self.ms.settingsdict['xytable']  = dlg.ListOfTables_2.currentText()
+            self.ms.settingsdict['xy_xcolumn'] = dlg.ListOfColumns_2.currentText()
+            self.ms.settingsdict['xy_y1column'] = dlg.ListOfColumns_3.currentText()
+            self.ms.settingsdict['xy_y2column'] = dlg.ListOfColumns_4.currentText()
+            self.ms.settingsdict['xy_y3column'] = dlg.ListOfColumns_5.currentText()
+            self.ms.settingsdict['xydotmarkers'] =  dlg.checkBoxDataPoints_2.checkState()
+            self.ms.settingsdict['wqualtable']  = dlg.ListOfTables_WQUAL.currentText()
+            self.ms.settingsdict['wqual_paramcolumn'] = dlg.ListOfColumns_WQUALPARAM.currentText()
+            self.ms.settingsdict['wqual_valuecolumn'] = dlg.ListOfColumns_WQUALVALUE.currentText()
+            self.ms.settingsdict['wqual_unitcolumn'] = dlg.ListOfColumns_WQUALUNIT.currentText()
+            self.ms.settingsdict['wqual_sortingcolumn'] = dlg.ListOfColumns_WQUALSORTING.currentText()
+            self.ms.settingsdict['stratigraphytable'] = dlg.ListOfTables_3.currentText()
+            self.ms.settingsdict['tabwidget'] = dlg.tabWidget.currentIndex()
+            self.ms.saveSettings()
+            self.ms.settingsareloaded = True
 
     def updatecoord(self):
-        if self.settingsareloaded == False:    # If the first thing the user does is to update coordinates, then load settings from project file    
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If the first thing the user does is to update coordinates, then load settings from project file    
+            self.ms.loadSettings()    
         layer = self.iface.activeLayer()
         if not layer:           #check there is actually a layer selected
             utils.pop_up_info("You have to select/activate obs_points layer!")
         elif layer.isEditable():
             utils.pop_up_info("The selected layer is currently in editing mode.\nPlease exit this mode before updating coordinates.", "Warning")
         else:
-            if not (self.settingsdict['database'] == ''):
+            if not (self.ms.settingsdict['database'] == ''):
                 layer = qgis.utils.iface.activeLayer()
                 if layer.name()==u'obs_points':     #IF LAYER obs_points IS SELECTED
                     sanity = utils.askuser("AllSelected","""Do you want to update coordinates\nfor All or Selected objects?""")
@@ -817,15 +770,15 @@ class midvatten:
                 utils.pop_up_info("Check settings! \nSelect database first!")        
 
     def updateposition(self):
-        if self.settingsareloaded == False:    # If the first thing the user does is to update coordinates, then load settings from project file    
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If the first thing the user does is to update coordinates, then load settings from project file    
+            self.ms.loadSettings()    
         layer = self.iface.activeLayer()
         if not layer:           #check there is actually a layer selected
             utils.pop_up_info("You have to select/activate obs_points layer!")
         elif layer.isEditable():
             utils.pop_up_info("The selected layer is currently in editing mode.\nPlease exit this mode before updating position.", "Warning")
         else:
-            if not (self.settingsdict['database'] == ''):
+            if not (self.ms.settingsdict['database'] == ''):
                 layer = qgis.utils.iface.activeLayer()
                 if layer.name()==u'obs_points':     #IF LAYER obs_points IS SELECTED
                     sanity = utils.askuser("AllSelected","""Do you want to update position\nfor All or Selected objects?""")
@@ -855,18 +808,18 @@ class midvatten:
                 utils.pop_up_info("Check settings! \nSelect database first!")        
             
     def waterqualityreport(self):
-        if self.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file
-            self.loadSettings()    
-        if not (self.settingsdict['database'] == '') and not (self.settingsdict['wqualtable']=='') and not (self.settingsdict['wqual_paramcolumn']=='')  and not (self.settingsdict['wqual_valuecolumn']==''):
+        if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file
+            self.ms.loadSettings()    
+        if not (self.ms.settingsdict['database'] == '') and not (self.ms.settingsdict['wqualtable']=='') and not (self.ms.settingsdict['wqual_paramcolumn']=='')  and not (self.ms.settingsdict['wqual_valuecolumn']==''):
             if qgis.utils.iface.activeLayer():
                 if utils.selection_check(qgis.utils.iface.activeLayer()) == 'ok':#there is a field obsid and at least one object is selected
                     fail = 0
                     for k in utils.getselectedobjectnames(qgis.utils.iface.activeLayer()):#all selected objects
-                        if not utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.settingsdict['wqualtable'],str(k)))[1]:#if there is a selected object without water quality data
+                        if not utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.ms.settingsdict['wqualtable'],str(k)))[1]:#if there is a selected object without water quality data
                             self.iface.messageBar().pushMessage("Error","No water quality data for %s"%str(k), 2)
                             fail = 1
                     if not fail == 1:#only if all objects has data
-                        wqualreport(qgis.utils.iface.activeLayer(),self.settingsdict)            #TEMPORARY FOR GVAB
+                        wqualreport(qgis.utils.iface.activeLayer(),self.ms.settingsdict)            #TEMPORARY FOR GVAB
             else:
                 utils.pop_up_info("You have to select a layer and the object with water quality first!")
         else: 
@@ -874,8 +827,8 @@ class midvatten:
 
     def wlvlcalculate(self):             
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()    
             
         allcritical_layers = ('obs_points', 'w_levels')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
@@ -885,7 +838,7 @@ class midvatten:
                     utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calculating water level.", "Warning")
                     errorsignal = 1
 
-        if self.settingsdict['database'] == '': #Check that database is selected
+        if self.ms.settingsdict['database'] == '': #Check that database is selected
             utils.pop_up_info("Check settings! \nSelect database first!")        
             errorsignal = 1
 
@@ -906,8 +859,8 @@ class midvatten:
 
     def wlvlloggcalibrate(self):             
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()    
 
         allcritical_layers = ('w_levels_logger', 'w_levels')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
@@ -928,7 +881,7 @@ class midvatten:
             errorsignal = 1
             
         if errorsignal == 0:
-            if not (self.settingsdict['database'] == ''):
+            if not (self.ms.settingsdict['database'] == ''):
                 if qgis.utils.iface.activeLayer():
                     if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':
                         obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
@@ -936,7 +889,7 @@ class midvatten:
                         sanity2sql = """select count(obsid) from w_levels_logger where head_cm not null and head_cm !='' and obsid = '""" +  obsid[0] + """'"""
                         if utils.sql_load_fr_db(sanity1sql)[1] == utils.sql_load_fr_db(sanity2sql)[1]: # This must only be done if head_cm exists for all data
                             from wlevels_calc_calibr import calibrlogger
-                            dlg = calibrlogger(self.iface.mainWindow(),obsid, self.settingsdict)  # dock is an instance of calibrlogger
+                            dlg = calibrlogger(self.iface.mainWindow(),obsid, self.ms.settingsdict)  # dock is an instance of calibrlogger
                             dlg.exec_()
                         else:
                             utils.pop_up_info("""There must not be empty cells or null values in the 'head_cm' column!\nFix head_cm data problem and try again.""", "Error") 
@@ -947,8 +900,8 @@ class midvatten:
 
     def aveflowcalculate(self):#not at all ready             
         errorsignal = 0
-        if self.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.loadSettings()    
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()    
             
         allcritical_layers = ('obs_points', 'w_flow')     #Check that none of these layers are in editing mode
         for layername in allcritical_layers:
@@ -958,7 +911,7 @@ class midvatten:
                     utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calculating water level.", "Warning")
                     errorsignal = 1
 
-        if self.settingsdict['database'] == '': #Check that database is selected
+        if self.ms.settingsdict['database'] == '': #Check that database is selected
             utils.pop_up_info("Check settings! \nSelect database first!")        
             errorsignal = 1
 

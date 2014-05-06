@@ -44,7 +44,16 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplotdates' : [],
             'secplottext' : '',
             'secplotdrillstop':'',
-            'secplotbw':2
+            'secplotbw':2,
+            'custplot_table1':'w_levels',
+            'custplot_table2':'',
+            'custplot_table3':'',
+            'custplot_xcol1':'date_time',
+            'custplot_xcol2':'',
+            'custplot_xcol3':'',
+            'custplot_ycol1':'date_time',
+            'custplot_ycol2':'',
+            'custplot_ycol3':''
             }
     return dictionary
     

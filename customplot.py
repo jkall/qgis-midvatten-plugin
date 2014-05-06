@@ -39,7 +39,7 @@ import midvatten_utils as utils
 
 customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'customplotdialog.ui'))[0]
 
-class plotsqlitewindow(QtGui.QDialog, customplot_ui_class):
+class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
     def __init__(self, parent, settingsdict={}):
         QtGui.QDialog.__init__(self)        
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -48,9 +48,7 @@ class plotsqlitewindow(QtGui.QDialog, customplot_ui_class):
         
         self.settingsdict = settingsdict
         self.maxtstep = 0
-        #self.database = self.settingsdict['database']
-        #self.table1 = ''
-        #self.database_pyqt4provider = QtSql.QSqlDatabase.addDatabase("QSQLITE","db1")
+        
         self.ReadFromDB()
         
     def initUI(self):
@@ -59,7 +57,7 @@ class plotsqlitewindow(QtGui.QDialog, customplot_ui_class):
         self.table_ComboBox_3.clear()  
         for i in range (1,3):
             self.clearthings(1)
-        # whenever Time Series Table is changed, the column-combobox must be updated and TableCheck must be performed (function partial due to problems with currentindexChanged and Combobox)
+        # function partial due to problems with currentindexChanged and Combobox
         #self.connect(self.table_ComboBox_1, QtCore.SIGNAL("currentIndexChanged(int)"), partial(self.Table1Changed))#currentIndexChanged caused unnecessary signals when scrolling in combobox
         self.connect(self.table_ComboBox_1, QtCore.SIGNAL("activated(int)"), partial(self.Table1Changed))  
         self.connect(self.Filter1_ComboBox_1, QtCore.SIGNAL("activated(int)"), partial(self.Filter1_1Changed))
@@ -514,33 +512,3 @@ class plotsqlitewindow(QtGui.QDialog, customplot_ui_class):
         self.table3=self.table_ComboBox_3.currentText()
         self.xcol3=self.xcol_ComboBox_3.currentText()
         self.ycol3=self.ycol_ComboBox_3.currentText()
-
-        
-                
-def sql_load_fr_db(dbpath, sql=''):
-    conn = sqlite.connect(unicode(dbpath),detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-    curs = conn.cursor()
-    resultfromsql = curs.execute(unicode(sql)) #Send SQL-syntax to cursor
-    result = resultfromsql.fetchall()
-    resultfromsql.close()
-    conn.close()
-    return result
-     
-def main(): #when this script is run directly or from python interpreter outside qgis
-    app=QtGui.QApplication.instance() # checks if QApplication already exists 
-    if not app: # create QApplication if it doesnt exist 
-        app = QtGui.QApplication(sys.argv)     
-        MainWindow()
-    sys.exit(app.exec_())#comment out when using Ipython
-
-if __name__ == "__main__":  #if this script is run directly
-    main()
-
-class plotsqliteapp(QtGui.QApplication): #call this from qgis python console
-    def __init__(self, args):
-        QtGui.QApplication.__init__(self,args)
-        self.window = MainWindow()
-
-    def show(self):
-        self.window.show()
-        sys.exit(self.exec_())
