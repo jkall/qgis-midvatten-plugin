@@ -114,7 +114,7 @@ class drillreport():        # general observation point info for the selected ob
             f.write(r"""</TD></TR></TABLE></TD></TR></TABLE>""")    
             f.write("\n</p></body></html>")        
             f.close()
-            
+            print reportpath
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
 
     def rpt_upper_left_sv(self, GeneralData, CRS='', CRSname=''):

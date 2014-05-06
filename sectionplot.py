@@ -40,6 +40,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
     def __init__(self, parent1, iface1):#Please note, self.selected_obsids must be a tuple
         #super(sectionplot, self).saveSettings()
         PyQt4.QtGui.QDockWidget.__init__(self, parent1) #, PyQt4.QtCore.Qt.WindowFlags(PyQt4.QtCore.Qt.WA_DeleteOnClose))
+        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         #Ui_SecPlotDock.__init__(self)
         #self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
 

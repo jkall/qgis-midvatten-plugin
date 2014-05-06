@@ -175,19 +175,17 @@ class SurveyStore:
             utils.pop_up_info("getDataStep1 failed ")  # _CHANGE_ for debugging
         return surveys
 
-    def _getDataStep2(self, surveys):    # _CHANGE_ 
+    def _getDataStep2(self, surveys):    
         """ STEP 2: get strata information for every point """
         myconnection = utils.dbconnection()
         if myconnection.connect2db() == True:
-            conn = sqlite.connect(self.path,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES) #MacOSX fix1
-            # skapa en cursor
+            # create a cursor
             curs = myconnection.conn.cursor()
-            
-            for (obsid, survey) in surveys.iteritems(): # _CHANGE_
+            for (obsid, survey) in surveys.iteritems(): 
                 sql =r"""SELECT stratid, depthtop, depthbot, geology, geoshort, capacity, comment, development FROM """
                 sql += self.stratitable #MacOSX fix1
                 sql += r""" WHERE obsid = '"""    
-                sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRAIGRAPHY FOR CHOOSEN obsid
+                sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRATIGRAPHY FOR CHOOSEN obsid
                 sql += """' ORDER BY stratid"""
                 rs = curs.execute(sql) #Send SQL-syntax to cursor
                 recs = rs.fetchall()  # All data are stored in recs            
@@ -233,7 +231,7 @@ class SurveyStore:
     def sanityCheck(self, surveys):
         """ does a sanity check on retreived data """
         
-        for (obsid, survey) in surveys.iteritems():  # _CHANGE_ from sond_id to obsid
+        for (obsid, survey) in surveys.iteritems():  
             
             # check whether there's at least one strata information
             if len(survey.strata) == 0:

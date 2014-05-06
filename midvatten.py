@@ -36,6 +36,7 @@ from loaddefaultlayers import loadlayers
 import midvatten_utils as utils 
 from definitions import midvatten_defs
 from sectionplot import sectionplot
+import customplot
 
 class midvatten:
     def __init__(self, iface): # Might need revision of variables and method for loading default variables
@@ -130,6 +131,10 @@ class midvatten:
         self.iface.registerMainWindowAction(self.actionPlotXY, "F9")   # The function should also be triggered by the F9 key
         QObject.connect(self.actionPlotXY, SIGNAL("triggered()"), self.PlotXY)
         
+        self.actionPlotSQLite = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","plotsqliteicon.png")), "Custom Plots", self.iface.mainWindow())
+        self.actionPlotSQLite.setWhatsThis("Create custom plots for your reports")
+        QObject.connect(self.actionPlotSQLite, SIGNAL("triggered()"), self.PlotSQLite)
+        
         self.actionPlotStratigraphy = QAction(QIcon(":/plugins/midvatten/icons/PlotStratigraphy.png"), "Plot stratigraphy", self.iface.mainWindow())
         self.actionPlotStratigraphy.setWhatsThis("Show stratigraphy for selected objects (modified ARPAT)")
         self.iface.registerMainWindowAction(self.actionPlotStratigraphy, "F10")   # The function should also be triggered by the F10 key
@@ -200,6 +205,7 @@ class midvatten:
         self.menu.plot_data_menu.addAction(self.actionPlotXY)
         self.menu.plot_data_menu.addAction(self.actionPlotStratigraphy)
         self.menu.plot_data_menu.addAction(self.actionPlotSection)        
+        self.menu.plot_data_menu.addAction(self.actionPlotSQLite)
         #self.menu.plot_data_menu.addAction(self.actionChartMaker)          #Not until implemented!
 
         self.menu.report_menu = QMenu(QCoreApplication.translate("Midvatten", "&View report"))
@@ -223,7 +229,7 @@ class midvatten:
         self.iface.projectRead.connect(self.loadSettings)
         self.iface.newProjectCreated.connect(self.resetSettings)
 
-        self.secplotdockOpened = False		#remember for not reopening section plot dock if there's already one opened
+        #self.secplotdockOpened = False		#remember for not reopening section plot dock if there's already one opened
         
     def unload(self):    
         # Remove the plugin menu items and icons
@@ -706,13 +712,15 @@ class midvatten:
         if msg:#if something went wrong
             self.iface.messageBar().pushMessage("Error",msg, 2)
         else:#otherwise go
-            if self.secplotdockOpened==True:
+            #if self.secplotdockOpened==True:
+            try:
                 #print 'found it and will try to reuse it'#debug
                 self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
-            elif self.secplotdockOpened==False:
+            #elif self.secplotdockOpened==False:
+            except:
                 self.myplot = sectionplot(self.iface.mainWindow(), self.iface)
                 #QObject.connect(self.myplot, SIGNAL( "closed(PyQt_PyObject)" ), self.cleaning2)
-                self.secplotdockOpened = True
+                #self.secplotdockOpened = True
                 self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
             #myplot.exec_()
             #self.myplot.show()#why not this instead?
@@ -729,6 +737,18 @@ class midvatten:
                 utils.pop_up_info("You have to select a layer first!")
         else:
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database, table and columns for x and y data!. Reset if needed.", 2)
+
+    def PlotSQLite(self):
+        if self.settingsareloaded == False:    
+            self.loadSettings()    
+        if self.settingsdict['database'] == '':
+            self.iface.messageBar().pushMessage("Error","No database found. Please check your Midvatten Settings. Reset if needed.", 2)
+            return
+
+        try:
+            self.customplot.activateWindow()
+        except:
+            self.customplot = customplot.plotsqlitewindow(self.settingsdict)
 
     def resetSettings(self):    
         self.settingsdict = self.createsettingsdict()    # calling for the method that defines an empty dictionary of settings
