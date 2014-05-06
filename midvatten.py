@@ -228,8 +228,6 @@ class midvatten:
         # QGIS iface connections
         self.iface.projectRead.connect(self.loadSettings)
         self.iface.newProjectCreated.connect(self.resetSettings)
-
-        #self.secplotdockOpened = False		#remember for not reopening section plot dock if there's already one opened
         
     def unload(self):    
         # Remove the plugin menu items and icons
@@ -712,18 +710,11 @@ class midvatten:
         if msg:#if something went wrong
             self.iface.messageBar().pushMessage("Error",msg, 2)
         else:#otherwise go
-            #if self.secplotdockOpened==True:
             try:
-                #print 'found it and will try to reuse it'#debug
                 self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
-            #elif self.secplotdockOpened==False:
             except:
                 self.myplot = sectionplot(self.iface.mainWindow(), self.iface)
-                #QObject.connect(self.myplot, SIGNAL( "closed(PyQt_PyObject)" ), self.cleaning2)
-                #self.secplotdockOpened = True
                 self.myplot.doit(self.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
-            #myplot.exec_()
-            #self.myplot.show()#why not this instead?
 
     def PlotXY(self):            
         if self.settingsareloaded == False:    # If the first thing the user does is to plot xy data, then load settings from project file
