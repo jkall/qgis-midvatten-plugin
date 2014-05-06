@@ -37,7 +37,6 @@ import midvatten_utils as utils
 from definitions import midvatten_defs
 from sectionplot import sectionplot
 import customplot
-#settings
 from midvsettings import midvsettings
 
 class midvatten:
@@ -695,16 +694,14 @@ class midvatten:
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database, table and columns for x and y data!. Reset if needed.", 2)
 
     def PlotSQLite(self):
-        if self.ms.settingsareloaded == False:    
-            self.ms.loadSettings()    
         if self.ms.settingsdict['database'] == '':
-            self.iface.messageBar().pushMessage("Error","No database found. Please check your Midvatten Settings. Reset if needed.", 2)
+            self.iface.messageBar().pushMessage("Error","A database is needed to create custom plots. Please check your Midvatten Settings. Reset if needed.", 2)
             return
 
         try:
             self.customplot.activateWindow()
         except:
-            self.customplot = customplot.plotsqlitewindow(self.ms.settingsdict)
+            self.customplot = customplot.plotsqlitewindow()#self.iface as arg?
 
     def setup(self):
         """Choose spatialite database and relevant table"""
@@ -898,7 +895,7 @@ class midvatten:
             else: 
                 utils.pop_up_info("Check settings! \nYou have to select database first!")
 
-    def aveflowcalculate(self):#not at all ready             
+    def aveflowcalculate(self):            
         errorsignal = 0
         if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
             self.ms.loadSettings()    
@@ -930,7 +927,7 @@ class midvatten:
             dlg = calcave(self.iface.mainWindow()) 
             dlg.exec_()
 
-    def cleaning2(self):        #clean up after closing section plot Dock dialog          --------------THIS NEVER HAPPENS!!!
+    def cleaning2(self):        #clean up after closing section plot Dock dialog --TO BE REMOVED SINCE THIS IS NEVER USED!!!
                 print 'cleaning the dock house'
                 self.mdl = None
                 self.secplotdockOpened = False

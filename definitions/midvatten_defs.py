@@ -53,7 +53,13 @@ def settingsdict():    #These are the default settings, they shall not be change
             'custplot_xcol3':'',
             'custplot_ycol1':'date_time',
             'custplot_ycol2':'',
-            'custplot_ycol3':''
+            'custplot_ycol3':'',
+            'custplot_maxtstep':0.0,
+            'custplot_title':'',
+            'custplot_xtitle':'',
+            'custplot_ytitle':'',
+            'custplot_legend':2,
+            'custplot_grid':2
             }
     return dictionary
     

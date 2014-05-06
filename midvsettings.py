@@ -21,10 +21,11 @@ class midvsettings():
         # settings...
         self.readingSettings = False # To enable resetsettings
         self.settingsdict = self.createsettingsdict()# calling for the method that defines an empty dictionary of settings NOTE!! byte strings in dict
-        #self.loadSettings()    # stored settings are loaded  NOTE: From ver 0.3.2 it is no longer possible to load settings here
-        #The settings are stored in the qgis project file and thus cannot be loaded when qgis is starting (and plugin initialized) 
-        #The settings are loaded each time a new qgis project is loaded (and several methods below do check that settings really are loaded)
-        self.settingsareloaded = False # To make sure settings are loaded once and only once
+        try:
+            self.loadSettings()    # stored settings are loaded (if there are any)
+            #The settings are loaded each time a new qgis project is loaded (and several methods below do check that settings really are loaded)
+        except:
+            pass
 
     def createsettingsdict(self):# Here is where an empty settings dictionary is defined, NOTE! byte strings in dictionary
         dictionary = midvatten_defs.settingsdict()
@@ -66,6 +67,8 @@ class midvsettings():
             for (key, value) in self.settingsdict.items():        # For storing in project file, as Time Manager plugin
                 try: # write plugin settings to QgsProject # For storing in project file, as Time Manager plugin
                     QgsProject.instance().writeEntry("Midvatten",key, value ) # For storing in project file, as Time Manager plugin
-                except TypeError: # For storing in project file, as Time Manager plugin
-                    utils.pop_up_info("Wrong type for "+key+"!\nType: "+str(type(value))) #For storing in project file, as Time Manager plugin
+                    print "debug info; midvsettings is saving: " + key + " value: " + value#debug
+                except TypeError: 
+                    #utils.pop_up_info("Wrong type for "+key+"!\nType: "+str(type(value)))
+                    print "debug info; midvsettings found that "+key+" had type: "+str(type(value))+" which is not appropriate"
         

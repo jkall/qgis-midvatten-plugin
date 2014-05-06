@@ -36,20 +36,20 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as Naviga
 import datetime
 import matplotlib.ticker as tick
 import midvatten_utils as utils
+from midvsettings import midvsettings
 
 customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'customplotdialog.ui'))[0]
 
 class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
-    def __init__(self, parent, settingsdict={}):
+    def __init__(self):#, parent as second arg?
+        self.ms = midvsettings()
+        self.ms.loadSettings()
         QtGui.QDialog.__init__(self)        
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setupUi( self )#due to initialisation of Ui_MainWindow instance
         self.initUI()
-        
-        self.settingsdict = settingsdict
-        self.maxtstep = 0
-        
-        self.ReadFromDB()
+        self.LoadTablesFromDB()
+        self.LastSelections()#fill comboboxes etc with last selected values
         
     def initUI(self):
         self.table_ComboBox_1.clear()  
@@ -80,17 +80,12 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.mpltoolbar.removeAction( lstActions[ 7 ] )
         self.layoutplot.addWidget( self.canvas )
         self.layoutplot.addWidget( self.mpltoolbar )
-
-        # Search for saved settings and load as preset values
-        #self.settings = QtCore.QSettings('foo','foo')
-        #self.readsettings()
-
+        
         self.show()
         
     def drawPlot(self):
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))#show the user this may take a long time...
 
-        #self.storesettings()    #db, table, x-col and y-col are saved as default values when user clicks 'plot chart'
         self.axes.clear()
         My_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array
         
@@ -102,11 +97,9 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         nop=0# nop=number of plots
         self.p=[]
         self.plabels=[]
-        
-        self.GetPlotSettings()
-        
-        if not (self.table1 == '' or self.table1==' ') and not (self.xcol1== '' or self.xcol1==' ') and not (self.ycol1== '' or self.ycol1==' '): #if anything is to be plotted from tab 1
-            self.maxtstep = self.spnmaxtstep.value()   # if user selected a time step bigger than zero than thre may be discontinuous plots
+                
+        if not (self.table_ComboBox_1.currentText() == '' or self.table_ComboBox_1.currentText()==' ') and not (self.xcol_ComboBox_1.currentText()== '' or self.xcol_ComboBox_1.currentText()==' ') and not (self.ycol_ComboBox_1.currentText()== '' or self.ycol_ComboBox_1.currentText()==' '): #if anything is to be plotted from tab 1
+            self.ms.settingsdict['custplot_maxtstep'] = self.spnmaxtstep.value()   # if user selected a time step bigger than zero than thre may be discontinuous plots
             plottable1='y'
             filter1 = unicode(self.Filter1_ComboBox_1.currentText())
             filter1list = self.Filter1_QListWidget_1.selectedItems()
@@ -142,8 +135,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                     self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText())
                     i += 1
 
-        if not (self.table2 == '' or self.table2==' ') and not (self.xcol2== '' or self.xcol2==' ') and not (self.ycol2== '' or self.ycol2==' '):#if anything is to be plotted from tab 2
-            self.maxtstep = self.spnmaxtstep.value()   # if user selected a time step bigger than zero than thre may be discontinuous plots
+        if not (self.table_ComboBox_2.currentText() == '' or self.table_ComboBox_2.currentText()==' ') and not (self.xcol_ComboBox_2.currentText()== '' or self.xcol_ComboBox_2.currentText()==' ') and not (self.ycol_ComboBox_2.currentText()== '' or self.ycol_ComboBox_2.currentText()==' '):#if anything is to be plotted from tab 2
+            self.ms.settingsdict['custplot_maxtstep'] = self.spnmaxtstep.value()   # if user selected a time step bigger than zero than thre may be discontinuous plots
             plottable2='y'
             filter1 = unicode(self.Filter1_ComboBox_2.currentText())
             filter1list = self.Filter1_QListWidget_2.selectedItems()
@@ -178,8 +171,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                     self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_2.currentText())
                     i += 1
             
-        if not (self.table3 == '' or self.table3==' ') and not (self.xcol3== '' or self.xcol3==' ') and not (self.ycol3== '' or self.ycol3==' '):#if anything is to be plotted from tab 3
-            self.maxtstep = self.spnmaxtstep.value()   # if user selected a time step bigger than zero than thre may be discontinuous plots
+        if not (self.table_ComboBox_3.currentText() == '' or self.table_ComboBox_3.currentText()==' ') and not (self.xcol_ComboBox_3.currentText()== '' or self.xcol_ComboBox_3.currentText()==' ') and not (self.ycol_ComboBox_3.currentText()== '' or self.ycol_ComboBox_3.currentText()==' '):#if anything is to be plotted from tab 3
+            self.ms.settingsdict['custplot_maxtstep'] = self.spnmaxtstep.value()   # if user selected a time step bigger than zero than thre may be discontinuous plots
             plottable3='y'
             filter1 = unicode(self.Filter1_ComboBox_3.currentText())
             filter1list = self.Filter1_QListWidget_3.selectedItems()
@@ -247,8 +240,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             numtime = myXYstring
 
         # from version 0.2 there is a possibility to make discontinuous plot if timestep bigger than maxtstep
-        if self.maxtstep > 0: # if user selected a time step bigger than zero than thre may be discontinuous plots
-            pos = np.where(np.abs(np.diff(numtime)) >= self.maxtstep)[0]
+        if self.spnmaxtstep.value() > 0: # if user selected a time step bigger than zero than thre may be discontinuous plots
+            pos = np.where(np.abs(np.diff(numtime)) >= self.spnmaxtstep.value())[0]
             numtime[pos] = np.nan
             table2.values[pos] = np.nan
 
@@ -277,54 +270,62 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.p[i], = self.axes.plot(numtime, table2.values,  MarkVar,markersize = 6, label=self.plabels[i])
         else: 
             self.p[i], = self.axes.plot(numtime, table2.values,  MarkVar,label=self.plabels[i]) 
-                
-    def refreshPlot( self ):
-        self.axes.legend_=None
-        #self.axes.clear()
-        #self.plabels = ('Rb1103','Rb1104')#debugging
-        #print self.plabels #debug
-        datemin = self.spnMinX.dateTime().toPyDateTime()
-        datemax = self.spnMaxX.dateTime().toPyDateTime()
-        if datemin == datemax: #xaxis-limits
-            pass
-        else:
-            self.axes.set_xlim(min(datemin, datemax),max(datemin, datemax))            
-        if self.spnMinY.value() == self.spnMaxY.value(): #yaxis-limits
-            pass
-        else:
-            self.axes.set_ylim(min(self.spnMaxY.value(), self.spnMinY.value()),max(self.spnMaxY.value(), self.spnMinY.value()))            
-        self.axes.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))#yaxis-format
-        self.figure.autofmt_xdate()#xaxis-format
-        self.axes.grid(self.Grid_checkBox.isChecked() )#grid
-        if not self.title_QLineEdit.text()=='':#title
-            self.axes.set_title(self.title_QLineEdit.text())
-        if not self.xtitle_QLineEdit.text()=='':#xaxis label
-            self.axes.set_xlabel(self.xtitle_QLineEdit.text())
-        if not self.ytitle_QLineEdit.text()=='':#yaxis label
-            self.axes.set_ylabel(self.ytitle_QLineEdit.text())
-        for label in self.axes.xaxis.get_ticklabels():
-            label.set_fontsize(10)
-        for label in self.axes.yaxis.get_ticklabels():
-            label.set_fontsize(10)
-        # finally, the legend
-        if self.Legend_checkBox.isChecked():
-            if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
-                leg = self.axes.legend(self.p, self.plabels)
-            else:
-                leg = self.axes.legend(self.p, self.plabels, bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
-            leg.draggable(state=True)
-            frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
-            frame.set_facecolor('1')    # set the frame face color to white                
-            frame.set_fill(False)    # set the frame face color to white                
-            for t in leg.get_texts():
-                t.set_fontsize(10)    # the legend text fontsize
-        else:
-            self.axes.legend_=None
 
-        self.figure.autofmt_xdate()
-        self.canvas.draw()
+    def LastSelections(self):
+        #table1
+        searchindex = self.table_ComboBox_1.findText(self.ms.settingsdict['custplot_table1'])
+        if searchindex >= 0:
+            self.table_ComboBox_1.setCurrentIndex(searchindex)
+            self.Table1Changed()
+            searchindex = self.xcol_ComboBox_1.findText(self.ms.settingsdict['custplot_xcol1'])
+            if searchindex >= 0:
+                self.xcol_ComboBox_1.setCurrentIndex(searchindex)
+            searchindex = self.ycol_ComboBox_1.findText(self.ms.settingsdict['custplot_ycol1'])
+            if searchindex >= 0:
+                self.ycol_ComboBox_1.setCurrentIndex(searchindex)
+        #table2
+        searchindex = self.table_ComboBox_2.findText(self.ms.settingsdict['custplot_table2'])
+        if searchindex >= 0:
+            self.table_ComboBox_2.setCurrentIndex(searchindex)
+            self.Table2Changed()
+            searchindex = self.xcol_ComboBox_2.findText(self.ms.settingsdict['custplot_xcol2'])
+            if searchindex >= 0:
+                self.xcol_ComboBox_2.setCurrentIndex(searchindex)
+            searchindex = self.ycol_ComboBox_2.findText(self.ms.settingsdict['custplot_ycol2'])
+            if searchindex >= 0:
+                self.ycol_ComboBox_2.setCurrentIndex(searchindex)
+        #table3
+        searchindex = self.table_ComboBox_3.findText(self.ms.settingsdict['custplot_table3'])
+        if searchindex >= 0:
+            self.table_ComboBox_3.setCurrentIndex(searchindex)
+            self.Table2Changed()
+            searchindex = self.xcol_ComboBox_3.findText(self.ms.settingsdict['custplot_xcol3'])
+            if searchindex >= 0:
+                self.xcol_ComboBox_3.setCurrentIndex(searchindex)
+            searchindex = self.ycol_ComboBox_3.findText(self.ms.settingsdict['custplot_ycol3'])
+            if searchindex >= 0:
+                self.ycol_ComboBox_3.setCurrentIndex(searchindex)
 
-    def ReadFromDB( self ):    # Open the SpatiaLite file to extract info about tables 
+        self.spnmaxtstep.setValue(self.ms.settingsdict['custplot_maxtstep'])
+
+        if self.ms.settingsdict['custplot_legend']==2:
+            self.Legend_checkBox.setChecked(True)
+        else:
+            self.Legend_checkBox.setChecked(False)
+
+        if self.ms.settingsdict['custplot_grid']==2:
+            self.Grid_checkBox.setChecked(True)
+        else:
+            self.Grid_checkBox.setChecked(False)
+
+        if len(self.ms.settingsdict['custplot_title'])>0:
+            self.title_QLineEdit.setText(self.ms.settingsdict['custplot_title'])
+        if len(self.ms.settingsdict['custplot_xtitle'])>0:
+            self.xtitle_QLineEdit.setText(self.ms.settingsdict['custplot_xtitle'])
+        if len(self.ms.settingsdict['custplot_ytitle'])>0:
+            self.ytitle_QLineEdit.setText(self.ms.settingsdict['custplot_ytitle'])
+            
+    def LoadTablesFromDB( self ):    # Open the SpatiaLite file to extract info about tables 
         self.table_ComboBox_1.clear()  
         self.table_ComboBox_2.clear()  
         self.table_ComboBox_3.clear()  
@@ -376,55 +377,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             rs.close()
             myconnection.closedb()        
 
-    def clearthings(self,tabno=1):   #clear xcol,ycol,fukter1,filter2
-        xcolcombobox = 'xcol_ComboBox_' + str(tabno)
-        ycolcombobox = 'ycol_ComboBox_' + str(tabno)
-        filter1combobox = 'Filter1_ComboBox_' + str(tabno)
-        filter2combobox = 'Filter2_ComboBox_' + str(tabno)
-        filter1qlistwidget = 'Filter1_QListWidget_' + str(tabno)
-        filter2qlistwidget = 'Filter2_QListWidget_' + str(tabno)
-        getattr(self,xcolcombobox).clear()
-        getattr(self,ycolcombobox).clear()
-        getattr(self,filter1combobox).clear()
-        getattr(self,filter2combobox).clear()
-        getattr(self,filter1qlistwidget).clear()
-        getattr(self,filter2qlistwidget).clear()
-
-    def Table1Changed(self):     #This method is called whenever table1 is changed
-        # First, update combobox with columns
-        self.clearthings(1)
-        self.table1 = unicode(self.table_ComboBox_1.currentText())
-        self.PopulateComboBox('xcol_ComboBox_1', self.table_ComboBox_1.currentText())  # GeneralNote: For some reason it is not possible to send currentText with the SIGNAL-trigger
-        self.PopulateComboBox('ycol_ComboBox_1', self.table_ComboBox_1.currentText())  # See GeneralNote
-        self.PopulateComboBox('Filter1_ComboBox_1', self.table_ComboBox_1.currentText())  # See GeneralNote
-        self.PopulateComboBox('Filter2_ComboBox_1', self.table_ComboBox_1.currentText())  # See GeneralNote
-
-    def Table2Changed(self):     #This method is called whenever table2 is changed
-        # First, update combobox with columns
-        self.clearthings(2)
-        self.table2 = unicode(self.table_ComboBox_2.currentText())
-        self.PopulateComboBox('xcol_ComboBox_2', self.table_ComboBox_2.currentText())  # GeneralNote: For some reason it is not possible to send currentText with the SIGNAL-trigger
-        self.PopulateComboBox('ycol_ComboBox_2', self.table_ComboBox_2.currentText())  # See GeneralNote
-        self.PopulateComboBox('Filter1_ComboBox_2', self.table_ComboBox_2.currentText())  # See GeneralNote
-        self.PopulateComboBox('Filter2_ComboBox_2', self.table_ComboBox_2.currentText())  # See GeneralNote
-
-    def Table3Changed(self):     #This method is called whenever table3 is changed
-        # First, update combobox with columns
-        self.clearthings(3)
-        self.table3 = unicode(self.table_ComboBox_3.currentText())
-        self.PopulateComboBox('xcol_ComboBox_3', self.table_ComboBox_3.currentText())  # GeneralNote: For some reason it is not possible to send currentText with the SIGNAL-trigger
-        self.PopulateComboBox('ycol_ComboBox_3', self.table_ComboBox_3.currentText())  # See GeneralNote
-        self.PopulateComboBox('Filter1_ComboBox_3', self.table_ComboBox_3.currentText())  # See GeneralNote
-        self.PopulateComboBox('Filter2_ComboBox_3', self.table_ComboBox_3.currentText())  # See GeneralNote
-
-    def PopulateComboBox(self, comboboxname='', table=None):
-        """This method fills comboboxes with columns for selected tool and table"""
-        columns = self.LoadColumnsFromTable(table)    # Load all columns into a list 'columns'
-        if len(columns)>0:    # Transfer information from list 'columns' to the combobox
-            getattr(self, comboboxname).addItem('')
-            for columnName in columns:
-                getattr(self, comboboxname).addItem(columnName)  # getattr is to combine a function and a string to a combined function
-        
     def LoadColumnsFromTable(self, table=''):
         """ This method returns a list with all the columns in the table"""
         if len(table)>0:            # Should not be needed since the function never should be called without existing table...
@@ -445,35 +397,84 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             columns = {}
         return columns        # This method returns a list with all the columns in the table
 
+    def clearthings(self,tabno=1):   #clear xcol,ycol,filter1,filter2
+        xcolcombobox = 'xcol_ComboBox_' + str(tabno)
+        ycolcombobox = 'ycol_ComboBox_' + str(tabno)
+        filter1combobox = 'Filter1_ComboBox_' + str(tabno)
+        filter2combobox = 'Filter2_ComboBox_' + str(tabno)
+        filter1qlistwidget = 'Filter1_QListWidget_' + str(tabno)
+        filter2qlistwidget = 'Filter2_QListWidget_' + str(tabno)
+        getattr(self,xcolcombobox).clear()
+        getattr(self,ycolcombobox).clear()
+        getattr(self,filter1combobox).clear()
+        getattr(self,filter2combobox).clear()
+        getattr(self,filter1qlistwidget).clear()
+        getattr(self,filter2qlistwidget).clear()
+
+    def Table1Changed(self):     #This method is called whenever table1 is changed
+        # First, update combobox with columns
+        self.clearthings(1)
+        self.ms.settingsdict['custplot_table1'] = self.table_ComboBox_1.currentText()
+        self.PopulateComboBox('xcol_ComboBox_1', self.table_ComboBox_1.currentText())  # GeneralNote: For some reason it is not possible to send currentText with the SIGNAL-trigger
+        self.PopulateComboBox('ycol_ComboBox_1', self.table_ComboBox_1.currentText())  # See GeneralNote
+        self.PopulateComboBox('Filter1_ComboBox_1', self.table_ComboBox_1.currentText())  # See GeneralNote
+        self.PopulateComboBox('Filter2_ComboBox_1', self.table_ComboBox_1.currentText())  # See GeneralNote
+
+    def Table2Changed(self):     #This method is called whenever table2 is changed
+        # First, update combobox with columns
+        self.clearthings(2)
+        self.ms.settingsdict['custplot_table2'] = self.table_ComboBox_2.currentText()
+        self.PopulateComboBox('xcol_ComboBox_2', self.table_ComboBox_2.currentText())  # GeneralNote: For some reason it is not possible to send currentText with the SIGNAL-trigger
+        self.PopulateComboBox('ycol_ComboBox_2', self.table_ComboBox_2.currentText())  # See GeneralNote
+        self.PopulateComboBox('Filter1_ComboBox_2', self.table_ComboBox_2.currentText())  # See GeneralNote
+        self.PopulateComboBox('Filter2_ComboBox_2', self.table_ComboBox_2.currentText())  # See GeneralNote
+
+    def Table3Changed(self):     #This method is called whenever table3 is changed
+        # First, update combobox with columns
+        self.clearthings(3)
+        self.ms.settingsdict['custplot_table2'] = self.table_ComboBox_3.currentText()
+        self.PopulateComboBox('xcol_ComboBox_3', self.table_ComboBox_3.currentText())  # GeneralNote: For some reason it is not possible to send currentText with the SIGNAL-trigger
+        self.PopulateComboBox('ycol_ComboBox_3', self.table_ComboBox_3.currentText())  # See GeneralNote
+        self.PopulateComboBox('Filter1_ComboBox_3', self.table_ComboBox_3.currentText())  # See GeneralNote
+        self.PopulateComboBox('Filter2_ComboBox_3', self.table_ComboBox_3.currentText())  # See GeneralNote
+
+    def PopulateComboBox(self, comboboxname='', table=None):
+        """This method fills comboboxes with columns for selected tool and table"""
+        columns = self.LoadColumnsFromTable(table)    # Load all columns into a list 'columns'
+        if len(columns)>0:    # Transfer information from list 'columns' to the combobox
+            getattr(self, comboboxname).addItem('')
+            for columnName in columns:
+                getattr(self, comboboxname).addItem(columnName)  # getattr is to combine a function and a string to a combined function
+        
     def Filter1_1Changed(self):
         self.Filter1_QListWidget_1.clear()
         if not self.Filter1_ComboBox_1.currentText()=='':
-            self.PopulateFilterList(self.table1,'Filter1_QListWidget_1', self.Filter1_ComboBox_1.currentText())  # For some reason it is not possible to send currentText with the SIGNAL-trigger
+            self.PopulateFilterList(self.ms.settingsdict['custplot_table1'],'Filter1_QListWidget_1', self.Filter1_ComboBox_1.currentText())  # For some reason it is not possible to send currentText with the SIGNAL-trigger
         
     def Filter2_1Changed(self):
         self.Filter2_QListWidget_1.clear()
         if not self.Filter2_ComboBox_1.currentText()=='':
-            self.PopulateFilterList(self.table1,'Filter2_QListWidget_1', self.Filter2_ComboBox_1.currentText())  # For some reason it is not possible to send currentText with the SIGNAL-trigger
+            self.PopulateFilterList(self.ms.settingsdict['custplot_table1'],'Filter2_QListWidget_1', self.Filter2_ComboBox_1.currentText())  # For some reason it is not possible to send currentText with the SIGNAL-trigger
 
     def Filter1_2Changed(self):
         self.Filter1_QListWidget_2.clear()
         if not self.Filter1_ComboBox_2.currentText()=='':
-            self.PopulateFilterList(self.table2,'Filter1_QListWidget_2', self.Filter1_ComboBox_2.currentText())  
+            self.PopulateFilterList(self.ms.settingsdict['custplot_table2'],'Filter1_QListWidget_2', self.Filter1_ComboBox_2.currentText())  
             
     def Filter2_2Changed(self):
         self.Filter2_QListWidget_2.clear()
         if not self.Filter2_ComboBox_2.currentText()=='':
-            self.PopulateFilterList(self.table2,'Filter2_QListWidget_2', self.Filter2_ComboBox_2.currentText())
+            self.PopulateFilterList(self.ms.settingsdict['custplot_table2'],'Filter2_QListWidget_2', self.Filter2_ComboBox_2.currentText())
 
     def Filter1_3Changed(self):
         self.Filter1_QListWidget_3.clear()
         if not self.Filter1_ComboBox_3.currentText()=='':
-            self.PopulateFilterList(self.table3,'Filter1_QListWidget_3', self.Filter1_ComboBox_3.currentText())
+            self.PopulateFilterList(self.ms.settingsdict['custplot_table3'],'Filter1_QListWidget_3', self.Filter1_ComboBox_3.currentText())
         
     def Filter2_3Changed(self):
         self.Filter2_QListWidget_3.clear()
         if not self.Filter2_ComboBox_3.currentText()=='':
-            self.PopulateFilterList(self.table3,'Filter2_QListWidget_3', self.Filter2_ComboBox_3.currentText())
+            self.PopulateFilterList(self.ms.settingsdict['custplot_table3'],'Filter2_QListWidget_3', self.Filter2_ComboBox_3.currentText())
                         
     def PopulateFilterList(self, table, QListWidgetname='', filtercolumn=None):
         sql = "select distinct " + unicode(filtercolumn) + " from " + table + " order by " + unicode(filtercolumn)
@@ -482,33 +483,64 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             item = QtGui.QListWidgetItem(unicode(post[0]))
             getattr(self, QListWidgetname).addItem(item)
 
-    def GetPlotSettings(self):
-        self.table1=self.table_ComboBox_1.currentText()
-        self.xcol1=self.xcol_ComboBox_1.currentText()
-        self.ycol1=self.ycol_ComboBox_1.currentText()
-        self.table2=self.table_ComboBox_2.currentText()
-        self.xcol2=self.xcol_ComboBox_2.currentText()
-        self.ycol2=self.ycol_ComboBox_2.currentText()
-        self.table3=self.table_ComboBox_3.currentText()
-        self.xcol3=self.xcol_ComboBox_3.currentText()
-        self.ycol3=self.ycol_ComboBox_3.currentText()
+    def refreshPlot( self ):
+        self.storesettings()    #all custom plot related settings are stored when plotting data (or pressing "redraw")
+        self.axes.legend_=None
+        datemin = self.spnMinX.dateTime().toPyDateTime()
+        datemax = self.spnMaxX.dateTime().toPyDateTime()
+        if datemin == datemax: #xaxis-limits
+            pass
+        else:
+            self.axes.set_xlim(min(datemin, datemax),max(datemin, datemax))            
+        if self.spnMinY.value() == self.spnMaxY.value(): #yaxis-limits
+            pass
+        else:
+            self.axes.set_ylim(min(self.spnMaxY.value(), self.spnMinY.value()),max(self.spnMaxY.value(), self.spnMinY.value()))            
+        self.axes.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))#yaxis-format
+        self.figure.autofmt_xdate()#xaxis-format
+        self.axes.grid(self.Grid_checkBox.isChecked() )#grid
+        if not self.title_QLineEdit.text()=='':#title
+            self.axes.set_title(self.title_QLineEdit.text())
+        if not self.xtitle_QLineEdit.text()=='':#xaxis label
+            self.axes.set_xlabel(self.xtitle_QLineEdit.text())
+        if not self.ytitle_QLineEdit.text()=='':#yaxis label
+            self.axes.set_ylabel(self.ytitle_QLineEdit.text())
+        for label in self.axes.xaxis.get_ticklabels():
+            label.set_fontsize(10)
+        for label in self.axes.yaxis.get_ticklabels():
+            label.set_fontsize(10)
+        # finally, the legend
+        if self.Legend_checkBox.isChecked():
+            if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
+                leg = self.axes.legend(self.p, self.plabels)
+            else:
+                leg = self.axes.legend(self.p, self.plabels, bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
+            leg.draggable(state=True)
+            frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
+            frame.set_facecolor('1')    # set the frame face color to white                
+            frame.set_fill(False)    # set the frame face color to white                
+            for t in leg.get_texts():
+                t.set_fontsize(10)    # the legend text fontsize
+        else:
+            self.axes.legend_=None
+
+        self.figure.autofmt_xdate()
+        self.canvas.draw()
 
     def storesettings(self):
-        self.settings.setValue('table1', self.table_ComboBox_1.currentText())
-        self.settings.setValue('xcol1', self.xcol_ComboBox_1.currentText())
-        self.settings.setValue('ycol1', self.ycol_ComboBox_1.currentText())
-        self.table1=self.table_ComboBox_1.currentText()
-        self.xcol1=self.xcol_ComboBox_1.currentText()
-        self.ycol1=self.ycol_ComboBox_1.currentText()
-        self.settings.setValue('table2', self.table_ComboBox_2.currentText())
-        self.settings.setValue('xcol2', self.xcol_ComboBox_2.currentText())
-        self.settings.setValue('ycol2', self.ycol_ComboBox_2.currentText())
-        self.table2=self.table_ComboBox_2.currentText()
-        self.xcol2=self.xcol_ComboBox_2.currentText()
-        self.ycol2=self.ycol_ComboBox_2.currentText()
-        self.settings.setValue('table3', self.table_ComboBox_3.currentText())
-        self.settings.setValue('xcol3', self.xcol_ComboBox_3.currentText())
-        self.settings.setValue('ycol3', self.ycol_ComboBox_3.currentText())
-        self.table3=self.table_ComboBox_3.currentText()
-        self.xcol3=self.xcol_ComboBox_3.currentText()
-        self.ycol3=self.ycol_ComboBox_3.currentText()
+        self.ms.settingsdict['custplot_table1'] = self.table_ComboBox_1.currentText()
+        self.ms.settingsdict['custplot_xcol1'] = self.xcol_ComboBox_1.currentText()
+        self.ms.settingsdict['custplot_ycol1'] = self.ycol_ComboBox_1.currentText()
+        self.ms.settingsdict['custplot_table2'] = self.table_ComboBox_2.currentText()
+        self.ms.settingsdict['custplot_xcol2'] = self.xcol_ComboBox_2.currentText()
+        self.ms.settingsdict['custplot_ycol2'] = self.ycol_ComboBox_2.currentText()
+        self.ms.settingsdict['custplot_table3'] = self.table_ComboBox_3.currentText()
+        self.ms.settingsdict['custplot_xcol3'] = self.xcol_ComboBox_3.currentText()
+        self.ms.settingsdict['custplot_ycol3'] = self.ycol_ComboBox_3.currentText()
+        self.ms.settingsdict['custplot_maxtstep'] = self.spnmaxtstep.value()
+        self.ms.settingsdict['custplot_legend']=self.Legend_checkBox.checkState()
+        self.ms.settingsdict['custplot_grid']=self.Grid_checkBox.checkState()
+        self.ms.settingsdict['custplot_title'] = self.title_QLineEdit.text()
+        self.ms.settingsdict['custplot_xtitle'] = self.xtitle_QLineEdit.text()
+        self.ms.settingsdict['custplot_ytitle'] = self.ytitle_QLineEdit.text()
+        self.ms.saveSettings()
