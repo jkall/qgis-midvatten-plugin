@@ -3,7 +3,7 @@
 /***************************************************************************
  midvsettings
                                  A part of the QGIS plugin Midvatten
- This part of the plugin handles plugin specific settings
+                                This part of the plugin handles plugin specific settings
                              -------------------
         begin                : 2011-10-18
         copyright            : (C) 2011 by joskal

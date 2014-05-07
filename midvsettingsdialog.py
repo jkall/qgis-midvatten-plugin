@@ -21,7 +21,7 @@ from functools import partial # only to get combobox signals to work
 from ui.midvsettingsdialog_ui import Ui_Dialog
 import locale
 import midvatten_utils as utils
-
+from definitions import midvatten_defs
 
 class midvsettingsdialog(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH THE SETTINGS DIALOG
     def __init__(self, parent, s_dict):
@@ -409,36 +409,7 @@ class midvsettingsdialog(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH TH
         myconnection = utils.dbconnection(self.database)
         if myconnection.connect2db() == True:
             cursor = myconnection.conn.cursor()
-            rs=cursor.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in('geom_cols_ref_sys',
-            'geometry_columns',
-            'geometry_columns_time',
-            'spatial_ref_sys',
-            'spatialite_history',
-            'vector_layers',
-            'views_geometry_columns',
-            'virts_geometry_columns',
-            'geometry_columns_auth',
-            'geometry_columns_fields_infos',
-            'geometry_columns_field_infos',
-            'geometry_columns_statistics',
-            'sql_statements_log',
-            'layer_statistics',
-            'sqlite_sequence',
-            'sqlite_stat1' ,
-            'views_layer_statistics',
-            'virts_layer_statistics',
-            'vector_layers_auth',
-            'vector_layers_field_infos',
-            'vector_layers_statistics',
-            'views_geometry_columns_auth',
-            'views_geometry_columns_field_infos',
-            'views_geometry_columns_statistics',
-            'virts_geometry_columns_auth',
-            'virts_geometry_columns_field_infos',
-            'virts_geometry_columns_statistics' ,
-            'geometry_columns',
-            'spatialindex',
-            'SpatialIndex')) ORDER BY tbl_name""" )  #SQL statement to get the relevant tables in the spatialite database
+            rs=cursor.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + midvatten_defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")  #SQL statement to get the relevant tables in the spatialite database
             self.ListOfTables.addItem('')
             self.ListOfTables_2.addItem('')
             self.ListOfTables_3.addItem('')

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>895</width>
-    <height>568</height>
+    <width>1062</width>
+    <height>644</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1811,7 +1811,7 @@
              </font>
             </property>
             <property name="text">
-             <string>Please note! Although xmin and xmax are dates, plotsqlite now fully supports both time series plots and xy scatter plots.</string>
+             <string>Please note! Although xmin and xmax are dates, both time series plots and xy scatter series can be plotted.</string>
             </property>
            </widget>
           </item>
@@ -1871,7 +1871,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>895</width>
+     <width>1062</width>
      <height>25</height>
     </rect>
    </property>

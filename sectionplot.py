@@ -612,7 +612,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         del data, npdata
         return LengthAlongTable
 
-    def saveSettings(self):# settingsdict is a dictionary belonging to instance midvatten. This is a quick-fix, should call parent method instead.
+    def saveSettings(self):# This is a quick-fix, should use the midvsettings class instead.
         QgsProject.instance().writeEntry("Midvatten",'secplotwlvltab', self.s_dict['secplotwlvltab'] )
         QgsProject.instance().writeEntry("Midvatten",'secplotdates', self.s_dict['secplotdates'] )
         QgsProject.instance().writeEntry("Midvatten",'secplottext', self.s_dict['secplottext'] )
