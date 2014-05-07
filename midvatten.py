@@ -701,7 +701,7 @@ class midvatten:
         try:
             self.customplot.activateWindow()
         except:
-            self.customplot = customplot.plotsqlitewindow()#self.iface as arg?
+            self.customplot = customplot.plotsqlitewindow(self.iface.mainWindow())#self.iface as arg?
 
     def setup(self):
         """Choose spatialite database and relevant table"""

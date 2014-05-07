@@ -37,19 +37,22 @@ import datetime
 import matplotlib.ticker as tick
 import midvatten_utils as utils
 from midvsettings import midvsettings
+from definitions import midvatten_defs
 
 customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'customplotdialog.ui'))[0]
 
 class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
-    def __init__(self):#, parent as second arg?
+    def __init__(self, parent):#, parent as second arg?
         self.ms = midvsettings()
         self.ms.loadSettings()
-        QtGui.QDialog.__init__(self)        
+        QtGui.QDialog.__init__(self, parent)        
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setupUi( self )#due to initialisation of Ui_MainWindow instance
         self.initUI()
         self.LoadTablesFromDB()
         self.LastSelections()#fill comboboxes etc with last selected values
+        #on close:
+        #del self.axes.collections[:]#this should delete all plot objects related to axes and hence not intefere with following tsplots
         
     def initUI(self):
         self.table_ComboBox_1.clear()  
@@ -72,9 +75,9 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.Redraw_pushButton.clicked.connect( self.refreshPlot )
         
         # Create a plot window with one single subplot
-        self.figure = plt.figure() 
-        self.axes = self.figure.add_subplot( 111 )
-        self.canvas = FigureCanvas( self.figure )
+        self.custplotfigure = plt.figure() 
+        self.axes = self.custplotfigure.add_subplot( 111 )
+        self.canvas = FigureCanvas( self.custplotfigure )
         self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot )
         lstActions = self.mpltoolbar.actions()
         self.mpltoolbar.removeAction( lstActions[ 7 ] )
@@ -149,25 +152,25 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 if not (filter1 == '' or filter1==' ') and not (filter2== '' or filter2==' '):
                     for item1 in filter1list:
                         for item2 in filter2list:
-                            sql = r""" select """ + unicode(self.xcol2) + """, """ + unicode(self.ycol2) + """ from """ + unicode(self.table2) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' and """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol2)
+                            sql = r""" select """ + unicode(self.xcol_ComboBox_2.currentText()) + """, """ + unicode(self.ycol_ComboBox_2.currentText()) + """ from """ + unicode(self.table_ComboBox_2.currentText()) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' and """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol_ComboBox_2.currentText())
                             self.plabels[i] = unicode(item1.text()) + """, """ + unicode(item2.text())
                             self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_2.currentText())
                             i += 1
                 elif not (filter1 == '' or filter1==' '):
                     for item1 in filter1list:
-                        sql = r""" select """ + unicode(self.xcol2) + """, """ + unicode(self.ycol2) + """ from """ + unicode(self.table2) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' order by """ + unicode(self.xcol2)
+                        sql = r""" select """ + unicode(self.xcol_ComboBox_2.currentText()) + """, """ + unicode(self.ycol_ComboBox_2.currentText()) + """ from """ + unicode(self.table_ComboBox_2.currentText()) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' order by """ + unicode(self.xcol_ComboBox_2.currentText())
                         self.plabels[i] = unicode(item1.text()) 
                         self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_2.currentText())
                         i += 1
                 elif not (filter2 == '' or filter2==' '):
                     for item2 in filter2list:
-                        sql = r""" select """ + unicode(self.xcol2) + """, """ + unicode(self.ycol2) + """ from """ + unicode(self.table2) + """ where """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol2)
+                        sql = r""" select """ + unicode(self.xcol_ComboBox_2.currentText()) + """, """ + unicode(self.ycol_ComboBox_2.currentText()) + """ from """ + unicode(self.table_ComboBox_2.currentText()) + """ where """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol_ComboBox_2.currentText())
                         self.plabels[i] = unicode(item2.text())
                         self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_2.currentText())
                         i += 1            
                 else:
-                    sql = r""" select """ + unicode(self.xcol2) + """, """ + unicode(self.ycol2) + """ from """ + unicode(self.table2) + """ order by """ + unicode(self.xcol2)
-                    self.plabels[i] = unicode(self.ycol2)+""", """+unicode(self.table2)
+                    sql = r""" select """ + unicode(self.xcol_ComboBox_2.currentText()) + """, """ + unicode(self.ycol_ComboBox_2.currentText()) + """ from """ + unicode(self.table_ComboBox_2.currentText()) + """ order by """ + unicode(self.xcol_ComboBox_2.currentText())
+                    self.plabels[i] = unicode(self.ycol2)+""", """+unicode(self.table_ComboBox_2.currentText())
                     self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_2.currentText())
                     i += 1
             
@@ -185,25 +188,25 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 if not (filter1 == '' or filter1==' ') and not (filter2== '' or filter2==' '):
                     for item1 in filter1list:
                         for item2 in filter2list:
-                            sql = r""" select """ + unicode(self.xcol3) + """, """ + unicode(self.ycol3) + """ from """ + unicode(self.table3) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' and """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol3)
+                            sql = r""" select """ + unicode(self.xcol_ComboBox_3.currentText()) + """, """ + unicode(self.ycol_ComboBox_3.currentText()) + """ from """ + unicode(self.table_ComboBox_3.currentText()) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' and """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol_ComboBox_3.currentText())
                             self.plabels[i] = unicode(item1.text()) + """, """ + unicode(item2.text())
                             self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_3.currentText())
                             i += 1
                 elif not (filter1 == '' or filter1==' '):
                     for item1 in filter1list:
-                        sql = r""" select """ + unicode(self.xcol3) + """, """ + unicode(self.ycol3) + """ from """ + unicode(self.table3) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' order by """ + unicode(self.xcol3)
+                        sql = r""" select """ + unicode(self.xcol_ComboBox_3.currentText()) + """, """ + unicode(self.ycol_ComboBox_3.currentText()) + """ from """ + unicode(self.table_ComboBox_3.currentText()) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' order by """ + unicode(self.xcol_ComboBox_3.currentText())
                         self.plabels[i] = unicode(item1.text()) 
                         self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_3.currentText())
                         i += 1
                 elif not (filter2 == '' or filter2==' '):
                     for item2 in filter2list:
-                        sql = r""" select """ + unicode(self.xcol3) + """, """ + unicode(self.ycol3) + """ from """ + unicode(self.table3) + """ where """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol3)
+                        sql = r""" select """ + unicode(self.xcol_ComboBox_3.currentText()) + """, """ + unicode(self.ycol_ComboBox_3.currentText()) + """ from """ + unicode(self.table_ComboBox_3.currentText()) + """ where """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol_ComboBox_3.currentText())
                         self.plabels[i] = unicode(item2.text())
                         self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_3.currentText())
                         i += 1            
                 else:
-                    sql = r""" select """ + unicode(self.xcol3) + """, """ + unicode(self.ycol3) + """ from """ + unicode(self.table3) + """ order by """ + unicode(self.xcol3)
-                    self.plabels[i] = unicode(self.ycol3)+""", """+unicode(self.table3)
+                    sql = r""" select """ + unicode(self.xcol_ComboBox_3.currentText()) + """, """ + unicode(self.ycol_ComboBox_3.currentText()) + """ from """ + unicode(self.table_ComboBox_3.currentText()) + """ order by """ + unicode(self.xcol_ComboBox_3.currentText())
+                    self.plabels[i] = unicode(self.ycol_ComboBox_3.currentText())+""", """+unicode(self.table_ComboBox_3.currentText())
                     self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_3.currentText())
                     i += 1
 
@@ -265,7 +268,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         elif FlagTimeXY == "XY" and plottype == "step-pre":
             self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-pre', linestyle='-', marker='None',c=np.random.rand(3,1),label=self.plabels[i]) 
         elif FlagTimeXY == "XY" and plottype == "step-post":
-            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-post', linestyle='-', marker='None',c=np.random.rand(3,1),abel=self.plabels[i]) 
+            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-post', linestyle='-', marker='None',c=np.random.rand(3,1),label=self.plabels[i]) 
         elif FlagTimeXY == "XY" and plottype == "line and cross":
             self.p[i], = self.axes.plot(numtime, table2.values,  MarkVar,markersize = 6, label=self.plabels[i])
         else: 
@@ -335,35 +338,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         if myconnection.connect2db() == True:
             # skapa en cursor
             curs = myconnection.conn.cursor()
-            rs=curs.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in('geom_cols_ref_sys',
-                'geometry_columns',
-                'geometry_columns_time',
-                'spatial_ref_sys',
-                'spatialite_history',
-                'vector_layers',
-                'views_geometry_columns',
-                'virts_geometry_columns',
-                'geometry_columns_auth',
-                'geometry_columns_fields_infos',
-                'geometry_columns_statistics',
-                'sql_statements_log',
-                'layer_statistics',
-                'sqlite_sequence',
-                'sqlite_stat1' ,
-                'views_layer_statistics',
-                'virts_layer_statistics',
-                'vector_layers_auth',
-                'vector_layers_field_infos',
-                'vector_layers_statistics',
-                'views_geometry_columns_auth',
-                'views_geometry_columns_field_infos',
-                'views_geometry_columns_statistics',
-                'virts_geometry_columns_auth',
-                'virts_geometry_columns_field_infos',
-                'virts_geometry_columns_statistics' ,
-                'geometry_columns',
-                'spatialindex',
-                'SpatialIndex')) ORDER BY tbl_name"""  )  #SQL statement to get the relevant tables in the spatialite database
+            rs=curs.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + midvatten_defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")  #SQL statement to get the relevant tables in the spatialite database
             #self.dbTables = {} 
             self.table_ComboBox_1.addItem('')
             self.table_ComboBox_2.addItem('')
@@ -497,7 +472,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         else:
             self.axes.set_ylim(min(self.spnMaxY.value(), self.spnMinY.value()),max(self.spnMaxY.value(), self.spnMinY.value()))            
         self.axes.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))#yaxis-format
-        self.figure.autofmt_xdate()#xaxis-format
+        self.custplotfigure.autofmt_xdate()#xaxis-format
         self.axes.grid(self.Grid_checkBox.isChecked() )#grid
         if not self.title_QLineEdit.text()=='':#title
             self.axes.set_title(self.title_QLineEdit.text())
@@ -524,8 +499,9 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         else:
             self.axes.legend_=None
 
-        self.figure.autofmt_xdate()
+        self.custplotfigure.autofmt_xdate()
         self.canvas.draw()
+        plt.close(self.custplotfigure)#this closes reference to self.custplotfigure 
 
     def storesettings(self):
         self.ms.settingsdict['custplot_table1'] = self.table_ComboBox_1.currentText()
