@@ -19,16 +19,15 @@ deprecated=False
 
 changelog=
         - Warning! This is an unstable experimental release
-        - Fix slow/erroneous creation of spatialite databases under splite 4 (InitSpatialMetadata(1))
-        - New feature _and_ database design: import of meteorological data into a new table "meteo" in database
-        - New feature for calculating average water flow from accumulated water volume
-        - Minor database design changes: now "w_levels"."level_masl" may be null and is no longer -999 by default
-        - New behaviour during imports - empty readings (real number) are from now on imported as null instead of zero
-        - Alternative backend handling included in code (tsplot2.py) - to avoid time series plots from blocking qgis on specific platform/backend combinations  - But this is not implemented sincce it prevents multiple plots
+        - New feature: custom plots!
         - New feature: Section plot (unstable)!
-        - Working on a new feature: custom plots!
+        - New feature for calculating average water flow from accumulated water volume
+        - New feature _and_ database design: import of meteorological data into a new table "meteo" in database
+        - Minor database design changes: now "w_levels"."level_masl" may be null and is no longer -999 by default
         - Working on a new feature (see code): Piper diagram!
+        - New behaviour during imports - empty readings (real number) are from now on imported as null instead of zero
         - minor html report changes
+        - Fix slow/erroneous creation of spatialite databases under splite 4 (InitSpatialMetadata(1))
         - a number of code cleanups and bug fixes
 
 ;for the new plugin repo

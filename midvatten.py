@@ -27,7 +27,6 @@ import resources  # Initialize Qt resources from file resources.py
 import os.path
 import sys
 from midvsettingsdialog import midvsettingsdialog
-#from tsplot2 import TimeSeriesPlot #On some platform/backend/graphics-combos this may be better to avoid pyplot plot windows from blocking the qgis window
 from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
@@ -617,8 +616,6 @@ class midvatten:
             if layer:
                 if utils.selection_check(layer) == 'ok':
                     dlg = TimeSeriesPlot(layer, self.ms.settingsdict)
-                    #self.dlg = TimeSeriesPlot(layer, self.ms.settingsdict)#when using tsplot2
-                    #self.dlg.show()#when using tsplot2
             else:
                 utils.pop_up_info("You have to select a layer first!")
         else:
@@ -712,21 +709,21 @@ class midvatten:
             self.ms.settingsdict['database'] = unicode(dlg.txtpath.text())    
             self.ms.settingsdict['tstable'] = unicode(dlg.ListOfTables.currentText())
             self.ms.settingsdict['tscolumn'] = unicode(dlg.ListOfColumns.currentText())
-            self.ms.settingsdict['tsdotmarkers'] = unicode(dlg.checkBoxDataPoints.checkState())
-            self.ms.settingsdict['tsstepplot'] = unicode(dlg.checkBoxStepPlot.checkState())
+            self.ms.settingsdict['tsdotmarkers'] = dlg.checkBoxDataPoints.checkState()
+            self.ms.settingsdict['tsstepplot'] = dlg.checkBoxStepPlot.checkState()
             self.ms.settingsdict['xytable']  = unicode(dlg.ListOfTables_2.currentText())
             self.ms.settingsdict['xy_xcolumn'] = unicode(dlg.ListOfColumns_2.currentText())
             self.ms.settingsdict['xy_y1column'] = unicode(dlg.ListOfColumns_3.currentText())
             self.ms.settingsdict['xy_y2column'] = unicode(dlg.ListOfColumns_4.currentText())
             self.ms.settingsdict['xy_y3column'] = unicode(dlg.ListOfColumns_5.currentText())
-            self.ms.settingsdict['xydotmarkers'] =  unicode(dlg.checkBoxDataPoints_2.checkState())
+            self.ms.settingsdict['xydotmarkers'] =  dlg.checkBoxDataPoints_2.checkState()
             self.ms.settingsdict['wqualtable']  = unicode(dlg.ListOfTables_WQUAL.currentText())
             self.ms.settingsdict['wqual_paramcolumn'] = unicode(dlg.ListOfColumns_WQUALPARAM.currentText())
             self.ms.settingsdict['wqual_valuecolumn'] = unicode(dlg.ListOfColumns_WQUALVALUE.currentText())
             self.ms.settingsdict['wqual_unitcolumn'] = unicode(dlg.ListOfColumns_WQUALUNIT.currentText())
             self.ms.settingsdict['wqual_sortingcolumn'] = unicode(dlg.ListOfColumns_WQUALSORTING.currentText())
             self.ms.settingsdict['stratigraphytable'] = unicode(dlg.ListOfTables_3.currentText())
-            self.ms.settingsdict['tabwidget'] = unicode(dlg.tabWidget.currentIndex())
+            self.ms.settingsdict['tabwidget'] = dlg.tabWidget.currentIndex()
             self.ms.saveSettings()
             self.ms.settingsareloaded = True
 
