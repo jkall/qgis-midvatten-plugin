@@ -67,7 +67,7 @@ class midvsettings():
             for (key, value) in self.settingsdict.items():        # For storing in project file, as Time Manager plugin
                 try: # write plugin settings to QgsProject # For storing in project file, as Time Manager plugin
                     QgsProject.instance().writeEntry("Midvatten",key, value ) # For storing in project file, as Time Manager plugin
-                    print "debug info; midvsettings is saving: " + key + " value: " + value#debug
+                    #print "debug info; midvsettings is saving: " + key + " value: " + value#debug
                 except TypeError: 
                     #utils.pop_up_info("Wrong type for "+key+"!\nType: "+str(type(value)))
                     print "debug info; midvsettings found that "+key+" had type: "+str(type(value))+" which is not appropriate"

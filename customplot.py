@@ -64,6 +64,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         #self.connect(self.table_ComboBox_1, QtCore.SIGNAL("currentIndexChanged(int)"), partial(self.Table1Changed))#currentIndexChanged caused unnecessary signals when scrolling in combobox
         self.connect(self.table_ComboBox_1, QtCore.SIGNAL("activated(int)"), partial(self.Table1Changed))  
         self.connect(self.Filter1_ComboBox_1, QtCore.SIGNAL("activated(int)"), partial(self.Filter1_1Changed))
+        #self.connect(self.Filter1_ComboBox_1, QtCore.SIGNAL("activated(int)"), partial(self.FilterChanged(1,1)))
         self.connect(self.Filter2_ComboBox_1, QtCore.SIGNAL("activated(int)"), partial(self.Filter2_1Changed)) 
         self.connect(self.table_ComboBox_2, QtCore.SIGNAL("activated(int)"), partial(self.Table2Changed)) 
         self.connect(self.Filter1_ComboBox_2, QtCore.SIGNAL("activated(int)"), partial(self.Filter1_2Changed))
@@ -274,7 +275,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         else: 
             self.p[i], = self.axes.plot(numtime, table2.values,  MarkVar,label=self.plabels[i]) 
 
-    def LastSelections(self):
+    def LastSelections(self):#set same selections as last plot
         #table1
         searchindex = self.table_ComboBox_1.findText(self.ms.settingsdict['custplot_table1'])
         if searchindex >= 0:
@@ -287,6 +288,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             if searchindex >= 0:
                 self.ycol_ComboBox_1.setCurrentIndex(searchindex)
         #table2
+        self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['custplot_tabwidget']))
         searchindex = self.table_ComboBox_2.findText(self.ms.settingsdict['custplot_table2'])
         if searchindex >= 0:
             self.table_ComboBox_2.setCurrentIndex(searchindex)
@@ -301,32 +303,101 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         searchindex = self.table_ComboBox_3.findText(self.ms.settingsdict['custplot_table3'])
         if searchindex >= 0:
             self.table_ComboBox_3.setCurrentIndex(searchindex)
-            self.Table2Changed()
+            self.Table3Changed()
             searchindex = self.xcol_ComboBox_3.findText(self.ms.settingsdict['custplot_xcol3'])
             if searchindex >= 0:
                 self.xcol_ComboBox_3.setCurrentIndex(searchindex)
             searchindex = self.ycol_ComboBox_3.findText(self.ms.settingsdict['custplot_ycol3'])
             if searchindex >= 0:
                 self.ycol_ComboBox_3.setCurrentIndex(searchindex)
-
+        #filtre1_1
+        searchindex = self.Filter1_ComboBox_1.findText(self.ms.settingsdict['custplot_filter1_1'])
+        if searchindex >= 0:
+            self.Filter1_ComboBox_1.setCurrentIndex(searchindex)
+            self.FilterChanged(1, 1)
+        #filtre2_1
+        searchindex = self.Filter2_ComboBox_1.findText(self.ms.settingsdict['custplot_filter2_1'])
+        if searchindex >= 0:
+            self.Filter2_ComboBox_1.setCurrentIndex(searchindex)
+            self.FilterChanged(2, 1)
+        #filtre1_2
+        searchindex = self.Filter1_ComboBox_2.findText(self.ms.settingsdict['custplot_filter1_2'])
+        if searchindex >= 0:
+            self.Filter1_ComboBox_2.setCurrentIndex(searchindex)
+            self.FilterChanged( 1, 2)
+        #filtre2_2
+        searchindex = self.Filter2_ComboBox_2.findText(self.ms.settingsdict['custplot_filter2_2'])
+        if searchindex >= 0:
+            self.Filter2_ComboBox_2.setCurrentIndex(searchindex)
+            self.FilterChanged(2, 2)
+        #filtre1_3
+        searchindex = self.Filter1_ComboBox_3.findText(self.ms.settingsdict['custplot_filter1_3'])
+        if searchindex >= 0:
+            self.Filter1_ComboBox_3.setCurrentIndex(searchindex)
+            self.FilterChanged(1, 3)
+        #filtre2_3
+        searchindex = self.Filter2_ComboBox_3.findText(self.ms.settingsdict['custplot_filter2_3'])
+        if searchindex >= 0:
+            self.Filter2_ComboBox_3.setCurrentIndex(searchindex)
+            self.FilterChanged(2, 3) 
+        #filtre1_1_selection
+        for index in xrange(self.Filter1_QListWidget_1.count()):
+            for item in self.ms.settingsdict['custplot_filter1_1_selection']:
+                if self.Filter1_QListWidget_1.item(index).text()==str(item):
+                     self.Filter1_QListWidget_1.item(index).setSelected(True)
+        #filtre2_1_selection
+        for index in xrange(self.Filter2_QListWidget_1.count()):
+            for item in self.ms.settingsdict['custplot_filter2_1_selection']:
+                if self.Filter2_QListWidget_1.item(index).text()==str(item):
+                     self.Filter2_QListWidget_1.item(index).setSelected(True)
+        #filtre1_2_selection
+        for index in xrange(self.Filter1_QListWidget_2.count()):
+            for item in self.ms.settingsdict['custplot_filter1_2_selection']:
+                if self.Filter1_QListWidget_2.item(index).text()==str(item):
+                     self.Filter1_QListWidget_2.item(index).setSelected(True)
+        #filtre2_2_selection
+        for index in xrange(self.Filter2_QListWidget_2.count()):
+            for item in self.ms.settingsdict['custplot_filter2_2_selection']:
+                if self.Filter2_QListWidget_2.item(index).text()==str(item):
+                     self.Filter2_QListWidget_2.item(index).setSelected(True)
+        #filtre1_3_selection
+        for index in xrange(self.Filter1_QListWidget_3.count()):
+            for item in self.ms.settingsdict['custplot_filter1_3_selection']:
+                if self.Filter1_QListWidget_3.item(index).text()==str(item):
+                     self.Filter1_QListWidget_3.item(index).setSelected(True)
+        #filtre2_3_selection
+        for index in xrange(self.Filter2_QListWidget_3.count()):
+            for item in self.ms.settingsdict['custplot_filter2_3_selection']:
+                if self.Filter2_QListWidget_3.item(index).text()==str(item):
+                     self.Filter2_QListWidget_3.item(index).setSelected(True)
+        #plottype1
+        searchindex = self.PlotType_comboBox_1.findText(self.ms.settingsdict['custplot_plottype1'])
+        if searchindex >= 0:
+            self.PlotType_comboBox_1.setCurrentIndex(searchindex)
+        #plottype2
+        searchindex = self.PlotType_comboBox_2.findText(self.ms.settingsdict['custplot_plottype2'])
+        if searchindex >= 0:
+            self.PlotType_comboBox_2.setCurrentIndex(searchindex)
+        #plottype3
+        searchindex = self.PlotType_comboBox_3.findText(self.ms.settingsdict['custplot_plottype3'])
+        if searchindex >= 0:
+            self.PlotType_comboBox_3.setCurrentIndex(searchindex)
+        #max time step, titles, grid, legend
         self.spnmaxtstep.setValue(self.ms.settingsdict['custplot_maxtstep'])
-
-        if self.ms.settingsdict['custplot_legend']==2:
-            self.Legend_checkBox.setChecked(True)
-        else:
-            self.Legend_checkBox.setChecked(False)
-
-        if self.ms.settingsdict['custplot_grid']==2:
-            self.Grid_checkBox.setChecked(True)
-        else:
-            self.Grid_checkBox.setChecked(False)
-
         if len(self.ms.settingsdict['custplot_title'])>0:
             self.title_QLineEdit.setText(self.ms.settingsdict['custplot_title'])
         if len(self.ms.settingsdict['custplot_xtitle'])>0:
             self.xtitle_QLineEdit.setText(self.ms.settingsdict['custplot_xtitle'])
         if len(self.ms.settingsdict['custplot_ytitle'])>0:
             self.ytitle_QLineEdit.setText(self.ms.settingsdict['custplot_ytitle'])
+        if self.ms.settingsdict['custplot_legend']==2:
+            self.Legend_checkBox.setChecked(True)
+        else:
+            self.Legend_checkBox.setChecked(False)
+        if self.ms.settingsdict['custplot_grid']==2:
+            self.Grid_checkBox.setChecked(True)
+        else:
+            self.Grid_checkBox.setChecked(False)
             
     def LoadTablesFromDB( self ):    # Open the SpatiaLite file to extract info about tables 
         self.table_ComboBox_1.clear()  
@@ -389,7 +460,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
     def Table1Changed(self):     #This method is called whenever table1 is changed
         # First, update combobox with columns
         self.clearthings(1)
-        self.ms.settingsdict['custplot_table1'] = self.table_ComboBox_1.currentText()
+        #self.ms.settingsdict['custplot_table1'] = self.table_ComboBox_1.currentText()
         self.PopulateComboBox('xcol_ComboBox_1', self.table_ComboBox_1.currentText())  # GeneralNote: For some reason it is not possible to send currentText with the SIGNAL-trigger
         self.PopulateComboBox('ycol_ComboBox_1', self.table_ComboBox_1.currentText())  # See GeneralNote
         self.PopulateComboBox('Filter1_ComboBox_1', self.table_ComboBox_1.currentText())  # See GeneralNote
@@ -398,7 +469,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
     def Table2Changed(self):     #This method is called whenever table2 is changed
         # First, update combobox with columns
         self.clearthings(2)
-        self.ms.settingsdict['custplot_table2'] = self.table_ComboBox_2.currentText()
+        #self.ms.settingsdict['custplot_table2'] = self.table_ComboBox_2.currentText()
         self.PopulateComboBox('xcol_ComboBox_2', self.table_ComboBox_2.currentText())  # GeneralNote: For some reason it is not possible to send currentText with the SIGNAL-trigger
         self.PopulateComboBox('ycol_ComboBox_2', self.table_ComboBox_2.currentText())  # See GeneralNote
         self.PopulateComboBox('Filter1_ComboBox_2', self.table_ComboBox_2.currentText())  # See GeneralNote
@@ -407,7 +478,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
     def Table3Changed(self):     #This method is called whenever table3 is changed
         # First, update combobox with columns
         self.clearthings(3)
-        self.ms.settingsdict['custplot_table2'] = self.table_ComboBox_3.currentText()
+        #self.ms.settingsdict['custplot_table2'] = self.table_ComboBox_3.currentText()
         self.PopulateComboBox('xcol_ComboBox_3', self.table_ComboBox_3.currentText())  # GeneralNote: For some reason it is not possible to send currentText with the SIGNAL-trigger
         self.PopulateComboBox('ycol_ComboBox_3', self.table_ComboBox_3.currentText())  # See GeneralNote
         self.PopulateComboBox('Filter1_ComboBox_3', self.table_ComboBox_3.currentText())  # See GeneralNote
@@ -420,36 +491,32 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             getattr(self, comboboxname).addItem('')
             for columnName in columns:
                 getattr(self, comboboxname).addItem(columnName)  # getattr is to combine a function and a string to a combined function
+
+    def FilterChanged(self, filterno, tabno):
+        TableCombobox = 'table_ComboBox_' + str(tabno)
+        FilterCombobox = 'Filter' + str(filterno) + '_ComboBox_' + str(tabno)
+        FilterQListWidget = 'Filter' + str(filterno) + '_QListWidget_' + str(tabno)
+        getattr(self,FilterQListWidget).clear()
+        if not getattr(self,FilterCombobox).currentText()=='':
+            self.PopulateFilterList(getattr(self,TableCombobox).currentText(),FilterQListWidget,getattr(self,FilterCombobox).currentText())
         
     def Filter1_1Changed(self):
-        self.Filter1_QListWidget_1.clear()
-        if not self.Filter1_ComboBox_1.currentText()=='':
-            self.PopulateFilterList(self.ms.settingsdict['custplot_table1'],'Filter1_QListWidget_1', self.Filter1_ComboBox_1.currentText())  # For some reason it is not possible to send currentText with the SIGNAL-trigger
-        
+        self.FilterChanged(1,1)
+    
     def Filter2_1Changed(self):
-        self.Filter2_QListWidget_1.clear()
-        if not self.Filter2_ComboBox_1.currentText()=='':
-            self.PopulateFilterList(self.ms.settingsdict['custplot_table1'],'Filter2_QListWidget_1', self.Filter2_ComboBox_1.currentText())  # For some reason it is not possible to send currentText with the SIGNAL-trigger
+        self.FilterChanged(2,1)
 
     def Filter1_2Changed(self):
-        self.Filter1_QListWidget_2.clear()
-        if not self.Filter1_ComboBox_2.currentText()=='':
-            self.PopulateFilterList(self.ms.settingsdict['custplot_table2'],'Filter1_QListWidget_2', self.Filter1_ComboBox_2.currentText())  
+        self.FilterChanged(1,2)
             
     def Filter2_2Changed(self):
-        self.Filter2_QListWidget_2.clear()
-        if not self.Filter2_ComboBox_2.currentText()=='':
-            self.PopulateFilterList(self.ms.settingsdict['custplot_table2'],'Filter2_QListWidget_2', self.Filter2_ComboBox_2.currentText())
+        self.FilterChanged(2,2)
 
     def Filter1_3Changed(self):
-        self.Filter1_QListWidget_3.clear()
-        if not self.Filter1_ComboBox_3.currentText()=='':
-            self.PopulateFilterList(self.ms.settingsdict['custplot_table3'],'Filter1_QListWidget_3', self.Filter1_ComboBox_3.currentText())
+        self.FilterChanged(1,3)
         
     def Filter2_3Changed(self):
-        self.Filter2_QListWidget_3.clear()
-        if not self.Filter2_ComboBox_3.currentText()=='':
-            self.PopulateFilterList(self.ms.settingsdict['custplot_table3'],'Filter2_QListWidget_3', self.Filter2_ComboBox_3.currentText())
+        self.FilterChanged(2,3)
                         
     def PopulateFilterList(self, table, QListWidgetname='', filtercolumn=None):
         sql = "select distinct " + unicode(filtercolumn) + " from " + table + " order by " + unicode(filtercolumn)
@@ -513,10 +580,38 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.ms.settingsdict['custplot_table3'] = unicode(self.table_ComboBox_3.currentText())
         self.ms.settingsdict['custplot_xcol3'] = unicode(self.xcol_ComboBox_3.currentText())
         self.ms.settingsdict['custplot_ycol3'] = unicode(self.ycol_ComboBox_3.currentText())
+        self.ms.settingsdict['custplot_filter1_1']=unicode(self.Filter1_ComboBox_1.currentText())
+        self.ms.settingsdict['custplot_filter2_1']=unicode(self.Filter2_ComboBox_1.currentText())
+        self.ms.settingsdict['custplot_filter1_2']=unicode(self.Filter1_ComboBox_2.currentText())
+        self.ms.settingsdict['custplot_filter2_2']=unicode(self.Filter2_ComboBox_2.currentText())
+        self.ms.settingsdict['custplot_filter1_3']=unicode(self.Filter1_ComboBox_3.currentText())
+        self.ms.settingsdict['custplot_filter2_3']=unicode(self.Filter2_ComboBox_3.currentText())
+        self.ms.settingsdict['custplot_filter1_1_selection']=[]
+        self.ms.settingsdict['custplot_filter2_1_selection']=[]
+        self.ms.settingsdict['custplot_filter1_2_selection']=[]
+        self.ms.settingsdict['custplot_filter2_2_selection']=[]
+        self.ms.settingsdict['custplot_filter1_3_selection']=[]
+        self.ms.settingsdict['custplot_filter2_3_selection']=[]
+        for item in self.Filter1_QListWidget_1.selectedItems(): 
+            self.ms.settingsdict['custplot_filter1_1_selection'].append(unicode(item.text()))
+        for item in self.Filter2_QListWidget_1.selectedItems(): 
+            self.ms.settingsdict['custplot_filter2_1_selection'].append(unicode(item.text()))
+        for item in self.Filter1_QListWidget_2.selectedItems(): 
+            self.ms.settingsdict['custplot_filter1_2_selection'].append(unicode(item.text()))
+        for item in self.Filter2_QListWidget_2.selectedItems(): 
+            self.ms.settingsdict['custplot_filter2_2_selection'].append(unicode(item.text()))
+        for item in self.Filter1_QListWidget_3.selectedItems(): 
+            self.ms.settingsdict['custplot_filter1_3_selection'].append(unicode(item.text()))
+        for item in self.Filter2_QListWidget_3.selectedItems(): 
+            self.ms.settingsdict['custplot_filter2_3_selection'].append(unicode(item.text()))
+        self.ms.settingsdict['custplot_plottype1']=unicode(self.PlotType_comboBox_1.currentText())
+        self.ms.settingsdict['custplot_plottype2']=unicode(self.PlotType_comboBox_2.currentText())
+        self.ms.settingsdict['custplot_plottype3']=unicode(self.PlotType_comboBox_3.currentText())
         self.ms.settingsdict['custplot_maxtstep'] = self.spnmaxtstep.value()
         self.ms.settingsdict['custplot_legend']=self.Legend_checkBox.checkState()
         self.ms.settingsdict['custplot_grid']=self.Grid_checkBox.checkState()
         self.ms.settingsdict['custplot_title'] = unicode(self.title_QLineEdit.text())
         self.ms.settingsdict['custplot_xtitle'] = unicode(self.xtitle_QLineEdit.text())
         self.ms.settingsdict['custplot_ytitle'] = unicode(self.ytitle_QLineEdit.text())
+        self.ms.settingsdict['custplot_tabwidget'] = self.tabWidget.currentIndex()
         self.ms.saveSettings()
