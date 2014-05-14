@@ -46,7 +46,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplotdrillstop':'',
             'secplotbw':2,
             'secplotlocation':0,
-            'settingslocation':2,
+            'settingslocation':1,
             'custplot_tabwidget':0,
             'custplot_table1':'w_levels',
             'custplot_table2':'',
