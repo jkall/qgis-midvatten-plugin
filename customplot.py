@@ -36,14 +36,13 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as Naviga
 import datetime
 import matplotlib.ticker as tick
 import midvatten_utils as utils
-from midvsettings import midvsettings
 from definitions import midvatten_defs
 
 customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'customplotdialog.ui'))[0]
 
 class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
-    def __init__(self, parent):#, parent as second arg?
-        self.ms = midvsettings()
+    def __init__(self, parent, msettings):#, parent as second arg?
+        self.ms = msettings
         self.ms.loadSettings()
         QtGui.QDialog.__init__(self, parent)        
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)

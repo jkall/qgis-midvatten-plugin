@@ -62,13 +62,17 @@ class midvsettings():
         self.settingsdict = self.createsettingsdict()    # calling for the method that defines an empty dictionary of settings
         self.saveSettings()        # the empty settings dictionary is stored
 
-    def saveSettings(self):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
+    def saveSettings(self,key = ''):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
         if not self.readingSettings:
-            for (key, value) in self.settingsdict.items():        # For storing in project file, as Time Manager plugin
-                try: # write plugin settings to QgsProject # For storing in project file, as Time Manager plugin
-                    QgsProject.instance().writeEntry("Midvatten",key, value ) # For storing in project file, as Time Manager plugin
-                    #print "debug info; midvsettings is saving: " + key + " value: " + value#debug
+            if key =='': #if no argument, then save all settings according to dictionary
+                for (key, value) in self.settingsdict.items():        
+                    try: # write plugin settings to QgsProject
+                        QgsProject.instance().writeEntry("Midvatten",key, value ) 
+                    except TypeError: 
+                        print "debug info; midvsettings found that "+key+" had type: "+str(type(value))+" which is not appropriate"
+            else:#otherwise only save specific setting as per given key
+                try:
+                    QgsProject.instance().writeEntry("Midvatten",key, self.settingsdict[key]) 
                 except TypeError: 
-                    #utils.pop_up_info("Wrong type for "+key+"!\nType: "+str(type(value)))
-                    print "debug info; midvsettings found that "+key+" had type: "+str(type(value))+" which is not appropriate"
+                    print "debug info; midvsettings found that "+key+" had type: "+str(type(self.settingsdict[key]))+" which is not appropriate"
         

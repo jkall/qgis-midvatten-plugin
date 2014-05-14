@@ -45,6 +45,8 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplottext' : '',
             'secplotdrillstop':'',
             'secplotbw':2,
+            'secplotlocation':0,
+            'settingslocation':2,
             'custplot_tabwidget':0,
             'custplot_table1':'w_levels',
             'custplot_table2':'',
@@ -75,7 +77,14 @@ def settingsdict():    #These are the default settings, they shall not be change
             'custplot_filter2_3_selection':[],
             'custplot_plottype1':'line',
             'custplot_plottype2':'line',
-            'custplot_plottype3':'line'
+            'custplot_plottype3':'line',
+            'piper_cl':'Klorid, Cl',
+            'piper_hco3':'Alkalinitet, HCO3',
+            'piper_so4':'Sulfat, SO4',
+            'piper_na':'Natrium, Na',
+            'piper_k':'Kalium, K',
+            'piper_ca':'Kalcium, Ca',
+            'piper_mg':'Magnesium, Mg'
             }
     return dictionary
     

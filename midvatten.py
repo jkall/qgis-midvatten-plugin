@@ -26,7 +26,6 @@ import qgis.utils
 import resources  # Initialize Qt resources from file resources.py
 import os.path
 import sys
-from midvsettingsdialog import midvsettingsdialog
 from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
@@ -37,6 +36,7 @@ from definitions import midvatten_defs
 from sectionplot import sectionplot
 import customplot
 from midvsettings import midvsettings
+import midvsettingsdialog
 
 class midvatten:
     def __init__(self, iface): # Might need revision of variables and method for loading default variables
@@ -220,8 +220,8 @@ class midvatten:
         menuBar.addMenu(self.menu)
 
         # QGIS iface connections
-        self.iface.projectRead.connect(self.ms.loadSettings)
-        self.iface.newProjectCreated.connect(self.ms.resetSettings)
+        self.iface.projectRead.connect(self.ProjectOpened)
+        self.iface.newProjectCreated.connect(self.ProjectCreated)
         
     def unload(self):    
         # Remove the plugin menu items and icons
@@ -669,13 +669,13 @@ class midvatten:
             msg = 'You must select at least two objects in the obs_points layer'
         
         if msg:#if something went wrong
-            self.iface.messageBar().pushMessage("Error",msg, 2)
+            self.iface.messageBar().pushMessage("Error",msg, 2,duration =15)
         else:#otherwise go
             try:
-                self.myplot.doit(self.ms.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
+                self.myplot.doit(self.ms,OBSID,SectionLineLayer)
             except:
                 self.myplot = sectionplot(self.iface.mainWindow(), self.iface)
-                self.myplot.doit(self.ms.settingsdict,OBSID,SectionLineLayer)#second last argument is bar width in percent of xmax-xmin
+                self.myplot.doit(self.ms,OBSID,SectionLineLayer)
 
     def PlotXY(self):            
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot xy data, then load settings from project file
@@ -692,40 +692,39 @@ class midvatten:
 
     def PlotSQLite(self):
         if self.ms.settingsdict['database'] == '':
-            self.iface.messageBar().pushMessage("Error","A database is needed to create custom plots. Please check your Midvatten Settings. Reset if needed.", 2)
+            self.iface.messageBar().pushMessage("Error","A database is needed to create custom plots. Please check your Midvatten Settings. Reset if needed.", 2,duration=15)
             return
 
         try:
             self.customplot.activateWindow()
         except:
-            self.customplot = customplot.plotsqlitewindow(self.iface.mainWindow())#self.iface as arg?
+            self.customplot = customplot.plotsqlitewindow(self.iface.mainWindow(), self.ms)#self.iface as arg?
+
+    def ProjectCreated(self):
+        self.ms.resetSettings()
+        print "did reset"
+        try:#if midvsettingsdock is shown, then it must be reset
+            self.midvsettingsdialog.activateWindow()
+            self.midvsettingsdialog.ClearEverything()
+            print "found an open midvsettingsdock, did reset"    #debug        
+        except:
+            pass
+        
+    def ProjectOpened(self):
+        try:#if midvsettingsdock is shown, then it must be reloaded
+            self.midvsettingsdialog.activateWindow()
+            self.midvsettingsdialog.ClearEverything()
+            self.ms.loadSettings()
+            if len(self.ms.settingsdict['database'])>0:
+                self.midvsettingsdialog.LoadAndSelectLastSettings()
+        except:
+            pass
 
     def setup(self):
-        """Choose spatialite database and relevant table"""
-        if self.ms.settingsareloaded == False:    # If the first thing the user does is to check settings, then load settings from project file
-            self.ms.loadSettings()    
-        dlg = midvsettingsdialog(self.iface.mainWindow(), self.ms.settingsdict)  # dlg is an instance of midvsettings
-        if dlg.exec_() == QDialog.Accepted:      # When the settins dialog is closed, all settings are stored in the dictionary
-            self.ms.settingsdict['database'] = unicode(dlg.txtpath.text())    
-            self.ms.settingsdict['tstable'] = unicode(dlg.ListOfTables.currentText())
-            self.ms.settingsdict['tscolumn'] = unicode(dlg.ListOfColumns.currentText())
-            self.ms.settingsdict['tsdotmarkers'] = dlg.checkBoxDataPoints.checkState()
-            self.ms.settingsdict['tsstepplot'] = dlg.checkBoxStepPlot.checkState()
-            self.ms.settingsdict['xytable']  = unicode(dlg.ListOfTables_2.currentText())
-            self.ms.settingsdict['xy_xcolumn'] = unicode(dlg.ListOfColumns_2.currentText())
-            self.ms.settingsdict['xy_y1column'] = unicode(dlg.ListOfColumns_3.currentText())
-            self.ms.settingsdict['xy_y2column'] = unicode(dlg.ListOfColumns_4.currentText())
-            self.ms.settingsdict['xy_y3column'] = unicode(dlg.ListOfColumns_5.currentText())
-            self.ms.settingsdict['xydotmarkers'] =  dlg.checkBoxDataPoints_2.checkState()
-            self.ms.settingsdict['wqualtable']  = unicode(dlg.ListOfTables_WQUAL.currentText())
-            self.ms.settingsdict['wqual_paramcolumn'] = unicode(dlg.ListOfColumns_WQUALPARAM.currentText())
-            self.ms.settingsdict['wqual_valuecolumn'] = unicode(dlg.ListOfColumns_WQUALVALUE.currentText())
-            self.ms.settingsdict['wqual_unitcolumn'] = unicode(dlg.ListOfColumns_WQUALUNIT.currentText())
-            self.ms.settingsdict['wqual_sortingcolumn'] = unicode(dlg.ListOfColumns_WQUALSORTING.currentText())
-            self.ms.settingsdict['stratigraphytable'] = unicode(dlg.ListOfTables_3.currentText())
-            self.ms.settingsdict['tabwidget'] = dlg.tabWidget.currentIndex()
-            self.ms.saveSettings()
-            self.ms.settingsareloaded = True
+        try:
+            self.midvsettingsdialog.activateWindow()
+        except:
+            self.midvsettingsdialog = midvsettingsdialog.midvsettingsdialogdock(self.iface.mainWindow(),self.iface, self.ms)#self.iface as arg?
 
     def updatecoord(self):
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to update coordinates, then load settings from project file    

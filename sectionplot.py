@@ -42,23 +42,27 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         PyQt4.QtGui.QDockWidget.__init__(self, parent1) #, PyQt4.QtCore.Qt.WindowFlags(PyQt4.QtCore.Qt.WA_DeleteOnClose))
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         #Ui_SecPlotDock.__init__(self)
-        #self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
 
-        self.location = PyQt4.QtCore.Qt.BottomDockWidgetArea#should be loaded from settings instead
         self.parent = parent1
         self.iface = iface1
+        #self.location = PyQt4.QtCore.Qt.Qt.BottomDockWidgetArea#should be loaded from settings instead
+        #self.location = int(self.ms.settingsdict['secplotlocation'])
         self.connect(self, PyQt4.QtCore.SIGNAL("dockLocationChanged(Qt::DockWidgetArea)"), self.setLocation)#not really implemented yet
 
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.setWindowTitle("Midvatten plugin - section plot") # Set the title for the dialog
         self.initUI()
-        #self.showed = False
 
-    def doit(self,s_dict,OBSIDtuplein,SectionLineLayer):
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
-        self.s_dict=s_dict
+    def doit(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
+        #show the user this may take a long time...
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))
+        #settings must be recieved here since plot windows may stay open (hence sectionplot instance activated) while a new qgis project is opened or midv settings are chaned 
+        self.ms = msettings
+        #Draw the widget
+        self.iface.addDockWidget(self.ms.settingsdict['secplotlocation'], self)
+        self.iface.mapCanvas().setRenderFlag(True)        
+
         self.FillComboBoxes()        # Comboboxes are filled with relevant information
-
         self.show()
         #class variables
         self.geology_txt = []
@@ -106,9 +110,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.mpltoolbar.removeAction( lstActions[ 7 ] )
         self.mplplotlayout.addWidget( self.canvas )
         self.mplplotlayout.addWidget( self.mpltoolbar )
-        #Draw the widget
-        self.iface.addDockWidget(self.location, self)
-        self.iface.mapCanvas().setRenderFlag(True)
 
     def FillComboBoxes(self): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
@@ -175,9 +176,9 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         textitems=['','geology','geoshort','capacity','development','comment']
         for item in textitems:
             self.textcolComboBox.addItem(item)
-        self.drillstoplineEdit.setText(self.s_dict['secplotdrillstop'])
+        self.drillstoplineEdit.setText(self.ms.settingsdict['secplotdrillstop'])
         #FILL THE LIST OF DATES AS WELL
-        for datum in self.s_dict['secplotdates']:
+        for datum in self.ms.settingsdict['secplotdates']:
             #print 'loading ' + datum#debug
             self.datetimetextEdit.append(datum)
 
@@ -187,31 +188,31 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
         DATES - SETTINGS AND PLOT ETC
         """
-        if len(str(self.s_dict['secplotwlvltab'])):#If there is a last selected wlvsl
+        if len(str(self.ms.settingsdict['secplotwlvltab'])):#If there is a last selected wlvsl
             notfound=0 
             i=0
             while notfound==0:    # Loop until the last selected tstable is found
                 self.wlvltableComboBox.setCurrentIndex(i)
-                if unicode(self.wlvltableComboBox.currentText()) == unicode(self.s_dict['secplotwlvltab']):#The index count stops when last selected table is found #MacOSX fix1
+                if unicode(self.wlvltableComboBox.currentText()) == unicode(self.ms.settingsdict['secplotwlvltab']):#The index count stops when last selected table is found #MacOSX fix1
                     notfound=1
                 elif i> len(self.wlvltableComboBox):
                     notfound=1
                 i = i + 1
-        if len(str(self.s_dict['secplottext'])):#If there is a last selected field for annotation in graph
+        if len(str(self.ms.settingsdict['secplottext'])):#If there is a last selected field for annotation in graph
             notfound=0 
             i=0
             while notfound==0:    # Loop until the last selected tstable is found
                 self.textcolComboBox.setCurrentIndex(i)
-                if unicode(self.textcolComboBox.currentText()) == unicode(self.s_dict['secplottext']):#The index count stops when last selected table is found #MacOSX fix1
+                if unicode(self.textcolComboBox.currentText()) == unicode(self.ms.settingsdict['secplottext']):#The index count stops when last selected table is found #MacOSX fix1
                     notfound=1
                 elif i> len(self.textcolComboBox):
                     notfound=1
                 i = i + 1
-        if self.s_dict['secplotbw'] !=0:
-            self.barwidthdoubleSpinBox.setValue(self.s_dict['secplotbw'])            
+        if self.ms.settingsdict['secplotbw'] !=0:
+            self.barwidthdoubleSpinBox.setValue(self.ms.settingsdict['secplotbw'])            
         else:
             self.barwidthdoubleSpinBox.setValue(2)
-        self.drillstoplineEdit.setText(self.s_dict['secplotdrillstop']) 
+        self.drillstoplineEdit.setText(self.ms.settingsdict['secplotdrillstop']) 
         
     def GetPlotData(self):
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
@@ -226,10 +227,10 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.Hatches = defs.PlotHatchDict()
         self.Colors = defs.PlotColorDict()
 
-        #self.s_dict['secplotbw'] = self.barwidthdoubleSpinBox.value()
+        #self.ms.settingsdict['secplotbw'] = self.barwidthdoubleSpinBox.value()
         ##fix Floating Bar Width in percents of xmax - xmin
         #xmax, xmin =float(max(self.LengthAlong)), float(min(self.LengthAlong))
-        #self.barwidth = (self.s_dict['secplotbw']/100.0)*(xmax -xmin)
+        #self.barwidth = (self.ms.settingsdict['secplotbw']/100.0)*(xmax -xmin)
         
         for Typ in self.PlotTypes:#Adding a plot for each "geoshort" that is identified
             #print Typ.encode('latin-1')#debug
@@ -292,20 +293,20 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             pass
         self.secax.clear()
         #load user settings from the ui
-        self.s_dict['secplotwlvltab'] = unicode(self.wlvltableComboBox.currentText())
+        self.ms.settingsdict['secplotwlvltab'] = unicode(self.wlvltableComboBox.currentText())
         temporarystring = self.datetimetextEdit.toPlainText() #this needs some cleanup
-        self.s_dict['secplotdates']=temporarystring.split()
-        self.s_dict['secplottext'] = self.textcolComboBox.currentText()
-        self.s_dict['secplotbw'] = self.barwidthdoubleSpinBox.value()
-        self.s_dict['secplotdrillstop'] = self.drillstoplineEdit.text()
+        self.ms.settingsdict['secplotdates']=temporarystring.split()
+        self.ms.settingsdict['secplottext'] = self.textcolComboBox.currentText()
+        self.ms.settingsdict['secplotbw'] = self.barwidthdoubleSpinBox.value()
+        self.ms.settingsdict['secplotdrillstop'] = self.drillstoplineEdit.text()
         #fix Floating Bar Width in percents of xmax - xmin
         xmax, xmin =float(max(self.LengthAlong)), float(min(self.LengthAlong))
-        self.barwidth = (self.s_dict['secplotbw']/100.0)*(xmax -xmin)
+        self.barwidth = (self.ms.settingsdict['secplotbw']/100.0)*(xmax -xmin)
         
         #PLOT ALL MAIN GEOLOGY TYPES AS SINGLE FLOATING BAR SERIES
         self.PlotGeology()
         #WRITE TEXT BY ALL GEOLOGY TYPES, ADJACENT TO FLOATING BAR SERIES
-        if len(self.s_dict['secplottext'])>0:
+        if len(self.ms.settingsdict['secplottext'])>0:
             self.WriteAnnotation()
         #PLOT Water Levels
         self.PlotWaterLevel()
@@ -326,13 +327,13 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
     def WriteAnnotation(self):
         #print len(self.x_txt)#debug
-        if self.s_dict['secplottext'] == 'geology':
+        if self.ms.settingsdict['secplottext'] == 'geology':
             annotate_txt = self.geology_txt
-        elif self.s_dict['secplottext'] == 'geoshort':
+        elif self.ms.settingsdict['secplottext'] == 'geoshort':
             annotate_txt = self.geoshort_txt
-        elif self.s_dict['secplottext'] == 'capacity':
+        elif self.ms.settingsdict['secplottext'] == 'capacity':
             annotate_txt = self.capacity_txt
-        elif self.s_dict['secplottext'] == 'development':
+        elif self.ms.settingsdict['secplottext'] == 'development':
             annotate_txt = self.development_txt
         else:
             annotate_txt = self.comment_txt
@@ -340,8 +341,8 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.annotationtext = self.secax.annotate(o,xy=(m,n),xytext=(5,0), textcoords='offset points',ha = 'left', va = 'center',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.6))#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
 
     def PlotWaterLevel(self):
-        if self.s_dict['secplotdates'] and len(self.s_dict['secplotdates'])>0:    # Adding a plot for each water level date identified
-            for datum in self.s_dict['secplotdates']:
+        if self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0:    # Adding a plot for each water level date identified
+            for datum in self.ms.settingsdict['secplotdates']:
                 WL = []
                 x_wl=[]
                 k=0
@@ -613,13 +614,14 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         return LengthAlongTable
 
     def saveSettings(self):# This is a quick-fix, should use the midvsettings class instead.
-        QgsProject.instance().writeEntry("Midvatten",'secplotwlvltab', self.s_dict['secplotwlvltab'] )
-        QgsProject.instance().writeEntry("Midvatten",'secplotdates', self.s_dict['secplotdates'] )
-        QgsProject.instance().writeEntry("Midvatten",'secplottext', self.s_dict['secplottext'] )
-        QgsProject.instance().writeEntry("Midvatten",'secplotdrillstop', self.s_dict['secplotdrillstop'] )
-        QgsProject.instance().writeEntry("Midvatten",'secplotbw', self.s_dict['secplotbw'] )
+        self.ms.saveSettings('secplotwlvltab')
+        self.ms.saveSettings('secplotdates')
+        self.ms.saveSettings('secplottext')
+        self.ms.saveSettings('secplotdrillstop')
+        self.ms.saveSettings('secplotbw')
+        self.ms.saveSettings('secplotlocation')
 
     def setLocation(self):#not ready
-        self.location=self.parent.dockWidgetArea(self)
-        #should be stored in settings
-        #print self.location#
+        dockarea = self.parent.dockWidgetArea(self)
+        self.ms.settingsdict['secplotlocation']=dockarea
+        #print dockarea.value() #debug

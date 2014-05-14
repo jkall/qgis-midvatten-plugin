@@ -2,9 +2,10 @@
 """
 /***************************************************************************
  midvsettingsdialog
-                                 A part of the QGIS plugin Midvatten
- This part of the plugin lets the user select a SQLite Database, some tables and
- columns with data of interest
+ A part of the QGIS plugin Midvatten
+ 
+ This part of the plugin handles the user interaction with midvsettingsdock and propagates any changes to midvattensettings
+ 
                              -------------------
         begin                : 2011-10-18
         copyright            : (C) 2011 by joskal
@@ -13,400 +14,322 @@
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from PyQt4 import uic
 
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency  
 import os.path
 import qgis.utils
 from functools import partial # only to get combobox signals to work
-from ui.midvsettingsdialog_ui import Ui_Dialog
+#from ui.midvsettingsdialog_ui import Ui_Dialog
 import locale
 import midvatten_utils as utils
 from definitions import midvatten_defs
 
-class midvsettingsdialog(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH THE SETTINGS DIALOG
-    def __init__(self, parent, s_dict):
-        QDialog.__init__(self)  
-        self.setupUi(self) # Required by Qt4 to initialize the UI
+midvsettingsdock_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'midvsettingsdock.ui'))[0]
 
-        self.setWindowTitle("Midvatten toolset settings") # Set the title for the dialog
-        self.btnAccept = self.buttonBox.button(QDialogButtonBox.Ok)
-        self.btnAccept.setEnabled( True )  # It  must be possbile to store empty values as well
+class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS IS ONLY TO DEAL WITH THE SETTINGS DIALOG
+    def __init__(self, parent,iface,msettings):
+        self.parent = parent
+        self.iface=iface
+        #midvsettings instance
+        self.ms = msettings
+        self.ms.loadSettings()
+        #initiate the dockwidget
+        QDockWidget.__init__(self, self.parent)        
+        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.connect(self, SIGNAL("dockLocationChanged(Qt::DockWidgetArea)"), self.setLocation)#not really implemented yet        
+        self.setupUi( self )#Required by Qt4 to initialize the UI
+        self.initUI()
 
-        self.s_dict = s_dict    # The dictionary with all settings
+    def initUI(self):        
+        # The settings dialog is cleared, filled with relevant information and the last selected settings are preset
+        self.ClearEverything()
+        if len(self.ms.settingsdict['database'])>0:
+            self.LoadAndSelectLastSettings()
+        # SIGNALS
+        self.connect(self.btnSetDB, SIGNAL("clicked()"), self.selectFile)
+        #tab TS
+        self.connect(self.ListOfTables, SIGNAL("activated(int)"), partial(self.TSTableUpdated)) 
+        self.connect(self.ListOfColumns, SIGNAL("activated(int)"), partial(self.ChangedListOfColumns)) 
+        self.connect(self.checkBoxDataPoints,SIGNAL("stateChanged(int)"),self.ChangedCheckBoxDataPoints)
+        self.connect(self.checkBoxStepPlot,SIGNAL("stateChanged(int)"),self.ChangedCheckBoxStepPlot)
+        #tab XY
+        self.connect(self.ListOfTables_2, SIGNAL("activated(int)"), partial(self.XYTableUpdated))
+        self.connect(self.ListOfColumns_2, SIGNAL("activated(int)"), partial(self.ChangedListOfColumns2)) 
+        self.connect(self.ListOfColumns_3, SIGNAL("activated(int)"), partial(self.ChangedListOfColumns3)) 
+        self.connect(self.ListOfColumns_4, SIGNAL("activated(int)"), partial(self.ChangedListOfColumns4)) 
+        self.connect(self.ListOfColumns_5, SIGNAL("activated(int)"), partial(self.ChangedListOfColumns5)) 
+        self.connect(self.checkBoxDataPoints_2,SIGNAL("stateChanged(int)"),self.ChangedCheckBoxDataPoints2)
+        #tab wqualreport
+        self.connect(self.ListOfTables_WQUAL, SIGNAL("activated(int)"), partial(self.WQUALTableUpdated))  
+        self.connect(self.ListOfColumns_WQUALPARAM, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualParam)) 
+        self.connect(self.ListOfColumns_WQUALVALUE, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualValue))
+        self.connect(self.ListOfColumns_WQUALUNIT, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualUnit))         
+        self.connect(self.ListOfColumns_WQUALSORTING, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualSorting))                 
+        #tab stratigraphy
+        self.connect(self.ListOfTables_3, SIGNAL("activated(int)"), partial(self.StratigraphyTableUpdated))  
+        #tab piper
+        self.connect(self.paramCl, SIGNAL("activated(int)"), partial(self.ChangedParamCl)) 
+        self.connect(self.paramHCO3, SIGNAL("activated(int)"), partial(self.ChangedParamHCO3)) 
+        self.connect(self.paramSO4, SIGNAL("activated(int)"), partial(self.ChangedParamSO4)) 
+        self.connect(self.paramNa, SIGNAL("activated(int)"), partial(self.ChangedParamNa)) 
+        self.connect(self.paramK, SIGNAL("activated(int)"), partial(self.ChangedParamK)) 
+        self.connect(self.paramCa, SIGNAL("activated(int)"), partial(self.ChangedParamCa)) 
+        self.connect(self.paramMg, SIGNAL("activated(int)"), partial(self.ChangedParamMg))         
 
-        # Some  instance helper variables
-        self.database = '' # a string is stored whenever len(s_dict['database']), see below
-        self.dbTables = {} # the list is filled with databasetables whenever len(s_dict['database']), see below
+        #Draw the widget
+        self.iface.addDockWidget(self.ms.settingsdict['settingslocation'], self)
+        self.iface.mapCanvas().setRenderFlag(True)
 
-        # The settings dialog is cleared, filled with relevant information and then the last settings are selected
+    def ChangedCheckBoxDataPoints(self):
+        self.ms.settingsdict['tsdotmarkers']=self.checkBoxDataPoints.checkState()
+    
+    def ChangedCheckBoxDataPoints2(self):
+        self.ms.settingsdict['xydotmarkers']=self.checkBoxDataPoints_2.checkState()
+                
+    def ChangedCheckBoxStepPlot(self):
+        self.ms.settingsdict['tsstepplot']=self.ChangedCheckBoxStepPlot.checkState()
+    
+    def ChangedListOfColumns(self):
+        self.ms.settingsdict['tscolumn']=self.ListOfColumns.currentText()
+        self.ms.saveSettings('tscolumn')
+
+    def ChangedListOfColumns2(self):
+        self.ms.settingsdict['xy_xcolumn']=self.ListOfColumns_2.currentText()
+        self.ms.saveSettings('xy_xcolumn')
+
+    def ChangedListOfColumns3(self):
+        self.ms.settingsdict['xy_y1column']=self.ListOfColumns_3.currentText()
+        self.ms.saveSettings('xy_y1column')
+        
+    def ChangedListOfColumns4(self):
+        self.ms.settingsdict['xy_y2column']=self.ListOfColumns_4.currentText()
+        self.ms.saveSettings('xy_y2column')
+
+    def ChangedListOfColumns5(self):
+        self.ms.settingsdict['xy_y3column']=self.ListOfColumns_5.currentText()
+        self.ms.saveSettings('xy_y3column')
+                
+    def ChangedListOfColumnsWQualParam(self):
+        self.ms.settingsdict['wqual_paramcolumn']=self.ListOfColumns_WQUALPARAM.currentText()
+        self.ms.saveSettings('wqual_paramcolumn')
+                
+    def ChangedListOfColumnsWQualValue(self):
+        self.ms.settingsdict['wqual_valuecolumn']=self.ListOfColumns_WQUALVALUE.currentText()
+        self.ms.saveSettings('wqual_valuecolumn')        
+
+    def ChangedListOfColumnsWQualUnit(self):
+        self.ms.settingsdict['wqual_unitcolumn']=self.ListOfColumns_WQUALUNIT.currentText()
+        self.ms.saveSettings('wqual_unitcolumn')
+
+    def ChangedListOfColumnsWQualSorting(self):
+        self.ms.settingsdict['wqual_sortingcolumn']=self.ListOfColumns_WQUALSORTING.currentText()
+        self.ms.saveSettings('wqual_sortingcolumn')
+
+    def ChangedParamCl(self):
+        self.ms.settingsdict['piper_cl']=self.paramCl.currentText()
+        self.ms.saveSettings('piper_cl')
+
+    def ChangedParamHCO3(self):
+        self.ms.settingsdict['piper_hco3']=self.paramHCO3.currentText()
+        self.ms.saveSettings('piper_hco3')
+
+    def ChangedParamSO4(self):
+        self.ms.settingsdict['piper_so4']=self.paramSO4.currentText()
+        self.ms.saveSettings('piper_so4')
+
+    def ChangedParamNa(self):
+        self.ms.settingsdict['piper_na']=self.paramNa.currentText()
+        self.ms.saveSettings('piper_na')
+
+    def ChangedParamK(self):
+        self.ms.settingsdict['piper_k']=self.paramK.currentText()
+        self.ms.saveSettings('piper_k')
+
+    def ChangedParamCa(self):
+        self.ms.settingsdict['piper_ca']=self.paramCa.currentText()
+        self.ms.saveSettings('piper_ca')
+
+    def ChangedParamMg(self):
+        self.ms.settingsdict['piper_mg']=self.paramMg.currentText()
+        self.ms.saveSettings('piper_mg')
+
+    def ClearColumnLists(self):
+        self.ListOfColumns.clear()
+        self.ListOfColumns_2.clear()
+        self.ListOfColumns_3.clear()
+        self.ListOfColumns_4.clear()
+        self.ListOfColumns_5.clear()
+        self.ListOfColumns_WQUALPARAM.clear()
+        self.ListOfColumns_WQUALVALUE.clear()
+        self.ListOfColumns_WQUALUNIT.clear()
+        self.ListOfColumns_WQUALSORTING.clear()
+
+    def ClearEverything(self):
+        self.txtpath.setText('')
+        self.ClearTableLists()
+        self.ClearPiperParams()
+        
+    def ClearTableLists(self):
         self.ListOfTables.clear()    
         self.ListOfTables_2.clear()    
         self.ListOfTables_3.clear()
         self.ListOfTables_WQUAL.clear()
 
-        self.tabWidget.setCurrentIndex(int(self.s_dict['tabwidget']))# widget is opened with the last choosen tab #MacOSX fix1
+    def ClearPiperParams(self):
+        self.paramCl.clear()
+        self.paramHCO3.clear()
+        self.paramSO4.clear()
+        self.paramNa.clear()
+        self.paramK.clear()
+        self.paramCa.clear()
+        self.paramMg.clear()
 
-        if len(self.s_dict['database'])>0:    # If there is a stored database, show it and fill the table-comboboxes with a list of all tables #MacOSX fix1
-            self.database = self.s_dict['database'] #MacOSX fix1
-            #print "found db in project file, printing o ui"#debug
-            self.txtpath.setText(self.database)
-            self.loadTablesFromDB()        # All ListOfTables are filled with relevant information
+    def ColumnsToComboBox(self, comboboxname='', table=None):
+        getattr(self, comboboxname).clear()
+        """This method fills comboboxes with columns for selected tool and table"""
+        columns = self.LoadColumnsFromTable(table)    # Load all columns into a list 'columns'
+        if len(columns)>0:    # Transfer information from list 'columns' to the combobox
+            getattr(self, comboboxname).addItem('')
+            for columnName in columns:
+                getattr(self, comboboxname).addItem(columnName)  # getattr is to combine a function and a string to a combined function
 
-        if len(str(self.s_dict['tstable'])):#If there is a last selected tstable. #MacOSX fix1
-            notfound=0 
-            i=0
-            while notfound==0:    # Loop until the last selected tstable is found
-                self.ListOfTables.setCurrentIndex(i)
-                if unicode(self.ListOfTables.currentText()) == unicode(self.s_dict['tstable']):#The index count stops when last selected table is found #MacOSX fix1
-                    notfound=1
-                    self.TSTableUpdated()        # Fill the given combobox with columns from the given table and also perform a sanity check of table
-                    if len(self.s_dict['tscolumn']):#If there is a last selected tsColumn #MacOSX fix1
-                        notfound2=0 
-                        j=0
-                        while notfound2==0:    # loop until the last selected tscolumn is found
-                            self.ListOfColumns.setCurrentIndex(j)
-                            if unicode(self.ListOfColumns.currentText()) == unicode(self.s_dict['tscolumn']):# index count stops when column found #MacOSX fix1
-                                notfound2=1
-                            elif j> len(self.ListOfColumns):
-                                notfound2=1
-                            j = j + 1
-                elif i> len(self.ListOfTables):
-                    notfound=1
-                i = i + 1
-            
-        if self.s_dict['tsdotmarkers']==2:#If the TSPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
-            self.checkBoxDataPoints.setChecked(True)
-        else:
-            self.checkBoxDataPoints.setChecked(False)
-        if self.s_dict['tsstepplot']==2: #If the TSPlot stepplot checkbox was checked last time it will be so now #MacOSX fix1
-            self.checkBoxStepPlot.setChecked(True)
-        else:
-            self.checkBoxStepPlot.setChecked(False)
+    def LoadAndSelectLastSettings(self):
+        if os.path.isfile( self.ms.settingsdict['database'] ):#absolute path
+            self.txtpath.setText(self.ms.settingsdict['database'])
+            self.loadTablesFromDB(self.ms.settingsdict['database'])        # All ListOfTables are filled with relevant information
+            self.LoadDistinctPiperParams(self.ms.settingsdict['database'])
 
-        if len(self.s_dict['xytable']):#If there is a last selected xytable #MacOSX fix1
-            notfound=0 
-            i=0
-            while notfound==0: #looping through ListOfTables_2 looking for last selected xytable
-                self.ListOfTables_2.setCurrentIndex(i)
-                if unicode(self.ListOfTables_2.currentText()) == unicode(self.s_dict['xytable']):    #when last selected xytable found, it is selected in list and a lot of columns is searced for #MacOSX fix1
-                    notfound=1
-                    self.XYTableUpdated()    # Fill the given combobox with columns from the given table and performs a test
-                    if len(self.s_dict['xy_xcolumn']):# Show the last selected xyplot x-column in the ListOfColumns_2 #MacOSX fix1
-                        notfound2=0 
-                        j=0
-                        while notfound2==0:
-                            self.ListOfColumns_2.setCurrentIndex(j)
-                            if unicode(self.ListOfColumns_2.currentText()) == unicode(self.s_dict['xy_xcolumn']):#MacOSX fix1
-                                notfound2=1
-                            elif j> len(self.ListOfColumns_2):
-                                notfound2=1
-                            j = j + 1
-                    if len(self.s_dict['xy_y1column']):# Show the last selected xyplot y1-column in the ListOfColumns_3 #MacOSX fix1
-                        notfound2=0 
-                        j=0
-                        while notfound2==0:
-                            self.ListOfColumns_3.setCurrentIndex(j)
-                            if unicode(self.ListOfColumns_3.currentText()) == unicode(self.s_dict['xy_y1column']): #MacOSX fix1
-                                notfound2=1
-                            elif j> len(self.ListOfColumns_3):
-                                notfound2=1
-                            j = j + 1
-                    if len(self.s_dict['xy_y2column']):# Show the last selected xyplot y2-column in the ListOfColumns_4 #MacOSX fix1
-                        notfound2=0 
-                        j=0
-                        while notfound2==0:
-                            self.ListOfColumns_4.setCurrentIndex(j)
-                            if unicode(self.ListOfColumns_4.currentText()) == unicode(self.s_dict['xy_y2column']):#MacOSX fix1
-                                notfound2=1
-                            elif j> len(self.ListOfColumns_4):
-                                notfound2=1
-                            j = j + 1
-                    if len(self.s_dict['xy_y3column']):#MacOSX fix1
-                        notfound2=0 
-                        j=0
-                        while notfound2==0:
-                            self.ListOfColumns_5.setCurrentIndex(j)
-                            if unicode(self.ListOfColumns_5.currentText()) == unicode(self.s_dict['xy_y3column']):#MacOSX fix1
-                                notfound2=1
-                            elif j> len(self.ListOfColumns_5):
-                                notfound2=1
-                            j = j + 1
-                elif i> len(self.ListOfTables_2):
-                    notfound=1
-                i = i + 1
-
-        if self.s_dict['xydotmarkers']==2:# If the XYPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
-            self.checkBoxDataPoints_2.setChecked(True)
-        else:
-            self.checkBoxDataPoints_2.setChecked(False)
-                
-        if len(self.s_dict['stratigraphytable']):#If there is a last selected stratigraphytable, then it is selected again in the combobox ListOfTables #MacOSX fix1
-            notfound=0 
-            i=0
-            while notfound==0:
-                self.ListOfTables_3.setCurrentIndex(i)
-                if unicode(self.ListOfTables_3.currentText()) == unicode(self.s_dict['stratigraphytable']):#MacOSX fix1
-                    self.StratigraphyTableUpdated()        # Perform a sanity check of the table
-                    notfound=1
-                elif i> len(self.ListOfTables_3):
-                    notfound=1
-                i = i + 1
-                
-        if len(self.s_dict['wqualtable']):# If there is a last selected table, then it is selected again in the combobox ListOfTables #MacOSX fix1
-            notfound=0 
-            i=0
-            while notfound==0:
-                self.ListOfTables_WQUAL.setCurrentIndex(i)
-                if unicode(self.ListOfTables_WQUAL.currentText()) == unicode(self.s_dict['wqualtable']):#MacOSX fix1
-                    notfound=1
-                    self.WQUALTableUpdated()    # Fill the given combobox with columns from the given table and performs a test
-                    if len(self.s_dict['wqual_paramcolumn']):#MacOSX fix1
-                        notfound2=0 
-                        j=0
-                        while notfound2==0:
-                            self.ListOfColumns_WQUALPARAM.setCurrentIndex(j)
-                            if unicode(self.ListOfColumns_WQUALPARAM.currentText()) == unicode(self.s_dict['wqual_paramcolumn']):#MacOSX fix1
-                                notfound2=1
-                            elif j> len(self.ListOfColumns_WQUALPARAM):
-                                notfound2=1
-                            j = j + 1
-                    if len(self.s_dict['wqual_valuecolumn']):# Show the last selected xyplot y2-column in the ListOfColumns_4 #MacOSX fix1
-                        notfound2=0 
-                        j=0
-                        while notfound2==0:
-                            self.ListOfColumns_WQUALVALUE.setCurrentIndex(j)
-                            if unicode(self.ListOfColumns_WQUALVALUE.currentText()) == unicode(self.s_dict['wqual_valuecolumn']):#MacOSX fix1
-                                notfound2=1
-                            elif j> len(self.ListOfColumns_WQUALVALUE):
-                                notfound2=1
-                            j = j + 1
-                    if len(self.s_dict['wqual_unitcolumn']):#MacOSX fix1
-                        notfound2=0 
-                        j=0
-                        while notfound2==0:
-                            self.ListOfColumns_WQUALUNIT.setCurrentIndex(j)
-                            if unicode(self.ListOfColumns_WQUALUNIT.currentText()) == unicode(self.s_dict['wqual_unitcolumn']):#MacOSX fix1
-                                notfound2=1
-                            elif j> len(self.ListOfColumns_WQUALUNIT):
-                                notfound2=1
-                            j = j + 1
-                    if len(self.s_dict['wqual_sortingcolumn']):# Show the last selected xyplot y3-column in the ListOfColumns_5 #MacOSX fix1
-                        notfound2=0 
-                        j=0
-                        while notfound2==0:
-                            self.ListOfColumns_WQUALSORTING.setCurrentIndex(j)
-                            if unicode(self.ListOfColumns_WQUALSORTING.currentText()) == unicode(self.s_dict['wqual_sortingcolumn']): #MacOSX fix1
-                                notfound2=1
-                            elif j> len(self.ListOfColumns_WQUALSORTING):
-                                notfound2=1
-                            j = j + 1
-                elif i> len(self.ListOfTables_WQUAL):
-                    notfound=1
-                i = i + 1
-                
-        # SIGNALS
-        self.connect(self.btnSetDB, SIGNAL("clicked()"), self.selectFile)
-        # whenever Time Series Table is changed, the column-combobox must be updated and TableCheck must be performed (function partial due to problems with currentindexChanged and Combobox)
-        self.connect(self.ListOfTables, SIGNAL("currentIndexChanged(int)"), partial(self.TSTableUpdated)) 
-         # whenever XY Table is changed, the columns-comboboxes must be updated (function partial due to problems with currentindexChanged and Combobox)
-        self.connect(self.ListOfTables_2, SIGNAL("currentIndexChanged(int)"), partial(self.XYTableUpdated))  
-        self.connect(self.ListOfTables_3, SIGNAL("activated(int)"), partial(self.StratigraphyTableUpdated))  
-        self.connect(self.ListOfTables_WQUAL, SIGNAL("currentIndexChanged(int)"), partial(self.WQUALTableUpdated))  
-        QObject.connect( self.buttonBox, SIGNAL( "accepted()" ), self.accept)
-        QObject.connect( self.buttonBox, SIGNAL( "rejected()" ), self.reject)
-    
-    def selectFile(self):
-        """ Open a dialog to locate the sqlite file and some more..."""        
-        path = QFileDialog.getOpenFileName(None,str("Select database:"),"*.sqlite")
-        if path: #Only get new db name if not cancelling the FileDialog
-            self.database = path #
-            print "selected this file " + self.database#debug
-        else:#debug
-            print "cancelled and still using database path " + self.database #debug
-        self.openDBFile()
-
-    def openDBFile( self ):
-        """ Open the SpatiaLite file to extract info about tables 
-            and populate the table-QComboBoxes with all the tables"""
-        if os.path.isfile( self.database ):#absolute path
-            self.txtpath.setText( self.database)
-            print "this is the database to be opened " + self.database
-            self.ListOfTables.clear()
-            self.ListOfTables_2.clear()
-            self.ListOfTables_3.clear()
-            self.ListOfTables_WQUAL.clear()
-            self.ListOfColumns.clear()
-            self.ListOfColumns_2.clear()
-            self.ListOfColumns_3.clear()
-            self.ListOfColumns_4.clear()
-            self.ListOfColumns_5.clear()
-            self.ListOfColumns_WQUALPARAM.clear()
-            self.ListOfColumns_WQUALVALUE.clear()
-            self.ListOfColumns_WQUALUNIT.clear()
-            self.ListOfColumns_WQUALSORTING.clear()
-            self.loadTablesFromDB()
-
-            if len(unicode(self.s_dict['tstable'])):#If there is a last selected tstable. #MacOSX fix1
+            #TS plot settings
+            if len(str(self.ms.settingsdict['tstable'])):#If there is a last selected tstable. #MacOSX fix1
                 notfound=0 
                 i=0
                 while notfound==0:    # Loop until the last selected tstable is found
                     self.ListOfTables.setCurrentIndex(i)
-                    if unicode(self.ListOfTables.currentText()) == unicode(self.s_dict['tstable']):#The index count stops when last selected table is found #MacOSX fix1
+                    if unicode(self.ListOfTables.currentText()) == unicode(self.ms.settingsdict['tstable']):#The index count stops when last selected table is found #MacOSX fix1
                         notfound=1
                         self.TSTableUpdated()        # Fill the given combobox with columns from the given table and also perform a sanity check of table
-                        if len(self.s_dict['tscolumn']):#If there is a last selected tsColumn #MacOSX fix1
-                            notfound2=0 
-                            j=0
-                            while notfound2==0:    # loop until the last selected tscolumn is found
-                                self.ListOfColumns.setCurrentIndex(j)
-                                if unicode(self.ListOfColumns.currentText()) == unicode(self.s_dict['tscolumn']):# index count stops when column found #MacOSX fix1
-                                    notfound2=1
-                                elif j> len(self.ListOfColumns):
-                                    notfound2=1
-                                j = j + 1
+                        searchindex = self.ListOfColumns.findText(self.ms.settingsdict['tscolumn'])
+                        if searchindex >= 0:
+                            self.ListOfColumns.setCurrentIndex(searchindex)
                     elif i> len(self.ListOfTables):
                         notfound=1
                     i = i + 1
                 
-            if self.s_dict['tsdotmarkers']==2:#If the TSPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
+            if self.ms.settingsdict['tsdotmarkers']==2:#If the TSPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
                 self.checkBoxDataPoints.setChecked(True)
             else:
                 self.checkBoxDataPoints.setChecked(False)
-            if self.s_dict['tsstepplot']==2: #If the TSPlot stepplot checkbox was checked last time it will be so now #MacOSX fix1
+            if self.ms.settingsdict['tsstepplot']==2: #If the TSPlot stepplot checkbox was checked last time it will be so now #MacOSX fix1
                 self.checkBoxStepPlot.setChecked(True)
             else:
                 self.checkBoxStepPlot.setChecked(False)
 
-            if len(self.s_dict['xytable']):#If there is a last selected xytable #MacOSX fix1
+            #XY plot settings
+            if len(self.ms.settingsdict['xytable']):#If there is a last selected xytable #MacOSX fix1
                 notfound=0 
                 i=0
                 while notfound==0: #looping through ListOfTables_2 looking for last selected xytable
                     self.ListOfTables_2.setCurrentIndex(i)
-                    if unicode(self.ListOfTables_2.currentText()) == unicode(self.s_dict['xytable']):    #when last selected xytable found, it is selected in list and a lot of columns is searced for #MacOSX fix1
+                    if unicode(self.ListOfTables_2.currentText()) == unicode(self.ms.settingsdict['xytable']):    #when last selected xytable found, it is selected in list and a lot of columns is searced for #MacOSX fix1
                         notfound=1
                         self.XYTableUpdated()    # Fill the given combobox with columns from the given table and performs a test
-                        if len(self.s_dict['xy_xcolumn']):# Show the last selected xyplot x-column in the ListOfColumns_2 #MacOSX fix1
-                            notfound2=0 
-                            j=0
-                            while notfound2==0:
-                                self.ListOfColumns_2.setCurrentIndex(j)
-                                if unicode(self.ListOfColumns_2.currentText()) == unicode(self.s_dict['xy_xcolumn']):#MacOSX fix1
-                                    notfound2=1
-                                elif j> len(self.ListOfColumns_2):
-                                    notfound2=1
-                                j = j + 1
-                        if len(self.s_dict['xy_y1column']):# Show the last selected xyplot y1-column in the ListOfColumns_3 #MacOSX fix1
-                            notfound2=0 
-                            j=0
-                            while notfound2==0:
-                                self.ListOfColumns_3.setCurrentIndex(j)
-                                if unicode(self.ListOfColumns_3.currentText()) == unicode(self.s_dict['xy_y1column']): #MacOSX fix1
-                                    notfound2=1
-                                elif j> len(self.ListOfColumns_3):
-                                    notfound2=1
-                                j = j + 1
-                        if len(self.s_dict['xy_y2column']):# Show the last selected xyplot y2-column in the ListOfColumns_4 #MacOSX fix1
-                            notfound2=0 
-                            j=0
-                            while notfound2==0:
-                                self.ListOfColumns_4.setCurrentIndex(j)
-                                if unicode(self.ListOfColumns_4.currentText()) == unicode(self.s_dict['xy_y2column']):#MacOSX fix1
-                                    notfound2=1
-                                elif j> len(self.ListOfColumns_4):
-                                    notfound2=1
-                                j = j + 1
-                        if len(self.s_dict['xy_y3column']):#MacOSX fix1
-                            notfound2=0 
-                            j=0
-                            while notfound2==0:
-                                self.ListOfColumns_5.setCurrentIndex(j)
-                                if unicode(self.ListOfColumns_5.currentText()) == unicode(self.s_dict['xy_y3column']):#MacOSX fix1
-                                    notfound2=1
-                                elif j> len(self.ListOfColumns_5):
-                                    notfound2=1
-                                j = j + 1
+                        searchindex = self.ListOfColumns_2.findText(self.ms.settingsdict['xy_xcolumn'])
+                        if searchindex >= 0:
+                            self.ListOfColumns_2.setCurrentIndex(searchindex)
+                        searchindex = self.ListOfColumns_3.findText(self.ms.settingsdict['xy_y1column'])
+                        if searchindex >= 0:
+                            self.ListOfColumns_3.setCurrentIndex(searchindex)
+                        searchindex = self.ListOfColumns_4.findText(self.ms.settingsdict['xy_y2column'])
+                        if searchindex >= 0:
+                            self.ListOfColumns_4.setCurrentIndex(searchindex)
+                        searchindex = self.ListOfColumns_5.findText(self.ms.settingsdict['xy_y3column'])
+                        if searchindex >= 0:
+                            self.ListOfColumns_5.setCurrentIndex(searchindex)
                     elif i> len(self.ListOfTables_2):
                         notfound=1
                     i = i + 1
 
-            if self.s_dict['xydotmarkers']==2:# If the XYPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
+            if self.ms.settingsdict['xydotmarkers']==2:# If the XYPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
                 self.checkBoxDataPoints_2.setChecked(True)
             else:
                 self.checkBoxDataPoints_2.setChecked(False)
-                
-            if len(self.s_dict['stratigraphytable']):#If there is a last selected stratigraphytable, then it is selected again in the combobox ListOfTables #MacOSX fix1
-                notfound=0 
-                i=0
-                while notfound==0:
-                    self.ListOfTables_3.setCurrentIndex(i)
-                    if unicode(self.ListOfTables_3.currentText()) == unicode(self.s_dict['stratigraphytable']):#MacOSX fix1
-                        self.StratigraphyTableUpdated()        # Perform a sanity check of the table
-                        notfound=1
-                    elif i> len(self.ListOfTables_3):
-                        notfound=1
-                    i = i + 1
-                
-            if len(self.s_dict['wqualtable']):# If there is a last selected table, then it is selected again in the combobox ListOfTables #MacOSX fix1
-                notfound=0 
-                i=0
-                while notfound==0:
-                    self.ListOfTables_WQUAL.setCurrentIndex(i)
-                    if unicode(self.ListOfTables_WQUAL.currentText()) == unicode(self.s_dict['wqualtable']):#MacOSX fix1
-                        notfound=1
-                        self.WQUALTableUpdated()    # Fill the given combobox with columns from the given table and performs a test
-                        if len(self.s_dict['wqual_paramcolumn']):#MacOSX fix1
-                            notfound2=0 
-                            j=0
-                            while notfound2==0:
-                                self.ListOfColumns_WQUALPARAM.setCurrentIndex(j)
-                                if unicode(self.ListOfColumns_WQUALPARAM.currentText()) == unicode(self.s_dict['wqual_paramcolumn']):#MacOSX fix1
-                                    notfound2=1
-                                elif j> len(self.ListOfColumns_WQUALPARAM):
-                                    notfound2=1
-                                j = j + 1
-                        if len(self.s_dict['wqual_valuecolumn']):# Show the last selected xyplot y2-column in the ListOfColumns_4 #MacOSX fix1
-                            notfound2=0 
-                            j=0
-                            while notfound2==0:
-                                self.ListOfColumns_WQUALVALUE.setCurrentIndex(j)
-                                if unicode(self.ListOfColumns_WQUALVALUE.currentText()) == unicode(self.s_dict['wqual_valuecolumn']):#MacOSX fix1
-                                    notfound2=1
-                                elif j> len(self.ListOfColumns_WQUALVALUE):
-                                    notfound2=1
-                                j = j + 1
-                        if len(self.s_dict['wqual_unitcolumn']):#MacOSX fix1
-                            notfound2=0 
-                            j=0
-                            while notfound2==0:
-                                self.ListOfColumns_WQUALUNIT.setCurrentIndex(j)
-                                if unicode(self.ListOfColumns_WQUALUNIT.currentText()) == unicode(self.s_dict['wqual_unitcolumn']):#MacOSX fix1
-                                    notfound2=1
-                                elif j> len(self.ListOfColumns_WQUALUNIT):
-                                    notfound2=1
-                                j = j + 1
-                        if len(self.s_dict['wqual_sortingcolumn']):# Show the last selected xyplot y3-column in the ListOfColumns_5 #MacOSX fix1
-                            notfound2=0 
-                            j=0
-                            while notfound2==0:
-                                self.ListOfColumns_WQUALSORTING.setCurrentIndex(j)
-                                if unicode(self.ListOfColumns_WQUALSORTING.currentText()) == unicode(self.s_dict['wqual_sortingcolumn']): #MacOSX fix1
-                                    notfound2=1
-                                elif j> len(self.ListOfColumns_WQUALSORTING):
-                                    notfound2=1
-                                j = j + 1
-                    elif i> len(self.ListOfTables_WQUAL):
-                        notfound=1
-                    i = i + 1
+            
+            #Stratigraphy settings
+            searchindex = self.ListOfTables_3.findText(self.ms.settingsdict['stratigraphytable'])
+            if searchindex >= 0:
+                self.ListOfTables_3.setCurrentIndex(searchindex)
 
-    def loadTablesFromDB(self): # This method populates all table-comboboxes with the tables inside the database
+            #Water Quality Reports settings
+            searchindexouter = self.ListOfTables_WQUAL.findText(self.ms.settingsdict['wqualtable'])
+            if searchindexouter >= 0:
+                self.ListOfTables_WQUAL.setCurrentIndex(searchindexouter)
+                self.WQUALTableUpdated()
+                #and then check all possible last selected columns for parameters, values etc.
+                searchindex = self.ListOfColumns_WQUALPARAM.findText(self.ms.settingsdict['wqual_paramcolumn'])
+                if searchindex >= 0:
+                    self.ListOfColumns_WQUALPARAM.setCurrentIndex(searchindex)
+                searchindex = self.ListOfColumns_WQUALVALUE.findText(self.ms.settingsdict['wqual_valuecolumn'])
+                if searchindex >= 0:
+                    self.ListOfColumns_WQUALVALUE.setCurrentIndex(searchindex)
+                searchindex = self.ListOfColumns_WQUALUNIT.findText(self.ms.settingsdict['wqual_unitcolumn'])
+                if searchindex >= 0:
+                    self.ListOfColumns_WQUALUNIT.setCurrentIndex(searchindex)
+                searchindex = self.ListOfColumns_WQUALSORTING.findText(self.ms.settingsdict['wqual_sortingcolumn'])
+                if searchindex >= 0:
+                    self.ListOfColumns_WQUALSORTING.setCurrentIndex(searchindex)
+
+            #piper diagram settings
+            searchindex = self.paramCl.findText(self.ms.settingsdict['piper_cl'])
+            if searchindex >= 0:
+                self.paramCl.setCurrentIndex(searchindex)
+            searchindex = self.paramHCO3.findText(self.ms.settingsdict['piper_hco3'])
+            if searchindex >= 0:
+                self.paramHCO3.setCurrentIndex(searchindex)
+            searchindex = self.paramSO4.findText(self.ms.settingsdict['piper_so4'])
+            if searchindex >= 0:
+                self.paramSO4.setCurrentIndex(searchindex)
+            searchindex = self.paramNa.findText(self.ms.settingsdict['piper_na'])
+            if searchindex >= 0:
+                self.paramNa.setCurrentIndex(searchindex)
+            searchindex = self.paramK.findText(self.ms.settingsdict['piper_k'])
+            if searchindex >= 0:
+                self.paramK.setCurrentIndex(searchindex)
+            searchindex = self.paramCa.findText(self.ms.settingsdict['piper_ca'])
+            if searchindex >= 0:
+                self.paramCa.setCurrentIndex(searchindex)
+            searchindex = self.paramMg.findText(self.ms.settingsdict['piper_mg'])
+            if searchindex >= 0:
+                self.paramMg.setCurrentIndex(searchindex)
+
+            # finally, set dockwidget to last choosen tab
+            self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['tabwidget']))
+        else:
+            self.iface.messageBar().pushMessage("Warning","Could not recover Midvatten settings. You will have to reset.", 1,duration=5)
+
+    def LoadColumnsFromTable(self, table=''):
+        """ This method returns a list with all the columns in the table"""
+        if len(table)>0 and len(self.ms.settingsdict['database'])>0:            # Should not be needed since the function never should be called without existing table...
+            myconnection = utils.dbconnection(self.ms.settingsdict['database'])
+            if myconnection.connect2db() == True:
+                curs = myconnection.conn.cursor()
+                sql = r"""SELECT * FROM '"""
+                sql += str(table)
+                sql += """'"""     
+                rs = curs.execute(sql)  #Send the SQL statement to get the columns in the table            
+                columns = {} 
+                columns = [tuple[0] for tuple in curs.description]
+                rs.close()
+                myconnection.closedb()# then close the database         
+        else:
+            columns = {}
+        return columns        # This method returns a list with all the columns in the table
+         
+    def loadTablesFromDB(self,db): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
-        # start with cleaning comboboxes before filling with new entries
-        self.ListOfTables.clear()    
-        self.ListOfTables_2.clear()    
-        self.ListOfTables_3.clear()    
-        self.ListOfTables_WQUAL.clear()    
+        # start with cleaning comboboxes before filling with new entries   
 
-        myconnection = utils.dbconnection(self.database)
+        myconnection = utils.dbconnection(db)#self.ms.settingsdict['database'])
         if myconnection.connect2db() == True:
             cursor = myconnection.conn.cursor()
             rs=cursor.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + midvatten_defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")  #SQL statement to get the relevant tables in the spatialite database
@@ -421,42 +344,85 @@ class midvsettingsdialog(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH TH
                 self.ListOfTables_3.addItem(row[0])
                 self.ListOfTables_WQUAL.addItem(row[0])
             rs.close()
+            myconnection.closedb()# then close the database          
+
+    def LoadDistinctPiperParams(self,db):
+        self.ClearPiperParams()
+        myconnection = utils.dbconnection(db)#self.ms.settingsdict['database'])
+        if myconnection.connect2db() == True:
+            cursor = myconnection.conn.cursor()
+            rs=cursor.execute(r"""SELECT DISTINCT parameter FROM w_qual_lab ORDER BY parameter""")  #SQL statement to get all unique parameter names
+            self.paramCl.addItem('')
+            self.paramHCO3.addItem('')
+            self.paramSO4.addItem('')
+            self.paramNa.addItem('')
+            self.paramK.addItem('')
+            self.paramCa.addItem('')
+            self.paramMg.addItem('')
+            for row in cursor:
+                self.paramCl.addItem(row[0])
+                self.paramHCO3.addItem(row[0])
+                self.paramSO4.addItem(row[0])
+                self.paramNa.addItem(row[0])
+                self.paramK.addItem(row[0])
+                self.paramCa.addItem(row[0])
+                self.paramMg.addItem(row[0])
+            rs.close()
             myconnection.closedb()# then close the database
-        else:
-            self.database = ''
-            self.txtpath.setText(self.database)
-            self.ListOfTables.clear()    
-            self.ListOfTables_2.clear()    
-            self.ListOfTables_3.clear()
-            self.ListOfTables_WQUAL.clear()            
 
-    def ColumnsToComboBox(self, comboboxname='', table=None):
-        getattr(self, comboboxname).clear()
-        """This method fills comboboxes with columns for selected tool and table"""
-        columns = self.LoadColumnsFromTable(table)    # Load all columns into a list 'columns'
-        if len(columns)>0:    # Transfer information from list 'columns' to the combobox
-            getattr(self, comboboxname).addItem('')
-            for columnName in columns:
-                getattr(self, comboboxname).addItem(columnName)  # getattr is to combine a function and a string to a combined function
+    def PiperClUpdated(self):
+        self.ms.settingsdict['piper_cl']= unicode(self.paramCl.currentText())
+        self.ms.saveSettings('piper_cl')#save this specific setting
 
-    def XYColumnsToComboBox(self, table=None):
-        """This method fills comboboxes with columns for xyplot"""
-        self.ListOfColumns_2.clear()
-        self.ListOfColumns_3.clear()
-        self.ListOfColumns_4.clear()
-        self.ListOfColumns_5.clear()
-        columns = self.LoadColumnsFromTable(table)    # Load all columns into a list (dict?) 'columns'
-        if len(columns):    # Transfer information from list 'columns' to the combobox
-            self.ListOfColumns_2.addItem('')
-            self.ListOfColumns_3.addItem('')
-            self.ListOfColumns_4.addItem('')
-            self.ListOfColumns_5.addItem('')
-            for columnName in columns:
-                self.ListOfColumns_2.addItem(columnName)  
-                self.ListOfColumns_3.addItem(columnName)  
-                self.ListOfColumns_4.addItem(columnName)  
-                self.ListOfColumns_5.addItem(columnName)  
+    def PiperHCO3Updated(self):
+        self.ms.settingsdict['piper_hco3']= unicode(self.paramHCO3.currentText())
+        self.ms.saveSettings('piper_hco3')#save this specific setting
 
+    def PiperSO4Updated(self):
+        self.ms.settingsdict['piper_so4']= unicode(self.paramSO4.currentText())
+        self.ms.saveSettings('piper_so4')#save this specific setting
+
+    def PiperNaUpdated(self):
+        self.ms.settingsdict['piper_na']= unicode(self.paramNa.currentText())
+        self.ms.saveSettings('piper_na')#save this specific setting
+
+    def PiperKUpdated(self):
+        self.ms.settingsdict['piper_k']= unicode(self.paramK.currentText())
+        self.ms.saveSettings('piper_k')#save this specific setting
+
+    def PiperCaUpdated(self):
+        self.ms.settingsdict['piper_ca']= unicode(self.paramCa.currentText())
+        self.ms.saveSettings('piper_ca')#save this specific setting
+
+    def PiperMgUpdated(self):
+        self.ms.settingsdict['piper_mg']= unicode(self.paramMg.currentText())
+        self.ms.saveSettings('piper_mg')#save this specific setting
+        
+    def selectFile(self):
+        """ Open a dialog to locate the sqlite file and some more..."""        
+        path = QFileDialog.getOpenFileName(None,str("Select database:"),"*.sqlite")
+        if path: #Only get new db name if not cancelling the FileDialog
+            self.ms.settingsdict['database'] = path #
+        else:#debug
+            print "cancelled and still using database path " + self.ms.settingsdict['database'] #debug
+        self.LoadAndSelectLastSettings()
+
+    def setLocation(self):
+        dockarea = self.parent.dockWidgetArea(self)
+        self.ms.settingsdict['settingslocation']=dockarea
+        self.ms.saveSettings('settingslocation')
+        
+    def StratigraphyTableUpdated(self):
+        """This method is called whenever stratigraphy table is changed"""
+        # Make sure that columns obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, comment exists
+        Needed_columns = ('comment', 'capacity', 'geology', 'geoshort', 'depthtop', 'depthbot', 'obsid', 'stratid')
+        columns = self.LoadColumnsFromTable(self.ListOfTables_3.currentText())     # For some reason it is not possible to send currentText with the SIGNAL-trigger
+        text = "<font color=green>Correct table! all the expected columns obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, comment have been found.</font>"
+        for column in Needed_columns:
+            if not column in columns:
+                text = "<font color=red>Wrong table! Column " + str(column) + " is missing.</font>"
+        self.InfoTxtStratigraphy.setText(text)
+        
     def TSTableUpdated(self):
         """This method is called whenever time series table is changed"""
         # First, update combobox with columns
@@ -468,18 +434,9 @@ class midvsettingsdialog(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH TH
         else:
             text = "<font color=red>Wrong table! obsid and/or date_time is missing.</font>"
         self.InfoTxtTSPlot.setText(text)
-
-    def XYTableUpdated(self):
-        """This method is called whenever xy table is changed"""
-        # First, update comboboxes with columns
-        self.XYColumnsToComboBox(self.ListOfTables_2.currentText())   # For some reason it is not possible to send currentText with the SIGNAL-trigger
-        # Second, Make sure that column obsid exists
-        columns = self.LoadColumnsFromTable(self.ListOfTables_2.currentText())     # For some reason it is not possible to send currentText with the SIGNAL-trigger
-        if 'obsid' in columns:    
-            text = "<font color=green>Correct table! obsid column is found.</font>"
-        else:
-            text = "<font color=red>Wrong table! obsid is missing.</font>"
-        self.InfoTxtXYPlot.setText(text)
+        #finally, save to qgis project settings
+        self.ms.settingsdict['tstable']=self.ListOfTables.currentText()
+        self.ms.saveSettings('tstable')#save this specific setting
 
     def WQUALTableUpdated(self):
         """This method is called whenever water quality table is changed and fils comboboxes with columns for wqual report"""
@@ -499,38 +456,32 @@ class midvsettingsdialog(QDialog, Ui_Dialog): #THE CLASS IS ONLY TO DEAL WITH TH
                 self.ListOfColumns_WQUALUNIT.addItem(columnName)
                 self.ListOfColumns_WQUALSORTING.addItem(columnName)
 
-    def StratigraphyTableUpdated(self):
-        """This method is called whenever stratigraphy table is changed"""
-        # Make sure that columns obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, comment exists
-        Needed_columns = ('comment', 'capacity', 'geology', 'geoshort', 'depthtop', 'depthbot', 'obsid', 'stratid')
-        columns = self.LoadColumnsFromTable(self.ListOfTables_3.currentText())     # For some reason it is not possible to send currentText with the SIGNAL-trigger
-        text = "<font color=green>Correct table! all the expected columns obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, comment have been found.</font>"
-        for column in Needed_columns:
-            if not column in columns:
-                text = "<font color=red>Wrong table! Column " + str(column) + " is missing.</font>"
-        self.InfoTxtStratigraphy.setText(text)
-        
-    def LoadColumnsFromTable(self, table=''):
-        """ This method returns a list with all the columns in the table"""
-        if len(table)>0 and len(self.database)>0:            # Should not be needed since the function never should be called without existing table...
-            myconnection = utils.dbconnection(self.database)
-            if myconnection.connect2db() == True:
-                curs = myconnection.conn.cursor()
-                sql = r"""SELECT * FROM '"""
-                sql += str(table)
-                sql += """'"""     
-                rs = curs.execute(sql)  #Send the SQL statement to get the columns in the table            
-                columns = {} 
-                columns = [tuple[0] for tuple in curs.description]
-                rs.close()
-                myconnection.closedb()# then close the database
-            else:
-                self.database = ''
-                self.txtpath.setText(self.database)
-                self.ListOfTables.clear()    
-                self.ListOfTables_2.clear()    
-                self.ListOfTables_3.clear()
-                self.ListOfTables_WQUAL.clear()            
+    def XYColumnsToComboBox(self, table=None):
+        """This method fills comboboxes with columns for xyplot"""
+        self.ListOfColumns_2.clear()
+        self.ListOfColumns_3.clear()
+        self.ListOfColumns_4.clear()
+        self.ListOfColumns_5.clear()
+        columns = self.LoadColumnsFromTable(table)    # Load all columns into a list (dict?) 'columns'
+        if len(columns):    # Transfer information from list 'columns' to the combobox
+            self.ListOfColumns_2.addItem('')
+            self.ListOfColumns_3.addItem('')
+            self.ListOfColumns_4.addItem('')
+            self.ListOfColumns_5.addItem('')
+            for columnName in columns:
+                self.ListOfColumns_2.addItem(columnName)  
+                self.ListOfColumns_3.addItem(columnName)  
+                self.ListOfColumns_4.addItem(columnName)  
+                self.ListOfColumns_5.addItem(columnName)  
+
+    def XYTableUpdated(self):
+        """This method is called whenever xy table is changed"""
+        # First, update comboboxes with columns
+        self.XYColumnsToComboBox(self.ListOfTables_2.currentText())   # For some reason it is not possible to send currentText with the SIGNAL-trigger
+        # Second, Make sure that column obsid exists
+        columns = self.LoadColumnsFromTable(self.ListOfTables_2.currentText())     # For some reason it is not possible to send currentText with the SIGNAL-trigger
+        if 'obsid' in columns:    
+            text = "<font color=green>Correct table! obsid column is found.</font>"
         else:
-            columns = {}
-        return columns        # This method returns a list with all the columns in the table
+            text = "<font color=red>Wrong table! obsid is missing.</font>"
+        self.InfoTxtXYPlot.setText(text)

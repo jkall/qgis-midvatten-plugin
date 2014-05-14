@@ -28,5 +28,7 @@
         <file>icons/import_obs_lines.png</file>
         <file>icons/load_seismics.png</file>
         <file>icons/load_vlf.png</file>
+        <file>icons/plotsqliteicon.png</file>
+        <file>icons/Piper.png</file>
     </qresource>
 </RCC>
