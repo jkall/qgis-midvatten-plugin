@@ -83,12 +83,15 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
     def ChangedCheckBoxDataPoints(self):
         self.ms.settingsdict['tsdotmarkers']=self.checkBoxDataPoints.checkState()
+        self.ms.saveSettings('tsdotmarkers')
     
     def ChangedCheckBoxDataPoints2(self):
         self.ms.settingsdict['xydotmarkers']=self.checkBoxDataPoints_2.checkState()
+        self.ms.saveSettings('xydotmarkers')
                 
     def ChangedCheckBoxStepPlot(self):
         self.ms.settingsdict['tsstepplot']=self.ChangedCheckBoxStepPlot.checkState()
+        self.ms.saveSettings('tsstepplot')
     
     def ChangedListOfColumns(self):
         self.ms.settingsdict['tscolumn']=self.ListOfColumns.currentText()
@@ -168,6 +171,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def ClearEverything(self):
         self.txtpath.setText('')
         self.ClearTableLists()
+        self.ClearColumnLists()
         self.ClearPiperParams()
         
     def ClearTableLists(self):
@@ -196,6 +200,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
     def LoadAndSelectLastSettings(self):
         if os.path.isfile( self.ms.settingsdict['database'] ):#absolute path
+            self.ms.saveSettings('database')
             self.txtpath.setText(self.ms.settingsdict['database'])
             self.loadTablesFromDB(self.ms.settingsdict['database'])        # All ListOfTables are filled with relevant information
             self.LoadDistinctPiperParams(self.ms.settingsdict['database'])

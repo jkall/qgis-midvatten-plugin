@@ -59,7 +59,7 @@ class midvatten:
         QObject.connect(self.actionsetup, SIGNAL("activated()"), self.setup)
         
         self.actionresetSettings = QAction(QIcon(":/plugins/midvatten/icons/ResetSettings.png"), "Reset Settings", self.iface.mainWindow())
-        QObject.connect(self.actionresetSettings, SIGNAL("triggered()"), self.ms.resetSettings)
+        QObject.connect(self.actionresetSettings, SIGNAL("triggered()"), self.resetSettings)
         
         self.actionabout = QAction(QIcon(":/plugins/midvatten/icons/about.png"), "About", self.iface.mainWindow())
         QObject.connect(self.actionabout, SIGNAL("triggered()"), self.about)
@@ -701,22 +701,24 @@ class midvatten:
             self.customplot = customplot.plotsqlitewindow(self.iface.mainWindow(), self.ms)#self.iface as arg?
 
     def ProjectCreated(self):
-        self.ms.resetSettings()
-        print "did reset"
-        try:#if midvsettingsdock is shown, then it must be reset
-            self.midvsettingsdialog.activateWindow()
-            self.midvsettingsdialog.ClearEverything()
-            print "found an open midvsettingsdock, did reset"    #debug        
-        except:
-            pass
+        self.resetSettings()
         
     def ProjectOpened(self):
+        self.ms.resetSettings()
+        self.ms.loadSettings()
         try:#if midvsettingsdock is shown, then it must be reloaded
             self.midvsettingsdialog.activateWindow()
             self.midvsettingsdialog.ClearEverything()
-            self.ms.loadSettings()
-            if len(self.ms.settingsdict['database'])>0:
-                self.midvsettingsdialog.LoadAndSelectLastSettings()
+            self.midvsettingsdialog.LoadAndSelectLastSettings()
+        except:
+            pass
+
+    def resetSettings(self):
+        self.ms.resetSettings()
+        self.ms.saveSettings()
+        try:#if midvsettingsdock is shown, then it must be reset
+            self.midvsettingsdialog.activateWindow()
+            self.midvsettingsdialog.ClearEverything()
         except:
             pass
 
