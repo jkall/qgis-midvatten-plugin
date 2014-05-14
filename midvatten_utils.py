@@ -206,9 +206,12 @@ def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatur
         elif not(selectedfeatures==0) and layer.selectedFeatureCount()==selectedfeatures:
             return 'ok'
         elif selectedfeatures == 0 and not(layer.selectedFeatureCount() > 0):
-            pop_up_info("Select at least one object in the qgis layer!")
+            qgis.utils.iface.messageBar().pushMessage("Error","Select at least one object in the qgis layer!", 2,duration=15)
+            #pop_up_info("Select at least one object in the qgis layer!")
         else:
-            pop_up_info("""Select exactly %s object in the qgis layer!"""%str(selectedfeatures))
+            textstring = """Select exactly %s object in the qgis layer!"""%str(selectedfeatures)
+            qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15)
+            #pop_up_info("""Select exactly %s object in the qgis layer!"""%str(selectedfeatures))
     else:
         pop_up_info("Select a qgis layer that has a field obsid!")
         

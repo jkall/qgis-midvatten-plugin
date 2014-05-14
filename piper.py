@@ -23,26 +23,76 @@ __modified_date__ = "Nov 2013"
 from PyQt4 import QtCore, QtGui
 from qgis.core import *
 from qgis.gui import *
-#from pylab import * # the pylab module combines Pyplot (MATLAB type of plotting) with Numpy into a single namespace
+from pylab import * # ONLY DURING DEVELOPMENT the pylab module combines Pyplot (MATLAB type of plotting) with Numpy into a single namespace
 import numpy as np # prefer this instead of pylab 
 import sqlite3 as sqlite
-import midvatten_utils as utils#when ready, remove self.sql_load_fr_db and replace with utils.sql_load_fr_db
+import midvatten_utils as utils
 
-class piperplot():
-    def __init__(self,dbpath,OBSID,ParameterList):
-        # Specify locations of files and open the files
-        # -------------------------------------------------------------------------------- #
-        # Import observations
-        # Observations are expected have meq/l units with parameters in the order: Cl, HCO3, SO4, Na, K, Ca, Mg
-        sql = self.big_sql(OBSID,ParameterList)
-        obs = self.sql_load_fr_db(dbpath,sql[1]# a list is returned # LATER, change to utils.sql_load_fr_db and skip dbpath as arg
-        obs = np.asarray(obs)#convert to np array
-        #obs=loadtxt(r"""U:\My Documents\pythoncode\scripts\ternary_plots\piper_rectangular_watersamples.txt""", delimiter='\t', comments='#') # first row with headers is skipped, matrix with data is assigned to obs (obs is a numpy array)
-        #obs[obs == -9999] = NaN # if observations are missing, label them as -9999 (for example) in excel and make them Not a Number (NaN)
+class PiperPlot():
+    def __init__(self,msettings,activelayer):
+        self.ms = msettings
+        self.activelayer = activelayer
+        self.ParameterList=[]# ParameterList = ['Klorid, Cl','Alkalinitet, HCO3','Sulfat, SO4','Natrium, Na','Kalium, K','Kalcium, Ca','Magnesium, Mg']
+        self.ParameterList.append(self.ms.settingsdict['piper_cl'])
+        self.ParameterList.append(self.ms.settingsdict['piper_hco3'])
+        self.ParameterList.append(self.ms.settingsdict['piper_so4'])
+        self.ParameterList.append(self.ms.settingsdict['piper_na'])
+        self.ParameterList.append(self.ms.settingsdict['piper_k'])
+        self.ParameterList.append(self.ms.settingsdict['piper_ca'])
+        self.ParameterList.append(self.ms.settingsdict['piper_mg'])
 
-        nosamples = len(obs[:,0]) # Determine number of samples in file
-        print obs
-        """
+        self.GetSelectedObservations()
+        self.GetPiperData()
+        #self.GetSamplePiperData()#during development
+        #self.MakeThePlot()
+        #self.FinishPlotWindow()
+
+    def big_sql(self):
+        # Data must be stored as mg/l in the database since it is converted to meq/l in code here...
+        sql = r"""select a.obsid as obsid, date_time, obs_points.type as type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl, K_meqPl, Ca_meqPl, Mg_meqPl
+        from (select obsid, date_time, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl, K_meqPl, Ca_meqPl, Mg_meqPl
+            from (
+                  select obsid, date_time, 
+                      (max (case when parameter = '%s' then reading_num end))/35.453 as Cl_meqPl,
+                      (max (case when parameter = '%s' then reading_num end))/61.0168 as HCO3_meqPl,
+                      2*(max (case when parameter = '%s' then reading_num end))/96.063 as SO4_meqPl,
+                      (max (case when parameter = '%s' then reading_num end))/22.9898 as Na_meqPl,
+                      (max (case when parameter = '%s' then reading_num end))/39.0983 as K_meqPl,
+                      2*(max (case when parameter = '%s' then reading_num end))/40.078 as Ca_meqPl,
+                      2*(max (case when parameter = '%s' then reading_num end))/24.305 as Mg_meqPl
+                  from w_qual_lab where obsid in %s 
+                  group by obsid, date_time
+                )
+            where Ca_meqPl is not null and Mg_meqPl is not null and Na_meqPl is not null and K_meqPl is not null and HCO3_meqPl is not null and Cl_meqPl is not null and SO4_meqPl is not null
+            ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(self.ParameterList[0],self.ParameterList[1],self.ParameterList[2],self.ParameterList[3],self.ParameterList[4],self.ParameterList[5],self.ParameterList[6],(str(self.observations)).encode('utf-8').replace('[','(').replace(']',')'))
+        return sql
+
+    def GetSelectedObservations(self):
+        obsar = utils.getselectedobjectnames(self.activelayer)
+        observations = obsar
+        i=0
+        for obs in obsar:
+                observations[i] = obs.encode('utf-8') #turn into a list of python byte strings
+                i += 1 
+        self.observations=observations#A list with selected obsid
+        
+    def GetSamplePiperData(self):
+        self.observations=('Rb0917', 'Rb0918', 'Br1002', 'Rb0919', 'Br1101', 'snow', 'Br139', 'Br140', 'Br141', 'Br142', 'Rb1038', 'Br143', 'Rb1002', 'Rb1039', 'Rb1004', 'Rb1005', 'Rb1045', 'pegel Christenssen', 'Rb1015', 'Rb1016', 'Rb0905', 'Rb1055', 'Rb1021')
+        #These sample data are given in meq/l and the loaded columns are: #Type, Cl, HCO3, SO4, NaK, Ca, Mg, EC, NO3, Sicc
+        #observations are expected have meq/l units with parameters in the order: Cl, HCO3, SO4, Na, K, Ca, Mg
+        self.obs=loadtxt(r"""/home/josef/pythoncode/scripts/plot/ternary_plots/piper_rectangular_watersamples.txt""", delimiter='\t', comments='#') # first row with headers is skipped, matrix with data is assigned to obs (obs is a numpy array)
+        self.obs[self.obs == -9999] = NaN # if observations are missing, label them as -9999 (for example) in excel and make them Not a Number (NaN)
+        print self.obs
+
+    def GetPiperData(self):
+        #These observations are supposed to be in mg/l and must be stored in a Midvatten database, table w_qual_lab
+        sql = self.big_sql()
+        self.obsimport = utils.sql_load_fr_db(sql)[1]# a list is returned 
+        self.obsimport = np.asarray(self.obsimport)#convert to np array
+        
+        nosamples = len(self.obsimport[:,0]) # Determine number of samples in file
+        print self.obsimport
+        # Next step must be to create a column Na+K since that is the one to be plotted
         # Column Index for parameters
         Type = 3
         Cl = 4
@@ -52,20 +102,10 @@ class piperplot():
         K = Cl+4
         Ca = Cl+5
         Mg = Cl+6
-
-        # ---------------------------------->>>>>>DET HÄR ANGREPPSSÄTTET GÅR INTE-------------
-        # MAN MÅSTE TA IN mg/l och
-        " 1.  Loopa igenom arrayen och "find and replace" alla '<' som indikerar att vi är uder detektionsgränsen
-        # 1b. Eventuellt ersätta med halva mätgränsvärdet
-        # 2. Beräkna meq/l i koden...
-        #
-        # Sen åter på banan, nästa steg är då...
-        # Fixa också en ny kolumn med Na+K eftersom det är den som ska plottas
-
-
-
+        # Then categorize the Type to decide plot symbol dependent on typ
+        # Then check date interval to set plot symbol color as a scale dependent on date
         
-
+    def MakeThePlot(self):
         # Change default settings for figures
         # -------------------------------------------------------------------------------- #
         rc('savefig', dpi = 300)
@@ -98,19 +138,19 @@ class piperplot():
 
         # loop to use different symbol marker for each water type
         for i in range(0, nosamples):
-            if obs[i, 0] == 1:
+            if self.obs[i, 0] == 1:
                 plotsym= 'rs'
-            elif obs[i, 0] == 2:
+            elif self.obs[i, 0] == 2:
                 plotsym= 'b>'
-            elif obs[i, 0] == 3:
+            elif self.obs[i, 0] == 3:
                 plotsym= 'c<'
-            elif obs[i, 0] == 4:
+            elif self.obs[i, 0] == 4:
                 plotsym= 'go'
-            elif obs[i, 0] == 5:
+            elif self.obs[i, 0] == 5:
                 plotsym= 'm^'
             else:
                 plotsym= 'bs'
-            ax1.plot(100*obs[i,Ca]/(obs[i,NaK]+obs[i,Ca]+obs[i,Mg]), 100*obs[i,Mg]/(obs[i,NaK]+obs[i,Ca]+obs[i,Mg]), plotsym, ms = markersize)
+            ax1.plot(100*self.obs[i,Ca]/(self.obs[i,NaK]+self.obs[i,Ca]+self.obs[i,Mg]), 100*self.obs[i,Mg]/(self.obs[i,NaK]+self.obs[i,Ca]+self.obs[i,Mg]), plotsym, ms = markersize)
 
         ax1.set_xlim(0,100)
         ax1.set_ylim(0,100)
@@ -134,19 +174,19 @@ class piperplot():
 
         # loop to use different symbol marker for each water type
         for i in range(0, nosamples):
-            if obs[i, 0] == 1:
+            if self.obs[i, 0] == 1:
                 plotsym= 'rs'
-            elif obs[i, 0] == 2:
+            elif self.obs[i, 0] == 2:
                 plotsym= 'b>'
-            elif obs[i, 0] == 3:
+            elif self.obs[i, 0] == 3:
                 plotsym= 'c<'
-            elif obs[i, 0] == 4:
+            elif self.obs[i, 0] == 4:
                 plotsym= 'go'
-            elif obs[i, 0] == 5:
+            elif self.obs[i, 0] == 5:
                 plotsym= 'm^'
             else:
                 plotsym= 'bs'
-            plot(100*obs[i,Cl]/(obs[i,Cl]+obs[i,HCO3]+obs[i,SO4]), 100*obs[i,SO4]/(obs[i,Cl]+obs[i,HCO3]+obs[i,SO4]), plotsym, ms = markersize)
+            plot(100*self.obs[i,Cl]/(self.obs[i,Cl]+self.obs[i,HCO3]+self.obs[i,SO4]), 100*self.obs[i,SO4]/(self.obs[i,Cl]+self.obs[i,HCO3]+self.obs[i,SO4]), plotsym, ms = markersize)
 
         xlim(0,100)
         ylim(0,100)
@@ -176,18 +216,18 @@ class piperplot():
 
         # loop to use different symbol marker for each water type
         for i in range(0, nosamples):
-            catsum = (obs[i,NaK]+obs[i,Ca]+obs[i,Mg])
-            ansum = (obs[i,Cl]+obs[i,HCO3]+obs[i,SO4])
-            if obs[i, 0] == 1:
-                h1,=ax2.plot(100*obs[i,NaK]/catsum, 100*(obs[i,SO4]+obs[i,Cl])/ansum, 'rs', ms = markersize)
-            elif obs[i, 0] == 2:
-                h2,=ax2.plot(100*obs[i,NaK]/catsum, 100*(obs[i,SO4]+obs[i,Cl])/ansum, 'b>', ms = markersize)
-            elif obs[i, 0] == 3:
-                h3,=ax2.plot(100*obs[i,NaK]/catsum, 100*(obs[i,SO4]+obs[i,Cl])/ansum, 'c<', ms = markersize)
-            elif obs[i, 0] == 4:
-                h4,=ax2.plot(100*obs[i,NaK]/catsum, 100*(obs[i,SO4]+obs[i,Cl])/ansum, 'go', ms = markersize)
+            catsum = (self.obs[i,NaK]+self.obs[i,Ca]+self.obs[i,Mg])
+            ansum = (self.obs[i,Cl]+self.obs[i,HCO3]+self.obs[i,SO4])
+            if self.obs[i, 0] == 1:
+                h1,=ax2.plot(100*self.obs[i,NaK]/catsum, 100*(self.obs[i,SO4]+self.obs[i,Cl])/ansum, 'rs', ms = markersize)
+            elif self.obs[i, 0] == 2:
+                h2,=ax2.plot(100*self.obs[i,NaK]/catsum, 100*(self.obs[i,SO4]+self.obs[i,Cl])/ansum, 'b>', ms = markersize)
+            elif self.obs[i, 0] == 3:
+                h3,=ax2.plot(100*self.obs[i,NaK]/catsum, 100*(self.obs[i,SO4]+self.obs[i,Cl])/ansum, 'c<', ms = markersize)
+            elif self.obs[i, 0] == 4:
+                h4,=ax2.plot(100*self.obs[i,NaK]/catsum, 100*(self.obs[i,SO4]+self.obs[i,Cl])/ansum, 'go', ms = markersize)
             else:
-                h5,=ax2.plot(100*obs[i,NaK]/catsum, 100*(obs[i,SO4]+obs[i,Cl])/ansum, 'm^', ms = markersize)
+                h5,=ax2.plot(100*self.obs[i,NaK]/catsum, 100*(self.obs[i,SO4]+self.obs[i,Cl])/ansum, 'm^', ms = markersize)
 
         ax2.set_xlim(0,100)
         ax2.set_ylim(0,100)
@@ -199,6 +239,7 @@ class piperplot():
         # next two lines needed to reverse 2nd y axis:
         ax2b.set_ylim(ax2b.get_ylim()[::-1])
 
+    def FinishPlotWindow(self):
         # Legend for Figure
         figlegend((h1,h2,h3,h4,h5),('Dinkel','Tributaries NL','Tributaries G','Lakes','Groundwater'), ncol=5, shadow=False, fancybox=True, loc='lower center', handlelength = 3)
         #figlegend((h1,h2,h3,h4),(u'Grundvattenrör',u'Pumpbrunn',u'Ljusnan',u'Privat bergbrunn'), ncol=5, shadow=False, fancybox=True, loc='lower center', handlelength = 3)
@@ -206,66 +247,3 @@ class piperplot():
         # adjust position subplots
         subplots_adjust(left=0.05, bottom=0.2, right=0.95, top=0.90, wspace=0.4, hspace=0.0)
         show()
-        """
-        
-    def big_sql(self,OBSID, ParameterList):
-    # ---------------------------- THE SOLUTION-----------------------------
-        sql = r"""select a.obsid as obsid, date_time, obs_points.type as type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl, K_meqPl, Ca_meqPl, Mg_meqPl
-        from (select obsid, date_time, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl, K_meqPl, Ca_meqPl, Mg_meqPl
-            from (
-                  select obsid, date_time, 
-                      (max (case when parameter = '%s' then reading_txt end))/35.453 as Cl_meqPl,
-                      (max (case when parameter = '%s' then reading_txt end))/61.0168 as HCO3_meqPl,
-                      2*(max (case when parameter = '%s' then reading_txt end))/96.063 as SO4_meqPl,
-                      (max (case when parameter = '%s' then reading_txt end))/22.9898 as Na_meqPl,
-                      (max (case when parameter = '%s' then reading_txt end))/39.0983 as K_meqPl,
-                      2*(max (case when parameter = '%s' then reading_txt end))/40.078 as Ca_meqPl,
-                      2*(max (case when parameter = '%s' then reading_txt end))/24.305 as Mg_meqPl
-                  from w_qual_lab where obsid in %s 
-                  group by obsid, date_time
-                )
-            where Ca_meqPl is not null and Mg_meqPl is not null and Na_meqPl is not null and K_meqPl is not null and HCO3_meqPl is not null and Cl_meqPl is not null and SO4_meqPl is not null
-            ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(ParameterList[0],ParameterList[1],ParameterList[2],ParameterList[3],ParameterList[4],ParameterList[5],ParameterList[6],OBSID)
-        return sql
-
-def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
-    #qgis.utils.iface.messageBar().pushMessage("Debug",sql, 0,duration=30)#debug
-    dbpath = QgsProject.instance().readEntry("Midvatten","database")
-    try:
-        conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)#dbpath[0] is unicode already #MacOSC fix1 
-        curs = conn.cursor()
-        resultfromsql = curs.execute(sql) #Send SQL-syntax to cursor #MacOSX fix1
-        result = resultfromsql.fetchall()
-        resultfromsql.close()
-        conn.close()
-        ConnectionOK = True
-    except:
-        pop_up_info("Could not connect to the database, please check Midvatten settings!\n Perhaps you need to reset settings first?")
-        ConnectionOK = False
-        result = ''
-    return ConnectionOK, result
-# ---------------------------- /THE SOLUTION-----------------------------
-
-def main(dbpath, OBSID,ParameterList): #when this script is run directly or from python interpreter outside qgis
-    print 'alright, main function called'
-    """
-    app=QtGui.QApplication.instance() # checks if QApplication already exists 
-    if not app: # create QApplication if it doesnt exist 
-        app = QtGui.QApplication(sys.argv)
-        print 'there was no app so I did a new'
-    """
-    mypiper = piperplot(dbpath,OBSID,ParameterList)
-    #sys.exit(app.exec_())#comment out when using Ipython
-
-if __name__ == '__main__':#if this script is run directly
-    """
-    --------------<USER VARIABLES ARE FOUND HERE>--------------------------
-    --------------WHEN RUNNING THIS SCRIPT, THEN THESE ARE SENT AS ARGS TO MAIN,
-    -------------OTHERWISE IMPORT MODULE AND SEND OTHER ARGUMENTS
-    """
-    print 'I did start'
-    #dbpath=u"/mnt/data/synkade_mappar/2666_veman_gvu/ARBETSDATA/DATABAS/2666_Midv_obsdb.sqlite"
-    dbpath=u"/mnt/data/synkade_mappar/2513_funas/ARBETSDATA/DATABAS/2513_obs.sqlite"
-    OBSID=('Rb0917', 'Rb0918', 'Br1002', 'Rb0919', 'Br1101', 'snow', 'Br139', 'Br140', 'Br141', 'Br142', 'Rb1038', 'Br143', 'Rb1002', 'Rb1039', 'Rb1004', 'Rb1005', 'Rb1045', 'pegel Christenssen', 'Rb1015', 'Rb1016', 'Rb0905', 'Rb1055', 'Rb1021')#2513
-    ParameterList = ['Klorid, Cl','Alkalinitet, HCO3','Sulfat, SO4','Natrium, Na','Kalium, K','Kalcium, Ca','Magnesium, Mg']
-    mypiper = main(dbpath, OBSID,ParameterList)

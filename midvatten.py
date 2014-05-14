@@ -37,6 +37,7 @@ from sectionplot import sectionplot
 import customplot
 from midvsettings import midvsettings
 import midvsettingsdialog
+from piper import PiperPlot
 
 class midvatten:
     def __init__(self, iface): # Might need revision of variables and method for loading default variables
@@ -125,6 +126,10 @@ class midvatten:
         self.iface.registerMainWindowAction(self.actionPlotXY, "F9")   # The function should also be triggered by the F9 key
         QObject.connect(self.actionPlotXY, SIGNAL("triggered()"), self.PlotXY)
         
+        self.actionPlotPiper = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","Piper.png")), "Piper Diagram", self.iface.mainWindow())
+        self.actionPlotPiper.setWhatsThis("Plot a rectangular Piper diagram for selected objects")
+        QObject.connect(self.actionPlotPiper, SIGNAL("triggered()"), self.PlotPiper)
+                
         self.actionPlotSQLite = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","plotsqliteicon.png")), "Custom Plots", self.iface.mainWindow())
         self.actionPlotSQLite.setWhatsThis("Create custom plots for your reports")
         QObject.connect(self.actionPlotSQLite, SIGNAL("triggered()"), self.PlotSQLite)
@@ -162,6 +167,8 @@ class midvatten:
         self.toolBar.addAction(self.actionPlotXY)
         self.toolBar.addAction(self.actionPlotStratigraphy)
         self.toolBar.addAction(self.actionPlotSection)
+        self.toolBar.addAction(self.actionPlotPiper)
+        self.toolBar.addAction(self.actionPlotSQLite)
         self.toolBar.addAction(self.actiondrillreport)
         self.toolBar.addAction(self.actionwqualreport)
         #self.toolBar.addAction(self.actionChartMaker)
@@ -198,9 +205,9 @@ class midvatten:
         self.menu.plot_data_menu.addAction(self.actionPlotTS) 
         self.menu.plot_data_menu.addAction(self.actionPlotXY)
         self.menu.plot_data_menu.addAction(self.actionPlotStratigraphy)
-        self.menu.plot_data_menu.addAction(self.actionPlotSection)        
+        self.menu.plot_data_menu.addAction(self.actionPlotSection)
+        self.menu.plot_data_menu.addAction(self.actionPlotPiper)
         self.menu.plot_data_menu.addAction(self.actionPlotSQLite)
-        #self.menu.plot_data_menu.addAction(self.actionChartMaker)          #Not until implemented!
 
         self.menu.report_menu = QMenu(QCoreApplication.translate("Midvatten", "&View report"))
         self.menu.addMenu(self.menu.report_menu)
@@ -607,9 +614,21 @@ class midvatten:
                 self.ms.settingsdict['database'] = db
                 self.ms.saveSettings()
 
+    def PlotPiper(self):
+        if self.ms.settingsareloaded == False:
+            self.ms.loadSettings()    
+        if not (self.ms.settingsdict['database'] == '' or self.ms.settingsdict['database'] == ' '):
+            layer = qgis.utils.iface.activeLayer()
+            if layer:
+                if utils.selection_check(layer) == 'ok':
+                    dlg = PiperPlot(self.ms,qgis.utils.iface.activeLayer())
+            else:
+                self.iface.messageBar().pushMessage("Error","You have to select a layer first!",2,duration=15)        
+        else:
+            self.iface.messageBar().pushMessage("Error","Specify database and w_qual_lab parameters for Piper plot. (Check Midvatten Settings.)",2,duration=15)
+                 
     def PlotTS(self):
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file    
-            #utils.pop_up_info("reading from .qgs file")    #debugging
             self.ms.loadSettings()    
         if not (self.ms.settingsdict['database'] == '' or self.ms.settingsdict['tstable'] =='' or self.ms.settingsdict['tscolumn'] == ''):
             layer = qgis.utils.iface.activeLayer()
@@ -617,9 +636,9 @@ class midvatten:
                 if utils.selection_check(layer) == 'ok':
                     dlg = TimeSeriesPlot(layer, self.ms.settingsdict)
             else:
-                utils.pop_up_info("You have to select a layer first!")
+                self.iface.messageBar().pushMessage("Error","You have to select a layer first!",2,duration=15)        
         else:
-            self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database, table and column for time series plot. Reset if needed.", 2)
+            self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database, table and column for time series plot. Reset if needed.", 2,duration=15)
             
     def PlotStratigraphy(self):            
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot stratigraphy, then load settings from project file

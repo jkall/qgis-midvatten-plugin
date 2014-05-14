@@ -59,7 +59,8 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #settings must be recieved here since plot windows may stay open (hence sectionplot instance activated) while a new qgis project is opened or midv settings are chaned 
         self.ms = msettings
         #Draw the widget
-        self.iface.addDockWidget(self.ms.settingsdict['secplotlocation'], self)
+        print "secplotlocation is " + str(self.ms.settingsdict['secplotlocation'])#debug
+        self.iface.addDockWidget(max(self.ms.settingsdict['secplotlocation'],1), self)
         self.iface.mapCanvas().setRenderFlag(True)        
 
         self.FillComboBoxes()        # Comboboxes are filled with relevant information
@@ -624,4 +625,3 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
     def setLocation(self):#not ready
         dockarea = self.parent.dockWidgetArea(self)
         self.ms.settingsdict['secplotlocation']=dockarea
-        #print dockarea.value() #debug

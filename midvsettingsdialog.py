@@ -37,7 +37,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         #initiate the dockwidget
         QDockWidget.__init__(self, self.parent)        
         self.setAttribute(Qt.WA_DeleteOnClose)
-        self.connect(self, SIGNAL("dockLocationChanged(Qt::DockWidgetArea)"), self.setLocation)#not really implemented yet        
         self.setupUi( self )#Required by Qt4 to initialize the UI
         self.initUI()
 
@@ -47,6 +46,9 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         if len(self.ms.settingsdict['database'])>0:
             self.LoadAndSelectLastSettings()
         # SIGNALS
+        #move dockwidget
+        self.connect(self, SIGNAL("dockLocationChanged(Qt::DockWidgetArea)"), self.setLocation)
+        #select file
         self.connect(self.btnSetDB, SIGNAL("clicked()"), self.selectFile)
         #tab TS
         self.connect(self.ListOfTables, SIGNAL("activated(int)"), partial(self.TSTableUpdated)) 
@@ -78,7 +80,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.paramMg, SIGNAL("activated(int)"), partial(self.ChangedParamMg))         
 
         #Draw the widget
-        self.iface.addDockWidget(self.ms.settingsdict['settingslocation'], self)
+        self.iface.addDockWidget(max(self.ms.settingsdict['settingslocation'],1), self)
         self.iface.mapCanvas().setRenderFlag(True)
 
     def ChangedCheckBoxDataPoints(self):
