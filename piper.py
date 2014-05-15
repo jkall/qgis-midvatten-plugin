@@ -24,7 +24,9 @@ from PyQt4 import QtCore, QtGui
 from qgis.core import *
 from qgis.gui import *
 from pylab import * # ONLY DURING DEVELOPMENT the pylab module combines Pyplot (MATLAB type of plotting) with Numpy into a single namespace
-import numpy as np # prefer this instead of pylab 
+import numpy as np # prefer this instead of pylab
+import matplotlib.pyplot as plt
+import datetime 
 import sqlite3 as sqlite
 import midvatten_utils as utils
 
@@ -44,12 +46,12 @@ class PiperPlot():
         self.GetSelectedObservations()
         self.GetPiperData()
         #self.GetSamplePiperData()#during development
-        #self.MakeThePlot()
+        self.MakeThePlot()
         #self.FinishPlotWindow()
 
     def big_sql(self):
         # Data must be stored as mg/l in the database since it is converted to meq/l in code here...
-        sql = r"""select a.obsid as obsid, date_time, obs_points.type as type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl, K_meqPl, Ca_meqPl, Mg_meqPl
+        sql = r"""select a.obsid as obsid, date_time, obs_points.type as type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl + K_meqPl as NaK_meqPl, Ca_meqPl, Mg_meqPl
         from (select obsid, date_time, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl, K_meqPl, Ca_meqPl, Mg_meqPl
             from (
                   select obsid, date_time, 
@@ -82,30 +84,66 @@ class PiperPlot():
         #observations are expected have meq/l units with parameters in the order: Cl, HCO3, SO4, Na, K, Ca, Mg
         self.obs=loadtxt(r"""/home/josef/pythoncode/scripts/plot/ternary_plots/piper_rectangular_watersamples.txt""", delimiter='\t', comments='#') # first row with headers is skipped, matrix with data is assigned to obs (obs is a numpy array)
         self.obs[self.obs == -9999] = NaN # if observations are missing, label them as -9999 (for example) in excel and make them Not a Number (NaN)
-        print self.obs
+        #print dtype(self.obs)#debug
+        #print self.obs#debug
 
     def GetPiperData(self):
         #These observations are supposed to be in mg/l and must be stored in a Midvatten database, table w_qual_lab
         sql = self.big_sql()
-        self.obsimport = utils.sql_load_fr_db(sql)[1]# a list is returned 
-        self.obsimport = np.asarray(self.obsimport)#convert to np array
+        # get data into a list: obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl, K_meqPl, Ca_meqPl, Mg_meqPl
+        obsimport = utils.sql_load_fr_db(sql)[1]
         
-        nosamples = len(self.obsimport[:,0]) # Determine number of samples in file
-        print self.obsimport
+        """Transform data to a numpy.recarray
+        ### PROBLEMS WITH STRINGS! PERHAPS SKIP THEM IN NUMPY ARRAY????
+        #convert to numpy array - could also have used 'asarray' but it does not matter in this situation
+        """
+        #convert to numpy ndarray W/O format specified
+        self.obsnp_nospecformat = np.array(obsimport) 
+                
+        #define format
+        """ some problems with string fiels
+        np.str_
+        My_format = [('obsid', str), 
+        My_format = [('obsid', unicode), 
+        My_format = [('obsid', np.dtype('a35')), 
+        My_format = [('obsid', np.dtype(np.str_)),
+        My_format = [('obsid', np.str_),
+        My_format = [('obsid', object),
+        none is working besides from 'a35' which limits string length to 35 characters 
+        least bad is the "object" type, then everything is loaded, but all strings as unicode strings which _should_ be ok
+        """
+        My_format = [('obsid', object), ('date_time', datetime.datetime),('obstype', object),('Cl_meqPl', float),('HCO3_meqPl', float),('SO4_meqPl', float),('NaK_meqPl', float),('Ca_meqPl', float),('Mg_meqPl', float)]
+        
+        #convert to numpy ndarray W format specified - i.e. a structured array
+        self.obsnp_specified_format = np.array(obsimport, dtype=My_format)
+        
+        #convert to np recarray - takes the structured array and makes the columns into callable objects, i.e. write table2.Cl_meqPl
+        self.obsrecarray=self.obsnp_specified_format.view(np.recarray)
+        
+        """
+        #some debugging printouts
+        print "obsimport should be a list ", obsimport
+        print obsimport[0][0]
+        print "obsnp_nospecformat ", self.obsnp_nospecformat
+        print self.obsnp_nospecformat[:,0]
+        print "obsnp_specified_format ", self.obsnp_specified_format
+        print self.obsnp_specified_format[:]['obsid']
+        print "obsrecarray ", self.obsrecarray#debug
+        print self.obsrecarray.obsid#debug
+        print self.obsrecarray.NaK_meqPl#debug
+        #ok works, use self.obsrecarray for floats and date_time. might need to access obsid and type one-by-one
         # Next step must be to create a column Na+K since that is the one to be plotted
-        # Column Index for parameters
-        Type = 3
-        Cl = 4
-        HCO3 = Cl+1
-        SO4 = Cl+2
-        Na = Cl + 3
-        K = Cl+4
-        Ca = Cl+5
-        Mg = Cl+6
+        
+        #size obsimport
+        print len(obsimport)
+        print self.obsnp_nospecformat.shape
+        print self.obsnp_specified_format.shape
+        """
         # Then categorize the Type to decide plot symbol dependent on typ
         # Then check date interval to set plot symbol color as a scale dependent on date
         
     def MakeThePlot(self):
+        nosamples = len(self.obsrecarray.obsid) # Determine number of samples in file
         # Change default settings for figures
         # -------------------------------------------------------------------------------- #
         rc('savefig', dpi = 300)
@@ -136,21 +174,21 @@ class PiperPlot():
         ax1.text(75,15, 'Ca type')
         ax1.text(25,65, 'Mg type')
 
-        # loop to use different symbol marker for each water type
+        # loop to use different symbol marker for each water type ("loop through samples and add one plot per sample")
         for i in range(0, nosamples):
-            if self.obs[i, 0] == 1:
+            if self.obsrecarray.obstype[i] == 1:
                 plotsym= 'rs'
-            elif self.obs[i, 0] == 2:
+            elif self.obsrecarray.obstype[i] == 2:
                 plotsym= 'b>'
-            elif self.obs[i, 0] == 3:
+            elif self.obsrecarray.obstype[i] == 3:
                 plotsym= 'c<'
-            elif self.obs[i, 0] == 4:
+            elif self.obsrecarray.obstype[i] == 4:
                 plotsym= 'go'
-            elif self.obs[i, 0] == 5:
+            elif self.obsrecarray.obstype[i] == 5:
                 plotsym= 'm^'
             else:
                 plotsym= 'bs'
-            ax1.plot(100*self.obs[i,Ca]/(self.obs[i,NaK]+self.obs[i,Ca]+self.obs[i,Mg]), 100*self.obs[i,Mg]/(self.obs[i,NaK]+self.obs[i,Ca]+self.obs[i,Mg]), plotsym, ms = markersize)
+            ax1.plot(100*self.obsrecarray.Ca_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i]), 100*self.obsrecarray.Mg_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i]), plotsym, ms = markersize)
 
         ax1.set_xlim(0,100)
         ax1.set_ylim(0,100)
@@ -161,7 +199,6 @@ class PiperPlot():
 
         # next two lines needed to reverse x axis:
         ax1.set_xlim(ax1.get_xlim()[::-1])
-
 
         # ANIONS
         subplot(1,3,3)
@@ -174,25 +211,24 @@ class PiperPlot():
 
         # loop to use different symbol marker for each water type
         for i in range(0, nosamples):
-            if self.obs[i, 0] == 1:
+            if self.obsrecarray.obstype[i] == 1:
                 plotsym= 'rs'
-            elif self.obs[i, 0] == 2:
+            elif self.obsrecarray.obstype[i] == 2:
                 plotsym= 'b>'
-            elif self.obs[i, 0] == 3:
+            elif self.obsrecarray.obstype[i] == 3:
                 plotsym= 'c<'
-            elif self.obs[i, 0] == 4:
+            elif self.obsrecarray.obstype[i] == 4:
                 plotsym= 'go'
-            elif self.obs[i, 0] == 5:
+            elif self.obsrecarray.obstype[i] == 5:
                 plotsym= 'm^'
             else:
                 plotsym= 'bs'
-            plot(100*self.obs[i,Cl]/(self.obs[i,Cl]+self.obs[i,HCO3]+self.obs[i,SO4]), 100*self.obs[i,SO4]/(self.obs[i,Cl]+self.obs[i,HCO3]+self.obs[i,SO4]), plotsym, ms = markersize)
-
+            plot(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), plotsym, ms = markersize)
+            
         xlim(0,100)
         ylim(0,100)
         xlabel('Cl (% meq) =>')
         ylabel('SO4 (% meq) =>')
-
 
         # CATIONS AND ANIONS COMBINED IN DIAMOND SHAPE PLOT = BOX IN RECTANGULAR COORDINATES
         # 2 lines below needed to create 2nd y-axis (ax1b) for first subplot
@@ -216,19 +252,21 @@ class PiperPlot():
 
         # loop to use different symbol marker for each water type
         for i in range(0, nosamples):
-            catsum = (self.obs[i,NaK]+self.obs[i,Ca]+self.obs[i,Mg])
-            ansum = (self.obs[i,Cl]+self.obs[i,HCO3]+self.obs[i,SO4])
-            if self.obs[i, 0] == 1:
-                h1,=ax2.plot(100*self.obs[i,NaK]/catsum, 100*(self.obs[i,SO4]+self.obs[i,Cl])/ansum, 'rs', ms = markersize)
-            elif self.obs[i, 0] == 2:
-                h2,=ax2.plot(100*self.obs[i,NaK]/catsum, 100*(self.obs[i,SO4]+self.obs[i,Cl])/ansum, 'b>', ms = markersize)
-            elif self.obs[i, 0] == 3:
-                h3,=ax2.plot(100*self.obs[i,NaK]/catsum, 100*(self.obs[i,SO4]+self.obs[i,Cl])/ansum, 'c<', ms = markersize)
-            elif self.obs[i, 0] == 4:
-                h4,=ax2.plot(100*self.obs[i,NaK]/catsum, 100*(self.obs[i,SO4]+self.obs[i,Cl])/ansum, 'go', ms = markersize)
+            catsum = (self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i])
+            ansum = (self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i])
+            if self.obsrecarray.obstype[i] == 1:
+                h1,=ax2.plot(100*self.obsrecarray.NaK_meqPl[i]/catsum, 100*(self.obsrecarray.SO4_meqPl[i]+self.obsrecarray.Cl_meqPl[i])/ansum, 'rs', ms = markersize)
+            elif self.obsrecarray.obstype[i] == 2:
+                h2,=ax2.plot(100*self.obsrecarray.NaK_meqPl[i]/catsum, 100*(self.obsrecarray.SO4_meqPl[i]+self.obsrecarray.Cl_meqPl[i])/ansum, 'b>', ms = markersize)
+            elif self.obsrecarray.obstype[i] == 3:
+                h3,=ax2.plot(100*self.obsrecarray.NaK_meqPl[i]/catsum, 100*(self.obsrecarray.SO4_meqPl[i]+self.obsrecarray.Cl_meqPl[i])/ansum, 'c<', ms = markersize)
+            elif self.obsrecarray.obstype[i] == 4:
+                h4,=ax2.plot(100*self.obsrecarray.NaK_meqPl[i]/catsum, 100*(self.obsrecarray.SO4_meqPl[i]+self.obsrecarray.Cl_meqPl[i])/ansum, 'go', ms = markersize)
+            elif self.obsrecarray.obstype[i] == 5:
+                h5,=ax2.plot(100*self.obsrecarray.NaK_meqPl[i]/catsum, 100*(self.obsrecarray.SO4_meqPl[i]+self.obsrecarray.Cl_meqPl[i])/ansum, 'm^', ms = markersize)
             else:
-                h5,=ax2.plot(100*self.obs[i,NaK]/catsum, 100*(self.obs[i,SO4]+self.obs[i,Cl])/ansum, 'm^', ms = markersize)
-
+                h6,=ax2.plot(100*self.obsrecarray.NaK_meqPl[i]/catsum, 100*(self.obsrecarray.SO4_meqPl[i]+self.obsrecarray.Cl_meqPl[i])/ansum, 'bs', ms = markersize)
+                
         ax2.set_xlim(0,100)
         ax2.set_ylim(0,100)
         ax2.set_xlabel('Na+K (% meq) =>')
@@ -239,9 +277,8 @@ class PiperPlot():
         # next two lines needed to reverse 2nd y axis:
         ax2b.set_ylim(ax2b.get_ylim()[::-1])
 
-    def FinishPlotWindow(self):
         # Legend for Figure
-        figlegend((h1,h2,h3,h4,h5),('Dinkel','Tributaries NL','Tributaries G','Lakes','Groundwater'), ncol=5, shadow=False, fancybox=True, loc='lower center', handlelength = 3)
+        #figlegend((h1,h2,h3,h4,h5,h6),('Dinkel','Tributaries NL','Tributaries G','Lakes','Groundwater','Other'), ncol=6, shadow=False, fancybox=True, loc='lower center', handlelength = 3)
         #figlegend((h1,h2,h3,h4),(u'Grundvattenrör',u'Pumpbrunn',u'Ljusnan',u'Privat bergbrunn'), ncol=5, shadow=False, fancybox=True, loc='lower center', handlelength = 3)
 
         # adjust position subplots
