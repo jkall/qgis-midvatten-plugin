@@ -34,15 +34,7 @@ class PiperPlot():
     def __init__(self,msettings,activelayer):
         self.ms = msettings
         self.activelayer = activelayer
-        self.ParameterList=[]# ParameterList = ['Klorid, Cl','Alkalinitet, HCO3','Sulfat, SO4','Natrium, Na','Kalium, K','Kalcium, Ca','Magnesium, Mg']
-        self.ParameterList.append(self.ms.settingsdict['piper_cl'])
-        self.ParameterList.append(self.ms.settingsdict['piper_hco3'])
-        self.ParameterList.append(self.ms.settingsdict['piper_so4'])
-        self.ParameterList.append(self.ms.settingsdict['piper_na'])
-        self.ParameterList.append(self.ms.settingsdict['piper_k'])
-        self.ParameterList.append(self.ms.settingsdict['piper_ca'])
-        self.ParameterList.append(self.ms.settingsdict['piper_mg'])
-
+        self.CreateParameterSelection()
         self.GetSelectedObservations()
         self.GetPiperData()
         #self.GetSamplePiperData()#during development
@@ -50,6 +42,26 @@ class PiperPlot():
         #self.FinishPlotWindow()
 
     def big_sql(self):
+        # Data must be stored as mg/l in the database since it is converted to meq/l in code here...
+        sql = r"""select a.obsid as obsid, date_time, obs_points.type as type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl + K_meqPl as NaK_meqPl, Ca_meqPl, Mg_meqPl
+        from (select obsid, date_time, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl, K_meqPl, Ca_meqPl, Mg_meqPl
+            from (
+                  select obsid, date_time, 
+                      (max (case when %s then reading_num end))/35.453 as Cl_meqPl,
+                      (max (case when %s then reading_num end))/61.0168 as HCO3_meqPl,
+                      2*(max (case when %s then reading_num end))/96.063 as SO4_meqPl,
+                      (max (case when %s then reading_num end))/22.9898 as Na_meqPl,
+                      (max (case when %s then reading_num end))/39.0983 as K_meqPl,
+                      2*(max (case when %s then reading_num end))/40.078 as Ca_meqPl,
+                      2*(max (case when %s then reading_num end))/24.305 as Mg_meqPl
+                  from w_qual_lab where obsid in %s 
+                  group by obsid, date_time
+                )
+            where Ca_meqPl is not null and Mg_meqPl is not null and Na_meqPl is not null and K_meqPl is not null and HCO3_meqPl is not null and Cl_meqPl is not null and SO4_meqPl is not null
+            ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(self.ParameterList[0],self.ParameterList[1],self.ParameterList[2],self.ParameterList[3],self.ParameterList[4],self.ParameterList[5],self.ParameterList[6],(str(self.observations)).encode('utf-8').replace('[','(').replace(']',')'))
+        return sql
+
+    def big_sql_old(self):
         # Data must be stored as mg/l in the database since it is converted to meq/l in code here...
         sql = r"""select a.obsid as obsid, date_time, obs_points.type as type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl + K_meqPl as NaK_meqPl, Ca_meqPl, Mg_meqPl
         from (select obsid, date_time, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl, K_meqPl, Ca_meqPl, Mg_meqPl
@@ -68,6 +80,47 @@ class PiperPlot():
             where Ca_meqPl is not null and Mg_meqPl is not null and Na_meqPl is not null and K_meqPl is not null and HCO3_meqPl is not null and Cl_meqPl is not null and SO4_meqPl is not null
             ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(self.ParameterList[0],self.ParameterList[1],self.ParameterList[2],self.ParameterList[3],self.ParameterList[4],self.ParameterList[5],self.ParameterList[6],(str(self.observations)).encode('utf-8').replace('[','(').replace(']',')'))
         return sql
+
+    def CreateParameterSelection(self):
+        self.ParameterList=[]# ParameterList = ['Klorid, Cl','Alkalinitet, HCO3','Sulfat, SO4','Natrium, Na','Kalium, K','Kalcium, Ca','Magnesium, Mg']
+        if self.ms.settingsdict['piper_cl']!='':
+            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_cl'] + "'")
+        else:
+            self.ParameterList.append(r"""(parameter like '%klorid%' or parameter like '%chloride%')""")
+        if self.ms.settingsdict['piper_hco3']!='':
+            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_hco3'] + "'")
+        else:
+            self.ParameterList.append(r"""(parameter like '%alkalinitet%' or parameter like '%alcalinity%')""")
+        if self.ms.settingsdict['piper_so4']!='':
+            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_so4'] + "'")
+        else:
+            self.ParameterList.append(r"""(parameter like '%sulfat%' or parameter like '%sulphat%')""")
+        if self.ms.settingsdict['piper_na']!='':
+            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_na'] + "'")
+        else:
+            self.ParameterList.append(r"""(parameter like '%natrium%')""")
+        if self.ms.settingsdict['piper_k']!='':
+            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_k'] + "'")
+        else:
+            self.ParameterList.append(r"""(parameter like '%kalium%' or parameter like '%potassium%')""")
+        if self.ms.settingsdict['piper_ca']!='':
+            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_ca'] + "'")
+        else:
+            self.ParameterList.append(r"""(parameter like '%kalcium%' or parameter like '%calcium%')""")
+        if self.ms.settingsdict['piper_mg']!='':
+            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_mg'] + "'")
+        else:
+            self.ParameterList.append(r"""(parameter like '%magnesium%')""")
+
+    def CreateParameterSelection_old(self):
+        self.ParameterList=[]# ParameterList = ['Klorid, Cl','Alkalinitet, HCO3','Sulfat, SO4','Natrium, Na','Kalium, K','Kalcium, Ca','Magnesium, Mg']
+        self.ParameterList.append(self.ms.settingsdict['piper_cl'])
+        self.ParameterList.append(self.ms.settingsdict['piper_hco3'])
+        self.ParameterList.append(self.ms.settingsdict['piper_so4'])
+        self.ParameterList.append(self.ms.settingsdict['piper_na'])
+        self.ParameterList.append(self.ms.settingsdict['piper_k'])
+        self.ParameterList.append(self.ms.settingsdict['piper_ca'])
+        self.ParameterList.append(self.ms.settingsdict['piper_mg'])
 
     def GetSelectedObservations(self):
         obsar = utils.getselectedobjectnames(self.activelayer)
@@ -90,6 +143,7 @@ class PiperPlot():
     def GetPiperData(self):
         #These observations are supposed to be in mg/l and must be stored in a Midvatten database, table w_qual_lab
         sql = self.big_sql()
+        print sql
         # get data into a list: obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl, K_meqPl, Ca_meqPl, Mg_meqPl
         obsimport = utils.sql_load_fr_db(sql)[1]
         
