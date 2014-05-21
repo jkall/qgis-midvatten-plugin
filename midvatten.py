@@ -126,30 +126,30 @@ class midvatten:
         self.iface.registerMainWindowAction(self.actionPlotXY, "F9")   # The function should also be triggered by the F9 key
         QObject.connect(self.actionPlotXY, SIGNAL("triggered()"), self.PlotXY)
         
-        self.actionPlotPiper = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","Piper.png")), "Piper Diagram", self.iface.mainWindow())
+        self.actionPlotPiper = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","Piper.png")), "Piper diagram", self.iface.mainWindow())
         self.actionPlotPiper.setWhatsThis("Plot a rectangular Piper diagram for selected objects")
         QObject.connect(self.actionPlotPiper, SIGNAL("triggered()"), self.PlotPiper)
                 
-        self.actionPlotSQLite = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","plotsqliteicon.png")), "Custom Plots", self.iface.mainWindow())
+        self.actionPlotSQLite = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","plotsqliteicon.png")), "Custom plots", self.iface.mainWindow())
         self.actionPlotSQLite.setWhatsThis("Create custom plots for your reports")
         QObject.connect(self.actionPlotSQLite, SIGNAL("triggered()"), self.PlotSQLite)
         
-        self.actionPlotStratigraphy = QAction(QIcon(":/plugins/midvatten/icons/PlotStratigraphy.png"), "Plot stratigraphy", self.iface.mainWindow())
+        self.actionPlotStratigraphy = QAction(QIcon(":/plugins/midvatten/icons/PlotStratigraphy.png"), "Stratigraphy plot", self.iface.mainWindow())
         self.actionPlotStratigraphy.setWhatsThis("Show stratigraphy for selected objects (modified ARPAT)")
         self.iface.registerMainWindowAction(self.actionPlotStratigraphy, "F10")   # The function should also be triggered by the F10 key
         QObject.connect(self.actionPlotStratigraphy, SIGNAL("triggered()"), self.PlotStratigraphy)
         
-        self.actiondrillreport = QAction(QIcon(":/plugins/midvatten/icons/drill_report.png"), "General Report", self.iface.mainWindow())
+        self.actiondrillreport = QAction(QIcon(":/plugins/midvatten/icons/drill_report.png"), "General report", self.iface.mainWindow())
         self.actiondrillreport.setWhatsThis("Show a general report for the selected obs point")
         self.iface.registerMainWindowAction(self.actiondrillreport, "F11")   # The function should also be triggered by the F11 key
         QObject.connect(self.actiondrillreport, SIGNAL("triggered()"), self.drillreport)
 
-        self.actionwqualreport = QAction(QIcon(":/plugins/midvatten/icons/wqualreport.png"), "Water Quality Report", self.iface.mainWindow())
+        self.actionwqualreport = QAction(QIcon(":/plugins/midvatten/icons/wqualreport.png"), "Water quality report", self.iface.mainWindow())
         self.actionwqualreport.setWhatsThis("Show water quality for the selected obs point")
         self.iface.registerMainWindowAction(self.actionwqualreport, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionwqualreport, SIGNAL("triggered()"), self.waterqualityreport)
 
-        self.actionPlotSection = QAction(QIcon(":/plugins/midvatten/icons/PlotSection.png"), "Plot Section", self.iface.mainWindow())
+        self.actionPlotSection = QAction(QIcon(":/plugins/midvatten/icons/PlotSection.png"), "Section plot", self.iface.mainWindow())
         self.actionPlotSection.setWhatsThis("Plot a section with stratigraphy and water levels")
         #self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionPlotSection, SIGNAL("triggered()"), self.PlotSection)
@@ -167,8 +167,8 @@ class midvatten:
         self.toolBar.addAction(self.actionPlotXY)
         self.toolBar.addAction(self.actionPlotStratigraphy)
         self.toolBar.addAction(self.actionPlotSection)
-        self.toolBar.addAction(self.actionPlotPiper)
         self.toolBar.addAction(self.actionPlotSQLite)
+        self.toolBar.addAction(self.actionPlotPiper)
         self.toolBar.addAction(self.actiondrillreport)
         self.toolBar.addAction(self.actionwqualreport)
         #self.toolBar.addAction(self.actionChartMaker)
@@ -206,8 +206,8 @@ class midvatten:
         self.menu.plot_data_menu.addAction(self.actionPlotXY)
         self.menu.plot_data_menu.addAction(self.actionPlotStratigraphy)
         self.menu.plot_data_menu.addAction(self.actionPlotSection)
-        self.menu.plot_data_menu.addAction(self.actionPlotPiper)
         self.menu.plot_data_menu.addAction(self.actionPlotSQLite)
+        self.menu.plot_data_menu.addAction(self.actionPlotPiper)
 
         self.menu.report_menu = QMenu(QCoreApplication.translate("Midvatten", "&View report"))
         self.menu.addMenu(self.menu.report_menu)

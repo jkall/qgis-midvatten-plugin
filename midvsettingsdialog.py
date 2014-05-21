@@ -429,7 +429,9 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             if not column in columns:
                 text = "<font color=red>Wrong table! Column " + str(column) + " is missing.</font>"
         self.InfoTxtStratigraphy.setText(text)
-        
+        self.ms.settingsdict['stratigraphytable']=self.ListOfTables_3.currentText()
+        self.ms.saveSettings('stratigraphytable')#save this specific setting
+                
     def TSTableUpdated(self):
         """This method is called whenever time series table is changed"""
         # First, update combobox with columns
@@ -462,6 +464,8 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 self.ListOfColumns_WQUALVALUE.addItem(columnName)
                 self.ListOfColumns_WQUALUNIT.addItem(columnName)
                 self.ListOfColumns_WQUALSORTING.addItem(columnName)
+        self.ms.settingsdict['wqualtable']=self.ListOfTables_WQUAL.currentText()
+        self.ms.saveSettings('wqualtable')#save this specific setting
 
     def XYColumnsToComboBox(self, table=None):
         """This method fills comboboxes with columns for xyplot"""
@@ -492,3 +496,5 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         else:
             text = "<font color=red>Wrong table! obsid is missing.</font>"
         self.InfoTxtXYPlot.setText(text)
+        self.ms.settingsdict['xytable']=self.ListOfTables_2.currentText()
+        self.ms.saveSettings('xytable')#save this specific setting
