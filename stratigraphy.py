@@ -82,7 +82,6 @@ class Stratigraphy:
             data = self.store.getData(ids, lyr)    # added lyr as an argument!!!
         except DataSanityError, e: # if an object 'e' belonging to DataSanityError is created, then do following
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            QMessageBox.information(None, "Information", "Sorting...") 
             utils.pop_up_info("Data sanity problem, obsid: %s\n%s" % (e.sond_id, e.message))
             return
         except: # if an object 'e' belonging to DataSanityError is created, then do following

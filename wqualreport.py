@@ -61,9 +61,11 @@ class wqualreport():        # extracts water quality data for selected objects, 
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
 
     def GetData(self, dbPath='', obsid = ''):            # GetData method that returns a table with water quality data
-        conn = sqlite.connect(dbPath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        #conn = sqlite.connect(dbPath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        myconnection = utils.dbconnection()
+        myconnection.connect2db()
         # skapa en cursor
-        curs = conn.cursor()
+        curs = myconnection.conn.cursor()
 
         # Load all water quality parameters stored in two result columns: parameter, unit
         if not(unicode(self.settingsdict['wqual_unitcolumn']) ==''):          #If there is a a given column for unit 
@@ -128,7 +130,6 @@ class wqualreport():        # extracts water quality data for selected objects, 
         
         datecounter=1    # first 'column' is for parameter names
         for k, v in date_times:    # Loop through all report    
-            #if datecounter < 3: #debug
             parametercounter = 1    # first row is for obsid    
             ReportTable[parametercounter][datecounter] = v # v is date_time
             for p, u in parameters:
@@ -155,27 +156,23 @@ class wqualreport():        # extracts water quality data for selected objects, 
                     sql += """'"""
                 rs = curs.execute(sql) #Send SQL-syntax to cursor, NOTE: here we send sql which was utf-8 already from interpreting it
                 recs = rs.fetchall()  # All data are stored in recs
+                #each value must be in unicode or string to be written as html report
                 if recs:
                     try:
-                        the_value = recs[0][0] #unicode should be return from pysqlite
-                    except UnicodeError:
-                        try:
-                            the_value = unicode(recs[0][0])# if not, try converting to unicode
-                            qgis.utils.iface.messageBar().pushMessage("Note!","""Your db may contain characters with non-utf encoding, check the value %s which had to be converted to unicode!"""%the_value,0,duration=3)#debug
-                        except UnicodeError:
-                            the_value = recs[0][0].encode('utf-8') #if still encoding problems, try convert to byte string 
-                            qgis.utils.iface.messageBar().pushMessage("Note!","""Your db may contain characters with non-utf encoding, check the value %s which had to be converted to utf-8 byte string!"""%the_value,0,duration=3)#debug
-                        else: 
-                            the_value = 'Value could not be loaded, check database!'    # if it fails, load this string to let user know
-                    ReportTable[parametercounter][datecounter] =the_value
+                        ReportTable[parametercounter][datecounter] = utils.returnunicode(recs[0][0])
+                    except:
+                        ReportTable[parametercounter][datecounter]=''
+                        qgis.utils.iface.messageBar().pushMessage("Note!","The value for %s [%s] at %s, %s was not readable. Check your data!"%(p,u,k,v),0,duration=15)
                 else: 
                     ReportTable[parametercounter][datecounter] =' '
+
             datecounter = datecounter + 1
         self.htmlcols = datecounter + 1    # to be able to set a relevant width to the table
         parameters_cursor.close()
         date_times_cursor.close()
         rs.close()
-        conn.close()
+        #conn.close()
+        myconnection.closedb()
         return ReportTable
         
     def WriteHTMLReport(self, ReportData, f):            
@@ -186,14 +183,17 @@ class wqualreport():        # extracts water quality data for selected objects, 
         f.write(rpt)
         counter = 0
         for sublist in ReportData:
-            if counter <2:
-                rpt = "  <tr><th>"
-                rpt += "    </th><th width =\"75\">".join(sublist)
-                rpt += "  </th></tr>\n"
-            else:
-                rpt = "  <tr><td>"
-                rpt += "    </td><td align=\"right\">".join(sublist)
-                rpt += "  </td></tr>\n"
+            try:
+                if counter <2:
+                    rpt = "  <tr><th>"
+                    rpt += "    </th><th width =\"75\">".join(sublist)
+                    rpt += "  </th></tr>\n"
+                else:
+                    rpt = "  <tr><td>"
+                    rpt += "    </td><td align=\"right\">".join(sublist)
+                    rpt += "  </td></tr>\n"
+            except:
+                print "here was an error: ", sublist
             f.write(rpt)
             counter = counter + 1
         f.write("\n</table><p></p><p></p>")
