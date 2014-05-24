@@ -84,7 +84,8 @@ def settingsdict():    #These are the default settings, they shall not be change
             'piper_na':'Natrium, Na',
             'piper_k':'Kalium, K',
             'piper_ca':'Kalcium, Ca',
-            'piper_mg':'Magnesium, Mg'
+            'piper_mg':'Magnesium, Mg',
+            'piper_markers':'type'
             }
     return dictionary
     

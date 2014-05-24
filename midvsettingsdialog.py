@@ -78,6 +78,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.paramK, SIGNAL("activated(int)"), partial(self.ChangedParamK)) 
         self.connect(self.paramCa, SIGNAL("activated(int)"), partial(self.ChangedParamCa)) 
         self.connect(self.paramMg, SIGNAL("activated(int)"), partial(self.ChangedParamMg))         
+        self.connect(self.MarkerComboBox, SIGNAL("activated(int)"), partial(self.ChangedPiperMarkerComboBox))         
 
         #Draw the widget
         self.iface.addDockWidget(max(self.ms.settingsdict['settingslocation'],1), self)
@@ -158,6 +159,10 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def ChangedParamMg(self):
         self.ms.settingsdict['piper_mg']=self.paramMg.currentText()
         self.ms.saveSettings('piper_mg')
+
+    def ChangedPiperMarkerComboBox(self):
+        self.ms.settingsdict['piper_markers']=self.MarkerComboBox.currentText()
+        self.ms.saveSettings('piper_markers')
 
     def ClearColumnLists(self):
         self.ListOfColumns.clear()
@@ -308,6 +313,9 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             searchindex = self.paramMg.findText(self.ms.settingsdict['piper_mg'])
             if searchindex >= 0:
                 self.paramMg.setCurrentIndex(searchindex)
+            searchindex = self.MarkerComboBox.findText(self.ms.settingsdict['piper_markers'])
+            if searchindex >= 0:
+                self.MarkerComboBox.setCurrentIndex(searchindex)
 
             # finally, set dockwidget to last choosen tab
             self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['tabwidget']))

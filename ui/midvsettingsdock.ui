@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>381</width>
-    <height>686</height>
+    <height>688</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -90,7 +90,7 @@
       </property>
       <widget class="QWidget" name="TAB_TSPLOT_2">
        <attribute name="icon">
-        <iconset resource="../../../../../../mnt/hpserv/U_josef/My Documents/pythoncode/qgis_plugins/midvatten/resources.qrc">
+        <iconset resource="../resources.qrc">
          <normaloff>:/plugins/midvatten/icons/PlotTS.png</normaloff>:/plugins/midvatten/icons/PlotTS.png</iconset>
        </attribute>
        <attribute name="title">
@@ -110,8 +110,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>339</width>
-             <height>556</height>
+             <width>178</width>
+             <height>215</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_10">
@@ -252,7 +252,7 @@
       </widget>
       <widget class="QWidget" name="TAB_XYPLOT_2">
        <attribute name="icon">
-        <iconset resource="../../../../../../mnt/hpserv/U_josef/My Documents/pythoncode/qgis_plugins/midvatten/resources.qrc">
+        <iconset resource="../resources.qrc">
          <normaloff>:/plugins/midvatten/icons/PlotXY.png</normaloff>:/plugins/midvatten/icons/PlotXY.png</iconset>
        </attribute>
        <attribute name="title">
@@ -272,8 +272,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>339</width>
-             <height>556</height>
+             <width>176</width>
+             <height>376</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_21">
@@ -491,7 +491,7 @@
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="icon">
-        <iconset resource="../../../../../../mnt/hpserv/U_josef/My Documents/pythoncode/qgis_plugins/midvatten/resources.qrc">
+        <iconset resource="../resources.qrc">
          <normaloff>:/plugins/midvatten/icons/wqualreport.png</normaloff>:/plugins/midvatten/icons/wqualreport.png</iconset>
        </attribute>
        <attribute name="title">
@@ -511,8 +511,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>339</width>
-             <height>556</height>
+             <width>193</width>
+             <height>345</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_16">
@@ -705,7 +705,7 @@
       </widget>
       <widget class="QWidget" name="TAB_STRATIGRAPHY_2">
        <attribute name="icon">
-        <iconset resource="../../../../../../mnt/hpserv/U_josef/My Documents/pythoncode/qgis_plugins/midvatten/resources.qrc">
+        <iconset resource="../resources.qrc">
          <normaloff>:/plugins/midvatten/icons/PlotStratigraphy.png</normaloff>:/plugins/midvatten/icons/PlotStratigraphy.png</iconset>
        </attribute>
        <attribute name="title">
@@ -725,8 +725,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>339</width>
-             <height>556</height>
+             <width>98</width>
+             <height>133</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_19">
@@ -813,7 +813,7 @@
       </widget>
       <widget class="QWidget" name="TAB_PIPER_2">
        <attribute name="icon">
-        <iconset resource="../../../../../../mnt/hpserv/U_josef/My Documents/pythoncode/qgis_plugins/midvatten/resources.qrc">
+        <iconset resource="../resources.qrc">
          <normaloff>:/plugins/midvatten/icons/Piper.png</normaloff>:/plugins/midvatten/icons/Piper.png</iconset>
        </attribute>
        <attribute name="title">
@@ -833,65 +833,13 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>339</width>
-             <height>556</height>
+             <width>323</width>
+             <height>574</height>
             </rect>
            </property>
-           <layout class="QGridLayout" name="gridLayout_23">
+           <layout class="QGridLayout" name="gridLayout_11">
             <item row="0" column="0">
-             <layout class="QGridLayout" name="gridLayout_24">
-              <item row="8" column="0">
-               <widget class="QLabel" name="label_43">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>K, Potassium parameter:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="13" column="0">
-               <widget class="QComboBox" name="paramMg">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="toolTip">
-                 <string>parameter name for magnesium (mg/l)</string>
-                </property>
-               </widget>
-              </item>
-              <item row="10" column="0">
-               <widget class="QLabel" name="label_44">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Ca, Calcium parameter:</string>
-                </property>
-               </widget>
-              </item>
+             <layout class="QGridLayout" name="gridLayout_3">
               <item row="11" column="0">
                <widget class="QComboBox" name="paramCa">
                 <property name="enabled">
@@ -908,26 +856,10 @@
                 </property>
                </widget>
               </item>
-              <item row="9" column="0">
-               <widget class="QComboBox" name="paramK">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
+              <item row="15" column="0">
+               <widget class="QComboBox" name="MarkerComboBox">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="toolTip">
-                 <string>parameter name for potassium (mg/l)</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_40">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
@@ -937,42 +869,43 @@
                   <pointsize>10</pointsize>
                  </font>
                 </property>
-                <property name="text">
-                 <string>HCO3, Alcalinity parameter:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="0">
-               <widget class="QComboBox" name="paramNa">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
                 <property name="toolTip">
-                 <string>parameter name for Natrium (mg/l)</string>
+                 <string>select here to get unique markers</string>
                 </property>
+                <item>
+                 <property name="text">
+                  <string>obsid</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>type</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>date_time</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>obsid but no legend</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>simple marker</string>
+                 </property>
+                </item>
                </widget>
               </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="label_39">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
+              <item row="17" column="0">
+               <widget class="QLabel" name="Piperinfo">
                 <property name="text">
-                 <string>Cl, Chloride parameter:</string>
+                 <string>This feature assumes your water quality data is stored in a table &quot;w_qual_lab&quot; as in a midvatten default database. The parameters for piper diagrams must be given in mg/l and with the parameter names exactly as selected above.</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -1010,8 +943,8 @@
                 </property>
                </widget>
               </item>
-              <item row="5" column="0">
-               <widget class="QComboBox" name="paramSO4">
+              <item row="7" column="0">
+               <widget class="QComboBox" name="paramNa">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -1022,7 +955,7 @@
                  </sizepolicy>
                 </property>
                 <property name="toolTip">
-                 <string>parameter name for sulfate (mg/l)</string>
+                 <string>parameter name for Natrium (mg/l)</string>
                 </property>
                </widget>
               </item>
@@ -1044,28 +977,127 @@
                 </property>
                </widget>
               </item>
-              <item row="15" column="0">
-               <widget class="QLabel" name="Piperinfo">
-                <property name="text">
-                 <string>This feature assumes your water quality data is stored in a table &quot;w_qual_lab&quot; as in a midvatten default database. The parameters for piper diagrams must be given in mg/l and with the parameter names exactly as selected above.</string>
-                </property>
-                <property name="wordWrap">
+              <item row="5" column="0">
+               <widget class="QComboBox" name="paramSO4">
+                <property name="enabled">
                  <bool>true</bool>
+                </property>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>parameter name for sulfate (mg/l)</string>
                 </property>
                </widget>
               </item>
               <item row="14" column="0">
-               <spacer name="verticalSpacer_9">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
+               <widget class="QLabel" name="label_46">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
                 </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>40</height>
-                 </size>
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
-               </spacer>
+                <property name="text">
+                 <string>Markers unique for:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="0">
+               <widget class="QComboBox" name="paramK">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>parameter name for potassium (mg/l)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_39">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Cl, Chloride parameter:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_40">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>HCO3, Alcalinity parameter:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="0">
+               <widget class="QLabel" name="label_43">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>K, Potassium parameter:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="0">
+               <widget class="QLabel" name="label_44">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Ca, Calcium parameter:</string>
+                </property>
+               </widget>
               </item>
               <item row="3" column="0">
                <widget class="QComboBox" name="paramHCO3">
@@ -1080,6 +1112,22 @@
                 </property>
                 <property name="toolTip">
                  <string>parameter name for alcalinity (mg/l)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="13" column="0">
+               <widget class="QComboBox" name="paramMg">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>parameter name for magnesium (mg/l)</string>
                 </property>
                </widget>
               </item>
@@ -1101,6 +1149,19 @@
                 </property>
                </widget>
               </item>
+              <item row="16" column="0">
+               <spacer name="verticalSpacer_4">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
              </layout>
             </item>
            </layout>
@@ -1115,7 +1176,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../../../../../../mnt/hpserv/U_josef/My Documents/pythoncode/qgis_plugins/midvatten/resources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>
