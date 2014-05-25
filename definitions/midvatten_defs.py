@@ -38,7 +38,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'wqual_paramcolumn' : 'parameter',
             'wqual_valuecolumn' : 'reading_txt',
             'wqual_unitcolumn' : 'unit',
-            'wqual_sortingcolumn' : 'report',
+            'wqual_sortingcolumn' : '',
             'tabwidget' : 0,
             'secplotwlvltab' : 'w_levels',
             'secplotdates' : [],
