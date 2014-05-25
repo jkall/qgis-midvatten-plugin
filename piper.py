@@ -46,9 +46,11 @@ class PiperPlot():
             self.GetSelectedDateTimes()
             self.CreateMarkers()
         self.GetPiperData()
-        #self.GetSamplePiperData()#during development
+        #here is a simple printout (to python console) to let the user see the piper plot data
+        print """obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na+K_meqPl, Ca_meqPl, Mg_meqPl"""
+        for row in self.obsrecarray:
+            print ','.join([unicode(col).encode('utf-8') for col in row])
         self.MakeThePlot()
-        #self.FinishPlotWindow()
 
     def big_sql(self):
         # Data must be stored as mg/l in the database since it is converted to meq/l in code here...
@@ -63,26 +65,6 @@ class PiperPlot():
                       (max (case when %s then reading_num end))/39.0983 as K_meqPl,
                       2*(max (case when %s then reading_num end))/40.078 as Ca_meqPl,
                       2*(max (case when %s then reading_num end))/24.305 as Mg_meqPl
-                  from w_qual_lab where obsid in %s 
-                  group by obsid, date_time
-                )
-            where Ca_meqPl is not null and Mg_meqPl is not null and Na_meqPl is not null and K_meqPl is not null and HCO3_meqPl is not null and Cl_meqPl is not null and SO4_meqPl is not null
-            ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(self.ParameterList[0],self.ParameterList[1],self.ParameterList[2],self.ParameterList[3],self.ParameterList[4],self.ParameterList[5],self.ParameterList[6],(str(self.observations)).encode('utf-8').replace('[','(').replace(']',')'))
-        return sql
-
-    def big_sql_old(self):
-        # Data must be stored as mg/l in the database since it is converted to meq/l in code here...
-        sql = r"""select a.obsid as obsid, date_time, obs_points.type as type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl + K_meqPl as NaK_meqPl, Ca_meqPl, Mg_meqPl
-        from (select obsid, date_time, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl, K_meqPl, Ca_meqPl, Mg_meqPl
-            from (
-                  select obsid, date_time, 
-                      (max (case when parameter = '%s' then reading_num end))/35.453 as Cl_meqPl,
-                      (max (case when parameter = '%s' then reading_num end))/61.0168 as HCO3_meqPl,
-                      2*(max (case when parameter = '%s' then reading_num end))/96.063 as SO4_meqPl,
-                      (max (case when parameter = '%s' then reading_num end))/22.9898 as Na_meqPl,
-                      (max (case when parameter = '%s' then reading_num end))/39.0983 as K_meqPl,
-                      2*(max (case when parameter = '%s' then reading_num end))/40.078 as Ca_meqPl,
-                      2*(max (case when parameter = '%s' then reading_num end))/24.305 as Mg_meqPl
                   from w_qual_lab where obsid in %s 
                   group by obsid, date_time
                 )
@@ -134,16 +116,6 @@ class PiperPlot():
         else:
             self.ParameterList.append(r"""(parameter like '%magnesium%')""")
 
-    def CreateParameterSelection_old(self):
-        self.ParameterList=[]# ParameterList = ['Klorid, Cl','Alkalinitet, HCO3','Sulfat, SO4','Natrium, Na','Kalium, K','Kalcium, Ca','Magnesium, Mg']
-        self.ParameterList.append(self.ms.settingsdict['piper_cl'])
-        self.ParameterList.append(self.ms.settingsdict['piper_hco3'])
-        self.ParameterList.append(self.ms.settingsdict['piper_so4'])
-        self.ParameterList.append(self.ms.settingsdict['piper_na'])
-        self.ParameterList.append(self.ms.settingsdict['piper_k'])
-        self.ParameterList.append(self.ms.settingsdict['piper_ca'])
-        self.ParameterList.append(self.ms.settingsdict['piper_mg'])
-
     def GetSelectedDateTimes(self):
         sql1 = self.big_sql()
         sql2 = r""" select distinct date_time from (""" + sql1 + r""") order by date_time"""
@@ -165,20 +137,13 @@ class PiperPlot():
         sql = "select distinct type from obs_points where obsid in " +  str(self.observations).encode('utf-8').replace('[','(').replace(']',')')
         ConnOK, self.distincttypes = utils.sql_load_fr_db(sql)
         
-    def GetSamplePiperData(self):
-        self.observations=('Rb0917', 'Rb0918', 'Br1002', 'Rb0919', 'Br1101', 'snow', 'Br139', 'Br140', 'Br141', 'Br142', 'Rb1038', 'Br143', 'Rb1002', 'Rb1039', 'Rb1004', 'Rb1005', 'Rb1045', 'pegel Christenssen', 'Rb1015', 'Rb1016', 'Rb0905', 'Rb1055', 'Rb1021')
-        #These sample data are given in meq/l and the loaded columns are: #Type, Cl, HCO3, SO4, NaK, Ca, Mg, EC, NO3, Sicc
-        #observations are expected have meq/l units with parameters in the order: Cl, HCO3, SO4, Na, K, Ca, Mg
-        self.obs=loadtxt(r"""/home/josef/pythoncode/scripts/plot/ternary_plots/piper_rectangular_watersamples.txt""", delimiter='\t', comments='#') # first row with headers is skipped, matrix with data is assigned to obs (obs is a numpy array)
-        self.obs[self.obs == -9999] = NaN # if observations are missing, label them as -9999 (for example) in excel and make them Not a Number (NaN)
-
     def GetPiperData(self):
         #These observations are supposed to be in mg/l and must be stored in a Midvatten database, table w_qual_lab
         sql = self.big_sql()
-        # get data into a list: obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl, K_meqPl, Ca_meqPl, Mg_meqPl
+        # get data into a list: obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na+K_meqPl, Ca_meqPl, Mg_meqPl
         obsimport = utils.sql_load_fr_db(sql)[1]
         #convert to numpy ndarray W/O format specified
-        self.obsnp_nospecformat = np.array(obsimport) 
+        self.obsnp_nospecformat = np.array(obsimport)
         #define format
         """ some problems with string fields
         np.str_
