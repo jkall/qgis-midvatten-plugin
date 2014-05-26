@@ -89,12 +89,8 @@
        <number>4</number>
       </property>
       <widget class="QWidget" name="TAB_TSPLOT_2">
-       <attribute name="icon">
-        <iconset resource="../resources.qrc">
-         <normaloff>:/plugins/midvatten/icons/PlotTS.png</normaloff>:/plugins/midvatten/icons/PlotTS.png</iconset>
-       </attribute>
        <attribute name="title">
-        <string/>
+        <string>TSplot</string>
        </attribute>
        <attribute name="toolTip">
         <string>Time Series Plot</string>
@@ -110,8 +106,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>178</width>
-             <height>215</height>
+             <width>339</width>
+             <height>558</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_10">
@@ -251,12 +247,8 @@
        </layout>
       </widget>
       <widget class="QWidget" name="TAB_XYPLOT_2">
-       <attribute name="icon">
-        <iconset resource="../resources.qrc">
-         <normaloff>:/plugins/midvatten/icons/PlotXY.png</normaloff>:/plugins/midvatten/icons/PlotXY.png</iconset>
-       </attribute>
        <attribute name="title">
-        <string/>
+        <string>XYplot</string>
        </attribute>
        <attribute name="toolTip">
         <string>XY Scatter plot</string>
@@ -272,8 +264,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>176</width>
-             <height>376</height>
+             <width>339</width>
+             <height>558</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_21">
@@ -490,12 +482,8 @@
        </layout>
       </widget>
       <widget class="QWidget" name="tab_2">
-       <attribute name="icon">
-        <iconset resource="../resources.qrc">
-         <normaloff>:/plugins/midvatten/icons/wqualreport.png</normaloff>:/plugins/midvatten/icons/wqualreport.png</iconset>
-       </attribute>
        <attribute name="title">
-        <string/>
+        <string>WQual report</string>
        </attribute>
        <attribute name="toolTip">
         <string>W quality report</string>
@@ -511,8 +499,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>193</width>
-             <height>345</height>
+             <width>339</width>
+             <height>558</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_16">
@@ -704,12 +692,8 @@
        </layout>
       </widget>
       <widget class="QWidget" name="TAB_STRATIGRAPHY_2">
-       <attribute name="icon">
-        <iconset resource="../resources.qrc">
-         <normaloff>:/plugins/midvatten/icons/PlotStratigraphy.png</normaloff>:/plugins/midvatten/icons/PlotStratigraphy.png</iconset>
-       </attribute>
        <attribute name="title">
-        <string/>
+        <string>Stratigraphy</string>
        </attribute>
        <attribute name="toolTip">
         <string>Stratigraphy</string>
@@ -725,8 +709,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>133</height>
+             <width>339</width>
+             <height>558</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_19">
@@ -812,12 +796,8 @@
        </layout>
       </widget>
       <widget class="QWidget" name="TAB_PIPER_2">
-       <attribute name="icon">
-        <iconset resource="../resources.qrc">
-         <normaloff>:/plugins/midvatten/icons/Piper.png</normaloff>:/plugins/midvatten/icons/Piper.png</iconset>
-       </attribute>
        <attribute name="title">
-        <string/>
+        <string>Piper</string>
        </attribute>
        <attribute name="toolTip">
         <string>Piper Diagram</string>

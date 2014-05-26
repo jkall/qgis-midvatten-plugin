@@ -30,5 +30,6 @@
         <file>icons/load_vlf.png</file>
         <file>icons/plotsqliteicon.png</file>
         <file>icons/Piper.png</file>
+        <file>icons/Piper22x22.png</file>
     </qresource>
 </RCC>

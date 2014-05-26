@@ -24,7 +24,7 @@ from functools import partial # only to get combobox signals to work
 import locale
 import midvatten_utils as utils
 from definitions import midvatten_defs
-
+#from ui.midvsettingsdock_ui import Ui_MidDockSettings
 midvsettingsdock_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'midvsettingsdock.ui'))[0]
 
 class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS IS ONLY TO DEAL WITH THE SETTINGS DIALOG
