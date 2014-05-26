@@ -62,7 +62,8 @@ class newdb():
                     return ''
                     PyQt4.QtGui.QApplication.restoreOverrideCursor()
                 #First, find spatialite version
-                ConnectionOK, versionstext = utils.sql_load_fr_db('select spatialite_version()')
+                versionstext = cur.execute('select spatialite_version()').fetchall()
+                print versionstext
                 # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
                 # then the syntax defines a Midvatten project db according to the loaded .sql-file
                 if int(versionstext[0][0][0]) > 3: # which file to use depends on spatialite version installed
