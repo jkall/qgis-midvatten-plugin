@@ -19,6 +19,7 @@ deprecated=False
 
 changelog=
         - Warning! This is an unstable experimental release
+        - New feature: Piper diagram!
         - New feature: custom plots!
         - New feature: Section plot (unstable)!
         - New feature for calculating average water flow from accumulated water volume
