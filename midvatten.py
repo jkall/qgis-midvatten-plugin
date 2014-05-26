@@ -317,12 +317,13 @@ class midvatten:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.obslines_import()
-                if importinstance.status=='True':      #
-                    utils.pop_up_info("%s observation lines were imported to the database."%str(importinstance.recsafter - importinstance.recsbefore))
-                    #self.iface.messageBar().pushMessage("Info","%s observation lines were imported to the database."%str(importinstance.recsafter - importinstance.recsbefore), 0)
-                #else:  
-                    #self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
-                    #utils.pop_up_info("Something failed during import") 
+                if importinstance.status=='True': 
+                    self.iface.messageBar().pushMessage("Info","%s observation lines were imported to the database."%str(importinstance.recsafter - importinstance.recsbefore), 0)
+                    try:
+                        self.midvsettingsdialog.ClearEverything()
+                        self.midvsettingsdialog.LoadAndSelectLastSettings()
+                    except:
+                        pass
 
     def import_obs_points(self):
         errorsignal = 0
@@ -348,9 +349,12 @@ class midvatten:
                 #utils.pop_up_info(importinstance.status) #debugging
                 if importinstance.status=='True':      # 
                     utils.pop_up_info("%s observation points were imported to the database.\nTo display the imported points on map, select them in\nthe obs_points attribute table then update map position:\nMidvatten - Edit data in database - Update map position from coordinates"%str(importinstance.recsafter - importinstance.recsbefore))
-                #else:  
-                    #self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
-                    #utils.pop_up_info("Something failed during import") #for debugging
+                    #self.iface.messageBar().pushMessage("Info","%s observation points were imported to the database.\nTo display the imported points on map, select them in\nthe obs_points attribute table then update map position:\nMidvatten - Edit data in database - Update map position from coordinates"%str(importinstance.recsafter - importinstance.recsbefore), 0)                    
+                    try:
+                        self.midvsettingsdialog.ClearEverything()
+                        self.midvsettingsdialog.LoadAndSelectLastSettings()
+                    except:
+                        pass
 
     def import_seismics(self):
         errorsignal = 0
@@ -364,17 +368,19 @@ class midvatten:
                     utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
                     errorsignal = 1
 
-        if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
+        if errorsignal == 0: 
             sanity = utils.askuser("YesNo","""You are about to import interpreted seismic data, from a text file which must have one header row and 6 columns:\n\nobsid, length, ground, bedrock, gw_table, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nEmpty or null values are not allowed for obsid or length.\nEach combination of obsid and length must be unique.\n\nContinue?""",'Are you sure?')
-            #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.seismics_import()
-                if importinstance.status=='True':      #Why is this if statement? Nothing more is to be done! 
+                if importinstance.status=='True':  
                     self.iface.messageBar().pushMessage("Info","%s interpreted seismic data values were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
-                #else:  
-                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    try:
+                        self.midvsettingsdialog.ClearEverything()
+                        self.midvsettingsdialog.LoadAndSelectLastSettings()
+                    except:
+                        pass
 
     def import_stratigraphy(self):
         errorsignal = 0
@@ -391,15 +397,17 @@ class midvatten:
 
         if errorsignal == 0:        # unless none of the critical layers are in editing mode
             sanity = utils.askuser("YesNo","""You are about to import stratigraphy data, from a text file which must have one header row and 9 columns:\n1. obsid\n2. stratid - integer starting from ground surface and increasing downwards\n3. depth_top - depth to top of stratigraphy layer\n4. depth_bot - depth to bottom of stratigraphy layer\n5. geology - full description of layer geology\n6. geoshort - shortname for layer geology (see dicionary)\n7. capacity\n8. development - well development\n9. comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid or stratid, such rows will be excluded from the import.\nEach combination of obsid and stratid must be unique.\n\nContinue?""",'Are you sure?')
-            #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.strat_import()
                 if importinstance.status=='True':      # 
                     self.iface.messageBar().pushMessage("Info","%s stratigraphy layers were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
-                #else:  
-                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    try:
+                        self.midvsettingsdialog.ClearEverything()
+                        self.midvsettingsdialog.LoadAndSelectLastSettings()
+                    except:
+                        pass
                     
     def import_vlf(self):
         errorsignal = 0
@@ -423,8 +431,11 @@ class midvatten:
                 importinstance.vlf_import()
                 if importinstance.status=='True': 
                     self.iface.messageBar().pushMessage("Info","%s raw values of vlf measurements were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
-                #else:  
-                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    try:
+                        self.midvsettingsdialog.ClearEverything()
+                        self.midvsettingsdialog.LoadAndSelectLastSettings()
+                    except:
+                        pass
 
     def import_wflow(self):
         errorsignal = 0
@@ -448,8 +459,11 @@ class midvatten:
                 importinstance.wflow_import()
                 if importinstance.status=='True':      # 
                     self.iface.messageBar().pushMessage("Info","%s water flow readings were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
-                #else:  
-                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    try:
+                        self.midvsettingsdialog.ClearEverything()
+                        self.midvsettingsdialog.LoadAndSelectLastSettings()
+                    except:
+                        pass
 
     def import_wlvl(self):    
         errorsignal = 0
@@ -464,17 +478,19 @@ class midvatten:
                     utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
                     errorsignal = 1
 
-        if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
+        if errorsignal == 0:
             sanity = utils.askuser("YesNo","""You are about to import water level measurements, from a text file which must have one header row and 4 columns:\n\nobsid;date_time;meas;comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid or date_time, such rows will be excluded from the import.\nEmpty or null values are not accepted at the same time in both the columns meas and comment.\nEach combination of obsid and date_time must be unique.\n\nContinue?""",'Are you sure?')
-            #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.wlvl_import()
                 if importinstance.status=='True': 
                     self.iface.messageBar().pushMessage("Info","%s water level measurements were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
-                #else:  
-                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    try:
+                        self.midvsettingsdialog.ClearEverything()
+                        self.midvsettingsdialog.LoadAndSelectLastSettings()
+                    except:
+                        pass
                     
     def import_wlvllogg(self):#  - should be rewritten 
         errorsignal = 0
@@ -489,7 +505,7 @@ class midvatten:
                     utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
                     errorsignal = 1
 
-        if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
+        if errorsignal == 0:   
             if not (self.ms.settingsdict['database'] == ''):
                 if qgis.utils.iface.activeLayer():
                     if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':                
@@ -503,6 +519,12 @@ class midvatten:
                             importinstance = wlvlloggimportclass()
                             if not importinstance.status=='True':      
                                 self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                            else:
+                                try:
+                                    self.midvsettingsdialog.ClearEverything()
+                                    self.midvsettingsdialog.LoadAndSelectLastSettings()
+                                except:
+                                    pass                            
                 else:
                     self.iface.messageBar().pushMessage("Critical","You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!", 2)
             else: 
@@ -530,8 +552,11 @@ class midvatten:
                 importinstance.wqualfield_import()
                 if importinstance.status=='True':      # 
                     self.iface.messageBar().pushMessage("Info","%s water quality paramters were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
-                #else:  
-                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    try:
+                        self.midvsettingsdialog.ClearEverything()
+                        self.midvsettingsdialog.LoadAndSelectLastSettings()
+                    except:
+                        pass
                     
     def import_wqual_lab(self):
         errorsignal = 0
@@ -548,15 +573,17 @@ class midvatten:
 
         if errorsignal == 0:        # unless none of the critical layers are in editing mode
             sanity = utils.askuser("YesNo","""You are about to import water quality data from laboratory analysis, from a text file which must have one header row and the following 12 columns:\n\n1. obsid - must exist in obs_points table\n2. depth - sample depth (real number)\n3. report - each pair of 'report' & 'parameter' must be unique!\n4. project\n5. staff\n6. date_time - on format yyyy-mm-dd hh:mm(:ss)\n7. analysis_method\n8. parameter - water quality parameter name\n9. reading_num - param. value (real number, decimal separator=point(.))\n10. reading_txt - parameter value as text, including <, > etc\n11. unit\n12. comment - text string, avoid semicolon and commas\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid, report or parameter, such rows will be excluded from the import.\nEach combination of report and parameter must be unique.\n\nContinue?""",'Are you sure?')
-            #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.wquallab_import()
                 if importinstance.status=='True':      # 
                     self.iface.messageBar().pushMessage("Info","%s water quality parameters were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
-                #else:  
-                #    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    try:
+                        self.midvsettingsdialog.ClearEverything()
+                        self.midvsettingsdialog.LoadAndSelectLastSettings()
+                    except:
+                        pass
 
     def import_meteo(self):
         errorsignal = 0
@@ -581,13 +608,17 @@ class midvatten:
 
         if errorsignal == 0:        # unless none of the critical layers are in editing mode or the database is so old no meteo table exist
             sanity = utils.askuser("YesNo","""You are about to import meteorological data from, from a text file which must have one header row and 8 columns:\n\n"obsid", "instrumentid", "parameter", "date_time", "reading_num", "reading_txt", "unit", "comment"\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of parameters since all new parameters will silently be added to the database table zz_meteoparam during import.\nEmpty or null values are not allowed for obsid, instrumentid, parameter or date_time.\nEach combination of obsid, instrumentid, parameter and date_time must be unique.\n\nContinue?""",'Are you sure?')
-            #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.meteo_import()
-                if importinstance.status=='True':      # 
+                if importinstance.status=='True': 
                     self.iface.messageBar().pushMessage("Info","%s meteorological readings were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
+                    try:
+                        self.midvsettingsdialog.ClearEverything()
+                        self.midvsettingsdialog.LoadAndSelectLastSettings()
+                    except:
+                        pass
             
     def loadthelayers(self):            
         if self.ms.settingsareloaded == False:    # If this is the first thing the user does, then load settings from project file

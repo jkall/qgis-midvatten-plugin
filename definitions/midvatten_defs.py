@@ -427,6 +427,7 @@ def SQLiteInternalTables():
                 'virts_geometry_columns',
                 'geometry_columns_auth',
                 'geometry_columns_fields_infos',
+                'geometry_columns_field_infos',
                 'geometry_columns_statistics',
                 'sql_statements_log',
                 'layer_statistics',
