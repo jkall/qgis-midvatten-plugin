@@ -49,7 +49,11 @@ class PiperPlot():
         #here is a simple printout (to python console) to let the user see the piper plot data
         print """obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na+K_meqPl, Ca_meqPl, Mg_meqPl"""
         for row in self.obsrecarray:
-            print ','.join([unicode(col).encode('utf-8') for col in row])
+            #print ','.join([unicode(col).encode('utf-8') for col in row])
+            try:
+                print ','.join([utils.returnunicode(col) for col in row])
+            except:
+                print "failed printing piper data..."            
         self.MakeThePlot()
 
     def big_sql(self):
