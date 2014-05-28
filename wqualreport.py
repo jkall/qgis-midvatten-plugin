@@ -17,8 +17,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QUrl
-from PyQt4.QtGui import QDesktopServices
+from PyQt4.QtCore import QUrl, Qt
+from PyQt4.QtGui import QDesktopServices, QApplication, QCursor
 
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import os
@@ -28,6 +28,9 @@ import codecs
 
 class wqualreport():        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     def __init__(self,layer, settingsdict = {}):
+        #show the user this may take a long time...
+        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+
         self.settingsdict = settingsdict
         provider = layer.dataProvider()  # OGR provider
         kolumnindex = provider.fieldNameIndex('obsid') # To find the column named 'obsid'
@@ -57,9 +60,11 @@ class wqualreport():        # extracts water quality data for selected objects, 
         f.write("\n</body></html>")        
         f.close()
 
+        QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+
         if ReportData:
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
-
+        
     def GetData(self, dbPath='', obsid = ''):            # GetData method that returns a table with water quality data
         #conn = sqlite.connect(dbPath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
         myconnection = utils.dbconnection()
@@ -78,6 +83,7 @@ class wqualreport():        # extracts water quality data for selected objects, 
         sql += r""" where obsid = '"""
         sql += obsid  
         sql += r"""' ORDER BY parameter"""
+        print sql #debug
         parameters_cursor = curs.execute(sql) #Send SQL-syntax to cursor
         parameters = parameters_cursor.fetchall()
         if not parameters:
@@ -96,6 +102,7 @@ class wqualreport():        # extracts water quality data for selected objects, 
         sql += obsid 
         sql += """' ORDER BY date_time"""
         #sql2 = unicode(sql) #To get back to unicode-string
+        print sql#debug
         date_times_cursor = curs.execute(sql) #Send SQL-syntax to cursor,
         date_times = date_times_cursor.fetchall()
 
@@ -133,6 +140,7 @@ class wqualreport():        # extracts water quality data for selected objects, 
             parametercounter = 1    # first row is for obsid    
             ReportTable[parametercounter][datecounter] = v # v is date_time
             for p, u in parameters:
+                print p, u #debug
                 parametercounter = parametercounter + 1 # one 'row' down after date was stored
                 sql =r"""SELECT """
                 sql += self.settingsdict['wqual_valuecolumn']
@@ -154,6 +162,7 @@ class wqualreport():        # extracts water quality data for selected objects, 
                     sql += """' and parameter = '"""
                     sql += p
                     sql += """'"""
+                print sql #debug
                 rs = curs.execute(sql) #Send SQL-syntax to cursor, NOTE: here we send sql which was utf-8 already from interpreting it
                 recs = rs.fetchall()  # All data are stored in recs
                 #each value must be in unicode or string to be written as html report
