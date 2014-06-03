@@ -472,6 +472,10 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 self.ListOfColumns_WQUALVALUE.addItem(columnName)
                 self.ListOfColumns_WQUALUNIT.addItem(columnName)
                 self.ListOfColumns_WQUALSORTING.addItem(columnName)
+        self.ChangedListOfColumnsWQualParam()
+        self.ChangedListOfColumnsWQualValue()
+        self.ChangedListOfColumnsWQualUnit()
+        self.ChangedListOfColumnsWQualSorting()        
         self.ms.settingsdict['wqualtable']=self.ListOfTables_WQUAL.currentText()
         self.ms.saveSettings('wqualtable')#save this specific setting
 

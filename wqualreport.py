@@ -90,11 +90,11 @@ class wqualreport():        # extracts water quality data for selected objects, 
             return False
 
         # Load all date_times, stored in two result columns: reportnr, date_time
-        if not (self.settingsdict['wqual_sortingcolumn'] == ''):          #If there is a a specific reportnr 
+        if not (self.settingsdict['wqual_sortingcolumn'] == ''):          #If there is a a specific sorting column
             sql =r"""select distinct """
             sql += self.settingsdict['wqual_sortingcolumn']
             sql += r""", date_time from """      #including parameters
-        else:                     # IF no specific column exist for report
+        else:                     # IF no specific column exist for sorting
             sql =r"""select distinct date_time, date_time from """      # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
         sql += self.settingsdict['wqualtable']
         sql += """ where obsid = '"""
