@@ -323,9 +323,9 @@ class drillreport():        # general observation point info for the selected ob
         
         sql = r"""SELECT x.obsid, x.meas as median from (select obsid, meas FROM w_levels WHERE obsid = '"""
         sql += obsid
-        sql += r"""') as x, (select obsid, meas FROM w_levels WHERE obsid = '"""
+        sql += r"""' and (typeof(meas)=typeof(0.01) or typeof(meas)=typeof(1))) as x, (select obsid, meas FROM w_levels WHERE obsid = '"""
         sql += obsid
-        sql += r"""') as y GROUP BY x.meas HAVING SUM(CASE WHEN y.meas <= x.meas THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.meas >= x.meas THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
+        sql += r"""' and (typeof(meas)=typeof(0.01) or typeof(meas)=typeof(1))) as y GROUP BY x.meas HAVING SUM(CASE WHEN y.meas <= x.meas THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.meas >= x.meas THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
         ConnectionOK, median_value = utils.sql_load_fr_db(sql)
         if median_value:
             Statistics_list[1] = median_value[0][1]

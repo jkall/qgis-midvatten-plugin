@@ -83,7 +83,6 @@ class wqualreport():        # extracts water quality data for selected objects, 
         sql += r""" where obsid = '"""
         sql += obsid  
         sql += r"""' ORDER BY parameter"""
-        print sql #debug
         parameters_cursor = curs.execute(sql) #Send SQL-syntax to cursor
         parameters = parameters_cursor.fetchall()
         if not parameters:
@@ -102,7 +101,6 @@ class wqualreport():        # extracts water quality data for selected objects, 
         sql += obsid 
         sql += """' ORDER BY date_time"""
         #sql2 = unicode(sql) #To get back to unicode-string
-        print sql#debug
         date_times_cursor = curs.execute(sql) #Send SQL-syntax to cursor,
         date_times = date_times_cursor.fetchall()
 
@@ -140,7 +138,6 @@ class wqualreport():        # extracts water quality data for selected objects, 
             parametercounter = 1    # first row is for obsid    
             ReportTable[parametercounter][datecounter] = v # v is date_time
             for p, u in parameters:
-                print p, u #debug
                 parametercounter = parametercounter + 1 # one 'row' down after date was stored
                 sql =r"""SELECT """
                 sql += self.settingsdict['wqual_valuecolumn']
@@ -162,7 +159,6 @@ class wqualreport():        # extracts water quality data for selected objects, 
                     sql += """' and parameter = '"""
                     sql += p
                     sql += """'"""
-                print sql #debug
                 rs = curs.execute(sql) #Send SQL-syntax to cursor, NOTE: here we send sql which was utf-8 already from interpreting it
                 recs = rs.fetchall()  # All data are stored in recs
                 #each value must be in unicode or string to be written as html report
