@@ -144,7 +144,7 @@ class drillreport():        # general observation point info for the selected ob
         if utils.returnunicode(GeneralData[0][14]) != '':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'nordlig koordinat' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][14]) + ' (' + CRSname  + ', EPSG:' + CRS + ')</TD></TR>'
         if utils.returnunicode(GeneralData[0][13]) != '' and utils.returnunicode(GeneralData[0][14]) != '' and utils.returnunicode(GeneralData[0][15]) != '':
-            rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'lägesnoggrannhet' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][15]) + '</TD></TR>'
+            rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'lägesonoggrannhet' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][15]) + '</TD></TR>'
         if utils.returnunicode(GeneralData[0][7]) != '':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'material' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][7]) + '</TD></TR>'
         if utils.returnunicode(GeneralData[0][6]) != '':
