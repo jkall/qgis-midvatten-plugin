@@ -348,32 +348,32 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         #filtre1_1_selection
         for index in xrange(self.Filter1_QListWidget_1.count()):
             for item in self.ms.settingsdict['custplot_filter1_1_selection']:
-                if self.Filter1_QListWidget_1.item(index).text()==str(item):
+                if self.Filter1_QListWidget_1.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
                      self.Filter1_QListWidget_1.item(index).setSelected(True)
         #filtre2_1_selection
         for index in xrange(self.Filter2_QListWidget_1.count()):
             for item in self.ms.settingsdict['custplot_filter2_1_selection']:
-                if self.Filter2_QListWidget_1.item(index).text()==str(item):
+                if self.Filter2_QListWidget_1.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
                      self.Filter2_QListWidget_1.item(index).setSelected(True)
         #filtre1_2_selection
         for index in xrange(self.Filter1_QListWidget_2.count()):
             for item in self.ms.settingsdict['custplot_filter1_2_selection']:
-                if self.Filter1_QListWidget_2.item(index).text()==str(item):
+                if self.Filter1_QListWidget_2.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
                      self.Filter1_QListWidget_2.item(index).setSelected(True)
         #filtre2_2_selection
         for index in xrange(self.Filter2_QListWidget_2.count()):
             for item in self.ms.settingsdict['custplot_filter2_2_selection']:
-                if self.Filter2_QListWidget_2.item(index).text()==str(item):
+                if self.Filter2_QListWidget_2.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
                      self.Filter2_QListWidget_2.item(index).setSelected(True)
         #filtre1_3_selection
         for index in xrange(self.Filter1_QListWidget_3.count()):
             for item in self.ms.settingsdict['custplot_filter1_3_selection']:
-                if self.Filter1_QListWidget_3.item(index).text()==str(item):
+                if self.Filter1_QListWidget_3.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
                      self.Filter1_QListWidget_3.item(index).setSelected(True)
         #filtre2_3_selection
         for index in xrange(self.Filter2_QListWidget_3.count()):
             for item in self.ms.settingsdict['custplot_filter2_3_selection']:
-                if self.Filter2_QListWidget_3.item(index).text()==str(item):
+                if self.Filter2_QListWidget_3.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
                      self.Filter2_QListWidget_3.item(index).setSelected(True)
         #plottype1
         searchindex = self.PlotType_comboBox_1.findText(self.ms.settingsdict['custplot_plottype1'])
