@@ -38,6 +38,7 @@ import customplot
 from midvsettings import midvsettings
 import midvsettingsdialog
 from piper import PiperPlot
+#import profilefromdem
 
 class midvatten:
     def __init__(self, iface): # Might need revision of variables and method for loading default variables

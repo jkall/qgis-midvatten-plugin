@@ -89,6 +89,8 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         ok = utils.sql_alter_db(sql)
         sql = r"""DELETE FROM geometry_columns WHERE "f_table_name"='%s'"""%self.temptableName
         ok = utils.sql_alter_db(sql)
+        sql = r"""DELETE FROM spatialite_history WHERE "table_name"='%s'"""%self.temptableName
+        ok = utils.sql_alter_db(sql)
         
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
         

@@ -28,7 +28,9 @@ changelog=
         - New behaviour during imports - empty readings (real number) are from now on imported as null instead of zero
         - minor html report changes
         - Fix slow/erroneous creation of spatialite databases under splite 4 (InitSpatialMetadata(1))
-        - a number of code cleanups and bug fixes
+        - a number of code cleanups and bug fixes, in 1.099n:
+                -removing temporary_section_line records in the spatialite database table spatialite_history
+                -fix for failng data sanity checks during import (w_qual_field duplicates)
 
 ;for the new plugin repo
 about=The plugin is a toolset for using QGIS to manage observational data from hydrogeological investigations. Data is stored in a spatialite database. 
