@@ -7,6 +7,23 @@ THIS FILE ONLY FOR HISTORICAL RESONS, IF I NEED TO PICK UP A PARTICULAR VERSION 
 [+] add
 [-] remove/bugfix
 
+2014 - countless number of features and bug fixes in 1.0.99, among others:
+        - New feature: Piper diagram!
+        - New feature: custom plots!
+        - New feature: Section plot (unstable)!
+        - New feature for calculating average water flow from accumulated water volume
+        - New feature _and_ database design: import of meteorological data into a new table "meteo" in database
+        - Minor database design changes: now "w_levels"."level_masl" may be null and is no longer -999 by default
+        - New behaviour during imports - empty readings (real number) are from now on imported as null instead of zero
+        - minor html report changes
+        - Fix slow/erroneous creation of spatialite databases under splite 4 (InitSpatialMetadata(1))
+        - 1.099o:
+                -changed database vacuuming behaviour to speed up repeated data imports to big databases
+        - 1.099n:
+                -removing temporary_section_line records in the spatialite database table spatialite_history
+                -fix for failng data sanity checks during import (w_qual_field duplicates)
+        -1.0.99m:
+                -...
  
 23.10.2013 - version 1.0.4
         - Now csv files with more columns than needed will not interrupt import. Additional columns only neglected during import.

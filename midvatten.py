@@ -160,6 +160,10 @@ class midvatten:
         #self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionChartMaker, SIGNAL("triggered()"), self.ChartMaker)
 
+        self.actionVacuumDB = QAction(QIcon(":/plugins/midvatten/icons/vacuum.png"), "Vacuum the database", self.iface.mainWindow())
+        self.actionVacuumDB.setWhatsThis("Perform database vacuuming")
+        QObject.connect(self.actionVacuumDB, SIGNAL("triggered()"), self.VacuumDB)
+
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
         self.toolBar.addAction(self.actionsetup)
@@ -215,8 +219,13 @@ class midvatten:
         self.menu.report_menu.addAction(self.actiondrillreport)
         self.menu.report_menu.addAction(self.actionwqualreport)
 
+        self.menu.db_manage_menu = QMenu(QCoreApplication.translate("Midvatten", "&Database management"))
+        self.menu.addMenu(self.menu.db_manage_menu)
+        self.menu.db_manage_menu.addAction(self.actionNewDB)
+        self.menu.db_manage_menu.addAction(self.actionVacuumDB)
+        
         self.menu.addSeparator()
-        self.menu.addAction(self.actionNewDB)
+
         self.menu.addAction(self.actionloadthelayers)   
         self.menu.addAction(self.actionsetup)
         self.menu.addAction(self.actionresetSettings)
@@ -852,7 +861,17 @@ class midvatten:
                     utils.pop_up_info("You have to select/activate obs_points layer!")
             else:
                 utils.pop_up_info("Check settings! \nSelect database first!")        
-            
+
+    def VacuumDB(self):
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file    
+            self.ms.loadSettings()    
+        if not (self.ms.settingsdict['database'] == ''):
+            utils.sql_alter_db('vacuum')
+        else:
+            self.iface.messageBar().pushMessage("Error","You need to specify database in Midvatten Settings. Reset if needed.", 2,duration=15)
+        QApplication.restoreOverrideCursor()
+
     def waterqualityreport(self):
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file
             self.ms.loadSettings()    

@@ -58,7 +58,7 @@ class askuser(QtGui.QDialog):
         #pop_up_info("question = " + question + " and msg = " + msg)        #DEBUGGING
         self.result = ''
         if question == 'YesNo':         #  Yes/No dialog 
-            reply = QtGui.QMessageBox.information(parent, dialogtitle, msg, QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+            reply = QtGui.QMessageBox.information(parent, dialogtitle, msg, QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
             if reply==QtGui.QMessageBox.Yes:
                 self.result = 1 #1 = "yes"
             else:

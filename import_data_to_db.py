@@ -69,7 +69,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def obsp_import(self): 
@@ -95,7 +96,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def seismics_import(self): 
@@ -121,7 +123,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def strat_import(self): 
@@ -147,7 +150,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
     def vlf_import(self): 
@@ -173,7 +177,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
     def wflow_import(self): #please note the particular behaviour of adding additional flowtypes to table zz_flowtype
@@ -207,7 +212,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
     def meteo_import(self): #please note the particular behaviour of adding additional flowtypes to table zz_meteoparam
@@ -241,7 +247,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
     def wlvl_import(self): 
@@ -267,7 +274,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
     def wquallab_import(self): 
@@ -293,7 +301,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
     def wqualfield_import(self): 
@@ -319,7 +328,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def VerifyIDInMajorTable(self,MajorTable): #for all tables with foreign key = obsid
@@ -491,11 +501,18 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         curs.close()
         conn.close()
 
+    def SanityCheckVacuumDB(self):
+        sanity = utils.askuser("YesNo","""It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""",'Vacuum the database?')
+        if sanity.result == 1:
+            PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
 """ Note, thes class below is a quickfix and should be incorporated into the a multi-import class above instead. As soon as there is time for code cleanup..."""
 class wlvlloggimportclass():
 
     def __init__(self):
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.csvpath = ''
         self.temptableName = 'temporary_logg_lvl'
         self.status = 'False' #Changed to True if uploadQgisVectorLayer succeeds
@@ -546,10 +563,13 @@ class wlvlloggimportclass():
             else:
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
 
-            
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
-
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            sanity = utils.askuser("YesNo","""It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""",'Vacuum the database?')
+            if sanity.result == 1:
+                PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+                utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+                PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
     def selectcsv(self):     
         """Select the csv file"""

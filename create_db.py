@@ -45,7 +45,7 @@ class newdb():
             utils.pop_up_info("Cancelling...")
         else: # If a CRS is selectd, go on and create the database
             #path and name of new db
-            self.dbpath = PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","Midv_obsdb.sqlite","Spatialite (*.sqlite)")
+            self.dbpath = PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)")
             if not self.dbpath: 
                 return ''
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
