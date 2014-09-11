@@ -26,6 +26,14 @@ import qgis.utils
 import resources  # Initialize Qt resources from file resources.py
 import os.path
 import sys
+import shutil
+import zipfile
+try:
+    import zlib
+    compression = zipfile.ZIP_DEFLATED
+except:
+    compression = zipfile.ZIP_STORED
+import datetime
 from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
@@ -164,6 +172,10 @@ class midvatten:
         self.actionVacuumDB.setWhatsThis("Perform database vacuuming")
         QObject.connect(self.actionVacuumDB, SIGNAL("triggered()"), self.VacuumDB)
 
+        self.actionZipDB = QAction(QIcon(":/plugins/midvatten/icons/zip.png"), "Backup the database", self.iface.mainWindow())
+        self.actionZipDB.setWhatsThis("A compressed copy of the database will be placed in same directory as the db.")
+        QObject.connect(self.actionZipDB, SIGNAL("triggered()"), self.ZipDB)
+
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
         self.toolBar.addAction(self.actionsetup)
@@ -223,6 +235,7 @@ class midvatten:
         self.menu.addMenu(self.menu.db_manage_menu)
         self.menu.db_manage_menu.addAction(self.actionNewDB)
         self.menu.db_manage_menu.addAction(self.actionVacuumDB)
+        self.menu.db_manage_menu.addAction(self.actionZipDB)
         
         self.menu.addSeparator()
 
@@ -278,6 +291,38 @@ class midvatten:
         f_out.close()
         dlg = utils.HtmlDialog("About Midvatten plugin for QGIS",QUrl.fromLocalFile(ABOUT_outputfile))
         dlg.exec_()
+
+    def aveflowcalculate(self):            
+        errorsignal = 0
+        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+            self.ms.loadSettings()    
+            
+        allcritical_layers = ('obs_points', 'w_flow')     #Check that none of these layers are in editing mode
+        for layername in allcritical_layers:
+            layerexists = utils.find_layer(str(layername))
+            if layerexists:
+                if layerexists.isEditable():
+                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calculating water level.", "Warning")
+                    errorsignal = 1
+
+        if self.ms.settingsdict['database'] == '': #Check that database is selected
+            utils.pop_up_info("Check settings! \nSelect database first!")        
+            errorsignal = 1
+
+        layer = qgis.utils.iface.activeLayer()
+        if layer:
+            if utils.selection_check(layer) == 'ok':
+                pass
+            else:
+                errorsignal = 1
+        else:
+            utils.pop_up_info("You have to select a relevant layer!")
+            errorsignal = 1
+
+        if not(errorsignal == 1):     
+            from w_flow_calc_aveflow import calcave
+            dlg = calcave(self.iface.mainWindow()) 
+            dlg.exec_()
 
     def ChartMaker(self): #  - Not ready - 
         if self.ms.settingsareloaded == False:    # If this is the first thing the user does, then load settings from project file
@@ -864,7 +909,7 @@ class midvatten:
 
     def VacuumDB(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
-        if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file    
+        if self.ms.settingsareloaded == False:    # If the first thing the user does is to vacuum, then load settings from project file    
             self.ms.loadSettings()    
         if not (self.ms.settingsdict['database'] == ''):
             utils.sql_alter_db('vacuum')
@@ -963,37 +1008,28 @@ class midvatten:
             else: 
                 utils.pop_up_info("Check settings! \nYou have to select database first!")
 
-    def aveflowcalculate(self):            
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
+    def ZipDB(self):
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        if self.ms.settingsareloaded == False:    # If the first thing the user does is to ZipDB, then load settings from project file    
             self.ms.loadSettings()    
-            
-        allcritical_layers = ('obs_points', 'w_flow')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calculating water level.", "Warning")
-                    errorsignal = 1
-
-        if self.ms.settingsdict['database'] == '': #Check that database is selected
-            utils.pop_up_info("Check settings! \nSelect database first!")        
-            errorsignal = 1
-
-        layer = qgis.utils.iface.activeLayer()
-        if layer:
-            if utils.selection_check(layer) == 'ok':
-                pass
-            else:
-                errorsignal = 1
+        if not (self.ms.settingsdict['database'] == ''):
+            connection = utils.dbconnection()
+            connection.connect2db()
+            connection.conn.cursor().execute("begin immediate")
+            #utils.sql_load_fr_db('begin immediate')
+            bkupname = self.ms.settingsdict['database'] + datetime.datetime.now().strftime('%Y%m%dT%H%M') + '.zip'
+            #shutil.copyfile (self.ms.settingsdict['database'], bkupname + 'bkup')
+            zf = zipfile.ZipFile(bkupname, mode='w')
+            zf.write(self.ms.settingsdict['database'], compress_type=compression) #compression will depend on if zlib is found or not
+            zf.close()
+            #utils.sql_load_fr_db('rollback')
+            #connection.conn.cursor().execute("select count(*) from sqlite_master")
+            connection.conn.rollback()
+            connection.closedb()
+            self.iface.messageBar().pushMessage("Information","Database backup was written to " + bkupname, 1,duration=15)
         else:
-            utils.pop_up_info("You have to select a relevant layer!")
-            errorsignal = 1
-
-        if not(errorsignal == 1):     
-            from w_flow_calc_aveflow import calcave
-            dlg = calcave(self.iface.mainWindow()) 
-            dlg.exec_()
+            self.iface.messageBar().pushMessage("Error","You need to specify database in Midvatten Settings. Reset if needed.", 2,duration=15)
+        QApplication.restoreOverrideCursor()
 
     def cleaning2(self):        #clean up after closing section plot Dock dialog --TO BE REMOVED SINCE THIS IS NEVER USED!!!
                 print 'cleaning the dock house'

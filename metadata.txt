@@ -31,6 +31,7 @@ changelog=
         - a number of code cleanups and bug fixes, in 1.099o:
                 -changed database vacuuming behaviour to speed up repeated data imports to big databases
                 -new feature for vacuuming
+                -new feature for database backup
                 -plugin menu changes
 
 ;for the new plugin repo

@@ -32,5 +32,6 @@
         <file>icons/Piper.png</file>
         <file>icons/Piper22x22.png</file>
         <file>icons/vacuum.png</file>
+        <file>icons/zip.png</file>
     </qresource>
 </RCC>
