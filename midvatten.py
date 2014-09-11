@@ -26,7 +26,6 @@ import qgis.utils
 import resources  # Initialize Qt resources from file resources.py
 import os.path
 import sys
-import shutil
 import zipfile
 try:
     import zlib
@@ -1016,14 +1015,10 @@ class midvatten:
             connection = utils.dbconnection()
             connection.connect2db()
             connection.conn.cursor().execute("begin immediate")
-            #utils.sql_load_fr_db('begin immediate')
             bkupname = self.ms.settingsdict['database'] + datetime.datetime.now().strftime('%Y%m%dT%H%M') + '.zip'
-            #shutil.copyfile (self.ms.settingsdict['database'], bkupname + 'bkup')
             zf = zipfile.ZipFile(bkupname, mode='w')
             zf.write(self.ms.settingsdict['database'], compress_type=compression) #compression will depend on if zlib is found or not
             zf.close()
-            #utils.sql_load_fr_db('rollback')
-            #connection.conn.cursor().execute("select count(*) from sqlite_master")
             connection.conn.rollback()
             connection.closedb()
             self.iface.messageBar().pushMessage("Information","Database backup was written to " + bkupname, 1,duration=15)
