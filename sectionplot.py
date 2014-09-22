@@ -14,6 +14,7 @@
 Major parts of the code is re-used from the profiletool plugin:
 # Copyright (C) 2008  Borys Jurgiel
 # Copyright (C) 2012  Patrice Verchere 
+Code is also re-used from the qprof plugin by Mauro Alberti, Marco Zanieri
 
 SAKNAS:
 1. (input och plottning av seismik, vlf etc längs med linjen) - efter release alpha
@@ -24,7 +25,7 @@ import PyQt4.QtGui
 from qgis.core import *
 
 import numpy as np
-import sys
+import sys, os
 import locale
 import matplotlib
 import matplotlib.pyplot as plt
@@ -33,8 +34,14 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import pyspatialite.dbapi2 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
 import midvatten_utils as utils
-from ui.secplotdockwidget_ui import Ui_SecPlotDock
+
+#from ui.secplotdockwidget_ui import Ui_SecPlotDock
+from PyQt4 import uic
+Ui_SecPlotDock =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'secplotdockwidget_ui.ui'))[0]
+
 import definitions.midvatten_defs as defs
+from tools.sec_tools import loaded_monoband_raster_layers
+import tools.sampledem as sampledem 
 
 class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
     def __init__(self, parent1, iface1):#Please note, self.selected_obsids must be a tuple
@@ -53,13 +60,25 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #self.setWindowTitle("Midvatten plugin - section plot") # Set the title for the dialog
         self.initUI()
 
+    def connection(self):#from qspatialite, it is only used by self.uploadQgisVectorLayer
+        """ Create connexion if not yet connected and Return connexion object for the current DB"""
+        try:
+            return self.connectionObject
+        except:
+            try:
+                dbpath = QgsProject.instance().readEntry("Midvatten","database")
+                self.connectionObject=sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+                return self.connectionObject
+            except sqlite.OperationalError, Msg:
+                utils.pop_up_info("Can't connect to DataBase: %s\nError %s"%(self.path,Msg))
+
     def doit(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
         #show the user this may take a long time...
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))
         #settings must be recieved here since plot windows may stay open (hence sectionplot instance activated) while a new qgis project is opened or midv settings are chaned 
         self.ms = msettings
         #Draw the widget
-        print "secplotlocation is " + str(self.ms.settingsdict['secplotlocation'])#debug
+        #print "secplotlocation is " + str(self.ms.settingsdict['secplotlocation'])#debug
         self.iface.addDockWidget(max(self.ms.settingsdict['secplotlocation'],1), self)
         self.iface.mapCanvas().setRenderFlag(True)        
 
@@ -99,20 +118,62 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #draw plot
         self.DrawPlot()
 
-    def initUI(self):
-        #connect signal
-        self.pushButton.clicked.connect(self.DrawPlot)
+    def DrawPlot(self):
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
+        try:
+            self.annotationtext.remove()
+            #print 'removed it'#debug
+        except:
+            pass
+        self.secax.clear()
+        #load user settings from the ui
+        self.ms.settingsdict['secplotwlvltab'] = unicode(self.wlvltableComboBox.currentText())
+        temporarystring = self.datetimetextEdit.toPlainText() #this needs some cleanup
+        self.ms.settingsdict['secplotdates']=temporarystring.split()
+        self.ms.settingsdict['secplottext'] = self.textcolComboBox.currentText()
+        self.ms.settingsdict['secplotbw'] = self.barwidthdoubleSpinBox.value()
+        self.ms.settingsdict['secplotdrillstop'] = self.drillstoplineEdit.text()
+        #fix Floating Bar Width in percents of xmax - xmin
+        xmax, xmin =float(max(self.LengthAlong)), float(min(self.LengthAlong))
+        self.barwidth = (self.ms.settingsdict['secplotbw']/100.0)*(xmax -xmin)
         
-        # Create a plot window with one single subplot
-        self.secfig = plt.figure()
-        self.secax = self.secfig.add_subplot( 111 )
-        self.canvas = FigureCanvas( self.secfig )
-        
-        self.mpltoolbar = NavigationToolbar( self.canvas, self.plotareawidget )
-        lstActions = self.mpltoolbar.actions()
-        self.mpltoolbar.removeAction( lstActions[ 7 ] )
-        self.mplplotlayout.addWidget( self.canvas )
-        self.mplplotlayout.addWidget( self.mpltoolbar )
+        #PLOT ALL MAIN GEOLOGY TYPES AS SINGLE FLOATING BAR SERIES
+        self.PlotGeology()
+        #WRITE TEXT BY ALL GEOLOGY TYPES, ADJACENT TO FLOATING BAR SERIES
+        if len(self.ms.settingsdict['secplottext'])>0:
+            self.WriteAnnotation()
+        #PLOT Water Levels
+        self.PlotWaterLevel()
+        #write obsid at top of each stratigraphy floating bar plot, also plot empty bars to show drillings without stratigraphy data
+        self.WriteOBSID()
+        #if there are any DEMs selected, try to plot them
+        if len(self.ms.settingsdict['secplotselectedDEMs'])>0:
+            self.PlotDEMs()
+        #labels, grid, legend etc.
+        self.FinishPlot()
+        self.saveSettings()
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+
+    def executeQuery(self,query,params=(),commit=False):#from qspatialite, it is only used by self.uploadQgisVectorLayer
+        """Execute query (string) with given parameters (tuple) (optionnaly perform commit to save Db) and return resultset [header,data] or [flase,False] if error"""
+        query=unicode(query)
+        self.queryPb=False
+        header=[]
+        data=[]
+        cursor=self.connectionObject.cursor()
+        try:
+            cursor.execute(query,params)
+            if (cursor.description is not None):
+                header = [item[0] for item in cursor.description]
+            data = [row for row in cursor]
+            if commit:
+                self.connectionObject.commit()
+        except sqlite.OperationalError, Msg:
+            self.connectionObject.rollback()
+            utils.pop_up_info("The SQL query\n %s\n seems to be invalid.\n\n%s" %(query,Msg),None)
+            self.queryPb=True #Indicates pb with current query
+            
+        return header,data
 
     def FillComboBoxes(self): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
@@ -120,7 +181,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         # clear comboboxes etc
         self.wlvltableComboBox.clear()  
         #self.colorComboBox.clear()
-        self.DEMlistWidget.clear()  
+        #self.DEMlistWidget.clear()  
         self.textcolComboBox.clear()  
         self.datetimetextEdit.clear()
         self.drillstoplineEdit.clear()
@@ -216,7 +277,56 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         else:
             self.barwidthdoubleSpinBox.setValue(2)
         self.drillstoplineEdit.setText(self.ms.settingsdict['secplotdrillstop']) 
-        
+
+    def FinishPlot(self):
+        leg = self.secax.legend(self.p, self.Labels,loc=0 )
+        leg.draggable(state=True)
+        frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
+        frame.set_facecolor('1')    # set the frame face color to white                
+        frame.set_fill(False)    # set the frame face color to white                
+        for t in leg.get_texts():
+            t.set_fontsize(10) 
+
+        self.secax.grid(b=True, which='both', color='0.65',linestyle='-')
+        self.secax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
+        self.secax.xaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
+        self.secax.set_ylabel(unicode("Level, masl",'utf-8'))  #This is the method - can now write 'åäö' in console and it works (since console is in utf-8 I guess)
+        self.secax.set_xlabel(unicode("Distance along section",'utf-8'))  #This is the method - can now write 'åäö' in console and it works (since console is in utf-8 I guess)
+        for label in self.secax.xaxis.get_ticklabels():
+            label.set_fontsize(10)
+        for label in self.secax.yaxis.get_ticklabels():
+            label.set_fontsize(10)
+        """
+        if there is no stratigraphy data and no borehole lenght for first or last observations,
+        then autscaling will fail silently since it does not consider axes.annotate (which is used for printing obsid)
+        hence this special treatment to check if xlim are less than expected from lengthalong
+        """
+        #self.secax.autoscale(enable=True, axis='both', tight=None)
+        xmin, xmax = self.secax.get_xlim()
+        self.secax.set_xlim(min(float(min(self.LengthAlong))-self.barwidth,xmin), max(float(max(self.LengthAlong))+self.barwidth,xmax))
+        self.canvas.draw()
+        """
+        The plot is shown in the canvas. 
+        Now close the figure to prevent it from being plotted again by plt.show() when choosing tsplot or xyplot
+        The plt.close(self.secfig) closes reference to self.secfig 
+        and it will not be plotted by plt.show() - but the plot exists in self.canvas
+        Please note, this do not work completely as expected under windows. 
+        """
+        plt.close(self.secfig)#this closes reference to self.secfig 
+
+    def GetLengthAlong(self,obsidtuple):#returns a numpy recarray with attributes obs_id and length 
+        #------------First a sql clause that returns a table, but that is not what we need
+        sql = r"""SELECT obsid AS "obsid",
+        GLength(l.geometry)*ST_Line_Locate_Point(l.geometry, p.geometry) AS "abs_dist"
+        FROM %s AS l, (select * from obs_points where obsid in %s) AS p
+        GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptableName,obsidtuple)
+        data = utils.sql_load_fr_db(sql)[1]
+        My_format = [('obs_id', np.str_, 32),('length', float)] #note that here is a limit of maximum 32 characters in obsid
+        npdata = np.array(data, dtype=My_format)  #NDARRAY
+        LengthAlongTable=npdata.view(np.recarray)   # RECARRAY   Makes the two columns into callable objects, i.e. write self.LengthAlong.obs_id and self.LengthAlong.length
+        del data, npdata
+        return LengthAlongTable
+
     def GetPlotData(self):
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
         self.plotx = {}
@@ -286,39 +396,36 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 self.plotbottom[Typ] = Bottom
                 self.plotbarlength[Typ] = BarLength
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
-                
-    def DrawPlot(self):
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
-        try:
-            self.annotationtext.remove()
-            #print 'removed it'#debug
-        except:
-            pass
-        self.secax.clear()
-        #load user settings from the ui
-        self.ms.settingsdict['secplotwlvltab'] = unicode(self.wlvltableComboBox.currentText())
-        temporarystring = self.datetimetextEdit.toPlainText() #this needs some cleanup
-        self.ms.settingsdict['secplotdates']=temporarystring.split()
-        self.ms.settingsdict['secplottext'] = self.textcolComboBox.currentText()
-        self.ms.settingsdict['secplotbw'] = self.barwidthdoubleSpinBox.value()
-        self.ms.settingsdict['secplotdrillstop'] = self.drillstoplineEdit.text()
-        #fix Floating Bar Width in percents of xmax - xmin
-        xmax, xmin =float(max(self.LengthAlong)), float(min(self.LengthAlong))
-        self.barwidth = (self.ms.settingsdict['secplotbw']/100.0)*(xmax -xmin)
+
+    def get_selected_dems_params( self, dialog ):   
+        selected_dems = []
+        selected_dem_colors = [] 
+        for dem_qgis_ndx in range( dialog.listDEMs_treeWidget.topLevelItemCount () ):
+            curr_DEM_item = dialog.listDEMs_treeWidget.topLevelItem ( dem_qgis_ndx ) 
+            if curr_DEM_item.checkState ( 0 ) == 2:
+                selected_dems.append( dialog.singleband_raster_layers_in_project[ dem_qgis_ndx ] )
+                selected_dem_colors.append( dialog.listDEMs_treeWidget.itemWidget( curr_DEM_item, 1 ).currentText() )  
+        return selected_dems, selected_dem_colors
+
+    def initUI(self):
+        #connect signal
+        self.pushButton.clicked.connect(self.DrawPlot)
+        self.pushButton_DEMs.clicked.connect(self.SelectDEM)
         
-        #PLOT ALL MAIN GEOLOGY TYPES AS SINGLE FLOATING BAR SERIES
-        self.PlotGeology()
-        #WRITE TEXT BY ALL GEOLOGY TYPES, ADJACENT TO FLOATING BAR SERIES
-        if len(self.ms.settingsdict['secplottext'])>0:
-            self.WriteAnnotation()
-        #PLOT Water Levels
-        self.PlotWaterLevel()
-        #write obsid at top of each stratigraphy floating bar plot, also plot empty bars to show drillings without stratigraphy data
-        self.WriteOBSID()
-        #labels, grid, legend etc.
-        self.FinishPlot()
-        self.saveSettings()
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+        # Create a plot window with one single subplot
+        self.secfig = plt.figure()
+        self.secax = self.secfig.add_subplot( 111 )
+        self.canvas = FigureCanvas( self.secfig )
+        
+        self.mpltoolbar = NavigationToolbar( self.canvas, self.plotareawidget )
+        lstActions = self.mpltoolbar.actions()
+        self.mpltoolbar.removeAction( lstActions[ 7 ] )
+        self.mplplotlayout.addWidget( self.canvas )
+        self.mplplotlayout.addWidget( self.mpltoolbar )
+
+    def PlotDEMs(self):
+        temp_memorylayer = sampledem.qchain(self.sectionlinelayer,self.barwidth/2)
+        DEMdata = sampledem.sampling(temp_memorylayer,self.ms.settingsdict['secplotselectedDEMs'])
 
     def PlotGeology(self):
         self.p=[]
@@ -327,21 +434,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             plotxleftbarcorner = [i - self.barwidth/2 for i in self.plotx[Typ]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
             self.p.append(self.secax.bar(plotxleftbarcorner,self.plotbarlength[Typ], color=self.Colors[Typ], edgecolor='black', hatch=self.Hatches[Typ], width = self.barwidth, bottom=self.plotbottom[Typ]))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
             self.Labels.append(Typ)
-
-    def WriteAnnotation(self):
-        #print len(self.x_txt)#debug
-        if self.ms.settingsdict['secplottext'] == 'geology':
-            annotate_txt = self.geology_txt
-        elif self.ms.settingsdict['secplottext'] == 'geoshort':
-            annotate_txt = self.geoshort_txt
-        elif self.ms.settingsdict['secplottext'] == 'capacity':
-            annotate_txt = self.capacity_txt
-        elif self.ms.settingsdict['secplottext'] == 'development':
-            annotate_txt = self.development_txt
-        else:
-            annotate_txt = self.comment_txt
-        for m,n,o in zip(self.x_txt,self.z_txt,annotate_txt):#change last arg to the one to be written in plot
-            self.annotationtext = self.secax.annotate(o,xy=(m,n),xytext=(5,0), textcoords='offset points',ha = 'left', va = 'center',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.6))#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
 
     def PlotWaterLevel(self):
         if self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0:    # Adding a plot for each water level date identified
@@ -358,72 +450,42 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 lineplot,=self.secax.plot(x_wl, WL,  'v-', markersize = 6)#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
                 self.p.append(lineplot)
                 self.Labels.append(datum)
-        
-    def WriteOBSID(self):#annotation, and also empty bars to show drillings without stratigraphy data
-        x_id = []
-        z_id=[]
-        barlengths=[]
-        bottoms=[]
-        q=0# a new counter per self.selected_obsids
-        for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
-            x_id.append(float(self.LengthAlong[q]))
-            sql = u'select h_toc, h_gs, length from obs_points where obsid = "' + obs + u'"'
-            recs = utils.sql_load_fr_db(sql)[1]
-            if recs[0][1]>0:
-                z_id.append(recs[0][1])
-            elif recs[0][0]>0:
-                z_id.append(recs[0][0])
-            else:
-                z_id.append(0)
-            if utils.isfloat(str(recs[0][2])):
-                barlengths.append(recs[0][2])
-            else:
-                barlengths.append(0)
-            bottoms.append(z_id[q]-barlengths[q])
-            q +=1
-            del recs
-        plotxleftbarcorner = [i - self.barwidth/2 for i in x_id]#x-coord for bars at each obs
-        self.p.append(self.secax.bar(plotxleftbarcorner,barlengths, fill=False, edgecolor='black', width = self.barwidth, bottom=bottoms))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
-        for m,n,o in zip(x_id,z_id,self.selected_obsids):#change last arg to the one to be written in plot
-            self.secax.annotate(o,xy=(m,n),xytext=(0,10), textcoords='offset points',ha = 'center', va = 'top',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.4))
-        del x_id, z_id, q
 
-    def FinishPlot(self):
-        leg = self.secax.legend(self.p, self.Labels,loc=0 )
-        leg.draggable(state=True)
-        frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
-        frame.set_facecolor('1')    # set the frame face color to white                
-        frame.set_fill(False)    # set the frame face color to white                
-        for t in leg.get_texts():
-            t.set_fontsize(10) 
+    def saveSettings(self):# This is a quick-fix, should use the midvsettings class instead.
+        self.ms.saveSettings('secplotwlvltab')
+        self.ms.saveSettings('secplotdates')
+        self.ms.saveSettings('secplottext')
+        self.ms.saveSettings('secplotdrillstop')
+        self.ms.saveSettings('secplotbw')
+        self.ms.saveSettings('secplotlocation')
+        self.ms.saveSettings('secplotselectedDEMs')
+        self.ms.saveSettings('secplotDEMcolors')
 
-        self.secax.grid(b=True, which='both', color='0.65',linestyle='-')
-        self.secax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
-        self.secax.xaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
-        self.secax.set_ylabel(unicode("Level, masl",'utf-8'))  #This is the method - can now write 'åäö' in console and it works (since console is in utf-8 I guess)
-        self.secax.set_xlabel(unicode("Distance along section",'utf-8'))  #This is the method - can now write 'åäö' in console and it works (since console is in utf-8 I guess)
-        for label in self.secax.xaxis.get_ticklabels():
-            label.set_fontsize(10)
-        for label in self.secax.yaxis.get_ticklabels():
-            label.set_fontsize(10)
-        """
-        if there is no stratigraphy data and no borehole lenght for first or last observations,
-        then autscaling will fail silently since it does not consider axes.annotate (which is used for printing obsid)
-        hence this special treatment to check if xlim are less than expected from lengthalong
-        """
-        #self.secax.autoscale(enable=True, axis='both', tight=None)
-        xmin, xmax = self.secax.get_xlim()
-        self.secax.set_xlim(min(float(min(self.LengthAlong))-self.barwidth,xmin), max(float(max(self.LengthAlong))+self.barwidth,xmax))
-        self.canvas.draw()
-        """
-        The plot is shown in the canvas. 
-        Now close the figure to prevent it from being plotted again by plt.show() when choosing tsplot or xyplot
-        The plt.close(self.secfig) closes reference to self.secfig 
-        and it will not be plotted by plt.show() - but the plot exists in self.canvas
-        Please note, this do not work completely as expected under windows. 
-        """
-        plt.close(self.secfig)#this closes reference to self.secfig 
-                
+    def SelectDEM(self):
+        current_raster_layers = loaded_monoband_raster_layers()  
+        if len( current_raster_layers ) == 0:
+            utils.pop_up_info( "No available DEM","DEMs",self)
+            return            
+
+        dialog = SourceDEMsDialog( current_raster_layers )
+
+        if dialog.exec_():
+            selected_dems, selected_dem_colors = self.get_selected_dems_params( dialog )
+        else:
+            utils.pop_up_info("No DEM chosen","DEMs", self)
+            return
+            
+        if  len( selected_dems ) == 0:       
+            utils.pop_up_info("No selected DEM","DEMs",self )
+        else:
+            self.ms.settingsdict['secplotselectedDEMs']=selected_dems
+            self.ms.settingsdict['secplotDEMcolors']= selected_dem_colors
+            print(selected_dems, selected_dem_colors) #debug 
+
+    def setLocation(self):#not ready
+        dockarea = self.parent.dockWidgetArea(self)
+        self.ms.settingsdict['secplotlocation']=dockarea
+
     def uploadQgisVectorLayer(self, layer, srid=None,selected=False, mapinfo=True,Attributes=False): #from qspatialite, with a few  changes LAST ARGUMENT IS USED TO SKIP ARGUMENTS SINCE WE ONLY WANT THE GEOMETRY TO CALCULATE DISTANCES
         """Upload layer (QgsMapLayer) (optionnaly only selected values ) into current DB, in self.temptableName (string) with desired SRID (default layer srid if None) - user can desactivate mapinfo compatibility Date importation. Return True if operation succesfull or false in all other cases"""
         selected_ids=[]
@@ -570,60 +632,109 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         # reload tables
         return True
 
-    def connection(self):#from qspatialite, it is only used by self.uploadQgisVectorLayer
-        """ Create connexion if not yet connected and Return connexion object for the current DB"""
-        try:
-            return self.connectionObject
-        except:
-            try:
-                dbpath = QgsProject.instance().readEntry("Midvatten","database")
-                self.connectionObject=sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-                return self.connectionObject
-            except sqlite.OperationalError, Msg:
-                utils.pop_up_info("Can't connect to DataBase: %s\nError %s"%(self.path,Msg))
-             
-    def executeQuery(self,query,params=(),commit=False):#from qspatialite, it is only used by self.uploadQgisVectorLayer
-        """Execute query (string) with given parameters (tuple) (optionnaly perform commit to save Db) and return resultset [header,data] or [flase,False] if error"""
-        query=unicode(query)
-        self.queryPb=False
-        header=[]
-        data=[]
-        cursor=self.connectionObject.cursor()
-        try:
-            cursor.execute(query,params)
-            if (cursor.description is not None):
-                header = [item[0] for item in cursor.description]
-            data = [row for row in cursor]
-            if commit:
-                self.connectionObject.commit()
-        except sqlite.OperationalError, Msg:
-            self.connectionObject.rollback()
-            utils.pop_up_info("The SQL query\n %s\n seems to be invalid.\n\n%s" %(query,Msg),None)
-            self.queryPb=True #Indicates pb with current query
-            
-        return header,data
+    def WriteAnnotation(self):
+        #print len(self.x_txt)#debug
+        if self.ms.settingsdict['secplottext'] == 'geology':
+            annotate_txt = self.geology_txt
+        elif self.ms.settingsdict['secplottext'] == 'geoshort':
+            annotate_txt = self.geoshort_txt
+        elif self.ms.settingsdict['secplottext'] == 'capacity':
+            annotate_txt = self.capacity_txt
+        elif self.ms.settingsdict['secplottext'] == 'development':
+            annotate_txt = self.development_txt
+        else:
+            annotate_txt = self.comment_txt
+        for m,n,o in zip(self.x_txt,self.z_txt,annotate_txt):#change last arg to the one to be written in plot
+            self.annotationtext = self.secax.annotate(o,xy=(m,n),xytext=(5,0), textcoords='offset points',ha = 'left', va = 'center',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.6))#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
+
+    def WriteOBSID(self):#annotation, and also empty bars to show drillings without stratigraphy data
+        x_id = []
+        z_id=[]
+        barlengths=[]
+        bottoms=[]
+        q=0# a new counter per self.selected_obsids
+        for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
+            x_id.append(float(self.LengthAlong[q]))
+            sql = u'select h_toc, h_gs, length from obs_points where obsid = "' + obs + u'"'
+            recs = utils.sql_load_fr_db(sql)[1]
+            if recs[0][1]>0:
+                z_id.append(recs[0][1])
+            elif recs[0][0]>0:
+                z_id.append(recs[0][0])
+            else:
+                z_id.append(0)
+            if utils.isfloat(str(recs[0][2])):
+                barlengths.append(recs[0][2])
+            else:
+                barlengths.append(0)
+            bottoms.append(z_id[q]-barlengths[q])
+            q +=1
+            del recs
+        plotxleftbarcorner = [i - self.barwidth/2 for i in x_id]#x-coord for bars at each obs
+        self.p.append(self.secax.bar(plotxleftbarcorner,barlengths, fill=False, edgecolor='black', width = self.barwidth, bottom=bottoms))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
+        for m,n,o in zip(x_id,z_id,self.selected_obsids):#change last arg to the one to be written in plot
+            self.secax.annotate(o,xy=(m,n),xytext=(0,10), textcoords='offset points',ha = 'center', va = 'top',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.4))
+        del x_id, z_id, q
         
-    def GetLengthAlong(self,obsidtuple):#returns a numpy recarray with attributes obs_id and length 
-        #------------First a sql clause that returns a table, but that is not what we need
-        sql = r"""SELECT obsid AS "obsid",
-        GLength(l.geometry)*ST_Line_Locate_Point(l.geometry, p.geometry) AS "abs_dist"
-        FROM %s AS l, (select * from obs_points where obsid in %s) AS p
-        GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptableName,obsidtuple)
-        data = utils.sql_load_fr_db(sql)[1]
-        My_format = [('obs_id', np.str_, 32),('length', float)] #note that here is a limit of maximum 32 characters in obsid
-        npdata = np.array(data, dtype=My_format)  #NDARRAY
-        LengthAlongTable=npdata.view(np.recarray)   # RECARRAY   Makes the two columns into callable objects, i.e. write self.LengthAlong.obs_id and self.LengthAlong.length
-        del data, npdata
-        return LengthAlongTable
+class SourceDEMsDialog( PyQt4.QtGui.QDialog ):
+    
+    def __init__(self, raster_layers, parent=None):
+        
+        super( SourceDEMsDialog, self ).__init__(parent)        
+        
+        self.singleband_raster_layers_in_project = raster_layers
 
-    def saveSettings(self):# This is a quick-fix, should use the midvsettings class instead.
-        self.ms.saveSettings('secplotwlvltab')
-        self.ms.saveSettings('secplotdates')
-        self.ms.saveSettings('secplottext')
-        self.ms.saveSettings('secplotdrillstop')
-        self.ms.saveSettings('secplotbw')
-        self.ms.saveSettings('secplotlocation')
+        self.listDEMs_treeWidget = PyQt4.QtGui.QTreeWidget()
+        self.listDEMs_treeWidget.setColumnCount( 2 )
+        self.listDEMs_treeWidget.setColumnWidth ( 0, 200 )
+        self.listDEMs_treeWidget.headerItem().setText( 0, "Name" )
+        self.listDEMs_treeWidget.headerItem().setText( 1, "Plot color" )
+        self.listDEMs_treeWidget.setHorizontalScrollBarPolicy(PyQt4.QtCore.Qt.ScrollBarAsNeeded)
+        self.listDEMs_treeWidget.setDragEnabled(False)
+        self.listDEMs_treeWidget.setDragDropMode(PyQt4.QtGui.QAbstractItemView.NoDragDrop)
+        self.listDEMs_treeWidget.setAlternatingRowColors(True)
+        self.listDEMs_treeWidget.setSelectionMode(PyQt4.QtGui.QAbstractItemView.SingleSelection)
+        self.listDEMs_treeWidget.setTextElideMode( PyQt4.QtCore.Qt.ElideLeft )
+         
+        self.refresh_raster_layer_treewidget()
+        
+        okButton = PyQt4.QtGui.QPushButton("&OK")
+        cancelButton = PyQt4.QtGui.QPushButton("Cancel")
 
-    def setLocation(self):#not ready
-        dockarea = self.parent.dockWidgetArea(self)
-        self.ms.settingsdict['secplotlocation']=dockarea
+        buttonLayout = PyQt4.QtGui.QHBoxLayout()
+        buttonLayout.addStretch()
+        buttonLayout.addWidget(okButton)
+        buttonLayout.addWidget(cancelButton)
+        
+        layout = PyQt4.QtGui.QGridLayout()
+
+        layout.addWidget( self.listDEMs_treeWidget, 0, 0, 1, 3 )                 
+        layout.addLayout( buttonLayout, 1, 0, 1, 3 )
+        
+        self.setLayout(layout)
+
+        okButton.clicked.connect(self.accept)
+        #self.connect(okButton, SIGNAL("clicked()"),
+        #             self,  SLOT("accept()") )
+        cancelButton.clicked.connect(self.reject)
+        #self.connect(cancelButton, SIGNAL("clicked()"),
+        #             self, SLOT("reject()"))
+        
+        self.setWindowTitle("Define source DEMs")
+         
+
+    def refresh_raster_layer_treewidget( self ):
+
+        self.listDEMs_treeWidget.clear() 
+                                    
+        for raster_layer in self.singleband_raster_layers_in_project:
+            
+            tree_item = PyQt4.QtGui.QTreeWidgetItem( self.listDEMs_treeWidget )
+            tree_item.setText(0, raster_layer.name() )
+            combo_box = PyQt4.QtGui.QComboBox()
+            combo_box.setSizeAdjustPolicy ( 0 )
+            combo_box.addItems( ['orange', 'green', 'red', 'grey', 'brown', 'yellow', 'magenta', 'black', 'blue', 'white', 'cyan', 'chartreuse' ])
+            self.listDEMs_treeWidget.setItemWidget( tree_item, 1, combo_box )       
+            tree_item.setFlags( tree_item.flags() | PyQt4.QtCore.Qt.ItemIsUserCheckable )
+            tree_item.setCheckState( 0, 0 )
+

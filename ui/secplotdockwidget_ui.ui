@@ -6,30 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>728</width>
-    <height>359</height>
+    <width>757</width>
+    <height>317</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Midvatten Section Plot</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <layout class="QGridLayout" name="gridLayout_2">
-    <item row="0" column="1">
-     <widget class="QWidget" name="plotareawidget" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>500</width>
-        <height>0</height>
-       </size>
-      </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <layout class="QVBoxLayout" name="mplplotlayout"/>
-       </item>
-      </layout>
-     </widget>
-    </item>
+   <layout class="QGridLayout" name="gridLayout_3">
     <item row="0" column="0">
      <widget class="QFrame" name="frame">
       <property name="minimumSize">
@@ -50,7 +35,7 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QGridLayout" name="gridLayout_3">
+      <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0">
         <layout class="QFormLayout" name="formLayout_5">
          <item row="0" column="0">
@@ -92,31 +77,17 @@
         </layout>
        </item>
        <item row="2" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <item>
-          <widget class="QLabel" name="label_4">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>DEMs:</string>
-           </property>
-           <property name="buddy">
-            <cstring>wlvltableComboBox</cstring>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QListWidget" name="DEMlistWidget">
-           <property name="sortingEnabled">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QPushButton" name="pushButton_DEMs">
+         <property name="maximumSize">
+          <size>
+           <width>250</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>DEM(s)</string>
+         </property>
+        </widget>
        </item>
        <item row="3" column="0">
         <layout class="QFormLayout" name="formLayout_2">
@@ -158,7 +129,11 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QComboBox" name="textcolComboBox"/>
+          <widget class="QComboBox" name="textcolComboBox">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -201,6 +176,21 @@
           <string>Replot</string>
          </property>
         </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QWidget" name="plotareawidget" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>500</width>
+        <height>0</height>
+       </size>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <layout class="QVBoxLayout" name="mplplotlayout"/>
        </item>
       </layout>
      </widget>
