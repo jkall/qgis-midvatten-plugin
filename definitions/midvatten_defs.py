@@ -47,7 +47,6 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplotbw':2,
             'secplotlocation':8,
             'secplotselectedDEMs':[],
-            'secplotDEMcolors':[],
             'settingslocation':1,
             'custplot_tabwidget':0,
             'custplot_table1':'w_levels',

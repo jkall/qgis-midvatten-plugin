@@ -82,7 +82,8 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.iface.addDockWidget(max(self.ms.settingsdict['secplotlocation'],1), self)
         self.iface.mapCanvas().setRenderFlag(True)        
 
-        self.FillComboBoxes()        # Comboboxes are filled with relevant information
+        self.FillComboBoxes()        # Comboboxes are filled with relevant information'
+        self.FillDEMList()
         self.show()
         #class variables
         self.geology_txt = []
@@ -133,6 +134,8 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ms.settingsdict['secplottext'] = self.textcolComboBox.currentText()
         self.ms.settingsdict['secplotbw'] = self.barwidthdoubleSpinBox.value()
         self.ms.settingsdict['secplotdrillstop'] = self.drillstoplineEdit.text()
+        self.GetDEMSelection()
+        self.ms.settingsdict['secplotselectedDEMs'] = self.rasterselection
         #fix Floating Bar Width in percents of xmax - xmin
         xmax, xmin =float(max(self.LengthAlong)), float(min(self.LengthAlong))
         self.barwidth = (self.ms.settingsdict['secplotbw']/100.0)*(xmax -xmin)
@@ -278,6 +281,19 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.barwidthdoubleSpinBox.setValue(2)
         self.drillstoplineEdit.setText(self.ms.settingsdict['secplotdrillstop']) 
 
+    def FillDEMList(self): # This method populates the QListWidget 'inData' with all possible DEMs
+        self.inData.clear()
+        self.rastItems = {} #dictionary - layer name : layer
+        mc = self.iface.mapCanvas()
+        for i in range(mc.layerCount()):#find the raster layers
+            layer = mc.layer(i)
+            if layer.type() == layer.RasterLayer:
+                self.rastItems[unicode(layer.name())] = layer
+                self.inData.addItem(unicode(layer.name()))
+        print self.rastItems #debug
+
+        self.GetDEMSelection()
+
     def FinishPlot(self):
         leg = self.secax.legend(self.p, self.Labels,loc=0 )
         leg.draggable(state=True)
@@ -314,6 +330,11 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         """
         plt.close(self.secfig)#this closes reference to self.secfig 
 
+    def GetDEMSelection(self):
+        self.rasterselection = []
+        for item in self.inData.selectedItems():
+            self.rasterselection.append(item.text())
+                
     def GetLengthAlong(self,obsidtuple):#returns a numpy recarray with attributes obs_id and length 
         #------------First a sql clause that returns a table, but that is not what we need
         sql = r"""SELECT obsid AS "obsid",
@@ -410,7 +431,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
     def initUI(self):
         #connect signal
         self.pushButton.clicked.connect(self.DrawPlot)
-        self.pushButton_DEMs.clicked.connect(self.SelectDEM)
         
         # Create a plot window with one single subplot
         self.secfig = plt.figure()
@@ -424,8 +444,14 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.mplplotlayout.addWidget( self.mpltoolbar )
 
     def PlotDEMs(self):
-        temp_memorylayer = sampledem.qchain(self.sectionlinelayer,self.barwidth/2)
-        DEMdata = sampledem.sampling(temp_memorylayer,self.ms.settingsdict['secplotselectedDEMs'])
+        if self.ms.settingsdict['secplotselectedDEMs'] and len(self.ms.settingsdict['secplotselectedDEMs'])>0:    # Adding a plot for each selected raster
+            temp_memorylayer, xarray = sampledem.qchain(self.sectionlinelayer,self.barwidth/2)
+            for layername in self.ms.settingsdict['secplotselectedDEMs']:
+                DEMdata = sampledem.sampling(temp_memorylayer,self.rastItems[unicode(layername)])
+                lineplot,=self.secax.plot(xarray, DEMdata,  '-')#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
+                self.p.append(lineplot)
+                self.Labels.append(layername)
+            QgsMapLayerRegistry.instance().removeMapLayer(temp_memorylayer.id())
 
     def PlotGeology(self):
         self.p=[]
@@ -459,7 +485,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ms.saveSettings('secplotbw')
         self.ms.saveSettings('secplotlocation')
         self.ms.saveSettings('secplotselectedDEMs')
-        self.ms.saveSettings('secplotDEMcolors')
 
     def SelectDEM(self):
         current_raster_layers = loaded_monoband_raster_layers()  
@@ -675,66 +700,3 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         for m,n,o in zip(x_id,z_id,self.selected_obsids):#change last arg to the one to be written in plot
             self.secax.annotate(o,xy=(m,n),xytext=(0,10), textcoords='offset points',ha = 'center', va = 'top',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.4))
         del x_id, z_id, q
-        
-class SourceDEMsDialog( PyQt4.QtGui.QDialog ):
-    
-    def __init__(self, raster_layers, parent=None):
-        
-        super( SourceDEMsDialog, self ).__init__(parent)        
-        
-        self.singleband_raster_layers_in_project = raster_layers
-
-        self.listDEMs_treeWidget = PyQt4.QtGui.QTreeWidget()
-        self.listDEMs_treeWidget.setColumnCount( 2 )
-        self.listDEMs_treeWidget.setColumnWidth ( 0, 200 )
-        self.listDEMs_treeWidget.headerItem().setText( 0, "Name" )
-        self.listDEMs_treeWidget.headerItem().setText( 1, "Plot color" )
-        self.listDEMs_treeWidget.setHorizontalScrollBarPolicy(PyQt4.QtCore.Qt.ScrollBarAsNeeded)
-        self.listDEMs_treeWidget.setDragEnabled(False)
-        self.listDEMs_treeWidget.setDragDropMode(PyQt4.QtGui.QAbstractItemView.NoDragDrop)
-        self.listDEMs_treeWidget.setAlternatingRowColors(True)
-        self.listDEMs_treeWidget.setSelectionMode(PyQt4.QtGui.QAbstractItemView.SingleSelection)
-        self.listDEMs_treeWidget.setTextElideMode( PyQt4.QtCore.Qt.ElideLeft )
-         
-        self.refresh_raster_layer_treewidget()
-        
-        okButton = PyQt4.QtGui.QPushButton("&OK")
-        cancelButton = PyQt4.QtGui.QPushButton("Cancel")
-
-        buttonLayout = PyQt4.QtGui.QHBoxLayout()
-        buttonLayout.addStretch()
-        buttonLayout.addWidget(okButton)
-        buttonLayout.addWidget(cancelButton)
-        
-        layout = PyQt4.QtGui.QGridLayout()
-
-        layout.addWidget( self.listDEMs_treeWidget, 0, 0, 1, 3 )                 
-        layout.addLayout( buttonLayout, 1, 0, 1, 3 )
-        
-        self.setLayout(layout)
-
-        okButton.clicked.connect(self.accept)
-        #self.connect(okButton, SIGNAL("clicked()"),
-        #             self,  SLOT("accept()") )
-        cancelButton.clicked.connect(self.reject)
-        #self.connect(cancelButton, SIGNAL("clicked()"),
-        #             self, SLOT("reject()"))
-        
-        self.setWindowTitle("Define source DEMs")
-         
-
-    def refresh_raster_layer_treewidget( self ):
-
-        self.listDEMs_treeWidget.clear() 
-                                    
-        for raster_layer in self.singleband_raster_layers_in_project:
-            
-            tree_item = PyQt4.QtGui.QTreeWidgetItem( self.listDEMs_treeWidget )
-            tree_item.setText(0, raster_layer.name() )
-            combo_box = PyQt4.QtGui.QComboBox()
-            combo_box.setSizeAdjustPolicy ( 0 )
-            combo_box.addItems( ['orange', 'green', 'red', 'grey', 'brown', 'yellow', 'magenta', 'black', 'blue', 'white', 'cyan', 'chartreuse' ])
-            self.listDEMs_treeWidget.setItemWidget( tree_item, 1, combo_box )       
-            tree_item.setFlags( tree_item.flags() | PyQt4.QtCore.Qt.ItemIsUserCheckable )
-            tree_item.setCheckState( 0, 0 )
-
