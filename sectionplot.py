@@ -77,7 +77,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #settings must be recieved here since plot windows may stay open (hence sectionplot instance activated) while a new qgis project is opened or midv settings are chaned 
         self.ms = msettings
         #Draw the widget
-        #print "secplotlocation is " + str(self.ms.settingsdict['secplotlocation'])#debug
         self.iface.addDockWidget(max(self.ms.settingsdict['secplotlocation'],1), self)
         self.iface.mapCanvas().setRenderFlag(True)        
 
@@ -122,7 +121,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
         try:
             self.annotationtext.remove()
-            #print 'removed it'#debug
         except:
             pass
         self.secax.clear()
@@ -245,7 +243,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.drillstoplineEdit.setText(self.ms.settingsdict['secplotdrillstop'])
         #FILL THE LIST OF DATES AS WELL
         for datum in self.ms.settingsdict['secplotdates']:
-            #print 'loading ' + datum#debug
             self.datetimetextEdit.append(datum)
 
         #then select what was selected last time (according to midvatten settings)
@@ -289,7 +286,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             if layer.type() == layer.RasterLayer:
                 self.rastItems[unicode(layer.name())] = layer
                 self.inData.addItem(unicode(layer.name()))
-        print self.rastItems #debug
 
         self.GetDEMSelection()
 
@@ -366,7 +362,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #self.barwidth = (self.ms.settingsdict['secplotbw']/100.0)*(xmax -xmin)
         
         for Typ in self.PlotTypes:#Adding a plot for each "geoshort" that is identified
-            #print Typ.encode('latin-1')#debug
             i=0 #counter for unique obs and stratid
             k=0 #counter for unique Typ 
             x = []
@@ -406,11 +401,9 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                         i +=1
                         j +=1
                         l +=1
-                        #print l #debug
                     del recs
                 k +=1
             if len(x)>0:
-                #print Typ.encode('latin-1')#debug
                 self.ExistingPlotTypes.append(Typ)
                 self.plotx[Typ] = x
                 self.plotbottom[Typ] = Bottom
@@ -613,18 +606,12 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             if Attributes == True:
                 if len(fields)>0:
                     query="""INSERT INTO "%s" VALUES (%s,%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]),','.join('?'*len(values_perso)))
-                    #print 'attr datas'#debug
-                    #print query#debug
                     header,data=self.executeQuery(query,tuple([unicode(value) for value in values_perso]))
                 else: #no attribute Datas
                     query="""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]))
                     header,data=self.executeQuery(query)
-                    #print 'no attr datas'#debug
-                    #print query#debug
             else:
                 query="""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]))
-                #print 'no attr datas'#debug
-                #print query#debug
                 header,data=self.executeQuery(query)
         for date in mapinfoDAte: #mapinfo compatibility: convert date in SQLITE format (2010/02/11 -> 2010-02-11 ) or rollback if any error
             header,data=self.executeQuery("""UPDATE OR ROLLBACK "%s" set '%s'=replace( "%s", '/' , '-' )  """%(self.temptableName,date[1],date[1]))
@@ -636,7 +623,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         return True
 
     def WriteAnnotation(self):
-        #print len(self.x_txt)#debug
         if self.ms.settingsdict['secplottext'] == 'geology':
             annotate_txt = self.geology_txt
         elif self.ms.settingsdict['secplottext'] == 'geoshort':
