@@ -40,8 +40,7 @@ from PyQt4 import uic
 Ui_SecPlotDock =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'secplotdockwidget_ui.ui'))[0]
 
 import definitions.midvatten_defs as defs
-from tools.sec_tools import loaded_monoband_raster_layers
-import tools.sampledem as sampledem 
+from tools.sampledem import qchain, create_points_at, points_along_line, sampling 
 
 class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
     def __init__(self, parent1, iface1):#Please note, self.selected_obsids must be a tuple
@@ -147,11 +146,11 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.WriteAnnotation()
         #PLOT Water Levels
         self.PlotWaterLevel()
-        #write obsid at top of each stratigraphy floating bar plot, also plot empty bars to show drillings without stratigraphy data
-        self.WriteOBSID()
         #if there are any DEMs selected, try to plot them
         if len(self.ms.settingsdict['secplotselectedDEMs'])>0:
             self.PlotDEMs()
+        #write obsid at top of each stratigraphy floating bar plot, also plot empty bars to show drillings without stratigraphy data
+        self.WriteOBSID()
         #labels, grid, legend etc.
         self.FinishPlot()
         self.saveSettings()
@@ -445,10 +444,10 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
     def PlotDEMs(self):
         if self.ms.settingsdict['secplotselectedDEMs'] and len(self.ms.settingsdict['secplotselectedDEMs'])>0:    # Adding a plot for each selected raster
-            temp_memorylayer, xarray = sampledem.qchain(self.sectionlinelayer,self.barwidth/2)
+            temp_memorylayer, xarray = qchain(self.sectionlinelayer,self.barwidth/2)
             for layername in self.ms.settingsdict['secplotselectedDEMs']:
-                DEMdata = sampledem.sampling(temp_memorylayer,self.rastItems[unicode(layername)])
-                lineplot,=self.secax.plot(xarray, DEMdata,  '-')#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
+                DEMdata = sampling(temp_memorylayer,self.rastItems[unicode(layername)])
+                lineplot,=self.secax.plot(xarray, DEMdata)#,  '-')#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
                 self.p.append(lineplot)
                 self.Labels.append(layername)
             QgsMapLayerRegistry.instance().removeMapLayer(temp_memorylayer.id())
@@ -485,27 +484,6 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ms.saveSettings('secplotbw')
         self.ms.saveSettings('secplotlocation')
         self.ms.saveSettings('secplotselectedDEMs')
-
-    def SelectDEM(self):
-        current_raster_layers = loaded_monoband_raster_layers()  
-        if len( current_raster_layers ) == 0:
-            utils.pop_up_info( "No available DEM","DEMs",self)
-            return            
-
-        dialog = SourceDEMsDialog( current_raster_layers )
-
-        if dialog.exec_():
-            selected_dems, selected_dem_colors = self.get_selected_dems_params( dialog )
-        else:
-            utils.pop_up_info("No DEM chosen","DEMs", self)
-            return
-            
-        if  len( selected_dems ) == 0:       
-            utils.pop_up_info("No selected DEM","DEMs",self )
-        else:
-            self.ms.settingsdict['secplotselectedDEMs']=selected_dems
-            self.ms.settingsdict['secplotDEMcolors']= selected_dem_colors
-            print(selected_dems, selected_dem_colors) #debug 
 
     def setLocation(self):#not ready
         dockarea = self.parent.dockWidgetArea(self)
