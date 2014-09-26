@@ -460,7 +460,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 x_wl=[]
                 k=0
                 for obs in self.selected_obsids:
-                    query = u'select level_masl from w_levels where obsid = "' + obs + '" and date_time like "' + datum  +'%"' 
+                    query = u'select level_masl from ' + self.ms.settingsdict['secplotwlvltab'] + ' where obsid = "' + obs + '" and date_time like "' + datum  +'%"' 
                     if utils.sql_load_fr_db(query)[1]:
                         WL.append((utils.sql_load_fr_db(query)[1])[0][0])
                         x_wl.append(float(self.LengthAlong[k]))

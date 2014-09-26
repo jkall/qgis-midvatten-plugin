@@ -13,12 +13,17 @@ THIS FILE ONLY FOR HISTORICAL RESONS, IF I NEED TO PICK UP A PARTICULAR VERSION 
         - New feature: Section plot (unstable)!
         - New feature for calculating average water flow from accumulated water volume
         - New feature _and_ database design: import of meteorological data into a new table "meteo" in database
+        - New feature for vacuuming database
+        - New feature for database backup
         - Minor database design changes: now "w_levels"."level_masl" may be null and is no longer -999 by default
         - New behaviour during imports - empty readings (real number) are from now on imported as null instead of zero
         - minor html report changes
         - Fix slow/erroneous creation of spatialite databases under splite 4 (InitSpatialMetadata(1))
         - 1.099o:
                 -changed database vacuuming behaviour to speed up repeated data imports to big databases
+                -DEM in section plot
+                -changed database vacuuming behaviour to speed up repeated data imports to big databases
+                -plugin menu changes
         - 1.099n:
                 -removing temporary_section_line records in the spatialite database table spatialite_history
                 -fix for failng data sanity checks during import (w_qual_field duplicates)
