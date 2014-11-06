@@ -646,9 +646,9 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             x_id.append(float(self.LengthAlong[q]))
             sql = u'select h_toc, h_gs, length from obs_points where obsid = "' + obs + u'"'
             recs = utils.sql_load_fr_db(sql)[1]
-            if recs[0][1]>0:
+            if utils.isfloat(str(recs[0][1])) and recs[0][1]>-999:
                 z_id.append(recs[0][1])
-            elif recs[0][0]>0:
+            elif utils.isfloat(str(recs[0][0]>0)) and recs[0][0]>-999:
                 z_id.append(recs[0][0])
             else:
                 z_id.append(0)
@@ -656,7 +656,9 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 barlengths.append(recs[0][2])
             else:
                 barlengths.append(0)
+            print(obs, str(z_id[q]), str(barlengths[q]))#debug
             bottoms.append(z_id[q]-barlengths[q])
+            
             q +=1
             del recs
         plotxleftbarcorner = [i - self.barwidth/2 for i in x_id]#x-coord for bars at each obs

@@ -32,6 +32,7 @@ changelog=
         - Fix slow/erroneous creation of spatialite databases under splite 4 (InitSpatialMetadata(1))
         - a number of code cleanups and bug fixes, in 1.099p:
             - bug fix in water level table selection in section plot
+            - bug fix in obsid plotting for negative elevations in section plot
 
 
 ;for the new plugin repo
