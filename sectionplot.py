@@ -656,7 +656,7 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 barlengths.append(recs[0][2])
             else:
                 barlengths.append(0)
-            print(obs, str(z_id[q]), str(barlengths[q]))#debug
+            #print(obs, str(z_id[q]), str(barlengths[q]))#debug
             bottoms.append(z_id[q]-barlengths[q])
             
             q +=1

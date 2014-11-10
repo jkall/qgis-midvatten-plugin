@@ -160,9 +160,9 @@ class SurveyStore:
                 for k in ob:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
                     attributes = ob[i]
                     obsid_list[i] = unicode(str(attributes[obsid_ColNo])) # Copy value in column obsid in the attribute list 
-                    if attributes[h_gs_ColNo] and attributes[h_gs_ColNo] >0:  # Only get h_gs if it exists 
+                    if attributes[h_gs_ColNo] and utils.isfloat(attributes[h_gs_ColNo]) and  attributes[h_gs_ColNo]>-999:  # Only get h_gs if it exists 
                         toplvl_list[i] = attributes[h_gs_ColNo] # Copy value in column h_gs in the attribute list
-                    elif attributes[h_toc_ColNo] and attributes[h_toc_ColNo] >0:    # else get h_toc if that exists
+                    elif attributes[h_toc_ColNo] and utils.isfloat(attributes[h_toc_ColNo]) and attributes[h_toc_ColNo] >-999:    # else get h_toc if that exists
                         toplvl_list[i] = attributes[h_toc_ColNo] # Copy value in column h_gs in the attribute list
                     else:       # otherwise, if neither h_gs nor h_toc exists - plot as if h_gs is zero
                         toplvl_list[i] = 0
@@ -190,9 +190,15 @@ class SurveyStore:
                 recs = rs.fetchall()  # All data are stored in recs            
                 # parse attributes
                 for record in recs:
-                    stratigaphy_id = record[0]  # Stratigraphy layer no
-                    depthtotop = record[1]  # depth to top of stratrigraphy layer
-                    depthtobot = record[2]  # depth to bottom of stratrigraphy layer
+                    if utils.isinteger(record[0]) and utils.isfloat(record[1]) and utils.isfloat(record[2]):
+                        stratigaphy_id = record[0]  # Stratigraphy layer no
+                        depthtotop = record[1]  # depth to top of stratrigraphy layer
+                        depthtobot = record[2]  # depth to bottom of stratrigraphy layer
+                    else:
+                        raise DataSanityError(str(obsid), "Something bad with stratid, depthtop or depthbot!")
+                        stratigaphy_id = 1  # when something went wrong, put it into first layer
+                        depthtotop = 0
+                        depthtobot = 999#default value when something went wrong
                     if record[3]: # Must check since it is not possible to print null values as text in qt widget
                         geology = record[3]  # Geology full text 
                     else:
