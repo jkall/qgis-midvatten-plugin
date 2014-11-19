@@ -381,10 +381,13 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                         x.append(float(self.LengthAlong[k]))# - self.barwidth/2)
                         sql01 = u'select "h_gs" from obs_points where obsid = "' + obs + u'"'
                         sql02 = u'select "h_toc" from obs_points where obsid = "' + obs + u'"'
-                        if utils.isfloat(str((utils.sql_load_fr_db(sql01)[1])[0][0])) and (utils.sql_load_fr_db(sql01)[1])[0][0]>0:
-                            z_gs.append(float(str((utils.sql_load_fr_db(u'select "h_gs" from obs_points where obsid = "' + obs + u'"')[1])[0][0])))
-                        elif utils.isfloat(str((utils.sql_load_fr_db(sql02)[1])[0][0])) and (utils.sql_load_fr_db(sql02)[1])[0][0]>0:
-                            z_gs.append(float(str((utils.sql_load_fr_db(u'select "h_toc" from obs_points where obsid = "' + obs + u'"')[1])[0][0])))
+                        #print('h_gs for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql01)[1])[0][0]))#debug
+                        #print('h_toc for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql02)[1])[0][0]))#debug
+                        
+                        if utils.isfloat(str((utils.sql_load_fr_db(sql01)[1])[0][0])) and (utils.sql_load_fr_db(sql01)[1])[0][0]>-999:
+                            z_gs.append(float(str((utils.sql_load_fr_db(sql01)[1])[0][0])))
+                        elif utils.isfloat(str((utils.sql_load_fr_db(sql02)[1])[0][0])) and (utils.sql_load_fr_db(sql02)[1])[0][0]>-999:
+                            z_gs.append(float(str((utils.sql_load_fr_db(sql02)[1])[0][0])))
                         else:
                             z_gs.append(0)
                         Bottom.append(z_gs[i]- float(str((utils.sql_load_fr_db(u'select "depthbot" from stratigraphy where obsid = "' + obs + u'" and stratid = ' + str(recs[j][1])+ u' and lower(geoshort) ' + self.PlotTypes[Typ])[1])[0][0])))
@@ -646,9 +649,10 @@ class sectionplot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             x_id.append(float(self.LengthAlong[q]))
             sql = u'select h_toc, h_gs, length from obs_points where obsid = "' + obs + u'"'
             recs = utils.sql_load_fr_db(sql)[1]
+            print (recs)#debug
             if utils.isfloat(str(recs[0][1])) and recs[0][1]>-999:
                 z_id.append(recs[0][1])
-            elif utils.isfloat(str(recs[0][0]>0)) and recs[0][0]>-999:
+            elif utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
                 z_id.append(recs[0][0])
             else:
                 z_id.append(0)
