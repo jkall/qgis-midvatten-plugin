@@ -104,17 +104,17 @@ class drillreport():        # general observation point info for the selected ob
             f.write(rpt)
 
             # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
-            statistics = self.GetStatistics(unicode(settingsdict['database']), obsid)#MacOSX fix1
+            meas_or_level_masl, statistics = self.GetStatistics(unicode(settingsdict['database']), obsid)#MacOSX fix1
             if  locale.getdefaultlocale()[0] == 'sv_SE':
-                reportdata_4 = self.rpt_lower_right_sv(statistics)
+                reportdata_4 = self.rpt_lower_right_sv(statistics,meas_or_level_masl)
             else:
-                reportdata_4 = self.rpt_lower_right(statistics)
+                reportdata_4 = self.rpt_lower_right(statistics,meas_or_level_masl)
             f.write(reportdata_4)
             
             f.write(r"""</TD></TR></TABLE></TD></TR></TABLE>""")    
             f.write("\n</p></body></html>")        
             f.close()
-            print reportpath
+            #print reportpath#debug
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
 
     def rpt_upper_left_sv(self, GeneralData, CRS='', CRSname=''):
@@ -271,29 +271,37 @@ class drillreport():        # general observation point info for the selected ob
         rpt += r"""</p>"""
         return rpt
 
-    def rpt_lower_right_sv(self, statistics):
+    def rpt_lower_right_sv(self, statistics,meas_or_level_masl):
+        if meas_or_level_masl == 'meas':
+            unit = u' m u rök<br>'
+        else:
+            unit = u' m ö h<br>'
         rpt = r"""<p style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;">"""
         if utils.returnunicode(statistics[2]) != '' and utils.returnunicode(statistics[2]) != '0':
-            rpt += u'Antal nivåmätningar: ' +  utils.returnunicode(statistics[2]) + u' st<br>'
+            rpt += u'Antal nivåmätningar: ' +  utils.returnunicode(statistics[2]) +  u'<br>'
             if utils.returnunicode(statistics[0]) != '':
-                rpt += u'Högsta uppmätta nivå: ' +  utils.returnunicode(statistics[0]) + u' m u rök<br>'
+                rpt += u'Högsta uppmätta nivå: ' +  utils.returnunicode(statistics[0]) + unit
             if utils.returnunicode(statistics[1]) != '':
-                rpt += u'Medianvärde för nivå: ' +  utils.returnunicode(statistics[1]) + u' m u rök<br>'
+                rpt += u'Medianvärde för nivå: ' +  utils.returnunicode(statistics[1]) + unit
             if utils.returnunicode(statistics[3]) != '':
-                rpt += u'Lägsta uppmätta nivå: ' +  utils.returnunicode(statistics[3]) + u' m u rök'
+                rpt += u'Lägsta uppmätta nivå: ' +  utils.returnunicode(statistics[3]) + unit
         rpt += r"""</p>"""
         return rpt
 
-    def rpt_lower_right(self, statistics):
+    def rpt_lower_right(self, statistics,meas_or_level_masl):
+        if meas_or_level_masl == 'meas':
+            unit = u' m below toc<br>'
+        else:
+            unit = u' m above sea level<br>'
         rpt = r"""<p style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;">"""
         if utils.returnunicode(statistics[2]) != '' and utils.returnunicode(statistics[2]) != '0':
             rpt += u'Number of water level measurements: ' +  utils.returnunicode(statistics[2]) + u'<br>'
             if utils.returnunicode(statistics[0]) != '':
-                rpt += u'Highest measured water level: ' +  utils.returnunicode(statistics[0]) + u' m below toc<br>'
+                rpt += u'Highest measured water level: ' +  utils.returnunicode(statistics[0]) + unit
             if utils.returnunicode(statistics[1]) != '':
-                rpt += u'Median water level: ' +  utils.returnunicode(statistics[1]) + u' m below toc<br>'
+                rpt += u'Median water level: ' +  utils.returnunicode(statistics[1]) + unit
             if utils.returnunicode(statistics[3]) != '':
-                rpt += u'Lowest measured water level: ' +  utils.returnunicode(statistics[3]) + u' m below toc'
+                rpt += u'Lowest measured water level: ' +  utils.returnunicode(statistics[3]) + unit
         rpt += r"""</p>"""
         return rpt
 
@@ -313,36 +321,50 @@ class drillreport():        # general observation point info for the selected ob
 
     def GetStatistics(self, dbPath='', obsid = ''): 
         Statistics_list = [0]*4
-        
-        sql = r"""select min(meas) from w_levels where obsid = '"""
+
+        columns = ['meas', 'level_masl']
+
+        #number of values, also decide wehter to use meas or level_masl in report
+        for column in columns:
+            sql = r"""select Count(""" + column + r""") from w_levels where obsid = '"""
+            sql += obsid
+            sql += r"""'"""
+            ConnectionOK, number_of_values = utils.sql_load_fr_db(sql)
+            if number_of_values and number_of_values[0][0] > Statistics_list[2]:#this will select meas if meas >= level_masl
+                meas_or_level_masl = column
+                Statistics_list[2] = number_of_values[0][0]
+
+        #min value
+        if meas_or_level_masl=='meas':
+            sql = r"""select min(meas) from w_levels where obsid = '"""
+        else:
+            sql = r"""select max(level_masl) from w_levels where obsid = '"""
         sql += obsid
         sql += r"""'"""
         ConnectionOK, min_value = utils.sql_load_fr_db(sql)
         if min_value:
             Statistics_list[0] = min_value[0][0]
-        
-        sql = r"""SELECT x.obsid, x.meas as median from (select obsid, meas FROM w_levels WHERE obsid = '"""
+
+        #median value
+        sql = r"""SELECT x.obsid, x.""" + meas_or_level_masl + r""" as median from (select obsid, """ + meas_or_level_masl + r""" FROM w_levels WHERE obsid = '"""
         sql += obsid
-        sql += r"""' and (typeof(meas)=typeof(0.01) or typeof(meas)=typeof(1))) as x, (select obsid, meas FROM w_levels WHERE obsid = '"""
+        sql += r"""' and (typeof(""" + meas_or_level_masl + r""")=typeof(0.01) or typeof(""" + meas_or_level_masl + r""")=typeof(1))) as x, (select obsid, """ + meas_or_level_masl + r""" FROM w_levels WHERE obsid = '"""
         sql += obsid
-        sql += r"""' and (typeof(meas)=typeof(0.01) or typeof(meas)=typeof(1))) as y GROUP BY x.meas HAVING SUM(CASE WHEN y.meas <= x.meas THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.meas >= x.meas THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
+        sql += r"""' and (typeof(""" + meas_or_level_masl + r""")=typeof(0.01) or typeof(""" + meas_or_level_masl + r""")=typeof(1))) as y GROUP BY x.""" + meas_or_level_masl + r""" HAVING SUM(CASE WHEN y.""" + meas_or_level_masl + r""" <= x.""" + meas_or_level_masl + r""" THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.""" + meas_or_level_masl + r""" >= x.""" + meas_or_level_masl + r""" THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
         ConnectionOK, median_value = utils.sql_load_fr_db(sql)
         if median_value:
             Statistics_list[1] = median_value[0][1]
-        
-        sql = r"""select Count(meas) from w_levels where obsid = '"""
-        sql += obsid
-        sql += r"""'"""
-        ConnectionOK, number_of_values = utils.sql_load_fr_db(sql)
-        if number_of_values:
-            Statistics_list[2] = number_of_values[0][0]
-        
-        sql = r"""select max(meas) from w_levels where obsid = '"""
+
+        #max value
+        if meas_or_level_masl=='meas':
+            sql = r"""select max(meas) from w_levels where obsid = '"""
+        else:
+            sql = r"""select min(level_masl) from w_levels where obsid = '"""
         sql += obsid
         sql += r"""'"""
         ConnectionOK, max_value = utils.sql_load_fr_db(sql)
         if max_value:
             Statistics_list[3] = max_value[0][0]
         
-        return Statistics_list    
+        return meas_or_level_masl, Statistics_list    
 

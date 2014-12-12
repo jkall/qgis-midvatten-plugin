@@ -20,17 +20,18 @@ deprecated=False
 changelog=
         - Warning! This is an unstable experimental release
         - New feature: Piper diagram!
-        - New feature: custom plots!
+        - New feature: Custom plots!
         - New feature: Section plot!
-        - New feature for calculating average water flow from accumulated water volume
+        - New feature: Calculate average water flow from accumulated water volume readings
+        - New feature: vacuuming database
+        - New feature: database backup
         - New feature _and_ database design: import of meteorological data into a new table "meteo" in database
-        - New feature for vacuuming database
-        - New feature for database backup
         - Minor database design changes: now "w_levels"."level_masl" may be null and is no longer -999 by default
         - New behaviour during imports - empty readings (real number) are from now on imported as null instead of zero
-        - minor html report changes
+        - New behaviour in drillreport - it will now present statistics for 'level_masl' instead of 'meas', if number of 'level_masl' > number of 'meas' 
+        - Additional minor html report changes
         - Fix slow/erroneous creation of spatialite databases under splite 4 (InitSpatialMetadata(1))
-        - a number of code cleanups and bug fixes, in 1.099p:
+        - A number of code cleanups and bug fixes, in 1.099p:
             - bug fixes in section plot: water level table selection, obsid plotting for negative elevations
 
 
