@@ -323,6 +323,7 @@ class drillreport():        # general observation point info for the selected ob
         Statistics_list = [0]*4
 
         columns = ['meas', 'level_masl']
+        meas_or_level_masl= 'meas'#default value
 
         #number of values, also decide wehter to use meas or level_masl in report
         for column in columns:
