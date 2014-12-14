@@ -101,6 +101,11 @@ def default_nonspatlayers():            # These may be changed
 def default_layers_w_ui():
     list = ['obs_lines', 'obs_points', 'w_lvls_last_geom']
     return list
+
+def default_layers_w_form_logics():
+    list = ['obs_lines', 'obs_points', 'w_levels', 'w_flow', 'stratigraphy']
+    return list
+
     
 def geocolorsymbols():    # STRATIGRAPHY PLOT - THIS IS WHERE YOU SHALL CHANGE TO YOUR OWN GEOLOGIC CODES, SYMBOLS AND COLORS
     dictionary  = { '': ('NoBrush', 'white'),

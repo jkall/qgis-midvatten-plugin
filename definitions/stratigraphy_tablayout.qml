@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis version="2.6.1-Brighton" minimumScale="-4.65661e-10" maximumScale="1e+08" hasScaleBasedVisibilityFlag="0">
+<qgis version="2.6.1-Brighton" minimumScale="0" maximumScale="1e+08" hasScaleBasedVisibilityFlag="0">
   <edittypes>
     <edittype widgetv2type="TextEdit" name="obsid">
       <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
@@ -30,8 +30,8 @@
     </edittype>
   </edittypes>
   <editform></editform>
-  <editforminit>stratigraphy_form_logic.formOpen</editforminit>
-  <featformsuppress>0</featformsuppress>
+  <editforminit>form_logics.stratigraphy_form_open</editforminit>
+  <featformsuppress>1</featformsuppress>
   <annotationform></annotationform>
   <editorlayout>tablayout</editorlayout>
   <excludeAttributesWMS/>

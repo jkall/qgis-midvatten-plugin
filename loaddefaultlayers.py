@@ -34,6 +34,7 @@ class loadlayers():
         self.settingsdict = settingsdict
         self.default_layers =  defs.default_layers() 
         self.default_nonspatlayers = defs.default_nonspatlayers()
+        self.default_layers_w_form_logics = defs.default_layers_w_form_logics()
         self.iface = iface
         self.legend = self.iface.legendInterface()
         self.remove_layers()
@@ -78,23 +79,34 @@ class loadlayers():
                 #preparing search paths for qml file and form logics
                 layer.setEditorLayout(1)#perhaps this is unnecessary since it gets set from the loaded qml below?
                 if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
-                    filename = layer.name() + "_tablayout_sv.qml"
+                    tabstylefilename = layer.name() + "_tablayout_sv.qml"
+                    stylefilename = layer.name() + "_sv.qml"
                     formlogic = "form_logics_sv." + layer.name() + "_form_open"
                 else:
-                    filename = layer.name() + "_tablayout.qml"
+                    tabstylefilename = layer.name() + "_tablayout.qml"
+                    stylefilename = layer.name() + ".qml"
                     formlogic = "form_logics." + layer.name() + "_form_open"
 
                 #now try to load the style file
-                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",filename)
-                try:
-                    layer.loadNamedStyle(stylefile)
-                except:
-                    pass
+                tabstylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",tabstylefilename)
+                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",stylefilename)
+                if os.path.isfile(tabstylefile):
+                    try:
+                        layer.loadNamedStyle(tabstylefile)
+                    except:
+                        pass
+                else:
+                    try:
+                        layer.loadNamedStyle(stylefile)
+                    except:
+                        pass
+
                 #and then the form logics
-                try:
-                    layer.setEditFormInit(formlogic)
-                except:
-                    pass
+                if layer.name() in self.default_layers_w_form_logics:
+                    try:
+                        layer.setEditFormInit(formlogic)
+                    except:
+                        pass
 
                 if layer.name() == 'obs_points':#zoom to obs_points extent
                     QgsMapCanvas().setExtent(layer.extent())
