@@ -24,15 +24,17 @@ from qgis.core import QGis
 import os
 import locale
 from pyspatialite import dbapi2 as sqlite# pyspatialite is absolutely necessary (sqlite3 not enough) due to InitSpatialMetaData()
+import datetime
+#plugin modules
 import midvatten_utils as utils    
 
 class newdb():
 
     def __init__(self, verno):
         self.dbpath = ''
-        self.CreateNewDB(verno)
+        self.create_new_db(verno)#CreateNewDB(verno)
         
-    def CreateNewDB(self, verno):
+    def create_new_db(self, verno):#CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
         # USER MUST SELECT CRS FIRST!! 
         if locale.getdefaultlocale()[0]=='sv_SE':
@@ -53,17 +55,17 @@ class newdb():
             else:
                 try:
                     # creating/connecting the test_db
-                    conn = sqlite.connect(self.dbpath) 
+                    self.conn = sqlite.connect(self.dbpath) 
                     # creating a Cursor
-                    cur = conn.cursor()
-                    cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+                    self.cur = self.conn.cursor()
+                    self.cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
                 except:
                     utils.pop_up_info("Impossible to connect to selected DataBase")
                     return ''
                     PyQt4.QtGui.QApplication.restoreOverrideCursor()
                 #First, find spatialite version
-                versionstext = cur.execute('select spatialite_version()').fetchall()
-                print versionstext
+                versionstext = self.cur.execute('select spatialite_version()').fetchall()
+                #print versionstext#debug
                 # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
                 # then the syntax defines a Midvatten project db according to the loaded .sql-file
                 if int(versionstext[0][0][0]) > 3: # which file to use depends on spatialite version installed
@@ -75,17 +77,73 @@ class newdb():
                 linecounter = 1
                 for line in f:
                     if linecounter > 1:    # first line is encoding info....
-                        rs = cur.execute(line.replace('CHANGETORELEVANTEPSGID',str(EPSGID[0])).replace('CHANGETOPLUGINVERSION',str(verno)).replace('CHANGETOQGISVERSION',str(qgisverno)).replace('CHANGETOSPLITEVERSION',str(versionstext[0][0]))) # use tags to find and replace SRID and versioning info
+                        self.rs = self.cur.execute(line.replace('CHANGETORELEVANTEPSGID',str(EPSGID[0])).replace('CHANGETOPLUGINVERSION',str(verno)).replace('CHANGETOQGISVERSION',str(qgisverno)).replace('CHANGETOSPLITEVERSION',str(versionstext[0][0]))) # use tags to find and replace SRID and versioning info
                     linecounter += 1
-                
-                cur.execute("PRAGMA foreign_keys = OFF")
+
+                self.cur.execute("PRAGMA foreign_keys = OFF")
                 #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
-                rs.close()
-                conn.close()
+                self.rs.close()
+                self.conn.close()
                 #create SpatiaLite Connection in QGIS QSettings
                 settings=PyQt4.QtCore.QSettings()
                 settings.beginGroup('/SpatiaLite/connections')
                 #settings.setValue(u'%s/sqlitepath'%os.path.basename(str(self.dbpath)),'%s'%self.dbpath)
                 settings.setValue(u'%s/sqlitepath'%os.path.basename(self.dbpath),'%s'%self.dbpath)
                 settings.endGroup()
+
+                """
+                #The intention is to keep layer styles in the database by using the class AddLayerStyles but due to limitations in how layer styles are stored in the database, I will put this class on hold for a while. 
+
+                #Finally add the layer styles info into the data base
+                AddLayerStyles(self.dbpath)
+                """
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
+
+
+class AddLayerStyles():
+    """ currently this class is not used although it should be, when storing layer styles in the database works better """
+    def __init__(self, dbpath):
+        self.dbpath = dbpath
+        # creating/connecting the test_db
+        self.conn = sqlite.connect(self.dbpath) 
+        # creating a Cursor
+        self.cur = self.conn.cursor()
+        self.cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+        
+        #add layer styles
+        self.add_layer_styles_2_db()
+
+        #load style from file and set it as value into the layer styles table
+        """
+        self.style_from_file_into_db('obs_lines', 'obs_lines_tablayout.qml','obs_lines_tablayout.sld')
+        self.style_from_file_into_db('obs_p_w_strat', 'obs_p_w_strat.qml','obs_p_w_strat.sld')
+        self.style_from_file_into_db('obs_p_w_lvl', 'obs_p_w_lvl.qml','obs_p_w_lvl.sld')
+        #osv
+        """
+        self.style_from_file_into_db('obs_points', 'obs_points_tablayout.qml','obs_points_tablayout.sld')
+        self.style_from_file_into_db('stratigraphy', 'stratigraphy_tablayout.qml','stratigraphy_tablayout.sld')
+
+        self.cur.execute("PRAGMA foreign_keys = OFF")
+        #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
+        self.rs.close()
+        self.conn.close()
+    
+    def add_layer_styles_2_db(self):
+        SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"definitions","add_layer_styles_2_db.sql")
+        datetimestring = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        f = open(SQLFile, 'r')
+        linecounter = 1
+        for line in f:
+            if linecounter > 1:    # first line is encoding info....
+                self.rs = self.cur.execute(line.replace('CHANGETOCURRENTDATETIME',datetimestring).replace('CHANGETODBPATH',self.dbpath)) # use tags to find and replace SRID and versioning info
+            linecounter += 1
+
+    def style_from_file_into_db(self,layer,qml_file, sld_file):
+        with open(os.path.join(os.sep,os.path.dirname(__file__),"definitions",qml_file), 'r') as content_file:
+            content = content_file.read()
+        #print(content)#debug
+        self.cur.execute("update layer_styles set styleQML=? where f_table_name=?",(content,layer))#Use parameterized arguments to allow sqlite3 to escape the quotes for you. (It also helps prevent SQL injection.
+        #"UPDATE posts SET html = ? WHERE id = ?", (html ,temp[i][1])
+        with open(os.path.join(os.sep,os.path.dirname(__file__),"definitions",sld_file), 'r') as content_file:
+            content = content_file.read()
+        self.cur.execute("update layer_styles set styleSLD=? where f_table_name=?",(content,layer))#Use parameterized arguments to allow sqlite3 to escape the quotes for you. (It also helps prevent SQL injection.
