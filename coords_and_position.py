@@ -35,11 +35,11 @@ class updatecoordinates():
         sql = r"""select obsid from obs_points where (Geometry is null or Geometry ='') and obsid in """ + self.sqlpart2
         ConnectionOK, result = utils.sql_load_fr_db(sql)#ok to send a utf-8 byte string even though unicode is preferred
         if len(result)==0:
-            self.doit()
+            self.do_it()
         else:
             utils.pop_up_info("Positions (geometries) are missing for\n" + result[0][0] + "\nCoordinates will not be updated.")
         
-    def doit(self):
+    def do_it(self):
         """Update coordinates for all observations in self.observations"""
         
         sql = r"""UPDATE OR IGNORE obs_points SET east=X(Geometry) WHERE obsid IN """ + self.sqlpart2
@@ -60,11 +60,11 @@ class updateposition():
         sql = r"""select obsid from obs_points where (east is null or east ='' or  north is null or north = '') and obsid in """ + self.sqlpart2
         ConnectionOK, result = utils.sql_load_fr_db(sql)
         if len(result)==0:
-            self.doit()
+            self.do_it()
         else:
             utils.pop_up_info("Coordinates are missing for\n" + result[0][0] + "\nPositions (geometry) will not be updated.")
         
-    def doit(self):
+    def do_it(self):
         """Update positions for all observations in self.observations"""
         # First find EPSG-ID for the CRS
         sql = r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'"""

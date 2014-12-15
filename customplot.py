@@ -619,4 +619,4 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.ms.settingsdict['custplot_xtitle'] = unicode(self.xtitle_QLineEdit.text())
         self.ms.settingsdict['custplot_ytitle'] = unicode(self.ytitle_QLineEdit.text())
         self.ms.settingsdict['custplot_tabwidget'] = self.tabWidget.currentIndex()
-        self.ms.saveSettings()
+        self.ms.save_settings()

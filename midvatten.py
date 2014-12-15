@@ -40,7 +40,7 @@ from wqualreport import wqualreport
 from loaddefaultlayers import loadlayers
 import midvatten_utils as utils 
 from definitions import midvatten_defs
-from sectionplot import sectionplot
+from sectionplot import SectionPlot
 import customplot
 from midvsettings import midvsettings
 import midvsettingsdialog
@@ -682,7 +682,7 @@ class midvatten:
             if sanity.result == 1:
                 loadlayers(qgis.utils.iface, self.ms.settingsdict)
                 self.iface.mapCanvas().zoomToFullExtent()#zoom to full extent to let user see what was loaded
-                #self.iface.mapCanvas().refresh()  # to redraw after loaded symbology
+                self.iface.mapCanvas().refresh()  # to redraw after loaded symbology
         else:   
             utils.pop_up_info("You have to select a database in Midvatten settings first!")
 
@@ -697,7 +697,7 @@ class midvatten:
             if not newdbinstance.dbpath=='':
                 db = newdbinstance.dbpath
                 self.ms.settingsdict['database'] = db
-                self.ms.saveSettings()
+                self.ms.save_settings()
 
     def PlotPiper(self):
         if self.ms.settingsareloaded == False:
@@ -776,10 +776,10 @@ class midvatten:
             self.iface.messageBar().pushMessage("Error",msg, 2,duration =15)
         else:#otherwise go
             try:
-                self.myplot.doit(self.ms,OBSID,SectionLineLayer)
+                self.myplot.do_it(self.ms,OBSID,SectionLineLayer)
             except:
-                self.myplot = sectionplot(self.iface.mainWindow(), self.iface)
-                self.myplot.doit(self.ms,OBSID,SectionLineLayer)
+                self.myplot = SectionPlot(self.iface.mainWindow(), self.iface)
+                self.myplot.do_it(self.ms,OBSID,SectionLineLayer)
 
     def PlotXY(self):            
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot xy data, then load settings from project file
@@ -819,7 +819,7 @@ class midvatten:
 
     def resetSettings(self):
         self.ms.resetSettings()
-        self.ms.saveSettings()
+        self.ms.save_settings()
         try:#if midvsettingsdock is shown, then it must be reset
             self.midvsettingsdialog.activateWindow()
             self.midvsettingsdialog.ClearEverything()

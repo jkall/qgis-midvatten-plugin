@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>766</width>
-    <height>449</height>
+    <height>472</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,8 +35,8 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0" colspan="2">
         <layout class="QFormLayout" name="formLayout_5">
          <item row="0" column="0">
           <widget class="QLabel" name="label">
@@ -57,7 +57,7 @@
          </item>
         </layout>
        </item>
-       <item>
+       <item row="1" column="0" colspan="2">
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
           <widget class="QLabel" name="label_3">
@@ -88,7 +88,7 @@ p, li { white-space: pre-wrap; }
          </item>
         </layout>
        </item>
-       <item>
+       <item row="2" column="0" colspan="2">
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
           <widget class="QLabel" name="label_4">
@@ -127,7 +127,7 @@ p, li { white-space: pre-wrap; }
          </item>
         </layout>
        </item>
-       <item>
+       <item row="3" column="0" colspan="2">
         <layout class="QFormLayout" name="formLayout_2">
          <property name="fieldGrowthPolicy">
           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
@@ -157,7 +157,7 @@ p, li { white-space: pre-wrap; }
          </item>
         </layout>
        </item>
-       <item>
+       <item row="4" column="0" colspan="2">
         <layout class="QFormLayout" name="formLayout_3">
          <item row="0" column="0">
           <widget class="QLabel" name="label_5">
@@ -178,7 +178,7 @@ p, li { white-space: pre-wrap; }
          </item>
         </layout>
        </item>
-       <item>
+       <item row="5" column="0" colspan="2">
         <layout class="QFormLayout" name="formLayout">
          <property name="fieldGrowthPolicy">
           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
@@ -208,7 +208,31 @@ p, li { white-space: pre-wrap; }
          </item>
         </layout>
        </item>
-       <item>
+       <item row="6" column="0">
+        <widget class="QCheckBox" name="Labels_checkBox">
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Labels</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QCheckBox" name="Stratigraphy_checkBox">
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Stratigraphy</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0" colspan="2">
         <widget class="QPushButton" name="pushButton">
          <property name="maximumSize">
           <size>

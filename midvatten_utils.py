@@ -41,7 +41,6 @@ class dbconnection():
                 self.conn = sqlite.connect(self.dbpath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
                 self.conn.cursor().execute("select count(*) from sqlite_master") 
                 ConnectionOK = True
-                #print "successfully connected to " + self.dbpath#debug
             except:
                 pop_up_info("Could not connect to  " + self.dbpath + "\nYou will have to reset Midvatten settings for this project!")
                 ConnectionOK = False
@@ -55,7 +54,6 @@ class dbconnection():
     
 class askuser(QtGui.QDialog):
     def __init__(self, question="YesNo", msg = '', dialogtitle='User input needed', parent=None):
-        #pop_up_info("question = " + question + " and msg = " + msg)        #DEBUGGING
         self.result = ''
         if question == 'YesNo':         #  Yes/No dialog 
             reply = QtGui.QMessageBox.information(parent, dialogtitle, msg, QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
@@ -165,7 +163,6 @@ def pop_up_info(msg='',title='Information',parent=None):
     QtGui.QMessageBox.information(parent, title, '%s' % (msg))
 
 def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
-    #qgis.utils.iface.messageBar().pushMessage("Debug",sql, 0,duration=30)#debug
     dbpath = QgsProject.instance().readEntry("Midvatten","database")
     if os.path.exists(dbpath[0]):
         try:

@@ -19,6 +19,10 @@ deprecated=False
 
 changelog=
         - Warning! This is an unstable experimental release
+        - Removed custom forms and form logics for user data input
+          ***** WARNING **********
+          This will break your old QGIS projects!
+          This is why: https://hub.qgis.org/issues/10739
         - New feature: Piper diagram!
         - New feature: Custom plots!
         - New feature: Section plot!

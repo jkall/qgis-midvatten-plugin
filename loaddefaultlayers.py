@@ -51,7 +51,7 @@ class loadlayers():
         MyGroup = self.legend.addGroup ("Midvatten_OBS_DB",1,-1)
         uri = QgsDataSourceURI()
         uri.setDatabase(self.settingsdict['database'])
-
+        canvas = self.iface.mapCanvas()
         layer_list = []
         map_canvas_layer_list=[]
 
@@ -79,27 +79,18 @@ class loadlayers():
                 #preparing search paths for qml file and form logics
                 layer.setEditorLayout(1)#perhaps this is unnecessary since it gets set from the loaded qml below?
                 if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
-                    tabstylefilename = layer.name() + "_tablayout_sv.qml"
                     stylefilename = layer.name() + "_sv.qml"
                     formlogic = "form_logics_sv." + layer.name() + "_form_open"
                 else:
-                    tabstylefilename = layer.name() + "_tablayout.qml"
                     stylefilename = layer.name() + ".qml"
                     formlogic = "form_logics." + layer.name() + "_form_open"
 
                 #now try to load the style file
-                tabstylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",tabstylefilename)
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",stylefilename)
-                if os.path.isfile(tabstylefile):
-                    try:
-                        layer.loadNamedStyle(tabstylefile)
-                    except:
-                        pass
-                else:
-                    try:
-                        layer.loadNamedStyle(stylefile)
-                    except:
-                        pass
+                try:
+                    layer.loadNamedStyle(stylefile)
+                except:
+                    pass
 
                 #and then the form logics
                 if layer.name() in self.default_layers_w_form_logics:
@@ -109,13 +100,13 @@ class loadlayers():
                         pass
 
                 if layer.name() == 'obs_points':#zoom to obs_points extent
-                    QgsMapCanvas().setExtent(layer.extent())
+                    canvas.setExtent(layer.extent())
                 elif layer.name() == 'w_lvls_last_geom':#we do not want w_lvls_last_geom to be visible by default
                     self.legend.setLayerVisible(layer,False)
                 else:
                     pass
-
-        
+                canvas.refresh()
+                
     def add_layers_old_method(self):
         """
         this method is depreceated and should no longer be used

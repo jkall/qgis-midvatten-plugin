@@ -47,7 +47,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             self.LoadAndSelectLastSettings()
         # SIGNALS
         #move dockwidget
-        self.connect(self, SIGNAL("dockLocationChanged(Qt::DockWidgetArea)"), self.setLocation)
+        self.connect(self, SIGNAL("dockLocationChanged(Qt::DockWidgetArea)"), self.set_location)
         #select file
         self.connect(self.btnSetDB, SIGNAL("clicked()"), self.selectFile)
         #tab TS
@@ -86,83 +86,83 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
     def ChangedCheckBoxDataPoints(self):
         self.ms.settingsdict['tsdotmarkers']=self.checkBoxDataPoints.checkState()
-        self.ms.saveSettings('tsdotmarkers')
+        self.ms.save_settings('tsdotmarkers')
     
     def ChangedCheckBoxDataPoints2(self):
         self.ms.settingsdict['xydotmarkers']=self.checkBoxDataPoints_2.checkState()
-        self.ms.saveSettings('xydotmarkers')
+        self.ms.save_settings('xydotmarkers')
                 
     def ChangedCheckBoxStepPlot(self):
         self.ms.settingsdict['tsstepplot']=self.ChangedCheckBoxStepPlot.checkState()
-        self.ms.saveSettings('tsstepplot')
+        self.ms.save_settings('tsstepplot')
     
     def ChangedListOfColumns(self):
         self.ms.settingsdict['tscolumn']=self.ListOfColumns.currentText()
-        self.ms.saveSettings('tscolumn')
+        self.ms.save_settings('tscolumn')
 
     def ChangedListOfColumns2(self):
         self.ms.settingsdict['xy_xcolumn']=self.ListOfColumns_2.currentText()
-        self.ms.saveSettings('xy_xcolumn')
+        self.ms.save_settings('xy_xcolumn')
 
     def ChangedListOfColumns3(self):
         self.ms.settingsdict['xy_y1column']=self.ListOfColumns_3.currentText()
-        self.ms.saveSettings('xy_y1column')
+        self.ms.save_settings('xy_y1column')
         
     def ChangedListOfColumns4(self):
         self.ms.settingsdict['xy_y2column']=self.ListOfColumns_4.currentText()
-        self.ms.saveSettings('xy_y2column')
+        self.ms.save_settings('xy_y2column')
 
     def ChangedListOfColumns5(self):
         self.ms.settingsdict['xy_y3column']=self.ListOfColumns_5.currentText()
-        self.ms.saveSettings('xy_y3column')
+        self.ms.save_settings('xy_y3column')
                 
     def ChangedListOfColumnsWQualParam(self):
         self.ms.settingsdict['wqual_paramcolumn']=self.ListOfColumns_WQUALPARAM.currentText()
-        self.ms.saveSettings('wqual_paramcolumn')
+        self.ms.save_settings('wqual_paramcolumn')
                 
     def ChangedListOfColumnsWQualValue(self):
         self.ms.settingsdict['wqual_valuecolumn']=self.ListOfColumns_WQUALVALUE.currentText()
-        self.ms.saveSettings('wqual_valuecolumn')        
+        self.ms.save_settings('wqual_valuecolumn')        
 
     def ChangedListOfColumnsWQualUnit(self):
         self.ms.settingsdict['wqual_unitcolumn']=self.ListOfColumns_WQUALUNIT.currentText()
-        self.ms.saveSettings('wqual_unitcolumn')
+        self.ms.save_settings('wqual_unitcolumn')
 
     def ChangedListOfColumnsWQualSorting(self):
         self.ms.settingsdict['wqual_sortingcolumn']=self.ListOfColumns_WQUALSORTING.currentText()
-        self.ms.saveSettings('wqual_sortingcolumn')
+        self.ms.save_settings('wqual_sortingcolumn')
 
     def ChangedParamCl(self):
         self.ms.settingsdict['piper_cl']=self.paramCl.currentText()
-        self.ms.saveSettings('piper_cl')
+        self.ms.save_settings('piper_cl')
 
     def ChangedParamHCO3(self):
         self.ms.settingsdict['piper_hco3']=self.paramHCO3.currentText()
-        self.ms.saveSettings('piper_hco3')
+        self.ms.save_settings('piper_hco3')
 
     def ChangedParamSO4(self):
         self.ms.settingsdict['piper_so4']=self.paramSO4.currentText()
-        self.ms.saveSettings('piper_so4')
+        self.ms.save_settings('piper_so4')
 
     def ChangedParamNa(self):
         self.ms.settingsdict['piper_na']=self.paramNa.currentText()
-        self.ms.saveSettings('piper_na')
+        self.ms.save_settings('piper_na')
 
     def ChangedParamK(self):
         self.ms.settingsdict['piper_k']=self.paramK.currentText()
-        self.ms.saveSettings('piper_k')
+        self.ms.save_settings('piper_k')
 
     def ChangedParamCa(self):
         self.ms.settingsdict['piper_ca']=self.paramCa.currentText()
-        self.ms.saveSettings('piper_ca')
+        self.ms.save_settings('piper_ca')
 
     def ChangedParamMg(self):
         self.ms.settingsdict['piper_mg']=self.paramMg.currentText()
-        self.ms.saveSettings('piper_mg')
+        self.ms.save_settings('piper_mg')
 
     def ChangedPiperMarkerComboBox(self):
         self.ms.settingsdict['piper_markers']=self.MarkerComboBox.currentText()
-        self.ms.saveSettings('piper_markers')
+        self.ms.save_settings('piper_markers')
 
     def ClearColumnLists(self):
         self.ListOfColumns.clear()
@@ -207,7 +207,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
     def LoadAndSelectLastSettings(self):
         if os.path.isfile( self.ms.settingsdict['database'] ):#absolute path
-            self.ms.saveSettings('database')
+            self.ms.save_settings('database')
             self.txtpath.setText(self.ms.settingsdict['database'])
             self.loadTablesFromDB(self.ms.settingsdict['database'])        # All ListOfTables are filled with relevant information
             self.LoadDistinctPiperParams(self.ms.settingsdict['database'])
@@ -387,31 +387,31 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
     def PiperClUpdated(self):
         self.ms.settingsdict['piper_cl']= unicode(self.paramCl.currentText())
-        self.ms.saveSettings('piper_cl')#save this specific setting
+        self.ms.save_settings('piper_cl')#save this specific setting
 
     def PiperHCO3Updated(self):
         self.ms.settingsdict['piper_hco3']= unicode(self.paramHCO3.currentText())
-        self.ms.saveSettings('piper_hco3')#save this specific setting
+        self.ms.save_settings('piper_hco3')#save this specific setting
 
     def PiperSO4Updated(self):
         self.ms.settingsdict['piper_so4']= unicode(self.paramSO4.currentText())
-        self.ms.saveSettings('piper_so4')#save this specific setting
+        self.ms.save_settings('piper_so4')#save this specific setting
 
     def PiperNaUpdated(self):
         self.ms.settingsdict['piper_na']= unicode(self.paramNa.currentText())
-        self.ms.saveSettings('piper_na')#save this specific setting
+        self.ms.save_settings('piper_na')#save this specific setting
 
     def PiperKUpdated(self):
         self.ms.settingsdict['piper_k']= unicode(self.paramK.currentText())
-        self.ms.saveSettings('piper_k')#save this specific setting
+        self.ms.save_settings('piper_k')#save this specific setting
 
     def PiperCaUpdated(self):
         self.ms.settingsdict['piper_ca']= unicode(self.paramCa.currentText())
-        self.ms.saveSettings('piper_ca')#save this specific setting
+        self.ms.save_settings('piper_ca')#save this specific setting
 
     def PiperMgUpdated(self):
         self.ms.settingsdict['piper_mg']= unicode(self.paramMg.currentText())
-        self.ms.saveSettings('piper_mg')#save this specific setting
+        self.ms.save_settings('piper_mg')#save this specific setting
         
     def selectFile(self):
         """ Open a dialog to locate the sqlite file and some more..."""        
@@ -422,10 +422,10 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             print "cancelled and still using database path " + self.ms.settingsdict['database'] #debug
         self.LoadAndSelectLastSettings()
 
-    def setLocation(self):
+    def set_location(self):
         dockarea = self.parent.dockWidgetArea(self)
         self.ms.settingsdict['settingslocation']=dockarea
-        self.ms.saveSettings('settingslocation')
+        self.ms.save_settings('settingslocation')
         
     def StratigraphyTableUpdated(self):
         """This method is called whenever stratigraphy table is changed"""
@@ -438,7 +438,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 text = "<font color=red>Wrong table! Column " + str(column) + " is missing.</font>"
         self.InfoTxtStratigraphy.setText(text)
         self.ms.settingsdict['stratigraphytable']=self.ListOfTables_3.currentText()
-        self.ms.saveSettings('stratigraphytable')#save this specific setting
+        self.ms.save_settings('stratigraphytable')#save this specific setting
                 
     def TSTableUpdated(self):
         """This method is called whenever time series table is changed"""
@@ -453,7 +453,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.InfoTxtTSPlot.setText(text)
         #finally, save to qgis project settings
         self.ms.settingsdict['tstable']=self.ListOfTables.currentText()
-        self.ms.saveSettings('tstable')#save this specific setting
+        self.ms.save_settings('tstable')#save this specific setting
 
     def WQUALTableUpdated(self):
         """This method is called whenever water quality table is changed and fils comboboxes with columns for wqual report"""
@@ -477,7 +477,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ChangedListOfColumnsWQualUnit()
         self.ChangedListOfColumnsWQualSorting()        
         self.ms.settingsdict['wqualtable']=self.ListOfTables_WQUAL.currentText()
-        self.ms.saveSettings('wqualtable')#save this specific setting
+        self.ms.save_settings('wqualtable')#save this specific setting
 
     def XYColumnsToComboBox(self, table=None):
         """This method fills comboboxes with columns for xyplot"""
@@ -509,4 +509,4 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             text = "<font color=red>Wrong table! obsid is missing.</font>"
         self.InfoTxtXYPlot.setText(text)
         self.ms.settingsdict['xytable']=self.ListOfTables_2.currentText()
-        self.ms.saveSettings('xytable')#save this specific setting
+        self.ms.save_settings('xytable')#save this specific setting
