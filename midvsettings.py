@@ -68,10 +68,11 @@ class midvsettings():
                     try: # write plugin settings to QgsProject
                         QgsProject.instance().writeEntry("Midvatten",key, value ) 
                     except TypeError: 
-                        print "debug info; midvsettings found that "+key+" had type: "+str(type(value))+" which is not appropriate"
+                        print("debug info; midvsettings found that "+key+" had type: "+str(type(value))+" which is not appropriate")
             else:#otherwise only save specific setting as per given key
                 try:
                     QgsProject.instance().writeEntry("Midvatten",key, self.settingsdict[key]) 
+                    #print ('debug info, wrote %s value %s' %(key, self.settingsdict[key]))#debug
                 except TypeError: 
-                    print "debug info; midvsettings found that "+key+" had type: "+str(type(self.settingsdict[key]))+" which is not appropriate"
+                    print("debug info; midvsettings found that "+key+" had type: "+str(type(self.settingsdict[key]))+" which is not appropriate")
         

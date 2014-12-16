@@ -80,8 +80,9 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.iface.addDockWidget(max(self.ms.settingsdict['secplotlocation'],1), self)
         self.iface.mapCanvas().setRenderFlag(True)        
 
-        self.fill_combo_boxes()        # Comboboxes are filled with relevant information'
+        self.fill_combo_boxes()
         self.fill_dem_list()
+        self.fill_check_boxes()
         self.show()
         #class variables
         self.geology_txt = []
@@ -182,13 +183,22 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             
         return header,data
 
+    def fill_check_boxes(self):#sets checkboxes to last selection
+        if self.ms.settingsdict['stratigraphyplotted']==2:
+            self.Stratigraphy_checkBox.setChecked(True)
+        else:
+            self.Stratigraphy_checkBox.setChecked(False)        
+        if self.ms.settingsdict['secplotlabelsplotted']==2:
+            self.Labels_checkBox.setChecked(True)
+        else:
+            self.Labels_checkBox.setChecked(False)        
+
     def fill_combo_boxes(self): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
         # start with cleaning comboboxes before filling with new entries
         # clear comboboxes etc
         self.wlvltableComboBox.clear()  
         #self.colorComboBox.clear()
-        #self.DEMlistWidget.clear()  
         self.textcolComboBox.clear()  
         self.datetimetextEdit.clear()
         self.drillstoplineEdit.clear()
@@ -459,6 +469,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.Labels.append(Typ)
 
     def plot_water_level(self):   # Adding a plot for each water level date identified
+        self.obsids_w_wl = []
         for datum in self.ms.settingsdict['secplotdates']:
             WL = []
             x_wl=[]
@@ -468,6 +479,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 if utils.sql_load_fr_db(query)[1]:
                     WL.append((utils.sql_load_fr_db(query)[1])[0][0])
                     x_wl.append(float(self.LengthAlong[k]))
+                    if obs not in self.obsids_w_wl:
+                        self.obsids_w_wl.append(obs)
                 k += 1
             lineplot,=self.secax.plot(x_wl, WL,  'v-', markersize = 6)#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
             self.p.append(lineplot)
@@ -481,7 +494,9 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ms.save_settings('secplotbw')
         self.ms.save_settings('secplotlocation')
         self.ms.save_settings('secplotselectedDEMs')
-
+        self.ms.save_settings('stratigraphyplotted')
+        self.ms.save_settings('secplotlabelsplotted')
+        
     def set_location(self):#not ready
         dockarea = self.parent.dockWidgetArea(self)
         self.ms.settingsdict['secplotlocation']=dockarea
@@ -645,10 +660,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         z_id=[]
         barlengths=[]
         bottoms=[]
-        obsid_wlid=[]#if stratigr not shall be plotted, then obsid shall be plotted close to water level instead of toc or gs
+        obsid_wlid=[]#if no stratigr plot, then obsid will be plotted close to water level instead of toc or gs
 
         q=0# a new counter per self.selected_obsids
-        if self.ms.settingsdict['stratigraphyplotted'] ==2:#if stratigr shall be plotted, then obsid written close to toc or gs
+        if self.ms.settingsdict['stratigraphyplotted'] ==2:#if stratigr plot, then obsid written close to toc or gs
             for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
                 x_id.append(float(self.LengthAlong[q]))
                 sql = u'select h_toc, h_gs, length from obs_points where obsid = "' + obs + u'"'
@@ -674,21 +689,21 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
                 for m,n,o in zip(x_id,z_id,self.selected_obsids):#change last arg to the one to be written in plot
                     self.secax.annotate(o,xy=(m,n),xytext=(0,10), textcoords='offset points',ha = 'center', va = 'top',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.4))
-        else: #obsid written close to water level
-            for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
-                query = u'select avg("level_masl") from ' + self.ms.settingsdict['secplotwlvltab'] + u' where obsid = "' + obs + '" and date_time > ' + min(self.ms.settingsdict['secplotdates']) + u' and date_time < ' + max(self.ms.settingsdict['secplotdates'])
-                recs = utils.sql_load_fr_db(query)[1]
-                print('debugging: ' + str(recs[0][0]))#debug
-                if utils.sql_load_fr_db(query)[1]:
-                    obsid_wlid.append(obs)
-                    x_id.append(float(self.LengthAlong[q]))
-                    if utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
-                        z_id.append(recs[0][0])
-                    else:
-                        z_id.append(0)
-                q +=1
-                del recs
-            if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
+        else: #obsid written close to average water level (average of all water levels between given min and max date) 
+            if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated            
+                for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
+                    if obs in self.obsids_w_wl:
+                        query = r"""select avg("level_masl") from """ + self.ms.settingsdict['secplotwlvltab'] + r""" where obsid = '""" + obs + r"""' and date_time >= '""" + min(self.ms.settingsdict['secplotdates']) + r"""' and date_time <= '""" + max(self.ms.settingsdict['secplotdates']) + r"""'"""
+                        recs = utils.sql_load_fr_db(query)[1]
+                        if utils.sql_load_fr_db(query)[1]:
+                            obsid_wlid.append(obs)
+                            x_id.append(float(self.LengthAlong[q]))
+                            if utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
+                                z_id.append(recs[0][0])
+                            else:
+                                z_id.append(0)
+                        del recs
+                    q +=1
                 for m,n,o in zip(x_id,z_id,obsid_wlid):#change last arg to the one to be written in plot
-                    self.secax.annotate(o,xy=(m,n),xytext=(0,10), textcoords='offset points',ha = 'center', va = 'top',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.4))        
+                        self.secax.annotate(o,xy=(m,n),xytext=(0,10), textcoords='offset points',ha = 'center', va = 'top',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.4))        
         del x_id, z_id, q, obsid_wlid

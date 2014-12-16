@@ -76,28 +76,42 @@ class loadlayers():
                 group_index = self.legend.groups().index('Midvatten_OBS_DB') 
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
 
-                #preparing search paths for qml file and form logics
                 layer.setEditorLayout(1)#perhaps this is unnecessary since it gets set from the loaded qml below?
-                if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
-                    stylefilename = layer.name() + "_sv.qml"
-                    formlogic = "form_logics_sv." + layer.name() + "_form_open"
-                else:
-                    stylefilename = layer.name() + ".qml"
-                    formlogic = "form_logics." + layer.name() + "_form_open"
 
                 #now try to load the style file
-                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",stylefilename)
-                try:
-                    layer.loadNamedStyle(stylefile)
-                except:
-                    pass
-
-                #and then the form logics
-                if layer.name() in self.default_layers_w_form_logics:
+                stylefile_sv = os.path.join(os.sep,os.path.dirname(__file__),"definitions",layer.name() + "_sv.qml")
+                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",layer.name() + ".qml")
+                if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
                     try:
-                        layer.setEditFormInit(formlogic)
+                        layer.loadNamedStyle(stylefile_sv)
+                    except:
+                        try:
+                            layer.loadNamedStyle(stylefile)
+                        except:
+                            pass
+                else:
+                    try:
+                        layer.loadNamedStyle(stylefile)
                     except:
                         pass
+
+                #and then the form logics
+                formlogic_sv = "form_logics_sv." + layer.name() + "_form_open"
+                formlogic = "form_logics." + layer.name() + "_form_open"
+                if layer.name() in self.default_layers_w_form_logics:
+                    if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
+                        try:
+                            layer.setEditFormInit(formlogic_sv)
+                        except:
+                            try:
+                                layer.setEditFormInit(formlogic)
+                            except:
+                                pass
+                    else:
+                        try:
+                            layer.setEditFormInit(formlogic)
+                        except:
+                            pass
 
                 if layer.name() == 'obs_points':#zoom to obs_points extent
                     canvas.setExtent(layer.extent())

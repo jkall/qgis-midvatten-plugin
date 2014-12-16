@@ -8,7 +8,7 @@ author=Josef Källgården
 email=groundwatergis@gmail.com
 
 ;optional metadata entries
-tags=hydrogeology,groundwater,time series,stratigraphy
+tags=hydrogeology,groundwater,time series,stratigraphy,piper diagram,borehole
 icon=icons/MidvSettings.png
 homepage=http://sites.google.com/site/midvattenpluginforqgis/
 authorName=Josef Källgården
