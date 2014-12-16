@@ -693,7 +693,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated            
                 for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
                     if obs in self.obsids_w_wl:
-                        query = r"""select avg("level_masl") from """ + self.ms.settingsdict['secplotwlvltab'] + r""" where obsid = '""" + obs + r"""' and date_time >= '""" + min(self.ms.settingsdict['secplotdates']) + r"""' and date_time <= '""" + max(self.ms.settingsdict['secplotdates']) + r"""'"""
+                        query = r"""select avg("level_masl") from """ + self.ms.settingsdict['secplotwlvltab'] + r""" where obsid = '""" + obs + r"""' and ((date_time >= '""" + min(self.ms.settingsdict['secplotdates']) + r"""' and date_time <= '""" + max(self.ms.settingsdict['secplotdates']) + r"""') or (date_time like '""" + min(self.ms.settingsdict['secplotdates']) + r"""%' or date_time like '""" + max(self.ms.settingsdict['secplotdates']) + r"""%'))"""
+                        #print(query)#debug
                         recs = utils.sql_load_fr_db(query)[1]
                         if utils.sql_load_fr_db(query)[1]:
                             obsid_wlid.append(obs)
