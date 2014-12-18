@@ -195,6 +195,47 @@ def sql_alter_db(sql=''):
     resultfromsql.close()
     conn.close()
     return result
+
+def sql_alter_db_by_param_subst(sql='',*subst_params):#sql sent as unicode, result from db returned as list of unicode strings, the subst_paramss is a tuple of parameters to be substituted into the sql
+    """
+    #please note that the argument, subst_paramss, must be a tuple with the parameters to be substituted with ? inside the sql string
+    #simple example:
+    sql = 'select ?, ? from w_levels where obsid=?)
+    subst_params = ('date_time', 'level_masl', 'well01')
+    #and since it is a tuple, then one single parameter must be given with a tailing comma:
+    sql = 'select * from obs_points where obsid = ?'
+    subst_params = ('well01',) 
+    """ 
+    dbpath = QgsProject.instance().readEntry("Midvatten","database")
+    if os.path.exists(dbpath[0]):
+        print('debug info about the tuple %s'%(subst_params[0],))#debug
+        try:
+            conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+            curs = conn.cursor()
+            try:
+                curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+                
+                resultfromsql = curs.execute(sql,subst_params[0])#please note, index 0 is pointing to the first optional argument, not index in tuple 
+                #det får antagligen inte vara något annat än själva värdena i subst_params, strängen som anger kolumner och obsid-namn osv för select är nog string-concatenation som vanligt, det är alltså bara input värdena som ska använda parameter substs            
+            
+            except:#in case it is an sql without parameter substitution
+                print('debugging info: failed loading with parameter substitution, trying the sql without any parameters at all')#debug
+                resultfromsql = curs.execute(sql) 
+            result = resultfromsql.fetchall()
+            conn.commit()
+            
+            resultfromsql.close()
+            conn.close()
+            ConnectionOK = True
+        except:
+            pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
+            ConnectionOK = False
+            result = ''
+    else:
+        pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
+        ConnectionOK = False
+        result = ''
+    return ConnectionOK, result
     
 def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatures=0 is for a check if any features are selected at all, the number is unimportant
     if layer.dataProvider().fieldNameIndex('obsid')  > -1 or layer.dataProvider().fieldNameIndex('OBSID')  > -1: # 'OBSID' to get backwards compatibility

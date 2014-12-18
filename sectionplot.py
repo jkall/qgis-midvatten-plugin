@@ -151,6 +151,11 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 self.write_annotation()
         if self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0: #PLOT Water Levels
             self.plot_water_level()
+        #if the line layer obs_lines is selected, then try to plot seismic data if there are any
+        if self.sectionlinelayer.name()=='obs_lines':
+            if len(self.obs_lines_plot_data)>0:
+                self.plot_obs_lines_data()
+
         #if there are any DEMs selected, try to plot them
         if len(self.ms.settingsdict['secplotselectedDEMs'])>0:
             self.plot_dems()
@@ -425,6 +430,23 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 self.plotx[Typ] = x
                 self.plotbottom[Typ] = Bottom
                 self.plotbarlength[Typ] = BarLength
+
+        #Last step in get data - check if the line layer is obs_lines and if so, load seismic data if there are any 
+        My_format = [('obsline_x', float), ('obsline_y1', float), ('obsline_y2', float)]
+        obsline_x=[]
+        obsline_y1=[]#bedrock
+        obsline_y2=[]#ground surface
+        x='length'
+        self.y1_column='bedrock'
+        self.y2_column='ground'
+        table='seismic_data'
+        if self.sectionlinelayer.name()=='obs_lines':
+            obsline_id = utils.getselectedobjectnames(self.sectionlinelayer)[0]
+            sql = r"""select "%s" as x, "%s" as y1, "%s" as y2 from "%s" where obsid='%s'"""%(x, self.y1_column,self.y2_column,table,obsline_id)
+            conn_OK, recs = utils.sql_load_fr_db(sql)
+            table = np.array(recs, dtype=My_format)  #NDARRAY
+            self.obs_lines_plot_data=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write self.obs_lines_plot_data.values
+
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def get_selected_dems_params( self, dialog ):   
@@ -468,6 +490,14 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.p.append(self.secax.bar(plotxleftbarcorner,self.plotbarlength[Typ], color=self.Colors[Typ], edgecolor='black', hatch=self.Hatches[Typ], width = self.barwidth, bottom=self.plotbottom[Typ]))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
             self.Labels.append(Typ)
 
+    def plot_obs_lines_data(self):
+        lineplot, = self.secax.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y1)#, marker = 'None', linestyle = '-', label=self.y1_column)    # PLOT!!
+        self.p.append(lineplot)
+        self.Labels.append(self.y1_column)
+        lineplot, = self.secax.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y2)#, marker = 'None', linestyle = '-', label=self.y1_column)    # PLOT!!
+        self.p.append(lineplot)
+        self.Labels.append(self.y2_column)
+        
     def plot_water_level(self):   # Adding a plot for each water level date identified
         self.obsids_w_wl = []
         for datum in self.ms.settingsdict['secplotdates']:
