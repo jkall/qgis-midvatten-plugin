@@ -681,7 +681,7 @@ class midvatten:
             sanity = utils.askuser("YesNo","""This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""",'Warning!')
             if sanity.result == 1:
                 loadlayers(qgis.utils.iface, self.ms.settingsdict)
-                self.iface.mapCanvas().zoomToFullExtent()#zoom to full extent to let user see what was loaded
+                #self.iface.mapCanvas().zoomToFullExtent()#zoom to full extent to let user see what was loaded
                 self.iface.mapCanvas().refresh()  # to redraw after loaded symbology
         else:   
             utils.pop_up_info("You have to select a database in Midvatten settings first!")
