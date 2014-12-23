@@ -81,7 +81,6 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.iface.mapCanvas().setRenderFlag(True)        
 
         self.fill_combo_boxes()
-        self.fill_dem_list()
         self.fill_check_boxes()
         self.show()
         #class variables
@@ -95,13 +94,15 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         
         
         #upload vector line layer as temporary table in sqlite db
-        crs = self.sectionlinelayer.crs()
-        ok = self.upload_qgis_vector_layer(self.sectionlinelayer, crs.postgisSrid(), True, False)#loads qgis polyline layer into sqlite table
+        self.line_crs = self.sectionlinelayer.crs()
+        ok = self.upload_qgis_vector_layer(self.sectionlinelayer, self.line_crs.postgisSrid(), True, False)#loads qgis polyline layer into sqlite table
         # get sorted obsid and distance along section from sqlite db
         nF = len(OBSIDtuplein)#number of Features
         LengthAlongTable = self.get_length_along(OBSIDtuplein)#get_length_along returns a numpy view, values are returned by LengthAlongTable.obs_id or LengthAlongTable.length
         self.selected_obsids = LengthAlongTable.obs_id
         self.LengthAlong = LengthAlongTable.length
+
+        self.fill_dem_list()
         
         #drop temporary table
         sql = r"""DROP TABLE %s"""%self.temptableName
@@ -306,8 +307,12 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         for i in range(mc.layerCount()):#find the raster layers
             layer = mc.layer(i)
             if layer.type() == layer.RasterLayer:
-                self.rastItems[unicode(layer.name())] = layer
-                self.inData.addItem(unicode(layer.name()))
+                if layer.bandCount()==1:#only single band raster layers
+                    #print('raster layer '  + layer.name() + ' and crs is '+str(layer.crs))
+                    #print('polyline layer crs is '+str(self.line_crs))
+                    if layer.crs == self.line_crs:#only raster layer with crs corresponding to line layer
+                        self.rastItems[unicode(layer.name())] = layer
+                        self.inData.addItem(unicode(layer.name()))
 
         self.get_dem_selection()
 

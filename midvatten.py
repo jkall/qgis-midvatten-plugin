@@ -681,11 +681,11 @@ class midvatten:
             sanity = utils.askuser("YesNo","""This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""",'Warning!')
             if sanity.result == 1:
                 #show the user this may take a long time...
-                PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))
+                QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
                 loadlayers(qgis.utils.iface, self.ms.settingsdict)
                 #self.iface.mapCanvas().zoomToFullExtent()#zoom to full extent to let user see what was loaded
                 self.iface.mapCanvas().refresh()  # to redraw after loaded symbology
-                PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+                QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
         else:   
             utils.pop_up_info("You have to select a database in Midvatten settings first!")
 
