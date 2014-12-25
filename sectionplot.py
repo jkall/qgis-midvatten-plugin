@@ -152,6 +152,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 self.write_annotation()
         if self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0: #PLOT Water Levels
             self.plot_water_level()
+        if self.ms.settingsdict['secplotdrillstop']!='':
+            self.plot_drill_stop()
         #if the line layer obs_lines is selected, then try to plot seismic data if there are any
         if self.sectionlinelayer.name()=='obs_lines':
             if len(self.obs_lines_plot_data)>0:
@@ -491,6 +493,15 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 self.p.append(lineplot)
                 self.Labels.append(layername)
             QgsMapLayerRegistry.instance().removeMapLayer(temp_memorylayer.id())
+
+    def plot_drill_stop(self):   # not ready
+        query = r"""select obsid from obs_points where lower(drillstop) like '""" +self.ms.settingsdict['secplotdrillstop'] +r"""'"""
+        print('debug this sqliteclause:' + query)#debug
+        result = utils.sql_load_fr_db(query)
+        if result[1]:
+            for item in result[1]:
+                print('debug this item: ' + str(item[0]))#debug
+
 
     def plot_geology(self):
         for Typ in self.ExistingPlotTypes:#Adding a plot for each "geoshort" that is identified
