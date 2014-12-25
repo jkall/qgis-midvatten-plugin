@@ -304,16 +304,19 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.inData.clear()
         self.rastItems = {} #dictionary - layer name : layer
         mc = self.iface.mapCanvas()
+        msg=''
         for i in range(mc.layerCount()):#find the raster layers
             layer = mc.layer(i)
             if layer.type() == layer.RasterLayer:
+                msg='please notice that DEM(s) must be single band rasters and have same crs as your selected vector line layer'
                 if layer.bandCount()==1:#only single band raster layers
-                    #print('raster layer '  + layer.name() + ' and crs is '+str(layer.crs))
-                    #print('polyline layer crs is '+str(self.line_crs))
-                    if layer.crs == self.line_crs:#only raster layer with crs corresponding to line layer
+                    #print('raster layer '  + layer.name() + ' has crs '+str(layer.crs().authid()[5:]))#debug
+                    #print('polyline layer ' + self.sectionlinelayer.name() + ' has crs '+str(self.line_crs.authid()[5:]))#debug
+                    if layer.crs().authid()[5:] == self.line_crs.authid()[5:]:#only raster layer with crs corresponding to line layer
                         self.rastItems[unicode(layer.name())] = layer
                         self.inData.addItem(unicode(layer.name()))
-
+        if msg !='':
+            self.iface.messageBar().pushMessage("Info",msg, 0,duration=10)
         self.get_dem_selection()
 
     def finish_plot(self):
