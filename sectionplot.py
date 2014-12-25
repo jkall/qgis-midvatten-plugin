@@ -91,7 +91,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.comment_txt = []
         self.temptableName = 'temporary_section_line'
         self.sectionlinelayer = SectionLineLayer       
-        
+        self.obsids_w_wl = []
         
         #upload vector line layer as temporary table in sqlite db
         self.line_crs = self.sectionlinelayer.crs()
@@ -154,6 +154,9 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.plot_water_level()
         if self.ms.settingsdict['secplotdrillstop']!='':
             self.plot_drill_stop()
+        if self.ms.settingsdict['stratigraphyplotted'] ==2 or (self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0):#write obsid at top of each stratigraphy floating bar plot, also plot empty bars to show drillings without stratigraphy data
+            self.write_obsid(self.ms.settingsdict['secplotlabelsplotted'])#if argument is 2, then labels will be plotted, otherwise only empty bars
+
         #if the line layer obs_lines is selected, then try to plot seismic data if there are any
         if self.sectionlinelayer.name()=='obs_lines':
             if len(self.obs_lines_plot_data)>0:
@@ -162,9 +165,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #if there are any DEMs selected, try to plot them
         if len(self.ms.settingsdict['secplotselectedDEMs'])>0:
             self.plot_dems()
-        #write obsid at top of each stratigraphy floating bar plot, also plot empty bars to show drillings without stratigraphy data
-        if self.ms.settingsdict['stratigraphyplotted'] ==2 or (self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0):
-            self.write_obsid(self.ms.settingsdict['secplotlabelsplotted'])#if argument is 2, then labels will be plotted, otherwise only empty bars
+
         #labels, grid, legend etc.
         self.finish_plot()
         self.save_settings()
@@ -381,8 +382,12 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.plotbottom = {}
         self.plotbarlength = {}
         l=0 #counter fro unique obs, stratid and typ
-        self.x_txt = [] #used by self.WriteAnnotation
+        self.x_txt = []#used by self.WriteAnnotation
         self.z_txt = []#used by self.WriteAnnotation
+        self.x_id = []#used by self.write_obsid
+        self.z_id=[]#used by self.write_obsid
+        self.barlengths=[]#used by self.write_obsid, not to be mixed with "BarLength" used locally in this function
+        self.bottoms=[]#used by self.write_obsid, not to be mixed with "Bottom" used locally in this function
         self.PlotTypes = defs.PlotTypesDict()
         self.ExistingPlotTypes = []
         self.Hatches = defs.PlotHatchDict()
@@ -395,12 +400,32 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         
         for Typ in self.PlotTypes:#Adding a plot for each "geoshort" that is identified
             i=0 #counter for unique obs and stratid
-            k=0 #counter for unique Typ 
+            k=0 #counter for unique Typ
+            q=0 #counter for unique obsid (only used in first Typ-loop)
             x = []
             z_gs=[]
-            BarLength=[]
-            Bottom = []
+            BarLength=[]#stratigraphy bar length
+            Bottom = []#stratigraphy bottom
             for obs in self.selected_obsids:
+                if k<=len(self.selected_obsids):#in first Typ-loop, get some basic obs_points data - to be used for plotting obsid, empty bars etc
+                    self.x_id.append(float(self.LengthAlong[q]))
+                    sql = u'select h_toc, h_gs, length from obs_points where obsid = "' + obs + u'"'
+                    recs = utils.sql_load_fr_db(sql)[1]
+                    if utils.isfloat(str(recs[0][1])) and recs[0][1]>-999:
+                        self.z_id.append(recs[0][1])
+                    elif utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
+                        self.z_id.append(recs[0][0])
+                    else:
+                        self.z_id.append(0)
+                    if utils.isfloat(str(recs[0][2])):
+                        self.barlengths.append(recs[0][2])
+                    else:
+                        self.barlengths.append(0)
+                    self.bottoms.append(self.z_id[q]-self.barlengths[q])
+                    
+                    q +=1
+                    del recs
+                    
                 sql=u'select "depthbot"-"depthtop", stratid, geology, geoshort, capacity, development, comment from stratigraphy where obsid = "' + obs + u'" and lower(geoshort) ' + self.PlotTypes[Typ] + u" order by stratid"
                 if utils.sql_load_fr_db(sql)[1]:
                     recs = utils.sql_load_fr_db(sql)[1]#[0][0]
@@ -456,6 +481,13 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             conn_OK, recs = utils.sql_load_fr_db(sql)
             table = np.array(recs, dtype=My_format)  #NDARRAY
             self.obs_lines_plot_data=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write self.obs_lines_plot_data.values
+        print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id) + str(self.barlengths) + str(self.bottoms))#debug
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+
+    def get_plot_data_2(self):#not yet implemented, should be invoked by draw_plot and load data depending on a number of selections in left side panel
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
+
+        self.obsid_wlid=[]#if no stratigr plot, then obsid will be plotted close to water level instead of toc or gs
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
@@ -495,13 +527,20 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             QgsMapLayerRegistry.instance().removeMapLayer(temp_memorylayer.id())
 
     def plot_drill_stop(self):   # not ready
+        obs_p_w_drill_stops=[]
         query = r"""select obsid from obs_points where lower(drillstop) like '""" +self.ms.settingsdict['secplotdrillstop'] +r"""'"""
-        print('debug this sqliteclause:' + query)#debug
+        print('debug this sqliteclause :' + query)#debug
         result = utils.sql_load_fr_db(query)
         if result[1]:
             for item in result[1]:
+                obs_p_w_drill_stops.append(item[0])
                 print('debug this item: ' + str(item[0]))#debug
-
+            x_ds=[]
+            k=0
+            for obs in self.selected_obsids:
+                if obs in self.obs_p_w_drill_stops:
+                    x_ds.append(float(self.LengthAlong[k]))
+                k += 1
 
     def plot_geology(self):
         for Typ in self.ExistingPlotTypes:#Adding a plot for each "geoshort" that is identified
@@ -705,38 +744,16 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.annotationtext = self.secax.annotate(o,xy=(m,n),xytext=(5,0), textcoords='offset points',ha = 'left', va = 'center',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.6))#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
 
     def write_obsid(self, plot_labels=2):#annotation, and also empty bars to show drillings without stratigraphy data
+        #local variables, only used if there is no stratigraphy plot and obsid is to be plotted close to average water level
         x_id = []
         z_id=[]
-        barlengths=[]
-        bottoms=[]
         obsid_wlid=[]#if no stratigr plot, then obsid will be plotted close to water level instead of toc or gs
-
         q=0# a new counter per self.selected_obsids
         if self.ms.settingsdict['stratigraphyplotted'] ==2:#if stratigr plot, then obsid written close to toc or gs
-            for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
-                x_id.append(float(self.LengthAlong[q]))
-                sql = u'select h_toc, h_gs, length from obs_points where obsid = "' + obs + u'"'
-                recs = utils.sql_load_fr_db(sql)[1]
-                #print (recs)#debug
-                if utils.isfloat(str(recs[0][1])) and recs[0][1]>-999:
-                    z_id.append(recs[0][1])
-                elif utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
-                    z_id.append(recs[0][0])
-                else:
-                    z_id.append(0)
-                if utils.isfloat(str(recs[0][2])):
-                    barlengths.append(recs[0][2])
-                else:
-                    barlengths.append(0)
-                #print(obs, str(z_id[q]), str(barlengths[q]))#debug
-                bottoms.append(z_id[q]-barlengths[q])
-                
-                q +=1
-                del recs
-            plotxleftbarcorner = [i - self.barwidth/2 for i in x_id]#x-coord for bars at each obs
-            self.p.append(self.secax.bar(plotxleftbarcorner,barlengths, fill=False, edgecolor='black', width = self.barwidth, bottom=bottoms))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
+            plotxleftbarcorner = [i - self.barwidth/2 for i in self.x_id]#x-coord for bars at each obs
+            self.p.append(self.secax.bar(plotxleftbarcorner,self.barlengths, fill=False, edgecolor='black', width = self.barwidth, bottom=self.bottoms))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
-                for m,n,o in zip(x_id,z_id,self.selected_obsids):#change last arg to the one to be written in plot
+                for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
                     self.secax.annotate(o,xy=(m,n),xytext=(0,10), textcoords='offset points',ha = 'center', va = 'top',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.4))
         else: #obsid written close to average water level (average of all water levels between given min and max date) 
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated            
