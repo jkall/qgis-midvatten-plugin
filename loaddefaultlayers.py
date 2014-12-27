@@ -36,6 +36,7 @@ class loadlayers():
         self.default_nonspatlayers = defs.default_nonspatlayers()
         self.default_layers_w_form_logics = defs.default_layers_w_form_logics()
         self.iface = iface
+        self.root = QgsProject.instance().layerTreeRoot()
         self.legend = self.iface.legendInterface()
         self.remove_layers()
         self.add_layers()
@@ -48,7 +49,12 @@ class loadlayers():
         self.add_layers_new_method()
 
     def add_layers_new_method(self):
-        MyGroup = self.legend.addGroup ("Midvatten_OBS_DB",1,-1)
+        try:#qgis>=2.4
+            MyGroup = self.root.insertGroup(0, "Midvatten_OBS_DB")#verify this is inserted at top
+            print('debug info: did create group by new method')#debug
+        except:#qgis < 2.4
+            MyGroup = self.legend.addGroup ("Midvatten_OBS_DB",1,-1)
+            print('debug info: used old method to create group')
         uri = QgsDataSourceURI()
         uri.setDatabase(self.settingsdict['database'])
         canvas = self.iface.mapCanvas()
@@ -72,9 +78,16 @@ class loadlayers():
             else:
                 map_canvas_layer_list.append(QgsMapCanvasLayer(layer))
 
-                QgsMapLayerRegistry.instance().addMapLayers([layer])
-                group_index = self.legend.groups().index('Midvatten_OBS_DB') 
-                self.legend.moveLayer (self.legend.layers()[0],group_index)
+                try:#qgis>=2.4
+                    QgsMapLayerRegistry.instance().addMapLayers([layer],False)
+                    MyGroup.insertLayer(0,layer)
+                    #MyGroup.addLayer(layer)
+                    print('debug - inserted layer into group by new method')#debug
+                except:#qgis<2.4
+                    QgsMapLayerRegistry.instance().addMapLayers([layer])
+                    group_index = self.legend.groups().index('Midvatten_OBS_DB') 
+                    self.legend.moveLayer (self.legend.layers()[0],group_index)
+                    print('debug - inserted layer into group by OLD method')#debug
 
                 layer.setEditorLayout(1)#perhaps this is unnecessary since it gets set from the loaded qml below?
 
@@ -188,17 +201,21 @@ class loadlayers():
                     self.legend.setLayerVisible(layer,False)
 
     def remove_layers(self):
-        """ FIRST search for and try to remove old layers """
-        ALL_LAYERS = self.iface.mapCanvas().layers() 
-        for lyr in ALL_LAYERS:         
-            name = lyr.name()
-            if (name in self.default_layers) or (name in self.default_nonspatlayers):
-                QgsMapLayerRegistry.instance().removeMapLayers( [lyr.id()] )
-                
-        """ THEN remove old group """
-        while 'Midvatten_OBS_DB' in self.legend.groups():
-            group_index = self.legend.groups().index('Midvatten_OBS_DB') 
-            self.legend.removeGroup(group_index)
+        try:#qgis>2.6
+            remove_group = self.root.findGroup("Midvatten_OBS_DB")
+            self.root.removeChildNode(remove_group)
+            print('debug info, removed group by new method')#debug
+        except: #qgis < 2.4
+            """ FIRST search for and try to remove old layers """        
+            ALL_LAYERS = self.iface.mapCanvas().layers() 
+            for lyr in ALL_LAYERS:         
+                name = lyr.name()
+                if (name in self.default_layers) or (name in self.default_nonspatlayers):
+                    QgsMapLayerRegistry.instance().removeMapLayers( [lyr.id()] )                    
+            """ THEN remove old group """
+            while 'Midvatten_OBS_DB' in self.legend.groups():
+                group_index = self.legend.groups().index('Midvatten_OBS_DB') 
+                self.legend.removeGroup(group_index)
 
     def selection_layer_in_db_or_not(self): #this is not used, it might be if using layer_styles stored in the db
         sql = r"""select name from sqlite_master where name = 'layer_styles'"""
