@@ -378,7 +378,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         del data, npdata
         return LengthAlongTable
 
-    def get_plot_data(self):#this is called when class is instantiated
+    def get_plot_data(self):#this is called when class is instantiated, collecting data specific for the profile line layer and the obs_points
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
         self.plotx = {}
         self.plotbottom = {}
@@ -483,10 +483,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             conn_OK, recs = utils.sql_load_fr_db(sql)
             table = np.array(recs, dtype=My_format)  #NDARRAY
             self.obs_lines_plot_data=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write self.obs_lines_plot_data.values
-        print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id) + str(self.barlengths) + str(self.bottoms))#debug
+        #print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id) + str(self.barlengths) + str(self.bottoms))#debug
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
-    def get_plot_data_2(self):#not yet implemented, should be invoked by draw_plot and load data depending on a number of selections in left side panel
+    def get_plot_data_2(self):#collecting data depending on a number of selections in left side panel
         self.obsid_wlid=[]#if no stratigr plot, then obsid will be plotted close to water level instead of toc or gs
         self.x_id_wwl=[]
         self.z_id_wwl=[]
@@ -497,13 +497,11 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
         if self.ms.settingsdict['secplotdrillstop']!='':
             query = r"""select obsid from obs_points where lower(drillstop) like '""" +self.ms.settingsdict['secplotdrillstop'] +r"""'"""
-            print('debug this sqliteclause :' + query)#debug
             result = utils.sql_load_fr_db(query)
             if result[1]:
                 for item in result[1]:
                     self.obs_p_w_drill_stops.append(item[0])
-                    print('debug this item: ' + str(item[0]))#debug
-
+                    
         q=0
         for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
             if obs in self.obsids_w_wl:
@@ -559,8 +557,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 self.Labels.append(layername)
             QgsMapLayerRegistry.instance().removeMapLayer(temp_memorylayer.id())
 
-    def plot_drill_stop(self):   # not ready
-        lineplot,=self.secax.plot(self.x_ds, self.z_ds,  '^', markersize = 6)
+    def plot_drill_stop(self): 
+        lineplot,=self.secax.plot(self.x_ds, self.z_ds,  '^', markersize = 6,color='black')
         self.p.append(lineplot)
         self.Labels.append('drillstop like ' + self.ms.settingsdict['secplotdrillstop'])
 
