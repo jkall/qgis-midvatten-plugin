@@ -187,7 +187,7 @@ def attr_changed(attr,value):#background is set red if values do not fulfill sim
     the message handling is commented out since it is not very useful - there is way too many attr_changed signals
     """
     #bg color for field obsid - if obsid exists in db or not
-    if attr == "obsid":
+    if attr.lower() == "obsid":
         if obsid_exists(myDialog.findChild(QLineEdit,"obsid").text(),'obs_points') or obsid_exists(myDialog.findChild(QLineEdit,"obsid").text(),'obs_lines'):#if obsid in database, then blank background, and try some table specific field updates
             myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
         #elif (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) == 0):#red bg if obsid not set
@@ -206,28 +206,34 @@ def attr_changed(attr,value):#background is set red if values do not fulfill sim
     """
     
     # then attribute-specific checks - note that they are only performed for strings, the other ones are having constraints from the qgis editor
-    if attr=="unit":
-        if (myDialog.findChild(QLineEdit,"unit").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"unit").text()) ==0):
-            myDialog.findChild(QLineEdit,"unit").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-        else:
-            myDialog.findChild(QLineEdit,"unit").setStyleSheet("") 
-    elif attr=="instrumentid":
+    if attr.lower() in("unit","enhet"):
+        try:
+            if (myDialog.findChild(QLineEdit,"unit").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"unit").text()) ==0):
+                myDialog.findChild(QLineEdit,"unit").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+            else:
+                myDialog.findChild(QLineEdit,"unit").setStyleSheet("") 
+        except:
+            if (myDialog.findChild(QLineEdit,"enhet").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"enhet").text()) ==0):
+                myDialog.findChild(QLineEdit,"enhet").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+            else:
+                myDialog.findChild(QLineEdit,"enhet").setStyleSheet("") 
+    elif attr.lower() in ("instrumentid"):
         if (myDialog.findChild(QLineEdit,"instrumentid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"instrumentid").text()) ==0): 
             myDialog.findChild(QLineEdit,"instrumentid").setStyleSheet("background-color: rgba(255, 107, 107, 150);") 
         else:
             myDialog.findChild(QLineEdit,"instrumentid").setStyleSheet("")
-    elif attr=="flowtype":
+    elif attr.lower() in ("flowtype","flödestyp"):
         if not flowtype_exists(myDialog.findChild(QLineEdit,"flowtype").text()): 
             myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
             myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("")
     #If qgis edit widget types were more flexible (number of decimal places etc) then the following ones would not be needed, keep on to-do-list 
-    elif attr=="stratid":
+    elif attr.lower() in ("stratid", "lager nr"):
         if utils.isinteger(myDialog.findChild(QLineEdit,"stratid").text())==False:
             myDialog.findChild(QLineEdit,"stratid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
             myDialog.findChild(QLineEdit,"stratid").setStyleSheet("")   
-    elif attr=="depthtop":
+    elif attr.lower() in ("depthtop","depth to top of layer","från djup under my (m)"):
         if utils.isfloat(myDialog.findChild(QLineEdit,"depthtop").text())==False:
             myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
@@ -241,7 +247,7 @@ def attr_changed(attr,value):#background is set red if values do not fulfill sim
                     myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("")
             except:
                 myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("")
-    elif attr=="depthbot":
+    elif attr.lower() in ("depthbop","depth to bottom of layer","till djup under my (m)"):
         if utils.isfloat(myDialog.findChild(QLineEdit,"depthbot").text())==False:
             myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
@@ -255,32 +261,32 @@ def attr_changed(attr,value):#background is set red if values do not fulfill sim
                     myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("")
             except:
                 myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("")
-    elif attr=="level_masl":
+    elif attr.lower()=="level_masl":
         if utils.isfloat(myDialog.findChild(QLineEdit,"level_masl").text())==False:
             myDialog.findChild(QLineEdit,"level_masl").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
             myDialog.findChild(QLineEdit,"level_masl").setStyleSheet("")
-    elif attr=="reading":
+    elif attr.lower()=="reading":
         if (myDialog.findChild(QLineEdit,"reading").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"reading").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
             myDialog.findChild(QLineEdit,"reading").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
             myDialog.findChild(QLineEdit,"reading").setStyleSheet("")  
-    elif attr=="reading_num":
+    elif attr.lower()=="reading_num":
         if (myDialog.findChild(QLineEdit,"reading_num").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"reading_num").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
             myDialog.findChild(QLineEdit,"reading_num").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
             myDialog.findChild(QLineEdit,"reading_num").setStyleSheet("")  
-    elif attr=="reading, numerical":
+    elif attr.lower()=="reading, numerical":
         if (myDialog.findChild(QLineEdit,"reading, numerical").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"reading, numerical").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
             myDialog.findChild(QLineEdit,"reading, numerical").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
             myDialog.findChild(QLineEdit,"reading, numerical").setStyleSheet("")  
-    elif attr=="report":
+    elif attr.lower()=="report":
         if (myDialog.findChild(QLineEdit,"report").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"report").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
             myDialog.findChild(QLineEdit,"report").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
             myDialog.findChild(QLineEdit,"report").setStyleSheet("") 
-    elif attr=="parameter":
+    elif attr.lower()=="parameter":
         if (myDialog.findChild(QLineEdit,"parameter").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"parameter").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
             myDialog.findChild(QLineEdit,"parameter").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:

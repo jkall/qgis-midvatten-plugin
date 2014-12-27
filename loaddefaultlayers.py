@@ -109,22 +109,11 @@ class loadlayers():
                         pass
 
                 #and then the form logics
-                formlogic_sv = "form_logics_sv." + layer.name() + "_form_open"
                 formlogic = "form_logics." + layer.name() + "_form_open"
-                if layer.name() in self.default_layers_w_form_logics:
-                    if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
-                        try:
-                            layer.setEditFormInit(formlogic_sv)
-                        except:
-                            try:
-                                layer.setEditFormInit(formlogic)
-                            except:
-                                pass
-                    else:
-                        try:
-                            layer.setEditFormInit(formlogic)
-                        except:
-                            pass
+                try:
+                    layer.setEditFormInit(formlogic)
+                except:
+                    pass
 
                 if layer.name() == 'obs_points':#zoom to obs_points extent
                     canvas.setExtent(layer.extent())
