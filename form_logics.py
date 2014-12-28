@@ -182,12 +182,13 @@ def w_flow_form_open(dialog,layerid,featureid):
     buttonBox.rejected.connect(myDialog.reject)
 
 def attr_changed(attr,value):#background is set red if values do not fulfill simple validity checks
+    attribute_name_string = attr.lower()
     """
     this one will mainly color field backgrounds to red in case of database inconsistencies or not yet saved edits
     the message handling is commented out since it is not very useful - there is way too many attr_changed signals
     """
     #bg color for field obsid - if obsid exists in db or not
-    if attr.lower() == "obsid":
+    if attribute_name_string == "obsid":
         if obsid_exists(myDialog.findChild(QLineEdit,"obsid").text(),'obs_points') or obsid_exists(myDialog.findChild(QLineEdit,"obsid").text(),'obs_lines'):#if obsid in database, then blank background, and try some table specific field updates
             myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
         #elif (myDialog.findChild(QLineEdit,"obsid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"obsid").text()) == 0):#red bg if obsid not set
@@ -206,36 +207,30 @@ def attr_changed(attr,value):#background is set red if values do not fulfill sim
     """
     
     # then attribute-specific checks - note that they are only performed for strings, the other ones are having constraints from the qgis editor
-    if attr.lower() in("unit","enhet"):
-        try:
-            if (myDialog.findChild(QLineEdit,"unit").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"unit").text()) ==0):
-                myDialog.findChild(QLineEdit,"unit").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-            else:
-                myDialog.findChild(QLineEdit,"unit").setStyleSheet("") 
-        except:
-            if (myDialog.findChild(QLineEdit,"enhet").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"enhet").text()) ==0):
-                myDialog.findChild(QLineEdit,"enhet").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-            else:
-                myDialog.findChild(QLineEdit,"enhet").setStyleSheet("") 
-    elif attr.lower() in ("instrumentid"):
-        if (myDialog.findChild(QLineEdit,"instrumentid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"instrumentid").text()) ==0): 
-            myDialog.findChild(QLineEdit,"instrumentid").setStyleSheet("background-color: rgba(255, 107, 107, 150);") 
+    if attribute_name_string in("unit","enhet"):
+        if (myDialog.findChild(QLineEdit,attribute_name_string).text()=='NULL') or (len(myDialog.findChild(QLineEdit,attribute_name_string).text()) ==0):
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
-            myDialog.findChild(QLineEdit,"instrumentid").setStyleSheet("")
-    elif attr.lower() in ("flowtype","flödestyp"):
-        if not flowtype_exists(myDialog.findChild(QLineEdit,"flowtype").text()): 
-            myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("") 
+    elif attribute_name_string in ("instrumentid","instrument id","instrument id"):
+        if (myDialog.findChild(QLineEdit,attribute_name_string).text()=='NULL') or (len(myDialog.findChild(QLineEdit,attribute_name_string).text()) ==0): 
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("background-color: rgba(255, 107, 107, 150);") 
         else:
-            myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("")
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("")
+    elif attribute_name_string in ("flowtype","flödestyp"):
+        if not flowtype_exists(myDialog.findChild(QLineEdit,attribute_name_string).text()): 
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+        else:
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("")
     #If qgis edit widget types were more flexible (number of decimal places etc) then the following ones would not be needed, keep on to-do-list 
-    elif attr.lower() in ("stratid", "lager nr"):
-        if utils.isinteger(myDialog.findChild(QLineEdit,"stratid").text())==False:
-            myDialog.findChild(QLineEdit,"stratid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+    elif attribute_name_string in ("stratid", "lager nr"):
+        if utils.isinteger(myDialog.findChild(QLineEdit,attribute_name_string).text())==False:
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
-            myDialog.findChild(QLineEdit,"stratid").setStyleSheet("")   
-    elif attr.lower() in ("depthtop","depth to top of layer","från djup under my (m)"):
-        if utils.isfloat(myDialog.findChild(QLineEdit,"depthtop").text())==False:
-            myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("")   
+    elif attribute_name_string in ("depthtop","depth to top of layer","från djup under my (m)"):
+        if utils.isfloat(myDialog.findChild(QLineEdit,attribute_name_string).text())==False:
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
             try:
                 if not (float(myDialog.findChild(QLineEdit,"depthtop").text()) < float(myDialog.findChild(QLineEdit,"depthbot").text())):
@@ -246,12 +241,26 @@ def attr_changed(attr,value):#background is set red if values do not fulfill sim
                     myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("")  
                     myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("")
             except:
-                myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("")
-    elif attr.lower() in ("depthbop","depth to bottom of layer","till djup under my (m)"):
-        if utils.isfloat(myDialog.findChild(QLineEdit,"depthbot").text())==False:
-            myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+                if not (float(myDialog.findChild(QLineEdit,"från djup under my (m)").text()) < float(myDialog.findChild(QLineEdit,"till djup under my (m)").text())):
+                    myDialog.findChild(QLineEdit,"från djup under my (m)").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+                    myDialog.findChild(QLineEdit,"från djup under my (m)").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+                    #qgis.utils.iface.messageBar().pushMessage("Error","depthbot must be greated than depthtop!",2,duration=2)
+                else:
+                    myDialog.findChild(QLineEdit,"från djup under my (m)").setStyleSheet("")  
+                    myDialog.findChild(QLineEdit,"till djup under my (m)").setStyleSheet("")
+    elif attribute_name_string in ("depthbot","depth to bottom of layer","till djup under my (m)"):
+        if utils.isfloat(myDialog.findChild(QLineEdit,attribute_name_string).text())==False:
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
             try:
+                if not (float(myDialog.findChild(QLineEdit,"från djup under my (m)").text()) < float(myDialog.findChild(QLineEdit,"till djup under my (m)").text())):
+                    myDialog.findChild(QLineEdit,"från djup under my (m)").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+                    myDialog.findChild(QLineEdit,"till djup under my (m)").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+                    #qgis.utils.iface.messageBar().pushMessage("Error","depthbot must be greated than depthtop!",2,duration=2)
+                else:
+                    myDialog.findChild(QLineEdit,"från djup under my (m)").setStyleSheet("")
+                    myDialog.findChild(QLineEdit,"till djup under my (m)").setStyleSheet("")
+            except:
                 if not (float(myDialog.findChild(QLineEdit,"depthtop").text()) < float(myDialog.findChild(QLineEdit,"depthbot").text())):
                     myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
                     myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
@@ -259,39 +268,31 @@ def attr_changed(attr,value):#background is set red if values do not fulfill sim
                 else:
                     myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("")
                     myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("")
-            except:
-                myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("")
-    elif attr.lower()=="level_masl":
-        if utils.isfloat(myDialog.findChild(QLineEdit,"level_masl").text())==False:
-            myDialog.findChild(QLineEdit,"level_masl").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+    elif attribute_name_string in ("level_masl","nivå (möh)"):
+        if utils.isfloat(myDialog.findChild(QLineEdit,attribute_name_string).text())==False:
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
-            myDialog.findChild(QLineEdit,"level_masl").setStyleSheet("")
-    elif attr.lower()=="reading":
-        if (myDialog.findChild(QLineEdit,"reading").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"reading").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
-            myDialog.findChild(QLineEdit,"reading").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("")
+    elif attribute_name_string in ("reading","mätvärde numeriskt","mätvärde"):
+        if (myDialog.findChild(QLineEdit,attribute_name_string).text()=='NULL') or (len(myDialog.findChild(QLineEdit,attribute_name_string).text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,attribute_name_string).text())==False):
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
-            myDialog.findChild(QLineEdit,"reading").setStyleSheet("")  
-    elif attr.lower()=="reading_num":
-        if (myDialog.findChild(QLineEdit,"reading_num").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"reading_num").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
-            myDialog.findChild(QLineEdit,"reading_num").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("")  
+    elif attribute_name_string in ("reading_num","mätvärde numeriskt","reading, numerical","mätvärde, numeriskt"):
+        if (myDialog.findChild(QLineEdit,attribute_name_string).text()=='NULL') or (len(myDialog.findChild(QLineEdit,attribute_name_string).text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,attribute_name_string).text())==False):
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
-            myDialog.findChild(QLineEdit,"reading_num").setStyleSheet("")  
-    elif attr.lower()=="reading, numerical":
-        if (myDialog.findChild(QLineEdit,"reading, numerical").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"reading, numerical").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
-            myDialog.findChild(QLineEdit,"reading, numerical").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("")  
+    elif attribute_name_string in ("report","labrapportnr","labrapport nr"):
+        if (myDialog.findChild(QLineEdit,attribute_name_string).text()=='NULL') or (len(myDialog.findChild(QLineEdit,attribute_name_string).text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,attribute_name_string).text())==False):
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
-            myDialog.findChild(QLineEdit,"reading, numerical").setStyleSheet("")  
-    elif attr.lower()=="report":
-        if (myDialog.findChild(QLineEdit,"report").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"report").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
-            myDialog.findChild(QLineEdit,"report").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("") 
+    elif attribute_name_string=="parameter":
+        if (myDialog.findChild(QLineEdit,attribute_name_string).text()=='NULL') or (len(myDialog.findChild(QLineEdit,attribute_name_string).text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,attribute_name_string).text())==False):
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("background-color: rgba(255, 107, 107, 150);")
         else:
-            myDialog.findChild(QLineEdit,"report").setStyleSheet("") 
-    elif attr.lower()=="parameter":
-        if (myDialog.findChild(QLineEdit,"parameter").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"parameter").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
-            myDialog.findChild(QLineEdit,"parameter").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-        else:
-            myDialog.findChild(QLineEdit,"parameter").setStyleSheet("") 
-            
+            myDialog.findChild(QLineEdit,attribute_name_string).setStyleSheet("") 
             
     """
     elif attr=="date_time":#using date/time edit widgets instead
@@ -307,7 +308,7 @@ def obsid_exists(obsid, tablename):
     if len(result)>0:
         return 'True'
 
-def flowtype_exists(flowtype):  # Check if obsid exists in database.
+def flowtype_exists(flowtype):
     sql = r"""SELECT type FROM zz_flowtype where type = '""" + flowtype + """'"""
     result = utils.sql_load_fr_db(sql)[1]
     if len(result)>0:
@@ -354,151 +355,3 @@ def stratigraphy_feature_added(fid):# - NOT READY whenever a new feature is adde
                 myLayer.dataProvider().changeAttributeValues({ fid :  { 'stratid' : 1} })
                 #fid['depthtop'] = 0 
                 myLayer.dataProvider().changeAttributeValues({ fid :  { 'depthtop' : 0} })
-        
-
-
-def w_flow_validate():   #This is not used anymore!
-
-    if not (obsid_exists(myDialog.findChild(QLineEdit,"obsid").text(),'w_flow')):
-        utils.pop_up_info("obsid must exist in database table obs_points!")
-    elif utils.isdate(myDialog.findChild(QLineEdit,"date_time").text())==False:
-        utils.pop_up_info("Invalid date!")
-    elif not (flowtype_exists(myDialog.findChild(QLineEdit,"flowtype").text(),'w_flow')):
-        utils.pop_up_info("flowtype must exist in database table zz_flowtypes!")
-    elif not utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==True:
-        utils.pop_up_info("reading must be a floating-point number!")
-    elif not (len(myDialog.findChild(QLineEdit,"obsid").text()) > 0 and 
-            len(myDialog.findChild(QLineEdit,"instrumentid").text()) > 0 and 
-            len(myDialog.findChild(QLineEdit,"flowtype").text()) > 0 and 
-            len(myDialog.findChild(QLineEdit,"date_time").text()) > 0 and 
-            len(myDialog.findChild(QLineEdit,"reading").text()) > 0 and
-            len(myDialog.findChild(QLineEdit,"unit").text()) > 0): 
-        utils.pop_up_info("obsid, instrumentid, flowtype, date_time, reading and unit must not be empty!")
-    elif (myDialog.findChild(QLineEdit,"obsid").text()=='NULL' or 
-            myDialog.findChild(QLineEdit,"instrumentid").text()=='NULL' or 
-            myDialog.findChild(QLineEdit,"flowtype").text()=='NULL' or 
-            myDialog.findChild(QLineEdit,"date_time").text()=='NULL' or 
-            myDialog.findChild(QLineEdit,"reading").text()=='NULL' or
-            myDialog.findChild(QLineEdit,"unit").text()=='NULL'):
-        utils.pop_up_info("obsid, instrumentid, flowtype, date_time, reading and unit must not be NULL!")
-    else:
-        myDialog.accept()
-
-def w_levels_validate():  #This is not used anymore!
-    if not (len(myDialog.findChild(QLineEdit,"obsid").text()) > 0 and 
-            len(myDialog.findChild(QLineEdit,"date_time").text()) > 0 and 
-            len(myDialog.findChild(QLineEdit,"level_masl").text()) > 0): 
-        utils.pop_up_info("obsid, date_time and level_masl must not be empty!")
-    elif (myDialog.findChild(QLineEdit,"obsid").text()=='NULL' or
-                myDialog.findChild(QLineEdit,"date_time").text()=='NULL' or 
-                myDialog.findChild(QLineEdit,"level_masl").text()=='NULL'):
-        utils.pop_up_info("obsid, date_time and level_masl must not be NULL!")
-    elif utils.isdate(myDialog.findChild(QLineEdit,"date_time").text())==False:
-        utils.pop_up_info("Invalid date!")
-    elif not utils.isfloat(myDialog.findChild(QLineEdit,"level_masl").text())==True:
-        utils.pop_up_info("level_masl must be a floating-point number!")
-    else:
-        # Return the form as accpeted to QGIS.
-        myDialog.accept()
-
-def stratigraphy_obsid_field_text_changed():#this was called when a new object was created - not used anymore
-    """
-    #Warning - this method will corrupt the stratigraphy table when used with dual view!!!
-    
-    print ('debug info - called function stratigraphy_obsid_field_text_changed')#debug
-    # Must find another trigger: new feature/object/record!
-    # no no, just check if stratid field is empty, then it is considered a new feature and a default value should be added!!
-    if obsid_exists(myDialog.findChild(QLineEdit,"obsid").text(),'obs_points') and (len(myDialog.findChild(QLineEdit,"stratid").text()) == 0): #if stratid is empty, then it is considered to be a new record and preset values should be suggested, otherwise, do not suggest anything!
-        myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
-        sql = u"select max(stratid) from stratigraphy WHERE obsid = '"
-        sql += myDialog.findChild(QLineEdit,"obsid").text()
-        sql += u"'"
-        maxstratid = utils.sql_load_fr_db(sql)[1]
-        if utils.isinteger(str(maxstratid[0][0]).encode('utf-8'))==True:
-            myDialog.findChild(QLineEdit,"stratid").setText(str(int(maxstratid[0][0])+1)) #form stratid is preset to max(stratid) + 1 in db
-            sql = u"select max(depthbot) from stratigraphy WHERE obsid = '"
-            sql +=myDialog.findChild(QLineEdit,"obsid").text()
-            sql += u"'"
-            maxdepthbot = utils.sql_load_fr_db(sql)[1]
-            if utils.isfloat(str(maxdepthbot[0][0]).encode('utf-8'))==True:
-                myDialog.findChild(QLineEdit,"depthtop").setText(str(maxdepthbot[0][0])) #form depthtop is preset to max(depthbot) in db
-        else:
-            myDialog.findChild(QLineEdit,"stratid").setText("1")
-            myDialog.findChild(QLineEdit,"depthtop").setText("0") 
-    else:
-        myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    """
-    pass
-
-def stratigraphy_stratid_field_text_changed():#this was called when a new object was created - not used anymore
-    if (myDialog.findChild(QLineEdit,"stratid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"stratid").text()) == 0) or (utils.isinteger(myDialog.findChild(QLineEdit,"stratid").text())==False): 
-        myDialog.findChild(QLineEdit,"stratid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    else:
-        myDialog.findChild(QLineEdit,"stratid").setStyleSheet("")  
-
-def stratigraphy_depthtop_field_text_changed():#this was called when a new object was created - not used anymore
-    if (myDialog.findChild(QLineEdit,"depthtop").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"depthtop").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"depthtop").text())==False):
-        myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-
-    else:
-        myDialog.findChild(QLineEdit,"depthtop").setStyleSheet("")  
-
-def stratigraphy_depthbot_field_text_changed():#this was called when a new object was created - not used anymore
-    if (myDialog.findChild(QLineEdit,"depthbot").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"depthbot").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"depthbot").text())==False):
-        myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    else:
-        myDialog.findChild(QLineEdit,"depthbot").setStyleSheet("")  
-
-def w_flow_obsid_field_text_changed():#This is not used anymore!
-    if not obsid_exists(myDialog.findChild(QLineEdit,"obsid").text(),'w_flow'):
-        myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    else:
-        myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
-
-def w_flow_date_time_field_text_changed():#This is not used anymore!
-    if (myDialog.findChild(QLineEdit,"date_time").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"date_time").text()) ==0) or utils.isdate(myDialog.findChild(QLineEdit,"date_time").text())==False: 
-        myDialog.findChild(QLineEdit,"date_time").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    else:
-        myDialog.findChild(QLineEdit,"date_time").setStyleSheet("")        
-
-def w_flow_instrumentid_field_text_changed():#This is not used anymore!
-    if (myDialog.findChild(QLineEdit,"instrumentid").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"instrumentid").text()) ==0): 
-        myDialog.findChild(QLineEdit,"instrumentid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    else:
-        myDialog.findChild(QLineEdit,"instrumentid").setStyleSheet("")        
-
-def w_flow_flowtype_field_text_changed():#This is not used anymore!
-    if not flowtype_exists(myDialog.findChild(QLineEdit,"flowtype").text(),'w_flow'): 
-        myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    else:
-        myDialog.findChild(QLineEdit,"flowtype").setStyleSheet("")        
-
-def w_flow_reading_field_text_changed():#This is not used anymore!
-    if (myDialog.findChild(QLineEdit,"reading").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"reading").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"reading").text())==False):
-        myDialog.findChild(QLineEdit,"reading").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    else:
-        myDialog.findChild(QLineEdit,"reading").setStyleSheet("")  
-        
-def w_flow_unit_field_text_changed():#This is not used anymore!
-    if (myDialog.findChild(QLineEdit,"unit").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"unit").text()) ==0):
-        myDialog.findChild(QLineEdit,"unit").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    else:
-        myDialog.findChild(QLineEdit,"unit").setStyleSheet("") 
-
-def w_levels_obsid_field_text_changed():#This is not used anymore!
-    if not obsid_exists(myDialog.findChild(QLineEdit,"obsid").text(),'w_levels'):
-        myDialog.findChild(QLineEdit,"obsid").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    else:
-        myDialog.findChild(QLineEdit,"obsid").setStyleSheet("")
-
-def w_levels_date_time_field_text_changed():#This is not used anymore!
-    if utils.isdate(myDialog.findChild(QLineEdit,"date_time").text())==False:
-        myDialog.findChild(QLineEdit,"date_time").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    else:
-        myDialog.findChild(QLineEdit,"date_time").setStyleSheet("")        
-
-def w_levels_level_masl_field_text_changed():#This is not used anymore!
-    if (myDialog.findChild(QLineEdit,"level_masl").text()=='NULL') or (len(myDialog.findChild(QLineEdit,"level_masl").text()) == 0) or (utils.isfloat(myDialog.findChild(QLineEdit,"level_masl").text())==False): 
-        myDialog.findChild(QLineEdit,"level_masl").setStyleSheet("background-color: rgba(255, 107, 107, 150);")
-    else:
-        myDialog.findChild(QLineEdit,"level_masl").setStyleSheet("")        
