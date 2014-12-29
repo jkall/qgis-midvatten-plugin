@@ -683,8 +683,6 @@ class midvatten:
                 #show the user this may take a long time...
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
                 loadlayers(qgis.utils.iface, self.ms.settingsdict)
-                #self.iface.mapCanvas().zoomToFullExtent()#zoom to full extent to let user see what was loaded
-                self.iface.mapCanvas().refresh()  # to redraw after loaded symbology
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
         else:   
             utils.pop_up_info("You have to select a database in Midvatten settings first!")

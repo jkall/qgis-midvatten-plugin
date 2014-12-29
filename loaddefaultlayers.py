@@ -116,12 +116,15 @@ class loadlayers():
                     pass
 
                 if layer.name() == 'obs_points':#zoom to obs_points extent
+                    obsp_lyr = layer
                     canvas.setExtent(layer.extent())
                 elif layer.name() == 'w_lvls_last_geom':#we do not want w_lvls_last_geom to be visible by default
                     self.legend.setLayerVisible(layer,False)
                 else:
                     pass
-                canvas.refresh()
+
+        #finally refresh canvas
+        canvas.refresh()
                 
     def add_layers_old_method(self):
         """
