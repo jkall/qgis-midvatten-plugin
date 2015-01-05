@@ -58,7 +58,7 @@ class midvsettings():
         self.readingSettings = False
         self.settingsareloaded = True
 
-    def resetSettings(self):    
+    def reset_settings(self):    
         self.settingsdict = self.createsettingsdict()    # calling for the method that defines an empty dictionary of settings
 
     def save_settings(self,key = ''):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.

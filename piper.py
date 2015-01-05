@@ -35,17 +35,17 @@ class PiperPlot():
     def __init__(self,msettings,activelayer):
         self.ms = msettings
         self.activelayer = activelayer
-        self.CreateParameterSelection()
-        self.GetSelectedObservations()
+        self.create_parameter_selection()
+        self.get_selected_observations()
         if self.ms.settingsdict['piper_markers']=='type':
-            self.GetSelectedObsTypes()#gets unique plottypes and a plot type dictionary
-            self.CreateMarkers()
+            self.get_selected_obstypes()#gets unique plottypes and a plot type dictionary
+            self.create_markers()
         elif self.ms.settingsdict['piper_markers']=='obsid' or self.ms.settingsdict['piper_markers']=='obsid but no legend':
-            self.CreateMarkers()
+            self.create_markers()
         elif self.ms.settingsdict['piper_markers']=='date_time':
-            self.GetSelectedDateTimes()
-            self.CreateMarkers()
-        self.GetPiperData()
+            self.get_selected_datetimes()
+            self.create_markers()
+        self.get_piper_data()
         #here is a simple printout (to python console) to let the user see the piper plot data
         print """obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na+K_meqPl, Ca_meqPl, Mg_meqPl"""
         for row in self.obsrecarray:
@@ -54,7 +54,7 @@ class PiperPlot():
                 print ','.join([utils.returnunicode(col) for col in row])
             except:
                 print "failed printing piper data..."            
-        self.MakeThePlot()
+        self.make_the_plot()
 
     def big_sql(self):
         # Data must be stored as mg/l in the database since it is converted to meq/l in code here...
@@ -76,7 +76,7 @@ class PiperPlot():
             ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(self.ParameterList[0],self.ParameterList[1],self.ParameterList[2],self.ParameterList[3],self.ParameterList[4],self.ParameterList[5],self.ParameterList[6],(str(self.observations)).encode('utf-8').replace('[','(').replace(']',')'))
         return sql
 
-    def CreateMarkers(self):
+    def create_markers(self):
         marker = itertools.cycle(('+', '.', '*','o', 'v', '^', '<', '>', '8', 's', 'p', '*', 'h', 'H', 'D', 'd')) 
         self.markerset = {}
         if self.ms.settingsdict['piper_markers']=='type':
@@ -89,7 +89,7 @@ class PiperPlot():
             for date_time in self.date_times:
                 self.markerset[date_time[0]] =marker.next()
 
-    def CreateParameterSelection(self):
+    def create_parameter_selection(self):
         self.ParameterList=[]# ParameterList = ['Klorid, Cl','Alkalinitet, HCO3','Sulfat, SO4','Natrium, Na','Kalium, K','Kalcium, Ca','Magnesium, Mg']
         if self.ms.settingsdict['piper_cl']!='':
             self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_cl'] + "'")
@@ -120,12 +120,12 @@ class PiperPlot():
         else:
             self.ParameterList.append(r"""(parameter like '%magnesium%')""")
 
-    def GetSelectedDateTimes(self):
+    def get_selected_datetimes(self):
         sql1 = self.big_sql()
         sql2 = r""" select distinct date_time from (""" + sql1 + r""") order by date_time"""
         ConnOK, self.date_times = utils.sql_load_fr_db(sql2)
         
-    def GetSelectedObservations(self):
+    def get_selected_observations(self):
         obsar = utils.getselectedobjectnames(self.activelayer)
         observations = obsar
         i=0
@@ -134,14 +134,14 @@ class PiperPlot():
                 i += 1 
         self.observations=observations#A list with selected obsid
 
-    def GetSelectedObsTypes(self):
+    def get_selected_obstypes(self):
         sql = "select obsid, type from obs_points where obsid in " +  str(self.observations).encode('utf-8').replace('[','(').replace(']',')')
         ConnOK, types = utils.sql_load_fr_db(sql)
         self.typedict = dict(types)#make it a dictionary
         sql = "select distinct type from obs_points where obsid in " +  str(self.observations).encode('utf-8').replace('[','(').replace(']',')')
         ConnOK, self.distincttypes = utils.sql_load_fr_db(sql)
         
-    def GetPiperData(self):
+    def get_piper_data(self):
         #These observations are supposed to be in mg/l and must be stored in a Midvatten database, table w_qual_lab
         sql = self.big_sql()
         # get data into a list: obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na+K_meqPl, Ca_meqPl, Mg_meqPl
@@ -166,7 +166,7 @@ class PiperPlot():
         #convert to np recarray - takes the structured array and makes the columns into callable objects, i.e. write table2.Cl_meqPl
         self.obsrecarray=self.obsnp_specified_format.view(np.recarray)
         
-    def MakeThePlot(self):
+    def make_the_plot(self):
         nosamples = len(self.obsrecarray.obsid) # Determine number of samples in file
         # Change default settings for figures
         # -------------------------------------------------------------------------------- #

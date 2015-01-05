@@ -687,7 +687,7 @@ class midvatten:
         else:   
             utils.pop_up_info("You have to select a database in Midvatten settings first!")
 
-    def NewDB(self): 
+    def new_db(self): 
         sanity = utils.askuser("YesNo","""This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""",'Are you sure?')
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
@@ -700,7 +700,7 @@ class midvatten:
                 self.ms.settingsdict['database'] = db
                 self.ms.save_settings()
 
-    def PlotPiper(self):
+    def plot_piper(self):
         if self.ms.settingsareloaded == False:
             self.ms.loadSettings()    
         if not (self.ms.settingsdict['database'] == '' or self.ms.settingsdict['database'] == ' '):
@@ -713,7 +713,7 @@ class midvatten:
         else:
             self.iface.messageBar().pushMessage("Error","Specify database and w_qual_lab parameters for Piper plot. (Check Midvatten Settings.)",2,duration=15)
                  
-    def PlotTS(self):
+    def plot_timeseries(self):
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file    
             self.ms.loadSettings()    
         if not (self.ms.settingsdict['database'] == '' or self.ms.settingsdict['tstable'] =='' or self.ms.settingsdict['tscolumn'] == ''):
@@ -726,7 +726,7 @@ class midvatten:
         else:
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database, table and column for time series plot. Reset if needed.", 2,duration=15)
             
-    def PlotStratigraphy(self):            
+    def plot_stratigraphy(self):            
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot stratigraphy, then load settings from project file
             self.ms.loadSettings()    
         if not (self.ms.settingsdict['database'] == '') and not (self.ms.settingsdict['stratigraphytable']==''):
@@ -741,7 +741,7 @@ class midvatten:
         else: 
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database and stratigraphy table. Reset if needed.", 2)
 
-    def PlotSection(self):
+    def plot_section(self):
         if self.ms.settingsareloaded == False:    # Perhaps settings should always be loaded, to 
             self.ms.loadSettings()
             
@@ -782,7 +782,7 @@ class midvatten:
                 self.myplot = SectionPlot(self.iface.mainWindow(), self.iface)
                 self.myplot.do_it(self.ms,OBSID,SectionLineLayer)
 
-    def PlotXY(self):            
+    def plot_xy(self):            
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot xy data, then load settings from project file
             self.ms.loadSettings()    
         if not (self.ms.settingsdict['database'] == '' or self.ms.settingsdict['xytable'] =='' or self.ms.settingsdict['xy_xcolumn'] == '' or (self.ms.settingsdict['xy_y1column'] == '' and self.ms.settingsdict['xy_y2column'] == '' and self.ms.settingsdict['xy_y3column'] == '')):
@@ -795,7 +795,7 @@ class midvatten:
         else:
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database, table and columns for x and y data!. Reset if needed.", 2)
 
-    def PlotSQLite(self):
+    def plot_sqlite(self):
         if self.ms.settingsdict['database'] == '':
             self.iface.messageBar().pushMessage("Error","A database is needed to create custom plots. Please check your Midvatten Settings. Reset if needed.", 2,duration=15)
             return
@@ -805,11 +805,11 @@ class midvatten:
         except:
             self.customplot = customplot.plotsqlitewindow(self.iface.mainWindow(), self.ms)#self.iface as arg?
 
-    def ProjectCreated(self):
-        self.resetSettings()
+    def project_created(self):
+        self.reset_settings()
         
-    def ProjectOpened(self):
-        self.ms.resetSettings()
+    def project_opened(self):
+        self.ms.reset_settings()
         self.ms.loadSettings()
         try:#if midvsettingsdock is shown, then it must be reloaded
             self.midvsettingsdialog.activateWindow()
@@ -818,8 +818,8 @@ class midvatten:
         except:
             pass
 
-    def resetSettings(self):
-        self.ms.resetSettings()
+    def reset_settings(self):
+        self.ms.reset_settings()
         self.ms.save_settings()
         try:#if midvsettingsdock is shown, then it must be reset
             self.midvsettingsdialog.activateWindow()
@@ -907,7 +907,7 @@ class midvatten:
             else:
                 utils.pop_up_info("Check settings! \nSelect database first!")        
 
-    def VacuumDB(self):
+    def vacuum_db(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to vacuum, then load settings from project file    
             self.ms.loadSettings()    
@@ -1008,7 +1008,7 @@ class midvatten:
             else: 
                 utils.pop_up_info("Check settings! \nYou have to select database first!")
 
-    def ZipDB(self):
+    def zip_db(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to ZipDB, then load settings from project file    
             self.ms.loadSettings()    
