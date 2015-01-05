@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- This is where a rectangular plot is created 
+ This is where a rectangular plt.plot is created 
  NOTE - if using this file, it has to be imported by midvatten.py
                              -------------------
         begin                : 2013-11-27
@@ -23,8 +23,8 @@ __modified_date__ = "Nov 2013"
 from PyQt4 import QtCore, QtGui
 from qgis.core import *
 from qgis.gui import *
-from pylab import * # ONLY DURING DEVELOPMENT the pylab module combines Pyplot (MATLAB type of plotting) with Numpy into a single namespace
-import numpy as np # prefer this instead of pylab
+from matplotlib.figure import Figure as figure
+import numpy as np
 import matplotlib.pyplot as plt
 import datetime 
 import sqlite3 as sqlite
@@ -38,7 +38,7 @@ class PiperPlot():
         self.create_parameter_selection()
         self.get_selected_observations()
         if self.ms.settingsdict['piper_markers']=='type':
-            self.get_selected_obstypes()#gets unique plottypes and a plot type dictionary
+            self.get_selected_obstypes()#gets unique plt.plottypes and a plt.plot type dictionary
             self.create_markers()
         elif self.ms.settingsdict['piper_markers']=='obsid' or self.ms.settingsdict['piper_markers']=='obsid but no legend':
             self.create_markers()
@@ -46,7 +46,7 @@ class PiperPlot():
             self.get_selected_datetimes()
             self.create_markers()
         self.get_piper_data()
-        #here is a simple printout (to python console) to let the user see the piper plot data
+        #here is a simple printout (to python console) to let the user see the piper plt.plot data
         print """obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na+K_meqPl, Ca_meqPl, Mg_meqPl"""
         for row in self.obsrecarray:
             #print ','.join([unicode(col).encode('utf-8') for col in row])
@@ -77,8 +77,7 @@ class PiperPlot():
         return sql
 
     def create_markers(self):
-        #marker = itertools.cycle(('+', '.', '*','o', 'v', '^', '<', '>', '8', 's', 'p', '*', 'h', 'H', 'D', 'd')) 
-        marker = itertools.cycle(('r+', 'b.', 'c*','go', 'mv', 'r^', 'b<', 'c>', 'g8', 'ms', 'rp', 'b*', 'ch', 'gH', 'mD', 'rd','b+', 'c.', 'g*','mo', 'rv', 'b^', 'c<', 'g>', 'm8', 'rs', 'bp', 'c*', 'gh', 'mH', 'rD', 'bd', 'c+', 'g.', 'm*','ro', 'bv', 'c^', 'g<', 'm>', 'r8', 'bs', 'cp', 'g*', 'mh', 'rH', 'bD', 'cd')) 
+        marker = itertools.cycle(('r+', 'b.', 'c*','go', 'mv', 'r^', 'b<', 'c>', 'g8', 'ms', 'rp', 'b*', 'ch', 'gH', 'mD', 'rd','b+', 'c.', 'g*','mo', 'rv', 'b^', 'c<', 'g>', 'm8', 'rs', 'bp', 'c*', 'gh', 'mH', 'rD', 'bd', 'c+', 'g.', 'm*','ro', 'bv', 'c^', 'g<', 'm>', 'r8', 'bs', 'cp', 'g*', 'mh', 'rH', 'bD', 'cd','g+', 'm.', 'r*','bo', 'cv', 'g^', 'm<', 'r>', 'b8', 'cs', 'gp', 'm*', 'rh', 'bH', 'cD', 'gd','m+', 'r.', 'b*','co', 'gv', 'm^', 'r<', 'b>', 'c8', 'gs', 'mp', 'r*', 'bh', 'cH', 'gD', 'md')) 
         self.markerset = {}
         if self.ms.settingsdict['piper_markers']=='type':
             for tp in self.distincttypes:
@@ -171,24 +170,24 @@ class PiperPlot():
         nosamples = len(self.obsrecarray.obsid) # Determine number of samples in file
         # Change default settings for figures
         # -------------------------------------------------------------------------------- #
-        rc('savefig', dpi = 300)
-        rc('xtick', labelsize = 10)
-        rc('ytick', labelsize = 10)
-        rc('font', size = 12)
-        rc('legend', fontsize = 12)
-        rc('figure', figsize = (14,4.5)) # defines size of Figure window
+        plt.rc('savefig', dpi = 300)
+        plt.rc('xtick', labelsize = 10)
+        plt.rc('ytick', labelsize = 10)
+        plt.rc('font', size = 12)
+        plt.rc('legend', fontsize = 12)
+        plt.rc('figure', figsize = (14,4.5)) # defines size of Figure window
 
         markersize = 8
         linewidth = 2
-        xtickpositions = linspace(0,100,6) # desired xtickpositions for graphs
+        xtickpositions = np.linspace(0,100,6) # desired xtickpositions for graphs
 
         # Make Figure
         # -------------------------------------------------------------------------------- #
 
-        fig=figure()
+        fig=plt.figure()
 
         # CATIONS
-        # 2 lines below needed to create 2nd y-axis (ax1b) for first subplot
+        # 2 lines below needed to create 2nd y-axis (ax1b) for first plt.subplot
         ax1 = fig.add_subplot(131)
         ax1b = ax1.twinx()
 
@@ -199,7 +198,7 @@ class PiperPlot():
         ax1.text(75,15, 'Ca type')
         ax1.text(25,65, 'Mg type')
 
-        # loop to use different symbol marker for each water type ("loop through samples and add one plot per sample")
+        # loop to use different symbol marker for each water type ("loop through samples and add one plt.plot per sample")
         if self.ms.settingsdict['piper_markers']=='type':
             for i in range(0, nosamples):
                 ax1.plot(100*self.obsrecarray.Ca_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i]), 100*self.obsrecarray.Mg_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i]), self.markerset[self.typedict[self.obsrecarray.obsid[i]]], ms = markersize)
@@ -209,7 +208,7 @@ class PiperPlot():
         elif self.ms.settingsdict['piper_markers']=='date_time':
             for i in range(0, nosamples):
                 ax1.plot(100*self.obsrecarray.Ca_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i]), 100*self.obsrecarray.Mg_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i]), self.markerset[self.obsrecarray.date_time[i]], ms = markersize)
-        else:#black cross is default if no unique markers are selected
+        else:#filled black circle is default if no unique markers are selected
             for i in range(0, nosamples):
                 ax1.plot(100*self.obsrecarray.Ca_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i]), 100*self.obsrecarray.Mg_meqPl[i]/(self.obsrecarray.NaK_meqPl[i]+self.obsrecarray.Ca_meqPl[i]+self.obsrecarray.Mg_meqPl[i]), 'o', color="black", ms = markersize)
         
@@ -218,41 +217,41 @@ class PiperPlot():
         ax1b.set_ylim(0,100)
         ax1.set_xlabel('<= Ca (% meq)')
         ax1b.set_ylabel('Mg (% meq) =>')
-        setp(ax1, yticklabels=[])
+        plt.setp(ax1, yticklabels=[])
 
         # next two lines needed to reverse x axis:
         ax1.set_xlim(ax1.get_xlim()[::-1])
 
         # ANIONS
-        subplot(1,3,3)
-        fill([100,100,0,100],[0,100,100,0],color = (0.8,0.8,0.8))
-        plot([0, 100],[100, 0],'k')
-        plot([50, 50, 0, 50],[0, 50, 50, 0],'k--')
-        text(55,15, 'Cl type')
-        text(5,15, 'HCO3 type')
-        text(5,65, 'SO4 type')
+        plt.subplot(1,3,3)
+        plt.fill([100,100,0,100],[0,100,100,0],color = (0.8,0.8,0.8))
+        plt.plot([0, 100],[100, 0],'k')
+        plt.plot([50, 50, 0, 50],[0, 50, 50, 0],'k--')
+        plt.text(55,15, 'Cl type')
+        plt.text(5,15, 'HCO3 type')
+        plt.text(5,65, 'SO4 type')
 
         # loop to use different symbol marker for each water type
         if self.ms.settingsdict['piper_markers']=='type':
             for i in range(0, nosamples):
-                plot(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), self.markerset[self.typedict[self.obsrecarray.obsid[i]]], ms = markersize)
+                plt.plot(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), self.markerset[self.typedict[self.obsrecarray.obsid[i]]], ms = markersize)
         elif self.ms.settingsdict['piper_markers']=='obsid' or self.ms.settingsdict['piper_markers']=='obsid but no legend':
             for i in range(0, nosamples):
-                plot(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), self.markerset[self.obsrecarray.obsid[i]], ms = markersize)
+                plt.plot(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), self.markerset[self.obsrecarray.obsid[i]], ms = markersize)
         elif self.ms.settingsdict['piper_markers']=='date_time':
             for i in range(0, nosamples):
-                plot(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), self.markerset[self.obsrecarray.date_time[i]], ms = markersize)
-        else:#black cross is default if no unique markers are selected
+                plt.plot(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), self.markerset[self.obsrecarray.date_time[i]], ms = markersize)
+        else:#filled black circle is default if no unique markers are selected
             for i in range(0, nosamples):
-                plot(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 'o',color="black", ms = markersize)
+                plt.plot(100*self.obsrecarray.Cl_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 100*self.obsrecarray.SO4_meqPl[i]/(self.obsrecarray.Cl_meqPl[i]+self.obsrecarray.HCO3_meqPl[i]+self.obsrecarray.SO4_meqPl[i]), 'o',color="black", ms = markersize)
                 
-        xlim(0,100)
-        ylim(0,100)
-        xlabel('Cl (% meq) =>')
-        ylabel('SO4 (% meq) =>')
+        plt.xlim(0,100)
+        plt.ylim(0,100)
+        plt.xlabel('Cl (% meq) =>')
+        plt.ylabel('SO4 (% meq) =>')
 
         # CATIONS AND ANIONS COMBINED IN DIAMOND SHAPE PLOT = BOX IN RECTANGULAR COORDINATES
-        # 2 lines below needed to create 2nd y-axis (ax1b) for first subplot
+        # 2 lines below needed to create 2nd y-axis (ax1b) for first plt.subplot
         ax2 = fig.add_subplot(132)
         ax2b = ax2.twinx()
 
@@ -262,14 +261,14 @@ class PiperPlot():
         ax2.plot([10, 10],[0, 100],'k--')
         ax2.plot([50, 50],[0, 100],'k--')
         ax2.plot([90, 90],[0, 100],'k--')
-        text(40,96, 'CO3+HCO3')
-        text(25,86, 'CO3+HCO3, SO4+Cl')
-        text(25,18, 'SO4+Cl, CO3+HCO3')
-        text(40,8, 'SO4+Cl')
-        text(3,40,'Ca+Mg',rotation=90)
-        text(16,30,'Ca+Mg, Na+K',rotation=90)
-        text(83,30,'Na+K, Ca+Mg',rotation=90)
-        text(93,40,'Na+K',rotation=90)
+        plt.text(40,96, 'CO3+HCO3')
+        plt.text(25,86, 'CO3+HCO3, SO4+Cl')
+        plt.text(25,18, 'SO4+Cl, CO3+HCO3')
+        plt.text(40,8, 'SO4+Cl')
+        plt.text(3,40,'Ca+Mg',rotation=90)
+        plt.text(16,30,'Ca+Mg, Na+K',rotation=90)
+        plt.text(83,30,'Na+K, Ca+Mg',rotation=90)
+        plt.text(93,40,'Na+K',rotation=90)
 
         # loop to use different symbol marker for each water type
         h=[]
@@ -282,7 +281,7 @@ class PiperPlot():
                 h.append(ax2.plot(100*self.obsrecarray.NaK_meqPl[i]/catsum, 100*(self.obsrecarray.SO4_meqPl[i]+self.obsrecarray.Cl_meqPl[i])/ansum, self.markerset[self.obsrecarray.obsid[i]], ms = markersize,label=self.obsrecarray.obsid[i]))
             elif self.ms.settingsdict['piper_markers']=='date_time':
                 h.append(ax2.plot(100*self.obsrecarray.NaK_meqPl[i]/catsum, 100*(self.obsrecarray.SO4_meqPl[i]+self.obsrecarray.Cl_meqPl[i])/ansum, self.markerset[self.obsrecarray.date_time[i]], ms = markersize,label=self.obsrecarray.date_time[i]))
-            else:#black cross is default if no unique markers are selected
+            else:#filled black circle is default if no unique markers are selected
                 h.append(ax2.plot(100*self.obsrecarray.NaK_meqPl[i]/catsum, 100*(self.obsrecarray.SO4_meqPl[i]+self.obsrecarray.Cl_meqPl[i])/ansum, 'o',color="black", ms = markersize))
         ax2.set_xlim(0,100)
         ax2.set_ylim(0,100)
@@ -294,13 +293,13 @@ class PiperPlot():
         # next two lines needed to reverse 2nd y axis:
         ax2b.set_ylim(ax2b.get_ylim()[::-1])
 
-        # Legend for Figures, use dummy plots for proxy artist legend
+        # Legend for Figures, use dummy plt.plots for proxy artist legend
         if self.ms.settingsdict['piper_markers']=='type':
             dummyplot=[]
             for tp in self.distincttypes:
-                dummyplot.append(ax1.plot(1000,1000,marker=self.markerset[tp[0]],color = 'k',ms = markersize, ls='',label=tp[0]))
+                dummyplot.append(ax1.plot(1000,1000,self.markerset[tp[0]],ms = markersize, ls='',label=tp[0]))
                 ph,l = ax1.get_legend_handles_labels()
-            leg = figlegend(ph,l, ncol=6, shadow=False, fancybox=True, loc='lower center', handlelength = 1,numpoints = 1)
+            leg = plt.figlegend(ph,l, ncol=6, shadow=False, fancybox=True, loc='lower center', handlelength = 1,numpoints = 1)
             leg.draggable(state=True)
             frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
             frame.set_facecolor('0.80')    # set the frame face color to light gray
@@ -308,9 +307,9 @@ class PiperPlot():
         elif self.ms.settingsdict['piper_markers']=='obsid':
             dummyplot=[]
             for obs in self.observations:
-                dummyplot.append(ax1.plot(1000,1000,marker=self.markerset[obs],color = 'k',ms = markersize, ls='',label=obs))
+                dummyplot.append(ax1.plot(1000,1000,self.markerset[obs],ms = markersize, ls='',label=obs))
                 ph,l = ax1.get_legend_handles_labels()
-            leg = figlegend(ph,l, ncol=6, shadow=False, fancybox=True, loc='lower center', handlelength = 1,numpoints = 1)
+            leg = plt.figlegend(ph,l, ncol=6, shadow=False, fancybox=True, loc='lower center', handlelength = 1,numpoints = 1)
             leg.draggable(state=True)
             frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
             frame.set_facecolor('0.80')    # set the frame face color to light gray
@@ -318,9 +317,9 @@ class PiperPlot():
         elif self.ms.settingsdict['piper_markers']=='date_time':
             dummyplot=[]
             for date_time in self.date_times:
-                dummyplot.append(ax1.plot(1000,1000,marker=self.markerset[date_time[0]],color = 'k',ms = markersize, ls='',label=date_time[0]))
+                dummyplot.append(ax1.plot(1000,1000,self.markerset[date_time[0]],ms = markersize, ls='',label=date_time[0]))
                 ph,l = ax1.get_legend_handles_labels()
-            leg = figlegend(ph,l, ncol=6, shadow=False, fancybox=True, loc='lower center', handlelength = 1,numpoints = 1)
+            leg = plt.figlegend(ph,l, ncol=6, shadow=False, fancybox=True, loc='lower center', handlelength = 1,numpoints = 1)
             leg.draggable(state=True)
             frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
             frame.set_facecolor('0.80')    # set the frame face color to light gray
@@ -328,6 +327,6 @@ class PiperPlot():
         else:    #no legend if no unique markers
             pass
 
-        # adjust position subplots
-        subplots_adjust(left=0.05, bottom=0.2, right=0.95, top=0.90, wspace=0.4, hspace=0.0)
-        show()
+        # adjust position plt.subplots
+        plt.subplots_adjust(left=0.05, bottom=0.2, right=0.95, top=0.90, wspace=0.4, hspace=0.0)
+        plt.show()
