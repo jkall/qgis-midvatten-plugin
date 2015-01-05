@@ -94,31 +94,31 @@ class PiperPlot():
         if self.ms.settingsdict['piper_cl']!='':
             self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_cl'] + "'")
         else:
-            self.ParameterList.append(r"""(parameter like '%klorid%' or parameter like '%chloride%')""")
+            self.ParameterList.append(r"""(lower(parameter) like '%klorid%' or lower(parameter) like '%chloride%')""")
         if self.ms.settingsdict['piper_hco3']!='':
             self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_hco3'] + "'")
         else:
-            self.ParameterList.append(r"""(parameter like '%alkalinitet%' or parameter like '%alcalinity%')""")
+            self.ParameterList.append(r"""(lower(parameter) like '%alkalinitet%' or lower(parameter) like '%alcalinity%')""")
         if self.ms.settingsdict['piper_so4']!='':
             self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_so4'] + "'")
         else:
-            self.ParameterList.append(r"""(parameter like '%sulfat%' or parameter like '%sulphat%')""")
+            self.ParameterList.append(r"""(lower(parameter) like '%sulfat%' or lower(parameter) like '%sulphat%')""")
         if self.ms.settingsdict['piper_na']!='':
             self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_na'] + "'")
         else:
-            self.ParameterList.append(r"""(parameter like '%natrium%')""")
+            self.ParameterList.append(r"""(lower(parameter) like '%natrium%')""")
         if self.ms.settingsdict['piper_k']!='':
             self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_k'] + "'")
         else:
-            self.ParameterList.append(r"""(parameter like '%kalium%' or parameter like '%potassium%')""")
+            self.ParameterList.append(r"""(lower(parameter) like '%kalium%' or lower(parameter) like '%potassium%')""")
         if self.ms.settingsdict['piper_ca']!='':
             self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_ca'] + "'")
         else:
-            self.ParameterList.append(r"""(parameter like '%kalcium%' or parameter like '%calcium%')""")
+            self.ParameterList.append(r"""(lower(parameter) like '%kalcium%' or lower(parameter) like '%calcium%')""")
         if self.ms.settingsdict['piper_mg']!='':
             self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_mg'] + "'")
         else:
-            self.ParameterList.append(r"""(parameter like '%magnesium%')""")
+            self.ParameterList.append(r"""(lower(parameter) like '%magnesium%')""")
 
     def get_selected_datetimes(self):
         sql1 = self.big_sql()
@@ -144,6 +144,7 @@ class PiperPlot():
     def get_piper_data(self):
         #These observations are supposed to be in mg/l and must be stored in a Midvatten database, table w_qual_lab
         sql = self.big_sql()
+        print(sql)#debug
         # get data into a list: obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na+K_meqPl, Ca_meqPl, Mg_meqPl
         obsimport = utils.sql_load_fr_db(sql)[1]
         #convert to numpy ndarray W/O format specified
