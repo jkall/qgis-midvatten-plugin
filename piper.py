@@ -77,7 +77,8 @@ class PiperPlot():
         return sql
 
     def create_markers(self):
-        marker = itertools.cycle(('+', '.', '*','o', 'v', '^', '<', '>', '8', 's', 'p', '*', 'h', 'H', 'D', 'd')) 
+        #marker = itertools.cycle(('+', '.', '*','o', 'v', '^', '<', '>', '8', 's', 'p', '*', 'h', 'H', 'D', 'd')) 
+        marker = itertools.cycle(('r+', 'b.', 'c*','go', 'mv', 'r^', 'b<', 'c>', 'g8', 'ms', 'rp', 'b*', 'ch', 'gH', 'mD', 'rd','b+', 'c.', 'g*','mo', 'rv', 'b^', 'c<', 'g>', 'm8', 'rs', 'bp', 'c*', 'gh', 'mH', 'rD', 'bd', 'c+', 'g.', 'm*','ro', 'bv', 'c^', 'g<', 'm>', 'r8', 'bs', 'cp', 'g*', 'mh', 'rH', 'bD', 'cd')) 
         self.markerset = {}
         if self.ms.settingsdict['piper_markers']=='type':
             for tp in self.distincttypes:

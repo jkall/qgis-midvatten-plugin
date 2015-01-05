@@ -55,7 +55,7 @@ class midvatten:
         
     def initGui(self): # Creates actions that will start plugin configuration
         self.actionNewDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), "Create a new Midvatten project DB", self.iface.mainWindow())
-        QObject.connect(self.actionNewDB, SIGNAL("triggered()"), self.NewDB)
+        QObject.connect(self.actionNewDB, SIGNAL("triggered()"), self.new_db)
         
         self.actionloadthelayers = QAction(QIcon(":/plugins/midvatten/icons/loaddefaultlayers.png"), "Load default db-layers to qgis", self.iface.mainWindow())
         self.actionloadthelayers.setWhatsThis("Load default layers from the selected database")
@@ -68,7 +68,7 @@ class midvatten:
         QObject.connect(self.actionsetup, SIGNAL("activated()"), self.setup)
         
         self.actionresetSettings = QAction(QIcon(":/plugins/midvatten/icons/ResetSettings.png"), "Reset Settings", self.iface.mainWindow())
-        QObject.connect(self.actionresetSettings, SIGNAL("triggered()"), self.resetSettings)
+        QObject.connect(self.actionresetSettings, SIGNAL("triggered()"), self.reset_settings)
         
         self.actionabout = QAction(QIcon(":/plugins/midvatten/icons/about.png"), "About", self.iface.mainWindow())
         QObject.connect(self.actionabout, SIGNAL("triggered()"), self.about)
@@ -132,15 +132,15 @@ class midvatten:
         self.actionPlotXY = QAction(QIcon(":/plugins/midvatten/icons/PlotXY.png"), "Scatter plot", self.iface.mainWindow())
         self.actionPlotXY.setWhatsThis("Plot XY scatter data (e.g. seismic profile) for the selected objects")
         self.iface.registerMainWindowAction(self.actionPlotXY, "F9")   # The function should also be triggered by the F9 key
-        QObject.connect(self.actionPlotXY, SIGNAL("triggered()"), self.PlotXY)
+        QObject.connect(self.actionPlotXY, SIGNAL("triggered()"), self.plot_xy)
         
         self.actionPlotPiper = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","Piper.png")), "Piper diagram", self.iface.mainWindow())
         self.actionPlotPiper.setWhatsThis("Plot a rectangular Piper diagram for selected objects")
-        QObject.connect(self.actionPlotPiper, SIGNAL("triggered()"), self.PlotPiper)
+        QObject.connect(self.actionPlotPiper, SIGNAL("triggered()"), self.plot_piper)
                 
         self.actionPlotSQLite = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","plotsqliteicon.png")), "Custom plots", self.iface.mainWindow())
         self.actionPlotSQLite.setWhatsThis("Create custom plots for your reports")
-        QObject.connect(self.actionPlotSQLite, SIGNAL("triggered()"), self.PlotSQLite)
+        QObject.connect(self.actionPlotSQLite, SIGNAL("triggered()"), self.plot_sqlite)
         
         self.actionPlotStratigraphy = QAction(QIcon(":/plugins/midvatten/icons/PlotStratigraphy.png"), "Stratigraphy plot", self.iface.mainWindow())
         self.actionPlotStratigraphy.setWhatsThis("Show stratigraphy for selected objects (modified ARPAT)")
@@ -160,7 +160,7 @@ class midvatten:
         self.actionPlotSection = QAction(QIcon(":/plugins/midvatten/icons/PlotSection.png"), "Section plot", self.iface.mainWindow())
         self.actionPlotSection.setWhatsThis("Plot a section with stratigraphy and water levels")
         #self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
-        QObject.connect(self.actionPlotSection, SIGNAL("triggered()"), self.PlotSection)
+        QObject.connect(self.actionPlotSection, SIGNAL("triggered()"), self.plot_section)
         
         self.actionChartMaker = QAction(QIcon(":/plugins/midvatten/icons/ChartMakerSQLite.png"), "ChartMaker for Midvatten DB", self.iface.mainWindow())
         self.actionChartMaker.setWhatsThis("Start ChartMaker for SQLite data")
@@ -169,11 +169,11 @@ class midvatten:
 
         self.actionVacuumDB = QAction(QIcon(":/plugins/midvatten/icons/vacuum.png"), "Vacuum the database", self.iface.mainWindow())
         self.actionVacuumDB.setWhatsThis("Perform database vacuuming")
-        QObject.connect(self.actionVacuumDB, SIGNAL("triggered()"), self.VacuumDB)
+        QObject.connect(self.actionVacuumDB, SIGNAL("triggered()"), self.vacuum_db)
 
         self.actionZipDB = QAction(QIcon(":/plugins/midvatten/icons/zip.png"), "Backup the database", self.iface.mainWindow())
         self.actionZipDB.setWhatsThis("A compressed copy of the database will be placed in same directory as the db.")
-        QObject.connect(self.actionZipDB, SIGNAL("triggered()"), self.ZipDB)
+        QObject.connect(self.actionZipDB, SIGNAL("triggered()"), self.zip_db)
 
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
@@ -249,8 +249,8 @@ class midvatten:
         menuBar.addMenu(self.menu)
 
         # QGIS iface connections
-        self.iface.projectRead.connect(self.ProjectOpened)
-        self.iface.newProjectCreated.connect(self.ProjectCreated)
+        self.iface.projectRead.connect(self.project_opened)
+        self.iface.newProjectCreated.connect(self.project_created)
         
     def unload(self):    
         # Remove the plugin menu items and icons
