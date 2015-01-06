@@ -3,7 +3,7 @@
 name=Midvatten
 qgisMinimumVersion=2.4
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.0.99q
+version=Version 1.1
 author=Josef Källgården
 email=groundwatergis@gmail.com
 
@@ -14,11 +14,10 @@ homepage=http://sites.google.com/site/midvattenpluginforqgis/
 authorName=Josef Källgården
 tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
 repository=https://github.com/jkall/qgis-midvatten-plugin
-experimental=True
+experimental=False
 deprecated=False
 
 changelog=
-        - Warning! This is an unstable experimental release
         - New feature: Piper diagram!
         - New feature: Custom plots!
         - New feature: Section plot!
@@ -35,7 +34,7 @@ changelog=
             ***** WARNING **********
             This plugin version will break all your earlier Midvatten plugin form logics for existing projects!
             This version includes simplified custom forms and no form logics for user data input.
-            See plugin web page for more information.
+            See plugin homepage for more information.
             ************************
 
 ;for the new plugin repo
