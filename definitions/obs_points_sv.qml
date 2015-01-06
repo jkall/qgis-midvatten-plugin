@@ -311,21 +311,23 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
     <alias field="type" index="3" name="obstyp"/>
     <alias field="wlogg_yn" index="12" name="utrustad m logger?"/>
     <alias field="wmeas_yn" index="11" name="ingår i mätprogram?"/>
+    <alias field="east" index="13" name="östlig koord (CRS anges i db)"/>
+    <alias field="north" index="14" name="nordlig koord (CRS anges i db)"/>
   </aliases>
   <excludeAttributesWMS/>
   <excludeAttributesWFS/>
   <attributeEditorForm>
-    <attributeEditorContainer name="general">
-      <attributeEditorContainer name="observation point">
+    <attributeEditorContainer name="allmänt">
+      <attributeEditorContainer name="observationspunkten">
         <attributeEditorField index="0" name="obsid"/>
       </attributeEditorContainer>
-      <attributeEditorContainer name="reference info">
+      <attributeEditorContainer name="referensinfo">
         <attributeEditorField index="1" name="name"/>
         <attributeEditorField index="2" name="place"/>
         <attributeEditorField index="10" name="drilldate"/>
         <attributeEditorField index="23" name="source"/>
       </attributeEditorContainer>
-      <attributeEditorContainer name="technical info">
+      <attributeEditorContainer name="teknisk info">
         <attributeEditorField index="3" name="type"/>
         <attributeEditorField index="4" name="length"/>
         <attributeEditorField index="5" name="drillstop"/>
@@ -336,16 +338,16 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
       </attributeEditorContainer>
     </attributeEditorContainer>
     <attributeEditorContainer name="xyz">
-      <attributeEditorContainer name="observation point">
+      <attributeEditorContainer name="observationspunkten">
         <attributeEditorField index="0" name="obsid"/>
       </attributeEditorContainer>
-      <attributeEditorContainer name="planar coordinates - CRS is set in db">
+      <attributeEditorContainer name="koordinater i plan - Ej automatiskt kopplade till kartposition">
         <attributeEditorField index="13" name="east"/>
         <attributeEditorField index="14" name="north"/>
         <attributeEditorField index="15" name="ne_accur"/>
         <attributeEditorField index="16" name="ne_source"/>
       </attributeEditorContainer>
-      <attributeEditorContainer name="elevation">
+      <attributeEditorContainer name="höjdinfo">
         <attributeEditorField index="17" name="h_toc"/>
         <attributeEditorField index="18" name="h_tocags"/>
         <attributeEditorField index="19" name="h_gs"/>
@@ -354,15 +356,15 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
         <attributeEditorField index="22" name="h_source"/>
       </attributeEditorContainer>
     </attributeEditorContainer>
-    <attributeEditorContainer name="management">
-      <attributeEditorContainer name="observation point">
+    <attributeEditorContainer name="administration">
+      <attributeEditorContainer name="observationspunkten">
         <attributeEditorField index="0" name="obsid"/>
       </attributeEditorContainer>
-      <attributeEditorContainer name="comments">
+      <attributeEditorContainer name="kommentarer">
         <attributeEditorField index="24" name="com_onerow"/>
         <attributeEditorField index="25" name="com_html"/>
       </attributeEditorContainer>
-      <attributeEditorContainer name="programs">
+      <attributeEditorContainer name="mätprogram m.m.">
         <attributeEditorField index="11" name="wmeas_yn"/>
         <attributeEditorField index="12" name="wlogg_yn"/>
       </attributeEditorContainer>

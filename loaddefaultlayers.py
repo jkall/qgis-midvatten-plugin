@@ -51,10 +51,8 @@ class loadlayers():
     def add_layers_new_method(self):
         try:#qgis>=2.4
             MyGroup = self.root.insertGroup(0, "Midvatten_OBS_DB")#verify this is inserted at top
-            print('debug info: did create group by new method')#debug
         except:#qgis < 2.4
             MyGroup = self.legend.addGroup ("Midvatten_OBS_DB",1,-1)
-            print('debug info: used old method to create group')
         uri = QgsDataSourceURI()
         uri.setDatabase(self.settingsdict['database'])
         canvas = self.iface.mapCanvas()
@@ -82,12 +80,10 @@ class loadlayers():
                     QgsMapLayerRegistry.instance().addMapLayers([layer],False)
                     MyGroup.insertLayer(0,layer)
                     #MyGroup.addLayer(layer)
-                    print('debug - inserted layer into group by new method')#debug
                 except:#qgis<2.4
                     QgsMapLayerRegistry.instance().addMapLayers([layer])
                     group_index = self.legend.groups().index('Midvatten_OBS_DB') 
                     self.legend.moveLayer (self.legend.layers()[0],group_index)
-                    print('debug - inserted layer into group by OLD method')#debug
 
                 layer.setEditorLayout(1)#perhaps this is unnecessary since it gets set from the loaded qml below?
 
@@ -196,7 +192,6 @@ class loadlayers():
         try:#qgis>2.6
             remove_group = self.root.findGroup("Midvatten_OBS_DB")
             self.root.removeChildNode(remove_group)
-            print('debug info, removed group by new method')#debug
         except: #qgis < 2.4
             """ FIRST search for and try to remove old layers """        
             ALL_LAYERS = self.iface.mapCanvas().layers() 

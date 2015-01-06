@@ -19,28 +19,24 @@ deprecated=False
 
 changelog=
         - Warning! This is an unstable experimental release
-        - Simplified custom forms and form logics for user data input, this is a 
-            ***** WARNING **********
-            This will break your old QGIS projects!
-            This is the reason for the new behaviour: https://hub.qgis.org/issues/10739
-            ************************
         - New feature: Piper diagram!
         - New feature: Custom plots!
         - New feature: Section plot!
         - New feature: Calculate average water flow from accumulated water volume readings
-        - New feature: vacuuming database
-        - New feature: database backup
+        - New feature: Vacuuming database
+        - New feature: Database backup
         - New feature _and_ database design: import of meteorological data into a new table "meteo" in database
-        - New feature _and_ database desing: layer styles are now stored in the database
         - Minor database design changes: now "w_levels"."level_masl" may be null and is no longer -999 by default
         - New behaviour during imports - empty readings (real number) are from now on imported as null instead of zero
         - New behaviour in drillreport - it will now present statistics for 'level_masl' instead of 'meas', if number of 'level_masl' > number of 'meas' 
         - Additional minor html report changes
         - Fix slow/erroneous creation of spatialite databases under splite 4 (InitSpatialMetadata(1))
-        - A number of code cleanups and bug fixes, in 1.099p:
-            - bug fixes in section plot: water level table selection, obsid plotting for negative elevations
-            - bug fixes/changed behaviour in form logics related to custom ui and attribute tables dual view
-
+        - Finally, but not least:
+            ***** WARNING **********
+            This plugin version will break all your earlier Midvatten plugin form logics for existing projects!
+            This version includes simplified custom forms and no form logics for user data input.
+            See plugin web page for more information.
+            ************************
 
 ;for the new plugin repo
 about=The plugin is a toolset for using QGIS to manage observational data from hydrogeological investigations. Data is stored in a spatialite database. 

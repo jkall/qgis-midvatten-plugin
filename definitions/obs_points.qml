@@ -307,6 +307,8 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
     <alias field="source" index="23" name="reference for this observation point (report etc)"/>
     <alias field="wlogg_yn" index="12" name="equipped w logger?"/>
     <alias field="wmeas_yn" index="11" name="in monitoring program?"/>
+    <alias field="east" index="13" name="east (CRS is set in db)"/>
+    <alias field="north" index="14" name="north (CRS is set in db)"/>
   </aliases>
   <excludeAttributesWMS/>
   <excludeAttributesWFS/>
@@ -335,7 +337,7 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
       <attributeEditorContainer name="observation point">
         <attributeEditorField index="0" name="obsid"/>
       </attributeEditorContainer>
-      <attributeEditorContainer name="planar coordinates - CRS is set in db">
+      <attributeEditorContainer name="planar coordinates - not auto-linked to map pos.">
         <attributeEditorField index="13" name="east"/>
         <attributeEditorField index="14" name="north"/>
         <attributeEditorField index="15" name="ne_accur"/>

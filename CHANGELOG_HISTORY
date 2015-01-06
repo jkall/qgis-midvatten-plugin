@@ -19,6 +19,12 @@ THIS FILE ONLY FOR HISTORICAL RESONS, IF I NEED TO PICK UP A PARTICULAR VERSION 
         - New behaviour during imports - empty readings (real number) are from now on imported as null instead of zero
         - minor html report changes
         - Fix slow/erroneous creation of spatialite databases under splite 4 (InitSpatialMetadata(1))
+        - 1.0.99q:
+            - bug fix for the optimistic approach to select an- and cations for piper diagram (if user leaves those fields empty)
+        - 1.099p:
+            - bug fixes in section plot: water level table selection, obsid plotting for negative elevations
+            - bug fixes/changed behaviour in form logics related to custom ui and attribute tables dual view
+            - colored legend in piper diagram
         - 1.099o:
                 -changed database vacuuming behaviour to speed up repeated data imports to big databases
                 -DEM in section plot
