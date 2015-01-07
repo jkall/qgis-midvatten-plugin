@@ -93,7 +93,6 @@ class loadlayers():
                 if  locale.getdefaultlocale()[0] == 'sv_SE' and os.path.isfile( stylefile_sv ): #swedish forms are loaded only if locale settings indicate sweden
                     try:
                         layer.loadNamedStyle(stylefile_sv)
-                        print ('debug I loaded swedish stylefile!!')#debug
                     except:
                         try:
                             layer.loadNamedStyle(stylefile)

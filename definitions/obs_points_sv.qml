@@ -79,6 +79,9 @@
     <edittype widgetv2type="TextEdit" name="com_html">
       <widgetv2config IsMultiline="1" fieldEditable="1" UseHtml="1" labelOnTop="1"/>
     </edittype>
+    <edittype widgetv2type="TextEdit" name="geometry">
+      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
+    </edittype>
   </edittypes>
   <renderer-v2 symbollevels="0" type="singleSymbol">
     <symbols>
@@ -135,9 +138,9 @@
     <property key="labeling/distMapUnitMinScale" value="0"/>
     <property key="labeling/enabled" value="true"/>
     <property key="labeling/fieldName" value="obsid"/>
-    <property key="labeling/fontBold" value="true"/>
+    <property key="labeling/fontBold" value="false"/>
     <property key="labeling/fontCapitals" value="0"/>
-    <property key="labeling/fontFamily" value="Ubuntu"/>
+    <property key="labeling/fontFamily" value="Sans Serif"/>
     <property key="labeling/fontItalic" value="false"/>
     <property key="labeling/fontLetterSpacing" value="0"/>
     <property key="labeling/fontLimitPixelSize" value="false"/>
@@ -149,7 +152,7 @@
     <property key="labeling/fontSizeMapUnitMinScale" value="0"/>
     <property key="labeling/fontStrikeout" value="false"/>
     <property key="labeling/fontUnderline" value="false"/>
-    <property key="labeling/fontWeight" value="63"/>
+    <property key="labeling/fontWeight" value="50"/>
     <property key="labeling/fontWordSpacing" value="0"/>
     <property key="labeling/formatNumbers" value="false"/>
     <property key="labeling/isExpression" value="false"/>
@@ -166,7 +169,7 @@
     <property key="labeling/minFeatureSize" value="0"/>
     <property key="labeling/multilineAlign" value="0"/>
     <property key="labeling/multilineHeight" value="1"/>
-    <property key="labeling/namedStyle" value="Medium"/>
+    <property key="labeling/namedStyle" value="Normal"/>
     <property key="labeling/obstacle" value="true"/>
     <property key="labeling/placeDirectionSymbol" value="0"/>
     <property key="labeling/placement" value="0"/>
@@ -265,7 +268,7 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
   <label>0</label>
   <labelattributes>
     <label fieldname="" text="Label"/>
-    <family fieldname="" name="Ubuntu"/>
+    <family fieldname="" name="Sans"/>
     <size fieldname="" units="pt" value="12"/>
     <bold fieldname="" on="0"/>
     <italic fieldname="" on="0"/>
@@ -283,7 +286,7 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
     <multilineenabled fieldname="" on=""/>
     <selectedonly on=""/>
   </labelattributes>
-  <editform>/home/midvatten/ui/obs_points_en.ui</editform>
+  <editform>../../midvatten/ui/obs_points_sv.ui</editform>
   <editforminit>form_logics.obs_points_form_open</editforminit>
   <featformsuppress>0</featformsuppress>
   <annotationform>.</annotationform>
@@ -295,6 +298,7 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
     <alias field="diam" index="6" name="diameter (mm)"/>
     <alias field="drilldate" index="10" name="borrdatum"/>
     <alias field="drillstop" index="5" name="avslut"/>
+    <alias field="east" index="13" name="östlig koord (CRS anges i db)"/>
     <alias field="h_accur" index="20" name="höjdonoggrannhet"/>
     <alias field="h_gs" index="19" name="marknivå"/>
     <alias field="h_source" index="22" name="höjdinfo ursprung"/>
@@ -305,14 +309,13 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
     <alias field="name" index="1" name="namn"/>
     <alias field="ne_accur" index="15" name="lägesonoggrannhet"/>
     <alias field="ne_source" index="16" name="lägesinfo ursprung"/>
+    <alias field="north" index="14" name="nordlig koord (CRS anges i db)"/>
     <alias field="place" index="2" name="plats (t.ex. fastighet)"/>
     <alias field="screen" index="8" name="filtertyp"/>
     <alias field="source" index="23" name="referens/ursprung"/>
     <alias field="type" index="3" name="obstyp"/>
     <alias field="wlogg_yn" index="12" name="utrustad m logger?"/>
     <alias field="wmeas_yn" index="11" name="ingår i mätprogram?"/>
-    <alias field="east" index="13" name="östlig koord (CRS anges i db)"/>
-    <alias field="north" index="14" name="nordlig koord (CRS anges i db)"/>
   </aliases>
   <excludeAttributesWMS/>
   <excludeAttributesWFS/>
