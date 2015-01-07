@@ -501,7 +501,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             if result[1]:
                 for item in result[1]:
                     self.obs_p_w_drill_stops.append(item[0])
-                    
+
         q=0
         for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
             if obs in self.obsids_w_wl:
@@ -558,7 +558,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             QgsMapLayerRegistry.instance().removeMapLayer(temp_memorylayer.id())
 
     def plot_drill_stop(self): 
-        lineplot,=self.secax.plot(self.x_ds, self.z_ds,  '^', markersize = 6,color='black')
+        lineplot,=self.secax.plot(self.x_ds, self.z_ds,  '^', markersize = 8,color='black')
         self.p.append(lineplot)
         self.Labels.append('drillstop like ' + self.ms.settingsdict['secplotdrillstop'])
 

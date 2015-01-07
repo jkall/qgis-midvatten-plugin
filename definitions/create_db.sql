@@ -1,134 +1,134 @@
 ﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
 select 'drop table ' || name || ';' from sqlite_master where type = 'table';
 select InitSpatialMetadata();
-create table about_db ("table" text, "column" text, "not_null" text, "default_value" text, "primary_key" text, "foreign_key" text, "description" text, "upd_date" text, "upd_sign" text);
-insert into about_db values('*', '*', '', '', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION, running QGIS version CHANGETOQGISVERSION on top of SpatiaLite version CHANGETOSPLITEVERSION', '', '')
-insert into about_db values('about_db', '*', '', '', '', '', 'A status log for the tables in the db', '', '')
-insert into about_db values('about_db', 'table', '', '', '', '', 'Name of a table in the db', '', '')
-insert into about_db values('about_db', 'column', '', '', '', '', 'Name of column', '', '')
-insert into about_db values('about_db', 'upd_date', '', '', '', '', 'Date for last update', '', '')
-insert into about_db values('about_db', 'upd_sign', '', '', '', '', 'Person responsible for update', '', '')
-insert into about_db values('about_db', 'contents', '', '', '', '', 'Contents', '', '')
-insert into about_db values('meteo', '*', '', '', '', '', 'meteorological observations', '', '')
-insert into about_db values('meteo', 'obsid', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '')
-insert into about_db values('meteo', 'instrumentid', '1', '', '1', '', 'Instrument Id, may use several different temperature sensors or precipitaion meters at same station', '', '')
-insert into about_db values('meteo', 'parameter', '1', '', '1', 'zz_meteoparam(parameter)', 'The meteorological parameter, e.g. precipitation, temperature etc', '', '')
-insert into about_db values('meteo', 'date_time', '1', '', '1', '', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '')
-insert into about_db values('meteo', 'reading_num', '', '', '', '', 'Value (real number) reading for the parameter', '', '')
-insert into about_db values('meteo', 'reading_txt', '', '', '', '', 'Value (text string) reading for the parameter', '', '')
-insert into about_db values('meteo', 'unit', '', '', '', '', 'Unit corresponding to the value reading', '', '')
-insert into about_db values('meteo', 'comment', '', '', '', '', 'Comment', '', '')
-insert into about_db values('obs_points', '*', '', '', '', '', 'One of the two main tables. This table holds all point observation objects.', '', '')
-insert into about_db values('obs_points', 'obsid', '1', '', '1', '', 'ID for the observation point, eg Well01, Br1201, Rb1201', '', '')
-insert into about_db values('obs_points', 'name', '', '', '', '', 'Ordinary name for the observation, e.g. Pumping well no 1, Brunn 123, Flow gauge A, pegel 3 etc ', '', '')
-insert into about_db values('obs_points', 'place', '', '', '', '', 'Place for the observation. E.g. estate, property, site', '', '')
-insert into about_db values('obs_points', 'type', '', '', '', '', 'Type of observation', '', '')
-insert into about_db values('obs_points', 'length', '', '', '', '', 'Borehole length from ground surface to bottom (equals to depth if vertical)', '', '')
-insert into about_db values('obs_points', 'drillstop', '', '', '', '', 'Drill stop, e.g. probing/direct push drilling stopped against rock', '', '')
-insert into about_db values('obs_points', 'diam', '', '', '', '', 'Inner diameter for casing or upper part of borehol', '', '')
-insert into about_db values('obs_points', 'material', '', '', '', '', 'Well material', '', '')
-insert into about_db values('obs_points', 'screen', '', '', '', '', 'Type of well screen, including description, e.g. 1 m Johnson Well Screen 2,5mm ', '', '')
-insert into about_db values('obs_points', 'capacity', '', '', '', '', 'Well capacity', '', '')
-insert into about_db values('obs_points', 'drilldate', '', '', '', '', 'Date when drilling was completed', '', '')
-insert into about_db values('obs_points', 'wmeas_yn', '', '', '', '', '1/0 if water level is to be measured for this point or not', '', '')
-insert into about_db values('obs_points', 'wlogg_yn', '', '', '', '', '1/0 if water level if borehole is equipped with a logger or not', '', '')
-insert into about_db values('obs_points', 'east', '', '', '', '', 'Eastern coordinate (in the corresponding CRS)', '', '')
-insert into about_db values('obs_points', 'north', '', '', '', '', 'Northern coordinate (in the corresponding CRS)', '', '')
-insert into about_db values('obs_points', 'ne_accur', '', '', '', '', 'Approximate inaccuracy for coordinates', '', '')
-insert into about_db values('obs_points', 'ne_source', '', '', '', '', 'Source for the given position, e.g. from an old map or measured in field campaign', '', '')
-insert into about_db values('obs_points', 'h_toc', '', '', '', '', 'Elevation (masl) for the measuring point, the point from which water level is measured, normally Top Of Casing', '', '')
-insert into about_db values('obs_points', 'h_tocags', '', '', '', '', 'Distance from Measuring point to Ground Surface (m), Top Of Casing Above Ground Surface', '', '')
-insert into about_db values('obs_points', 'h_gs', '', '', '', '', 'Ground Surface level (m). ', '', '')
-insert into about_db values('obs_points', 'h_accur', '', '', '', '', 'Inaccuracy (m) for Measuring Point level, h_toc', '', '')
-insert into about_db values('obs_points', 'h_syst', '', '', '', '', 'Reference system for elevation', '', '')
-insert into about_db values('obs_points', 'h_source', '', '', '', '', 'Source for the measuring point elevation (consultancy report or similar)', '', '')
-insert into about_db values('obs_points', 'source', '', '', '', '', 'The source for the observation point, eg full reference to consultancy report or authority and year', '', '')
-insert into about_db values('obs_points', 'com_onerow', '', '', '', '', 'onerow comment, appropriate for map labels', '', '')
-insert into about_db values('obs_points', 'com_html', '', '', '', '', 'multiline formatted comment in html format', '', '')
-insert into about_db values('obs_points', 'geometry', '', '', '', '', 'The geometry of OGR/FDO type point', '', '')
-insert into about_db values('obs_lines', '*', '', '', '', '', 'One of the two main tables. This table holds all line observation objects.', '', '')
-insert into about_db values('obs_lines', 'obsid', '1', '', '1', '', 'ID for observation line, e.g. S1.', '', '')
-insert into about_db values('obs_lines', 'name', '', '', '', '', 'Ordinary name for the observation, e.g. Seismic profile no 1', '', '')
-insert into about_db values('obs_lines', 'place', '', '', '', '', 'Place for the observation', '', '')
-insert into about_db values('obs_lines', 'type', '', '', '', '', 'Type of observation, e.g. vlf, seismics or gpr', '', '')
-insert into about_db values('obs_lines', 'source', '', '', '', '', 'The origin for the observation, eg full reference to consultancy report', '', '')
-insert into about_db values('obs_lines', 'geometry', '', '', '', '', 'The geometry of OGR/FDO type linestring', '', '')
-insert into about_db values('seismic_data', '*', '', '', '', '', 'Interpreted data from seismic measurements', '', '')
-insert into about_db values('seismic_data', 'obsid', '1', '', '1', 'obs_lines(obsid)', 'obsid linked to obs_lines.obsid', '', '')
-insert into about_db values('seismic_data', 'length', '1', '', '1', '', 'Length along line', '', '')
-insert into about_db values('seismic_data', 'ground', '', '', '', '', 'Ground surface level', '', '')
-insert into about_db values('seismic_data', 'bedrock', '', '', '', '', 'Interpreted level for bedrock surface', '', '')
-insert into about_db values('seismic_data', 'gw_table', '', '', '', '', 'Interpreted level for limit between unsaturated/saturated conditions', '', '')
-insert into about_db values('seismic_data', 'comment', '', '', '', '', 'Additional info', '', '')
-insert into about_db values('stratigraphy', '*', '', '', '', '', 'stratigraphy information from drillings, probings etc', '', '')
-insert into about_db values('stratigraphy', 'obsid', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '')
-insert into about_db values('stratigraphy', 'stratid', '1', '', '1', '', 'Stratigraphy layer ID for the OBSID, starts with layer 1 from ground surface and increases below', '', '')
-insert into about_db values('stratigraphy', 'depthtop', '', '', '', '', 'Depth, from surface level, to top of the stratigraphy layer', '', '')
-insert into about_db values('stratigraphy', 'depthbot', '', '', '', '', 'Depth, from surface level, to bottom of the stratigraphy layer', '', '')
-insert into about_db values('stratigraphy', 'geology', '', '', '', '', 'Full description of geology', '', '')
-insert into about_db values('stratigraphy', 'geoshort', '', '', '', '', 'Short description of geology, should correspond to the dictionaries used. Stratigraphy plot looks in this field and relates to coded dictionaries with fill patterns and colors.', '', '')
-insert into about_db values('stratigraphy', 'capacity', '', '', '', '', 'Well development at the layer, may also be waterloss or similar. If using notations 1, 2, 3, 4-, 4, and so on until 6+ it will match color codes in Midvatten plugin (see midvatten_defs.py). ', '', '')
-insert into about_db values('stratigraphy', 'development', '', '', '', '', 'Well development - Is the flushed water clear and free of suspended solids? ', '', '')
-insert into about_db values('stratigraphy', 'comment', '', '', '', '', 'Comment', '', '')
-insert into about_db values('vlf_data', '*', '', '', '', '', 'Raw data from VLF measurements', '', '')
-insert into about_db values('vlf_data', 'obsid', '1', '', '1', 'obs_lines(obsid)', 'obsid linked to obs_lines.obsid', '', '')
-insert into about_db values('vlf_data', 'length', '1', '', '1', '', 'Length along line', '', '')
-insert into about_db values('vlf_data', 'real_comp', '', '', '', '', 'Raw data real component (in-phase(%))', '', '')
-insert into about_db values('vlf_data', 'imag_comp', '', '', '', '', 'Raw data imaginary component', '', '')
-insert into about_db values('vlf_data', 'comment', '', '', '', '', 'Additional info', '', '')
-insert into about_db values('w_flow', '*', '', '', '', '', 'Water flow', '', '')
-insert into about_db values('w_flow', 'obsid', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '')
-insert into about_db values('w_flow', 'instrumentid', '1', '', '1', '', 'Instrument Id, may use several flowmeters at same borehole', '', '')
-insert into about_db values('w_flow', 'flowtype', '1', '', '1', 'zz_flowtype(type)', 'Flowtype must correspond to type in flowtypes - Accumulated volume, momentary flow etc', '', '')
-insert into about_db values('w_flow', 'date_time', '1', '', '1', '', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '')
-insert into about_db values('w_flow', 'reading', '', '', '', '', 'Value (real number) reading for the flow rate, accumulated volume etc', '', '')
-insert into about_db values('w_flow', 'unit', '', '', '', '', 'Unit corresponding to the value reading', '', '')
-insert into about_db values('w_flow', 'comment', '', '', '', '', 'Comment', '', '')
-insert into about_db values('w_levels', '*', '', '', '', '', 'Manual water level measurements', '', '')
-insert into about_db values('w_levels', 'obsid', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '')
-insert into about_db values('w_levels', 'date_time', '1', '', '1', '', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '')
-insert into about_db values('w_levels', 'meas', '', '', '', '', 'distance from measuring point to water level', '', '')
-insert into about_db values('w_levels', 'h_toc', '', '', '', '', 'Elevation (masl) for the measuring point at the particular date_time (measuring point elevation may vary by time)', '', '')
-insert into about_db values('w_levels', 'level_masl', '', '', '', '', 'Water level elevation (masl) calculated from measuring point and distance from measuring point to water level', '', '')
-insert into about_db values('w_levels', 'comment', '', '', '', '', 'Comment', '', '')
-insert into about_db values('w_levels_logger', '*', '', '', '', '', 'Automatic Water Level Readings', '', '')
-insert into about_db values('w_levels_logger', 'obsid', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '')
-insert into about_db values('w_levels_logger', 'date_time', '1', '', '1', '', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '')
-insert into about_db values('w_levels_logger', 'head_cm', '', '', '', '', 'pressure (cm water column) on pressure transducer', '', '')
-insert into about_db values('w_levels_logger', 'temp_degc', '', '', '', '', 'temperature degrees C', '', '')
-insert into about_db values('w_levels_logger', 'cond_mscm', '', '', '', '', 'electrical conductivity mS/cm', '', '')
-insert into about_db values('w_levels_logger', 'level_masl', '1', '-999', '', '', 'Corresponding Water level elevation (masl)', '', '')
-insert into about_db values('w_levels_logger', 'comment', '', '', '', '', 'Comment', '', '')
-insert into about_db values('w_qual_field', '*', '', '', '', '', 'Water quality from field measurements', '', '')
-insert into about_db values('w_qual_field', 'obsid', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '')
-insert into about_db values('w_qual_field', 'staff', '', '', '', '', 'Field staff', '', '')
-insert into about_db values('w_qual_field', 'date_time', '1', '', '1', '', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '')
-insert into about_db values('w_qual_field', 'instrument', '', '', '', '', 'Instrument ID', '', '')
-insert into about_db values('w_qual_field', 'parameter', '1', '', '1', '', 'Measured parameter', '', '')
-insert into about_db values('w_qual_field', 'reading_num', '', '', '', '', 'Value as real number', '', '')
-insert into about_db values('w_qual_field', 'reading_txt', '', '', '', '', 'Value as text, incl more than and less than symbols', '', '')
-insert into about_db values('w_qual_field', 'unit', '', '', '', '', 'Unit', '', '')
-insert into about_db values('w_qual_field', 'flow_lpm', '', '', '', '', 'Sampling flow (l/min)', '', '')
-insert into about_db values('w_qual_field', 'comment', '', '', '', '', 'Comment', '', '')
-insert into about_db values('w_qual_lab', '*', '', '', '', '', 'Water quality from laboratory analysis', '', '')
-insert into about_db values('w_qual_lab', 'obsid', '1', '', '', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '')
-insert into about_db values('w_qual_lab', 'depth', '', '', '', '', 'Depth (m below h_gs) from where sample is taken', '', '')
-insert into about_db values('w_qual_lab', 'report', '1', '', '1', '', 'Report no from laboratory', '', '')
-insert into about_db values('w_qual_lab', 'project', '', '', '', '', 'Project number', '', '')
-insert into about_db values('w_qual_lab', 'staff', '', '', '', '', 'Field staff', '', '')
-insert into about_db values('w_qual_lab', 'date_time', '', '', '', '', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '')
-insert into about_db values('w_qual_lab', 'anameth', '', '', '', '', 'Analysis method, preferrably code relating to analysis standard', '', '')
-insert into about_db values('w_qual_lab', 'parameter', '1', '', '1', '', 'Measured parameter', '', '')
-insert into about_db values('w_qual_lab', 'reading_num', '', '', '', '', 'Value as real number', '', '')
-insert into about_db values('w_qual_lab', 'reading_txt', '', '', '', '', 'Value as text, incl more than and less than symbols', '', '')
-insert into about_db values('w_qual_lab', 'unit', '', '', '', '', 'Unit', '', '')
-insert into about_db values('w_qual_lab', 'comment', '', '', '', '', 'Comments', '', '')
-insert into about_db values('zz_flowtype', '*', '', '', '', '', 'Possible Flowtypes in table w_flow', '', '')
-insert into about_db values('zz_flowtype', 'type', '1', 'Accvol, Aveflow or Momflow', '1', '', 'Existing types of measurements related to water flow', '', '')
-insert into about_db values('zz_flowtype', 'explanation', '', '', '', '', 'Explanation of the flowtypes', '', '')
-insert into about_db values('zz_meteoparam', '*', '', '', '', '', 'Possible meteorological parameters in meteo', '', '')
-insert into about_db values('zz_meteoparam', 'parameter', '1', 'precip, temp', '1', '', 'Existing types of parameter related to meteorological observations', '', '')
-insert into about_db values('zz_meteoparam', 'explanation', '', '', '', '', 'Explanation of the parameters', '', '')
+create table about_db ("table" text, "column" text, "data_type" text, "not_null" text, "default_value" text, "primary_key" text, "foreign_key" text, "description" text, "upd_date" text, "upd_sign" text);
+insert into about_db values('*', '*', '', '', '', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION, running QGIS version CHANGETOQGISVERSION on top of SpatiaLite version CHANGETOSPLITEVERSION', '', '');
+insert into about_db values('about_db', '*', '', '', '', '', '', 'A status log for the tables in the db', '', '');
+insert into about_db values('about_db', 'table', 'text', '', '', '', '', 'Name of a table in the db', '', '');
+insert into about_db values('about_db', 'column', 'text', '', '', '', '', 'Name of column', '', '');
+insert into about_db values('about_db', 'upd_date', 'text', '', '', '', '', 'Date for last update', '', '');
+insert into about_db values('about_db', 'upd_sign', 'text', '', '', '', '', 'Person responsible for update', '', '');
+insert into about_db values('about_db', 'contents', 'text', '', '', '', '', 'Contents', '', '');
+insert into about_db values('meteo', '*', '', '', '', '', '', 'meteorological observations', '', '');
+insert into about_db values('meteo', 'obsid', 'text', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '');
+insert into about_db values('meteo', 'instrumentid', 'text', '1', '', '1', '', 'Instrument Id, may use several different temperature sensors or precipitaion meters at same station', '', '');
+insert into about_db values('meteo', 'parameter', 'text', '1', '', '1', 'zz_meteoparam(parameter)', 'The meteorological parameter, e.g. precipitation, temperature etc', '', '');
+insert into about_db values('meteo', 'date_time', 'text', '1', '', '1', '', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '');
+insert into about_db values('meteo', 'reading_num', 'double', '', '', '', '', 'Value (real number) reading for the parameter', '', '');
+insert into about_db values('meteo', 'reading_txt', 'text', '', '', '', '', 'Value (text string) reading for the parameter', '', '');
+insert into about_db values('meteo', 'unit', 'text', '', '', '', '', 'Unit corresponding to the value reading', '', '');
+insert into about_db values('meteo', 'comment', 'text', '', '', '', '', 'Comment', '', '');
+insert into about_db values('obs_points', '*', '', '', '', '', '', 'One of the two main tables. This table holds all point observation objects.', '', '');
+insert into about_db values('obs_points', 'obsid', 'text', '1', '', '1', '', 'ID for the observation point, eg Well01, Br1201, Rb1201', '', '');
+insert into about_db values('obs_points', 'name', 'text', '', '', '', '', 'Ordinary name for the observation, e.g. Pumping well no 1, Brunn 123, Flow gauge A, pegel 3 etc ', '', '');
+insert into about_db values('obs_points', 'place', 'text', '', '', '', '', 'Place for the observation. E.g. estate, property, site', '', '');
+insert into about_db values('obs_points', 'type', 'text', '', '', '', '', 'Type of observation', '', '');
+insert into about_db values('obs_points', 'length', 'double', '', '', '', '', 'Borehole length from ground surface to bottom (equals to depth if vertical)', '', '');
+insert into about_db values('obs_points', 'drillstop', 'text', '', '', '', '', 'Drill stop, e.g. probing/direct push drilling stopped against rock', '', '');
+insert into about_db values('obs_points', 'diam', 'double', '', '', '', '', 'Inner diameter for casing or upper part of borehol', '', '');
+insert into about_db values('obs_points', 'material', 'text', '', '', '', '', 'Well material', '', '');
+insert into about_db values('obs_points', 'screen', 'text', '', '', '', '', 'Type of well screen, including description, e.g. 1 m Johnson Well Screen 2,5mm ', '', '');
+insert into about_db values('obs_points', 'capacity', 'text', '', '', '', '', 'Well capacity', '', '');
+insert into about_db values('obs_points', 'drilldate', 'text', '', '', '', '', 'Date when drilling was completed', '', '');
+insert into about_db values('obs_points', 'wmeas_yn', 'integer', '', '', '', '', '1/0 if water level is to be measured for this point or not', '', '');
+insert into about_db values('obs_points', 'wlogg_yn', 'integer', '', '', '', '', '1/0 if water level if borehole is equipped with a logger or not', '', '');
+insert into about_db values('obs_points', 'east', 'double', '', '', '', '', 'Eastern coordinate (in the corresponding CRS)', '', '');
+insert into about_db values('obs_points', 'north', 'double', '', '', '', '', 'Northern coordinate (in the corresponding CRS)', '', '');
+insert into about_db values('obs_points', 'ne_accur', 'double', '', '', '', '', 'Approximate inaccuracy for coordinates', '', '');
+insert into about_db values('obs_points', 'ne_source', 'text', '', '', '', '', 'Source for the given position, e.g. from an old map or measured in field campaign', '', '');
+insert into about_db values('obs_points', 'h_toc', 'double', '', '', '', '', 'Elevation (masl) for the measuring point, the point from which water level is measured, normally Top Of Casing', '', '');
+insert into about_db values('obs_points', 'h_tocags', 'double', '', '', '', '', 'Distance from Measuring point to Ground Surface (m), Top Of Casing Above Ground Surface', '', '');
+insert into about_db values('obs_points', 'h_gs', 'double', '', '', '', '', 'Ground Surface level (m). ', '', '');
+insert into about_db values('obs_points', 'h_accur', 'double', '', '', '', '', 'Inaccuracy (m) for Measuring Point level, h_toc', '', '');
+insert into about_db values('obs_points', 'h_syst', 'text', '', '', '', '', 'Reference system for elevation', '', '');
+insert into about_db values('obs_points', 'h_source', 'text', '', '', '', '', 'Source for the measuring point elevation (consultancy report or similar)', '', '');
+insert into about_db values('obs_points', 'source', 'text', '', '', '', '', 'The source for the observation point, eg full reference to consultancy report or authority and year', '', '');
+insert into about_db values('obs_points', 'com_onerow', 'text', '', '', '', '', 'onerow comment, appropriate for map labels', '', '');
+insert into about_db values('obs_points', 'com_html', 'text', '', '', '', '', 'multiline formatted comment in html format', '', '');
+insert into about_db values('obs_points', 'geometry', 'BLOB point', '', '', '', '', 'The geometry of OGR/FDO type point', '', '');
+insert into about_db values('obs_lines', '*', '', '', '', '', '', 'One of the two main tables. This table holds all line observation objects.', '', '');
+insert into about_db values('obs_lines', 'obsid', 'text', '1', '', '1', '', 'ID for observation line, e.g. S1.', '', '');
+insert into about_db values('obs_lines', 'name', 'text', '', '', '', '', 'Ordinary name for the observation, e.g. Seismic profile no 1', '', '');
+insert into about_db values('obs_lines', 'place', 'text', '', '', '', '', 'Place for the observation', '', '');
+insert into about_db values('obs_lines', 'type', 'text', '', '', '', '', 'Type of observation, e.g. vlf, seismics or gpr', '', '');
+insert into about_db values('obs_lines', 'source', 'text', '', '', '', '', 'The origin for the observation, eg full reference to consultancy report', '', '');
+insert into about_db values('obs_lines', 'geometry', 'BLOB linestring', '', '', '', '', 'The geometry of OGR/FDO type linestring', '', '');
+insert into about_db values('seismic_data', '*', '', '', '', '', '', 'Interpreted data from seismic measurements', '', '');
+insert into about_db values('seismic_data', 'obsid', 'text', '1', '', '1', 'obs_lines(obsid)', 'obsid linked to obs_lines.obsid', '', '');
+insert into about_db values('seismic_data', 'length', 'double', '1', '', '1', '', 'Length along line', '', '');
+insert into about_db values('seismic_data', 'ground', 'double', '', '', '', '', 'Ground surface level', '', '');
+insert into about_db values('seismic_data', 'bedrock', 'double', '', '', '', '', 'Interpreted level for bedrock surface', '', '');
+insert into about_db values('seismic_data', 'gw_table', 'double', '', '', '', '', 'Interpreted level for limit between unsaturated/saturated conditions', '', '');
+insert into about_db values('seismic_data', 'comment', 'text', '', '', '', '', 'Additional info', '', '');
+insert into about_db values('stratigraphy', '*', '', '', '', '', '', 'stratigraphy information from drillings, probings etc', '', '');
+insert into about_db values('stratigraphy', 'obsid', 'text', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '');
+insert into about_db values('stratigraphy', 'stratid', 'integer', '1', '', '1', '', 'Stratigraphy layer ID for the OBSID, starts with layer 1 from ground surface and increases below', '', '');
+insert into about_db values('stratigraphy', 'depthtop', 'double', '', '', '', '', 'Depth, from surface level, to top of the stratigraphy layer', '', '');
+insert into about_db values('stratigraphy', 'depthbot', 'double', '', '', '', '', 'Depth, from surface level, to bottom of the stratigraphy layer', '', '');
+insert into about_db values('stratigraphy', 'geology', 'text', '', '', '', '', 'Full description of geology', '', '');
+insert into about_db values('stratigraphy', 'geoshort', 'text', '', '', '', '', 'Short description of geology, should correspond to the dictionaries used. Stratigraphy plot looks in this field and relates to coded dictionaries with fill patterns and colors.', '', '');
+insert into about_db values('stratigraphy', 'capacity', 'text', '', '', '', '', 'Well development at the layer, may also be waterloss or similar. If using notations 1, 2, 3, 4-, 4, and so on until 6+ it will match color codes in Midvatten plugin (see midvatten_defs.py). ', '', '');
+insert into about_db values('stratigraphy', 'development', 'text', '', '', '', '', 'Well development - Is the flushed water clear and free of suspended solids? ', '', '');
+insert into about_db values('stratigraphy', 'comment', 'text', '', '', '', '', 'Comment', '', '');
+insert into about_db values('vlf_data', '*', '', '', '', '', '', 'Raw data from VLF measurements', '', '');
+insert into about_db values('vlf_data', 'obsid', 'text', '1', '', '1', 'obs_lines(obsid)', 'obsid linked to obs_lines.obsid', '', '');
+insert into about_db values('vlf_data', 'length', 'double', '1', '', '1', '', 'Length along line', '', '');
+insert into about_db values('vlf_data', 'real_comp', 'double', '', '', '', '', 'Raw data real component (in-phase(%))', '', '');
+insert into about_db values('vlf_data', 'imag_comp', 'double', '', '', '', '', 'Raw data imaginary component', '', '');
+insert into about_db values('vlf_data', 'comment', 'text', '', '', '', '', 'Additional info', '', '');
+insert into about_db values('w_flow', '*', '', '', '', '', '', 'Water flow', '', '');
+insert into about_db values('w_flow', 'obsid', 'text', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '');
+insert into about_db values('w_flow', 'instrumentid', 'text', '1', '', '1', '', 'Instrument Id, may use several flowmeters at same borehole', '', '');
+insert into about_db values('w_flow', 'flowtype', 'text', '1', '', '1', '', 'Flowtype must correspond to type in flowtypes - Accumulated volume, momentary flow etc', '', '');
+insert into about_db values('w_flow', 'date_time', 'text', '1', '', '1', 'zz_flowtype(type)', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '');
+insert into about_db values('w_flow', 'reading', 'double', '', '', '', '', 'Value (real number) reading for the flow rate, accumulated volume etc', '', '');
+insert into about_db values('w_flow', 'unit', 'text', '', '', '', '', 'Unit corresponding to the value reading', '', '');
+insert into about_db values('w_flow', 'comment', 'text', '', '', '', '', 'Comment', '', '');
+insert into about_db values('w_levels', '*', '', '', '', '', '', 'Manual water level measurements', '', '');
+insert into about_db values('w_levels', 'obsid', 'text', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '');
+insert into about_db values('w_levels', 'date_time', 'text', '1', '', '1', '', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '');
+insert into about_db values('w_levels', 'meas', 'double', '', '', '', '', 'distance from measuring point to water level', '', '');
+insert into about_db values('w_levels', 'h_toc', 'double', '', '', '', '', 'Elevation (masl) for the measuring point at the particular date_time (measuring point elevation may vary by time)', '', '');
+insert into about_db values('w_levels', 'level_masl', 'double', '', '', '', '', 'Water level elevation (masl) calculated from measuring point and distance from measuring point to water level', '', '');
+insert into about_db values('w_levels', 'comment', 'text', '', '', '', '', 'Comment', '', '');
+insert into about_db values('w_levels_logger', '*', '', '', '', '', '', 'Automatic Water Level Readings', '', '');
+insert into about_db values('w_levels_logger', 'obsid', 'text', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '');
+insert into about_db values('w_levels_logger', 'date_time', 'text', '1', '', '1', '', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '');
+insert into about_db values('w_levels_logger', 'head_cm', 'double', '', '', '', '', 'pressure (cm water column) on pressure transducer', '', '');
+insert into about_db values('w_levels_logger', 'temp_degc', 'double', '', '', '', '', 'temperature degrees C', '', '');
+insert into about_db values('w_levels_logger', 'cond_mscm', 'double', '', '', '', '', 'electrical conductivity mS/cm', '', '');
+insert into about_db values('w_levels_logger', 'level_masl', 'double', '1', '-999', '', '', 'Corresponding Water level elevation (masl)', '', '');
+insert into about_db values('w_levels_logger', 'comment', 'text', '', '', '', '', 'Comment', '', '');
+insert into about_db values('w_qual_field', '*', '', '', '', '', '', 'Water quality from field measurements', '', '');
+insert into about_db values('w_qual_field', 'obsid', 'text', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '');
+insert into about_db values('w_qual_field', 'staff', 'text', '', '', '', '', 'Field staff', '', '');
+insert into about_db values('w_qual_field', 'date_time', 'text', '1', '', '1', '', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '');
+insert into about_db values('w_qual_field', 'instrument', 'text', '', '', '', '', 'Instrument ID', '', '');
+insert into about_db values('w_qual_field', 'parameter', 'text', '1', '', '1', '', 'Measured parameter', '', '');
+insert into about_db values('w_qual_field', 'reading_num', 'double', '', '', '', '', 'Value as real number', '', '');
+insert into about_db values('w_qual_field', 'reading_txt', 'text', '', '', '', '', 'Value as text, incl more than and less than symbols', '', '');
+insert into about_db values('w_qual_field', 'unit', 'text', '', '', '', '', 'Unit', '', '');
+insert into about_db values('w_qual_field', 'flow_lpm', 'double', '', '', '', '', 'Sampling flow (l/min)', '', '');
+insert into about_db values('w_qual_field', 'comment', 'text', '', '', '', '', 'Comment', '', '');
+insert into about_db values('w_qual_lab', '*', '', '', '', '', '', 'Water quality from laboratory analysis', '', '');
+insert into about_db values('w_qual_lab', 'obsid', 'text', '1', '', '', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '');
+insert into about_db values('w_qual_lab', 'depth', 'double', '', '', '', '', 'Depth (m below h_gs) from where sample is taken', '', '');
+insert into about_db values('w_qual_lab', 'report', 'text', '1', '', '1', '', 'Report no from laboratory', '', '');
+insert into about_db values('w_qual_lab', 'project', 'text', '', '', '', '', 'Project number', '', '');
+insert into about_db values('w_qual_lab', 'staff', 'text', '', '', '', '', 'Field staff', '', '');
+insert into about_db values('w_qual_lab', 'date_time', 'text', '', '', '', '', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '');
+insert into about_db values('w_qual_lab', 'anameth', 'text', '', '', '', '', 'Analysis method, preferrably code relating to analysis standard', '', '');
+insert into about_db values('w_qual_lab', 'parameter', 'text', '1', '', '1', '', 'Measured parameter', '', '');
+insert into about_db values('w_qual_lab', 'reading_num', 'double', '', '', '', '', 'Value as real number', '', '');
+insert into about_db values('w_qual_lab', 'reading_txt', 'text', '', '', '', '', 'Value as text, incl more than and less than symbols', '', '');
+insert into about_db values('w_qual_lab', 'unit', 'text', '', '', '', '', 'Unit', '', '');
+insert into about_db values('w_qual_lab', 'comment', 'text', '', '', '', '', 'Comments', '', '');
+insert into about_db values('zz_flowtype', '*', '', '', '', '', '', 'Possible Flowtypes in table w_flow', '', '');
+insert into about_db values('zz_flowtype', 'type', 'text', '1', 'Accvol, Aveflow or Momflow', '1', '', 'Existing types of measurements related to water flow', '', '');
+insert into about_db values('zz_flowtype', 'explanation', 'text', '', '', '', '', 'Explanation of the flowtypes', '', '');
+insert into about_db values('zz_meteoparam', '*', '', '', '', '', '', 'Possible meteorological parameters in meteo', '', '');
+insert into about_db values('zz_meteoparam', 'parameter', 'text', '1', 'precip, temp', '1', '', 'Existing types of parameter related to meteorological observations', '', '');
+insert into about_db values('zz_meteoparam', 'explanation', 'text', '', '', '', '', 'Explanation of the parameters', '', '');
 create table "obs_points" ( "obsid" text not null, "name" text, "place" text, "type" text, "length" double, "drillstop" text, "diam" double, "material" text, "screen" text, "capacity" text, "drilldate" text, "wmeas_yn" integer, "wlogg_yn" integer, "east" double, "north" double, "ne_accur" double, "ne_source" text,  "h_toc" double, "h_tocags" double, "h_gs" double, "h_accur" double, "h_syst" text, "h_source" text, "source" text, "com_onerow" text, "com_html" text, primary key (obsid));
 SELECT AddGeometryColumn("obs_points", "Geometry", CHANGETORELEVANTEPSGID, "POINT", "XY", 0);
 create table "obs_lines" ("obsid" text  not null, name text, place text, type text, source text, primary key (obsid));
