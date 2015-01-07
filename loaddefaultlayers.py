@@ -90,9 +90,10 @@ class loadlayers():
                 #now try to load the style file
                 stylefile_sv = os.path.join(os.sep,os.path.dirname(__file__),"definitions",layer.name() + "_sv.qml")
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",layer.name() + ".qml")
-                if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
+                if  locale.getdefaultlocale()[0] == 'sv_SE' and os.path.isfile( stylefile_sv ): #swedish forms are loaded only if locale settings indicate sweden
                     try:
                         layer.loadNamedStyle(stylefile_sv)
+                        print ('debug I loaded swedish stylefile!!')#debug
                     except:
                         try:
                             layer.loadNamedStyle(stylefile)
