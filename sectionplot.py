@@ -169,6 +169,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.plot_dems()
 
         #labels, grid, legend etc.
+        print(self.p)#debug
+        print(self.Labels)#debug
         self.finish_plot()
         self.save_settings()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
@@ -464,6 +466,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 k +=1
             if len(x)>0:
                 self.ExistingPlotTypes.append(Typ)
+                print(Typ)#debug
                 self.plotx[Typ] = x
                 self.plotbottom[Typ] = Bottom
                 self.plotbarlength[Typ] = BarLength
@@ -569,10 +572,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.Labels.append(Typ)
 
     def plot_obs_lines_data(self):
-        lineplot, = self.secax.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y1)#, marker = 'None', linestyle = '-', label=self.y1_column)    # PLOT!!
+        lineplot, = self.secax.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y1, marker = 'None', linestyle = '-')# PLOT!!
         self.p.append(lineplot)
         self.Labels.append(self.y1_column)
-        lineplot, = self.secax.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y2)#, marker = 'None', linestyle = '-', label=self.y1_column)    # PLOT!!
+        lineplot, = self.secax.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y2, marker = 'None', linestyle = '-')# PLOT!!
         self.p.append(lineplot)
         self.Labels.append(self.y2_column)
         
