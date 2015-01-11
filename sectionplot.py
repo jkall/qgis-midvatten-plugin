@@ -156,8 +156,6 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.plot_water_level()
         if self.ms.settingsdict['secplotdrillstop']!='':
             self.plot_drill_stop()
-        if self.ms.settingsdict['stratigraphyplotted'] ==2 or (self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0):#write obsid at top of each stratigraphy floating bar plot, also plot empty bars to show drillings without stratigraphy data
-            self.write_obsid(self.ms.settingsdict['secplotlabelsplotted'])#if argument is 2, then labels will be plotted, otherwise only empty bars
 
         #if the line layer obs_lines is selected, then try to plot seismic data if there are any
         if self.sectionlinelayer.name()=='obs_lines':
@@ -168,9 +166,11 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         if len(self.ms.settingsdict['secplotselectedDEMs'])>0:
             self.plot_dems()
 
+        #write obsid at top of each stratigraphy floating bar plot, also plot empty bars to show drillings without stratigraphy data
+        if self.ms.settingsdict['stratigraphyplotted'] ==2 or (self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0):
+            self.write_obsid(self.ms.settingsdict['secplotlabelsplotted'])#if argument is 2, then labels will be plotted, otherwise only empty bars
+
         #labels, grid, legend etc.
-        print(self.p)#debug
-        print(self.Labels)#debug
         self.finish_plot()
         self.save_settings()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
@@ -466,7 +466,6 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 k +=1
             if len(x)>0:
                 self.ExistingPlotTypes.append(Typ)
-                print(Typ)#debug
                 self.plotx[Typ] = x
                 self.plotbottom[Typ] = Bottom
                 self.plotbarlength[Typ] = BarLength

@@ -131,7 +131,7 @@ class SurveyStore:
         surveys = self._getDataStep1(featureIds, vectorlayer)
         DataLoadingStatus, surveys = self._getDataStep2(surveys)
         if DataLoadingStatus == True:
-            self.sanityCheck(surveys)
+            surveys = self.sanityCheck(surveys)
             return surveys  
         else:
             DataSanityError(Exception)
@@ -240,24 +240,28 @@ class SurveyStore:
             
             # check whether there's at least one strata information
             if len(survey.strata) == 0:
-                raise DataSanityError(str(obsid), "No strata information")
-            
-            # check whether the depths are valid
-            top1 = survey.strata[0].depthTop
-            bed1 = survey.strata[0].depthBot
-            for strato in survey.strata[1:]:
-                # top (n) < top (n+1)
-                if top1 > strato.depthTop:
-                    raise DataSanityError(str(obsid), "Top depth is incorrect (%.2f > %.2f)" % (top1, strato.depthTop))
-                # bed (n) < bed (n+1)
-                if bed1 > strato.depthBot:
-                    raise DataSanityError(str(obsid), "Bed depth is incorrect (%.2f > %.2f)" % (bed1, strato.depthBot))
-                # bed (n) = top (n+1)
-                if bed1 != strato.depthTop:
-                    raise DataSanityError(str(obsid), "Top and bed depth don't match (%.2f != %.2f)" % (bed1, strato.depthTop))
-                
-                top1 = strato.depthTop
-                bed1 = strato.depthBot
+                #raise DataSanityError(str(obsid), "No strata information")
+                print(str(obsid) + " has no strata information")
+                print surveys
+                del surveys[obsid]#simply remove the item without strata info
+            else:
+                # check whether the depths are valid
+                top1 = survey.strata[0].depthTop
+                bed1 = survey.strata[0].depthBot
+                for strato in survey.strata[1:]:
+                    # top (n) < top (n+1)
+                    if top1 > strato.depthTop:
+                        raise DataSanityError(str(obsid), "Top depth is incorrect (%.2f > %.2f)" % (top1, strato.depthTop))
+                    # bed (n) < bed (n+1)
+                    if bed1 > strato.depthBot:
+                        raise DataSanityError(str(obsid), "Bed depth is incorrect (%.2f > %.2f)" % (bed1, strato.depthBot))
+                    # bed (n) = top (n+1)
+                    if bed1 != strato.depthTop:
+                        raise DataSanityError(str(obsid), "Top and bed depth don't match (%.2f != %.2f)" % (bed1, strato.depthTop))
+                    
+                    top1 = strato.depthTop
+                    bed1 = strato.depthBot
+            return surveys
 
 class SurveyWidget(PyQt4.QtGui.QFrame):
 
@@ -369,19 +373,25 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
         depthBot, depthTop = 999999, -999999
         for survey in self.order:
             sond = self.sondaggio[survey.obsid]
-            dTop = survey.top_lvl - survey.strata[0].depthTop
-            dBed = survey.top_lvl - survey.strata[-1].depthBot
-            
-            if dTop > depthTop: depthTop = dTop
-            if dBed < depthBot: depthBot = dBed
-            
+            try:
+                dTop = survey.top_lvl - survey.strata[0].depthTop
+                dBed = survey.top_lvl - survey.strata[-1].depthBot
+                
+                if dTop > depthTop: depthTop = dTop
+                if dBed < depthBot: depthBot = dBed
+            except:
+                pass
+                
         # draw surveys
         for survey in self.order:
             r = PyQt4.QtCore.QRect(x + margin, 0 + margin, surveyWidth - 2*margin, surveyHeight - 2*margin)
             x += surveyWidth
             sond = self.sondaggio[survey.obsid]
             # draw the survey
-            self.drawSurvey(painter, sond, r, columnWidth, (depthBot, depthTop))
+            try:
+                self.drawSurvey(painter, sond, r, columnWidth, (depthBot, depthTop))
+            except:
+                pass
 
     def drawSurvey(self, p, sond, sRect, columnWidth, interval):   
         """ draws one survey to rectangle in widget specified by sRect """

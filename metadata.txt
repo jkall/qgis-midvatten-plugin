@@ -18,8 +18,9 @@ experimental=False
 deprecated=False
 
 changelog=
-        Version 1.1.12-1.1.14:
-        - minor interface and metadata fixes in section plot, w_levels form and database table about_db, bugfix for loading swedish stylefiles
+        Version 1.1.12-1.1.15:
+        - minor interface, metadata and bug fixes in section plot, w_levels form and database table about_db, bugfix for loading swedish stylefiles
+        - changed behaviour of stratigraphy plot - it will now silently skip any obsid without stratigraphy info
         Version 1.1.0
         - New feature: Piper diagram!
         - New feature: Custom plots!
