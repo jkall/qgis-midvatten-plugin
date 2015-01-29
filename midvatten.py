@@ -38,6 +38,7 @@ from stratigraphy import Stratigraphy
 from xyplot import XYPlot
 from wqualreport import wqualreport
 from loaddefaultlayers import loadlayers
+from prepareforqgis2threejs import PrepareForQgis2Threejs
 import midvatten_utils as utils 
 from definitions import midvatten_defs
 from sectionplot import SectionPlot
@@ -167,6 +168,10 @@ class midvatten:
         #self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionChartMaker, SIGNAL("triggered()"), self.ChartMaker)
 
+        self.actionPrepareFor2Qgis2ThreeJS = QAction(QIcon(":/plugins/midvatten/icons/qgis2threejs.png"), "Prepare data for Qgis2threejs plugin", self.iface.mainWindow())
+        self.actionPrepareFor2Qgis2ThreeJS.setWhatsThis("Add spatialite views to be used by Qgis2threejs plugin to create a 3D plot")
+        QObject.connect(self.actionPrepareFor2Qgis2ThreeJS, SIGNAL("triggered()"), self.prepare_layers_for_qgis2threejs)
+
         self.actionVacuumDB = QAction(QIcon(":/plugins/midvatten/icons/vacuum.png"), "Vacuum the database", self.iface.mainWindow())
         self.actionVacuumDB.setWhatsThis("Perform database vacuuming")
         QObject.connect(self.actionVacuumDB, SIGNAL("triggered()"), self.vacuum_db)
@@ -230,6 +235,11 @@ class midvatten:
         self.menu.report_menu.addAction(self.actiondrillreport)
         self.menu.report_menu.addAction(self.actionwqualreport)
 
+
+        self.menu.prepare_menu = QMenu(QCoreApplication.translate("Midvatten", "&Prepare 3D data"))
+        self.menu.addMenu(self.menu.prepare_menu)
+        self.menu.prepare_menu.addAction(self.actionPrepareFor2Qgis2ThreeJS)
+        
         self.menu.db_manage_menu = QMenu(QCoreApplication.translate("Midvatten", "&Database management"))
         self.menu.addMenu(self.menu.db_manage_menu)
         self.menu.db_manage_menu.addAction(self.actionNewDB)
@@ -350,6 +360,28 @@ class midvatten:
                 utils.pop_up_info("You have to select the obs_points layer and the observation point (just one!) for which to generate a general report!", "Attention")
         else: 
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select a database! Reset if needed.", 2)
+
+    def prepare_layers_for_qgis2threejs(self):#not ready
+        errorsignal = 0
+        if self.ms.settingsareloaded == False:
+            self.ms.loadSettings()    
+            
+        allcritical_layers = ('obs_points', 'stratigraphy')     #Check that none of these layers are in editing mode
+        for layername in allcritical_layers:
+            layerexists = utils.find_layer(str(layername))
+            if layerexists:
+                if layerexists.isEditable():
+                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calculating water level.", "Warning")
+                    errorsignal = 1
+
+        if self.ms.settingsdict['database'] == '': #Check that database is selected
+            utils.pop_up_info("Check settings! \nSelect database first!")        
+            errorsignal = 1
+
+        if not(errorsignal == 1):     
+            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
+            PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
+            QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def import_obs_lines(self):
         errorsignal = 0

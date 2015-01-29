@@ -108,7 +108,6 @@ def default_layers_w_form_logics():
     list = ['obs_lines', 'obs_points', 'w_levels', 'w_flow', 'stratigraphy']
     return list
 
-    
 def geocolorsymbols():    # STRATIGRAPHY PLOT - THIS IS WHERE YOU SHALL CHANGE TO YOUR OWN GEOLOGIC CODES, SYMBOLS AND COLORS
     dictionary  = { '': ('NoBrush', 'white'),
                 ' ': ('NoBrush', 'white'),
@@ -285,7 +284,7 @@ def stratitable(): # THIS IS THE NAME OF THE table WITH stratigraphy _ MUST NOT 
     return 'stratigraphy'
 
 def PlotTypesDict():#sectionplot - dictionary for possible geoshorts
-    if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
+    if  locale.getdefaultlocale()[0] == 'sv_SE': 
         """
         Dict = {u"Okänt" : u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')",
         "Berg"  : u"in ('berg','b','rock','ro')",

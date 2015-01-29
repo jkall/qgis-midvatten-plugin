@@ -162,6 +162,16 @@ def pop_up_info(msg='',title='Information',parent=None):
     """Display an info message via Qt box"""
     QtGui.QMessageBox.information(parent, title, '%s' % (msg))
 
+def return_lower_ascii_string(textstring):
+    def onlyascii(char):
+        if ord(char) < 48 or ord(char) > 127: 
+            return ''
+        else: 
+            return char
+    filtered_string=filter(onlyascii, textstring)
+    filtered_string = filtered_string.lower()
+    return filtered_string
+
 def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
     dbpath = QgsProject.instance().readEntry("Midvatten","database")
     if os.path.exists(dbpath[0]):
@@ -208,7 +218,7 @@ def sql_alter_db_by_param_subst(sql='',*subst_params):#sql sent as unicode, resu
     """ 
     dbpath = QgsProject.instance().readEntry("Midvatten","database")
     if os.path.exists(dbpath[0]):
-        print('debug info about the tuple %s'%(subst_params[0],))#debug
+        #print('debug info about the tuple %s'%(subst_params[0],))#debug
         try:
             conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
             curs = conn.cursor()
