@@ -33,13 +33,13 @@ from definitions import midvatten_defs as defs
 class PrepareForQgis2Threejs():        
     def __init__(self, iface, settingsdict={}): 
         self.settingsdict = settingsdict
-        self.strat_layers_dict =  defs.PlotTypesDict() 
-        self.symbolcolors_dict = defs.PlotColorDict()
+        self.strat_layers_dict =  defs.PlotTypesDict('english') 
+        self.symbolcolors_dict = defs.PlotColorDict() # This is not used yet
         for key, v in self.strat_layers_dict.items():#make all the keys only ascii and only lower case and also add 'strat_' as prefix
             newkey = 'strat_' + utils.return_lower_ascii_string(key)
             self.strat_layers_dict[newkey] = self.strat_layers_dict[key] 
             del self.strat_layers_dict[key]
-        for key, v in self.symbolcolors_dict.items():#make all the keys only ascii and only lower case and also add 'strat_' as prefix
+        for key, v in self.symbolcolors_dict.items():#THIS IS NOT USED YET make all the keys only ascii and only lower case and also add 'strat_' as prefix
             newkey = 'strat_' + utils.return_lower_ascii_string(key)
             self.symbolcolors_dict[newkey] = self.symbolcolors_dict[key] 
             del self.symbolcolors_dict[key]
@@ -64,6 +64,9 @@ class PrepareForQgis2Threejs():
         for key in self.strat_layers_dict:
             list_with_all_strat_layer.append(key)
         #print list_with_all_strat_layer#debug
+
+        list_with_all_strat_layer.append('strat_obs_p_for_qgsi2threejs')
+
         for strat_layer_view in list_with_all_strat_layer: 
             uri.setDataSource('',strat_layer_view, 'Geometry')
             layer = QgsVectorLayer(uri.uri(), strat_layer_view, 'spatialite') # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
@@ -100,6 +103,12 @@ class PrepareForQgis2Threejs():
         myconnection.connect2db()
         curs = myconnection.conn.cursor()
         curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+
+        sqliteline = r"""create view strat_obs_p_for_qgsi2threejs as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."h_toc" as "h_toc", "a"."h_gs" as "h_gs", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "stratigraphy" as "b" using ("obsid") where (typeof("a"."h_toc") in ('integer', 'real') or typeof("a"."h_gs") in ('integer', 'real'))"""
+        curs.execute(sqliteline)
+        sqliteline = r"""insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) values ('strat_obs_p_for_qgsi2threejs', 'geometry', 'rowid', 'obs_points', 'geometry',1);"""
+        curs.execute(sqliteline)
+        
         for key in self.strat_layers_dict:
             f = open(SQLFile, 'r')
             linecounter = 1
@@ -114,6 +123,11 @@ class PrepareForQgis2Threejs():
         myconnection.closedb()
 
     def drop_db_views(self):
+        sql1="delete from views_geometry_columns where view_name = 'strat_obs_p_for_qgsi2threejs'"
+        sql2="drop view if exists strat_obs_p_for_qgsi2threejs"
+        utils.sql_alter_db(sql1) 
+        utils.sql_alter_db(sql2) 
+        
         sql1="delete from views_geometry_columns where view_name = ?"
         sql2="drop view if exists "
         for key in self.strat_layers_dict:

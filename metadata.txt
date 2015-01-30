@@ -18,7 +18,8 @@ experimental=False
 deprecated=False
 
 changelog=
-        Version 1.1.12-1.1.15:
+        Version 1.1.12-1.1.16:
+        - new feature export data for 3D borehole plots with Qgis2threejs plugin
         - minor interface, metadata and bug fixes in section plot, w_levels form and database table about_db, bugfix for loading swedish stylefiles
         - changed behaviour of stratigraphy plot - it will now silently skip any obsid without stratigraphy info
         Version 1.1.0
