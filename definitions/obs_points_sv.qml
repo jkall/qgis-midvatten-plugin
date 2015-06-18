@@ -140,7 +140,7 @@
     <property key="labeling/fieldName" value="obsid"/>
     <property key="labeling/fontBold" value="false"/>
     <property key="labeling/fontCapitals" value="0"/>
-    <property key="labeling/fontFamily" value="Sans Serif"/>
+    <property key="labeling/fontFamily" value="Arial"/>
     <property key="labeling/fontItalic" value="false"/>
     <property key="labeling/fontLetterSpacing" value="0"/>
     <property key="labeling/fontLimitPixelSize" value="false"/>
@@ -256,15 +256,7 @@
   <blendMode>0</blendMode>
   <featureBlendMode>0</featureBlendMode>
   <layerTransparency>0</layerTransparency>
-  <displayfield>&lt;style>
-p {   margin-top: 0em;   margin-bottom: 0em; }
-p.first { font-size: 8pt; font-weight: bold; color: black}
-p.others { font-size: 8pt; font-weight: normal; color: black}
-&lt;/style>
-&lt;p class="first">[% "obsid" %] &lt;/p>
-&lt;p class="others">[%   concat ('obstyp: ',tostring( "type"  ) )%]&lt;/p>
-&lt;p class="others">[%   concat ('djup (m): ',tostring( "length"  ) )%]&lt;/p>
-&lt;p class="others">[%   concat ('vg spetsnivå: ',tostring( "capacity"  ) )%]&lt;/p></displayfield>
+  <displayfield>obsid</displayfield>
   <label>0</label>
   <labelattributes>
     <label fieldname="" text="Label"/>
@@ -287,7 +279,7 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
     <selectedonly on=""/>
   </labelattributes>
   <editform>../../midvatten/ui/obs_points_sv.ui</editform>
-  <editforminit>form_logics.obs_points_form_open</editforminit>
+  <editforminit/>
   <featformsuppress>0</featformsuppress>
   <annotationform>.</annotationform>
   <editorlayout>tablayout</editorlayout>

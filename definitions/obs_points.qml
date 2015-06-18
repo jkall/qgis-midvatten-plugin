@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis version="2.6.1-Brighton" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="0" minLabelScale="1" maxLabelScale="1e+08" simplifyDrawingTol="1" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
+<qgis version="2.8.1-Wien" minimumScale="-4.65661e-10" maximumScale="1e+08" simplifyDrawingHints="0" minLabelScale="1" maxLabelScale="1e+08" simplifyDrawingTol="1" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
   <edittypes>
     <edittype widgetv2type="TextEdit" name="obsid">
       <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
@@ -79,9 +79,6 @@
     <edittype widgetv2type="TextEdit" name="com_html">
       <widgetv2config IsMultiline="1" fieldEditable="1" UseHtml="1" labelOnTop="1"/>
     </edittype>
-    <edittype widgetv2type="TextEdit" name="geometry">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
   </edittypes>
   <renderer-v2 symbollevels="0" type="singleSymbol">
     <symbols>
@@ -140,7 +137,7 @@
     <property key="labeling/fieldName" value="obsid"/>
     <property key="labeling/fontBold" value="false"/>
     <property key="labeling/fontCapitals" value="0"/>
-    <property key="labeling/fontFamily" value="Sans Serif"/>
+    <property key="labeling/fontFamily" value="Arial"/>
     <property key="labeling/fontItalic" value="false"/>
     <property key="labeling/fontLetterSpacing" value="0"/>
     <property key="labeling/fontLimitPixelSize" value="false"/>
@@ -169,7 +166,7 @@
     <property key="labeling/minFeatureSize" value="0"/>
     <property key="labeling/multilineAlign" value="0"/>
     <property key="labeling/multilineHeight" value="1"/>
-    <property key="labeling/namedStyle" value="Normal"/>
+    <property key="labeling/namedStyle" value="Regular"/>
     <property key="labeling/obstacle" value="true"/>
     <property key="labeling/placeDirectionSymbol" value="0"/>
     <property key="labeling/placement" value="0"/>
@@ -256,15 +253,7 @@
   <blendMode>0</blendMode>
   <featureBlendMode>0</featureBlendMode>
   <layerTransparency>0</layerTransparency>
-  <displayfield>&lt;style>
-p {   margin-top: 0em;   margin-bottom: 0em; }
-p.first { font-size: 8pt; font-weight: bold; color: black}
-p.others { font-size: 8pt; font-weight: normal; color: black}
-&lt;/style>
-&lt;p class="first">[% "obsid" %] &lt;/p>
-&lt;p class="others">[%   concat ('obstyp: ',tostring( "type"  ) )%]&lt;/p>
-&lt;p class="others">[%   concat ('djup (m): ',tostring( "length"  ) )%]&lt;/p>
-&lt;p class="others">[%   concat ('vg spetsnivå: ',tostring( "capacity"  ) )%]&lt;/p></displayfield>
+  <displayfield>obsid</displayfield>
   <label>0</label>
   <labelattributes>
     <label fieldname="" text="Label"/>
@@ -287,7 +276,7 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
     <selectedonly on=""/>
   </labelattributes>
   <editform>../../midvatten/ui/obs_points_en.ui</editform>
-  <editforminit>form_logics.obs_points_form_open</editforminit>
+  <editforminit/>
   <featformsuppress>0</featformsuppress>
   <annotationform>.</annotationform>
   <editorlayout>tablayout</editorlayout>
@@ -295,6 +284,7 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
     <alias field="com_html" index="25" name="multiple rows comment"/>
     <alias field="com_onerow" index="24" name="single row comment"/>
     <alias field="diam" index="6" name="diam (mm)"/>
+    <alias field="east" index="13" name="east (CRS is set in db)"/>
     <alias field="h_accur" index="20" name="accuracy for height"/>
     <alias field="h_gs" index="19" name="ground surface"/>
     <alias field="h_source" index="22" name="reference for height (where did you get height from)"/>
@@ -304,11 +294,10 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
     <alias field="length" index="4" name="length (m)"/>
     <alias field="ne_accur" index="15" name="accuracy for coords."/>
     <alias field="ne_source" index="16" name="reference for coords (from where did you get them)"/>
+    <alias field="north" index="14" name="north (CRS is set in db)"/>
     <alias field="source" index="23" name="reference for this observation point (report etc)"/>
     <alias field="wlogg_yn" index="12" name="equipped w logger?"/>
     <alias field="wmeas_yn" index="11" name="in monitoring program?"/>
-    <alias field="east" index="13" name="east (CRS is set in db)"/>
-    <alias field="north" index="14" name="north (CRS is set in db)"/>
   </aliases>
   <excludeAttributesWMS/>
   <excludeAttributesWFS/>
