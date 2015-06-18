@@ -25,6 +25,7 @@ import os
 import locale
 import midvatten_utils as utils  
 import codecs
+import time #for debugging
 
 class wqualreport():        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     def __init__(self,layer, settingsdict = {}):
@@ -51,10 +52,13 @@ class wqualreport():        # extracts water quality data for selected objects, 
         for object in observations:
             attributes = observations[i]
             obsid = attributes[kolumnindex]
+            print('about to get data for ' + obsid + ', at time: ' + str(time.time()))#debug
             ReportData = self.GetData(self.settingsdict['database'], obsid)   # one observation at a time
+            print('done with getting data for ' + obsid + ', at time: ' + str(time.time()))#debug
             if ReportData:
                 self.WriteHTMLReport(ReportData, f)
             i = i+1
+            print('wrote html report for ' + obsid + ', at time: ' + str(time.time()))#debug
 
         #write some finishing html and close the file
         f.write("\n</body></html>")        
@@ -84,11 +88,12 @@ class wqualreport():        # extracts water quality data for selected objects, 
         sql += obsid  
         sql += r"""' ORDER BY parameter"""
         parameters_cursor = curs.execute(sql) #Send SQL-syntax to cursor
+        print(sql)#debug
         parameters = parameters_cursor.fetchall()
         if not parameters:
             qgis.utils.iface.messageBar().pushMessage("Debug","Something is wrong, no parameters are found in table w_qual_lab for "+ obsid, 0 ,duration=10)#DEBUG
             return False
-
+        print('parameters for ' + obsid + ' is loaded at time: ' + str(time.time()))#debug
         # Load all date_times, stored in two result columns: reportnr, date_time
         if not (self.settingsdict['wqual_sortingcolumn'] == ''):          #If there is a a specific sorting column
             sql =r"""select distinct """
@@ -104,6 +109,9 @@ class wqualreport():        # extracts water quality data for selected objects, 
         date_times_cursor = curs.execute(sql) #Send SQL-syntax to cursor,
         date_times = date_times_cursor.fetchall()
 
+        print (sql)#debug
+        print('loaded distinct date_time for the parameters for ' + obsid + ' at time: ' + str(time.time()))#debug
+        
         if not date_times:
             qgis.utils.iface.messageBar().pushMessage("Debug","Something is wrong, no parameters are found in table w_qual_lab for "+ obsid, 0 ,duration=10)#DEBUG
             return
@@ -127,6 +135,7 @@ class wqualreport():        # extracts water quality data for selected objects, 
                 ReportTable[parametercounter][0] = p
             parametercounter = parametercounter + 1
 
+        print('now go for each parameter value for ' + obsid + ', at time: ' + str(time.time()))#debug
         #Populate First 'row' w obsid
         datecounter = 1    #First col is 'parametercolumn'
         for r, d in date_times: #date_times includes both report and date_time (or possibly date_time and date_time if there is no reportnr)
@@ -160,6 +169,8 @@ class wqualreport():        # extracts water quality data for selected objects, 
                     sql += p
                     sql += """'"""
                 rs = curs.execute(sql) #Send SQL-syntax to cursor, NOTE: here we send sql which was utf-8 already from interpreting it
+                #print (sql)#debug
+                #print('time: ' + str(time.time()))#debug
                 recs = rs.fetchall()  # All data are stored in recs
                 #each value must be in unicode or string to be written as html report
                 if recs:

@@ -61,9 +61,9 @@ def obs_points_form_open(dialog,the_layer,the_feature):#just trying to keep some
     myObsPDialog = dialog
     #myObsPLayer = the_layer
     try:#if it is an old form with a CRS label field, then update CRS label field and also try to update check boxes etc
+        CRS_field = myObsPDialog.findChild(QLabel,"CRS")
         sql = r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'"""
         result = utils.sql_load_fr_db(sql)[1]
-        CRS_field = myObsPDialog.findChild(QLabel,"CRS")
         CRS_field.setText("EPSG:" + str(result[0][0]))
         if obsid_exists(myObsPDialog.findChild(QLineEdit,"obsid").text(),'obs_points'):#if it is an obsid which already exists in database, then fill wmeas_yn and wlogg_yn fields
             sql = r"""SELECT wmeas_yn FROM obs_points where obsid = '"""
