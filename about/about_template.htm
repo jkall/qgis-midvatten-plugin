@@ -12,15 +12,69 @@ VERSIONCHANGETHIS
 <br>More info: <a href="HOMEPAGECHANGETHIS">HOMEPAGECHANGETHIS</a>
 
 <p>A toolset for importing, editing and viewing observational data from hydrogeological investigations: drillings, water level measurements, water flow measurements, seismic data, VLF data, GPR data etc. </p>
-<p>The toolset is distributed under the terms of the GNU GPL License v2 and is inspired by, and to some extents even includes code from, the following qgis plugins:
+<p>The toolset is distributed under the terms of the GNU GPL License v2.<br>
+<br>
+The following tools are included:<br>
 <ul>
-<li>ARPAT</li>
-<li>QSpatialite</li>
-<li>Time Series Plot (an early predecessor to Midvatten plugin)</li>
-<li>Chartmaker</li>
-<li>Sextante</li>
-<li>Statist</li>
-</ul>
+<li>
+Database generator - generates an empty database of a predefined and recommended design</li>
+<li>
+Load Default Layers - default layers from database are loaded, symbology and custom edit forms together with edit form logics are defined</li>
+<li>
+Importing tools, import from csv files to the database:<ul>
+<li>
+observation points </li>
+<li>
+observation lines</li>
+<li>
+water level data (both manual measurements and automatic measurements from a logger)</li>
+<li>
+water flow readings</li>
+<li>
+water quality data (both from laboratory analysis and field measurements)</li>
+<li>
+stratigraphy data</li>
+<li>
+vlf data</li>
+<li>
+seismics data</li>
+<li>
+meteorological observations</li></ul></li>
+<li>
+Edit tools:<ul>
+<li>
+Update obs_points coordinates from map position</li>
+<li>
+Update obs_points map position from coordinates</li>
+<li>
+Calculate water level in meter above sea level</li>
+<li>
+Calibrate automatic water level measurements</li>
+<li>
+Calculate average water flow from accumulated volume readings (from version 1.1)</li></ul></li>
+<li>
+View plots:<ul>
+<li>
+Time Series Plot - Point-and-click to select observation points and have corresponding time series data plotted in a separate window - e.g. water level measurements in observation wells</li>
+<li>
+XY Scatter Plot - Point-and-click to select e.g. seismic profiles and have the interpreted results plotted in a separate window</li>
+<li>
+Stratigraphy plots -  Point-and-click to select observation wells and have the stratigraphy plots in a pop-up window (This is a modified version of ARPAT-plugin with geo and hydro dictionaries stored in the python code. Those dicitionaries might be moved to domain tables in the database in the future.)</li>
+<li>
+Section Plot - select  a set of observation points in the obs_points layer and a vector line layer object - then get a 'profile'/section plot of stratigraphy data, water level, bedrock and ground surface from DEM etc</li>
+<li>
+Piper Diagram - create a piper diagram from the selected set of observation points</li>
+<li>
+Custom plots - any time series or scatter plot from the database (see announcement here)</li></ul></li>
+<li>
+View reports:<ul>
+<li>
+General observation point report (a simple borehole log) - Point-and-click to select an observation point and get corresponding general information togheter with stratigraphy and water level statistics presented as a html report. </li>
+<li>
+Water Quality reporting tool - Point-and-click to select water sampling points and have the corresponding water quality data presented as a html table report.</li>
+<li>
 </p>
 </body>
 </html>
+
+
