@@ -165,6 +165,9 @@ create view "w_qual_lab_geom" as select "w_qual_lab".'rowid' as rowid, "w_qual_l
 insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column) values ('w_qual_lab_geom', 'Geometry', 'rowid', 'obs_points', 'Geometry');
 create view "w_levels_geom" as select "b"."ROWID" as "ROWID", "a"."obsid" as "obsid", "a"."date_time" as "date_time",  "a"."meas" as "meas",  "a"."h_toc" as "h_toc",  "a"."level_masl" as "level_masl", "b"."Geometry" as "Geometry" from "w_levels" as "a" join "obs_points" as "b" using ("obsid");
 insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column) values ('w_levels_geom', 'Geometry', 'ROWID', 'obs_points', 'Geometry');
-create view w_flow_momflow as select "obsid" as "obsid","instrumentid" as "instrumentid","date_time" as "date_time","reading" as "reading", "unit" as "unit", "comment" as "comment" from w_flow where flowtype="Momflow"
-create view w_flow_aveflow as select "obsid" as "obsid","instrumentid" as "instrumentid","date_time" as "date_time","reading" as "reading", "unit" as "unit", "comment" as "comment" from w_flow where flowtype="Aveflow"
-create view w_flow_accvol as select "obsid" as "obsid","instrumentid" as "instrumentid","date_time" as "date_time","reading" as "reading", "unit" as "unit", "comment" as "comment" from w_flow where flowtype="Accvol"
+create view w_flow_momflow as select "obsid" as "obsid","instrumentid" as "instrumentid","date_time" as "date_time","reading" as "reading", "unit" as "unit", "comment" as "comment" from w_flow where flowtype="Momflow";
+create view w_flow_aveflow as select "obsid" as "obsid","instrumentid" as "instrumentid","date_time" as "date_time","reading" as "reading", "unit" as "unit", "comment" as "comment" from w_flow where flowtype="Aveflow";
+create view w_flow_accvol as select "obsid" as "obsid","instrumentid" as "instrumentid","date_time" as "date_time","reading" as "reading", "unit" as "unit", "comment" as "comment" from w_flow where flowtype="Accvol";
+CREATE INDEX idx_wquallab_odtp ON w_qual_lab(obsid, date_time, parameter);
+CREATE INDEX idx_wquallab_odtpu ON w_qual_lab(obsid, date_time, parameter, unit);
+CREATE INDEX idx_wqualfield_odtpu ON w_qual_field(obsid, date_time, parameter, unit);
