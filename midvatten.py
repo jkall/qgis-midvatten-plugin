@@ -427,15 +427,50 @@ class midvatten:
 
     def export_spatialite(self):# - not ready-
         allcritical_layers = ('obs_points', 'obs_lines', 'w_levels','w_flow','w_qual_lab','w_qual_field','stratigraphy') #none of these layers must be in editing mode
-        errorsignal = utils.verify_before_midv_meth_starts(self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
-        if not(errorsignal == 1):     
-            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
-            pass
-            """
-            # Här skajobbet göras, rimligen genom att anropa annan modul
-            #PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
-            """
-            QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+        errorsignal = utils.verify_before_midv_meth_starts(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if not(errorsignal == 1):
+            #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
+            obs_points_layer = utils.find_layer('obs_points')
+            selected_obs_points = utils.getselectedobjectnames(obs_points_layer)
+            obsidlist = []
+            if len(selected_obs_points)>0:
+                i=0
+                for id in selected_obs_points:
+                    obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
+                    i+=1
+                OBSID_P = tuple(obsidlist)#because module midv_exporting depends on obsid being a tuple
+            else:
+                OBSID_P = tuple([])
+
+            obs_lines_layer = utils.find_layer('obs_lines')
+            selected_obs_lines = utils.getselectedobjectnames(obs_lines_layer)
+            obsidlist = []
+            if len(selected_obs_lines)>0:
+                i=0
+                for id in selected_obs_lines:
+                    obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
+                    i+=1
+                OBSID_L = tuple(obsidlist)#because module midv_exporting depends on obsid being a tuple
+            else:
+                OBSID_L = tuple([])
+
+            sanity = utils.askuser("YesNo","""This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""",'Are you sure?')
+            if sanity.result == 1:
+                QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
+                obsp_layer = utils.find_layer('obs_points')
+                CRS = obsp_layer.crs()
+                EPSG_code = str(CRS.authid()[5:])
+                filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
+                iniText = QSettings(filenamepath , QSettings.IniFormat)
+                verno = str(iniText.value('version')) 
+                from create_db import newdb
+                newdbinstance = newdb(verno,'n',EPSG_code)#flag 'n' to avoid user selection of EPSG
+                if not newdbinstance.dbpath=='':
+                    newdb = newdbinstance.dbpath
+                    exportinstance = ExportData(OBSID_P, OBSID_L)
+                    exportinstance.export_2_splite(newdb,self.ms.settingsdict['database'],EPSG_code)
+            
+                QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def import_obs_lines(self):
         errorsignal = 0

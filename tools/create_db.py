@@ -30,27 +30,25 @@ import midvatten_utils as utils
 
 class newdb():
 
-    def __init__(self, verno):
+    def __init__(self, verno, user_select_CRS='y', EPSG_code='4326'):
         self.dbpath = ''
-        self.create_new_db(verno)#CreateNewDB(verno)
+        self.create_new_db(verno,user_select_CRS,EPSG_code)#CreateNewDB(verno)
         
-    def create_new_db(self, verno):#CreateNewDB(self, verno):
+    def create_new_db(self, verno, user_select_CRS='y', EPSG_code='4326'):#CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
-        # USER MUST SELECT CRS FIRST!! 
-        if locale.getdefaultlocale()[0]=='sv_SE':
-            default_crs = 3006
+        if user_select_CRS=='y':
+            EPSGID=str(self.ask_for_CRS()[0])
         else:
-            default_crs = 4326
-        EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, "Select CRS", "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:",default_crs)
+            EPSGID=EPSG_code
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        if EPSGID[0]==0 or not EPSGID:
+        if EPSGID=='0' or not EPSGID:
             utils.pop_up_info("Cancelling...")
         else: # If a CRS is selectd, go on and create the database
             #path and name of new db
             self.dbpath = PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)")
-            if not self.dbpath: 
-                return ''
+            if not self.dbpath:
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                return ''
             #create Spatialite database
             else:
                 try:
@@ -77,7 +75,7 @@ class newdb():
                 linecounter = 1
                 for line in f:
                     if linecounter > 1:    # first line is encoding info....
-                        self.rs = self.cur.execute(line.replace('CHANGETORELEVANTEPSGID',str(EPSGID[0])).replace('CHANGETOPLUGINVERSION',str(verno)).replace('CHANGETOQGISVERSION',str(qgisverno)).replace('CHANGETOSPLITEVERSION',str(versionstext[0][0]))) # use tags to find and replace SRID and versioning info
+                        self.rs = self.cur.execute(line.replace('CHANGETORELEVANTEPSGID',str(EPSGID)).replace('CHANGETOPLUGINVERSION',str(verno)).replace('CHANGETOQGISVERSION',str(qgisverno)).replace('CHANGETOSPLITEVERSION',str(versionstext[0][0]))) # use tags to find and replace SRID and versioning info
                     linecounter += 1
 
                 self.cur.execute("PRAGMA foreign_keys = OFF")
@@ -98,6 +96,15 @@ class newdb():
                 AddLayerStyles(self.dbpath)
                 """
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
+
+    def ask_for_CRS(self):
+        # USER MUST SELECT CRS FIRST!! 
+        if locale.getdefaultlocale()[0]=='sv_SE':
+            default_crs = 3006
+        else:
+            default_crs = 4326
+        EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, "Select CRS", "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:",default_crs)
+        return EPSGID
 
 
 class AddLayerStyles():

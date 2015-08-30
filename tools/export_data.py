@@ -18,7 +18,7 @@
  ***************************************************************************/
 """
 
-import sqlite3, csv, codecs, cStringIO, os, os.path
+import sqlite3 as sqlite, csv, codecs, cStringIO, os, os.path
 import midvatten_utils as utils
 
 class ExportData():
@@ -87,8 +87,68 @@ class ExportData():
         
         database.closedb()
 
-    def export_2_splite(self,exportdb):
-        pass
+    def export_2_splite(self,target_db,source_db, EPSG_code):
+        conn = sqlite.connect(target_db,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        curs = conn.cursor()
+        curs.execute("PRAGMA foreign_keys = ON")
+        curs.execute(r"""delete from spatial_ref_sys where NOT (srid='%s')"""%EPSG_code)
+        curs.execute(r"""ATTACH DATABASE '%s' AS a"""%source_db)
+        conn.commit()#commit sql statements so far
+        
+        #--------First export selected obs_points and corresponding data---------------------------
+        if len(self.ID_obs_points)>0:#only if there are any obs_points selected at all
+            ptabs = ['obs_points', 'w_levels', 'w_levels_logger', 'w_flow', 'w_qual_lab', 'w_qual_field', 'stratigraphy', 'meteo']
+            for tname in ptabs:
+                # problems with string replacement and tuples (no success with parameter substitution)
+                # and therefore different sql_clause depending on number of obs
+                if len(self.ID_obs_points)==1:
+                    sql_clause = r"""select count(obsid) from a.%s where obsid in ('%s')""" %(tname, self.ID_obs_points[0])
+                elif len(self.ID_obs_points)>1:
+                    sql_clause = r"select count(obsid) from a.%s where obsid in %s" %(tname, self.ID_obs_points)
+                no_of_obs_cursor = curs.execute(sql_clause)
+                no_of_obs = no_of_obs_cursor.fetchall()
+
+                if no_of_obs[0][0] > 0:#only go on if there are any observations for this obsid
+                    some_data = 0
+                    if len(self.ID_obs_points)==1:#problems to combine parameter substitution and string replacement in same sql clause, should be fixed
+                        sql_clause = r"""insert into %s select * from a.%s where obsid in ('%s')""" %(tname, tname, self.ID_obs_points[0])
+                        some_data = 1
+                    elif len(self.ID_obs_points)>1:
+                        sql_clause = r"insert into %s select * from a.%s where obsid in %s" %(tname, tname, self.ID_obs_points)
+                        some_data = 1
+                    if some_data !=0:
+                        curs.execute(sql_clause)
+            conn.commit()#commit all updates related to obs_points
+            
+        #--------Then export selected obs_lines with corresponding data---------------------------
+        if len(self.ID_obs_lines)>0:#only if there are any obs_points selected at all
+            ptabs = ['obs_lines', 'vlf_data', 'seismic_data']
+            for tname in ptabs:
+                # problems with string replacement and tuples (no success with parameter substitution)
+                # and therefore different sql_clause depending on number of obs
+                if len(self.ID_obs_lines)==1:
+                    sql_clause = r"""select count(obsid) from a.%s where obsid in ('%s')""" %(tname, self.ID_obs_lines[0])
+                elif len(self.ID_obs_lines)>1:
+                    sql_clause = r"select count(obsid) from a.%s where obsid in %s" %(tname, self.ID_obs_lines)
+                no_of_obs_cursor = curs.execute(sql_clause)
+                no_of_obs = no_of_obs_cursor.fetchall()
+
+                if no_of_obs[0][0] > 0:#only go on if there are any observations for this obsid
+                    some_data = 0
+                    if len(self.ID_obs_lines)==1:#problems to combine parameter substitution and string replacement in same sql clause, should be fixed
+                        sql_clause = r"""insert into %s select * from a.%s where obsid in ('%s')""" %(tname, tname, self.ID_obs_lines[0])
+                        some_data = 1
+                    elif len(self.ID_obs_lines)>1:
+                        sql_clause = r"insert into %s select * from a.%s where obsid in %s" %(tname, tname, self.ID_obs_lines)
+                        some_data = 1
+                    if some_data !=0:
+                        curs.execute(sql_clause)
+            conn.commit()#commit all updates related to obs_lines
+
+        curs.execute(r"""DETACH DATABASE a""")
+        curs.execute('vacuum')
+        conn.commit()
+        conn.close()
 
 class UnicodeWriter:
     """
