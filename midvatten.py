@@ -54,6 +54,7 @@ import customplot
 from midvsettings import midvsettings
 import midvsettingsdialog
 from piper import PiperPlot
+from export_data import ExportData
 #import profilefromdem
 
 class midvatten:
@@ -383,7 +384,7 @@ class midvatten:
         else: 
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select a database! Reset if needed.", 2)
 
-    def export_csv(self):# - not ready-
+    def export_csv(self):
         allcritical_layers = ('obs_points', 'obs_lines', 'w_levels','w_flow','w_qual_lab','w_qual_field','stratigraphy') #none of these layers must be in editing mode
         errorsignal = utils.verify_before_midv_meth_starts(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
@@ -405,7 +406,6 @@ class midvatten:
 
             obs_lines_layer = utils.find_layer('obs_lines')
             selected_obs_lines = utils.getselectedobjectnames(obs_lines_layer)
-            print(selected_obs_lines)#debug
             obsidlist = []
             if len(selected_obs_lines)>0:
                 i=0
@@ -416,12 +416,13 @@ class midvatten:
             else:
                 OBSID_L = tuple([])
 
-            print(OBSID_P, OBSID_L)#debug
-            # Här skajobbet göras, rimligen genom att anropa annan modul
-            #SectionPlot(self.iface.mainWindow(), self.iface)
-            #self.myplot.do_it(self.ms,OBSID,SectionLineLayer)
-            #PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
-
+            #sanity = utils.askuser("YesNo","""You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""",'Are you sure?')
+            #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
+            exportfolder = QFileDialog.getExistingDirectory(None, 'Select a folder where the csv files will be created:', '.',QFileDialog.ShowDirsOnly)
+            if len(exportfolder) > 0:
+                exportinstance = ExportData(OBSID_P, OBSID_L)
+                exportinstance.export_2_csv(exportfolder)
+                
             QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def export_spatialite(self):# - not ready-
