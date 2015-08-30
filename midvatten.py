@@ -39,7 +39,6 @@ from xyplot import XYPlot
 from wqualreport import wqualreport
 from loaddefaultlayers import loadlayers
 from prepareforqgis2threejs import PrepareForQgis2Threejs
-#import midvatten_utils as utils
 import tools.midvatten_utils as utils 
 from definitions import midvatten_defs
 from sectionplot import SectionPlot

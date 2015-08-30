@@ -39,7 +39,7 @@
     </edittype>
   </edittypes>
   <editform>.</editform>
-  <editforminit>form_logics.w_qual_lab_form_open</editforminit>
+  <editforminit></editforminit>
   <featformsuppress>1</featformsuppress>
   <annotationform>.</annotationform>
   <editorlayout>tablayout</editorlayout>

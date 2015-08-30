@@ -104,13 +104,14 @@ class loadlayers():
                     except:
                         pass
 
+                """
                 #and then the form logics
                 formlogic = "form_logics." + layer.name() + "_form_open"
                 try:
                     layer.setEditFormInit(formlogic)
                 except:
                     pass
-
+                """
                 if layer.name() == 'obs_points':#zoom to obs_points extent
                     obsp_lyr = layer
                     canvas.setExtent(layer.extent())

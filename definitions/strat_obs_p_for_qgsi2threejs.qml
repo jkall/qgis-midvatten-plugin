@@ -212,7 +212,7 @@ p.others { font-size: 8pt; font-weight: normal; color: black}
     <selectedonly on=""/>
   </labelattributes>
   <editform>../../midvatten/ui/obs_points_en.ui</editform>
-  <editforminit>form_logics.obs_points_form_open</editforminit>
+  <editforminit></editforminit>
   <featformsuppress>0</featformsuppress>
   <annotationform>.</annotationform>
   <editorlayout>tablayout</editorlayout>

@@ -224,7 +224,7 @@ p.level { font-size: 8pt; font-weight: normal; color: blue}
     <selectedonly on=""/>
   </labelattributes>
   <editform>.</editform>
-  <editforminit>form_logics.w_lvls_last_geom_form_open</editforminit>
+  <editforminit></editforminit>
   <featformsuppress>0</featformsuppress>
   <annotationform>.</annotationform>
   <editorlayout>tablayout</editorlayout>

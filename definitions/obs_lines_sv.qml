@@ -214,7 +214,7 @@
     <selectedonly on=""/>
   </labelattributes>
   <editform>.</editform>
-  <editforminit>form_logics.obs_lines_form_open</editforminit>
+  <editforminit></editforminit>
   <featformsuppress>0</featformsuppress>
   <annotationform>.</annotationform>
   <editorlayout>tablayout</editorlayout>
