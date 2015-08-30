@@ -54,7 +54,8 @@ class midvatten:
         self.iface = iface
         self.ms = midvsettings()#self.ms.settingsdict is created when ms is imported
         
-    def initGui(self): # Creates actions that will start plugin configuration
+    def initGui(self):
+        # Create actions that will start plugin configuration
         self.actionNewDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), "Create a new Midvatten project DB", self.iface.mainWindow())
         QObject.connect(self.actionNewDB, SIGNAL("triggered()"), self.new_db)
         
@@ -180,6 +181,14 @@ class midvatten:
         self.actionZipDB.setWhatsThis("A compressed copy of the database will be placed in same directory as the db.")
         QObject.connect(self.actionZipDB, SIGNAL("triggered()"), self.zip_db)
 
+        self.action_export_csv = QAction(QIcon(":/plugins/midvatten/icons/export_csv.png"), "Export to a set of csv files", self.iface.mainWindow())
+        self.action_export_csv.setWhatsThis("All data for the selected objects (obs_points and obs_lines) will be exported to a set of csv files.")
+        QObject.connect(self.action_export_csv, SIGNAL("triggered()"), self.export_csv)
+
+        self.action_export_spatialite = QAction(QIcon(":/plugins/midvatten/icons/export_spatialite.png"), "Export to another spatialite db", self.iface.mainWindow())
+        self.action_export_spatialite.setWhatsThis("All data for the selected objects (obs_points and obs_lines) will be exported to another spatialite db.")
+        QObject.connect(self.action_export_spatialite, SIGNAL("triggered()"), self.export_spatialite)
+
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
         self.toolBar.addAction(self.actionsetup)
@@ -211,6 +220,11 @@ class midvatten:
         self.menu.import_data_menu.addAction(self.action_import_seismics)   
         self.menu.import_data_menu.addAction(self.action_import_vlf)   
 
+        self.menu.export_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Export data from database"))
+        self.menu.addMenu(self.menu.export_data_menu)
+        self.menu.import_data_menu.addAction(self.action_export_csv)   
+        self.menu.import_data_menu.addAction(self.action_export_spatialite)   
+        
         self.menu.add_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Edit data in database"))
         #self.iface.addPluginToMenu("&Midvatten", self.menu.add_data_menu.menuAction())
         self.menu.addMenu(self.menu.add_data_menu)
@@ -261,7 +275,7 @@ class midvatten:
         # QGIS iface connections
         self.iface.projectRead.connect(self.project_opened)
         self.iface.newProjectCreated.connect(self.project_created)
-        
+
     def unload(self):    
         # Remove the plugin menu items and icons
         self.menu.deleteLater()
@@ -301,7 +315,7 @@ class midvatten:
         dlg = utils.HtmlDialog("About Midvatten plugin for QGIS",QUrl.fromLocalFile(ABOUT_outputfile))
         dlg.exec_()
 
-    def aveflowcalculate(self):            
+    def aveflowcalculate(self):
         errorsignal = 0
         if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
             self.ms.loadSettings()    
@@ -361,12 +375,13 @@ class midvatten:
         else: 
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select a database! Reset if needed.", 2)
 
-    def prepare_layers_for_qgis2threejs(self):#not ready
+    def export_csv(self):# - not ready-
+        pass
         errorsignal = 0
         if self.ms.settingsareloaded == False:
             self.ms.loadSettings()    
             
-        allcritical_layers = ('obs_points', 'stratigraphy')     #Check that none of these layers are in editing mode
+        allcritical_layers = ('obs_points', 'obs_lines', 'w_levels','w_flow','w_qual_lab','w_qual_field','stratigraphy') #none of these layers must be in editing mode
         for layername in allcritical_layers:
             layerexists = utils.find_layer(str(layername))
             if layerexists:
@@ -380,7 +395,38 @@ class midvatten:
 
         if not(errorsignal == 1):     
             QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
-            PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
+            pass
+            """
+            # Här skajobbet göras, rimligen genom att anropa annan modul
+            #PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
+            """
+            QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+
+    def export_spatialite(self):# - not ready-
+        pass
+        errorsignal = 0
+        if self.ms.settingsareloaded == False:
+            self.ms.loadSettings()    
+            
+        allcritical_layers = ('obs_points', 'obs_lines', 'w_levels','w_flow','w_qual_lab','w_qual_field','stratigraphy') #none of these layers must be in editing mode
+        for layername in allcritical_layers:
+            layerexists = utils.find_layer(str(layername))
+            if layerexists:
+                if layerexists.isEditable():
+                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calculating water level.", "Warning")
+                    errorsignal = 1
+
+        if self.ms.settingsdict['database'] == '': #Check that database is selected
+            utils.pop_up_info("Check settings! \nSelect database first!")        
+            errorsignal = 1
+
+        if not(errorsignal == 1):     
+            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
+            pass
+            """
+            # Här skajobbet göras, rimligen genom att anropa annan modul
+            #PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
+            """
             QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def import_obs_lines(self):
@@ -494,7 +540,7 @@ class midvatten:
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
                     except:
                         pass
-                    
+
     def import_vlf(self):
         errorsignal = 0
         if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
@@ -577,7 +623,7 @@ class midvatten:
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
                     except:
                         pass
-                    
+
     def import_wlvllogg(self):#  - should be rewritten 
         errorsignal = 0
         if self.ms.settingsareloaded == False:    # If this is the first thing user does - then load settings from project file
@@ -643,7 +689,7 @@ class midvatten:
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
                     except:
                         pass
-                    
+
     def import_wqual_lab(self):
         errorsignal = 0
         if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
@@ -705,8 +751,8 @@ class midvatten:
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
                     except:
                         pass
-            
-    def loadthelayers(self):            
+
+    def loadthelayers(self):
         if self.ms.settingsareloaded == False:    # If this is the first thing the user does, then load settings from project file
             self.ms.loadSettings()    
         if not self.ms.settingsdict['database'] == '':
@@ -744,7 +790,7 @@ class midvatten:
                 self.iface.messageBar().pushMessage("Error","You have to select a layer first!",2,duration=15)        
         else:
             self.iface.messageBar().pushMessage("Error","Specify database and w_qual_lab parameters for Piper plot. (Check Midvatten Settings.)",2,duration=15)
-                 
+
     def plot_timeseries(self):
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file    
             self.ms.loadSettings()    
@@ -757,8 +803,8 @@ class midvatten:
                 self.iface.messageBar().pushMessage("Error","You have to select a layer first!",2,duration=15)        
         else:
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database, table and column for time series plot. Reset if needed.", 2,duration=15)
-            
-    def plot_stratigraphy(self):            
+
+    def plot_stratigraphy(self):
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot stratigraphy, then load settings from project file
             self.ms.loadSettings()    
         if not (self.ms.settingsdict['database'] == '') and not (self.ms.settingsdict['stratigraphytable']==''):
@@ -814,7 +860,7 @@ class midvatten:
                 self.myplot = SectionPlot(self.iface.mainWindow(), self.iface)
                 self.myplot.do_it(self.ms,OBSID,SectionLineLayer)
 
-    def plot_xy(self):            
+    def plot_xy(self):
         if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot xy data, then load settings from project file
             self.ms.loadSettings()    
         if not (self.ms.settingsdict['database'] == '' or self.ms.settingsdict['xytable'] =='' or self.ms.settingsdict['xy_xcolumn'] == '' or (self.ms.settingsdict['xy_y1column'] == '' and self.ms.settingsdict['xy_y2column'] == '' and self.ms.settingsdict['xy_y3column'] == '')):
@@ -837,9 +883,31 @@ class midvatten:
         except:
             self.customplot = customplot.plotsqlitewindow(self.iface.mainWindow(), self.ms)#self.iface as arg?
 
+    def prepare_layers_for_qgis2threejs(self):
+        errorsignal = 0
+        if self.ms.settingsareloaded == False:
+            self.ms.loadSettings()    
+            
+        allcritical_layers = ('obs_points', 'stratigraphy')     #Check that none of these layers are in editing mode
+        for layername in allcritical_layers:
+            layerexists = utils.find_layer(str(layername))
+            if layerexists:
+                if layerexists.isEditable():
+                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calculating water level.", "Warning")
+                    errorsignal = 1
+
+        if self.ms.settingsdict['database'] == '': #Check that database is selected
+            utils.pop_up_info("Check settings! \nSelect database first!")        
+            errorsignal = 1
+
+        if not(errorsignal == 1):     
+            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
+            PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
+            QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+
     def project_created(self):
         self.reset_settings()
-        
+
     def project_opened(self):
         self.ms.reset_settings()
         self.ms.loadSettings()
@@ -967,7 +1035,7 @@ class midvatten:
         else: 
             utils.pop_up_info("Check Midvatten settings! \nSomething is wrong in the 'W quality report' tab!")
 
-    def wlvlcalculate(self):             
+    def wlvlcalculate(self):
         errorsignal = 0
         if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
             self.ms.loadSettings()    
@@ -999,7 +1067,7 @@ class midvatten:
             dlg = calclvl(self.iface.mainWindow(),qgis.utils.iface.activeLayer())  # dock is an instance of calibrlogger
             dlg.exec_()
 
-    def wlvlloggcalibrate(self):             
+    def wlvlloggcalibrate(self):
         errorsignal = 0
         if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
             self.ms.loadSettings()    
@@ -1059,8 +1127,3 @@ class midvatten:
             self.iface.messageBar().pushMessage("Error","You need to specify database in Midvatten Settings. Reset if needed.", 2,duration=15)
         QApplication.restoreOverrideCursor()
 
-    def cleaning2(self):        #clean up after closing section plot Dock dialog --TO BE REMOVED SINCE THIS IS NEVER USED!!!
-                print 'cleaning the dock house'
-                self.mdl = None
-                self.secplotdockOpened = False
-                self.wdg = None

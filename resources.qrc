@@ -1,38 +1,40 @@
 <RCC>
     <qresource prefix="/plugins/midvatten" >
-        <file>icons/MidvSettings.png</file>
-        <file>icons/PlotTS.png</file>
-        <file>icons/PlotXY.png</file>
-        <file>icons/PlotStratigraphy.png</file>
-        <file>icons/PlotSection.png</file>
-        <file>icons/ChartMakerSQLite.png</file>
-        <file>icons/ResetSettings.png</file>
         <file>icons/about.png</file>
+        <file>icons/calc_level_masl.png</file>
+        <file>icons/calibr_level_logger_masl.png</file>
+        <file>icons/ChartMakerSQLite.png</file>
         <file>icons/create_new.xpm</file>
-        <file>icons/wqualreport.png</file>
+        <file>icons/drill_report.png</file>
         <file>icons/editstratigraphy.png</file>
         <file>icons/editwlevels.png</file>
-        <file>icons/loaddefaultlayers.png</file>
-        <file>icons/updateposfrcoord.png</file>
-        <file>icons/updatecoordfrpos.png</file>
-        <file>icons/drill_report.png</file>
-        <file>icons/calibr_level_logger_masl.png</file>
-        <file>icons/calc_level_masl.png</file>
-        <file>icons/load_wlevels_manual.png</file>
-        <file>icons/load_wlevels_logger.png</file>
-        <file>icons/import_wqual_field.png</file>
-        <file>icons/import_wqual_lab.png</file>
+        <file>icons/export_csv.png</file>
+        <file>icons/export_spatialite.png</file>
+        <file>icons/import_obs_lines.png</file>
         <file>icons/import_obs_points.png</file>
         <file>icons/import_stratigraphy.png</file>
-        <file>icons/load_wflow.png</file>
-        <file>icons/import_obs_lines.png</file>
+        <file>icons/import_wqual_field.png</file>
+        <file>icons/import_wqual_lab.png</file>
         <file>icons/load_seismics.png</file>
         <file>icons/load_vlf.png</file>
-        <file>icons/plotsqliteicon.png</file>
+        <file>icons/load_wflow.png</file>
+        <file>icons/load_wlevels_logger.png</file>
+        <file>icons/load_wlevels_manual.png</file>
+        <file>icons/loaddefaultlayers.png</file>
+        <file>icons/MidvSettings.png</file>
         <file>icons/Piper.png</file>
         <file>icons/Piper22x22.png</file>
-        <file>icons/vacuum.png</file>
-        <file>icons/zip.png</file>
+        <file>icons/PlotSection.png</file>
+        <file>icons/plotsqliteicon.png</file>
+        <file>icons/PlotStratigraphy.png</file>
+        <file>icons/PlotTS.png</file>
+        <file>icons/PlotXY.png</file>
         <file>icons/qgis2threejs.png</file>
+        <file>icons/ResetSettings.png</file>
+        <file>icons/updatecoordfrpos.png</file>
+        <file>icons/updateposfrcoord.png</file>
+        <file>icons/vacuum.png</file>
+        <file>icons/wqualreport.png</file>
+        <file>icons/zip.png</file>
     </qresource>
 </RCC>

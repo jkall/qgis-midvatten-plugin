@@ -3,7 +3,7 @@
 name=Midvatten
 qgisMinimumVersion=2.4
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.2.1
+version=Version 1.3.0
 author=Josef Källgården
 email=groundwatergis@gmail.com
 
@@ -18,8 +18,10 @@ experimental=False
 deprecated=False
 
 changelog=
+        Version 1.3.0:
+        - new fature: export data from database to a set of csv files or another spatialite-daabase
         Version 1.2.1:
-        - temporarily adding print outputs from wqualreport.py for debugging purposes, turns out to be a LAN issue
+        - temporarily adding print outputs from wqualreport.py for debugging purposes, turns out to be a samba-LAN issue
         Version 1.2.0:
         - new feature export data for 3D borehole plots with Qgis2threejs plugin
         - minor interface, metadata and bug fixes in section plot, w_levels form and database table about_db, bugfix for loading swedish stylefiles
