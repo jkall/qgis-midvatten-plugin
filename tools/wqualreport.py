@@ -23,7 +23,7 @@ from PyQt4.QtGui import QDesktopServices, QApplication, QCursor
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import os
 import locale
-import tools.midvatten_utils as utils
+import midvatten_utils as utils
 import codecs
 import time #for debugging
 
@@ -37,7 +37,7 @@ class wqualreport():        # extracts water quality data for selected objects, 
         kolumnindex = provider.fieldNameIndex('obsid') # To find the column named 'obsid'
         observations = layer.selectedFeatures()
         i = 0
-        reportpath = os.path.join(os.sep,os.path.dirname(__file__),"reports","w_qual_report.html")
+        reportpath = os.path.join(os.sep,os.path.dirname(__file__),"..","reports","w_qual_report.html")
         #f = open(reportpath, "wb" )
         f = codecs.open(reportpath, "wb", "utf-8")
 

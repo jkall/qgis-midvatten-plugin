@@ -13,7 +13,7 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
-import tools.midvatten_utils as utils
+import midvatten_utils as utils
 from definitions import midvatten_defs
 
 class midvsettings(): 

@@ -26,7 +26,7 @@ import locale
 from pyspatialite import dbapi2 as sqlite# pyspatialite is absolutely necessary (sqlite3 not enough) due to InitSpatialMetaData()
 import datetime
 #plugin modules
-import tools.midvatten_utils as utils
+import midvatten_utils as utils
 
 class newdb():
 
@@ -69,9 +69,9 @@ class newdb():
                 # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
                 # then the syntax defines a Midvatten project db according to the loaded .sql-file
                 if int(versionstext[0][0][0]) > 3: # which file to use depends on spatialite version installed
-                    SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"definitions","create_db_splite4.sql")
+                    SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","create_db_splite4.sql")
                 else:
-                    SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"definitions","create_db.sql") 
+                    SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","create_db.sql") 
                 qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
                 f = open(SQLFile, 'r')
                 linecounter = 1
@@ -129,7 +129,7 @@ class AddLayerStyles():
         self.conn.close()
     
     def add_layer_styles_2_db(self):
-        SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"definitions","add_layer_styles_2_db.sql")
+        SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","add_layer_styles_2_db.sql")
         datetimestring = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         f = open(SQLFile, 'r')
         linecounter = 1
@@ -139,11 +139,11 @@ class AddLayerStyles():
             linecounter += 1
 
     def style_from_file_into_db(self,layer,qml_file, sld_file):
-        with open(os.path.join(os.sep,os.path.dirname(__file__),"definitions",qml_file), 'r') as content_file:
+        with open(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",qml_file), 'r') as content_file:
             content = content_file.read()
         #print(content)#debug
         self.cur.execute("update layer_styles set styleQML=? where f_table_name=?",(content,layer))#Use parameterized arguments to allow sqlite3 to escape the quotes for you. (It also helps prevent SQL injection.
         #"UPDATE posts SET html = ? WHERE id = ?", (html ,temp[i][1])
-        with open(os.path.join(os.sep,os.path.dirname(__file__),"definitions",sld_file), 'r') as content_file:
+        with open(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",sld_file), 'r') as content_file:
             content = content_file.read()
         self.cur.execute("update layer_styles set styleSLD=? where f_table_name=?",(content,layer))#Use parameterized arguments to allow sqlite3 to escape the quotes for you. (It also helps prevent SQL injection.

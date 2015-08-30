@@ -33,14 +33,14 @@ import matplotlib.ticker as tick
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import pyspatialite.dbapi2 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
-import tools.midvatten_utils as utils
+import midvatten_utils as utils
 
 #from ui.secplotdockwidget_ui import Ui_SecPlotDock
 from PyQt4 import uic
-Ui_SecPlotDock =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'secplotdockwidget_ui.ui'))[0]
+Ui_SecPlotDock =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'secplotdockwidget_ui.ui'))[0]
 
 import definitions.midvatten_defs as defs
-from tools.sampledem import qchain, create_points_at, points_along_line, sampling 
+from sampledem import qchain, create_points_at, points_along_line, sampling 
 
 class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
     def __init__(self, parent1, iface1):#Please note, self.selected_obsids must be a tuple

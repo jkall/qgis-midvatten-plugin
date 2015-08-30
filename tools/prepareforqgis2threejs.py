@@ -27,7 +27,7 @@ from qgis.gui import *
 
 import qgis.utils
 import os
-import tools.midvatten_utils as utils
+import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 
 class PrepareForQgis2Threejs():        
@@ -84,7 +84,7 @@ class PrepareForQgis2Threejs():
                 map_canvas_layer_list.append(QgsMapCanvasLayer(layer))
 
                 #now try to load the style file
-                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",layer.name() + ".qml")
+                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + ".qml")
                 try:
                     layer.loadNamedStyle(stylefile)
                 except:
@@ -97,7 +97,7 @@ class PrepareForQgis2Threejs():
             canvas.refresh()
 
     def create_db_views(self):
-        SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"definitions","add_spatial_views_for_gis2threejs.sql") 
+        SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","add_spatial_views_for_gis2threejs.sql") 
 
         myconnection = utils.dbconnection()
         myconnection.connect2db()

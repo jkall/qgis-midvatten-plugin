@@ -22,7 +22,7 @@ import qgis.utils
 from functools import partial # only to get combobox signals to work
 #from ui.midvsettingsdialog_ui import Ui_Dialog
 import locale
-import tools.midvatten_utils as utils
+import midvatten_utils as utils
 from definitions import midvatten_defs
 #from ui.midvsettingsdock_ui import Ui_MidDockSettings
 midvsettingsdock_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'midvsettingsdock.ui'))[0]

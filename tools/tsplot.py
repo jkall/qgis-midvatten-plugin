@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 from matplotlib.dates import datestr2num
 import datetime
 import matplotlib.ticker as tick
-import tools.midvatten_utils as utils
+import midvatten_utils as utils
 import locale
 
 class TimeSeriesPlot:

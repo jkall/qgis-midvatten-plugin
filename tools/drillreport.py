@@ -24,15 +24,15 @@ from PyQt4.QtGui import QDesktopServices
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import os
 import locale
-import tools.midvatten_utils as utils
+import midvatten_utils as utils
 import codecs
 
 class drillreport():        # general observation point info for the selected object
     
     def __init__(self, obsid='', settingsdict = {}):
          #open connection to report file
-        reportpath = os.path.join(os.sep,os.path.dirname(__file__),"reports","drill_report.html")
-        logopath = os.path.join(os.sep,os.path.dirname(__file__),"about","midvatten_logga.png")
+        reportpath = os.path.join(os.sep,os.path.dirname(__file__),"..","reports","drill_report.html")
+        logopath = os.path.join(os.sep,os.path.dirname(__file__),"..","about","midvatten_logga.png")
         f = codecs.open(reportpath, "wb", "utf-8")
         
         #write some initiating html, header and also 

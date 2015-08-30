@@ -18,28 +18,36 @@
  *                                                                         *
  ***************************************************************************/
 """
+# Import the PyQt and QGIS libraries
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
-
 import qgis.utils
 import resources  # Initialize Qt resources from file resources.py
+
+# Import some general python modules
 import os.path
 import sys
+import datetime
 import zipfile
 try:
     import zlib
     compression = zipfile.ZIP_DEFLATED
 except:
     compression = zipfile.ZIP_STORED
-import datetime
+
+#add midvatten plugin directory to pythonpath (needed here to allow importing modules from subfolders)
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/tools'))
+
+# Import Midvatten tools and modules
 from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
 from wqualreport import wqualreport
 from loaddefaultlayers import loadlayers
 from prepareforqgis2threejs import PrepareForQgis2Threejs
-import tools.midvatten_utils as utils 
+import midvatten_utils as utils 
 from definitions import midvatten_defs
 from sectionplot import SectionPlot
 import customplot
@@ -50,7 +58,7 @@ from piper import PiperPlot
 
 class midvatten:
     def __init__(self, iface): # Might need revision of variables and method for loading default variables
-        sys.path.append(os.path.dirname(os.path.abspath(__file__))) #add midvatten plugin directory to pythonpath
+        #sys.path.append(os.path.dirname(os.path.abspath(__file__))) #add midvatten plugin directory to pythonpath
         self.iface = iface
         self.ms = midvsettings()#self.ms.settingsdict is created when ms is imported
         
@@ -386,7 +394,7 @@ class midvatten:
             obs_points_layer = utils.find_layer('obs_points')
             selected_obs_points = utils.getselectedobjectnames(obs_points_layer)
             obsidlist = []
-            if len(selected_obs_points)>1:
+            if len(selected_obs_points)>0:
                 i=0
                 for id in selected_obs_points:
                     obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
@@ -397,8 +405,9 @@ class midvatten:
 
             obs_lines_layer = utils.find_layer('obs_lines')
             selected_obs_lines = utils.getselectedobjectnames(obs_lines_layer)
+            print(selected_obs_lines)#debug
             obsidlist = []
-            if len(selected_obs_lines)>1:
+            if len(selected_obs_lines)>0:
                 i=0
                 for id in selected_obs_lines:
                     obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
@@ -406,7 +415,8 @@ class midvatten:
                 OBSID_L = tuple(obsidlist)#because module midv_exporting depends on obsid being a tuple
             else:
                 OBSID_L = tuple([])
-            
+
+            print(OBSID_P, OBSID_L)#debug
             # Här skajobbet göras, rimligen genom att anropa annan modul
             #SectionPlot(self.iface.mainWindow(), self.iface)
             #self.myplot.do_it(self.ms,OBSID,SectionLineLayer)

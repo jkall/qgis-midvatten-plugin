@@ -26,7 +26,7 @@ from qgis.gui import *
 import qgis.utils
 import os
 import locale
-import tools.midvatten_utils as utils
+import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 
 class loadlayers():        
@@ -88,8 +88,8 @@ class loadlayers():
                 layer.setEditorLayout(1)#perhaps this is unnecessary since it gets set from the loaded qml below?
 
                 #now try to load the style file
-                stylefile_sv = os.path.join(os.sep,os.path.dirname(__file__),"definitions",layer.name() + "_sv.qml")
-                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",layer.name() + ".qml")
+                stylefile_sv = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + "_sv.qml")
+                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + ".qml")
                 if  locale.getdefaultlocale()[0] == 'sv_SE' and os.path.isfile( stylefile_sv ): #swedish forms are loaded only if locale settings indicate sweden
                     try:
                         layer.loadNamedStyle(stylefile_sv)
@@ -143,7 +143,7 @@ class loadlayers():
                 group_index = self.legend.groups().index('Midvatten_OBS_DB') 
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
                 filename = tablename + ".qml"       #  load styles
-                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",filename)
+                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filename)
                 layer.loadNamedStyle(stylefile)
                 if tablename in ('w_levels','w_flow','stratigraphy'):
                     if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
@@ -154,7 +154,7 @@ class loadlayers():
                         layer.setEditorLayout(2)
                     except:
                         pass
-                    uifile = os.path.join(os.sep,os.path.dirname(__file__),"ui",filename)
+                    uifile = os.path.join(os.sep,os.path.dirname(__file__),"..","ui",filename)
                     layer.setEditForm(uifile)
                     formlogic = "form_logics." + tablename + "_form_open"
                     layer.setEditFormInit(formlogic)
@@ -165,14 +165,14 @@ class loadlayers():
                 qgis.utils.iface.messageBar().pushMessage("Error","""Failed to load layer %s!"""%tablename,2)                
             else:
                 filename = tablename + ".qml"
-                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"definitions",filename)
+                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filename)
                 layer.loadNamedStyle(stylefile)
                 if tablename in defs.default_layers_w_ui():        #=   THE ONES WITH CUSTOM UI FORMS
                     if locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
                         filename = tablename + ".ui"
                     else:
                         filename = tablename + "_en.ui"
-                    uifile = os.path.join(os.sep,os.path.dirname(__file__),"ui",filename)
+                    uifile = os.path.join(os.sep,os.path.dirname(__file__),"..","ui",filename)
                     try: # python bindings for setEditorLayout were introduced in qgis-master commit 9183adce9f257a097fc54e5a8a700e4d494b2962 november 2012
                         layer.setEditorLayout(2)  
                     except:
