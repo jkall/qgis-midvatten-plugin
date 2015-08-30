@@ -26,7 +26,7 @@ import locale
 from pyspatialite import dbapi2 as sqlite# pyspatialite is absolutely necessary (sqlite3 not enough) due to InitSpatialMetaData()
 import datetime
 #plugin modules
-import midvatten_utils as utils    
+import tools.midvatten_utils as utils
 
 class newdb():
 

@@ -20,7 +20,7 @@
  ***************************************************************************/
 
 """
-import midvatten_utils as utils    
+import tools.midvatten_utils as utils
 
 class updatecoordinates():
 

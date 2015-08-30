@@ -19,7 +19,7 @@ from PyQt4.QtGui import *
 from qgis.core import QgsFeature
 
 from sqlite3 import dbapi2 as sqlite
-import midvatten_utils as utils# Whenever some global midvatten_utilities are needed
+import tools.midvatten_utils as utils
 import qgis.utils # for error/debug messages to messagebar
 #global variables, layers and dialogs must be specific for each form
 myDialog = None

@@ -45,7 +45,7 @@ import PyQt4.QtGui
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import unicodedata  # To normalize some special national characters to regular international characters
 from functools import partial # only to get combobox signals to work
-import midvatten_utils as utils        
+import tools.midvatten_utils as utils
 from definitions import midvatten_defs as defs
 import locale
 

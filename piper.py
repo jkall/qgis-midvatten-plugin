@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 import datetime 
 import sqlite3 as sqlite
 import itertools
-import midvatten_utils as utils
+import tools.midvatten_utils as utils
 
 class PiperPlot():
     def __init__(self,msettings,activelayer):

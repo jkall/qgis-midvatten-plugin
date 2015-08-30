@@ -26,7 +26,7 @@ from qgis.gui import *
 import qgis.utils
 import os
 import locale
-import midvatten_utils as utils
+import tools.midvatten_utils as utils
 from definitions import midvatten_defs as defs
 
 class loadlayers():        

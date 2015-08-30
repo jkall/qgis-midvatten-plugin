@@ -172,6 +172,22 @@ def return_lower_ascii_string(textstring):
     filtered_string = filtered_string.lower()
     return filtered_string
 
+def returnunicode(anything): #takes an input and tries to return it as unicode
+    if type(anything) == type(None):
+        text = unicode('')
+    elif type(anything) == type(unicode('unicodetextstring')):
+        text = anything 
+    elif (type(anything) == type (1)) or (type(anything) == type (1.1)):
+        text = unicode(str(anything))
+    elif type(anything) == type('ordinary_textstring'):
+        text = unicode(anything)
+    else:
+        try:
+            text = unicode(str(anything))
+        except:
+            text = unicode('data type unknown, check database')
+    return text
+
 def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
     dbpath = QgsProject.instance().readEntry("Midvatten","database")
     if os.path.exists(dbpath[0]):
@@ -269,18 +285,21 @@ def strat_selection_check(layer=''):
     else:
         pop_up_info("Select a qgis layer with field h_gs!")
 
-def returnunicode(anything): #takes an input and tries to return it as unicode
-    if type(anything) == type(None):
-        text = unicode('')
-    elif type(anything) == type(unicode('unicodetextstring')):
-        text = anything 
-    elif (type(anything) == type (1)) or (type(anything) == type (1.1)):
-        text = unicode(str(anything))
-    elif type(anything) == type('ordinary_textstring'):
-        text = unicode(anything)
-    else:
-        try:
-            text = unicode(str(anything))
-        except:
-            text = unicode('data type unknown, check database')
-    return text
+def verify_before_midv_meth_starts(iface, mset, allcritical_layers):
+    errorsignal = 0
+    if mset.settingsareloaded == False:
+        mset.loadSettings()    
+        
+    for layername in allcritical_layers:
+        layerexists = find_layer(str(layername))
+        if layerexists:
+            if layerexists.isEditable():
+                iface.messageBar().pushMessage("Error","Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", 2)
+                #pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", "Warning")
+                errorsignal = 1
+
+    if mset.settingsdict['database'] == '': #Check that database is selected
+        iface.messageBar().pushMessage("Error","No database found. Please check your Midvatten Settings. Reset if needed.", 2)
+        #pop_up_info("Check settings! \nSelect database first!")        
+        errorsignal = 1
+    return errorsignal    

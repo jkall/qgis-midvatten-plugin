@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt  # THIS LINE may cause conflict with plugins "st
 #from matplotlib.dates import datestr2num
 #import datetime
 import matplotlib.ticker as tick
-import midvatten_utils as utils
+import tools.midvatten_utils as utils
 import locale
 
 class XYPlot:

@@ -23,7 +23,7 @@ from PyQt4.QtGui import QDesktopServices, QApplication, QCursor
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import os
 import locale
-import midvatten_utils as utils  
+import tools.midvatten_utils as utils
 import codecs
 import time #for debugging
 

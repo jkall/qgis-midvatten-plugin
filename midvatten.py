@@ -39,7 +39,8 @@ from xyplot import XYPlot
 from wqualreport import wqualreport
 from loaddefaultlayers import loadlayers
 from prepareforqgis2threejs import PrepareForQgis2Threejs
-import midvatten_utils as utils 
+#import midvatten_utils as utils
+import tools.midvatten_utils as utils 
 from definitions import midvatten_defs
 from sectionplot import SectionPlot
 import customplot
@@ -222,8 +223,8 @@ class midvatten:
 
         self.menu.export_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Export data from database"))
         self.menu.addMenu(self.menu.export_data_menu)
-        self.menu.import_data_menu.addAction(self.action_export_csv)   
-        self.menu.import_data_menu.addAction(self.action_export_spatialite)   
+        self.menu.export_data_menu.addAction(self.action_export_csv)   
+        self.menu.export_data_menu.addAction(self.action_export_spatialite)   
         
         self.menu.add_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Edit data in database"))
         #self.iface.addPluginToMenu("&Midvatten", self.menu.add_data_menu.menuAction())
@@ -376,50 +377,47 @@ class midvatten:
             self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select a database! Reset if needed.", 2)
 
     def export_csv(self):# - not ready-
-        pass
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:
-            self.ms.loadSettings()    
-            
         allcritical_layers = ('obs_points', 'obs_lines', 'w_levels','w_flow','w_qual_lab','w_qual_field','stratigraphy') #none of these layers must be in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calculating water level.", "Warning")
-                    errorsignal = 1
-
-        if self.ms.settingsdict['database'] == '': #Check that database is selected
-            utils.pop_up_info("Check settings! \nSelect database first!")        
-            errorsignal = 1
+        errorsignal = utils.verify_before_midv_meth_starts(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
         if not(errorsignal == 1):     
             QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
-            pass
-            """
+
+            #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
+            obs_points_layer = utils.find_layer('obs_points')
+            selected_obs_points = utils.getselectedobjectnames(obs_points_layer)
+            obsidlist = []
+            if len(selected_obs_points)>1:
+                i=0
+                for id in selected_obs_points:
+                    obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
+                    i+=1
+                OBSID_P = tuple(obsidlist)#because module midv_exporting depends on obsid being a tuple
+            else:
+                OBSID_P = tuple([])
+
+            obs_lines_layer = utils.find_layer('obs_lines')
+            selected_obs_lines = utils.getselectedobjectnames(obs_lines_layer)
+            obsidlist = []
+            if len(selected_obs_lines)>1:
+                i=0
+                for id in selected_obs_lines:
+                    obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
+                    i+=1
+                OBSID_L = tuple(obsidlist)#because module midv_exporting depends on obsid being a tuple
+            else:
+                OBSID_L = tuple([])
+            
             # Här skajobbet göras, rimligen genom att anropa annan modul
+            #SectionPlot(self.iface.mainWindow(), self.iface)
+            #self.myplot.do_it(self.ms,OBSID,SectionLineLayer)
             #PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
-            """
+
             QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def export_spatialite(self):# - not ready-
-        pass
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:
-            self.ms.loadSettings()    
-            
         allcritical_layers = ('obs_points', 'obs_lines', 'w_levels','w_flow','w_qual_lab','w_qual_field','stratigraphy') #none of these layers must be in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calculating water level.", "Warning")
-                    errorsignal = 1
-
-        if self.ms.settingsdict['database'] == '': #Check that database is selected
-            utils.pop_up_info("Check settings! \nSelect database first!")        
-            errorsignal = 1
-
+        errorsignal = utils.verify_before_midv_meth_starts(self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if not(errorsignal == 1):     
             QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
             pass

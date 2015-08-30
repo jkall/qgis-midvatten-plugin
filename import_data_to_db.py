@@ -29,8 +29,7 @@ import qgis.utils
 import locale
 import os
 from pyspatialite import dbapi2 as sqlite #could perhaps have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
-import midvatten_utils as utils    
-   
+import tools.midvatten_utils as utils
 
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
 

@@ -28,7 +28,7 @@ from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2
 import datetime
 from matplotlib.dates import datestr2num
 import numpy as np
-import midvatten_utils as utils    
+import tools.midvatten_utils as utils
 from ui.calc_aveflow_dialog import Ui_Dialog as Calc_Ui_Dialog
 
 

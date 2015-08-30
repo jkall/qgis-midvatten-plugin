@@ -32,7 +32,7 @@ from matplotlib.dates import datestr2num
 import datetime
 import matplotlib.ticker as tick
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
-import midvatten_utils as utils    
+import tools.midvatten_utils as utils
 from ui.calibr_logger_dialog import Ui_Dialog as Calibr_Ui_Dialog
 from ui.calc_lvl_dialog import Ui_Dialog as Calc_Ui_Dialog
    
