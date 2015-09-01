@@ -26,10 +26,13 @@ import qgis.utils
 
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import datetime
+import os
 from matplotlib.dates import datestr2num
 import numpy as np
 import midvatten_utils as utils
-from ui.calc_aveflow_dialog import Ui_Dialog as Calc_Ui_Dialog
+#from ui.calc_aveflow_dialog import Ui_Dialog as Calc_Ui_Dialog
+from PyQt4 import uic
+Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_aveflow_dialog.ui'))[0]
 
 
 class calcave(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created

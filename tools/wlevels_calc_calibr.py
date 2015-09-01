@@ -33,9 +33,12 @@ import datetime
 import matplotlib.ticker as tick
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import midvatten_utils as utils
-from ui.calibr_logger_dialog import Ui_Dialog as Calibr_Ui_Dialog
-from ui.calc_lvl_dialog import Ui_Dialog as Calc_Ui_Dialog
-   
+#from ui.calibr_logger_dialog import Ui_Dialog as Calibr_Ui_Dialog
+#from ui.calc_lvl_dialog import Ui_Dialog as Calc_Ui_Dialog
+from PyQt4 import uic
+Calibr_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calibr_logger_dialog.ui'))[0]
+Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_lvl_dialog.ui'))[0]
+
 class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
 
     def __init__(self, parent,layerin):
