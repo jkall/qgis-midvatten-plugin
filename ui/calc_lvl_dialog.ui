@@ -206,10 +206,17 @@ obs_points.h_toc - w_levels.meas
          <hour>0</hour>
          <minute>0</minute>
          <second>0</second>
-         <year>1901</year>
+         <year>2099</year>
          <month>1</month>
          <day>1</day>
         </datetime>
+       </property>
+       <property name="date">
+        <date>
+         <year>2099</year>
+         <month>1</month>
+         <day>1</day>
+        </date>
        </property>
        <property name="displayFormat">
         <string>yyyy-MM-dd HH:mm:ss</string>

@@ -20,12 +20,12 @@ from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2
 import os.path
 import qgis.utils
 from functools import partial # only to get combobox signals to work
-#from ui.midvsettingsdialog_ui import Ui_Dialog
 import locale
 import midvatten_utils as utils
 from definitions import midvatten_defs
 #from ui.midvsettingsdock_ui import Ui_MidDockSettings
 midvsettingsdock_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'midvsettingsdock.ui'))[0]
+
 
 class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS IS ONLY TO DEAL WITH THE SETTINGS DIALOG
     def __init__(self, parent,iface,msettings):
