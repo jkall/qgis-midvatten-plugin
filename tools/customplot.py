@@ -410,7 +410,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.table_ComboBox_2.clear()  
         self.table_ComboBox_3.clear()  
         for i in range (1,3):
-            self.clearthings(1)
+            self.clearthings(i)
         myconnection = utils.dbconnection()
         if myconnection.connect2db() == True:
             # skapa en cursor

@@ -870,19 +870,12 @@ class midvatten:
     def wlvlloggcalibrate(self):
         allcritical_layers = ('w_levels_logger', 'w_levels')
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
-        layername='obs_points'
-        err_flag = utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag,layername)#verify selected layername and not in edit mode
-        err_flag = utils.verify_layer_selection(err_flag,1)#verify the selected layer has attribute "obsid" and that exactly one feature is selected
         if err_flag == 0:
-            obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
-            sanity1sql = """select count(obsid) from w_levels_logger where obsid = '""" +  obsid[0] + """'"""
-            sanity2sql = """select count(obsid) from w_levels_logger where head_cm not null and head_cm !='' and obsid = '""" +  obsid[0] + """'"""
-            if utils.sql_load_fr_db(sanity1sql)[1] == utils.sql_load_fr_db(sanity2sql)[1]: # This must only be done if head_cm exists for all data
-                from wlevels_calc_calibr import calibrlogger
-                dlg = calibrlogger(self.iface.mainWindow(),obsid, self.ms.settingsdict)  # dock is an instance of calibrlogger
-                dlg.exec_()
-            else:
-                self.iface.messageBar().pushMessage("Error","Calibration interrupted. There must not be empty cells or null values in the 'head_cm' column!", 2, duration = 30)
+            from wlevels_calc_calibr import calibrlogger
+            try:
+                self.calibrplot.activateWindow()
+            except:
+                self.calibrplot = calibrlogger(self.iface.mainWindow(), self.ms.settingsdict)#,obsid)
 
     def zip_db(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded

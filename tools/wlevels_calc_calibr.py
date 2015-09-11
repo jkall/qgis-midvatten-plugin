@@ -20,23 +20,29 @@
  *                                                                         *
  ***************************************************************************/
 """
+#TODO: cleanup pyqt imports
 import PyQt4.QtCore
 import PyQt4.QtGui
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from PyQt4 import uic
 
 import locale
 import os
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt   
-from matplotlib.dates import datestr2num
-import datetime
 import matplotlib.ticker as tick
+from matplotlib.dates import datestr2num
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+import datetime
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import midvatten_utils as utils
 #from ui.calibr_logger_dialog import Ui_Dialog as Calibr_Ui_Dialog
 #from ui.calc_lvl_dialog import Ui_Dialog as Calc_Ui_Dialog
-from PyQt4 import uic
-Calibr_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calibr_logger_dialog.ui'))[0]
+
+Calibr_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calibr_logger_dialog_integrated.ui'))[0]
 Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_lvl_dialog.ui'))[0]
 
 class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
@@ -114,55 +120,96 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
             utils.pop_up_info('Calculation aborted! There seems to be NULL values in your table obs_points, column h_toc.','Error')
             self.close()
         
-class calibrlogger(PyQt4.QtGui.QDialog, Calibr_Ui_Dialog): # An instance of the class Calibr_Ui_Dialog is created same time as instance of calibrlogger is created
+class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of the class Calibr_Ui_Dialog is created same time as instance of calibrlogger is created
 
-    def __init__(self, parent, obsid='', settingsdict1={}):
+    def __init__(self, parent, settingsdict1={}, obsid=''):
+        #self.obsid = obsid
         self.settingsdict = settingsdict1
-        PyQt4.QtGui.QDialog.__init__(self)
-        self.obsid = obsid
+        PyQt4.QtGui.QDialog.__init__(self, parent)        
+        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         self.setWindowTitle("Calibrate logger") # Set the title for the dialog
-        self.getlastcalibration()
         self.connect(self.pushButton, PyQt4.QtCore.SIGNAL("clicked()"), self.calibrateandplot)
-        
+        self.INFO.setText("Select the observation point with logger data to be calibrated.")
+
+        # Create a plot window with one single subplot
+        self.calibrplotfigure = plt.figure() 
+        self.axes = self.calibrplotfigure.add_subplot( 111 )
+        self.canvas = FigureCanvas( self.calibrplotfigure )
+        self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot )
+        lstActions = self.mpltoolbar.actions()
+        self.mpltoolbar.removeAction( lstActions[ 7 ] )
+        self.layoutplot.addWidget( self.canvas )
+        self.layoutplot.addWidget( self.mpltoolbar )
+        self.show()
+
+        # Populate combobox with obsid from table w_levels_logger
+        self.load_obsid_from_db()
+
+    def load_obsid_from_db(self):
+        self.combobox_obsid.clear()
+        myconnection = utils.dbconnection()
+        if myconnection.connect2db() == True:
+            # skapa en cursor
+            curs = myconnection.conn.cursor()
+            rs=curs.execute("""select distinct obsid from w_levels_logger order by obsid""")
+            self.combobox_obsid.addItem('')
+            for row in curs:
+                self.combobox_obsid.addItem(row[0])
+            rs.close()
+            myconnection.closedb()        
+
     def getlastcalibration(self):
-        sql = """SELECT MAX(date_time), loggerpos FROM (SELECT date_time, (level_masl - (head_cm/100)) as loggerpos FROM w_levels_logger WHERE level_masl > 0 AND obsid = '"""
-        sql += self.obsid[0]  
-        sql += """')"""
-        self.lastcalibr = utils.sql_load_fr_db(sql)[1]
-        if self.lastcalibr[0][1] and self.lastcalibr[0][0]:
-            text = """Last pos. for logger in """
-            text += self.obsid[0]
-            text += """\nwas """ + str(self.lastcalibr[0][1]) + """ masl\nat """ +  str(self.lastcalibr[0][0])
-        else:
-            text = """There is no earlier known\nposition for the logger\nin """ + self.obsid[0]
-        self.INFO.setText(text)
+        obsid = unicode(self.combobox_obsid.currentText())
+        if not obsid=='':
+            sql = """SELECT MAX(date_time), loggerpos FROM (SELECT date_time, (level_masl - (head_cm/100)) as loggerpos FROM w_levels_logger WHERE level_masl > 0 AND obsid = '"""
+            sql += obsid
+            sql += """')"""
+            self.lastcalibr = utils.sql_load_fr_db(sql)[1]
+            if self.lastcalibr[0][1] and self.lastcalibr[0][0]:
+                text = """Last pos. for logger in """
+                text += obsid
+                text += """\nwas """ + str(self.lastcalibr[0][1]) + """ masl\nat """ +  str(self.lastcalibr[0][0])
+            else:
+                text = """There is no earlier known\nposition for the logger\nin """ + unicode(self.combobox_obsid.currentText())#self.obsid[0]
+            self.INFO.setText(text)
 
     def calibrateandplot(self):
-        fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
-        to_d_t = self.ToDateTime.dateTime().toPyDateTime()
-        newzref = self.LoggerPos.text()
-        if len(newzref)>0:
-            sql =r"""UPDATE w_levels_logger SET level_masl = """
-            sql += str(newzref)
-            sql += """ + head_cm / 100 WHERE obsid = '"""
-            sql += self.obsid[0]   
-            sql += """' AND date_time >= '"""
-            sql += str(fr_d_t)
-            sql += """' AND date_time <= '"""
-            sql += str(to_d_t)
-            sql += """' """
-            dummy = utils.sql_alter_db(sql)
-        self.CalibrationPlot(self.obsid[0])
-        self.getlastcalibration()
+        obsid = unicode(self.combobox_obsid.currentText())
+        if not obsid=='':
+            sanity1sql = """select count(obsid) from w_levels_logger where obsid = '""" +  obsid[0] + """'"""
+            sanity2sql = """select count(obsid) from w_levels_logger where head_cm not null and head_cm !='' and obsid = '""" +  obsid[0] + """'"""
+            if utils.sql_load_fr_db(sanity1sql)[1] == utils.sql_load_fr_db(sanity2sql)[1]: # This must only be done if head_cm exists for all data
+                fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
+                to_d_t = self.ToDateTime.dateTime().toPyDateTime()
+                newzref = self.LoggerPos.text()
+                if len(newzref)>0:
+                    sql =r"""UPDATE w_levels_logger SET level_masl = """
+                    sql += str(newzref)
+                    sql += """ + head_cm / 100 WHERE obsid = '"""
+                    sql += obsid   
+                    sql += """' AND date_time >= '"""
+                    sql += str(fr_d_t)
+                    sql += """' AND date_time <= '"""
+                    sql += str(to_d_t)
+                    sql += """' """
+                    dummy = utils.sql_alter_db(sql)
+                self.CalibrationPlot(obsid)
+                self.getlastcalibration()
+            else:
+                utils.pop_up_info("Calibration aborted!!\nThere must not be empty cells or\nnull values in the 'head_cm' column!")
+        else:
+            self.INFO.setText("Select the observation point with logger data to be calibrated.")
 
-    def CalibrationPlot(self,obsid):            # 
+    def CalibrationPlot(self,obsid):
+        self.axes.clear()
+        
         conn = sqlite.connect(self.settingsdict['database'],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
         # skapa en cursor
         curs = conn.cursor()
         # Create a plot window with one single subplot
-        fig = plt.figure()  # causes conflict with plugins "statist" and "chartmaker"
-        ax = fig.add_subplot(111)
+        #fig = plt.figure()  # causes conflict with plugins "statist" and "chartmaker"
+        #ax = fig.add_subplot(111)
         
         p=[None]*2 # List for plot objects
         My_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array 
@@ -183,7 +230,7 @@ class calibrlogger(PyQt4.QtGui.QDialog, Calibr_Ui_Dialog): # An instance of the 
             myTimestring.append(table2.date_time[j])
             j = j + 1
         numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
-        p[0] = ax.plot_date(numtime, table2.values, 'o-', label=obsid)    # LINEPLOT WITH DOTS!!
+        p[0] = self.axes.plot_date(numtime, table2.values, 'o-', label=obsid)    # LINEPLOT WITH DOTS!!
         
         # Load Loggerlevels (full time series) for the obsid
         sql =r"""SELECT date_time as 'date [datetime]', level_masl FROM w_levels_logger WHERE obsid = '"""
@@ -201,21 +248,23 @@ class calibrlogger(PyQt4.QtGui.QDialog, Calibr_Ui_Dialog): # An instance of the 
             myTimestring.append(table2.date_time[j])
             j = j + 1
         numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
-        p[1] = ax.plot_date(numtime, table2.values, '-', label = obsid + unicode(' logger', 'utf-8'))    # LINEPLOT WITH DOTS!!
+        p[1] = self.axes.plot_date(numtime, table2.values, '-', label = obsid + unicode(' logger', 'utf-8'))    # LINEPLOT WITH DOTS!!
 
         """ Close SQLite-connections """
         rs.close() # First close the table 
         conn.close()  # then close the database
 
         """ Finish plot """
-        ax.grid(True)
-        ax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
-        fig.autofmt_xdate()                               
-        ax.set_ylabel(unicode('Level (masl)', 'utf-8'))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
-        ax.set_title(unicode('Calibration plot for ', 'utf-8') + str(obsid))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
-        for label in ax.xaxis.get_ticklabels():
+        self.axes.grid(True)
+        self.axes.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
+        self.calibrplotfigure.autofmt_xdate()
+        self.axes.set_ylabel(unicode('Level (masl)', 'utf-8'))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
+        self.axes.set_title(unicode('Calibration plot for ', 'utf-8') + str(obsid))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
+        for label in self.axes.xaxis.get_ticklabels():
             label.set_fontsize(10)
-        for label in ax.yaxis.get_ticklabels():
+        for label in self.axes.yaxis.get_ticklabels():
             label.set_fontsize(10)
-        plt.show()
+        #plt.show()
+        self.canvas.draw()
+        plt.close(self.calibrplotfigure)#this closes reference to self.calibrplotfigure 
 
