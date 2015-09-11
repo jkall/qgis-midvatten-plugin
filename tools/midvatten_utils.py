@@ -271,11 +271,9 @@ def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatur
             return 'ok'
         elif selectedfeatures == 0 and not(layer.selectedFeatureCount() > 0):
             qgis.utils.iface.messageBar().pushMessage("Error","Select at least one object in the qgis layer!", 2,duration=15)
-            #pop_up_info("Select at least one object in the qgis layer!")
         else:
             textstring = """Select exactly %s object in the qgis layer!"""%str(selectedfeatures)
             qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15)
-            #pop_up_info("""Select exactly %s object in the qgis layer!"""%str(selectedfeatures))
     else:
         pop_up_info("Select a qgis layer that has a field obsid!")
         
@@ -283,9 +281,9 @@ def strat_selection_check(layer=''):
     if layer.dataProvider().fieldNameIndex('h_gs')  > -1 or layer.dataProvider().fieldNameIndex('h_toc')  > -1  or layer.dataProvider().fieldNameIndex('SURF_LVL')  > -1: # SURF_LVL to enable backwards compatibility
             return 'ok'        
     else:
-        pop_up_info("Select a qgis layer with field h_gs!")
+        qgis.utils.iface.messageBar().pushMessage("Error","Select a qgis layer with field h_gs!", 2,duration=15)
 
-def verify_before_midv_meth_starts(iface, mset, allcritical_layers):
+def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=('')):
     errorsignal = 0
     if mset.settingsareloaded == False:
         mset.loadSettings()    
@@ -296,10 +294,38 @@ def verify_before_midv_meth_starts(iface, mset, allcritical_layers):
             if layerexists.isEditable():
                 iface.messageBar().pushMessage("Error","Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", 2)
                 #pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", "Warning")
-                errorsignal = 1
+                errorsignal += 1
 
     if mset.settingsdict['database'] == '': #Check that database is selected
         iface.messageBar().pushMessage("Error","No database found. Please check your Midvatten Settings. Reset if needed.", 2)
         #pop_up_info("Check settings! \nSelect database first!")        
-        errorsignal = 1
+        errorsignal += 1
     return errorsignal    
+
+def verify_layer_selection(errorsignal,selectedfeatures=0):
+    layer = qgis.utils.iface.activeLayer()
+    if layer:
+        if not(selection_check(layer) == 'ok'):
+            errorsignal += 1
+            if selectedfeatures==0:
+                qgis.utils.iface.messageBar().pushMessage("Error","You have to select some features!", 2,duration=10)
+            else:
+                qgis.utils.iface.messageBar().pushMessage("Error","You have to select exactly %s features!"%str(selectedfeatures), 2,duration=10)
+    else:
+        qgis.utils.iface.messageBar().pushMessage("Error","You have to select a relevant layer!", 2,duration=10)
+        errorsignal += 1
+    return errorsignal
+
+def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
+    layer = qgis.utils.iface.activeLayer()
+    if not layer:#check there is actually a layer selected
+        errorsignal += 1
+        qgis.utils.iface.messageBar().pushMessage("Error","You have to select/activate %s layer!"%layername, 2,duration=10)
+    elif layer.isEditable():
+        errorsignal += 1
+        qgis.utils.iface.messageBar().pushMessage("Error","The selected layer is currently in editing mode. Please exit this mode before updating coordinates.", 2,duration=10)
+    elif not(layer.name() == layername):
+        errorsignal += 1
+        qgis.utils.iface.messageBar().pushMessage("Error","You have to select/activate %s layer!"%layername, 2,duration=10)
+    return errorsignal
+    

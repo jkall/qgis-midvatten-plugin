@@ -173,11 +173,6 @@ class midvatten:
         #self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionPlotSection, SIGNAL("triggered()"), self.plot_section)
         
-        self.actionChartMaker = QAction(QIcon(":/plugins/midvatten/icons/ChartMakerSQLite.png"), "ChartMaker for Midvatten DB", self.iface.mainWindow())
-        self.actionChartMaker.setWhatsThis("Start ChartMaker for SQLite data")
-        #self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
-        QObject.connect(self.actionChartMaker, SIGNAL("triggered()"), self.ChartMaker)
-
         self.actionPrepareFor2Qgis2ThreeJS = QAction(QIcon(":/plugins/midvatten/icons/qgis2threejs.png"), "Prepare data for Qgis2threejs plugin", self.iface.mainWindow())
         self.actionPrepareFor2Qgis2ThreeJS.setWhatsThis("Add spatialite views to be used by Qgis2threejs plugin to create a 3D plot")
         QObject.connect(self.actionPrepareFor2Qgis2ThreeJS, SIGNAL("triggered()"), self.prepare_layers_for_qgis2threejs)
@@ -300,11 +295,9 @@ class midvatten:
         self.iface.unregisterMainWindowAction(self.actionPlotStratigraphy)
         self.iface.unregisterMainWindowAction(self.actiondrillreport)
         self.iface.unregisterMainWindowAction(self.actionwqualreport)
-        self.iface.unregisterMainWindowAction(self.actionChartMaker)
         sys.path.remove(os.path.dirname(os.path.abspath(__file__))) #Clean up python environment
 
     def about(self):   
-        #filenamepath = os.path.dirname(__file__) + "/metadata.txt"
         filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
         iniText = QSettings(filenamepath , QSettings.IniFormat)#This method seems to return a list of unicode strings BUT it seems as if the encoding from the byte strings in the file is not utf-8, hence there is need for special encoding, see below
         verno = str(iniText.value('version'))
@@ -325,70 +318,28 @@ class midvatten:
         dlg.exec_()
 
     def aveflowcalculate(self):
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.ms.loadSettings()    
-            
-        allcritical_layers = ('obs_points', 'w_flow')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calculating water level.", "Warning")
-                    errorsignal = 1
-
-        if self.ms.settingsdict['database'] == '': #Check that database is selected
-            utils.pop_up_info("Check settings! \nSelect database first!")        
-            errorsignal = 1
-
-        layer = qgis.utils.iface.activeLayer()
-        if layer:
-            if utils.selection_check(layer) == 'ok':
-                pass
-            else:
-                errorsignal = 1
-        else:
-            utils.pop_up_info("You have to select a relevant layer!")
-            errorsignal = 1
-
-        if not(errorsignal == 1):     
+        allcritical_layers = ('obs_points', 'w_flow') #none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some feature(s) is selected
+        if err_flag == 0:     
             from w_flow_calc_aveflow import calcave
             dlg = calcave(self.iface.mainWindow()) 
             dlg.exec_()
 
-    def ChartMaker(self): #  - Not ready - 
-        if self.ms.settingsareloaded == False:    # If this is the first thing the user does, then load settings from project file
-            self.ms.loadSettings()    
-        utils.pop_up_info("not yet implemented") #for debugging
-
-    def drillreport(self):             
-        if self.ms.settingsareloaded == False:    # If this is the first thing user does - then load settings from project file
-            self.ms.loadSettings()    
-        allcritical_layers = ('obs_points', 'w_levels', 'w_qual_lab')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:    # A warning if some of the layers are in editing mode
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease consider exiting this mode before generating a report.", "Warning")
-
-        if not (self.ms.settingsdict['database'] == ''):
-            if qgis.utils.iface.activeLayer():
-                if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok': #only one selected object
-                    obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())  # selected obs_point is now found in obsid[0]
-                    from drillreport import drillreport
-                    drillreport(obsid[0],self.ms.settingsdict) 
-                else:
-                    utils.pop_up_info("You have to select exactly one observation point!","Attention")
-            else:
-                utils.pop_up_info("You have to select the obs_points layer and the observation point (just one!) for which to generate a general report!", "Attention")
-        else: 
-            self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select a database! Reset if needed.", 2)
+    def drillreport(self):
+        allcritical_layers = ('obs_points', 'w_levels', 'w_qual_lab')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = utils.verify_layer_selection(err_flag,1)#verify the selected layer has attribute "obsid" and that exactly one feature is selected
+        if err_flag == 0:
+            obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())  # selected obs_point is now found in obsid[0]
+            from drillreport import drillreport
+            drillreport(obsid[0],self.ms.settingsdict)
 
     def export_csv(self):
         allcritical_layers = ('obs_points', 'obs_lines', 'w_levels','w_flow','w_qual_lab','w_qual_field','stratigraphy') #none of these layers must be in editing mode
-        errorsignal = utils.verify_before_midv_meth_starts(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
-        if not(errorsignal == 1):     
+        if err_flag == 0:     
             QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
 
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
@@ -425,10 +376,10 @@ class midvatten:
                 
             QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
-    def export_spatialite(self):# - not ready-
+    def export_spatialite(self):
         allcritical_layers = ('obs_points', 'obs_lines', 'w_levels','w_flow','w_qual_lab','w_qual_field','stratigraphy') #none of these layers must be in editing mode
-        errorsignal = utils.verify_before_midv_meth_starts(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
-        if not(errorsignal == 1):
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
             obs_points_layer = utils.find_layer('obs_points')
             selected_obs_points = utils.getselectedobjectnames(obs_points_layer)
@@ -473,19 +424,9 @@ class midvatten:
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def import_obs_lines(self):
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.ms.loadSettings()    
-
-        allcritical_layers = ('obs_lines')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
-                    errorsignal = 1
-
-        if errorsignal == 0:        # unless none of the critical layers are in editing mode
+        allcritical_layers = ('obs_lines')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:        # unless none of the critical layers are in editing mode
             sanity = utils.askuser("YesNo","""You are about to import observation lines data, from a text file which must have one header row and 6 columns (see plugin web page for further explanation):\nWKT;obsid;name;place;type;source\n\nPlease note that:\nThere must be WKT geometries of type LINESTRING in the first column.\nThe LINESTRING geometries must correspond to SRID in the dataabse.\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in string fields.\nEmpty or null values are not allowed for obsid and there must not be any duplicates of obsid\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
@@ -501,19 +442,9 @@ class midvatten:
                         pass
 
     def import_obs_points(self):
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.ms.loadSettings()    
-
-        allcritical_layers = ('obs_points')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
-                    errorsignal = 1
-
-        if errorsignal == 0:        # unless none of the critical layers are in editing mode
+        allcritical_layers = ('obs_points')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:        # unless none of the critical layers are in editing mode
             sanity = utils.askuser("YesNo","""You are about to import observation points data, from a text file which must have one header row and 26 columns (see plugin web page for further explanation):\n\n1. obsid, 2. name, 3. place, 4. type, 5. length, 6. drillstop, 7. diam, 8. material, 9. screen, 10. capacity, 11. drilldate, 12. wmeas_yn, 13. wlogg_yn, 14. east, 15. north, 16. ne_accur, 17. ne_source, 18. h_toc, 19. h_tocags, 20. h_gs, 21. h_accur, 22. h_syst, 23. h_source, 24. source, 25. com_onerow, 26. com_html\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in string fields.\nEmpty or null values are not allowed for obsid and there must not be any duplicates of obsid.\nEast and north values must correspond to the database SRID.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
@@ -532,18 +463,9 @@ class midvatten:
                         pass
 
     def import_seismics(self):
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.ms.loadSettings()    
-        allcritical_layers = ('obs_lines', 'seismic_data')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
-                    errorsignal = 1
-
-        if errorsignal == 0: 
+        allcritical_layers = ('obs_lines', 'seismic_data')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0: 
             sanity = utils.askuser("YesNo","""You are about to import interpreted seismic data, from a text file which must have one header row and 6 columns:\n\nobsid, length, ground, bedrock, gw_table, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nEmpty or null values are not allowed for obsid or length.\nEach combination of obsid and length must be unique.\n\nContinue?""",'Are you sure?')
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
@@ -558,19 +480,9 @@ class midvatten:
                         pass
 
     def import_stratigraphy(self):
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.ms.loadSettings()    
-
-        allcritical_layers = ('obs_points', 'stratigraphy')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
-                    errorsignal = 1
-
-        if errorsignal == 0:        # unless none of the critical layers are in editing mode
+        allcritical_layers = ('obs_points', 'stratigraphy')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:        # unless none of the critical layers are in editing mode
             sanity = utils.askuser("YesNo","""You are about to import stratigraphy data, from a text file which must have one header row and 9 columns:\n1. obsid\n2. stratid - integer starting from ground surface and increasing downwards\n3. depth_top - depth to top of stratigraphy layer\n4. depth_bot - depth to bottom of stratigraphy layer\n5. geology - full description of layer geology\n6. geoshort - shortname for layer geology (see dicionary)\n7. capacity\n8. development - well development\n9. comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid or stratid, such rows will be excluded from the import.\nEach combination of obsid and stratid must be unique.\n\nContinue?""",'Are you sure?')
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
@@ -585,19 +497,9 @@ class midvatten:
                         pass
 
     def import_vlf(self):
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.ms.loadSettings()    
-
-        allcritical_layers = ('obs_lines', 'vlf_data')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
-                    errorsignal = 1
-
-        if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
+        allcritical_layers = ('obs_lines', 'vlf_data')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:        # om ingen av de kritiska lagren är i editeringsmode
             sanity = utils.askuser("YesNo","""You are about to import raw data from vlf measurements, from a text file which must have one header row and 5 columns:\n\nobsid; length; real_comp; imag_comp, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nEmpty or null values are not allowed for obsid or length.\nEach combination of obsid and length must be unique.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
@@ -613,19 +515,9 @@ class midvatten:
                         pass
 
     def import_wflow(self):
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.ms.loadSettings()    
-
-        allcritical_layers = ('obs_points', 'w_flow')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
-                    errorsignal = 1
-
-        if errorsignal == 0:        # om ingen av de kritiska lagren är i editeringsmode
+        allcritical_layers = ('obs_points', 'w_flow')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:        # om ingen av de kritiska lagren är i editeringsmode
             sanity = utils.askuser("YesNo","""You are about to import water flow reading, from a text file which must have one header row and 7 columns:\n\n1. obsid\n2. instrumentid\n3. flowtype\n4. date_time\n5. reading\n6. unit\n7. comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of flowtypes since all new flowtypes will silently be added to the database table zz_flowtype during import.\nEmpty or null values are not allowed for obsid, instrumentid, flowtype or date_time.\nEach combination of obsid, instrumentid, flowtype and date_time must be unique.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
@@ -641,19 +533,9 @@ class midvatten:
                         pass
 
     def import_wlvl(self):    
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.ms.loadSettings()    
-
-        allcritical_layers = ('obs_points', 'w_levels')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
-                    errorsignal = 1
-
-        if errorsignal == 0:
+        allcritical_layers = ('obs_points', 'w_levels')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:
             sanity = utils.askuser("YesNo","""You are about to import water level measurements, from a text file which must have one header row and 4 columns:\n\nobsid;date_time;meas;comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid or date_time, such rows will be excluded from the import.\nEmpty or null values are not accepted at the same time in both the columns meas and comment.\nEach combination of obsid and date_time must be unique.\n\nContinue?""",'Are you sure?')
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
@@ -668,19 +550,9 @@ class midvatten:
                         pass
 
     def import_wlvllogg(self):#  - should be rewritten 
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first thing user does - then load settings from project file
-            self.ms.loadSettings()    
-
-        allcritical_layers = ('obs_points', 'w_levels_logger')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
-                    errorsignal = 1
-
-        if errorsignal == 0:   
+        allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:   
             if not (self.ms.settingsdict['database'] == ''):
                 if qgis.utils.iface.activeLayer():
                     if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':                
@@ -706,19 +578,9 @@ class midvatten:
                 self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
 
     def import_wqual_field(self):
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.ms.loadSettings()    
-
-        allcritical_layers = ('obs_points', 'w_qual_field')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
-                    errorsignal = 1
-
-        if errorsignal == 0:        # unless none of the critical layers are in editing mode
+        allcritical_layers = ('obs_points', 'w_qual_field')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:        # unless none of the critical layers are in editing mode
             sanity = utils.askuser("YesNo","""You are about to import water quality data from field measurements, from a text file which must have one header row and the following 10 columns:\n\n1. obsid\n2. staff\n3. date_time - on format yyyy-mm-dd hh:mm(:ss)\n4. instrument\n5. parameter - water quality parameter name\n6. reading_num - param. value (real number, decimal separator=point(.))\n7. reading_txt - parameter value as text, including <, > etc\n8. unit\n9. flow_lpm - sampling flow in litres/minute\n10. comment - text string\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid, date_time or parameter, such rows will be excluded from the import.\nEach combination of obsid, date_time and parameter must be unique.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
@@ -734,19 +596,9 @@ class midvatten:
                         pass
 
     def import_wqual_lab(self):
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.ms.loadSettings()    
-
-        allcritical_layers = ('obs_points', 'w_qual_lab')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
-                    errorsignal = 1
-
-        if errorsignal == 0:        # unless none of the critical layers are in editing mode
+        allcritical_layers = ('obs_points', 'w_qual_lab')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:        # unless none of the critical layers are in editing mode
             sanity = utils.askuser("YesNo","""You are about to import water quality data from laboratory analysis, from a text file which must have one header row and the following 12 columns:\n\n1. obsid - must exist in obs_points table\n2. depth - sample depth (real number)\n3. report - each pair of 'report' & 'parameter' must be unique!\n4. project\n5. staff\n6. date_time - on format yyyy-mm-dd hh:mm(:ss)\n7. analysis_method\n8. parameter - water quality parameter name\n9. reading_num - param. value (real number, decimal separator=point(.))\n10. reading_txt - parameter value as text, including <, > etc\n11. unit\n12. comment - text string, avoid semicolon and commas\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid, report or parameter, such rows will be excluded from the import.\nEach combination of report and parameter must be unique.\n\nContinue?""",'Are you sure?')
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
@@ -761,27 +613,14 @@ class midvatten:
                         pass
 
     def import_meteo(self):
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.ms.loadSettings()
+        allcritical_layers = ('obs_points')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
-        if utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[0]==True and len(utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[1])==0: #verify there actually is a meteo table (introduced in midv plugin version 1.1)
-            errorsignal = 1
-            utils.pop_up_info("There is no table for meteorological data in your database! Perhaps your database was created with a previous version of Midvatten plugin? Contact plugin author for advice!", "Error")
+        if (utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[0]==True and len(utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[1])==0) or (utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[0]==False): #verify there actually is a meteo table (introduced in midv plugin version 1.1)
+            err_flag += 1
+            self.iface.messageBar().pushMessage("Error","There is no table for meteorological data in your database! Perhaps your database was created with an earlier version of Midvatten plugin?",2,duration=15)
         
-        allcritical_layers = ('obs_points')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before importing data.", "Warning")
-                    errorsignal = 1
-
-        if utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[0]==False: 
-            errorsignal = 1
-            utils.pop_up_info("Database error! Try resetting midvatten plugin settings. Then select database again.", "Error")
-
-        if errorsignal == 0:        # unless none of the critical layers are in editing mode or the database is so old no meteo table exist
+        if err_flag == 0:        # unless none of the critical layers are in editing mode or the database is so old no meteo table exist
             sanity = utils.askuser("YesNo","""You are about to import meteorological data from, from a text file which must have one header row and 8 columns:\n\n"obsid", "instrumentid", "parameter", "date_time", "reading_num", "reading_txt", "unit", "comment"\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of parameters since all new parameters will silently be added to the database table zz_meteoparam during import.\nEmpty or null values are not allowed for obsid, instrumentid, parameter or date_time.\nEach combination of obsid, instrumentid, parameter and date_time must be unique.\n\nContinue?""",'Are you sure?')
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
@@ -796,17 +635,14 @@ class midvatten:
                         pass
 
     def loadthelayers(self):
-        if self.ms.settingsareloaded == False:    # If this is the first thing the user does, then load settings from project file
-            self.ms.loadSettings()    
-        if not self.ms.settingsdict['database'] == '':
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        if err_flag == 0:
             sanity = utils.askuser("YesNo","""This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""",'Warning!')
             if sanity.result == 1:
                 #show the user this may take a long time...
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
                 loadlayers(qgis.utils.iface, self.ms.settingsdict)
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
-        else:   
-            utils.pop_up_info("You have to select a database in Midvatten settings first!")
 
     def new_db(self): 
         sanity = utils.askuser("YesNo","""This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""",'Are you sure?')
@@ -822,53 +658,39 @@ class midvatten:
                 self.ms.save_settings()
 
     def plot_piper(self):
-        if self.ms.settingsareloaded == False:
-            self.ms.loadSettings()    
-        if not (self.ms.settingsdict['database'] == '' or self.ms.settingsdict['database'] == ' '):
-            layer = qgis.utils.iface.activeLayer()
-            if layer:
-                if utils.selection_check(layer) == 'ok':
-                    dlg = PiperPlot(self.ms,qgis.utils.iface.activeLayer())
-            else:
-                self.iface.messageBar().pushMessage("Error","You have to select a layer first!",2,duration=15)        
-        else:
-            self.iface.messageBar().pushMessage("Error","Specify database and w_qual_lab parameters for Piper plot. (Check Midvatten Settings.)",2,duration=15)
+        allcritical_layers = ('w_qual_lab', 'w_qual_field')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
+        if err_flag == 0:
+            dlg = PiperPlot(self.ms,qgis.utils.iface.activeLayer())
 
     def plot_timeseries(self):
-        if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file    
-            self.ms.loadSettings()    
-        if not (self.ms.settingsdict['database'] == '' or self.ms.settingsdict['tstable'] =='' or self.ms.settingsdict['tscolumn'] == ''):
-            layer = qgis.utils.iface.activeLayer()
-            if layer:
-                if utils.selection_check(layer) == 'ok':
-                    dlg = TimeSeriesPlot(layer, self.ms.settingsdict)
-            else:
-                self.iface.messageBar().pushMessage("Error","You have to select a layer first!",2,duration=15)        
-        else:
-            self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database, table and column for time series plot. Reset if needed.", 2,duration=15)
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
+        if (self.ms.settingsdict['tstable'] =='' or self.ms.settingsdict['tscolumn'] == ''):
+            err_flag += 1
+            self.iface.messageBar().pushMessage("Error","Please set time series table and column in Midvatten settings.", 2,duration =15)
+        if err_flag == 0:
+            dlg = TimeSeriesPlot(qgis.utils.iface.activeLayer(), self.ms.settingsdict)
 
     def plot_stratigraphy(self):
-        if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot stratigraphy, then load settings from project file
-            self.ms.loadSettings()    
-        if not (self.ms.settingsdict['database'] == '') and not (self.ms.settingsdict['stratigraphytable']==''):
-            layer = qgis.utils.iface.activeLayer()
-            if layer:
-                if utils.selection_check(layer) == 'ok' and utils.strat_selection_check(layer) == 'ok':
-                        dlg = Stratigraphy(self.iface, layer, self.ms.settingsdict)
-                        dlg.showSurvey()
-                        self.dlg = dlg        # only to prevent the Qdialog from closing.
-            else:
-                utils.pop_up_info("You have to select a layer first!")
-        else: 
-            self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database and stratigraphy table. Reset if needed.", 2)
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
+        if self.ms.settingsdict['stratigraphytable']=='':
+            err_flag += 1
+            self.iface.messageBar().pushMessage("Error","Please set stratigraphy table in Midvatten settings.", 2,duration =15)
+        if err_flag == 0 and utils.strat_selection_check(qgis.utils.iface.activeLayer()) == 'ok':
+            dlg = Stratigraphy(self.iface, qgis.utils.iface.activeLayer(), self.ms.settingsdict)
+            dlg.showSurvey()
+            self.dlg = dlg# only to prevent the Qdialog from closing.
 
     def plot_section(self):
-        if self.ms.settingsareloaded == False:    # Perhaps settings should always be loaded, to 
-            self.ms.loadSettings()
-            
-        if self.ms.settingsdict['database'] == '':#perhaps there is no database defined
-            self.iface.messageBar().pushMessage("Error","No database found. Please check your Midvatten Settings. Reset if needed.", 2)
+        all_critical_layers=('obs_points')
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, all_critical_layers)#verify midv settings are loaded
+        if not(err_flag == 0):
+            self.iface.messageBar().pushMessage("Error","Verify Midvatten settings and make sure 'obs_points' layer is not in editing mode.", 2, duration=10)
             return
+
         SectionLineLayer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
         msg = None
         if SectionLineLayer.selectedFeatureCount()==1:#First verify only one feature is selected in the active layer...
@@ -904,46 +726,27 @@ class midvatten:
                 self.myplot.do_it(self.ms,OBSID,SectionLineLayer)
 
     def plot_xy(self):
-        if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot xy data, then load settings from project file
-            self.ms.loadSettings()    
-        if not (self.ms.settingsdict['database'] == '' or self.ms.settingsdict['xytable'] =='' or self.ms.settingsdict['xy_xcolumn'] == '' or (self.ms.settingsdict['xy_y1column'] == '' and self.ms.settingsdict['xy_y2column'] == '' and self.ms.settingsdict['xy_y3column'] == '')):
-            layer = qgis.utils.iface.activeLayer()
-            if layer:
-                if utils.selection_check(layer) == 'ok':
-                    dlg = XYPlot(layer, self.ms.settingsdict)
-            else:
-                utils.pop_up_info("You have to select a layer first!")
-        else:
-            self.iface.messageBar().pushMessage("Error","Please check your Midvatten Settings and select database, table and columns for x and y data!. Reset if needed.", 2)
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
+        if (self.ms.settingsdict['xytable'] =='' or self.ms.settingsdict['xy_xcolumn'] == '' or (self.ms.settingsdict['xy_y1column'] == '' and self.ms.settingsdict['xy_y2column'] == '' and self.ms.settingsdict['xy_y3column'] == '')):
+            err_flag += 1
+            self.iface.messageBar().pushMessage("Error","Please set xy series table and columns in Midvatten settings.", 2,duration =15)
+        if err_flag == 0:
+            dlg = XYPlot(qgis.utils.iface.activeLayer(), self.ms.settingsdict)
 
     def plot_sqlite(self):
-        if self.ms.settingsdict['database'] == '':
-            self.iface.messageBar().pushMessage("Error","A database is needed to create custom plots. Please check your Midvatten Settings. Reset if needed.", 2,duration=15)
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        if not(err_flag == 0):
             return
-
         try:
             self.customplot.activateWindow()
         except:
             self.customplot = customplot.plotsqlitewindow(self.iface.mainWindow(), self.ms)#self.iface as arg?
 
     def prepare_layers_for_qgis2threejs(self):
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:
-            self.ms.loadSettings()    
-            
-        allcritical_layers = ('obs_points', 'stratigraphy')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calculating water level.", "Warning")
-                    errorsignal = 1
-
-        if self.ms.settingsdict['database'] == '': #Check that database is selected
-            utils.pop_up_info("Check settings! \nSelect database first!")        
-            errorsignal = 1
-
-        if not(errorsignal == 1):     
+        allcritical_layers = ('obs_points', 'stratigraphy')
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
+        if err_flag == 0:     
             QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
             PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
             QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
@@ -977,185 +780,114 @@ class midvatten:
             self.midvsettingsdialog = midvsettingsdialog.midvsettingsdialogdock(self.iface.mainWindow(),self.iface, self.ms)#self.iface as arg?
 
     def updatecoord(self):
-        if self.ms.settingsareloaded == False:    # If the first thing the user does is to update coordinates, then load settings from project file    
-            self.ms.loadSettings()    
-        layer = self.iface.activeLayer()
-        if not layer:           #check there is actually a layer selected
-            utils.pop_up_info("You have to select/activate obs_points layer!")
-        elif layer.isEditable():
-            utils.pop_up_info("The selected layer is currently in editing mode.\nPlease exit this mode before updating coordinates.", "Warning")
-        else:
-            if not (self.ms.settingsdict['database'] == ''):
-                layer = qgis.utils.iface.activeLayer()
-                if layer.name()==u'obs_points':     #IF LAYER obs_points IS SELECTED
-                    sanity = utils.askuser("AllSelected","""Do you want to update coordinates\nfor All or Selected objects?""")
-                    if sanity.result == 0:      #IF USER WANT ALL OBJECTS TO BE UPDATED
-                        sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor ALL objects in the obs_points table.\nProceed?""")
-                        if sanity.result==1:
-                            ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")[1]#a list of unicode strings is returned
-                            observations = [None]*len(ALL_OBS)
-                            i = 0
-                            for obs in ALL_OBS:
-                                observations[i] = obs[0]
-                                i+=1
-                            from coords_and_position import updatecoordinates
-                            updatecoordinates(observations)
-                    elif sanity.result == 1:    #IF USER WANT ONLY SELECTED OBJECTS TO BE UPDATED
-                        sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor SELECTED objects in the obs_points table.\nProceed?""")
-                        if sanity.result==1:
-                            if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!
-                                observations = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())#a list of unicode strings is returned
-                                from coords_and_position import updatecoordinates
-                                updatecoordinates(observations)                        
-                else:
-                    utils.pop_up_info("You have to select/activate obs_points layer!")
-            else:
-                utils.pop_up_info("Check settings! \nSelect database first!")        
+        all_critical_layers=('obs_points')
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, all_critical_layers)#verify midv settings are loaded
+        layername = 'obs_points'
+        err_flag = utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag, layername)
+        if err_flag == 0:
+            sanity = utils.askuser("AllSelected","""Do you want to update coordinates\nfor All or Selected objects?""")
+            if sanity.result == 0:  #IF USER WANT ALL OBJECTS TO BE UPDATED
+                sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor ALL objects in the obs_points table.\nProceed?""")
+                if sanity.result==1:
+                    ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")[1]#a list of unicode strings is returned
+                    observations = [None]*len(ALL_OBS)
+                    i = 0
+                    for obs in ALL_OBS:
+                        observations[i] = obs[0]
+                        i+=1
+                    from coords_and_position import updatecoordinates
+                    updatecoordinates(observations)
+            elif sanity.result == 1:    #IF USER WANT ONLY SELECTED OBJECTS TO BE UPDATED
+                sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor SELECTED objects in the obs_points table.\nProceed?""")
+                if sanity.result==1:
+                    layer = self.iface.activeLayer()
+                    if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!
+                        observations = utils.getselectedobjectnames(layer)#a list of unicode strings is returned
+                        from coords_and_position import updatecoordinates
+                        updatecoordinates(observations)
 
     def updateposition(self):
-        if self.ms.settingsareloaded == False:    # If the first thing the user does is to update coordinates, then load settings from project file    
-            self.ms.loadSettings()    
-        layer = self.iface.activeLayer()
-        if not layer:           #check there is actually a layer selected
-            utils.pop_up_info("You have to select/activate obs_points layer!")
-        elif layer.isEditable():
-            utils.pop_up_info("The selected layer is currently in editing mode.\nPlease exit this mode before updating position.", "Warning")
-        else:
-            if not (self.ms.settingsdict['database'] == ''):
-                layer = qgis.utils.iface.activeLayer()
-                if layer.name()==u'obs_points':     #IF LAYER obs_points IS SELECTED
-                    sanity = utils.askuser("AllSelected","""Do you want to update position\nfor All or Selected objects?""")
-                    if sanity.result == 0:      #IF USER WANT ALL OBJECTS TO BE UPDATED
-                        sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nALL objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")
-                        if sanity.result==1:
-                            ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")[1]
-                            observations = [None]*len(ALL_OBS)
-                            i = 0
-                            for obs in ALL_OBS:
-                                observations[i] = obs[0]
-                                i+=1
-                            from coords_and_position import updateposition
-                            updateposition(observations)
-                            layer.updateExtents()
-                    elif sanity.result == 1:    #IF USER WANT ONLY SELECTED OBJECTS TO BE UPDATED
-                        sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nSELECTED objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")
-                        if sanity.result==1:
-                            if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!
-                                observations = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
-                                from coords_and_position import updateposition
-                                updateposition(observations)
-                                layer.updateExtents()
-                else:
-                    utils.pop_up_info("You have to select/activate obs_points layer!")
-            else:
-                utils.pop_up_info("Check settings! \nSelect database first!")        
+        all_critical_layers=('obs_points')
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, all_critical_layers)#verify midv settings are loaded
+        layername = 'obs_points'
+        err_flag = utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag, layername)
+        if err_flag == 0:
+            layer = self.iface.activeLayer()
+            sanity = utils.askuser("AllSelected","""Do you want to update position\nfor All or Selected objects?""")
+            if sanity.result == 0:      #IF USER WANT ALL OBJECTS TO BE UPDATED
+                sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nALL objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")
+                if sanity.result==1:
+                    ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")[1]
+                    observations = [None]*len(ALL_OBS)
+                    i = 0
+                    for obs in ALL_OBS:
+                        observations[i] = obs[0]
+                        i+=1
+                    from coords_and_position import updateposition
+                    updateposition(observations)
+                    layer.updateExtents()
+            elif sanity.result == 1:    #IF USER WANT ONLY SELECTED OBJECTS TO BE UPDATED
+                sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nSELECTED objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")
+                if sanity.result==1:
+                    if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!
+                        observations = utils.getselectedobjectnames(layer)
+                        from coords_and_position import updateposition
+                        updateposition(observations)
+                        layer.updateExtents()
 
     def vacuum_db(self):
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-        if self.ms.settingsareloaded == False:    # If the first thing the user does is to vacuum, then load settings from project file    
-            self.ms.loadSettings()    
-        if not (self.ms.settingsdict['database'] == ''):
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        if err_flag == 0:
+            QApplication.setOverrideCursor(Qt.WaitCursor)
             utils.sql_alter_db('vacuum')
-        else:
-            self.iface.messageBar().pushMessage("Error","You need to specify database in Midvatten Settings. Reset if needed.", 2,duration=15)
-        QApplication.restoreOverrideCursor()
+            QApplication.restoreOverrideCursor()
 
     def waterqualityreport(self):
-        if self.ms.settingsareloaded == False:    # If the first thing the user does is to plot time series, then load settings from project file
-            self.ms.loadSettings()    
-        if not (self.ms.settingsdict['database'] == '') and not (self.ms.settingsdict['wqualtable']=='') and not (self.ms.settingsdict['wqual_paramcolumn']=='')  and not (self.ms.settingsdict['wqual_valuecolumn']==''):
-            if qgis.utils.iface.activeLayer():
-                if utils.selection_check(qgis.utils.iface.activeLayer()) == 'ok':#there is a field obsid and at least one object is selected
-                    fail = 0
-                    for k in utils.getselectedobjectnames(qgis.utils.iface.activeLayer()):#all selected objects
-                        if not utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.ms.settingsdict['wqualtable'],str(k)))[1]:#if there is a selected object without water quality data
-                            self.iface.messageBar().pushMessage("Error","No water quality data for %s"%str(k), 2)
-                            fail = 1
-                    if not fail == 1:#only if all objects has data
-                        wqualreport(qgis.utils.iface.activeLayer(),self.ms.settingsdict)            #TEMPORARY FOR GVAB
-            else:
-                utils.pop_up_info("You have to select a layer and the object with water quality first!")
-        else: 
-            utils.pop_up_info("Check Midvatten settings! \nSomething is wrong in the 'W quality report' tab!")
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        err_flag = utils.verify_layer_selection(err_flag)#verify the selected layer has attribute "obsid" and that some feature(s) is selected
+        if self.ms.settingsdict['database'] == '' or self.ms.settingsdict['wqualtable']=='' or self.ms.settingsdict['wqual_paramcolumn']=='' or self.ms.settingsdict['wqual_valuecolumn']=='':
+            err_flag += 1
+            self.iface.messageBar().pushMessage("Error","Check Midvatten settings! \nSomething is probably wrong in the 'W quality report' tab!", 2,duration =15)
+        if err_flag == 0:
+            fail = 0
+            for k in utils.getselectedobjectnames(qgis.utils.iface.activeLayer()):#all selected objects
+                if not utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.ms.settingsdict['wqualtable'],str(k)))[1]:#if there is a selected object without water quality data
+                    self.iface.messageBar().pushMessage("Error","No water quality data for %s"%str(k), 2)
+                    fail = 1
+            if not fail == 1:#only if all objects has data
+                wqualreport(qgis.utils.iface.activeLayer(),self.ms.settingsdict)#TEMPORARY FOR GVAB
 
     def wlvlcalculate(self):
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.ms.loadSettings()    
-            
         allcritical_layers = ('obs_points', 'w_levels')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calculating water level.", "Warning")
-                    errorsignal = 1
-
-        if self.ms.settingsdict['database'] == '': #Check that database is selected
-            utils.pop_up_info("Check settings! \nSelect database first!")        
-            errorsignal = 1
-
-        layer = qgis.utils.iface.activeLayer()
-        if layer:
-            if utils.selection_check(layer) == 'ok':
-                pass
-            else:
-                errorsignal = 1
-        else:
-            utils.pop_up_info("You have to select a relevant layer!")
-            errorsignal = 1
-
-        if not(errorsignal == 1):     
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
+        layername='obs_points'
+        err_flag = utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag,layername)#verify selected layername and not in edit mode
+        if err_flag == 0:
             from wlevels_calc_calibr import calclvl
             dlg = calclvl(self.iface.mainWindow(),qgis.utils.iface.activeLayer())  # dock is an instance of calibrlogger
             dlg.exec_()
 
     def wlvlloggcalibrate(self):
-        errorsignal = 0
-        if self.ms.settingsareloaded == False:    # If this is the first does - then load settings from project file
-            self.ms.loadSettings()    
-
-        allcritical_layers = ('w_levels_logger', 'w_levels')     #Check that none of these layers are in editing mode
-        for layername in allcritical_layers:
-            layerexists = utils.find_layer(str(layername))
-            if layerexists:
-                if layerexists.isEditable():
-                    utils.pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before calibrating logger data.", "Warning")
-                    errorsignal = 1
-
-        layer = qgis.utils.iface.activeLayer()
-        if layer:
-            if utils.selection_check(layer) == 'ok':
-                pass
+        allcritical_layers = ('w_levels_logger', 'w_levels')
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
+        layername='obs_points'
+        err_flag = utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag,layername)#verify selected layername and not in edit mode
+        err_flag = utils.verify_layer_selection(err_flag,1)#verify the selected layer has attribute "obsid" and that exactly one feature is selected
+        if err_flag == 0:
+            obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
+            sanity1sql = """select count(obsid) from w_levels_logger where obsid = '""" +  obsid[0] + """'"""
+            sanity2sql = """select count(obsid) from w_levels_logger where head_cm not null and head_cm !='' and obsid = '""" +  obsid[0] + """'"""
+            if utils.sql_load_fr_db(sanity1sql)[1] == utils.sql_load_fr_db(sanity2sql)[1]: # This must only be done if head_cm exists for all data
+                from wlevels_calc_calibr import calibrlogger
+                dlg = calibrlogger(self.iface.mainWindow(),obsid, self.ms.settingsdict)  # dock is an instance of calibrlogger
+                dlg.exec_()
             else:
-                errorsignal = 1
-        else:
-            utils.pop_up_info("You have to select a relevant layer!")
-            errorsignal = 1
-            
-        if errorsignal == 0:
-            if not (self.ms.settingsdict['database'] == ''):
-                if qgis.utils.iface.activeLayer():
-                    if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':
-                        obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
-                        sanity1sql = """select count(obsid) from w_levels_logger where obsid = '""" +  obsid[0] + """'"""
-                        sanity2sql = """select count(obsid) from w_levels_logger where head_cm not null and head_cm !='' and obsid = '""" +  obsid[0] + """'"""
-                        if utils.sql_load_fr_db(sanity1sql)[1] == utils.sql_load_fr_db(sanity2sql)[1]: # This must only be done if head_cm exists for all data
-                            from wlevels_calc_calibr import calibrlogger
-                            dlg = calibrlogger(self.iface.mainWindow(),obsid, self.ms.settingsdict)  # dock is an instance of calibrlogger
-                            dlg.exec_()
-                        else:
-                            utils.pop_up_info("""There must not be empty cells or null values in the 'head_cm' column!\nFix head_cm data problem and try again.""", "Error") 
-                else:
-                    utils.pop_up_info("You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!")
-            else: 
-                utils.pop_up_info("Check settings! \nYou have to select database first!")
+                self.iface.messageBar().pushMessage("Error","Calibration interrupted. There must not be empty cells or null values in the 'head_cm' column!", 2, duration = 30)
 
     def zip_db(self):
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-        if self.ms.settingsareloaded == False:    # If the first thing the user does is to ZipDB, then load settings from project file    
-            self.ms.loadSettings()    
-        if not (self.ms.settingsdict['database'] == ''):
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        if err_flag == 0:
+            QApplication.setOverrideCursor(Qt.WaitCursor)
             connection = utils.dbconnection()
             connection.connect2db()
             connection.conn.cursor().execute("begin immediate")
@@ -1166,7 +898,5 @@ class midvatten:
             connection.conn.rollback()
             connection.closedb()
             self.iface.messageBar().pushMessage("Information","Database backup was written to " + bkupname, 1,duration=15)
-        else:
-            self.iface.messageBar().pushMessage("Error","You need to specify database in Midvatten Settings. Reset if needed.", 2,duration=15)
-        QApplication.restoreOverrideCursor()
+            QApplication.restoreOverrideCursor()
 
