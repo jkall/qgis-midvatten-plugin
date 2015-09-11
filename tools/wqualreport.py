@@ -198,7 +198,6 @@ class wqualreport():        # extracts water quality data for selected objects, 
         t = html_tables.Table()
         counter = 0
         for sublist in ReportData:
-            print(str(sublist))#debug
             try:
                 if counter <2:
                     t.rows.append(html_tables.TableRow(sublist, header=True))
