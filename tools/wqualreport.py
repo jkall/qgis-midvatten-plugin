@@ -194,20 +194,22 @@ class wqualreport():        # extracts water quality data for selected objects, 
     def WriteHTMLReport(self, ReportData, f):            
         tabellbredd = 180 + 75*self.htmlcols
         rpt = "<table width=\""
-        rpt += str(tabellbredd) # set table total width from no of water quality analyses
-        rpt += "\" border=\"1\">\n"
+        rpt = rpt.join(str(tabellbredd)) # set table total width from no of water quality analyses
+        rpt = rpt.join("\" border=\"1\">\n")
         f.write(rpt)
         counter = 0
         for sublist in ReportData:
             try:
                 if counter <2:
                     rpt = "  <tr><th>"
-                    rpt += "    </th><th width =\"75\">".join(sublist)
-                    rpt += "  </th></tr>\n"
+                    rpt = rpt.join("    </th><th width =\"75\">")
+                    rpt = rpt.join(sublist)
+                    rpt = rpt.join("  </th></tr>\n")
                 else:
                     rpt = "  <tr><td>"
-                    rpt += "    </td><td align=\"right\">".join(sublist)
-                    rpt += "  </td></tr>\n"
+                    rpt = rpt.join("    </td><td align=\"right\">")
+                    rpt = rpt.join(sublist)
+                    rpt rpt = rpt.join("  </td></tr>\n")
             except:
                 print "here was an error: ", sublist
             f.write(rpt)
