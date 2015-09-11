@@ -23,9 +23,11 @@ from PyQt4.QtGui import QDesktopServices, QApplication, QCursor
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import os
 import locale
-import midvatten_utils as utils
 import codecs
 import time #for debugging
+#midvatten modules
+import midvatten_utils as utils
+import html_tables
 
 class wqualreport():        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     def __init__(self,layer, settingsdict = {}):
@@ -191,27 +193,18 @@ class wqualreport():        # extracts water quality data for selected objects, 
         myconnection.closedb()
         return ReportTable
         
-    def WriteHTMLReport(self, ReportData, f):            
-        tabellbredd = 180 + 75*self.htmlcols
-        rpt = "<table width=\""
-        rpt = rpt.join(str(tabellbredd)) # set table total width from no of water quality analyses
-        rpt = rpt.join("\" border=\"1\">\n")
-        f.write(rpt)
+    def WriteHTMLReport(self, ReportData, f):#start over with html_tables module
+        # open an HTML file to show output in a browser
+        t = html_tables.Table()
         counter = 0
         for sublist in ReportData:
+            print(str(sublist))#debug
             try:
                 if counter <2:
-                    rpt = "  <tr><th>"
-                    rpt = rpt.join("    </th><th width =\"75\">")
-                    rpt = rpt.join(sublist)
-                    rpt = rpt.join("  </th></tr>\n")
+                    t.rows.append(html_tables.TableRow(sublist, header=True))
                 else:
-                    rpt = "  <tr><td>"
-                    rpt = rpt.join("    </td><td align=\"right\">")
-                    rpt = rpt.join(sublist)
-                    rpt rpt = rpt.join("  </td></tr>\n")
+                    t.rows.append(html_tables.TableRow(sublist))
             except:
-                print "here was an error: ", sublist
-            f.write(rpt)
-            counter = counter + 1
-        f.write("\n</table><p></p><p></p>")
+                print("here was an error: %s"%str(sublist))
+            counter += 1
+        f.write(str(t) + '<p>\n')
