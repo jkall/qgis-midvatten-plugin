@@ -27,7 +27,6 @@ import codecs
 import time #for debugging
 #midvatten modules
 import midvatten_utils as utils
-import html_tables
 
 class wqualreport():        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     def __init__(self,layer, settingsdict = {}):
@@ -193,17 +192,26 @@ class wqualreport():        # extracts water quality data for selected objects, 
         myconnection.closedb()
         return ReportTable
         
-    def WriteHTMLReport(self, ReportData, f):#start over with html_tables module
-        # open an HTML file to show output in a browser
-        t = html_tables.Table()
+    def WriteHTMLReport(self, ReportData, f):
+        tabellbredd = 180 + 75*self.htmlcols
+        rpt = "<table width=\""
+        rpt += str(tabellbredd) # set table total width from no of water quality analyses
+        rpt += "\" border=\"1\">\n"
+        f.write(rpt)
         counter = 0
         for sublist in ReportData:
             try:
                 if counter <2:
-                    t.rows.append(html_tables.TableRow(sublist, header=True))
+                    rpt = "  <tr><th>"
+                    rpt += "    </th><th width =\"75\">".join(sublist)
+                    rpt += "  </th></tr>\n"
                 else:
-                    t.rows.append(html_tables.TableRow(sublist))
+                    rpt = "  <tr><td>"
+                    rpt += "    </td><td align=\"right\">".join(sublist)
+                    rpt += "  </td></tr>\n"
             except:
-                print("here was an error: %s"%str(sublist))
-            counter += 1
-        f.write(str(t) + '<p>\n')
+                print "here was an error: ", sublist
+            f.write(rpt)
+            counter = counter + 1
+        f.write("\n</table><p></p><p></p>")
+
