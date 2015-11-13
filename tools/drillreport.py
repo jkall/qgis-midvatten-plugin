@@ -119,103 +119,103 @@ class drillreport():        # general observation point info for the selected ob
 
     def rpt_upper_left_sv(self, GeneralData, CRS='', CRSname=''):
         rpt = r"""<p style="font-family:'arial'; font-size:8pt; font-weight:400; font-style:normal;">"""
-        if utils.returnunicode(GeneralData[0][1]) != '' and utils.returnunicode(GeneralData[0][1]) != utils.returnunicode(GeneralData[0][0]):
+        if utils.returnunicode(GeneralData[0][1]) != '' and utils.returnunicode(GeneralData[0][1]) != 'NULL' and utils.returnunicode(GeneralData[0][1]) != utils.returnunicode(GeneralData[0][0]):
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'originalbenämning' + r"""</TD><TD WIDTH=67%>""" + utils.returnunicode(GeneralData[0][1]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][3]) != '':
+        if utils.returnunicode(GeneralData[0][3]) != '' and utils.returnunicode(GeneralData[0][3]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'obstyp' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][3]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][4]) != '':
+        if utils.returnunicode(GeneralData[0][4]) != '' and utils.returnunicode(GeneralData[0][4]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'djup (m fr my t botten)' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][4]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][17]) != '':
+        if utils.returnunicode(GeneralData[0][17]) != '' and utils.returnunicode(GeneralData[0][17]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'röröverkant (möh)' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][17])
             if utils.returnunicode(GeneralData[0][21]) != '':
                 rpt += u' (' +  utils.returnunicode(GeneralData[0][21]) + ')'
             rpt += '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][18]) != '' and utils.returnunicode(GeneralData[0][18]) != '0' and utils.returnunicode(GeneralData[0][18]) != '0.0':
+        if utils.returnunicode(GeneralData[0][18]) != ''  and utils.returnunicode(GeneralData[0][18]) != 'NULL' and utils.returnunicode(GeneralData[0][18]) != '0' and utils.returnunicode(GeneralData[0][18]) != '0.0':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'rörövermått (m ö my)' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][18]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][19]) != '':
+        if utils.returnunicode(GeneralData[0][19]) != '' and utils.returnunicode(GeneralData[0][19]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'markytans nivå, my (möh)' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][19])
             if utils.returnunicode(GeneralData[0][21]) != '':
                 rpt += u' (' +  utils.returnunicode(GeneralData[0][21]) + ')'
             rpt += '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][20]) != '':
+        if utils.returnunicode(GeneralData[0][20]) != '' and utils.returnunicode(GeneralData[0][20]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'onoggrannhet i höjd, avser rök (m)' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][20]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][13]) != '':
+        if utils.returnunicode(GeneralData[0][13]) != '' and utils.returnunicode(GeneralData[0][13]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'östlig koordinat' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][13]) + ' (' + CRSname  + ', EPSG:' + CRS + ')</TD></TR>'
-        if utils.returnunicode(GeneralData[0][14]) != '':
+        if utils.returnunicode(GeneralData[0][14]) != '' and utils.returnunicode(GeneralData[0][14]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'nordlig koordinat' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][14]) + ' (' + CRSname  + ', EPSG:' + CRS + ')</TD></TR>'
-        if utils.returnunicode(GeneralData[0][13]) != '' and utils.returnunicode(GeneralData[0][14]) != '' and utils.returnunicode(GeneralData[0][15]) != '':
+        if utils.returnunicode(GeneralData[0][13]) != ''  and utils.returnunicode(GeneralData[0][13]) != 'NULL' and utils.returnunicode(GeneralData[0][14]) != '' and utils.returnunicode(GeneralData[0][15]) != '':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'lägesonoggrannhet' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][15]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][7]) != '':
+        if utils.returnunicode(GeneralData[0][7]) != '' and utils.returnunicode(GeneralData[0][7]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'material' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][7]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][6]) != '':
+        if utils.returnunicode(GeneralData[0][6]) != '' and utils.returnunicode(GeneralData[0][6]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'innerdiameter (mm)' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][6]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][5]) != '':
+        if utils.returnunicode(GeneralData[0][5]) != '' and utils.returnunicode(GeneralData[0][5]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'borrningens avslut' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][5]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][8]) != '':
+        if utils.returnunicode(GeneralData[0][8]) != '' and utils.returnunicode(GeneralData[0][8]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'filter/spets' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][8]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][10]) != '':
+        if utils.returnunicode(GeneralData[0][10]) != '' and utils.returnunicode(GeneralData[0][10]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'borrningen avslutades' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][10]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][9]) != '':
+        if utils.returnunicode(GeneralData[0][9]) != '' and utils.returnunicode(GeneralData[0][9]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'kapacitet/vg på spetsnivå' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][9]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][2]) != '':
+        if utils.returnunicode(GeneralData[0][2]) != '' and utils.returnunicode(GeneralData[0][2]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'fastighet/plats' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][2]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][23]) != '':
+        if utils.returnunicode(GeneralData[0][23]) != '' and utils.returnunicode(GeneralData[0][23]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'referens' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][23]) + '</TD></TR>'
         rpt += r"""</p>"""
-        if utils.returnunicode(GeneralData[0][16]) != '':
+        if utils.returnunicode(GeneralData[0][16]) != '' and utils.returnunicode(GeneralData[0][16]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'lägesangivelsens ursprung' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][16]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][22]) != '':
+        if utils.returnunicode(GeneralData[0][22]) != '' and utils.returnunicode(GeneralData[0][22]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'höjdangivelsens ursprung' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][22]) + '</TD></TR>'
         return rpt
 
     def rpt_upper_left(self, GeneralData, CRS='', CRSname=''):
         rpt = r"""<p style="font-family:'arial'; font-size:8pt; font-weight:400; font-style:normal;">"""
-        if utils.returnunicode(GeneralData[0][1]) != '' and utils.returnunicode(GeneralData[0][1]) != utils.returnunicode(GeneralData[0][0]):
+        if utils.returnunicode(GeneralData[0][1]) != '' and utils.returnunicode(GeneralData[0][1]) != 'NULL' and utils.returnunicode(GeneralData[0][1]) != utils.returnunicode(GeneralData[0][0]):
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'original name' + r"""</TD><TD WIDTH=67%>""" + utils.returnunicode(GeneralData[0][1]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][3]) != '':
+        if utils.returnunicode(GeneralData[0][3]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'obs type' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][3]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][4]) != '':
+        if utils.returnunicode(GeneralData[0][4]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'depth (m fr gs to bottom)' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][4]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][17]) != '':
+        if utils.returnunicode(GeneralData[0][17]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'top of casing, toc (masl)' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][17])
             if utils.returnunicode(GeneralData[0][21]) != '':
                 rpt += u' (' +  utils.returnunicode(GeneralData[0][21]) + ')'
             rpt += '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][18]) != '' and utils.returnunicode(GeneralData[0][18]) != '0' and utils.returnunicode(GeneralData[0][18]) != '0.0':
+        if utils.returnunicode(GeneralData[0][18]) not in ['','NULL'] and utils.returnunicode(GeneralData[0][18]) != '0' and utils.returnunicode(GeneralData[0][18]) != '0.0':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'distance toc-gs, tocags (mags)' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][18]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][19]) != '':
+        if utils.returnunicode(GeneralData[0][19]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'ground surface level, gs (masl)' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][19])
             if utils.returnunicode(GeneralData[0][21]) != '':
                 rpt += u' (' +  utils.returnunicode(GeneralData[0][21]) + ')'
             rpt += '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][20]) != '':
+        if utils.returnunicode(GeneralData[0][20]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'elevation accuracy (m)' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][20]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][13]) != '':
+        if utils.returnunicode(GeneralData[0][13]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'eastern coordinate' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][13]) + ' (' + CRSname  + ', EPSG:' + CRS + ')</TD></TR>'
-        if utils.returnunicode(GeneralData[0][14]) != '':
+        if utils.returnunicode(GeneralData[0][14]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'northern coordinate' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][14]) + ' (' + CRSname  + ', EPSG:' + CRS + ')</TD></TR>'
-        if utils.returnunicode(GeneralData[0][13]) != '' and utils.returnunicode(GeneralData[0][14]) != '' and utils.returnunicode(GeneralData[0][15]) != '':
+        if utils.returnunicode(GeneralData[0][13]) not in ['','NULL'] and utils.returnunicode(GeneralData[0][14]) != '' and utils.returnunicode(GeneralData[0][15]) != '':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'position accuracy' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][15]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][7]) != '':
+        if utils.returnunicode(GeneralData[0][7]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'material' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][7]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][6]) != '':
+        if utils.returnunicode(GeneralData[0][6]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'inner diameter (mm)' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][6]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][5]) != '':
+        if utils.returnunicode(GeneralData[0][5]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'drill stop' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][5]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][8]) != '':
+        if utils.returnunicode(GeneralData[0][8]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'screen type' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][8]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][10]) != '':
+        if utils.returnunicode(GeneralData[0][10]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'drill date' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][10]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][9]) != '':
+        if utils.returnunicode(GeneralData[0][9]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'capacity' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][9]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][2]) != '':
+        if utils.returnunicode(GeneralData[0][2]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'place' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][2]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][23]) != '':
+        if utils.returnunicode(GeneralData[0][23]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'reference' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][23]) + '</TD></TR>'
         rpt += r"""</p>"""
-        if utils.returnunicode(GeneralData[0][16]) != '':
+        if utils.returnunicode(GeneralData[0][16]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'source for position' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][16]) + '</TD></TR>'
-        if utils.returnunicode(GeneralData[0][22]) != '':
+        if utils.returnunicode(GeneralData[0][22]) not in ['','NULL']:
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'source for elevation' + r"""</TD><TD WIDTH=50%>""" + utils.returnunicode(GeneralData[0][22]) + '</TD></TR>'
         return rpt
         
@@ -229,13 +229,20 @@ class drillreport():        # general observation point info for the selected ob
             rpt += r"""<TD WIDTH=9%><P><u>""" + u'stänger?' + '</P></u></TD>'
             rpt += r"""<TD WIDTH=27%><P><u>""" + u'kommentar' + '</P></u></TD></TR>'
         for row in StratData:
+            col2 = '' if utils.returnunicode(row[2])=='NULL' else utils.returnunicode(row[2])
+            col3 = '' if utils.returnunicode(row[3])=='NULL' else utils.returnunicode(row[3])
+            col4 = '' if utils.returnunicode(row[4])=='NULL' else utils.returnunicode(row[4])
+            col5 = '' if utils.returnunicode(row[5])=='NULL' else utils.returnunicode(row[5])
+            col6 = '' if utils.returnunicode(row[6])=='NULL' else utils.returnunicode(row[6])
+            col7 = '' if utils.returnunicode(row[7])=='NULL' else utils.returnunicode(row[7])
+            col8 = '' if utils.returnunicode(row[8])=='NULL' else utils.returnunicode(row[8])
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=17%><P>"""
-            rpt += utils.returnunicode(row[2]) + ' - ' + utils.returnunicode(row[3]) + '</P></TD>'
-            rpt += r"""<TD WIDTH=27%><P>""" + utils.returnunicode(row[4]) + '</P></TD>'
-            rpt += r"""<TD WIDTH=17%><P>""" + utils.returnunicode(row[5]) + '</P></TD>'
-            rpt += r"""<TD WIDTH=5%><P>""" + utils.returnunicode(row[6]) + '</P></TD>'
-            rpt += r"""<TD WIDTH=9%><P>""" + utils.returnunicode(row[7]) + '</P></TD>'
-            rpt += r"""<TD WIDTH=27%><P>""" + utils.returnunicode(row[8]) + '</P></TD></TR>'
+            rpt += col2 + ' - ' + col3 + '</P></TD>'
+            rpt += r"""<TD WIDTH=27%><P>""" + col4 + '</P></TD>'
+            rpt += r"""<TD WIDTH=17%><P>""" + col5 + '</P></TD>'
+            rpt += r"""<TD WIDTH=5%><P>""" + col6 + '</P></TD>'
+            rpt += r"""<TD WIDTH=9%><P>""" + col7 + '</P></TD>'
+            rpt += r"""<TD WIDTH=27%><P>""" + col8 + '</P></TD></TR>'
         rpt += r"""</p>"""
         return rpt
 
@@ -249,24 +256,31 @@ class drillreport():        # general observation point info for the selected ob
             rpt += r"""<TD WIDTH=13%><P><u>""" + u'development' + '</P></u></TD>'
             rpt += r"""<TD WIDTH=21%><P><u>""" + u'comment' + '</P></u></TD></TR>'
         for row in StratData:
+            col2 = '' if utils.returnunicode(row[2])=='NULL' else utils.returnunicode(row[2])
+            col3 = '' if utils.returnunicode(row[3])=='NULL' else utils.returnunicode(row[3])
+            col4 = '' if utils.returnunicode(row[4])=='NULL' else utils.returnunicode(row[4])
+            col5 = '' if utils.returnunicode(row[5])=='NULL' else utils.returnunicode(row[5])
+            col6 = '' if utils.returnunicode(row[6])=='NULL' else utils.returnunicode(row[6])
+            col7 = '' if utils.returnunicode(row[7])=='NULL' else utils.returnunicode(row[7])
+            col8 = '' if utils.returnunicode(row[8])=='NULL' else utils.returnunicode(row[8])
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=15%><P>"""
-            rpt += utils.returnunicode(row[2]) + ' - ' + utils.returnunicode(row[3]) + '</P></TD>'
-            rpt += r"""<TD WIDTH=27%><P>""" + utils.returnunicode(row[4]) + '</P></TD>'
-            rpt += r"""<TD WIDTH=17%><P>""" + utils.returnunicode(row[5]) + '</P></TD>'
-            rpt += r"""<TD WIDTH=9%><P>""" + utils.returnunicode(row[6]) + '</P></TD>'
-            rpt += r"""<TD WIDTH=13%><P>""" + utils.returnunicode(row[7]) + '</P></TD>'
-            rpt += r"""<TD WIDTH=21%><P>""" + utils.returnunicode(row[8]) + '</P></TD></TR>'
+            rpt += col2 + ' - ' + col3 + '</P></TD>'
+            rpt += r"""<TD WIDTH=27%><P>""" + col4 + '</P></TD>'
+            rpt += r"""<TD WIDTH=17%><P>""" + col5 + '</P></TD>'
+            rpt += r"""<TD WIDTH=9%><P>""" + col6 + '</P></TD>'
+            rpt += r"""<TD WIDTH=13%><P>""" + col7 + '</P></TD>'
+            rpt += r"""<TD WIDTH=21%><P>""" + col8 + '</P></TD></TR>'
         rpt += r"""</p>"""
         return rpt
 
     def rpt_lower_left(self, GeneralData):
         rpt = r"""<p style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;">"""
-        if utils.returnunicode(GeneralData[0][24]) != '' and utils.returnunicode(GeneralData[0][25]) != '':
+        if utils.returnunicode(GeneralData[0][24]) not in ['','NULL'] and utils.returnunicode(GeneralData[0][25]) not in ['','NULL']:
             rpt += utils.returnunicode(GeneralData[0][24])
             rpt += utils.returnunicode(GeneralData[0][25])
-        elif utils.returnunicode(GeneralData[0][24]) != '':
+        elif utils.returnunicode(GeneralData[0][24]) not in ['','NULL']:
             rpt += utils.returnunicode(GeneralData[0][24])
-        elif utils.returnunicode(GeneralData[0][25]) != '':
+        elif utils.returnunicode(GeneralData[0][25]) not in ['','NULL']:
             rpt += utils.returnunicode(GeneralData[0][25])
         rpt += r"""</p>"""
         return rpt
