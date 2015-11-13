@@ -79,15 +79,15 @@ class wqualreport():        # extracts water quality data for selected objects, 
 
         # Load all water quality parameters stored in two result columns: parameter, unit
         if not(unicode(self.settingsdict['wqual_unitcolumn']) ==''):          #If there is a a given column for unit 
-            sql =r"""select distinct parameter, """
+            sql =r"""select distinct """ + self.settingsdict['wqual_paramcolumn'] + """, """
             sql += self.settingsdict['wqual_unitcolumn']
             sql +=r""" from """
         else:                              # IF no specific column exist for unit
-            sql =r"""select distinct parameter, parameter from """  # The twice selection of parameter is a dummy to keep same structure (2 cols) of sql-answer as if a unit column exists
+            sql =r"""select distinct """ + self.settingsdict['wqual_paramcolumn'] + """, """ + self.settingsdict['wqual_paramcolumn'] + """ from """  # The twice selection of parameter is a dummy to keep same structure (2 cols) of sql-answer as if a unit column exists
         sql += self.settingsdict['wqualtable']
         sql += r""" where obsid = '"""
         sql += obsid  
-        sql += r"""' ORDER BY parameter"""
+        sql += r"""' ORDER BY """ + self.settingsdict['wqual_paramcolumn']
         parameters_cursor = curs.execute(sql) #Send SQL-syntax to cursor
         print(sql)#debug
         parameters = parameters_cursor.fetchall()
