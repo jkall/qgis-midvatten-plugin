@@ -459,15 +459,15 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
             # draw associated text
             if self.showDesc:
                 if self.GeoOrComment == "geology":
-                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, layer.geology)
+                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, '' if layer.geology=='NULL' else layer.geology)#'Yes' if fruit == 'Apple' else 'No'
                 elif self.GeoOrComment == "comment":
-                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, layer.comment)
+                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, '' if layer.comment=='NULL' else layer.comment)
                 elif self.GeoOrComment == "geoshort":
-                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, layer.geo_short)
+                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, '' if layer.geo_short=='NULL' else layer.geo_short)
                 elif self.GeoOrComment == "hydro":
-                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, layer.hydro)
+                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, '' if layer.hydro=='NULL' else layer.hydro)
                 else:
-                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, layer.development)
+                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, '' if layer.development=='NULL' else layer.development)
 
             y += y2
 
