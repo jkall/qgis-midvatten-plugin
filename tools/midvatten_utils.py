@@ -25,7 +25,10 @@ from qgis.gui import *
 import qgis.utils
 import sys
 import os
+import tempfile
+from contextlib import contextmanager
 from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialite-specific sql clauses may be sent by sql_alter_db and sql_load_fr_db
+from pyspatialite.dbapi2 import IntegrityError 
 import time
 
 class dbconnection():
@@ -215,7 +218,10 @@ def sql_alter_db(sql=''):
     curs = conn.cursor()
     sql2 = sql 
     curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
-    resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
+    try:
+        resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
+    except IntegrityError, e:
+        raise IntegrityError(str(e) + "\nAn obsid chosen for import probably didn't exist in the obs_point table")
     result = resultfromsql.fetchall()
     conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
     resultfromsql.close()
@@ -329,3 +335,11 @@ def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
         qgis.utils.iface.messageBar().pushMessage("Error","You have to select/activate %s layer!"%layername, 2,duration=10)
     return errorsignal
     
+@contextmanager
+def tempinput(data):
+    temp = tempfile.NamedTemporaryFile(delete=False, suffix='.csv')
+    temp.write(data.encode('CP1252'))
+    temp.close()
+    yield temp.name
+    #os.unlink(temp.name) #TODO: This results in an error: WindowsError: [Error 32] Det g�r inte att komma �t filen eftersom den anv�nds av en annan process: 'c:\\users\\dator\\appdata\\local\\temp\\tmpxvcfna.csv'
+

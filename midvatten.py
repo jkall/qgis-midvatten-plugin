@@ -114,6 +114,9 @@ class midvatten:
         self.action_import_wlvllogg = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), "Import w level from logger", self.iface.mainWindow())
         QObject.connect(self.action_import_wlvllogg , SIGNAL("triggered()"), self.import_wlvllogg)
         
+        self.action_import_diverofficedata = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), "Import w level from diveroffice files", self.iface.mainWindow())
+        QObject.connect(self.action_import_diverofficedata, SIGNAL("triggered()"), self.import_diverofficedata)
+        
         self.action_wlvlloggcalibrate = QAction(QIcon(":/plugins/midvatten/icons/calibr_level_logger_masl.png"), "Calibrate w level from logger", self.iface.mainWindow())
         QObject.connect(self.action_wlvlloggcalibrate , SIGNAL("triggered()"), self.wlvlloggcalibrate)
 
@@ -214,7 +217,8 @@ class midvatten:
         self.menu.addMenu(self.menu.import_data_menu)
         self.menu.import_data_menu.addAction(self.actionimport_obs_points)   
         self.menu.import_data_menu.addAction(self.action_import_wlvl)   
-        self.menu.import_data_menu.addAction(self.action_import_wlvllogg)   
+        self.menu.import_data_menu.addAction(self.action_import_wlvllogg)
+        self.menu.import_data_menu.addAction(self.action_import_diverofficedata)         
         self.menu.import_data_menu.addAction(self.actionimport_wqual_lab)
         self.menu.import_data_menu.addAction(self.actionimport_wqual_field)   
         self.menu.import_data_menu.addAction(self.action_import_wflow)   
@@ -549,6 +553,32 @@ class midvatten:
                     except:
                         pass
 
+    def import_diverofficedata(self): 
+        allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:   
+            if not (self.ms.settingsdict['database'] == ''):
+                if qgis.utils.iface.activeLayer():
+                    longmessage = """You are about to import water head data, recorded with a\nLevel Logger (e.g. Diver)."""
+                    longmessage +=u""".\nData is supposed to be imported from a diveroffice file where obsid is supplied as 'Location'.\nThe data is supposed to be semicolon or comma\nseparated . The header for the data should have columns:\n\nDate/time,Water head[cm],Temperature[°C]\nor\nDate/time,Water head[cm],Temperature[°C],1:Conductivity[mS/cm]\n\nColumn names are unimportant although column order is.\nAlso, date-time must have format yyyy/mm/dd hh:mm(:ss) and\nthe other columns must be real numbers with point(. or ,) as decimal separator and no separator for thousands.\nRemember to not use comma in the comment field!\n\nAlso, records where any fields are empty will be excluded from the report!\n\nContinue?"""
+                    sanity = utils.askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
+                    if sanity.result == 1:
+                        from import_data_to_db import midv_data_importer
+                        importinstance = midv_data_importer()
+                        importinstance.wlvllogg_import()
+                        if not importinstance.status=='True':      
+                            self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                        else:
+                            try:
+                                self.midvsettingsdialog.ClearEverything()
+                                self.midvsettingsdialog.LoadAndSelectLastSettings()
+                            except:
+                                pass                            
+                else:
+                    self.iface.messageBar().pushMessage("Critical","You have to select the obs_points layer!", 2)
+            else: 
+                self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
+                        
     def import_wlvllogg(self):#  - should be rewritten 
         allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode

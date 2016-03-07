@@ -28,8 +28,10 @@ from qgis.gui import *
 import qgis.utils
 import locale
 import os
+from datetime import datetime
 from pyspatialite import dbapi2 as sqlite #could perhaps have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import midvatten_utils as utils
+from date_utils import find_date_format
 
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
 
@@ -277,6 +279,69 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
+    def wlvllogg_import(self):
+        """ Method for importing diveroffice csv files """
+        self.prepare_import('temporary_logg_lvl')
+        
+        result_info = []      
+        
+        existing_obsids = utils.sql_load_fr_db("""select distinct obsid from '%s'"""%'obs_points')[1]      
+        existing_obsids = [str(obsid[0]) for obsid in existing_obsids]
+        
+        files = self.select_files()
+        for selected_file in files:
+            file_data = self.load_diveroffice_file(selected_file, existing_obsids)
+            with utils.tempinput(file_data) as csvpath:
+                self.csvlayer = self.csv2qgsvectorlayer(csvpath)
+                #Continue to next file if the file failed to import
+                if not self.csvlayer:
+                    continue
+                    
+                self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
+                cleaningok = self.cleanuploggerdata() # returns 1 if cleaning went well
+
+                #HERE IS WHERE DATA IS TRANSFERRED TO w_levels_logger
+                if cleaningok == 1: # If cleaning was OK, then perform the import
+                    self.goalcolumns = utils.sql_load_fr_db("""PRAGMA table_info(w_levels_logger)""")[1]
+                    if len(self.columns) == 5: #No conductivity data
+                        sqlpart1 = """INSERT OR IGNORE INTO "w_levels_logger" ("%s", "%s", "%s", "%s") """%(self.goalcolumns[0][1],self.goalcolumns[1][1],self.goalcolumns[2][1],self.goalcolumns[3][1])     # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
+                        sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as double), CAST("%s" as double)"""%(self.columns[3][1],self.columns[0][1],self.columns[1][1],self.columns[2][1])     
+                        sqlpart3 = """ FROM %s"""%(self.temptableName) 
+                        sql = sqlpart1 + sqlpart2 + sqlpart3
+                        utils.sql_alter_db(sql)     
+                        #utils.pop_up_info(sql, "debug") #debug                
+                        self.status = 'True'        # Cleaning was OK and import perfomed!!
+
+                    elif len(self.columns) ==6: #Including conductivity data
+                        sqlpart1 = """INSERT OR IGNORE INTO "w_levels_logger" ("%s", "%s", "%s", "%s", "%s") """%(self.goalcolumns[0][1],self.goalcolumns[1][1],self.goalcolumns[2][1],self.goalcolumns[3][1],self.goalcolumns[4][1])     # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
+                        sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double)"""%(self.columns[4][1],self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1])     
+                        sqlpart3 = """ FROM %s"""%(self.temptableName)    
+                        sql = sqlpart1 + sqlpart2 + sqlpart3
+                        utils.sql_alter_db(sql)     
+                        #utils.pop_up_info(sql, "debug") #debug
+                        self.status = 'True'        # Cleaning was OK and import perfomed!!
+
+                    #Statistics
+                    self.RecordsAfter = utils.sql_load_fr_db("""SELECT Count(*) FROM w_levels_logger""")[1]
+                    NoExcluded = self.RecordsToImport[0][0] - (self.RecordsAfter[0][0] - self.RecordsBefore[0][0])
+                    if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
+                        result_info.append("""%s: In total %s measurements were not imported from the file since they would cause duplicates in the database."""%(selected_file, NoExcluded))
+                        #utils.pop_up_info("""In total %s measurements were not imported from the file since they would cause duplicates in the database."""%NoExcluded)
+                    else:  # If some of the imported data already existed in the database, let the user know
+                        result_info.append("""%s: In total %s measurements were imported."""%(selected_file,(self.RecordsAfter[0][0] - self.RecordsBefore[0][0])))
+                        #utils.pop_up_info("""In total %s measurements were imported."""%(self.RecordsAfter[0][0] - self.RecordsBefore[0][0]))
+                elif cleaningok == 0 and not(len(self.columns)==5 or len(self.columns)==6):
+                    utils.pop_up_info("Import file must have exactly three columns!\n(Or four if conductivity is also measured.)", "Import Error for file " + selected_file)
+                    self.status = 'False'
+                else:
+                    self.status = 'False'       #Cleaning was not ok and status is false - no import performed
+
+                utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
+        utils.pop_up_info('\n'.join(result_info))
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        self.SanityCheckVacuumDB()
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()        
+        
     def wquallab_import(self): 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.csvpath = ''
@@ -330,6 +395,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        
+    def prepare_import(self, temptableName):
+        """ Shared stuff as preparation for the import """
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+        self.csvpath = ''
+        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+        self.temptableName = temptableName        
 
     def VerifyIDInMajorTable(self,MajorTable): #for all tables with foreign key = obsid
         notinmajor = 'False'
@@ -415,7 +487,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
             qgis.utils.iface.messageBar().pushMessage("Warning","""In total %s posts were not imported since they would have caused duplicates in the database."""%NoExcluded, 1)
 
-    def selectcsv(self): # general importer
+    def selectcsv(self, only_one_file=True): # general importer
         """Select the csv file, user must also tell what charset to use"""
         try:#MacOSX fix2
             localencoding = locale.getdefaultlocale()[1]
@@ -423,17 +495,93 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         except:
             self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal,'utf-8')
         if self.charsetchoosen and not (self.charsetchoosen[0]==0 or self.charsetchoosen[0]==''):
-            self.csvpath = PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")
-            if not self.csvpath or self.csvpath=='': 
-                return
+            if only_one_file:
+                self.csvpath = PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")
+                csvlayer = self.csv2qgsvectorlayer(self.csvpath)
             else:
-                csvlayer = QgsVectorLayer(self.csvpath, "temporary_csv_layer", "ogr")
-                if not csvlayer.isValid():
-                    qgis.utils.iface.messageBar().pushMessage("Failure","Impossible to Load File in QGis:\n" + str(self.csvpath), 2)
-                    return False
-                csvlayer.setProviderEncoding(str(self.charsetchoosen[0]))                 #Set the Layer Encoding
-                return csvlayer
+                self.csvpath = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
+                csvlayer = [self.csv2qgsvectorlayer(path) for path in self.csvpath if path]
+            return csvlayer        
+            
+    def csv2qgsvectorlayer(self, path):
+        """ Creates QgsVectorLayer from a csv file """
+        if not path:
+            qgis.utils.iface.messageBar().pushMessage("Failure, no csv file was selected.")
+            return False
+        csvlayer = QgsVectorLayer(path, "temporary_csv_layer", "ogr")
+        if not csvlayer.isValid():
+            qgis.utils.iface.messageBar().pushMessage("Failure","Impossible to Load File in QGis:\n" + str(path), 2)
+            return False
+        csvlayer.setProviderEncoding(str(self.charsetchoosen[0]))                 #Set the Layer Encoding                                        
+        return csvlayer            
 
+    def select_files(self):
+        try:#MacOSX fix2
+            localencoding = locale.getdefaultlocale()[1]
+            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
+        except:
+            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal,'utf-8')
+        if self.charsetchoosen and not (self.charsetchoosen[0]==0 or self.charsetchoosen[0]==''):
+            path = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
+        return path
+
+    def load_diveroffice_file(self, path, existing_obsids=None):
+        """ Parses a diveroffice csv file into a string
+        
+            The Location attribute is used as obsid and added as a column.
+            Values containing ',' is replaced with '.'
+        """    
+        filedata = []
+        begin_extraction = False
+        with open(path, 'r') as f:
+            obsid = None
+            for rawrow in f:
+                row = rawrow.decode('CP1252').rstrip('\n').rstrip('\r').lstrip()
+                if row.startswith('Location'):
+                    obsid = row.split('=')[1].strip()
+                    continue
+                cols = row.split(';')
+                if row.startswith('Date/time'):
+                    cols.append('obsid')
+                    begin_extraction = True
+                    
+                    if obsid is None:
+                        obsid = PyQt4.QtGui.QInputDialog.getText(None, "Submit obsid", "The obsid name was not found for " + str(path) + ", please give the name", PyQt4.QtGui.QLineEdit.Normal, 'obsid')[0]
+                    if existing_obsids is not None:
+                        if obsid not in existing_obsids:
+                            obsid = obsid.capitalize()
+                        if obsid not in existing_obsids:
+                            obsid = PyQt4.QtGui.QInputDialog.getText(None, "WARNING", "The supplied obsis did not exist in obs_points, please submit it again for " + str(path) + ".", PyQt4.QtGui.QLineEdit.Normal, 'obsid')[0]                        
+                        if obsid not in existing_obsids:
+                            qgis.utils.iface.messageBar().pushMessage("Failure, the obsid " + obsid + " did not exist in obs_points.")
+                        
+                    filedata.append(';'.join(cols))
+                    continue
+                if begin_extraction:
+                    dateformat = find_date_format(cols[0])
+                    if dateformat is not None:
+                        date = datetime.strptime(cols[0], dateformat)
+                        printrow = [datetime.strftime(date,
+                                    '%Y-%m-%d %H:%M:%S')]
+                        printrow.extend([col.replace(',', '.')
+                                       for col in cols[1:]])
+                        printrow.append(obsid)
+                        filedata.append(';'.join(printrow))
+        filestring = '\n'.join(filedata)
+        return filestring
+
+    def csv2qgsvectorlayer(self, path):
+        """ Converts a csv path into a QgsVectorLayer """
+        if not path:
+            qgis.utils.iface.messageBar().pushMessage("Failure, no csv file was selected.")
+            return False        
+        csvlayer = QgsVectorLayer(path, "temporary_csv_layer", "ogr")
+        if not csvlayer.isValid():
+            qgis.utils.iface.messageBar().pushMessage("Failure","Impossible to Load File in QGis:\n" + str(path), 2)
+            return False
+        csvlayer.setProviderEncoding(str(self.charsetchoosen[0]))                 #Set the Layer Encoding                                        
+        return csvlayer                
+                
     def qgiscsv2sqlitetable(self): # general importer
         """Upload qgis csv-csvlayer (QgsMapLayer) as temporary table (temptableName) in current DB. status='True' if succesfull, else 'false'."""
         self.status = 'False'
@@ -500,6 +648,38 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         curs.close()
         conn.close()
 
+    def cleanuploggerdata(self):
+        """performs some sanity checks of the imported data and removes duplicates and empty records"""
+        #First load column names
+        self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]
+        if len(self.columns)==4 or len(self.columns)==5:  #only if correct number of columns!!
+            #And then simply remove all empty records
+            for column in self.columns:      #This method is quite cruel since it removes every record where any of the fields are empty
+                utils.sql_alter_db("""DELETE FROM "%s" where "%s" in('',' ') or "%s" is null"""%(self.temptableName,column[1],column[1]))
+            #THE METHOD ABOVE NEEDS REVISON
+            # Add level_masl column and fill with data
+            utils.sql_alter_db("""ALTER table "%s" ADD COLUMN level_masl double"""%self.temptableName)
+            utils.sql_alter_db("""UPDATE "%s" SET level_masl = -999-"%s" """%(self.temptableName,self.columns[1][1]))
+            #Then reload self.columns since two new columns are added!
+            self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]
+            
+            #Some statistics
+            self.RecordsBefore = utils.sql_load_fr_db("""SELECT Count(*) FROM w_levels_logger""")[1]
+            self.RecordsToImport = utils.sql_load_fr_db("""SELECT Count(*) FROM (SELECT DISTINCT "%s" FROM %s)"""%(self.columns[0][1],self.temptableName))[1]
+            self.RecordsInFile = utils.sql_load_fr_db("""SELECT Count(*) FROM %s"""%self.temptableName)[1]
+
+            #Then check wether there are duplicates in the imported file and if so, ask user what to do
+            if self.RecordsInFile[0][0] > self.RecordsToImport[0][0]: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
+                duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\n(More than one measurement at the same date_time.)\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicate measurements.\n\nProceed?"""%(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]),"Warning!")
+                #utils.pop_up_info(duplicatequestion.result)    #debug
+                if duplicatequestion.result == 0:      # if the user wants to abort
+                    return 0    # return 0 and then nothing will be imported
+
+            # Return 1 to perform import if either no duplicates existed in importfile or user wants to import only the last record of the duplicates 
+            return 1
+        else:
+            return 0                    
+        
     def SanityCheckVacuumDB(self):
         sanity = utils.askuser("YesNo","""It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""",'Vacuum the database?')
         if sanity.result == 1:
@@ -698,3 +878,4 @@ class wlvlloggimportclass():
             return 1
         else:
             return 0
+ 
