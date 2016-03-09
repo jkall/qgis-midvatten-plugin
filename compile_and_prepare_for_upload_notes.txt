@@ -1,0 +1,23 @@
+# ----------- icons -------------
+- icons should be 22x22 px
+- set paths to icons in resources.qrc
+- compile resources.qrc (i.e. update resources.py):
+$ cd ~/pythoncode/qgis_plugins/midvatten && pyrcc4 -o resources.py resources.qrc
+
+# ----------- Qt ui ------------
+- keep all ui forms in a subfolder ui which also contains an empty file __init__.py
+- use direct load of qt ui w/o pyuic4 compilation (https://github.com/jkall/qgis-midvatten-plugin/issues/63) which is the case for:
+    - calc_aveflow_dialog
+    - calc_lvl_dialog
+    - calibr_logger_dialog
+    - customplotdialog
+    - secplotdockwidget_ui
+- for ui where direct load is not possible, compile new ui-files (i.e. create corresponding py files):
+$ cd ~/pythoncode/qgis_plugins/midvatten/ui && pyuic4 -xo myui.py myui.ui
+
+# ---------- prepare for upload to qgis plugin repo ---------------
+make a zipped archive of midvatten folder, excluding: 
+- *.pyc
+- gitignore file
+- .git folder
+- html files in subfolder reports
