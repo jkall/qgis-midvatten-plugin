@@ -291,6 +291,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         files = self.select_files()
         for selected_file in files:
             file_data = self.load_diveroffice_file(selected_file, existing_obsids)
+            if file_data == 'failed':
+                utils.pop_up_info("The import failed and has been stopped.")
+                break
+            elif file_data == 'continue':
+                continue            
             with utils.tempinput(file_data) as csvpath:
                 self.csvlayer = self.csv2qgsvectorlayer(csvpath)
                 #Continue to next file if the file failed to import
@@ -545,16 +550,16 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     cols.append('obsid')
                     begin_extraction = True
                     
-                    if obsid is None:
-                        obsid = PyQt4.QtGui.QInputDialog.getText(None, "Submit obsid", "The obsid name was not found for " + str(path) + ", please give the name", PyQt4.QtGui.QLineEdit.Normal, 'obsid')[0]
+                    obsid = PyQt4.QtGui.QInputDialog.getText(None, "Submit obsid", "The obsid " + str(obsid) + " was found for " + str(path) + ", accept the found name or change it below", PyQt4.QtGui.QLineEdit.Normal, obsid.capitalize() if obsid is not None else 'None')[0]
                     if existing_obsids is not None:
                         if obsid not in existing_obsids:
-                            obsid = obsid.capitalize()
+                            obsid = PyQt4.QtGui.QInputDialog.getText(None, "WARNING", "The supplied obsid '" + str(obsid) + "' did not exist in obs_points, please submit it again for " + str(path) + ".", PyQt4.QtGui.QLineEdit.Normal, 'obsid')[0]                        
                         if obsid not in existing_obsids:
-                            obsid = PyQt4.QtGui.QInputDialog.getText(None, "WARNING", "The supplied obsis did not exist in obs_points, please submit it again for " + str(path) + ".", PyQt4.QtGui.QLineEdit.Normal, 'obsid')[0]                        
-                        if obsid not in existing_obsids:
-                            qgis.utils.iface.messageBar().pushMessage("Failure, the obsid " + obsid + " did not exist in obs_points.")
-                        
+                            stop_question = utils.askuser("YesNo", "Failure, the obsid '" + obsid + "' did not exist in obs_points, import will fail.\n\nDo you wan't to stop the import? (else it will continue with the next file)")
+                            if stop_question.result:
+                                return 'failed'
+                            else:
+                                return 'continue'                        
                     filedata.append(';'.join(cols))
                     continue
                 if begin_extraction:
