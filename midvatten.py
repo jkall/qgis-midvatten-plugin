@@ -305,7 +305,7 @@ class midvatten:
         filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
         iniText = QSettings(filenamepath , QSettings.IniFormat)#This method seems to return a list of unicode strings BUT it seems as if the encoding from the byte strings in the file is not utf-8, hence there is need for special encoding, see below
         verno = str(iniText.value('version'))
-        author = iniText.value('author').encode('cp1252')#.encode due to encoding probs
+        author = ', '.join(iniText.value('author')).encode('cp1252')#.encode due to encoding probs
         email = str(iniText.value('email'))
         homepage = str(iniText.value('homepage'))
 
