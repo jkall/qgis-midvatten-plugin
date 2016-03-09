@@ -194,7 +194,7 @@ Please note that this will change the database.</string>
          </font>
         </property>
         <property name="text">
-         <string>SelectFrom</string>
+         <string>Select from</string>
         </property>
        </widget>
       </item>             
@@ -288,7 +288,7 @@ Please note that this will change the database.</string>
          </font>
         </property>
         <property name="text">
-         <string>SelectTo</string>
+         <string>Select to</string>
         </property>
        </widget>
       </item>         
@@ -513,9 +513,34 @@ Please note that this will change the database.</string>
        <item row="0" column="0">
         <layout class="QVBoxLayout" name="layoutplot"/>
        </item>
+    <item row="1" column="0">    
+     <widget class="QCheckBox" name="loggerLineNodes">    
+      <property name="sizePolicy">    
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">    
+        <horstretch>0</horstretch>    
+        <verstretch>0</verstretch>    
+       </sizepolicy>    
+      </property>    
+      <property name="minimumSize">    
+       <size>    
+        <width>0</width>    
+        <height>0</height>    
+       </size>    
+      </property>    
+      <property name="font">    
+       <font>    
+        <family>Arial</family>    
+        <pointsize>10</pointsize>    
+       </font>    
+      </property>
+      <property name="text">
+       <string>Circle nodes for logger line</string>
+      </property>      
+     </widget>    
+    </item>         
       </layout>
      </widget>
-    </item>
+    </item>        
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">

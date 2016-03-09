@@ -260,7 +260,11 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.plot_recarray(self.axes, self.meas_ts, obsid, 'o-')     
         
         # Load Loggerlevels (full time series) for the obsid
-        self.plot_recarray(self.axes, self.logger_ts, obsid + unicode(' logger', 'utf-8'), '.-') # LINEPLOT WITH DOTS!!
+        if self.loggerLineNodes.isChecked():
+            logger_line_style = '.-'
+        else:
+            logger_line_style = '-'                
+        self.plot_recarray(self.axes, self.logger_ts, obsid + unicode(' logger', 'utf-8'), logger_line_style)
 
         """ Finish plot """
         self.axes.grid(True)
@@ -278,6 +282,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
     def set_from_date_from_x(self):
         """ Used to set the self.FromDateTime by clicking on a line node in the plot self.canvas """
+        utils.pop_up_info(self.date_select_from_click_pop_up_info())
         self.reset_cid_fromx()
         self.canvas.setFocusPolicy(Qt.ClickFocus)
         self.canvas.setFocus()   
@@ -286,7 +291,8 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.meas_pos = None 
 
     def set_to_date_from_x(self):
-        """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """    
+        """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """ 
+        utils.pop_up_info(self.date_select_from_click_pop_up_info())        
         self.reset_cid_fromx()
         self.canvas.setFocusPolicy(Qt.ClickFocus)
         self.canvas.setFocus()   
@@ -302,7 +308,10 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         found_date = utils.find_nearest_date_from_event(event)
         date_holder.setDateTime(found_date)           
         self.reset_cid_fromx()
-        
+    
+    def date_select_from_click_pop_up_info(self):
+        return "Make selection as close as possible to a line node.\nIt's especially important to select very close to the node on the x-axis.\nZoom in if necessary."
+
     def reset_cid_fromx(self):
         """ Resets self.cid_fromx to an empty list and disconnects unused events """
         for x in self.cid_fromx:
@@ -327,7 +336,12 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.canvas.setFocus()
 
         if self.log_pos is None:            
-            utils.pop_up_info("Select a node from the logger line\n")
+            utils.pop_up_info("This function is used for calibrating the values inside the chosen period to a specific level.\n"
+                              "Click this button after each select!!!\n"
+                              "First a logger line node is selected, then a y-position is selected.\n"
+                              "Using these two selections, the logger position is calculated and used\n"
+                              "for all values inside the chosen period.\n" + self.date_select_from_click_pop_up_info() + "\n"
+                              "\n\n\nSelect a node from the logger line.")
             self.cid_lpos.append(self.canvas.mpl_connect('pick_event', self.set_log_pos_from_node_date_click))  
         
         if self.log_pos is not None and self.meas_pos is None:
@@ -387,9 +401,12 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         if really_calibrate_question.result == 0: # if the user wants to abort
             return
             
-        coupled_vals = self.match_ts_values(self.meas_ts, self.head_ts, tolerance)    
-        self.LoggerPos.setText(str(utils.calc_mean_diff(coupled_vals)))
-        self.calibrateandplot()         
+        coupled_vals = self.match_ts_values(self.meas_ts, self.head_ts, tolerance)
+        if not coupled_vals:
+            utils.pop_up_info("There was no measurements or logger values inside the chosen period.\nNo calibration can be done!")
+        else:            
+            self.LoggerPos.setText(str(utils.calc_mean_diff(coupled_vals)))
+            self.calibrateandplot()         
      
     def match_ts_values(self, meas_ts, head_ts, tolerance):
         """ Matches two timeseries values for shared timesteps 
