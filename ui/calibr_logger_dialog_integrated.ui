@@ -179,6 +179,25 @@ Please note that this will change the database.</string>
           </property>
          </widget>
         </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="pushButtonFrom">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>SelectFrom</string>
+        </property>
+       </widget>
+      </item>             
         <item row="1" column="0">
          <widget class="QDateTimeEdit" name="FromDateTime">
           <property name="sizePolicy">
@@ -254,6 +273,25 @@ Please note that this will change the database.</string>
           </property>
          </widget>
         </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="pushButtonTo">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>SelectTo</string>
+        </property>
+       </widget>
+      </item>         
         <item row="3" column="0">
          <widget class="QDateTimeEdit" name="ToDateTime">
           <property name="sizePolicy">
@@ -348,6 +386,25 @@ Please note that this will change the database.</string>
         </item>
        </layout>
       </item>
+      <item row="5" column="0">
+       <widget class="QPushButton" name="pushButtonLpos">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Calibrate by selection in plot</string>
+        </property>
+       </widget>
+      </item>            
       <item row="5" column="1">
        <widget class="QPushButton" name="pushButton">
         <property name="sizePolicy">
@@ -367,6 +424,75 @@ Please note that this will change the database.</string>
         </property>
        </widget>
       </item>
+      <item row="6" column="0">
+       <widget class="QPushButton" name="pushButtonCalcBestFit">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Calibrate by best fit</string>
+        </property>
+       </widget>
+      </item>
+        <item row="7" column="0">
+         <widget class="QLabel" name="label_tolerance">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Tolerance: (ex: '10 minutes')</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="indent">
+           <number>3</number>
+          </property>
+         </widget>
+        </item>      
+        <item row="7" column="1">
+         <widget class="QLineEdit" name="bestFitTolerance">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="inputMethodHints">
+           <set>Qt::ImhPreferNumbers</set>
+          </property>
+         </widget>
+        </item>      
      </layout>
     </item>
     <item row="0" column="1">
