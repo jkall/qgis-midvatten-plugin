@@ -66,6 +66,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.ListOfTables_WQUAL, SIGNAL("activated(int)"), partial(self.WQUALTableUpdated))  
         self.connect(self.ListOfColumns_WQUALPARAM, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualParam)) 
         self.connect(self.ListOfColumns_WQUALVALUE, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualValue))
+        self.connect(self.ListOfdate_time_format, SIGNAL("activated(int)"), partial(self.ChangedListOfdate_time_format))
         self.connect(self.ListOfColumns_WQUALUNIT, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualUnit))         
         self.connect(self.ListOfColumns_WQUALSORTING, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualSorting))                 
         #tab stratigraphy
@@ -132,6 +133,10 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ms.settingsdict['wqual_sortingcolumn']=self.ListOfColumns_WQUALSORTING.currentText()
         self.ms.save_settings('wqual_sortingcolumn')
 
+    def ChangedListOfdate_time_format(self):
+        self.ms.settingsdict['wqual_date_time_format']=self.ListOfdate_time_format.currentText()
+        self.ms.save_settings('wqual_date_time_format')
+
     def ChangedParamCl(self):
         self.ms.settingsdict['piper_cl']=self.paramCl.currentText()
         self.ms.save_settings('piper_cl')
@@ -180,7 +185,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ClearTableLists()
         self.ClearColumnLists()
         self.ClearPiperParams()
-        
+
     def ClearTableLists(self):
         self.ListOfTables.clear()    
         self.ListOfTables_2.clear()    
@@ -213,114 +218,133 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             self.LoadDistinctPiperParams(self.ms.settingsdict['database'])
 
             #TS plot settings
-            if len(str(self.ms.settingsdict['tstable'])):#If there is a last selected tstable. #MacOSX fix1
-                notfound=0 
-                i=0
-                while notfound==0:    # Loop until the last selected tstable is found
-                    self.ListOfTables.setCurrentIndex(i)
-                    if unicode(self.ListOfTables.currentText()) == unicode(self.ms.settingsdict['tstable']):#The index count stops when last selected table is found #MacOSX fix1
-                        notfound=1
-                        self.TSTableUpdated()        # Fill the given combobox with columns from the given table and also perform a sanity check of table
-                        searchindex = self.ListOfColumns.findText(self.ms.settingsdict['tscolumn'])
-                        if searchindex >= 0:
-                            self.ListOfColumns.setCurrentIndex(searchindex)
-                    elif i> len(self.ListOfTables):
-                        notfound=1
-                    i = i + 1
-                
-            if self.ms.settingsdict['tsdotmarkers']==2:#If the TSPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
-                self.checkBoxDataPoints.setChecked(True)
-            else:
-                self.checkBoxDataPoints.setChecked(False)
-            if self.ms.settingsdict['tsstepplot']==2: #If the TSPlot stepplot checkbox was checked last time it will be so now #MacOSX fix1
-                self.checkBoxStepPlot.setChecked(True)
-            else:
-                self.checkBoxStepPlot.setChecked(False)
-
+            self.load_and_select_last_ts_plot_settings()
+            
             #XY plot settings
-            if len(self.ms.settingsdict['xytable']):#If there is a last selected xytable #MacOSX fix1
-                notfound=0 
-                i=0
-                while notfound==0: #looping through ListOfTables_2 looking for last selected xytable
-                    self.ListOfTables_2.setCurrentIndex(i)
-                    if unicode(self.ListOfTables_2.currentText()) == unicode(self.ms.settingsdict['xytable']):    #when last selected xytable found, it is selected in list and a lot of columns is searced for #MacOSX fix1
-                        notfound=1
-                        self.XYTableUpdated()    # Fill the given combobox with columns from the given table and performs a test
-                        searchindex = self.ListOfColumns_2.findText(self.ms.settingsdict['xy_xcolumn'])
-                        if searchindex >= 0:
-                            self.ListOfColumns_2.setCurrentIndex(searchindex)
-                        searchindex = self.ListOfColumns_3.findText(self.ms.settingsdict['xy_y1column'])
-                        if searchindex >= 0:
-                            self.ListOfColumns_3.setCurrentIndex(searchindex)
-                        searchindex = self.ListOfColumns_4.findText(self.ms.settingsdict['xy_y2column'])
-                        if searchindex >= 0:
-                            self.ListOfColumns_4.setCurrentIndex(searchindex)
-                        searchindex = self.ListOfColumns_5.findText(self.ms.settingsdict['xy_y3column'])
-                        if searchindex >= 0:
-                            self.ListOfColumns_5.setCurrentIndex(searchindex)
-                    elif i> len(self.ListOfTables_2):
-                        notfound=1
-                    i = i + 1
-
-            if self.ms.settingsdict['xydotmarkers']==2:# If the XYPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
-                self.checkBoxDataPoints_2.setChecked(True)
-            else:
-                self.checkBoxDataPoints_2.setChecked(False)
+            self.load_and_select_last_xyplot_settings()
             
             #Stratigraphy settings
-            searchindex = self.ListOfTables_3.findText(self.ms.settingsdict['stratigraphytable'])
-            if searchindex >= 0:
-                self.ListOfTables_3.setCurrentIndex(searchindex)
-
+            self.load_and_select_last_stratigraphy_settings()
+            
             #Water Quality Reports settings
-            searchindexouter = self.ListOfTables_WQUAL.findText(self.ms.settingsdict['wqualtable'])
-            if searchindexouter >= 0:
-                self.ListOfTables_WQUAL.setCurrentIndex(searchindexouter)
-                self.WQUALTableUpdated()
-                #and then check all possible last selected columns for parameters, values etc.
-                searchindex = self.ListOfColumns_WQUALPARAM.findText(self.ms.settingsdict['wqual_paramcolumn'])
-                if searchindex >= 0:
-                    self.ListOfColumns_WQUALPARAM.setCurrentIndex(searchindex)
-                searchindex = self.ListOfColumns_WQUALVALUE.findText(self.ms.settingsdict['wqual_valuecolumn'])
-                if searchindex >= 0:
-                    self.ListOfColumns_WQUALVALUE.setCurrentIndex(searchindex)
-                searchindex = self.ListOfColumns_WQUALUNIT.findText(self.ms.settingsdict['wqual_unitcolumn'])
-                if searchindex >= 0:
-                    self.ListOfColumns_WQUALUNIT.setCurrentIndex(searchindex)
-                searchindex = self.ListOfColumns_WQUALSORTING.findText(self.ms.settingsdict['wqual_sortingcolumn'])
-                if searchindex >= 0:
-                    self.ListOfColumns_WQUALSORTING.setCurrentIndex(searchindex)
+            self.load_and_select_last_wqual_settings()
 
             #piper diagram settings
-            searchindex = self.paramCl.findText(self.ms.settingsdict['piper_cl'])
-            if searchindex >= 0:
-                self.paramCl.setCurrentIndex(searchindex)
-            searchindex = self.paramHCO3.findText(self.ms.settingsdict['piper_hco3'])
-            if searchindex >= 0:
-                self.paramHCO3.setCurrentIndex(searchindex)
-            searchindex = self.paramSO4.findText(self.ms.settingsdict['piper_so4'])
-            if searchindex >= 0:
-                self.paramSO4.setCurrentIndex(searchindex)
-            searchindex = self.paramNa.findText(self.ms.settingsdict['piper_na'])
-            if searchindex >= 0:
-                self.paramNa.setCurrentIndex(searchindex)
-            searchindex = self.paramK.findText(self.ms.settingsdict['piper_k'])
-            if searchindex >= 0:
-                self.paramK.setCurrentIndex(searchindex)
-            searchindex = self.paramCa.findText(self.ms.settingsdict['piper_ca'])
-            if searchindex >= 0:
-                self.paramCa.setCurrentIndex(searchindex)
-            searchindex = self.paramMg.findText(self.ms.settingsdict['piper_mg'])
-            if searchindex >= 0:
-                self.paramMg.setCurrentIndex(searchindex)
-            searchindex = self.MarkerComboBox.findText(self.ms.settingsdict['piper_markers'])
-            if searchindex >= 0:
-                self.MarkerComboBox.setCurrentIndex(searchindex)
-
+            self.load_and_select_last_piper_settings()
+            
             # finally, set dockwidget to last choosen tab
             self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['tabwidget']))
         else:
             self.iface.messageBar().pushMessage("Warning","Could not recover Midvatten settings. You will have to reset.", 1,duration=5)
+
+    def load_and_select_last_piper_settings(self):
+        searchindex = self.paramCl.findText(self.ms.settingsdict['piper_cl'])
+        if searchindex >= 0:
+            self.paramCl.setCurrentIndex(searchindex)
+        searchindex = self.paramHCO3.findText(self.ms.settingsdict['piper_hco3'])
+        if searchindex >= 0:
+            self.paramHCO3.setCurrentIndex(searchindex)
+        searchindex = self.paramSO4.findText(self.ms.settingsdict['piper_so4'])
+        if searchindex >= 0:
+            self.paramSO4.setCurrentIndex(searchindex)
+        searchindex = self.paramNa.findText(self.ms.settingsdict['piper_na'])
+        if searchindex >= 0:
+            self.paramNa.setCurrentIndex(searchindex)
+        searchindex = self.paramK.findText(self.ms.settingsdict['piper_k'])
+        if searchindex >= 0:
+            self.paramK.setCurrentIndex(searchindex)
+        searchindex = self.paramCa.findText(self.ms.settingsdict['piper_ca'])
+        if searchindex >= 0:
+            self.paramCa.setCurrentIndex(searchindex)
+        searchindex = self.paramMg.findText(self.ms.settingsdict['piper_mg'])
+        if searchindex >= 0:
+            self.paramMg.setCurrentIndex(searchindex)
+        searchindex = self.MarkerComboBox.findText(self.ms.settingsdict['piper_markers'])
+        if searchindex >= 0:
+            self.MarkerComboBox.setCurrentIndex(searchindex)
+
+    def load_and_select_last_stratigraphy_settings(self):
+        searchindex = self.ListOfTables_3.findText(self.ms.settingsdict['stratigraphytable'])
+        print(searchindex)
+        print(self.ms.settingsdict['stratigraphytable'])
+        if searchindex >= 0:
+            self.ListOfTables_3.setCurrentIndex(searchindex)
+
+    def load_and_select_last_ts_plot_settings(self):
+        if len(str(self.ms.settingsdict['tstable'])):#If there is a last selected tstable. #MacOSX fix1
+            notfound=0 
+            i=0
+            while notfound==0:    # Loop until the last selected tstable is found
+                self.ListOfTables.setCurrentIndex(i)
+                if unicode(self.ListOfTables.currentText()) == unicode(self.ms.settingsdict['tstable']):#The index count stops when last selected table is found #MacOSX fix1
+                    notfound=1
+                    self.TSTableUpdated()        # Fill the given combobox with columns from the given table and also perform a sanity check of table
+                    searchindex = self.ListOfColumns.findText(self.ms.settingsdict['tscolumn'])
+                    if searchindex >= 0:
+                        self.ListOfColumns.setCurrentIndex(searchindex)
+                elif i> len(self.ListOfTables):
+                    notfound=1
+                i = i + 1
+            
+        if self.ms.settingsdict['tsdotmarkers']==2:#If the TSPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
+            self.checkBoxDataPoints.setChecked(True)
+        else:
+            self.checkBoxDataPoints.setChecked(False)
+        if self.ms.settingsdict['tsstepplot']==2: #If the TSPlot stepplot checkbox was checked last time it will be so now #MacOSX fix1
+            self.checkBoxStepPlot.setChecked(True)
+        else:
+            self.checkBoxStepPlot.setChecked(False)
+
+    def load_and_select_last_wqual_settings(self):
+        searchindexouter = self.ListOfTables_WQUAL.findText(self.ms.settingsdict['wqualtable'])
+        if searchindexouter >= 0:
+            self.ListOfTables_WQUAL.setCurrentIndex(searchindexouter)
+            self.WQUALTableUpdated()
+            #and then check all possible last selected columns for parameters, values etc.
+            searchindex = self.ListOfColumns_WQUALPARAM.findText(self.ms.settingsdict['wqual_paramcolumn'])
+            if searchindex >= 0:
+                self.ListOfColumns_WQUALPARAM.setCurrentIndex(searchindex)
+            searchindex = self.ListOfColumns_WQUALVALUE.findText(self.ms.settingsdict['wqual_valuecolumn'])
+            if searchindex >= 0:
+                self.ListOfColumns_WQUALVALUE.setCurrentIndex(searchindex)
+            searchindex = self.ListOfdate_time_format.findText(self.ms.settingsdict['wqual_date_time_format'])
+            self.ListOfdate_time_format.setCurrentIndex(searchindex)
+            searchindex = self.ListOfColumns_WQUALUNIT.findText(self.ms.settingsdict['wqual_unitcolumn'])
+            if searchindex >= 0:
+                self.ListOfColumns_WQUALUNIT.setCurrentIndex(searchindex)
+            searchindex = self.ListOfColumns_WQUALSORTING.findText(self.ms.settingsdict['wqual_sortingcolumn'])
+            if searchindex >= 0:
+                self.ListOfColumns_WQUALSORTING.setCurrentIndex(searchindex)
+
+    def load_and_select_last_xyplot_settings(self):
+        if len(self.ms.settingsdict['xytable']):#If there is a last selected xytable #MacOSX fix1
+            notfound=0 
+            i=0
+            while notfound==0: #looping through ListOfTables_2 looking for last selected xytable
+                self.ListOfTables_2.setCurrentIndex(i)
+                if unicode(self.ListOfTables_2.currentText()) == unicode(self.ms.settingsdict['xytable']):    #when last selected xytable found, it is selected in list and a lot of columns is searced for #MacOSX fix1
+                    notfound=1
+                    self.XYTableUpdated()    # Fill the given combobox with columns from the given table and performs a test
+                    searchindex = self.ListOfColumns_2.findText(self.ms.settingsdict['xy_xcolumn'])
+                    if searchindex >= 0:
+                        self.ListOfColumns_2.setCurrentIndex(searchindex)
+                    searchindex = self.ListOfColumns_3.findText(self.ms.settingsdict['xy_y1column'])
+                    if searchindex >= 0:
+                        self.ListOfColumns_3.setCurrentIndex(searchindex)
+                    searchindex = self.ListOfColumns_4.findText(self.ms.settingsdict['xy_y2column'])
+                    if searchindex >= 0:
+                        self.ListOfColumns_4.setCurrentIndex(searchindex)
+                    searchindex = self.ListOfColumns_5.findText(self.ms.settingsdict['xy_y3column'])
+                    if searchindex >= 0:
+                        self.ListOfColumns_5.setCurrentIndex(searchindex)
+                elif i> len(self.ListOfTables_2):
+                    notfound=1
+                i = i + 1
+
+        if self.ms.settingsdict['xydotmarkers']==2:# If the XYPlot dot markers checkbox was checked last time it will be so now #MacOSX fix1
+            self.checkBoxDataPoints_2.setChecked(True)
+        else:
+            self.checkBoxDataPoints_2.setChecked(False)
 
     def LoadColumnsFromTable(self, table=''):
         """ This method returns a list with all the columns in the table"""
@@ -339,7 +363,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         else:
             columns = {}
         return columns        # This method returns a list with all the columns in the table
-         
+
     def loadTablesFromDB(self,db): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
         # start with cleaning comboboxes before filling with new entries   
@@ -459,12 +483,14 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         """This method is called whenever water quality table is changed and fils comboboxes with columns for wqual report"""
         self.ListOfColumns_WQUALPARAM.clear()
         self.ListOfColumns_WQUALVALUE.clear()
+        self.ListOfdate_time_format.clear()
         self.ListOfColumns_WQUALUNIT.clear()
         self.ListOfColumns_WQUALSORTING.clear()
         columns = self.LoadColumnsFromTable(self.ListOfTables_WQUAL.currentText())    # Load all columns into a list (dict?) 'columns'
         if len(columns):    # Transfer information from list 'columns' to the combobox
             self.ListOfColumns_WQUALPARAM.addItem('')
             self.ListOfColumns_WQUALVALUE.addItem('')
+            self.ListOfdate_time_format.addItem('YYYY')
             self.ListOfColumns_WQUALUNIT.addItem('')
             self.ListOfColumns_WQUALSORTING.addItem('')
             for columnName in columns:
@@ -472,10 +498,16 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 self.ListOfColumns_WQUALVALUE.addItem(columnName)
                 self.ListOfColumns_WQUALUNIT.addItem(columnName)
                 self.ListOfColumns_WQUALSORTING.addItem(columnName)
-        self.ChangedListOfColumnsWQualParam()
-        self.ChangedListOfColumnsWQualValue()
-        self.ChangedListOfColumnsWQualUnit()
-        self.ChangedListOfColumnsWQualSorting()        
+        self.ListOfdate_time_format.addItem('YYYY-MM')
+        self.ListOfdate_time_format.addItem('YYYY-MM-DD')
+        self.ListOfdate_time_format.addItem('YYYY-MM-DD hh')
+        self.ListOfdate_time_format.addItem('YYYY-MM-DD hh:mm')
+        self.ListOfdate_time_format.addItem('YYYY-MM-DD hh:mm:ss')
+        #self.ChangedListOfColumnsWQualParam()
+        #self.ChangedListOfColumnsWQualValue()
+        #self.ChangedListOfdate_time_format()
+        #self.ChangedListOfColumnsWQualUnit()
+        #self.ChangedListOfColumnsWQualSorting()
         self.ms.settingsdict['wqualtable']=self.ListOfTables_WQUAL.currentText()
         self.ms.save_settings('wqualtable')#save this specific setting
 

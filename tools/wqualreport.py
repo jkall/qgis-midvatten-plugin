@@ -101,14 +101,21 @@ class wqualreport():        # extracts water quality data for selected objects, 
             sql += self.settingsdict['wqual_sortingcolumn']
             sql += r""", date_time from """      #including parameters
         else:                     # IF no specific column exist for sorting
-            sql =r"""select distinct date_time, date_time from """      # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
+            if len(self.settingsdict['wqual_date_time_format'])>16:
+                sql =r"""select distinct date_time, date_time from """ # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
+            else:
+                sql =r"""select distinct date_time, dummy from (select substr(date_time,1,%s) as date_time, substr(date_time,1,%s) as dummy from """%(len(self.settingsdict['wqual_date_time_format']),len(self.settingsdict['wqual_date_time_format']))      # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
         sql += self.settingsdict['wqualtable']
         sql += """ where obsid = '"""
-        sql += obsid 
-        sql += """' ORDER BY date_time"""
+        sql += obsid
+        if len(self.settingsdict['wqual_date_time_format'])>16:
+            sql += """' ORDER BY date_time"""
+        else:
+            sql += """') ORDER BY date_time"""
         #sql2 = unicode(sql) #To get back to unicode-string
         date_times_cursor = curs.execute(sql) #Send SQL-syntax to cursor,
         date_times = date_times_cursor.fetchall()
+        print(date_times)
 
         print (sql)#debug
         print('loaded distinct date_time for the parameters for ' + obsid + ' at time: ' + str(time.time()))#debug
@@ -155,7 +162,10 @@ class wqualreport():        # extracts water quality data for selected objects, 
                 sql += self.settingsdict['wqualtable']
                 sql += """ where obsid = '"""
                 sql += obsid
-                sql += """' and date_time = '"""
+                if len(self.settingsdict['wqual_date_time_format'])>16:
+                    sql += "' and date_time  = '"
+                else:
+                    sql += "' and substr(date_time,1,%s)  = '"%str(len(self.settingsdict['wqual_date_time_format']))
                 sql += v 
                 if not(self.settingsdict['wqual_unitcolumn'] == '') and u:
                     sql += """' and parameter = '"""

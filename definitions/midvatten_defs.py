@@ -37,6 +37,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'wqualtable' : 'w_qual_lab',
             'wqual_paramcolumn' : 'parameter',
             'wqual_valuecolumn' : 'reading_txt',
+            'wqual_date_time_format' : 'YYYY-MM-DD',
             'wqual_unitcolumn' : 'unit',
             'wqual_sortingcolumn' : '',
             'tabwidget' : 0,
