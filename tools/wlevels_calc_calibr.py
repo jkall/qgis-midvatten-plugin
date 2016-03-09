@@ -26,24 +26,30 @@ import PyQt4.QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import uic
+import qgis
 
 import locale
 import os
+import time
 import numpy as np
+import math
 import matplotlib
 import matplotlib.pyplot as plt   
 import matplotlib.ticker as tick
-from matplotlib.dates import datestr2num
+from matplotlib.dates import datestr2num, num2date
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import datetime
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import midvatten_utils as utils
+from date_utils import dateshift, datestring_to_date
+
 #from ui.calibr_logger_dialog import Ui_Dialog as Calibr_Ui_Dialog
 #from ui.calc_lvl_dialog import Ui_Dialog as Calc_Ui_Dialog
 
 Calibr_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calibr_logger_dialog_integrated.ui'))[0]
 Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_lvl_dialog.ui'))[0]
+
 
 class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
 
@@ -123,7 +129,11 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
 class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of the class Calibr_Ui_Dialog is created same time as instance of calibrlogger is created
 
     def __init__(self, parent, settingsdict1={}, obsid=''):
-        #self.obsid = obsid
+        self.obsid = obsid
+        self.log_pos = None
+        self.meas_pos = None
+        self.meas_ts = None
+        self.head_ts = None
         self.settingsdict = settingsdict1
         PyQt4.QtGui.QDialog.__init__(self, parent)        
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
@@ -131,7 +141,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.setWindowTitle("Calibrate logger") # Set the title for the dialog
         self.connect(self.pushButton, PyQt4.QtCore.SIGNAL("clicked()"), self.calibrateandplot)
         self.INFO.setText("Select the observation point with logger data to be calibrated.")
-
+      
         # Create a plot window with one single subplot
         self.calibrplotfigure = plt.figure() 
         self.axes = self.calibrplotfigure.add_subplot( 111 )
@@ -143,9 +153,30 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.layoutplot.addWidget( self.mpltoolbar )
         self.show()
 
+        self.cid_fromx = []
+        self.connect(self.pushButtonFrom, PyQt4.QtCore.SIGNAL("clicked()"), self.set_from_date_from_x)
+        self.connect(self.pushButtonTo, PyQt4.QtCore.SIGNAL("clicked()"), self.set_to_date_from_x)
+        
+        self.cid_lpos = []
+        self.log_pos = None
+        self.meas_pos = None
+        self.connect(self.pushButtonLpos, PyQt4.QtCore.SIGNAL("clicked()"), self.calibrate_from_plot_selection)
+        
+        self.connect(self.pushButtonCalcBestFit, PyQt4.QtCore.SIGNAL("clicked()"), self.calc_best_fit)
+        
         # Populate combobox with obsid from table w_levels_logger
         self.load_obsid_from_db()
 
+    def load_obsid_and_init(self):
+        obsid = unicode(self.combobox_obsid.currentText())   
+        if self.obsid != obsid:
+            meas_sql = r"""SELECT date_time, level_masl FROM w_levels WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
+            self.meas_ts = self.sql_into_recarray(meas_sql)
+            head_sql = r"""SELECT date_time as 'date [datetime]', head_cm / 100 FROM w_levels_logger WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
+            self.head_ts = self.sql_into_recarray(head_sql)
+            self.obsid = obsid
+        return obsid            
+     
     def load_obsid_from_db(self):
         self.combobox_obsid.clear()
         myconnection = utils.dbconnection()
@@ -160,9 +191,9 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             myconnection.closedb()        
 
     def getlastcalibration(self):
-        obsid = unicode(self.combobox_obsid.currentText())
+        obsid = self.load_obsid_and_init()
         if not obsid=='':
-            sql = """SELECT MAX(date_time), loggerpos FROM (SELECT date_time, (level_masl - (head_cm/100)) as loggerpos FROM w_levels_logger WHERE level_masl > 0 AND obsid = '"""
+            sql = """SELECT MAX(date_time), loggerpos FROM (SELECT date_time, (level_masl - (head_cm/100)) as loggerpos FROM w_levels_logger WHERE level_masl > -990 AND obsid = '"""
             sql += obsid
             sql += """')"""
             self.lastcalibr = utils.sql_load_fr_db(sql)[1]
@@ -173,10 +204,10 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             else:
                 text = """There is no earlier known\nposition for the logger\nin """ + unicode(self.combobox_obsid.currentText())#self.obsid[0]
             self.INFO.setText(text)
-
+        
     def calibrateandplot(self):
-        obsid = unicode(self.combobox_obsid.currentText())
-        if not obsid=='':
+        obsid = self.load_obsid_and_init()
+        if not obsid=='':        
             sanity1sql = """select count(obsid) from w_levels_logger where obsid = '""" +  obsid[0] + """'"""
             sanity2sql = """select count(obsid) from w_levels_logger where head_cm not null and head_cm !='' and obsid = '""" +  obsid[0] + """'"""
             if utils.sql_load_fr_db(sanity1sql)[1] == utils.sql_load_fr_db(sanity2sql)[1]: # This must only be done if head_cm exists for all data
@@ -188,71 +219,48 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                     sql += str(newzref)
                     sql += """ + head_cm / 100 WHERE obsid = '"""
                     sql += obsid   
-                    sql += """' AND date_time >= '"""
-                    sql += str(fr_d_t)
-                    sql += """' AND date_time <= '"""
-                    sql += str(to_d_t)
-                    sql += """' """
+                    # Sqlite seems to have problems with date comparison date_time >= a_date, so they have to be converted into total seconds first.
+                    sql += """' AND CAST(strftime('%s', date_time) AS NUMERIC) >= """
+                    sql += str((fr_d_t - datetime.datetime(1970,1,1)).total_seconds())
+                    sql += """ AND CAST(strftime('%s', date_time) AS NUMERIC) <= """
+                    sql += str((to_d_t - datetime.datetime(1970,1,1)).total_seconds())
+                    sql += """ """                
                     dummy = utils.sql_alter_db(sql)
+                    
+                logger_ts_sql = r"""SELECT date_time as 'date [datetime]', level_masl FROM w_levels_logger WHERE obsid = '""" + obsid + """' ORDER BY date_time"""     
+                self.logger_ts = self.sql_into_recarray(logger_ts_sql)
                 self.CalibrationPlot(obsid)
                 self.getlastcalibration()
             else:
-                utils.pop_up_info("Calibration aborted!!\nThere must not be empty cells or\nnull values in the 'head_cm' column!")
+                utils.pop_up_info("Calibration aborted!!\nThere must not be empty cells or\nnull values in the 'head_cm' column!") 
         else:
-            self.INFO.setText("Select the observation point with logger data to be calibrated.")
+            self.INFO.setText("Select the observation point with logger data to be calibrated.")                 
 
-    def CalibrationPlot(self,obsid):
+    def sql_into_recarray(self, sql):
+        """ Converts and runs an sql-string and turns the answer into an np.recarray and returns it""" 
+        my_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array     
+        recs = utils.sql_load_fr_db(sql)[1]
+        table = np.array(recs, dtype=my_format)  #NDARRAY
+        table2=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write table2.values 
+        return table2        
+
+    def plot_recarray(self, axes, a_recarray, lable, line_style='o-'):
+        """ Plots a recarray to the supplied axes object """
+        # Get help from function datestr2num to get date and time into float
+        myTimestring = [a_recarray.date_time[idx] for idx in xrange(len(a_recarray))]    
+        numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
+        axes.plot_date(numtime, a_recarray.values, line_style, label=lable, picker=10)    # LINEPLOT WITH DOTS!! 
+        
+    def CalibrationPlot(self, obsid):
         self.axes.clear()
         
-        conn = sqlite.connect(self.settingsdict['database'],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-        # skapa en cursor
-        curs = conn.cursor()
-        # Create a plot window with one single subplot
-        #fig = plt.figure()  # causes conflict with plugins "statist" and "chartmaker"
-        #ax = fig.add_subplot(111)
-        
         p=[None]*2 # List for plot objects
-        My_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array 
-        
+    
         # Load manual reading (full time series) for the obsid
-        sql =r"""SELECT date_time, level_masl FROM w_levels WHERE obsid = '"""
-        sql += obsid   
-        sql += """' ORDER BY date_time"""
-        rs = curs.execute(sql) #Send SQL-syntax to cursor
-        recs = rs.fetchall()  # All data are stored in recs
-        #Transform data to a numpy.recarray
-        table = np.array(recs, dtype=My_format)  #NDARRAY
-        table2=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write table2.values    
-        # Get help from function datestr2num to get date and time into float
-        myTimestring = []  #LIST
-        j = 0
-        for row in table2:
-            myTimestring.append(table2.date_time[j])
-            j = j + 1
-        numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
-        p[0] = self.axes.plot_date(numtime, table2.values, 'o-', label=obsid)    # LINEPLOT WITH DOTS!!
+        self.plot_recarray(self.axes, self.meas_ts, obsid, 'o-')     
         
         # Load Loggerlevels (full time series) for the obsid
-        sql =r"""SELECT date_time as 'date [datetime]', level_masl FROM w_levels_logger WHERE obsid = '"""
-        sql += obsid   # The result has format 'Qstring' - no good
-        sql += """' ORDER BY date_time"""
-        rs = curs.execute(sql) #Send SQL-syntax to cursor
-        recs = rs.fetchall()  # All data are stored in recs
-        #Transform data to a numpy.recarray
-        table = np.array(recs, dtype=My_format)  #NDARRAY
-        table2=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write table2.values    
-        # Get help from function datestr2num to get date and time into float
-        myTimestring = []  #LIST
-        j = 0
-        for row in table2:
-            myTimestring.append(table2.date_time[j])
-            j = j + 1
-        numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
-        p[1] = self.axes.plot_date(numtime, table2.values, '-', label = obsid + unicode(' logger', 'utf-8'))    # LINEPLOT WITH DOTS!!
-
-        """ Close SQLite-connections """
-        rs.close() # First close the table 
-        conn.close()  # then close the database
+        self.plot_recarray(self.axes, self.logger_ts, obsid + unicode(' logger', 'utf-8'), '.-') # LINEPLOT WITH DOTS!!
 
         """ Finish plot """
         self.axes.grid(True)
@@ -268,3 +276,188 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.canvas.draw()
         plt.close(self.calibrplotfigure)#this closes reference to self.calibrplotfigure 
 
+    def set_from_date_from_x(self):
+        """ Used to set the self.FromDateTime by clicking on a line node in the plot self.canvas """
+        self.reset_cid_fromx()
+        self.canvas.setFocusPolicy(Qt.ClickFocus)
+        self.canvas.setFocus()   
+        self.cid_fromx.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, self.FromDateTime)))
+        self.log_pos = None
+        self.meas_pos = None 
+
+    def set_to_date_from_x(self):
+        """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """    
+        self.reset_cid_fromx()
+        self.canvas.setFocusPolicy(Qt.ClickFocus)
+        self.canvas.setFocus()   
+        self.cid_fromx.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, self.ToDateTime)))
+        self.log_pos = None
+        self.meas_pos = None         
+            
+    def set_date_from_x_onclick(self, event, date_holder):
+        """ Sets the date_holder to a date from a line node closest to the pick event
+
+            date_holder: a QDateTimeEdit object.
+        """
+        found_date = utils.find_nearest_date_from_event(event)
+        date_holder.setDateTime(found_date)           
+        self.reset_cid_fromx()
+        
+    def reset_cid_fromx(self):
+        """ Resets self.cid_fromx to an empty list and disconnects unused events """
+        for x in self.cid_fromx:
+            self.canvas.mpl_disconnect(x)
+        self.cid_fromx = [] 
+        
+    def calibrate_from_plot_selection(self):
+        """ Calibrates by selecting a line node and a y-position on the plot
+
+            The user have to click on the button three times and follow instructions.
+        
+            The process:
+            1. Selecting a line node.
+            2. Selecting a selecting a y-position from the plot.
+            3. Extracting the head from head_ts with the same date as the line node.
+            4. Calculating y-position - head and setting self.LoggerPos.
+            5. Run calibration.
+        """            
+        #Run init to make sure self.meas_ts and self.head_ts is updated for the current obsid.           
+        self.load_obsid_and_init()
+        self.canvas.setFocusPolicy(Qt.ClickFocus)
+        self.canvas.setFocus()
+
+        if self.log_pos is None:            
+            utils.pop_up_info("Select a node from the logger line\n")
+            self.cid_lpos.append(self.canvas.mpl_connect('pick_event', self.set_log_pos_from_node_date_click))  
+        
+        if self.log_pos is not None and self.meas_pos is None:
+            utils.pop_up_info("Got logger date " + str(self.log_pos) + "\n\nNow select a y-position to move nodes inside from and to to")
+            self.cid_lpos.append(self.canvas.mpl_connect('button_press_event', self.set_meas_pos_from_y_click))
+            
+        if self.log_pos is not None and self.meas_pos is not None:
+            meas_pos = self.meas_pos
+            log_pos = self.log_pos
+            self.meas_pos = None
+            self.log_pos = None
+            log_pos = datestring_to_date(log_pos).replace(tzinfo=None)
+            head_val = None
+            
+            for head_raw_date, head_y in self.head_ts:
+                head_date = datestring_to_date(head_raw_date).replace(tzinfo=None)
+                if head_date == log_pos:
+                    head_val = head_y
+                    break
+
+            if head_val is None:
+                utils.pop_up_info("No connection between head_ts dates and logger date could be made!\nTry again or choose a new logger line node!")   
+            else:
+                adjust_value = float(meas_pos) - float(head_val)
+                self.LoggerPos.setText(str(adjust_value))
+                self.calibrateandplot()            
+        
+    def set_log_pos_from_node_date_click(self, event):
+        """ Sets self.log_pos variable to the date (x-axis) from the node nearest the pick event """
+        found_date = utils.find_nearest_date_from_event(event)
+        self.log_pos = found_date
+        for x in self.cid_lpos:
+            self.canvas.mpl_disconnect(x)        
+        self.cid_lpos = [] 
+ 
+    def set_meas_pos_from_y_click(self, event):
+        """ Sets the self.meas_pos variable to the y value of the click event """
+        self.meas_pos = event.ydata
+        for x in self.cid_lpos:
+            self.canvas.mpl_disconnect(x)        
+        self.cid_lpos = []
+        
+    def calc_best_fit(self):
+        """ Calculates the self.LoggerPos from self.meas_ts and self.head_ts
+        
+            First matches measurements from self.meas_ts to logger values from
+            self.head_ts. This is done by making a mean of all logger values inside
+            self.meas_ts date - tolerance and self.meas_ts date + tolerance.
+            (this could probably be change to get only the closest logger value
+            inside the tolerance instead)
+            (Tolerance is gotten from self.get_tolerance())
+            
+            Then calculates the mean of all matches and set to self.LoggerPos.
+        """
+        tolerance = self.get_tolerance()
+        really_calibrate_question = utils.askuser("YesNo", """This will calibrate all values inside the chosen period\nusing the mean difference between logger values and measurements.\n\nTime tolerance for matching logger and measurement nodes set to '""" + ' '.join(tolerance) + """'\n\nContinue?""")
+        if really_calibrate_question.result == 0: # if the user wants to abort
+            return
+            
+        coupled_vals = self.match_ts_values(self.meas_ts, self.head_ts, tolerance)    
+        self.LoggerPos.setText(str(utils.calc_mean_diff(coupled_vals)))
+        self.calibrateandplot()         
+     
+    def match_ts_values(self, meas_ts, head_ts, tolerance):
+        """ Matches two timeseries values for shared timesteps 
+        
+            For every measurement point, a mean of logger values inside 
+            measurementpoint + x minutes to measurementpoint - x minutes
+            is coupled together. 
+        """
+        #Run init to make sure self.meas_ts and self.head_ts is updated for the current obsid.        
+        self.load_obsid_and_init()    
+          
+        coupled_vals = []
+        
+        #Get the tolerance, default to 10 minutes
+        tol = int(tolerance[0])
+        tol_period = tolerance[1]
+  
+        logger_gen = utils.ts_gen(head_ts)  
+        try:
+            l = next(logger_gen)
+        except StopIteration:
+            return None
+        log_vals = []
+
+        #The .replace(tzinfo=None) is used to remove info about timezone. Needed for the comparisons. This should not be a problem though as the date scale in the plot is based on the dates from the database. 
+        outer_begin = self.FromDateTime.dateTime().toPyDateTime().replace(tzinfo=None)
+        outer_end = self.ToDateTime.dateTime().toPyDateTime().replace(tzinfo=None)
+        logger_step = datestring_to_date(l[0]).replace(tzinfo=None)
+        for m in meas_ts:
+            if logger_step is None:
+                break
+            meas_step = datestring_to_date(m[0]).replace(tzinfo=None)
+            if outer_begin > meas_step:
+                continue
+            if outer_end < meas_step:
+                break
+                
+            step_begin = max(outer_begin, dateshift(meas_step, -tol, tol_period))
+            step_end = min(outer_end, dateshift(meas_step, tol, tol_period))
+            log_vals = []
+            
+            while logger_step < step_begin:
+                try:
+                    l = next(logger_gen)
+                except StopIteration:
+                    break
+                logger_step = datestring_to_date(l[0]).replace(tzinfo=None)
+
+            while logger_step is not None and logger_step <= step_end:
+                if not math.isnan(float(l[1])) or l[1] == 'nan' or l[1] == 'NULL':
+                    log_vals.append(float(l[1]))
+                try:
+                    l = next(logger_gen)
+                except StopIteration:
+                    break
+                logger_step = datestring_to_date(l[0]).replace(tzinfo=None)                     
+            
+            means = np.mean(log_vals)
+            if not math.isnan(means):
+                coupled_vals.append((m[1], np.mean(log_vals)))
+                 
+        return coupled_vals
+                      
+    def get_tolerance(self):
+        """ Get the period tolerance, default to 10 minutes """
+        if not self.bestFitTolerance.text():
+            tol = '10 minutes'
+        else:
+            tol = self.bestFitTolerance.text()
+        return tuple(tol.split())                    
+        

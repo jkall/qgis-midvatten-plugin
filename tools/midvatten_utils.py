@@ -25,10 +25,13 @@ from qgis.gui import *
 import qgis.utils
 import sys
 import os
+import math
+import numpy as np
 import tempfile
 from contextlib import contextmanager
 from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialite-specific sql clauses may be sent by sql_alter_db and sql_load_fr_db
-from pyspatialite.dbapi2 import IntegrityError 
+from pyspatialite.dbapi2 import IntegrityError
+from matplotlib.dates import datestr2num, num2date
 import time
 
 class dbconnection():
@@ -337,9 +340,64 @@ def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
     
 @contextmanager
 def tempinput(data):
+    """ Creates and yields a temporary file from data
+    
+        The file can't be deleted in windows for some strange reason.
+        There shouldn't be so many temporary files using this function
+        for it to be a major problem though. Relying on windows temp file
+        cleanup instead.
+    """
     temp = tempfile.NamedTemporaryFile(delete=False, suffix='.csv')
     temp.write(data.encode('CP1252'))
     temp.close()
     yield temp.name
     #os.unlink(temp.name) #TODO: This results in an error: WindowsError: [Error 32] Det g�r inte att komma �t filen eftersom den anv�nds av en annan process: 'c:\\users\\dator\\appdata\\local\\temp\\tmpxvcfna.csv'
 
+def find_nearest_date_from_event(event): 
+    """ Returns the nearest date from a picked list event artist from mouse click
+    
+        The x-axis of the artist is assumed to be a date as float or int.
+        The found date float is then converted into datetime and returned.
+    """
+    #xy_array = event.artist.get_xydata()
+    line_nodes = np.array(zip(event.artist.get_xdata(), event.artist.get_ydata()))
+
+    #raise Exception("xdata: " + str(len(event.artist.get_xdata())) + " ydata: " + str(len(event.artist.get_ydata())) + " array: " + str(len(line_nodes)) + " xydata " + str(len(event.artist.get_xydata())) + " ind " + str(event.ind))
+    
+    xy_click = np.array((event.mouseevent.xdata, event.mouseevent.ydata))
+    nearest_xy = find_nearest_using_pythagoras(xy_click, line_nodes)    
+    nearest_date = num2date(nearest_xy[0])
+    return nearest_date 
+
+def find_nearest_using_pythagoras(xy_point, xy_array):
+    """ Finds the point in xy_array that is nearest xy_point
+
+        xy_point: tuple with two floats representing x and y
+        xy_array: list of tuples with floats representing x and y points 
+    
+        The search is using pythagoras theorem.
+        If the search becomes very slow when the xy_array gets long,
+        it could probably we rewritten using numpy methods.
+    """    
+    distances = [math.sqrt((float(xy_point[0]) - float(xy_array[x][0]))**2 + (float(xy_point[1]) - float(xy_array[x][1]))**2) for x in xrange(len(xy_array))]
+    min_index = distances.index(min(distances))
+    return xy_array[min_index]
+    
+def ts_gen(ts):
+    """ A generator that supplies one tuple from a list of tuples at a time
+
+        ts: a list of tuples where the tuple contains two positions.
+        
+        Usage:
+        a = ts_gen(ts)
+        b = next(a)
+    """        
+    for idx in xrange(len(ts)):
+        yield (ts[idx][0], ts[idx][1])  
+  
+def calc_mean_diff(coupled_vals):
+    """ Calculates the mean difference for all value couples in a list of tuples 
+    
+        Nan-values are excluded from the mean.
+    """
+    return np.mean([float(m) - float(l) for m, l in coupled_vals if not math.isnan(m) or math.isnan(l)])
