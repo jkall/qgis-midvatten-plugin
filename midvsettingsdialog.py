@@ -308,6 +308,8 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             if searchindex >= 0:
                 self.ListOfColumns_WQUALVALUE.setCurrentIndex(searchindex)
             searchindex = self.ListOfdate_time_format.findText(self.ms.settingsdict['wqual_date_time_format'])
+            if searchindex == -1:
+                searchindex = 1
             self.ListOfdate_time_format.setCurrentIndex(searchindex)
             searchindex = self.ListOfColumns_WQUALUNIT.findText(self.ms.settingsdict['wqual_unitcolumn'])
             if searchindex >= 0:
