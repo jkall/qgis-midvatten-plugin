@@ -17,11 +17,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-
+import PyQt4
 import sqlite3 as sqlite, csv, codecs, cStringIO, os, os.path
 import midvatten_utils as utils
 
-export_fieldlogger_ui_dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'export_fieldlogger_ui_dialog.ui'))[0]
+export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'export_fieldlogger_ui_dialog.ui'))[0]
 
 
 class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog):
@@ -35,5 +35,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         self.setWindowTitle("Export to FieldLogger") # Set the title for the dialog
+        self.show()        
         
         

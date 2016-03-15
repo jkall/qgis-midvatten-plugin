@@ -400,21 +400,11 @@ class midvatten:
                         
             from export_fieldlogger import ExportToFieldLogger
             try:
-                self.export_fieldlogger.activateWindow()
+                self.export_to_field_logger.activateWindow()
             except:
-                self.export_fieldlogger = ExportToFieldLogger(self.iface.mainWindow(), self.ms.settingsdict, OBSID_P)
-                
-
-         
-
-            #sanity = utils.askuser("YesNo","""You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""",'Are you sure?')
-            #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
-            exportfolder = QFileDialog.getExistingDirectory(None, 'Select a folder where the csv files will be created:', '.',QFileDialog.ShowDirsOnly)
-            if len(exportfolder) > 0:
-                exportinstance = ExportData(OBSID_P, OBSID_L)
-                exportinstance.export_2_csv(exportfolder)
-                
-            QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal                
+                self.export_to_field_logger = ExportToFieldLogger(self.iface.mainWindow(), self.ms.settingsdict, OBSID_P)
+        else:
+            utils.pop_up_info("Err_flag was not 0")       
 
     def import_obs_lines(self):
         allcritical_layers = ('obs_lines')#none of these layers must be in editing mode
