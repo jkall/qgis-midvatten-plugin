@@ -121,17 +121,28 @@ def find_layer(layer_name):
 
     return None
 
-def getselectedobjectnames(thelayer = qgis.utils.iface.activeLayer()):#returns a list of obsid (as unicode) - thelayer is an optional argument, if not given then activelayer is used
+def get_selected_features_as_tuple(layername):
+    """ Returns all selected obs_points or obs_lines
+     
+        Returns a list of tuples where first tuple is the found points and second tuple is the found lines
+    """
+    obs_points_layer = find_layer(layername)
+    selected_obs_points = getselectedobjectnames(obs_points_layer)
+    #module midv_exporting depends on obsid being a tuple
+    #we cannot send unicode as string to sql because it would include the u' so str() is used
+    obsidtuple = tuple([str(id) for id in selected_obs_points])
+    return obsidtuple      
+        
+def getselectedobjectnames(thelayer = qgis.utils.iface.activeLayer()):
+    """ Returns a list of obsid as unicode
+    
+        thelayer is an optional argument, if not given then activelayer is used
+    """        
     selectedobs = thelayer.selectedFeatures()
     kolumnindex = thelayer.dataProvider().fieldNameIndex('obsid')  #OGR data provier is used to find index for column named 'obsid'
     if kolumnindex == -1:
-            kolumnindex = thelayer.dataProvider().fieldNameIndex('OBSID')  #backwards compatibility
-    observations = [None]*(thelayer.selectedFeatureCount())
-    i=0
-    for k in selectedobs:
-        attributes = selectedobs[i]
-        observations[i] = attributes[kolumnindex] # value in column obsid is stored as unicode
-        i+=1
+        kolumnindex = thelayer.dataProvider().fieldNameIndex('OBSID')  #backwards compatibility
+    observations = [obs[kolumnindex] for obs in selectedobs] # value in column obsid is stored as unicode
     return observations
     
 def getQgisVectorLayers():
