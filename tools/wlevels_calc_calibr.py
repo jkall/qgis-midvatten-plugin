@@ -141,6 +141,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.setWindowTitle("Calibrate logger") # Set the title for the dialog
         self.connect(self.pushButton, PyQt4.QtCore.SIGNAL("clicked()"), self.calibrateandplot)
         self.INFO.setText("Select the observation point with logger data to be calibrated.")
+        self.log_calc_manual.setText("<a href=\"https://sites.google.com/site/midvattenpluginforqgis/usage/3-edit-data?pli=1#TOC-Calibrate-water-level-measurements-from-data-logger-\">Midvatten manual</a>")
       
         # Create a plot window with one single subplot
         self.calibrplotfigure = plt.figure() 
@@ -153,11 +154,11 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.layoutplot.addWidget( self.mpltoolbar )
         self.show()
 
-        self.cid_fromx = []
+        self.cid =[]
+                
         self.connect(self.pushButtonFrom, PyQt4.QtCore.SIGNAL("clicked()"), self.set_from_date_from_x)
         self.connect(self.pushButtonTo, PyQt4.QtCore.SIGNAL("clicked()"), self.set_to_date_from_x)
         
-        self.cid_lpos = []
         self.log_pos = None
         self.meas_pos = None
         self.connect(self.pushButtonLpos, PyQt4.QtCore.SIGNAL("clicked()"), self.calibrate_from_plot_selection)
@@ -282,21 +283,19 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
     def set_from_date_from_x(self):
         """ Used to set the self.FromDateTime by clicking on a line node in the plot self.canvas """
-        utils.pop_up_info(self.date_select_from_click_pop_up_info())
-        self.reset_cid_fromx()
+        self.reset_cid()
         self.canvas.setFocusPolicy(Qt.ClickFocus)
         self.canvas.setFocus()   
-        self.cid_fromx.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, self.FromDateTime)))
+        self.cid.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, self.FromDateTime)))
         self.log_pos = None
         self.meas_pos = None 
 
     def set_to_date_from_x(self):
-        """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """ 
-        utils.pop_up_info(self.date_select_from_click_pop_up_info())        
-        self.reset_cid_fromx()
+        """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """    
+        self.reset_cid()
         self.canvas.setFocusPolicy(Qt.ClickFocus)
         self.canvas.setFocus()   
-        self.cid_fromx.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, self.ToDateTime)))
+        self.cid.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, self.ToDateTime)))
         self.log_pos = None
         self.meas_pos = None         
             
@@ -307,16 +306,13 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         """
         found_date = utils.find_nearest_date_from_event(event)
         date_holder.setDateTime(found_date)           
-        self.reset_cid_fromx()
+        self.reset_cid()
     
-    def date_select_from_click_pop_up_info(self):
-        return "Make selection as close as possible to a line node.\nIt's especially important to select very close to the node on the x-axis.\nZoom in if necessary."
-
-    def reset_cid_fromx(self):
-        """ Resets self.cid_fromx to an empty list and disconnects unused events """
-        for x in self.cid_fromx:
+    def reset_cid(self):
+        """ Resets self.cid to an empty list and disconnects unused events """
+        for x in self.cid:
             self.canvas.mpl_disconnect(x)
-        self.cid_fromx = [] 
+        self.cid = [] 
         
     def calibrate_from_plot_selection(self):
         """ Calibrates by selecting a line node and a y-position on the plot
@@ -336,17 +332,10 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.canvas.setFocus()
 
         if self.log_pos is None:            
-            utils.pop_up_info("This function is used for calibrating the values inside the chosen period to a specific level.\n"
-                              "Click this button after each select!!!\n"
-                              "First a logger line node is selected, then a y-position is selected.\n"
-                              "Using these two selections, the logger position is calculated and used\n"
-                              "for all values inside the chosen period.\n" + self.date_select_from_click_pop_up_info() + "\n"
-                              "\n\n\nSelect a node from the logger line.")
-            self.cid_lpos.append(self.canvas.mpl_connect('pick_event', self.set_log_pos_from_node_date_click))  
+            self.cid.append(self.canvas.mpl_connect('pick_event', self.set_log_pos_from_node_date_click))  
         
         if self.log_pos is not None and self.meas_pos is None:
-            utils.pop_up_info("Got logger date " + str(self.log_pos) + "\n\nNow select a y-position to move nodes inside from and to to")
-            self.cid_lpos.append(self.canvas.mpl_connect('button_press_event', self.set_meas_pos_from_y_click))
+            self.cid.append(self.canvas.mpl_connect('button_press_event', self.set_meas_pos_from_y_click))
             
         if self.log_pos is not None and self.meas_pos is not None:
             meas_pos = self.meas_pos
@@ -373,16 +362,12 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         """ Sets self.log_pos variable to the date (x-axis) from the node nearest the pick event """
         found_date = utils.find_nearest_date_from_event(event)
         self.log_pos = found_date
-        for x in self.cid_lpos:
-            self.canvas.mpl_disconnect(x)        
-        self.cid_lpos = [] 
+        self.reset_cid()
  
     def set_meas_pos_from_y_click(self, event):
         """ Sets the self.meas_pos variable to the y value of the click event """
         self.meas_pos = event.ydata
-        for x in self.cid_lpos:
-            self.canvas.mpl_disconnect(x)        
-        self.cid_lpos = []
+        self.reset_cid()
         
     def calc_best_fit(self):
         """ Calculates the self.LoggerPos from self.meas_ts and self.head_ts
