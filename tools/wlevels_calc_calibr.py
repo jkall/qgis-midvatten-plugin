@@ -388,7 +388,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             
         coupled_vals = self.match_ts_values(self.meas_ts, self.head_ts, tolerance)
         if not coupled_vals:
-            utils.pop_up_info("There was no measurements or logger values inside the chosen period.\nNo calibration can be done!")
+            utils.pop_up_info("There was no matched measurements or logger values inside the chosen period.\n Try to increase the tolerance!")
         else:            
             self.LoggerPos.setText(str(utils.calc_mean_diff(coupled_vals)))
             self.calibrateandplot()         
