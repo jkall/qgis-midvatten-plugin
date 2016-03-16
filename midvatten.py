@@ -196,6 +196,10 @@ class midvatten:
         self.action_export_spatialite.setWhatsThis("All data for the selected objects (obs_points and obs_lines) will be exported to another spatialite db.")
         QObject.connect(self.action_export_spatialite, SIGNAL("triggered()"), self.export_spatialite)
 
+        self.action_export_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/export_csv.png"), "Export to FieldLogger format", self.iface.mainWindow())
+        self.action_export_fieldlogger.setWhatsThis("TODO: Description")
+        QObject.connect(self.action_export_fieldlogger, SIGNAL("triggered()"), self.export_fieldlogger)
+        
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
         self.toolBar.addAction(self.actionsetup)
@@ -231,7 +235,8 @@ class midvatten:
         self.menu.export_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Export data from database"))
         self.menu.addMenu(self.menu.export_data_menu)
         self.menu.export_data_menu.addAction(self.action_export_csv)   
-        self.menu.export_data_menu.addAction(self.action_export_spatialite)   
+        self.menu.export_data_menu.addAction(self.action_export_spatialite)
+        self.menu.export_data_menu.addAction(self.action_export_fieldlogger)        
         
         self.menu.add_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Edit data in database"))
         #self.iface.addPluginToMenu("&Midvatten", self.menu.add_data_menu.menuAction())
@@ -345,31 +350,10 @@ class midvatten:
 
         if err_flag == 0:     
             QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
-
-            #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
-            obs_points_layer = utils.find_layer('obs_points')
-            selected_obs_points = utils.getselectedobjectnames(obs_points_layer)
-            obsidlist = []
-            if len(selected_obs_points)>0:
-                i=0
-                for id in selected_obs_points:
-                    obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
-                    i+=1
-                OBSID_P = tuple(obsidlist)#because module midv_exporting depends on obsid being a tuple
-            else:
-                OBSID_P = tuple([])
-
-            obs_lines_layer = utils.find_layer('obs_lines')
-            selected_obs_lines = utils.getselectedobjectnames(obs_lines_layer)
-            obsidlist = []
-            if len(selected_obs_lines)>0:
-                i=0
-                for id in selected_obs_lines:
-                    obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
-                    i+=1
-                OBSID_L = tuple(obsidlist)#because module midv_exporting depends on obsid being a tuple
-            else:
-                OBSID_L = tuple([])
+            
+            #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines           
+            OBSID_P = utils.get_selected_features_as_tuple('obs_points')
+            OBSID_T = utils.get_selected_features_as_tuple('obs_lines')  
 
             #sanity = utils.askuser("YesNo","""You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""",'Are you sure?')
             #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
@@ -383,31 +367,11 @@ class midvatten:
     def export_spatialite(self):
         allcritical_layers = ('obs_points', 'obs_lines', 'w_levels','w_flow','w_qual_lab','w_qual_field','stratigraphy') #none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+
         if err_flag == 0:
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
-            obs_points_layer = utils.find_layer('obs_points')
-            selected_obs_points = utils.getselectedobjectnames(obs_points_layer)
-            obsidlist = []
-            if len(selected_obs_points)>0:
-                i=0
-                for id in selected_obs_points:
-                    obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
-                    i+=1
-                OBSID_P = tuple(obsidlist)#because module midv_exporting depends on obsid being a tuple
-            else:
-                OBSID_P = tuple([])
-
-            obs_lines_layer = utils.find_layer('obs_lines')
-            selected_obs_lines = utils.getselectedobjectnames(obs_lines_layer)
-            obsidlist = []
-            if len(selected_obs_lines)>0:
-                i=0
-                for id in selected_obs_lines:
-                    obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
-                    i+=1
-                OBSID_L = tuple(obsidlist)#because module midv_exporting depends on obsid being a tuple
-            else:
-                OBSID_L = tuple([])
+            OBSID_P = utils.get_selected_features_as_tuple('obs_points')
+            OBSID_T = utils.get_selected_features_as_tuple('obs_lines')  
 
             sanity = utils.askuser("YesNo","""This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""",'Are you sure?')
             if sanity.result == 1:
@@ -426,6 +390,21 @@ class midvatten:
                     exportinstance.export_2_splite(newdb,self.ms.settingsdict['database'],EPSG_code)
             
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+                
+    def export_fieldlogger(self):
+        allcritical_layers = ('obs_points') #none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+
+        if err_flag == 0:     
+            OBSID_P = utils.get_selected_features_as_tuple('obs_points')         
+                        
+            from export_fieldlogger import ExportToFieldLogger
+            try:
+                self.export_to_field_logger.activateWindow()
+            except:
+                self.export_to_field_logger = ExportToFieldLogger(self.iface.mainWindow(), self.ms.settingsdict, OBSID_P)
+        else:
+            utils.pop_up_info("Err_flag was not 0")       
 
     def import_obs_lines(self):
         allcritical_layers = ('obs_lines')#none of these layers must be in editing mode
