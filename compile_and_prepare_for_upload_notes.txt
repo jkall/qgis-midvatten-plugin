@@ -1,3 +1,6 @@
+# ----------- file format and encoding -------------
+- windows line endings (CR LF)
+- only utf-8 in all code
 # ----------- icons -------------
 - icons should be 22x22 px
 - set paths to icons in resources.qrc
