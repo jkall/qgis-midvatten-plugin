@@ -25,7 +25,9 @@ def find_date_format(datestring):
         Can only parse a list of preconfigured datestrings. See the code.
     """
     datestring = str(datestring)
-    date_formats_to_try = ['%Y/%m/%d %H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y%m%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y%m%d', '%Y-%m-%d']
+    date_formats_to_try = ['%Y/%m/%d %H:%M:%S', '%Y-%m-%d %H:%M:%S',
+                           '%Y%m%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y%m%d',
+                           '%Y-%m-%d']
     found_format = None
     for dateformat in date_formats_to_try:
         try:

@@ -362,7 +362,7 @@ def tempinput(data):
     temp.write(data.encode('CP1252'))
     temp.close()
     yield temp.name
-    #os.unlink(temp.name) #TODO: This results in an error: WindowsError: [Error 32] Det g�r inte att komma �t filen eftersom den anv�nds av en annan process: 'c:\\users\\dator\\appdata\\local\\temp\\tmpxvcfna.csv'
+    #os.unlink(temp.name) #TODO: This results in an error: WindowsError: [Error 32] Det går inte att komma åt filen eftersom den används av en annan process: 'c:\\users\\dator\\appdata\\local\\temp\\tmpxvcfna.csv'
 
 def find_nearest_date_from_event(event): 
     """ Returns the nearest date from a picked list event artist from mouse click
