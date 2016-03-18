@@ -232,18 +232,39 @@ def sql_alter_db(sql=''):
     curs = conn.cursor()
     sql2 = sql 
     curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
-    try:
-        resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
-    except IntegrityError, e:
-        raise IntegrityError(str(e) + "\nAn obsid chosen for import probably didn't exist in the obs_point table")
+
+    if isinstance(sql2, basestring):
+
+        try:
+            resultfromsql = sql_alter_db_excecute_sql(curs, sql2) #Send SQL-syntax to cursor
+        except IntegrityError, e:
+            raise IntegrityError(str(e) + "\nAn obsid chosen for import probably didn't exist in the obs_point table")
+    else:
+        pop_up_info("Transaktion will begin now")
+        try:
+            resultfromsql = curs.executemany(sql2[0], sql2[1])
+        except IntegrityError, e:
+            raise IntegrityError(str(e) + "\nAn obsid chosen for import probably didn't exist in the obs_point table")
+
+    pop_up_info("Transaktion done")
     result = resultfromsql.fetchall()
+    pop_up_info("After fetchall")
+
+    pop_up_info("First commit done, next one coming up")
     conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
-    resultfromsql.close()
+    pop_up_info("Second commit done")
     conn.close()
+    resultfromsql.close()
     return result
 
-def sql_alter_db_by_param_subst(sql='',*subst_params):#sql sent as unicode, result from db returned as list of unicode strings, the subst_paramss is a tuple of parameters to be substituted into the sql
+def sql_alter_db_excecute_sql(curs, sql):
+
+    return resultfromsql
+
+def sql_alter_db_by_param_subst(sql='',*subst_params):
     """
+    sql sent as unicode, result from db returned as list of unicode strings, the subst_paramss is a tuple of parameters to be substituted into the sql
+
     #please note that the argument, subst_paramss, must be a tuple with the parameters to be substituted with ? inside the sql string
     #simple example:
     sql = 'select ?, ? from w_levels where obsid=?)
