@@ -197,8 +197,12 @@ class midvatten:
         QObject.connect(self.action_export_spatialite, SIGNAL("triggered()"), self.export_spatialite)
 
         self.action_export_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/export_csv.png"), "Export to FieldLogger format", self.iface.mainWindow())
-        self.action_export_fieldlogger.setWhatsThis("TODO: Description")
+        self.action_export_fieldlogger.setWhatsThis(self.export_fieldlogger.__doc__)
         QObject.connect(self.action_export_fieldlogger, SIGNAL("triggered()"), self.export_fieldlogger)
+
+        self.action_calculate_statistics_for_all_obsid = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), "Calculate statistics of all obsid", self.iface.mainWindow())
+        self.action_calculate_statistics_for_all_obsid.setWhatsThis(self.calculate_statistics_for_all_obsid.__doc__)
+        QObject.connect(self.action_calculate_statistics_for_all_obsid, SIGNAL("triggered()"), self.calculate_statistics_for_all_obsid)
         
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
@@ -236,7 +240,7 @@ class midvatten:
         self.menu.addMenu(self.menu.export_data_menu)
         self.menu.export_data_menu.addAction(self.action_export_csv)   
         self.menu.export_data_menu.addAction(self.action_export_spatialite)
-        self.menu.export_data_menu.addAction(self.action_export_fieldlogger)        
+        #TODO: Add this when it does something: self.menu.export_data_menu.addAction(self.action_export_fieldlogger)
         
         self.menu.add_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Edit data in database"))
         #self.iface.addPluginToMenu("&Midvatten", self.menu.add_data_menu.menuAction())
@@ -262,7 +266,6 @@ class midvatten:
         self.menu.report_menu.addAction(self.actiondrillreport)
         self.menu.report_menu.addAction(self.actionwqualreport)
 
-
         self.menu.prepare_menu = QMenu(QCoreApplication.translate("Midvatten", "&Prepare 3D data"))
         self.menu.addMenu(self.menu.prepare_menu)
         self.menu.prepare_menu.addAction(self.actionPrepareFor2Qgis2ThreeJS)
@@ -272,7 +275,11 @@ class midvatten:
         self.menu.db_manage_menu.addAction(self.actionNewDB)
         self.menu.db_manage_menu.addAction(self.actionVacuumDB)
         self.menu.db_manage_menu.addAction(self.actionZipDB)
-        
+
+        self.menu.utils =  QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
+        self.menu.addMenu(self.menu.utils)
+        self.menu.utils.addAction(self.action_calculate_statistics_for_all_obsid)
+
         self.menu.addSeparator()
 
         self.menu.addAction(self.actionloadthelayers)   
@@ -392,6 +399,7 @@ class midvatten:
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
                 
     def export_fieldlogger(self):
+        """ NOT FINISHED YET. Export data for the android app FieldLogger """
         allcritical_layers = ('obs_points') #none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
@@ -902,3 +910,26 @@ class midvatten:
             self.iface.messageBar().pushMessage("Information","Database backup was written to " + bkupname, 1,duration=15)
             QApplication.restoreOverrideCursor()
 
+    def calculate_statistics_for_all_obsid(self):
+        """ Calculates min, median, nr of values and max for all obsids and writes to file
+
+            Uses GetStatistics from drillreport for the calculations
+        """
+        resultfile = QFileDialog.getSaveFileName(None, 'Enter result file name:', '.', )
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        myconnection = utils.dbconnection()
+        if myconnection.connect2db() == True:
+            curs = myconnection.conn.cursor()
+            rs=curs.execute("""select distinct obsid from w_levels_logger order by obsid""")
+            obsids = [row[0] for row in rs]
+            rs.close()
+            myconnection.closedb()
+
+            from drillreport import GetStatistics
+            dbname = unicode(self.ms.settingsdict['database'])
+            printlist = [obsid + "\t" + '\t'.join([str(x) for x in GetStatistics(dbname, obsid)[1]]) for obsid in sorted(obsids)]
+
+            with open(resultfile, 'w') as f:
+                f.write('Obsid\tMin\tMedian\tNr of values\tMax\n')
+                f.write('\n'.join(printlist))
+        QApplication.restoreOverrideCursor()

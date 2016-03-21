@@ -104,7 +104,7 @@ class drillreport():        # general observation point info for the selected ob
             f.write(rpt)
 
             # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
-            meas_or_level_masl, statistics = self.GetStatistics(unicode(settingsdict['database']), obsid)#MacOSX fix1
+            meas_or_level_masl, statistics = GetStatistics(unicode(settingsdict['database']), obsid)#MacOSX fix1
             if  locale.getdefaultlocale()[0] == 'sv_SE':
                 reportdata_4 = self.rpt_lower_right_sv(statistics,meas_or_level_masl)
             else:
@@ -333,53 +333,54 @@ class drillreport():        # general observation point info for the selected ob
         ConnectionOK, data = utils.sql_load_fr_db(sql)
         return ConnectionOK, data
 
-    def GetStatistics(self, dbPath='', obsid = ''): 
-        Statistics_list = [0]*4
 
-        columns = ['meas', 'level_masl']
-        meas_or_level_masl= 'meas'#default value
+def GetStatistics(bPath='', obsid = ''):
+    Statistics_list = [0]*4
 
-        #number of values, also decide wehter to use meas or level_masl in report
-        for column in columns:
-            sql = r"""select Count(""" + column + r""") from w_levels where obsid = '"""
-            sql += obsid
-            sql += r"""'"""
-            ConnectionOK, number_of_values = utils.sql_load_fr_db(sql)
-            if number_of_values and number_of_values[0][0] > Statistics_list[2]:#this will select meas if meas >= level_masl
-                meas_or_level_masl = column
-                Statistics_list[2] = number_of_values[0][0]
+    columns = ['meas', 'level_masl']
+    meas_or_level_masl= 'meas'#default value
 
-        #min value
-        if meas_or_level_masl=='meas':
-            sql = r"""select min(meas) from w_levels where obsid = '"""
-        else:
-            sql = r"""select max(level_masl) from w_levels where obsid = '"""
+    #number of values, also decide wehter to use meas or level_masl in report
+    for column in columns:
+        sql = r"""select Count(""" + column + r""") from w_levels where obsid = '"""
         sql += obsid
         sql += r"""'"""
-        ConnectionOK, min_value = utils.sql_load_fr_db(sql)
-        if min_value:
-            Statistics_list[0] = min_value[0][0]
+        ConnectionOK, number_of_values = utils.sql_load_fr_db(sql)
+        if number_of_values and number_of_values[0][0] > Statistics_list[2]:#this will select meas if meas >= level_masl
+            meas_or_level_masl = column
+            Statistics_list[2] = number_of_values[0][0]
 
-        #median value
-        sql = r"""SELECT x.obsid, x.""" + meas_or_level_masl + r""" as median from (select obsid, """ + meas_or_level_masl + r""" FROM w_levels WHERE obsid = '"""
-        sql += obsid
-        sql += r"""' and (typeof(""" + meas_or_level_masl + r""")=typeof(0.01) or typeof(""" + meas_or_level_masl + r""")=typeof(1))) as x, (select obsid, """ + meas_or_level_masl + r""" FROM w_levels WHERE obsid = '"""
-        sql += obsid
-        sql += r"""' and (typeof(""" + meas_or_level_masl + r""")=typeof(0.01) or typeof(""" + meas_or_level_masl + r""")=typeof(1))) as y GROUP BY x.""" + meas_or_level_masl + r""" HAVING SUM(CASE WHEN y.""" + meas_or_level_masl + r""" <= x.""" + meas_or_level_masl + r""" THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.""" + meas_or_level_masl + r""" >= x.""" + meas_or_level_masl + r""" THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
-        ConnectionOK, median_value = utils.sql_load_fr_db(sql)
-        if median_value:
-            Statistics_list[1] = median_value[0][1]
+    #min value
+    if meas_or_level_masl=='meas':
+        sql = r"""select min(meas) from w_levels where obsid = '"""
+    else:
+        sql = r"""select max(level_masl) from w_levels where obsid = '"""
+    sql += obsid
+    sql += r"""'"""
+    ConnectionOK, min_value = utils.sql_load_fr_db(sql)
+    if min_value:
+        Statistics_list[0] = min_value[0][0]
 
-        #max value
-        if meas_or_level_masl=='meas':
-            sql = r"""select max(meas) from w_levels where obsid = '"""
-        else:
-            sql = r"""select min(level_masl) from w_levels where obsid = '"""
-        sql += obsid
-        sql += r"""'"""
-        ConnectionOK, max_value = utils.sql_load_fr_db(sql)
-        if max_value:
-            Statistics_list[3] = max_value[0][0]
-        
-        return meas_or_level_masl, Statistics_list    
+    #median value
+    sql = r"""SELECT x.obsid, x.""" + meas_or_level_masl + r""" as median from (select obsid, """ + meas_or_level_masl + r""" FROM w_levels WHERE obsid = '"""
+    sql += obsid
+    sql += r"""' and (typeof(""" + meas_or_level_masl + r""")=typeof(0.01) or typeof(""" + meas_or_level_masl + r""")=typeof(1))) as x, (select obsid, """ + meas_or_level_masl + r""" FROM w_levels WHERE obsid = '"""
+    sql += obsid
+    sql += r"""' and (typeof(""" + meas_or_level_masl + r""")=typeof(0.01) or typeof(""" + meas_or_level_masl + r""")=typeof(1))) as y GROUP BY x.""" + meas_or_level_masl + r""" HAVING SUM(CASE WHEN y.""" + meas_or_level_masl + r""" <= x.""" + meas_or_level_masl + r""" THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.""" + meas_or_level_masl + r""" >= x.""" + meas_or_level_masl + r""" THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
+    ConnectionOK, median_value = utils.sql_load_fr_db(sql)
+    if median_value:
+        Statistics_list[1] = median_value[0][1]
+
+    #max value
+    if meas_or_level_masl=='meas':
+        sql = r"""select max(meas) from w_levels where obsid = '"""
+    else:
+        sql = r"""select min(level_masl) from w_levels where obsid = '"""
+    sql += obsid
+    sql += r"""'"""
+    ConnectionOK, max_value = utils.sql_load_fr_db(sql)
+    if max_value:
+        Statistics_list[3] = max_value[0][0]
+
+    return meas_or_level_masl, Statistics_list
 
