@@ -135,7 +135,6 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.meas_ts = None
         self.head_ts = None
         self.level_masl_ts = None
-        self.previous_level_masl_ts = None
 
         self.settingsdict = settingsdict1
         PyQt4.QtGui.QDialog.__init__(self, parent)        
@@ -162,8 +161,6 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.connect(self.pushButtonFrom, PyQt4.QtCore.SIGNAL("clicked()"), self.set_from_date_from_x)
         self.connect(self.pushButtonTo, PyQt4.QtCore.SIGNAL("clicked()"), self.set_to_date_from_x)
         self.connect(self.pushButtonupdateplot, PyQt4.QtCore.SIGNAL("clicked()"), self.update_plot)
-        self.connect(self.pushButtonWrite, PyQt4.QtCore.SIGNAL("clicked()"), self.write_logger_ts_to_db)
-        self.connect(self.pushButtonUndo, PyQt4.QtCore.SIGNAL("clicked()"), self.undo_previous_calibration)
         #TODO: The signals for comobboxes and checkboxes didn't work for some reason.
         #self.connect(self.loggerLineNodes, PyQt4.QtCore.SIGNAL("stateChanged()"), self.update_plot)
         #self.connect(self.plot_logger_head, PyQt4.QtCore.SIGNAL("stateChanged()"), self.update_plot)
@@ -172,6 +169,8 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.connect(self.pushButtonLpos, PyQt4.QtCore.SIGNAL("clicked()"), self.calibrate_from_plot_selection)
         
         self.connect(self.pushButtonCalcBestFit, PyQt4.QtCore.SIGNAL("clicked()"), self.calc_best_fit)
+
+        self.get_tolerance()
 
         # Populate combobox with obsid from table w_levels_logger
         self.load_obsid_from_db()
@@ -189,7 +188,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             rs.close()
             myconnection.closedb()
 
-    def load_obsid_and_init(self):
+    def load_obsid_and_init(self, update_level_masl=True):
         obsid = unicode(self.combobox_obsid.currentText())
         if not obsid:
             utils.pop_up_info("ERROR: no obsid is chosen")
@@ -199,9 +198,9 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             head_sql = r"""SELECT date_time as 'date [datetime]', head_cm / 100 FROM w_levels_logger WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
             self.head_ts = self.sql_into_recarray(head_sql)
             self.obsid = obsid
+        if update_level_masl:
             level_masl_ts_sql = r"""SELECT date_time as 'date [datetime]', level_masl FROM w_levels_logger WHERE obsid = '""" + self.obsid + """' ORDER BY date_time"""
             self.level_masl_ts = self.sql_into_recarray(level_masl_ts_sql)
-            self.previous_level_masl_ts = self.level_masl_ts
         return obsid
 
     def getlastcalibration(self):
@@ -228,7 +227,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     def calibrate(self):
         self.calib_help.setText("Calibrating")
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        obsid = self.load_obsid_and_init()
+        obsid = self.load_obsid_and_init(False)
         if not obsid=='':        
             sanity1sql = """select count(obsid) from w_levels_logger where obsid = '""" +  obsid[0] + """'"""
             sanity2sql = """select count(obsid) from w_levels_logger where head_cm not null and head_cm !='' and obsid = '""" +  obsid[0] + """'"""
@@ -237,14 +236,9 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                 to_d_t = self.ToDateTime.dateTime().toPyDateTime()
 
                 if self.relative_loggerpos.isChecked():
-                    self.calibrate_level_masl_ts(fr_d_t, to_d_t, self.LoggerPos.text())
-                    #self.update_level_masl_from_level_masl(obsid, fr_d_t, to_d_t, self.LoggerPos.text())
+                    self.update_level_masl_from_level_masl(obsid, fr_d_t, to_d_t, self.LoggerPos.text())
                 else:
-                    #self.update_level_masl_from_level_head(obsid, fr_d_t, to_d_t, self.LoggerPos.text())
-                    self.calibrate_level_masl_ts(fr_d_t, to_d_t, self.LoggerPos.text(), self.head_ts)
-
-                if self.autowrite_to_db.isChecked():
-                    self.write_logger_ts_to_db()
+                    self.update_level_masl_from_head(obsid, fr_d_t, to_d_t, self.LoggerPos.text())
 
                 self.getlastcalibration()
             else:
@@ -253,31 +247,6 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             self.INFO.setText("Select the observation point with logger data to be calibrated.")
         self.calib_help.setText("")
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
-    def calibrate_level_masl_ts(self, fr_d_t, to_d_t, newzref, other_recarray=None):
-        self.previous_level_masl_ts = self.level_masl_ts.copy()
-        a_recarray = self.level_masl_ts
-        for idx in xrange(len(a_recarray)):
-            date = datestring_to_date(a_recarray.date_time[idx])
-            value = a_recarray.values[idx]
-            if fr_d_t <= date <= to_d_t:
-                if other_recarray is None:
-                    a_recarray.values[idx] = value + float(newzref)
-                else:
-                    if datestring_to_date(other_recarray.date_time[idx]) != date:
-                        utils.pop_up_info("calibrate_level_masl_ts: The two recarrays didn't have the same dates/indexes")
-                        break
-                    a_recarray.values[idx] = other_recarray.values[idx] + float(newzref)
-
-    def undo_previous_calibration(self):
-        """ Reverts to the previous_level_masl_ts
-        """
-        self.reset_cid_and_calib_help()
-        if self.previous_level_masl_ts is not None:
-            temp_level_masl_ts = self.level_masl_ts
-            self.level_masl_ts = self.previous_level_masl_ts
-            self.previous_level_masl_ts = temp_level_masl_ts
-            self.update_plot()
 
     def update_level_masl_from_level_masl(self, obsid, fr_d_t, to_d_t, newzref):
         """ Updates the level masl using newzref
@@ -318,36 +287,6 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         sql += str((to_d_t - datetime.datetime(1970,1,1)).total_seconds())
         sql += """ """
         dummy = utils.sql_alter_db(sql)
-
-    def write_logger_ts_to_db(self):
-        """ Writes the current logger_ts to db
-
-        """
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.reset_cid_and_calib_help()
-        obsid = self.load_obsid_and_init()
-        a_recarray = self.level_masl_ts
-        #sql_list = []
-        sql =r"""UPDATE w_levels_logger SET level_masl = ? WHERE obsid = ?"""
-        sql += """ AND CAST(strftime('%s', date_time) AS NUMERIC) = ? """
-
-        sql_parameters = [(str(a_recarray.values[idx]), obsid, str((datestring_to_date(a_recarray.date_time[idx]) - datetime.datetime(1970,1,1)).total_seconds())) for idx in xrange(len(a_recarray))]
-
-
-#        for idx in xrange(len(a_recarray)):
-#            date = datestring_to_date(a_recarray.date_time[idx])
-#            value = a_recarray.values[idx]
-#            sql =r"""UPDATE w_levels_logger SET level_masl = """
-#            sql += str(value)
-#            sql += """ WHERE obsid = '"""
-#            sql += obsid
-#            sql += """' AND CAST(strftime('%s', date_time) AS NUMERIC) = """
-#            sql += str((date - datetime.datetime(1970,1,1)).total_seconds())
-#            sql += """ """
-#            sql_list.append(sql)
-        utils.pop_up_info("Sql lines preprocessed, will write to db now")
-        utils.sql_alter_db((sql, sql_parameters))
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def sql_into_recarray(self, sql):
         """ Converts and runs an sql-string and turns the answer into an np.recarray and returns it""" 
@@ -441,10 +380,6 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         for x in self.cid:
             self.canvas.mpl_disconnect(x)
         self.cid = []
-
-    def calibrate_relative(self):
-        """ Calibrates the values relative to the current level_masl """
-        pass
 
     def calibrate_from_plot_selection(self):
         """ Calibrates by selecting a line node and a y-position on the plot
@@ -542,7 +477,6 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             logger_ts = self.head_ts
 
         coupled_vals = self.match_ts_values(self.meas_ts, logger_ts, tolerance)
-
         if not coupled_vals:
             utils.pop_up_info("There was no matched measurements or logger values inside the chosen period.\n Try to increase the tolerance!")
         else:            
@@ -555,9 +489,15 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         
             For every measurement point, a mean of logger values inside 
             measurementpoint + x minutes to measurementpoint - x minutes
-            is coupled together. 
+            is coupled together.
+
+            At the first used measurement, only logger values greater than
+            the set start date is used.
+            At the last measurement, only logger values lesser than the set end
+            date is used.
+            This is done so that values from another logger reposition is not
+            mixed with the chosen logger positioning. (Hard to explain).
         """
-        #Run init to make sure self.meas_ts and self.head_ts is updated for the current obsid.
         coupled_vals = []
         
         #Get the tolerance, default to 10 minutes
@@ -579,23 +519,25 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             if logger_step is None:
                 break
             meas_step = datestring_to_date(m[0]).replace(tzinfo=None)
-            if outer_begin > meas_step:
-                continue
-            if outer_end < meas_step:
-                break
-                
+
             step_begin = dateshift(meas_step, -tol, tol_period)
             step_end = dateshift(meas_step, tol, tol_period)
+
+            if step_end < outer_begin:
+                continue
+            if step_begin > outer_end:
+                break
+
             log_vals = []
             
-            while logger_step < step_begin:
+            while logger_step < step_begin or logger_step < outer_begin:
                 try:
                     l = next(logger_gen)
                 except StopIteration:
                     break
                 logger_step = datestring_to_date(l[0]).replace(tzinfo=None)
 
-            while logger_step is not None and logger_step <= step_end:
+            while logger_step is not None and logger_step <= step_end and logger_step <= outer_end:
                 if not math.isnan(float(l[1])) or l[1] == 'nan' or l[1] == 'NULL':
                     log_vals.append(float(l[1]))
                 try:
@@ -614,7 +556,12 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         """ Get the period tolerance, default to 10 minutes """
         if not self.bestFitTolerance.text():
             tol = '10 minutes'
+            self.bestFitTolerance.setText(tol)
         else:
             tol = self.bestFitTolerance.text()
-        return tuple(tol.split())                    
+
+        tol_splitted = tol.split()
+        if len(tol_splitted) != 2:
+            utils.pop_up_info("Must write time resolution also, ex. 10 minutes")
+        return tuple(tol_splitted)
         

@@ -234,32 +234,22 @@ def sql_alter_db(sql=''):
     curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
 
     if isinstance(sql2, basestring):
-
         try:
-            resultfromsql = sql_alter_db_excecute_sql(curs, sql2) #Send SQL-syntax to cursor
+            resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
         except IntegrityError, e:
             raise IntegrityError(str(e) + "\nAn obsid chosen for import probably didn't exist in the obs_point table")
     else:
-        pop_up_info("Transaktion will begin now")
         try:
             resultfromsql = curs.executemany(sql2[0], sql2[1])
         except IntegrityError, e:
             raise IntegrityError(str(e) + "\nAn obsid chosen for import probably didn't exist in the obs_point table")
 
-    pop_up_info("Transaktion done")
     result = resultfromsql.fetchall()
-    pop_up_info("After fetchall")
-
-    pop_up_info("First commit done, next one coming up")
     conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
-    pop_up_info("Second commit done")
-    conn.close()
     resultfromsql.close()
+    conn.close()
+
     return result
-
-def sql_alter_db_excecute_sql(curs, sql):
-
-    return resultfromsql
 
 def sql_alter_db_by_param_subst(sql='',*subst_params):
     """

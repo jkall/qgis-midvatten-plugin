@@ -554,72 +554,9 @@ Please note that this will change the database.</string>
         </property>
        </widget>
       </item>   
-      <item row="11" column="0">
-       <widget class="QPushButton" name="pushButtonUndo">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Undo previous calibration</string>
-        </property>
-       </widget>
-      </item>         
-      <item row="12" column="0">
-       <widget class="QPushButton" name="pushButtonWrite">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Write calibration to db</string>
-        </property>
-       </widget>
-      </item>    
-    <item row="12" column="1">    
-     <widget class="QCheckBox" name="autowrite_to_db">    
-      <property name="sizePolicy">    
-       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">    
-        <horstretch>0</horstretch>    
-        <verstretch>0</verstretch>    
-       </sizepolicy>    
-      </property>    
-      <property name="minimumSize">    
-       <size>    
-        <width>0</width>    
-        <height>0</height>    
-       </size>    
-      </property>    
-      <property name="font">    
-       <font>    
-        <family>Arial</family>    
-        <pointsize>10</pointsize>    
-       </font>    
-      </property>
-      <property name="text">
-       <string>Write to db at each calibration</string>
-      </property>      
-     </widget>    
-    </item>   
        </layout>
       </item>             
-      <item row="13" column="0">
+      <item row="12" column="0">
        <widget class="QLabel" name="calib_help">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
