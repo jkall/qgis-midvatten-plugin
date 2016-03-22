@@ -287,10 +287,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         
         existing_obsids = utils.sql_load_fr_db("""select distinct obsid from '%s'"""%'obs_points')[1]      
         existing_obsids = [str(obsid[0]) for obsid in existing_obsids]
-        
+
+        confirm_names = utils.askuser("YesNo", "Do you want to confirm each logger import name before import?")
+
         files = self.select_files()
         for selected_file in files:
-            file_data = self.load_diveroffice_file(selected_file, existing_obsids)
+            file_data = self.load_diveroffice_file(selected_file, existing_obsids, confirm_names.result)
             if file_data == 'failed':
                 utils.pop_up_info("The import failed and has been stopped.")
                 break
@@ -530,7 +532,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             path = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
         return path
 
-    def load_diveroffice_file(self, path, existing_obsids=None):
+    def load_diveroffice_file(self, path, existing_obsids=None, ask_for_names=True):
         """ Parses a diveroffice csv file into a string
         
             The Location attribute is used as obsid and added as a column.
@@ -549,8 +551,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 if row.startswith('Date/time'):
                     cols.append('obsid')
                     begin_extraction = True
-                    
-                    obsid = PyQt4.QtGui.QInputDialog.getText(None, "Submit obsid", "The obsid " + str(obsid) + " was found for " + str(path) + ", accept the found name or change it below", PyQt4.QtGui.QLineEdit.Normal, obsid.capitalize() if obsid is not None else 'None')[0]
+
+                    if ask_for_names:
+                        obsid = PyQt4.QtGui.QInputDialog.getText(None, "Submit obsid", "The obsid " + str(obsid) + " was found for " + str(path) + ", accept the found name or change it below", PyQt4.QtGui.QLineEdit.Normal, obsid.capitalize() if obsid is not None else 'None')[0]
                     if existing_obsids is not None:
                         if obsid not in existing_obsids:
                             obsid = PyQt4.QtGui.QInputDialog.getText(None, "WARNING", "The supplied obsid '" + str(obsid) + "' did not exist in obs_points, please submit it again for " + str(path) + ".", PyQt4.QtGui.QLineEdit.Normal, 'obsid')[0]                        

@@ -135,6 +135,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.meas_ts = None
         self.head_ts = None
         self.level_masl_ts = None
+        self.loggerpos_masl_or_offset_state = 1
 
         self.settingsdict = settingsdict1
         PyQt4.QtGui.QDialog.__init__(self, parent)        
@@ -161,13 +162,8 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.connect(self.pushButtonFrom, PyQt4.QtCore.SIGNAL("clicked()"), self.set_from_date_from_x)
         self.connect(self.pushButtonTo, PyQt4.QtCore.SIGNAL("clicked()"), self.set_to_date_from_x)
         self.connect(self.pushButtonupdateplot, PyQt4.QtCore.SIGNAL("clicked()"), self.update_plot)
-        #TODO: The signals for comobboxes and checkboxes didn't work for some reason.
-        #self.connect(self.loggerLineNodes, PyQt4.QtCore.SIGNAL("stateChanged()"), self.update_plot)
-        #self.connect(self.plot_logger_head, PyQt4.QtCore.SIGNAL("stateChanged()"), self.update_plot)
-        #self.connect(self.combobox_obsid, PyQt4.QtCore.SIGNAL("activated()"), self.combobox_obsid_activated)
-
+        self.connect(self.loggerpos_masl_or_offset, PyQt4.QtCore.SIGNAL("clicked()"), self.loggerpos_masl_or_offset_change)
         self.connect(self.pushButtonLpos, PyQt4.QtCore.SIGNAL("clicked()"), self.calibrate_from_plot_selection)
-        
         self.connect(self.pushButtonCalcBestFit, PyQt4.QtCore.SIGNAL("clicked()"), self.calc_best_fit)
 
         self.get_tolerance()
@@ -220,7 +216,8 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
     def calibrateandplot(self):
         obsid = self.load_obsid_and_init()
-        self.calibrate()
+        if not self.LoggerPos.text() == '':
+            self.calibrate()
         self.update_plot()
         
 #    def calibrate(self, fr_d_t=self.FromDateTime.dateTime().toPyDateTime(), to_d_t=self.ToDateTime.dateTime().toPyDateTime()):
@@ -235,7 +232,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                 fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
                 to_d_t = self.ToDateTime.dateTime().toPyDateTime()
 
-                if self.relative_loggerpos.isChecked():
+                if self.loggerpos_masl_or_offset.isChecked():
                     self.update_level_masl_from_level_masl(obsid, fr_d_t, to_d_t, self.LoggerPos.text())
                 else:
                     self.update_level_masl_from_head(obsid, fr_d_t, to_d_t, self.LoggerPos.text())
@@ -305,7 +302,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         
     def update_plot(self):
         """ Plots self.level_masl_ts, self.meas_ts and maybe self.head_ts """
-        self.reset_cid_and_calib_help()
+        self.reset_plot_selects_and_calib_help()
         self.calib_help.setText("Updating plot")
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         obsid = self.load_obsid_and_init()
@@ -345,22 +342,22 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
     def set_from_date_from_x(self):
         """ Used to set the self.FromDateTime by clicking on a line node in the plot self.canvas """
-        self.reset_cid_and_calib_help()
+        self.reset_plot_selects_and_calib_help()
+        self.calib_help.setText("Select a node to use as \"from\"")
+        self.deactivate_pan_zoom()
         self.canvas.setFocusPolicy(Qt.ClickFocus)
         self.canvas.setFocus()   
         self.cid.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, self.FromDateTime)))
-        self.log_pos = None
-        self.y_pos = None 
 
     def set_to_date_from_x(self):
         """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """    
-        self.reset_cid_and_calib_help()
+        self.reset_plot_selects_and_calib_help()
+        self.calib_help.setText("Select a node to use as \"to\"")
+        self.deactivate_pan_zoom()
         self.canvas.setFocusPolicy(Qt.ClickFocus)
         self.canvas.setFocus()   
         self.cid.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, self.ToDateTime)))
-        self.log_pos = None
-        self.y_pos = None         
-            
+
     def set_date_from_x_onclick(self, event, date_holder):
         """ Sets the date_holder to a date from a line node closest to the pick event
 
@@ -368,11 +365,13 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         """
         found_date = utils.find_nearest_date_from_event(event)
         date_holder.setDateTime(found_date)           
-        self.reset_cid_and_calib_help()
+        self.reset_plot_selects_and_calib_help()
     
-    def reset_cid_and_calib_help(self):
+    def reset_plot_selects_and_calib_help(self):
         """ Reset self.cid and self.calib_help """
         self.reset_cid()
+        self.log_pos = None
+        self.y_pos = None
         self.calib_help.setText("")
 
     def reset_cid(self):
@@ -395,6 +394,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         """            
         #Run init to make sure self.meas_ts and self.head_ts is updated for the current obsid.           
         self.load_obsid_and_init()
+        self.deactivate_pan_zoom()
         self.canvas.setFocusPolicy(Qt.ClickFocus)
         self.canvas.setFocus()
 
@@ -409,7 +409,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         if self.log_pos is not None and self.y_pos is not None:
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
             
-            if self.relative_loggerpos.isChecked():
+            if self.loggerpos_masl_or_offset.isChecked():
                 logger_ts = self.level_masl_ts
             else:
                 logger_ts = self.head_ts
@@ -441,14 +441,14 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     def set_log_pos_from_node_date_click(self, event):
         """ Sets self.log_pos variable to the date (x-axis) from the node nearest the pick event """
         found_date = utils.find_nearest_date_from_event(event)
-        self.calib_help.setText("Logger node " + str(found_date) + " selected, click button again.")
+        self.calib_help.setText("Logger node " + str(found_date) + " selected, click button \"Calibrate by selection in plot\" again.")
         self.log_pos = found_date
         self.reset_cid()
  
     def set_y_pos_from_y_click(self, event):
         """ Sets the self.y_pos variable to the y value of the click event """
         self.y_pos = event.ydata
-        self.calib_help.setText("Y position set, click button again for calibration.")
+        self.calib_help.setText("Y position set, click button \"Calibrate by selection in plot\" again for calibration.")
         self.reset_cid()
         
     def calc_best_fit(self):
@@ -464,14 +464,14 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             Then calculates the mean of all matches and set to self.LoggerPos.
         """
         obsid = self.load_obsid_and_init()
-        self.reset_cid_and_calib_help()
+        self.reset_plot_selects_and_calib_help()
         tolerance = self.get_tolerance()
         really_calibrate_question = utils.askuser("YesNo", """This will calibrate all values inside the chosen period\nusing the mean difference between logger values and measurements.\n\nTime tolerance for matching logger and measurement nodes set to '""" + ' '.join(tolerance) + """'\n\nContinue?""")
         if really_calibrate_question.result == 0: # if the user wants to abort
             return
 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        if self.relative_loggerpos.isChecked():
+        if self.loggerpos_masl_or_offset.isChecked():
             logger_ts = self.level_masl_ts
         else:
             logger_ts = self.head_ts
@@ -564,4 +564,24 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         if len(tol_splitted) != 2:
             utils.pop_up_info("Must write time resolution also, ex. 10 minutes")
         return tuple(tol_splitted)
+
+    def loggerpos_masl_or_offset_change(self):
+        if self.loggerpos_masl_or_offset_state == 1:
+            self.label_11.setText("Offset relative to calibrated values:")
+            self.loggerpos_masl_or_offset.setText("Change to logger position")
+            self.label_adjustment_info.setText("Adjustments made from calibrated values")
+            self.loggerpos_masl_or_offset_state = 0
+        else:
+            self.label_11.setText("Logger position, masl:")
+            self.loggerpos_masl_or_offset.setText("Change to offset")
+            self.label_adjustment_info.setText("Adjustments made from head")
+            self.loggerpos_masl_or_offset_state = 1
+
+    def deactivate_pan_zoom(self):
+        """ Deactivates the NavigationToolbar pan or zoom feature if they are currently active """
+        if self.mpltoolbar._active == "PAN":
+            self.mpltoolbar.pan()
+        elif self.mpltoolbar._active == "ZOOM":
+            self.mpltoolbar.zoom()
+
         

@@ -171,9 +171,47 @@ Please note that this will change the database.</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="0" colspan="2">
+     <item row="5" column="0" colspan="2">
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="pushButtonupdateplot">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Update plot</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="Line" name="line_3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+        <item row="2" column="0">
          <widget class="QLabel" name="label_8">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -198,7 +236,7 @@ Please note that this will change the database.</string>
           </property>
          </widget>
         </item>        
-        <item row="1" column="0">
+        <item row="3" column="0">
          <widget class="QDateTimeEdit" name="FromDateTime">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -248,7 +286,7 @@ Please note that this will change the database.</string>
           </property>
          </widget>
         </item>
-      <item row="1" column="1">
+      <item row="3" column="1">
        <widget class="QPushButton" name="pushButtonFrom">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -267,7 +305,7 @@ Please note that this will change the database.</string>
         </property>
        </widget>
       </item>     
-        <item row="2" column="0">
+        <item row="4" column="0">
          <widget class="QLabel" name="label_9">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -292,7 +330,7 @@ Please note that this will change the database.</string>
           </property>
          </widget>
         </item>   
-        <item row="3" column="0">
+        <item row="5" column="0">
          <widget class="QDateTimeEdit" name="ToDateTime">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -342,7 +380,7 @@ Please note that this will change the database.</string>
           </property>
          </widget>
         </item>
-      <item row="3" column="1">
+      <item row="5" column="1">
        <widget class="QPushButton" name="pushButtonTo">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -360,8 +398,27 @@ Please note that this will change the database.</string>
          <string>Select to</string>
         </property>
        </widget>
-      </item>     
-        <item row="4" column="0" rowspan="2">
+      </item>   
+      <item row="6" column="0" colspan="2">
+       <widget class="Line" name="line_4">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+        <item row="7" column="0" rowspan="2">
          <widget class="QLabel" name="label_11">
           <property name="font">
            <font>
@@ -370,15 +427,14 @@ Please note that this will change the database.</string>
            </font>
           </property>
           <property name="text">
-           <string>Logger position, masl
-(empty=no calibr., just plot):</string>
+           <string>Logger position, masl:</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
           </property>
          </widget>
         </item>
-        <item row="6" column="0">
+        <item row="9" column="0">
          <widget class="QLineEdit" name="LoggerPos">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -403,8 +459,8 @@ Please note that this will change the database.</string>
           </property>
          </widget>
         </item>
-    <item row="6" column="1">    
-     <widget class="QCheckBox" name="relative_loggerpos">    
+    <item row="9" column="1">    
+     <widget class="QPushButton" name="loggerpos_masl_or_offset">    
       <property name="sizePolicy">    
        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">    
         <horstretch>0</horstretch>    
@@ -424,11 +480,46 @@ Please note that this will change the database.</string>
        </font>    
       </property>
       <property name="text">
-       <string>Logger pos relative to masl</string>
+       <string>Change to offset</string>
       </property>      
      </widget>    
-    </item>         
-      <item row="7" column="0">
+    </item>        
+      <item row="10" column="0" colspan="2">
+       <widget class="Line" name="line_5">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+        <item row="11" column="0" colspan="2">
+         <widget class="QLabel" name="label_adjustment_info">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Adjustments made from head</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+      <item row="12" column="0">
        <widget class="QPushButton" name="pushButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -447,8 +538,8 @@ Please note that this will change the database.</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
-       <widget class="QPushButton" name="pushButtonupdateplot">
+      <item row="13" column="0">
+       <widget class="QPushButton" name="pushButtonLpos">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -462,11 +553,11 @@ Please note that this will change the database.</string>
          </font>
         </property>
         <property name="text">
-         <string>Update plot</string>
+         <string>Calibrate by selection in plot</string>
         </property>
        </widget>
-      </item>
-        <item row="8" column="1">
+      </item>   
+        <item row="14" column="1">
          <widget class="QLabel" name="label_tolerance">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -491,7 +582,7 @@ Please note that this will change the database.</string>
           </property>
          </widget>
         </item>
-      <item row="9" column="0">
+      <item row="15" column="0">
        <widget class="QPushButton" name="pushButtonCalcBestFit">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -510,7 +601,7 @@ Please note that this will change the database.</string>
         </property>
        </widget>
       </item> 
-        <item row="9" column="1">
+        <item row="15" column="1">
          <widget class="QLineEdit" name="bestFitTolerance">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -534,29 +625,7 @@ Please note that this will change the database.</string>
            <set>Qt::ImhPreferNumbers</set>
           </property>
          </widget>
-        </item>  
-      <item row="10" column="0">
-       <widget class="QPushButton" name="pushButtonLpos">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Calibrate by selection in plot</string>
-        </property>
-       </widget>
-      </item>   
-       </layout>
-      </item>             
-      <item row="12" column="0">
+     <item row="16" column="0" colspan="2" rowspan="2">
        <widget class="QLabel" name="calib_help">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -578,6 +647,9 @@ Please note that this will change the database.</string>
         </property>
        </widget>
       </item>    
+        </item>  
+       </layout>
+      </item>             
      </layout>
     </item>
     <item row="0" column="1">
