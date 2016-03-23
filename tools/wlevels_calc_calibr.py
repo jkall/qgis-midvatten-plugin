@@ -232,10 +232,10 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                 fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
                 to_d_t = self.ToDateTime.dateTime().toPyDateTime()
 
-                if self.loggerpos_masl_or_offset.isChecked():
-                    self.update_level_masl_from_level_masl(obsid, fr_d_t, to_d_t, self.LoggerPos.text())
-                else:
+                if self.loggerpos_masl_or_offset_state == 1:
                     self.update_level_masl_from_head(obsid, fr_d_t, to_d_t, self.LoggerPos.text())
+                else:
+                    self.update_level_masl_from_level_masl(obsid, fr_d_t, to_d_t, self.LoggerPos.text())
 
                 self.getlastcalibration()
             else:
@@ -293,13 +293,6 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         table2=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write table2.values 
         return table2        
 
-    def plot_recarray(self, axes, a_recarray, lable, line_style='o-'):
-        """ Plots a recarray to the supplied axes object """
-        # Get help from function datestr2num to get date and time into float
-        myTimestring = [a_recarray.date_time[idx] for idx in xrange(len(a_recarray))]    
-        numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
-        axes.plot_date(numtime, a_recarray.values, line_style, label=lable, picker=10)    # LINEPLOT WITH DOTS!! 
-        
     def update_plot(self):
         """ Plots self.level_masl_ts, self.meas_ts and maybe self.head_ts """
         self.reset_plot_selects_and_calib_help()
@@ -311,18 +304,18 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         p=[None]*2 # List for plot objects
     
         # Load manual reading (full time series) for the obsid
-        self.plot_recarray(self.axes, self.meas_ts, obsid, 'o-')     
+        self.plot_recarray(self.axes, self.meas_ts, obsid, 'o-', 0)
         
         # Load Loggerlevels (full time series) for the obsid
         if self.loggerLineNodes.isChecked():
             logger_line_style = '.-'
         else:
             logger_line_style = '-'                
-        self.plot_recarray(self.axes, self.level_masl_ts, obsid + unicode(' logger', 'utf-8'), logger_line_style)
+        self.plot_recarray(self.axes, self.level_masl_ts, obsid + unicode(' logger', 'utf-8'), logger_line_style, 10)
 
         #Plot the original head_cm
         if self.plot_logger_head.isChecked():
-            self.plot_recarray(self.axes, self.head_ts, obsid + unicode(' original logger head', 'utf-8'), '-')
+            self.plot_recarray(self.axes, self.head_ts, obsid + unicode(' original logger head', 'utf-8'), '-', 0)
 
         """ Finish plot """
         self.axes.grid(True)
@@ -339,6 +332,13 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         plt.close(self.calibrplotfigure)#this closes reference to self.calibrplotfigure
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.calib_help.setText("")
+
+    def plot_recarray(self, axes, a_recarray, lable, line_style, picker=10):
+        """ Plots a recarray to the supplied axes object """
+        # Get help from function datestr2num to get date and time into float
+        myTimestring = [a_recarray.date_time[idx] for idx in xrange(len(a_recarray))]
+        numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
+        axes.plot_date(numtime, a_recarray.values, line_style, label=lable, picker=picker)
 
     def set_from_date_from_x(self):
         """ Used to set the self.FromDateTime by clicking on a line node in the plot self.canvas """
@@ -389,7 +389,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             1. Selecting a line node.
             2. Selecting a selecting a y-position from the plot.
             3. Extracting the head from head_ts with the same date as the line node.
-            4. Calculating y-position - head and setting self.LoggerPos.
+            4. Calculating y-position - head (or level_masl) and setting self.LoggerPos.
             5. Run calibration.
         """            
         #Run init to make sure self.meas_ts and self.head_ts is updated for the current obsid.           
@@ -408,11 +408,11 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             
         if self.log_pos is not None and self.y_pos is not None:
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-            
-            if self.loggerpos_masl_or_offset.isChecked():
-                logger_ts = self.level_masl_ts
-            else:
+
+            if self.loggerpos_masl_or_offset_state == 1:
                 logger_ts = self.head_ts
+            else:
+                logger_ts = self.level_masl_ts
             
             y_pos = self.y_pos
             log_pos = self.log_pos
@@ -471,10 +471,12 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             return
 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        if self.loggerpos_masl_or_offset.isChecked():
-            logger_ts = self.level_masl_ts
-        else:
+        if self.loggerpos_masl_or_offset_state == 1:
             logger_ts = self.head_ts
+        else:
+            logger_ts = self.level_masl_ts
+
+
 
         coupled_vals = self.match_ts_values(self.meas_ts, logger_ts, tolerance)
         if not coupled_vals:
@@ -511,6 +513,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             return None
         log_vals = []
 
+        all_done = False
         #The .replace(tzinfo=None) is used to remove info about timezone. Needed for the comparisons. This should not be a problem though as the date scale in the plot is based on the dates from the database. 
         outer_begin = self.FromDateTime.dateTime().toPyDateTime().replace(tzinfo=None)
         outer_end = self.ToDateTime.dateTime().toPyDateTime().replace(tzinfo=None)
@@ -528,14 +531,16 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             if step_begin > outer_end:
                 break
 
-            log_vals = []
-            
+            #Skip logger steps that are earlier than the chosen begin date or are not inside the measurement period.
             while logger_step < step_begin or logger_step < outer_begin:
                 try:
                     l = next(logger_gen)
                 except StopIteration:
+                    all_done = True
                     break
                 logger_step = datestring_to_date(l[0]).replace(tzinfo=None)
+
+            log_vals = []
 
             while logger_step is not None and logger_step <= step_end and logger_step <= outer_end:
                 if not math.isnan(float(l[1])) or l[1] == 'nan' or l[1] == 'NULL':
@@ -543,13 +548,16 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                 try:
                     l = next(logger_gen)
                 except StopIteration:
+                    all_done = True
                     break
                 logger_step = datestring_to_date(l[0]).replace(tzinfo=None)                     
-            
-            means = np.mean(log_vals)
-            if not math.isnan(means):
-                coupled_vals.append((m[1], np.mean(log_vals)))
-                 
+
+            if log_vals:
+                mean = np.mean(log_vals)
+                if not math.isnan(mean):
+                    coupled_vals.append((m[1], mean))
+            if all_done:
+                break
         return coupled_vals
                       
     def get_tolerance(self):
