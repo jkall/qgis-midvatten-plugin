@@ -176,7 +176,7 @@ class midvatten:
         #self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionPlotSection, SIGNAL("triggered()"), self.plot_section)
         
-        self.actionPrepareFor2Qgis2ThreeJS = QAction(QIcon(":/plugins/midvatten/icons/qgis2threejs.png"), "Prepare data for Qgis2threejs plugin", self.iface.mainWindow())
+        self.actionPrepareFor2Qgis2ThreeJS = QAction(QIcon(":/plugins/midvatten/icons/qgis2threejs.png"), "Prepare 3D-data for Qgis2threejs plugin", self.iface.mainWindow())
         self.actionPrepareFor2Qgis2ThreeJS.setWhatsThis("Add spatialite views to be used by Qgis2threejs plugin to create a 3D plot")
         QObject.connect(self.actionPrepareFor2Qgis2ThreeJS, SIGNAL("triggered()"), self.prepare_layers_for_qgis2threejs)
 
@@ -265,10 +265,6 @@ class midvatten:
         self.menu.addMenu(self.menu.report_menu)
         self.menu.report_menu.addAction(self.actiondrillreport)
         self.menu.report_menu.addAction(self.actionwqualreport)
-
-        self.menu.prepare_menu = QMenu(QCoreApplication.translate("Midvatten", "&Prepare 3D data"))
-        self.menu.addMenu(self.menu.prepare_menu)
-        self.menu.prepare_menu.addAction(self.actionPrepareFor2Qgis2ThreeJS)
         
         self.menu.db_manage_menu = QMenu(QCoreApplication.translate("Midvatten", "&Database management"))
         self.menu.addMenu(self.menu.db_manage_menu)
@@ -278,6 +274,7 @@ class midvatten:
 
         self.menu.utils =  QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
         self.menu.addMenu(self.menu.utils)
+        self.menu.utils.addAction(self.actionPrepareFor2Qgis2ThreeJS)
         self.menu.utils.addAction(self.action_calculate_statistics_for_all_obsid)
 
         self.menu.addSeparator()
