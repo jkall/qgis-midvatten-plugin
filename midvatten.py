@@ -927,7 +927,7 @@ class midvatten:
 
             from drillreport import GetStatistics
             dbname = unicode(self.ms.settingsdict['database'])
-            printlist = [obsid + "\t" + '\t'.join([str(x) for x in GetStatistics(dbname, obsid)[1]]) for obsid in sorted(obsids)]
+            printlist = [obsid + "\t" + '\t'.join([str(x) for x in GetStatistics(obsid)[1]]) for obsid in sorted(obsids)]
 
             with open(resultfile, 'w') as f:
                 f.write('Obsid\tMin\tMedian\tNr of values\tMax\n')

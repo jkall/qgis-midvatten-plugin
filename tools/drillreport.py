@@ -104,7 +104,7 @@ class drillreport():        # general observation point info for the selected ob
             f.write(rpt)
 
             # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
-            meas_or_level_masl, statistics = GetStatistics(unicode(settingsdict['database']), obsid)#MacOSX fix1
+            meas_or_level_masl, statistics = GetStatistics(obsid)#MacOSX fix1
             if  locale.getdefaultlocale()[0] == 'sv_SE':
                 reportdata_4 = self.rpt_lower_right_sv(statistics,meas_or_level_masl)
             else:
@@ -334,7 +334,7 @@ class drillreport():        # general observation point info for the selected ob
         return ConnectionOK, data
 
 
-def GetStatistics(bPath='', obsid = ''):
+def GetStatistics(obsid = ''):
     Statistics_list = [0]*4
 
     columns = ['meas', 'level_masl']
