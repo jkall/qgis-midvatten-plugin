@@ -113,7 +113,23 @@ class HtmlDialog(QtGui.QDialog):
 
     def closeWindow(self):
         self.close()
-    
+
+def get_all_obsids():
+    """ Returns all obsids from obs_points
+    :return: All obsids from obs_points
+    """
+    myconnection = dbconnection()
+    obsids = []
+    if myconnection.connect2db() == True:
+        # skapa en cursor
+        curs = myconnection.conn.cursor()
+        rs=curs.execute("""select distinct obsid from obs_points order by obsid""")
+
+        obsids = [row[0] for row in curs]
+        rs.close()
+        myconnection.closedb()
+    return obsids
+
 def find_layer(layer_name):
     for name, search_layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():
         if search_layer.name() == layer_name:
