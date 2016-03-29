@@ -36,23 +36,29 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         self.setWindowTitle("Export to FieldLogger") # Set the title for the dialog
 
-        self.parameters = self.get_parameters()
-        self.set_headers(self.horizontalLayout_headers, self.parameters)
+        self.parameters = self.create_parameters()
+        self.set_headers(self.horizontalLayout_headers, self.parameters.keys())
         self.obsids = utils.get_all_obsids()
 
-        self.selection_dict = self.build_selection_dict(self.obsids, self.parameters, self.gridWidget_selections)
+        self.selection_dict = self.build_selection_dict(self.obsids, self.parameters.keys(), self.gridWidget_selections)
         self.set_obsids_and_parameters_checkboxes(self.gridLayout_selections, self.selection_dict)
-        self.set_and_connect_selectall(self.horizontalLayout_selectall, self.parameters)
+        self.set_and_connect_selectall(self.horizontalLayout_selectall, self.parameters.keys())
         self.connect(self.pushButtonExport, PyQt4.QtCore.SIGNAL("clicked()"), self.export_selected)
 
         self.check_checkboxes_from_initial_selection(obsids, self.selection_dict)
 
-        #utils.pop_up_info(str(obsids))
-
         self.show()
 
-    def get_parameters(self):
-        return ['head_cm', 'comment']
+    def create_parameters(self):
+        """ Creaters self.parameters dict with parameters
+        :return: a dict like "{'parameter': Parameter()}"
+        """
+        parameters = {}
+        parameters['head_cm'] = Parameter('head_cm', '[m] from top of tube')
+        parameters['comment'] = Parameter('comment', 'make comment...', 'text')
+        qual_params_and_units = utils.get_qual_params_and_units()
+        parameters.update(dict([(param, Parameter(param, unit)) for param, unit in qual_params_and_units.iteritems()]))
+        return parameters
 
     def set_headers(self, header_field, parameters):
         """
@@ -98,7 +104,8 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         """
         for rownr, obs_parameter_dict_tuple in enumerate(sorted(selection_dict.iteritems())):
             #Write obsidname as a qlabel
-
+#
+#        utils.pop_up_info('\n'.join(checkboxes))
             obsid, parameter_dict = obs_parameter_dict_tuple
             grid_layout.addWidget(PyQt4.QtGui.QLabel(obsid), rownr, 0)
             for parno, parameter_checkbox_tuple in enumerate(sorted(parameter_dict.iteritems())):
@@ -108,12 +115,24 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                 grid_layout.addWidget(checkbox, rownr, colnr)
 
     def select_all_click(self):
+        """
+        Method representing a select_all click.
+
+        self.sender() is used to find the currently clicked checkbox.
+        :return: None
+        """
         checkbox = self.sender()
         parameter = checkbox.objectName()
         check_state = checkbox.isChecked()
         self.select_all(parameter, check_state)
 
     def select_all(self, parameter, check_state):
+        """
+        Selects or deselects a parameter for all obsids
+        :param parameter: A parametername
+        :param check_state: The state of the currently selected select_all checkbox.
+        :return:
+        """
         for obsid, parameter_dict in self.selection_dict.iteritems():
             checkbox = parameter_dict[parameter]
             checkbox.setChecked(check_state)
@@ -137,47 +156,73 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         chosen_parameters = set([parameter for obsid, parameter_dict in selection_dict.iteritems() for parameter, checkbox in parameter_dict.iteritems() if checkbox.isChecked()])
 
-#
-#        utils.pop_up_info('\n'.join(checkboxes))
         printlist = []
-        printlist.append("FileVersion 1;2\n")
-        printlist.append("NAME;INPUTTYPE;HINT\n")
+        printlist.append("FileVersion 1;" + str(len(chosen_parameters)))
+        printlist.append("NAME;INPUTTYPE;HINT")
         printlist.extend([self.parameter_export_word(parameter) for parameter in sorted(chosen_parameters)])
-
-
-        printlist.append('NAME;SUBNAME;LAT;LON;INPUTFIELD\n')
+        printlist.append('NAME;SUBNAME;LAT;LON;INPUTFIELD')
 
         latlons = utils.get_latlon_for_all_obsids()
-
         printlist.extend([self.obsid_export_word(obsid, parameter_dict, latlons.get(obsid)) for obsid, parameter_dict in sorted(selection_dict.iteritems()) if self.obsid_export_word(obsid, parameter_dict, latlons.get(obsid))])
 
-        utils.pop_up_info(str(printlist))
-
-
-        #utils.pop_up_info(str(chosen_parameters))
-
-
-#        try:
-#            with open(filename, 'w') as f:
-#                f.write("test")
-#        except IOError:
-#            pass
+        try:
+            with open(filename, 'w') as f:
+                f.write('\n'.join(printlist))
+        except IOError, e:
+            utils.pop_up_info("Writing of file failed!: " + str(e))
 
     def parameter_export_word(self, parameter):
         """ Creates a print line for a parameter for the FieldLogger format
         :param parameter: The name of the parameter
         :return: A word like "parametername;type;hint\n"
         """
-        parameter_hint = {'head_cm': "[m] from top of tube. -999 for dry wells or other problems",
-                          'comment': 'make comment, ex: "dry"'}
-        parameter_type = {'head_cm': 'numberSigned',
-                          'comment': 'text'}
-        return ';'.join([parameter, parameter_type.get(parameter, 'text'), parameter_hint.get(parameter, '')]) + '\n'
+        parameters = self.parameters
+        valuetype = parameters[parameter].valuetype
+        hint = parameters[parameter].hint
+        try:
+            return ';'.join([parameter, valuetype, hint])
+        except:
+            utils.pop_up_info("Parameter: " + parameter)
+            utils.pop_up_info("valuetype: " + valuetype)
+            utils.pop_up_info("hint:" + hint)
 
     def obsid_export_word(self, obsid, parameter_dict, latlon):
+        """ Creates a print line for an obsid
+        :param obsid: The obsid to print
+        :param parameter_dict: A parameter_dict with parameter name as key and a QCheckbox as value.
+        :param latlon: a tuple with (lat, lon)
+        :return: Returns a word like "obsid;obsid;lat;lon;param1|param2|param3"
+        """
         out_parameters = '|'.join([parameter for parameter, checkbox in sorted(parameter_dict.iteritems()) if checkbox.isChecked()])
         if out_parameters:
-            return ';'.join([obsid, obsid, str(latlon[0]), str(latlon[1]), out_parameters, '\n'])
+            return ';'.join([obsid, obsid, str(latlon[0]), str(latlon[1]), out_parameters])
         else:
             return False
 
+
+class Parameter(object):
+    def __init__(self, name, hint, valuetype='numberDecimal|numberSigned'):
+        """ A class representing a parameter
+
+        :param name: The name of the parameter
+        :param hint: A hint to the user
+        :param valuetype: a valuetype, ex: 'text', 'numberDecimal', 'numberSigned'
+        :return: None
+        """
+        self.name = name
+        if not hint:
+            self.hint = 'no hint'
+        else:
+            self.hint = self.decode_word(hint, 'no hint')
+        self.valuetype = valuetype
+
+    def decode_word(self, word, default=''):
+        decoded_word = default
+        for charset in ('cp1252', 'cp1250', 'iso8859-1', 'utf-8'):
+            try:
+                decoded_word = word.decode(charset)
+            except UnicodeEncodeError:
+                continue
+            else:
+                break
+        return decoded_word

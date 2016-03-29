@@ -449,9 +449,23 @@ def get_latlon_for_all_obsids():
     connection_ok, obsid_lat_lon = lat_lon_result
     if not connection_ok:
         pop_up_info("Getting lat, lon from db failed!")
+        return
 
     latlon_dict = dict([(obsid, (lat, lon)) for obsid, lat, lon in obsid_lat_lon])
     return latlon_dict
 
+def get_qual_params_and_units():
+    """ Returns water quality parameters and their units as tuples
+    :return: Tuple with quality parameter names and their units for all parameters in w_qual_field
+    """
+    qual_units_result = sql_load_fr_db('SELECT distinct parameter, unit FROM w_qual_field')
+    connection_ok, qual_units = qual_units_result
+
+    if not connection_ok:
+        pop_up_info("Getting parameter and units from db failed!")
+        return
+
+    wqual_dict = dict([(parameter, unit) for parameter, unit in qual_units])
+    return wqual_dict
 
 
