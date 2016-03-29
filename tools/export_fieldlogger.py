@@ -71,7 +71,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         select_all_field.addWidget(PyQt4.QtGui.QLabel('Select all'))
         for colnr, parameter in enumerate(sorted(parameters)):
             checkbox = PyQt4.QtGui.QCheckBox()
-            checkbox.setObjectName('selectall_' + parameter)
+            checkbox.setObjectName(parameter)
             self.connect(checkbox, PyQt4.QtCore.SIGNAL("clicked()"), self.select_all_click)
             select_all_field.addWidget(checkbox)
 
@@ -109,7 +109,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
     def select_all_click(self):
         checkbox = self.sender()
-        parameter = checkbox.objectName().lstrip('selectall_')
+        parameter = checkbox.objectName()
         check_state = checkbox.isChecked()
         self.select_all(parameter, check_state)
 
@@ -147,7 +147,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         printlist.append('NAME;SUBNAME;LAT;LON;INPUTFIELD\n')
 
-        printlist.extend([self.obsid_export_word(obsid, parameter_dict) for obsid, parameter_dict in sorted(selection_dict.iteritems()) if self.obsid_export_word(obsid, parameter_dict)])
+        latlons = utils.get_latlon_for_all_obsids()
+
+        printlist.extend([self.obsid_export_word(obsid, parameter_dict, latlons.get(obsid)) for obsid, parameter_dict in sorted(selection_dict.iteritems()) if self.obsid_export_word(obsid, parameter_dict, latlons.get(obsid))])
 
         utils.pop_up_info(str(printlist))
 
@@ -162,18 +164,20 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 #            pass
 
     def parameter_export_word(self, parameter):
-
+        """ Creates a print line for a parameter for the FieldLogger format
+        :param parameter: The name of the parameter
+        :return: A word like "parametername;type;hint\n"
+        """
         parameter_hint = {'head_cm': "[m] from top of tube. -999 for dry wells or other problems",
                           'comment': 'make comment, ex: "dry"'}
         parameter_type = {'head_cm': 'numberSigned',
                           'comment': 'text'}
+        return ';'.join([parameter, parameter_type.get(parameter, 'text'), parameter_hint.get(parameter, '')]) + '\n'
 
-        return ';'.join([parameter, parameter_type, parameter_hint]) + '\n'
-
-    def obsid_export_word(self, obsid, parameter_dict):
+    def obsid_export_word(self, obsid, parameter_dict, latlon):
         out_parameters = '|'.join([parameter for parameter, checkbox in sorted(parameter_dict.iteritems()) if checkbox.isChecked()])
         if out_parameters:
-            return ';'.join([obsid, obsid, 'lat', 'lon', out_parameters, '\n'])
+            return ';'.join([obsid, obsid, str(latlon[0]), str(latlon[1]), out_parameters, '\n'])
         else:
             return False
 
