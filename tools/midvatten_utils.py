@@ -113,7 +113,23 @@ class HtmlDialog(QtGui.QDialog):
 
     def closeWindow(self):
         self.close()
-    
+
+def get_all_obsids():
+    """ Returns all obsids from obs_points
+    :return: All obsids from obs_points
+    """
+    myconnection = dbconnection()
+    obsids = []
+    if myconnection.connect2db() == True:
+        # skapa en cursor
+        curs = myconnection.conn.cursor()
+        rs=curs.execute("""select distinct obsid from obs_points order by obsid""")
+
+        obsids = [row[0] for row in curs]
+        rs.close()
+        myconnection.closedb()
+    return obsids
+
 def find_layer(layer_name):
     for name, search_layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():
         if search_layer.name() == layer_name:
@@ -423,3 +439,33 @@ def calc_mean_diff(coupled_vals):
         Nan-values are excluded from the mean.
     """
     return np.mean([float(m) - float(l) for m, l in coupled_vals if not math.isnan(m) or math.isnan(l)])
+
+
+def get_latlon_for_all_obsids():
+    """ Returns lat, lon for all obsids
+    :return: A list of tuples with (obsid, lat, lon) for all obsids in obs_points
+    """
+    lat_lon_result = sql_load_fr_db('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')
+    connection_ok, obsid_lat_lon = lat_lon_result
+    if not connection_ok:
+        pop_up_info("Getting lat, lon from db failed!")
+        return
+
+    latlon_dict = dict([(obsid, (lat, lon)) for obsid, lat, lon in obsid_lat_lon])
+    return latlon_dict
+
+def get_qual_params_and_units():
+    """ Returns water quality parameters and their units as tuples
+    :return: Tuple with quality parameter names and their units for all parameters in w_qual_field
+    """
+    qual_units_result = sql_load_fr_db('SELECT distinct parameter, unit FROM w_qual_field')
+    connection_ok, qual_units = qual_units_result
+
+    if not connection_ok:
+        pop_up_info("Getting parameter and units from db failed!")
+        return
+
+    wqual_dict = dict([(parameter, unit) for parameter, unit in qual_units])
+    return wqual_dict
+
+
