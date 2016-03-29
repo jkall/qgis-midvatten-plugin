@@ -240,7 +240,6 @@ class midvatten:
         self.menu.addMenu(self.menu.export_data_menu)
         self.menu.export_data_menu.addAction(self.action_export_csv)   
         self.menu.export_data_menu.addAction(self.action_export_spatialite)
-        #TODO: Add this when it does something: self.menu.export_data_menu.addAction(self.action_export_fieldlogger)
         self.menu.export_data_menu.addAction(self.action_export_fieldlogger)
         
         self.menu.add_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Edit data in database"))
