@@ -40,27 +40,19 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.set_headers(self.horizontalLayout_headers, self.parameters)
         self.obsids = utils.get_all_obsids()
 
-
-        #self.set_obsids_and_parameters_checkboxes(self.gridLayout_selections, self.obsids, self.parameters)
-
-
-        self.parameter_translation_dict = {}
-
-
         self.selection_dict = self.build_selection_dict(self.obsids, self.parameters, self.gridWidget_selections)
         self.set_obsids_and_parameters_checkboxes(self.gridLayout_selections, self.selection_dict)
-
         self.set_and_connect_selectall(self.horizontalLayout_selectall, self.parameters)
-
-
         self.connect(self.pushButtonExport, PyQt4.QtCore.SIGNAL("clicked()"), self.export_selected)
+
+        self.check_checkboxes_from_initial_selection(obsids, self.selection_dict)
 
         #utils.pop_up_info(str(obsids))
 
         self.show()
 
     def get_parameters(self):
-        return ['W-level', 'Temperature', 'Comment']
+        return ['head_cm', 'comment']
 
     def set_headers(self, header_field, parameters):
         """
@@ -83,17 +75,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             self.connect(checkbox, PyQt4.QtCore.SIGNAL("clicked()"), self.select_all_click)
             select_all_field.addWidget(checkbox)
 
-    def select_all_click(self):
-        checkbox = self.sender()
-        parameter = checkbox.objectName().lstrip('selectall_')
-        check_state = checkbox.isChecked()
-        self.select_all(parameter, check_state)
-
-    def select_all(self, parameter, check_state):
-        for obsid, parameter_dict in self.selection_dict.iteritems():
-            checkbox = parameter_dict[parameter]
-            checkbox.setChecked(check_state)
-
     def build_selection_dict(self, obsids, parameters, parent_widget):
         """ Creates a dict of obsids and their parameter checkbox objects
         :param obsids: A list of obsids
@@ -115,12 +96,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         :param selection_dict: a dict like {'obsid': {'parametername': QCheckBox, ...}, ...}
         :return: None
         """
-
-        #Checkboxes select all
-        #TODO
-
-
-
         for rownr, obs_parameter_dict_tuple in enumerate(sorted(selection_dict.iteritems())):
             #Write obsidname as a qlabel
 
@@ -131,6 +106,28 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                 checkbox.setMinimumSize(20, 20)
                 colnr = parno + 1
                 grid_layout.addWidget(checkbox, rownr, colnr)
+
+    def select_all_click(self):
+        checkbox = self.sender()
+        parameter = checkbox.objectName().lstrip('selectall_')
+        check_state = checkbox.isChecked()
+        self.select_all(parameter, check_state)
+
+    def select_all(self, parameter, check_state):
+        for obsid, parameter_dict in self.selection_dict.iteritems():
+            checkbox = parameter_dict[parameter]
+            checkbox.setChecked(check_state)
+
+    def check_checkboxes_from_initial_selection(self, obsids, selection_dict):
+        """
+        Checks the checkboxes for all obsids
+        :param obsids: Obsids to set checkboxes checked.
+        :return: None
+        """
+        for obsid in obsids:
+            parameter_dict = selection_dict[obsid]
+            for parameter, checkbox in parameter_dict.iteritems():
+                checkbox.setChecked(True)
 
     def export_selected(self):
         """ Export the selected obsids and parameters to a file
@@ -154,16 +151,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         utils.pop_up_info(str(printlist))
 
-    def parameter_export_word(self, parameter):
-        return parameter + ';text\n'
-
-    def obsid_export_word(self, obsid, parameter_dict):
-        out_parameters = '|'.join([parameter for parameter, checkbox in sorted(parameter_dict.iteritems()) if checkbox.isChecked()])
-        if out_parameters:
-            return ';'.join([obsid, obsid, 'lat', 'lon', out_parameters, '\n'])
-        else:
-            return False
-
 
         #utils.pop_up_info(str(chosen_parameters))
 
@@ -174,5 +161,19 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 #        except IOError:
 #            pass
 
+    def parameter_export_word(self, parameter):
 
-        
+        parameter_hint = {'head_cm': "[m] from top of tube. -999 for dry wells or other problems",
+                          'comment': 'make comment, ex: "dry"'}
+        parameter_type = {'head_cm': 'numberSigned',
+                          'comment': 'text'}
+
+        return ';'.join([parameter, parameter_type, parameter_hint]) + '\n'
+
+    def obsid_export_word(self, obsid, parameter_dict):
+        out_parameters = '|'.join([parameter for parameter, checkbox in sorted(parameter_dict.iteritems()) if checkbox.isChecked()])
+        if out_parameters:
+            return ';'.join([obsid, obsid, 'lat', 'lon', out_parameters, '\n'])
+        else:
+            return False
+
