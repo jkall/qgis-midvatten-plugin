@@ -129,48 +129,6 @@
          <number>9</number>
         </property>
         <item>
-         <widget class="QWidget" name="horizontalWidget" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="cursor">
-           <cursorShape>CrossCursor</cursorShape>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_headers">
-           <property name="sizeConstraint">
-            <enum>QLayout::SetMinimumSize</enum>
-           </property>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QWidget" name="horizontalWidget_selectall" native="true">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>20</height>
-           </size>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_selectall"/>
-         </widget>
-        </item>
-        <item>
-         <widget class="Line" name="line_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QWidget" name="gridWidget_selections" native="true">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
