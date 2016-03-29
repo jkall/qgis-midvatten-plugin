@@ -442,30 +442,42 @@ def calc_mean_diff(coupled_vals):
 
 
 def get_latlon_for_all_obsids():
-    """ Returns lat, lon for all obsids
+    """
+    Returns lat, lon for all obsids
     :return: A list of tuples with (obsid, lat, lon) for all obsids in obs_points
     """
-    lat_lon_result = sql_load_fr_db('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')
-    connection_ok, obsid_lat_lon = lat_lon_result
-    if not connection_ok:
-        pop_up_info("Getting lat, lon from db failed!")
-        return
-
-    latlon_dict = dict([(obsid, (lat, lon)) for obsid, lat, lon in obsid_lat_lon])
+    latlon_dict = get_sql_result_as_dict('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')
     return latlon_dict
 
 def get_qual_params_and_units():
-    """ Returns water quality parameters and their units as tuples
+    """
+    Returns water quality parameters and their units as tuples
     :return: Tuple with quality parameter names and their units for all parameters in w_qual_field
     """
-    qual_units_result = sql_load_fr_db('SELECT distinct parameter, unit FROM w_qual_field')
-    connection_ok, qual_units = qual_units_result
-
-    if not connection_ok:
-        pop_up_info("Getting parameter and units from db failed!")
-        return
-
-    wqual_dict = dict([(parameter, unit) for parameter, unit in qual_units])
+    wqual_dict = get_sql_result_as_dict('SELECT distinct parameter, unit FROM w_qual_field')
     return wqual_dict
 
+def get_flow_params_and_units():
+    """
+    Return flow parameters and their units as tuples
+    :return: Tuple with water flow parameter name and their units.
+    """
+    flow_dict = get_sql_result_as_dict('SELECT distinct flowtype, unit from w_flow')
+    return flow_dict
+
+def get_sql_result_as_dict(sql):
+    """
+    Runs sql and returns result as dict
+    :param sql: The sql command to run
+    :return: A dict with the first column as key and the rest in a tuple as value
+    """
+    sql_result = sql_load_fr_db(sql)
+    connection_ok, result_list = sql_result
+
+    if not connection_ok:
+        pop_up_info("Getting data from db failed!")
+        return
+
+    result_dict = dict([(res[0], tuple(res[1:])) for res in result_list])
+    return result_dict
 

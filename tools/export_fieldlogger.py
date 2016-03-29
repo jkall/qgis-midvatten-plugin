@@ -37,12 +37,14 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.setWindowTitle("Export to FieldLogger") # Set the title for the dialog
 
         self.parameters = self.create_parameters()
-        self.set_headers(self.horizontalLayout_headers, self.parameters.keys())
+        self.set_headers(self.gridLayout_selections, self.parameters.keys(), self.gridWidget_selections)
+        self.set_and_connect_selectall(self.gridLayout_selections, self.parameters.keys(), self.gridWidget_selections)
+        self.add_line(self.gridLayout_selections, len(self.parameters.keys()), self.gridWidget_selections)
         self.obsids = utils.get_all_obsids()
 
         self.selection_dict = self.build_selection_dict(self.obsids, self.parameters.keys(), self.gridWidget_selections)
         self.set_obsids_and_parameters_checkboxes(self.gridLayout_selections, self.selection_dict)
-        self.set_and_connect_selectall(self.horizontalLayout_selectall, self.parameters.keys())
+
         self.connect(self.pushButtonExport, PyQt4.QtCore.SIGNAL("clicked()"), self.export_selected)
 
         self.check_checkboxes_from_initial_selection(obsids, self.selection_dict)
@@ -56,30 +58,51 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         parameters = {}
         parameters['head_cm'] = Parameter('head_cm', '[m] from top of tube')
         parameters['comment'] = Parameter('comment', 'make comment...', 'text')
+        parameters['instrument'] = Parameter('instrument', 'the measurement instrument id', 'text')
+        parameters['flow_lpm'] = Parameter('flow_lpm', 'the water flow during water quality measurement')
+
         qual_params_and_units = utils.get_qual_params_and_units()
-        parameters.update(dict([(param, Parameter(param, unit)) for param, unit in qual_params_and_units.iteritems()]))
+        parameters.update(dict([(param, Parameter(param, unit[0])) for param, unit in qual_params_and_units.iteritems()]))
+
+        flow_params_and_units = utils.get_flow_params_and_units()
+        parameters.update(dict([(param, Parameter(param, unit[0])) for param, unit in flow_params_and_units.iteritems()]))
         return parameters
 
-    def set_headers(self, header_field, parameters):
+    def set_headers(self, grid, parameters, widget_parent):
         """
-        :param header_field: The QHBoxLayout to put the headers in.
+        Creates Qlabel headers for all parameters
+        :param grid: A QGridLayout.
         :param parameters: The parameter names to print as headers.
         :return: None
         """
+        rownr = grid.rowCount()
+        grid.addWidget(PyQt4.QtGui.QLabel('Obsid', widget_parent), rownr, 0)
 
-        header_field.addWidget(PyQt4.QtGui.QLabel('Obsid'))
-
-        for parameter in sorted(parameters):
-            label = PyQt4.QtGui.QLabel(parameter)
-            header_field.addWidget(label)
-
-    def set_and_connect_selectall(self, select_all_field, parameters):
-        select_all_field.addWidget(PyQt4.QtGui.QLabel('Select all'))
         for colnr, parameter in enumerate(sorted(parameters)):
-            checkbox = PyQt4.QtGui.QCheckBox()
+            label = PyQt4.QtGui.QLabel(parameter)
+            grid.addWidget(label, rownr, colnr + 1)
+
+    def set_and_connect_selectall(self, grid, parameters, widget_parent):
+        """
+        Creates checkboxes for select all for all parameters
+        :param grid: A QGridLayout.
+        :param parameters: Parameter names
+        :return: None
+        """
+        rownr = grid.rowCount()
+        grid.addWidget(PyQt4.QtGui.QLabel('Select all'), rownr, 0)
+        for colnr, parameter in enumerate(sorted(parameters)):
+            checkbox = PyQt4.QtGui.QCheckBox(widget_parent)
+            checkbox.setToolTip(parameter)
             checkbox.setObjectName(parameter)
             self.connect(checkbox, PyQt4.QtCore.SIGNAL("clicked()"), self.select_all_click)
-            select_all_field.addWidget(checkbox)
+            grid.addWidget(checkbox, rownr, colnr + 1)
+
+    def add_line(self, grid, num_cols, widget_parent):
+        rownr = grid.rowCount()
+        frame = PyQt4.QtGui.QFrame(widget_parent)
+        frame.setFrameShape(PyQt4.QtGui.QFrame.HLine)
+        grid.addWidget(frame, rownr, 0, 1, num_cols + 1)
 
     def build_selection_dict(self, obsids, parameters, parent_widget):
         """ Creates a dict of obsids and their parameter checkbox objects
@@ -95,24 +118,24 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             selection_dict[obsid] = parameter_dict
         return selection_dict
 
-    def set_obsids_and_parameters_checkboxes(self, grid_layout, selection_dict):
+    def set_obsids_and_parameters_checkboxes(self, grid, selection_dict):
         """
         Creates a matrix of checkboxes for choosing parameters
-        :param grid_layout: A QGridLayout.
+        :param grid: A QGridLayout.
         :param selection_dict: a dict like {'obsid': {'parametername': QCheckBox, ...}, ...}
         :return: None
         """
+        start_rownr = grid.rowCount()
         for rownr, obs_parameter_dict_tuple in enumerate(sorted(selection_dict.iteritems())):
-            #Write obsidname as a qlabel
-#
-#        utils.pop_up_info('\n'.join(checkboxes))
+            rownr = start_rownr + rownr
             obsid, parameter_dict = obs_parameter_dict_tuple
-            grid_layout.addWidget(PyQt4.QtGui.QLabel(obsid), rownr, 0)
+            grid.addWidget(PyQt4.QtGui.QLabel(obsid), rownr, 0)
             for parno, parameter_checkbox_tuple in enumerate(sorted(parameter_dict.iteritems())):
                 parameter, checkbox = parameter_checkbox_tuple
                 checkbox.setMinimumSize(20, 20)
+                checkbox.setToolTip(parameter)
                 colnr = parno + 1
-                grid_layout.addWidget(checkbox, rownr, colnr)
+                grid.addWidget(checkbox, rownr, colnr)
 
     def select_all_click(self):
         """
