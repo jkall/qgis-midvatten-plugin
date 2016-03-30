@@ -27,7 +27,7 @@ def find_date_format(datestring):
     datestring = str(datestring)
     date_formats_to_try = ['%Y/%m/%d %H:%M:%S', '%Y-%m-%d %H:%M:%S',
                            '%Y%m%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y%m%d',
-                           '%Y-%m-%d']
+                           '%Y-%m-%d', '%d-%m-%Y', '%H:%M:%S', '%d-%m-%Y %H:%M:%S']
     found_format = None
     for dateformat in date_formats_to_try:
         try:

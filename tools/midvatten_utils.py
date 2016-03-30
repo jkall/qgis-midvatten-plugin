@@ -481,3 +481,14 @@ def get_sql_result_as_dict(sql):
     result_dict = dict([(res[0], tuple(res[1:])) for res in result_list])
     return result_dict
 
+def lstrip(word, from_string):
+    new_word = from_string
+    if from_string.startswith(word):
+        new_word = from_string[len(word):]
+    return new_word
+
+def rstrip(word, from_string):
+    new_word = from_string
+    if from_string.endswith(word):
+        new_word = from_string[0:-len(word)]
+    return new_word
