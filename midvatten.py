@@ -137,6 +137,9 @@ class midvatten:
         
         self.actionimport_meteo = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import meteorological observations", self.iface.mainWindow())
         QObject.connect(self.actionimport_meteo, SIGNAL("triggered()"), self.import_meteo)
+
+        self.actionimport_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import data with FieldLogger format", self.iface.mainWindow())
+        QObject.connect(self.actionimport_fieldlogger, SIGNAL("triggered()"), self.import_fieldlogger)
         
         self.actionPlotTS = QAction(QIcon(":/plugins/midvatten/icons/PlotTS.png"), "Time series plot", self.iface.mainWindow())
         self.actionPlotTS.setWhatsThis("Plot time series for selected objects")
@@ -200,9 +203,9 @@ class midvatten:
         self.action_export_fieldlogger.setWhatsThis(self.export_fieldlogger.__doc__)
         QObject.connect(self.action_export_fieldlogger, SIGNAL("triggered()"), self.export_fieldlogger)
 
-        self.action_calculate_statistics_for_all_obsid = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), "Calculate statistics of all obsid", self.iface.mainWindow())
-        self.action_calculate_statistics_for_all_obsid.setWhatsThis(self.calculate_statistics_for_all_obsid.__doc__)
-        QObject.connect(self.action_calculate_statistics_for_all_obsid, SIGNAL("triggered()"), self.calculate_statistics_for_all_obsid)
+        self.action_calculate_statistics_for_all_w_logger_data = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), "Calculate statistics for all w logger data", self.iface.mainWindow())
+        self.action_calculate_statistics_for_all_w_logger_data.setWhatsThis(self.calculate_statistics_for_all_w_logger_data.__doc__)
+        QObject.connect(self.action_calculate_statistics_for_all_w_logger_data, SIGNAL("triggered()"), self.calculate_statistics_for_all_w_logger_data)
         
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
@@ -234,7 +237,8 @@ class midvatten:
         self.menu.import_data_menu.addAction(self.actionimport_meteo)
         self.menu.import_data_menu.addAction(self.action_import_obs_lines)   
         self.menu.import_data_menu.addAction(self.action_import_seismics)   
-        self.menu.import_data_menu.addAction(self.action_import_vlf)   
+        self.menu.import_data_menu.addAction(self.action_import_vlf)
+        self.menu.import_data_menu.addAction(self.actionimport_fieldlogger)
 
         self.menu.export_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Export data from database"))
         self.menu.addMenu(self.menu.export_data_menu)
@@ -275,7 +279,7 @@ class midvatten:
         self.menu.utils =  QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
         self.menu.addMenu(self.menu.utils)
         self.menu.utils.addAction(self.actionPrepareFor2Qgis2ThreeJS)
-        self.menu.utils.addAction(self.action_calculate_statistics_for_all_obsid)
+        self.menu.utils.addAction(self.action_calculate_statistics_for_all_w_logger_data)
 
         self.menu.addSeparator()
 
@@ -396,7 +400,10 @@ class midvatten:
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
                 
     def export_fieldlogger(self):
-        """ NOT FINISHED YET. Export data for the android app FieldLogger """
+        """
+        Exports data to FieldLogger android app format
+        :return: None 
+        """
         allcritical_layers = ('obs_points') #none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
@@ -647,6 +654,34 @@ class midvatten:
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
                     except:
                         pass
+    def import_fieldlogger(self):
+        """
+        Imports data from FieldLogger android app format.
+        :return: Writes to db.
+        """
+        allcritical_layers = ('obs_points', 'w_qual_field', 'w_levels', 'w_flow')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:
+            if not (self.ms.settingsdict['database'] == ''):
+                if qgis.utils.iface.activeLayer():
+                    longmessage = "You are about to import water head data, water flow or water quality from FieldLogger format."
+                    sanity = utils.askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
+                    if sanity.result == 1:
+                        from import_data_to_db import midv_data_importer
+                        importinstance = midv_data_importer()
+                        importinstance.fieldlogger_import()
+                        if not importinstance.status=='True':
+                            self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                        else:
+                            try:
+                                self.midvsettingsdialog.ClearEverything()
+                                self.midvsettingsdialog.LoadAndSelectLastSettings()
+                            except:
+                                pass
+                else:
+                    self.iface.messageBar().pushMessage("Critical","You have to select the obs_points layer!", 2)
+            else:
+                self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
 
     def loadthelayers(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
@@ -907,7 +942,7 @@ class midvatten:
             self.iface.messageBar().pushMessage("Information","Database backup was written to " + bkupname, 1,duration=15)
             QApplication.restoreOverrideCursor()
 
-    def calculate_statistics_for_all_obsid(self):
+    def calculate_statistics_for_all_w_logger_data(self):
         """ Calculates min, median, nr of values and max for all obsids and writes to file
 
             Uses GetStatistics from drillreport for the calculations

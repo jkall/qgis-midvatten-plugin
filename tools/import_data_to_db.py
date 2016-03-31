@@ -28,15 +28,15 @@ from qgis.gui import *
 import qgis.utils
 import locale
 import os
+import io
 from datetime import datetime
 from pyspatialite import dbapi2 as sqlite #could perhaps have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import midvatten_utils as utils
-from date_utils import find_date_format
+from date_utils import find_date_format, datestring_to_date
 
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
 
     def __init__(self):
-        self.csvpath = ''
         self.columns = 0
         self.status= 'False'
         self.recsbefore = 0
@@ -46,11 +46,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.temptablename = ''
         self.charsetchoosen = ('','')
         
-    def obslines_import(self): 
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.csvpath = ''
-        self.temptableName = 'temporary_obs_lines'
-        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+    def obslines_import(self):
+        self.prepare_import('temporary_obs_lines')
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
@@ -75,10 +72,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def obsp_import(self): 
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.csvpath = ''
-        self.temptableName = 'temporary_obs_points'
-        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+        self.prepare_import('temporary_obs_points')
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
@@ -101,11 +95,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def seismics_import(self): 
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.csvpath = ''
-        self.temptableName = 'temporary_seismics'
-        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+    def seismics_import(self):
+        self.prepare_import('temporary_seismics')
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
@@ -128,11 +119,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def strat_import(self): 
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.csvpath = ''
-        self.temptableName = 'temporary_stratigraphy'
-        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+    def strat_import(self):
+        self.prepare_import('temporary_stratigraphy')
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
@@ -155,11 +143,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
-    def vlf_import(self): 
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.csvpath = ''
-        self.temptableName = 'temporary_vlf_data'
-        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+    def vlf_import(self):
+        self.prepare_import('temporary_vlf_data')
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
@@ -181,13 +166,17 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-        
-    def wflow_import(self): #please note the particular behaviour of adding additional flowtypes to table zz_flowtype
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.csvpath = ''
-        self.temptableName = 'temporary_wflow'
-        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+
+    def wflow_import(self):
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
+        self.wflow_import_from_csvlayer()
+
+    def wflow_import_from_csvlayer(self): #please note the particular behaviour of adding additional flowtypes to table zz_flowtype
+        """
+        self.csvlayer must contain columns "obsid, instrumentid, flowtype, date_time, reading, unit, comment"
+        :return:
+        """
+        self.prepare_import('temporary_wflow')
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
             self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]#Load column names from sqlite table
@@ -218,10 +207,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
     def meteo_import(self): #please note the particular behaviour of adding additional flowtypes to table zz_meteoparam
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.csvpath = ''
-        self.temptableName = 'temporary_meteo'
-        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+        self.prepare_import('temporary_meteo')
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
@@ -252,12 +238,16 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
-    def wlvl_import(self): 
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.csvpath = ''
-        self.temptableName = 'temporary_wlevels'
-        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+    def wlvl_import(self):
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
+        self.wlvl_import_from_csvlayer()
+
+    def wlvl_import_from_csvlayer(self):
+        """
+        self.csvlayer must contain columns "obsid, date_time, meas, comment"
+        :return: None
+        """
+        self.prepare_import('temporary_wlevels')
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
             self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]#Load column names from sqlite table
@@ -350,10 +340,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         PyQt4.QtGui.QApplication.restoreOverrideCursor()        
         
     def wquallab_import(self): 
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.csvpath = ''
-        self.temptableName = 'temporary_wquallab'
-        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+        self.prepare_import('temporary_wquallab')
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
@@ -375,13 +362,17 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-        
-    def wqualfield_import(self): 
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.csvpath = ''
-        self.temptableName = 'temporary_wqualfield'
-        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
+
+    def wqualfield_import(self):
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
+        self.wqualfield_import_from_csvlayer()
+
+    def wqualfield_import_from_csvlayer(self):
+        """
+        self.csvlayer must contain columns "obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment"
+        :return:
+        """
+        self.prepare_import('temporary_wqualfield')
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
             self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]#Load column names from sqlite table
@@ -402,11 +393,166 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-        
+
+    def fieldlogger_import(self):
+        filename = self.select_files(True)[0].encode(str(self.charsetchoosen[0]))
+
+        result_dict = {}
+        with io.open(filename, 'r', encoding=str(self.charsetchoosen[0])) as f:
+
+            #Skip header
+            f.readline()
+
+            result_dict = self.fieldlogger_import_parse_rows(f)
+
+        for typename, obsdict in result_dict.iteritems():
+            if typename == 'level':
+                self.fieldlogger_level_import(dict(obsdict))
+            elif typename == 'flow':
+                self.fieldlogger_flow_import(dict(obsdict))
+            elif typename == 'quality':
+                self.fieldlogger_quality_import(dict(obsdict))
+            else:
+                utils.pop_up_info("Unknown type: " + typename)
+
+    @staticmethod
+    def fieldlogger_import_parse_rows(f):
+        """
+        Parses rows from fieldlogger format into a dict
+        :param f: File_data, often an open file or a list of rows
+        :return: a dict like {typename: {obsid: {date_time: {parameter: value, }}}}
+
+        f must not have a header.
+        """
+        result_dict = {}
+        for rownr, rawrow in enumerate(f):
+            row = rawrow.rstrip('\r').rstrip('\n')
+            cols = row.split(';')
+            type_obsid = cols[0]
+            typename = type_obsid.split('.')[-1]
+            obsid = utils.rstrip('.' + typename, type_obsid)
+            date = cols[1]
+            time = cols[2]
+            date_time = datestring_to_date(date + ' ' + time)
+            value = cols[3]
+            type_parameter = cols[4]
+            paramtypename = type_parameter.split('.')[0]
+            parameter = utils.lstrip(paramtypename + '.', type_parameter)
+            result_dict.setdefault(typename, {}).setdefault(obsid, {}).setdefault(date_time, {})[parameter] = value
+        return result_dict
+
+
+    def fieldlogger_level_import(self, obsdict):
+        """
+        Produces a filestring with columns "obsid, date_time, meas, comment" and imports it
+        :param obsdict: a dict like {obsid: {date_time: {parameter: value}}}
+        :return: None
+        """
+        file_data_list = [';'.join(['obsid', 'date_time', 'meas', 'comment'])]
+        for obsid, date_time_dict in obsdict.iteritems():
+            for date_time, param_dict in sorted(date_time_dict.iteritems()):
+                printrow = [obsid]
+                printrow.append(datetime.strftime(date_time, '%Y-%m-%d %H:%M:%S'))
+                printrow.append(param_dict.get('meas', '').replace(',', '.'))
+                printrow.append(param_dict.get('comment', ''))
+                file_data_list.append(';'.join(printrow))
+
+        file_data = '\n'.join(file_data_list)
+        self.fieldlogger_send_file_data_to_importer(file_data, self.wlvl_import_from_csvlayer)
+
+    def fieldlogger_flow_import(self, obsdict):
+        """
+        Produces a filestring with columns "obsid, instrumentid, flowtype, date_time, reading, unit, comment" and imports it
+        :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
+        :return:
+        """
+
+        file_data_list = [';'.join(['obsid', 'instrumentid', 'flowtype', 'date_time', 'reading', 'unit', 'comment'])]
+
+        flow_params_and_units = utils.get_flow_params_and_units()
+
+        for obsid, date_time_dict in obsdict.iteritems():
+            for date_time, param_dict in sorted(date_time_dict.iteritems()):
+                _param_dict = dict(param_dict)
+                datestring = datetime.strftime(date_time, '%Y-%m-%d %H:%M:%S')
+
+                instrumentid = _param_dict.pop('instrument', '')
+                comment = _param_dict.pop('comment', '')
+
+                for flowtype, reading in _param_dict.iteritems():
+                    unit = flow_params_and_units.get(flowtype, None)[0]
+                    if unit is None:
+                        unit = PyQt4.QtGui.QInputDialog.getText(None, 'Unit not found', 'Please submit it for ' + flowtype + '\nIt will be used for all flowtypes of type ' + flowtype + '\n', PyQt4.QtGui.QLineEdit.Normal, ' ')[0]
+                        flow_params_and_units[flowtype] = unit
+                    else:
+                        unit = unit[0]
+
+                    printrow = [obsid, instrumentid, flowtype, datestring, reading.replace(',', '.'), unit, comment]
+                    try:
+                        file_data_list.append(';'.join(printrow))
+                    except:
+                        raise Exception(utils.pop_up_info(str(printrow)))
+
+        file_data = '\n'.join(file_data_list)
+        self.fieldlogger_send_file_data_to_importer(file_data, self.wflow_import_from_csvlayer)
+
+    def fieldlogger_quality_import(self, obsdict):
+        """
+        Produces a filestring with columns "obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment" and imports it
+        :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
+        :return:
+        """
+        file_data_list = [';'.join(['obsid', 'staff', 'date_time', 'instrument', 'parameter', 'reading_num', 'reading_txt', 'unit', 'flow_lpm', 'comment'])]
+
+        qual_params_and_units = utils.get_qual_params_and_units()
+
+        submitted_staff =None
+
+        for obsid, date_time_dict in obsdict.iteritems():
+            for date_time, param_dict in sorted(date_time_dict.iteritems()):
+                _param_dict = dict(param_dict)
+                datestring = datetime.strftime(date_time, '%Y-%m-%d %H:%M:%S')
+
+                instrument = _param_dict.pop('instrument', '')
+                comment = _param_dict.pop('comment', '')
+                flow_lpm = _param_dict.pop('flow_lpm', '').replace(',', '.')
+
+                staff = _param_dict.pop('staff', None)
+                if staff is None:
+                    if submitted_staff is None:
+                        staff = PyQt4.QtGui.QInputDialog.getText(None, 'Staff not found', 'Please submit the name or initials of the person who did the measurement.\nIt will be used for the rest of the import\n', PyQt4.QtGui.QLineEdit.Normal, ' ')[0]
+                        submitted_staff = staff
+                    else:
+                        staff = submitted_staff
+
+                for parameter, reading_num in _param_dict.iteritems():
+                    reading_num = reading_num.replace(',', '.')
+                    reading_txt = reading_num
+                    unit = qual_params_and_units.get(parameter, None)
+                    if unit is None:
+                        unit = PyQt4.QtGui.QInputDialog.getText(None, 'Unit not found', 'Please submit unit for ' + parameter + '\nIt will be used for all parameter of type ' + parameter + '\n', PyQt4.QtGui.QLineEdit.Normal, ' ')[0]
+                        qual_params_and_units[parameter] = unit
+                    else:
+                        unit = unit[0]
+
+                    printrow = [obsid, staff, datestring, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment]
+                    file_data_list.append(';'.join(printrow))
+
+        file_data = '\n'.join(file_data_list)
+        self.fieldlogger_send_file_data_to_importer(file_data, self.wqualfield_import_from_csvlayer)
+
+    def fieldlogger_send_file_data_to_importer(self, file_data, importer):
+        self.csvlayer = None
+        with utils.tempinput(file_data) as csvpath:
+            csvlayer = self.csv2qgsvectorlayer(csvpath)
+            if not csvlayer:
+                utils.pop_up_info("Creating csvlayer for " + str(importer) + " failed!")
+            self.csvlayer = csvlayer
+            importer()
+
     def prepare_import(self, temptableName):
         """ Shared stuff as preparation for the import """
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.csvpath = ''
         self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
         self.temptableName = temptableName        
 
@@ -503,11 +649,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal,'utf-8')
         if self.charsetchoosen and not (self.charsetchoosen[0]==0 or self.charsetchoosen[0]==''):
             if only_one_file:
-                self.csvpath = PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")
-                csvlayer = self.csv2qgsvectorlayer(self.csvpath)
+                csvpath = PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")
+                csvlayer = self.csv2qgsvectorlayer(csvpath)
             else:
-                self.csvpath = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
-                csvlayer = [self.csv2qgsvectorlayer(path) for path in self.csvpath if path]
+                csvpath = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
+                csvlayer = [self.csv2qgsvectorlayer(path) for path in csvpath if path]
             return csvlayer        
             
     def csv2qgsvectorlayer(self, path):
@@ -522,14 +668,17 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         csvlayer.setProviderEncoding(str(self.charsetchoosen[0]))                 #Set the Layer Encoding                                        
         return csvlayer            
 
-    def select_files(self):
+    def select_files(self, only_one_file=False):
         try:#MacOSX fix2
             localencoding = locale.getdefaultlocale()[1]
             self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
         except:
             self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal,'utf-8')
         if self.charsetchoosen and not (self.charsetchoosen[0]==0 or self.charsetchoosen[0]==''):
-            path = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
+            if only_one_file:
+                path = [PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")]
+            else:
+                path = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
         return path
 
     def load_diveroffice_file(self, path, existing_obsids=None, ask_for_names=True):
@@ -617,7 +766,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if fldType in (PyQt4.QtCore.QVariant.Char,PyQt4.QtCore.QVariant.String): # field type is text  - this will be the case for all columns if not a .csvt file is defined beside the imported file.
                 fldLength=name.length()
                 fldType='text(%s)'%fldLength  #Add field Length Information
-            elif fldType in (PyQt4.QtCore.QVariant.Bool,PyQt4.QtCore.QVariant.Int,QtCore.QVariant.LongLong,PyQt4.QtCore.QVariant.UInt,PyQt4.QtCore.QVariant.ULongLong): # field type is integer
+            elif fldType in (PyQt4.QtCore.QVariant.Bool, PyQt4.QtCore.QVariant.Int,QtCore.QVariant.LongLong, PyQt4.QtCore.QVariant.UInt, PyQt4.QtCore.QVariant.ULongLong):  # field type is integer
                 fldType='integer'
             elif fldType==PyQt4.QtCore.QVariant.Double: # field type is double
                 fldType='real'
