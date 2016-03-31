@@ -400,7 +400,10 @@ class midvatten:
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
                 
     def export_fieldlogger(self):
-        """ NOT FINISHED YET. Export data for the android app FieldLogger """
+        """
+        Exports data to FieldLogger android app format
+        :return: None 
+        """
         allcritical_layers = ('obs_points') #none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
@@ -652,6 +655,10 @@ class midvatten:
                     except:
                         pass
     def import_fieldlogger(self):
+        """
+        Imports data from FieldLogger android app format.
+        :return: Writes to db.
+        """
         allcritical_layers = ('obs_points', 'w_qual_field', 'w_levels', 'w_flow')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
