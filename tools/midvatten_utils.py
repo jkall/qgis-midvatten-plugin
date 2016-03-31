@@ -206,13 +206,31 @@ def return_lower_ascii_string(textstring):
     return filtered_string
 
 def returnunicode(anything): #takes an input and tries to return it as unicode
+    """
+    >>> returnunicode('b')
+    u'b'
+    >>> returnunicode(1)
+    u'1'
+    >>> returnunicode(None)
+    u''
+    >>> returnunicode([])
+    u'[]'
+    >>> returnunicode(['a', u'b'])
+    u"['a', u'b']"
+    >>> returnunicode(['a', 'b'])
+    u"['a', 'b']"
+
+    :param anything: just about anything
+    :return: hopefully a unicode converted anything
+    """
     if type(anything) == type(None):
         text = unicode('')
-    elif type(anything) == type(unicode('unicodetextstring')):
-        text = anything 
-    elif (type(anything) == type (1)) or (type(anything) == type (1.1)):
-        text = unicode(str(anything))
-    elif type(anything) == type('ordinary_textstring'):
+    elif isinstance(anything, unicode):
+        text = anything
+    elif (isinstance(anything, list) or
+        isinstance(anything, tuple) or
+        isinstance(anything, float) or
+        isinstance(anything, str)):
         text = unicode(anything)
     else:
         try:
@@ -386,7 +404,7 @@ def tempinput(data, charset='UTF-8'):
         cleanup instead.
     """
     temp = tempfile.NamedTemporaryFile(delete=False, suffix='.csv')
-    temp.write(data.encode(charset))
+    temp.write(returnunicode(data).encode(charset))
     temp.close()
     yield temp.name
     #os.unlink(temp.name) #TODO: This results in an error: WindowsError: [Error 32] Det går inte att komma åt filen eftersom den används av en annan process: 'c:\\users\\dator\\appdata\\local\\temp\\tmpxvcfna.csv'

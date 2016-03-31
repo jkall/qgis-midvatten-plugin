@@ -441,7 +441,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             result_dict.setdefault(typename, {}).setdefault(obsid, {}).setdefault(date_time, {})[parameter] = value
         return result_dict
 
-
     def fieldlogger_level_import(self, obsdict):
         """
         Produces a filestring with columns "obsid, date_time, meas, comment" and imports it
@@ -455,9 +454,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 printrow.append(datetime.strftime(date_time, '%Y-%m-%d %H:%M:%S'))
                 printrow.append(param_dict.get('meas', '').replace(',', '.'))
                 printrow.append(param_dict.get('comment', ''))
-                file_data_list.append(';'.join(printrow))
+                file_data_list.append(u';'.join(printrow))
 
-        file_data = '\n'.join(file_data_list)
+        file_data = u'\n'.join(file_data_list)
         self.fieldlogger_send_file_data_to_importer(file_data, self.wlvl_import_from_csvlayer)
 
     def fieldlogger_flow_import(self, obsdict):
@@ -489,11 +488,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
                     printrow = [obsid, instrumentid, flowtype, datestring, reading.replace(',', '.'), unit, comment]
                     try:
-                        file_data_list.append(';'.join(printrow))
+                        file_data_list.append(u';'.join(printrow))
                     except:
                         raise Exception(utils.pop_up_info(str(printrow)))
 
-        file_data = '\n'.join(file_data_list)
+        file_data = u'\n'.join(file_data_list)
         self.fieldlogger_send_file_data_to_importer(file_data, self.wflow_import_from_csvlayer)
 
     def fieldlogger_quality_import(self, obsdict):
@@ -536,9 +535,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         unit = unit[0]
 
                     printrow = [obsid, staff, datestring, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment]
-                    file_data_list.append(';'.join(printrow))
+                    file_data_list.append(u';'.join(printrow))
 
-        file_data = '\n'.join(file_data_list)
+        file_data = u'\n'.join(file_data_list)
         self.fieldlogger_send_file_data_to_importer(file_data, self.wqualfield_import_from_csvlayer)
 
     def fieldlogger_send_file_data_to_importer(self, file_data, importer):

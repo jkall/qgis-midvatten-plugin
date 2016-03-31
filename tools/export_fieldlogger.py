@@ -277,9 +277,11 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         try:
             with open(filename, 'w') as f:
-                f.write('\n'.join(printlist))
+                f.write(u'\n'.join(printlist).encode('utf-8'))
         except IOError, e:
             utils.pop_up_info("Writing of file failed!: " + str(e))
+        except UnicodeDecodeError, e:
+            utils.pop_up_info("Error writing " + str(printlist))
 
 
 class Parameter(object):
@@ -302,20 +304,9 @@ class Parameter(object):
         if not hint:
             self.hint = 'self.name'
         else:
-            self.hint = self.decode_word(hint, self.name)
+            self.hint = utils.returnunicode(hint)
 
         self.full_name = '.'.join((self.parameter_type, self.name))
-
-    def decode_word(self, word, default=''):
-        decoded_word = default
-        for charset in ('cp1252', 'cp1250', 'iso8859-1', 'utf-8'):
-            try:
-                decoded_word = word.decode(charset)
-            except UnicodeEncodeError:
-                continue
-            else:
-                break
-        return decoded_word
 
     def get_header_word(self):
         if self.header_word is None:
