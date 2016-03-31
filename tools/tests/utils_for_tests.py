@@ -22,11 +22,25 @@
 
 
 def dict_to_sorted_string(adict):
+    """
+    Creates a string of a dict of dicts
+    :param adict: a dict that may contain more dicts
+    :return:
+
+    >>> dict_to_sorted_string({'a': {'o':{'d': 1, 'c': 2}, 'e': ['u']}, 't': (5, 6)})
+    ['a', 'e', 'u', 'o', 'c', '2', 'd', '1', 't', '5', '6']
+    >>> dict_to_sorted_string({'a': {'o':{'d': 1, 'c': 2}, 'e': ['u']}, 't': (5, {'k': 8, 'i': 9})})
+    ['a', 'e', 'u', 'o', 'c', '2', 'd', '1', 't', '5', 'i', '9', 'k', '8']
+
+    """
     result_list = []
     if isinstance(adict, dict):
         for k, v in sorted(adict.iteritems()):
             result_list.append(k)
             result_list.extend(dict_to_sorted_string(v))
+    elif isinstance(adict, list) or isinstance(adict, tuple):
+        for k in adict:
+            result_list.extend(dict_to_sorted_string(k))
     else:
         result_list.append(str(adict))
     return result_list
