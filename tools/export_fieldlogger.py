@@ -51,8 +51,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         self.connect(self.pushButtonExport, PyQt4.QtCore.SIGNAL("clicked()"), self.export_selected)
 
-        self.check_checkboxes_from_initial_selection(obsids, self.selection_dict)
-
         self.show()
 
     def create_parameters(self):
@@ -224,18 +222,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             parametername = '.'.join(splitted[1:])
             checkbox = types_dict[typename][parametername]
             checkbox.setChecked(check_state)
-
-    def check_checkboxes_from_initial_selection(self, obsids, selection_dict):
-        """
-        Checks the checkboxes for all obsids
-        :param obsids: Obsids to set checkboxes checked.
-        :return: None
-        """
-        for obsid in obsids:
-            types_dict = selection_dict[obsid]
-            for typename, parameterdict in types_dict.iteritems():
-                for parametername, checkbox in parameterdict.iteritems():
-                    checkbox.setChecked(True)
 
     def export_selected(self):
         """ Export the selected obsids and parameters to a file
