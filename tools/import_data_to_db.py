@@ -399,34 +399,48 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         result_dict = {}
         with io.open(filename, 'r', encoding=str(self.charsetchoosen[0])) as f:
+
             #Skip header
             f.readline()
 
-            for rownr, rawrow in enumerate(f):
-                row = rawrow.rstrip('\r').rstrip('\n')
-                cols = row.split(';')
-                type_obsid = cols[0]
-                typename = type_obsid.split('.')[-1]
-                obsid = utils.rstrip('.' + typename, type_obsid)
-                date = cols[1]
-                time = cols[2]
-                date_time = datestring_to_date(date + ' ' + time)
-                value = cols[3]
-                type_parameter = cols[4]
-                paramtypename = type_parameter.split('.')[0]
-                parameter = utils.lstrip(paramtypename + '.', type_parameter)
-                result_dict.setdefault(typename, {}).setdefault(obsid, {}).setdefault(date_time, {})[parameter] = value
+            result_dict = self.fieldlogger_import_parse_rows(f)
 
         for typename, obsdict in result_dict.iteritems():
-            self.csvlayer = ''
             if typename == 'level':
-                self.fieldlogger_level_import(obsdict)
+                self.fieldlogger_level_import(dict(obsdict))
             elif typename == 'flow':
-                self.fieldlogger_flow_import(obsdict)
+                self.fieldlogger_flow_import(dict(obsdict))
             elif typename == 'quality':
-                self.fieldlogger_quality_import(obsdict)
+                self.fieldlogger_quality_import(dict(obsdict))
             else:
                 utils.pop_up_info("Unknown type: " + typename)
+
+    @staticmethod
+    def fieldlogger_import_parse_rows(f):
+        """
+        Parses rows from fieldlogger format into a dict
+        :param f: File_data, often an open file or a list of rows
+        :return: a dict like {typename: {obsid: {date_time: {parameter: value, }}}}
+
+        f must not have a header.
+        """
+        result_dict = {}
+        for rownr, rawrow in enumerate(f):
+            row = rawrow.rstrip('\r').rstrip('\n')
+            cols = row.split(';')
+            type_obsid = cols[0]
+            typename = type_obsid.split('.')[-1]
+            obsid = utils.rstrip('.' + typename, type_obsid)
+            date = cols[1]
+            time = cols[2]
+            date_time = datestring_to_date(date + ' ' + time)
+            value = cols[3]
+            type_parameter = cols[4]
+            paramtypename = type_parameter.split('.')[0]
+            parameter = utils.lstrip(paramtypename + '.', type_parameter)
+            result_dict.setdefault(typename, {}).setdefault(obsid, {}).setdefault(date_time, {})[parameter] = value
+        return result_dict
+
 
     def fieldlogger_level_import(self, obsdict):
         """
@@ -525,9 +539,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     file_data_list.append(';'.join(printrow))
 
         file_data = '\n'.join(file_data_list)
-        self.fieldlogger_send_file_data_to_importer(file_data, self.wflow_import_from_csvlayer)
+        self.fieldlogger_send_file_data_to_importer(file_data, self.wqualfield_import_from_csvlayer)
 
     def fieldlogger_send_file_data_to_importer(self, file_data, importer):
+        self.csvlayer = None
         with utils.tempinput(file_data) as csvpath:
             csvlayer = self.csv2qgsvectorlayer(csvpath)
             if not csvlayer:

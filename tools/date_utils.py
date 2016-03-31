@@ -20,9 +20,21 @@
 import datetime
 
 def find_date_format(datestring):
-    """ Parses a string and returns the found working dateformat string 
-    
-        Can only parse a list of preconfigured datestrings. See the code.
+    """
+    Parses a string and returns the found working dateformat string
+    :param datestring: A string representing a date, ex: '2015-01-01 12:00'
+    :return: The dateformat of the string, ex: '%Y-%m-%d %H:%M'
+
+    Can only parse a list of preconfigured datestrings. See the code.
+
+     >>> find_date_format('2015-01-01 01:01:01')
+     '%Y-%m-%d %H:%M:%S'
+     >>> find_date_format('01-01-2015 01:01:01')
+     '%d-%m-%Y %H:%M:%S'
+     >>> find_date_format('01:01:01')
+     '%H:%M:%S'
+     >>> find_date_format('2015-01-01')
+     '%Y-%m-%d'
     """
     datestring = str(datestring)
     date_formats_to_try = ['%Y/%m/%d %H:%M:%S', '%Y-%m-%d %H:%M:%S',
@@ -60,7 +72,20 @@ def dateshift(adate, n, step_lenght):
     return new_date
     
 def datestring_to_date(astring):
-    """ Takes a string representing a date and converts it to datetime """
+    """
+    Takes a string representing a date and converts it to datetime
+    :param astring: A string or a datetime-object representing a date, ex: '2015-01-01 12:00'
+    :return: A datetime object representing the string/datetime astring
+
+    If astring is a datetime object, it is untouched and returned.
+
+    >>> datestring_to_date('2015-01-01')
+    datetime.datetime(2015, 1, 1, 0, 0)
+    >>> datestring_to_date('2015-01-01 12:00')
+    datetime.datetime(2015, 1, 1, 12, 0)
+    >>> datestring_to_date(datetime.datetime(2015, 1, 1, 12, 0))
+    datetime.datetime(2015, 1, 1, 12, 0)
+    """
     if isinstance(astring, datetime.date):    
         return astring
     else:

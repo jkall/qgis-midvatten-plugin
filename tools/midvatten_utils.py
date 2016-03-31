@@ -377,7 +377,7 @@ def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
     return errorsignal
     
 @contextmanager
-def tempinput(data):
+def tempinput(data, charset='UTF-8'):
     """ Creates and yields a temporary file from data
     
         The file can't be deleted in windows for some strange reason.
@@ -386,7 +386,7 @@ def tempinput(data):
         cleanup instead.
     """
     temp = tempfile.NamedTemporaryFile(delete=False, suffix='.csv')
-    temp.write(data.encode('CP1252'))
+    temp.write(data.encode(charset))
     temp.close()
     yield temp.name
     #os.unlink(temp.name) #TODO: This results in an error: WindowsError: [Error 32] Det går inte att komma åt filen eftersom den används av en annan process: 'c:\\users\\dator\\appdata\\local\\temp\\tmpxvcfna.csv'
@@ -416,6 +416,9 @@ def find_nearest_using_pythagoras(xy_point, xy_array):
         The search is using pythagoras theorem.
         If the search becomes very slow when the xy_array gets long,
         it could probably we rewritten using numpy methods.
+
+        >>> find_nearest_using_pythagoras((1, 2), ((4, 5), (3, 5), (-1, 1)))
+        (-1, 1)
     """    
     distances = [math.sqrt((float(xy_point[0]) - float(xy_array[x][0]))**2 + (float(xy_point[1]) - float(xy_array[x][1]))**2) for x in xrange(len(xy_array))]
     min_index = distances.index(min(distances))
@@ -429,6 +432,10 @@ def ts_gen(ts):
         Usage:
         a = ts_gen(ts)
         b = next(a)
+
+        >>> for x in ts_gen(((1, 2), ('a', 'b'))): print x
+        (1, 2)
+        ('a', 'b')
     """        
     for idx in xrange(len(ts)):
         yield (ts[idx][0], ts[idx][1])  
@@ -482,12 +489,34 @@ def get_sql_result_as_dict(sql):
     return result_dict
 
 def lstrip(word, from_string):
+    """
+    Strips word from the start of from_string
+    :param word: a string to strip
+    :param from_string: the string to strip from
+    :return: the new string or the old string if word was not at the beginning of from_string.
+
+    >>> lstrip('123', '123abc')
+    abc
+    >>> lstrip('1234', '123abc')
+    123abc
+    """
     new_word = from_string
     if from_string.startswith(word):
         new_word = from_string[len(word):]
     return new_word
 
 def rstrip(word, from_string):
+    """
+    Strips word from the end of from_string
+    :param word: a string to strip
+    :param from_string: the string to strip from
+    :return: the new string or the old string if word was not at the end of from_string.
+
+    >>> rstrip('abc', '123abc')
+    123
+    >>> rstrip('abcd', '123abc')
+    123abc
+    """
     new_word = from_string
     if from_string.endswith(word):
         new_word = from_string[0:-len(word)]

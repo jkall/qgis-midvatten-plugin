@@ -203,9 +203,9 @@ class midvatten:
         self.action_export_fieldlogger.setWhatsThis(self.export_fieldlogger.__doc__)
         QObject.connect(self.action_export_fieldlogger, SIGNAL("triggered()"), self.export_fieldlogger)
 
-        self.action_calculate_statistics_for_all_obsid = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), "Calculate statistics of all obsid", self.iface.mainWindow())
-        self.action_calculate_statistics_for_all_obsid.setWhatsThis(self.calculate_statistics_for_all_obsid.__doc__)
-        QObject.connect(self.action_calculate_statistics_for_all_obsid, SIGNAL("triggered()"), self.calculate_statistics_for_all_obsid)
+        self.action_calculate_statistics_for_all_w_logger_data = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), "Calculate statistics for all w logger data", self.iface.mainWindow())
+        self.action_calculate_statistics_for_all_w_logger_data.setWhatsThis(self.calculate_statistics_for_all_w_logger_data.__doc__)
+        QObject.connect(self.action_calculate_statistics_for_all_w_logger_data, SIGNAL("triggered()"), self.calculate_statistics_for_all_w_logger_data)
         
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
@@ -279,7 +279,7 @@ class midvatten:
         self.menu.utils =  QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
         self.menu.addMenu(self.menu.utils)
         self.menu.utils.addAction(self.actionPrepareFor2Qgis2ThreeJS)
-        self.menu.utils.addAction(self.action_calculate_statistics_for_all_obsid)
+        self.menu.utils.addAction(self.action_calculate_statistics_for_all_w_logger_data)
 
         self.menu.addSeparator()
 
@@ -935,7 +935,7 @@ class midvatten:
             self.iface.messageBar().pushMessage("Information","Database backup was written to " + bkupname, 1,duration=15)
             QApplication.restoreOverrideCursor()
 
-    def calculate_statistics_for_all_obsid(self):
+    def calculate_statistics_for_all_w_logger_data(self):
         """ Calculates min, median, nr of values and max for all obsids and writes to file
 
             Uses GetStatistics from drillreport for the calculations
