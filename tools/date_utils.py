@@ -27,14 +27,16 @@ def find_date_format(datestring):
 
     Can only parse a list of preconfigured datestrings. See the code.
 
-     >>> find_date_format('2015-01-01 01:01:01')
-     '%Y-%m-%d %H:%M:%S'
-     >>> find_date_format('01-01-2015 01:01:01')
-     '%d-%m-%Y %H:%M:%S'
-     >>> find_date_format('01:01:01')
-     '%H:%M:%S'
-     >>> find_date_format('2015-01-01')
-     '%Y-%m-%d'
+    >>> find_date_format('2015-01-01 01:01:01')
+    '%Y-%m-%d %H:%M:%S'
+    >>> find_date_format('01-01-2015 01:01:01')
+    '%d-%m-%Y %H:%M:%S'
+    >>> find_date_format('01:01:01')
+    '%H:%M:%S'
+    >>> find_date_format('2015-01-01')
+    '%Y-%m-%d'
+    >>> print(find_date_format('abc'))
+    None
     """
     datestring = str(datestring)
     date_formats_to_try = ['%Y/%m/%d %H:%M:%S', '%Y-%m-%d %H:%M:%S',
@@ -52,7 +54,18 @@ def find_date_format(datestring):
     return found_format
     
 def dateshift(adate, n, step_lenght):
-    """ Shifts a date n step_lenghts and returns a new date object """
+    """
+    Shifts a date n step_lenghts and returns a new date object
+    :param adate: A string representing a date or a datetime object.
+    :param n: Number of step_lengths to shift the date. It can be positive or negative.
+    :param step_lenght: The step_lenght of the shift, for example "days, hours, weeks". See the function for all supported lenghts.
+    :return: The dateformat of the string, ex: '%Y-%m-%d %H:%M'
+
+    >>> dateshift('2015-02-01', -5, 'days')
+    datetime.datetime(2015, 1, 27, 0, 0)
+    >>> dateshift('2016-03-01', -24, 'hours')
+    datetime.datetime(2016, 2, 29, 0, 0)
+    """
     adate = datestring_to_date(adate)    
     if step_lenght == 'microseconds':
         td = datetime.timedelta(microseconds=n)

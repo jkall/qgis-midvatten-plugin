@@ -271,6 +271,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         
     def wlvllogg_import(self):
         """ Method for importing diveroffice csv files """
+        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
         self.prepare_import('temporary_logg_lvl')
         
         result_info = []      
@@ -680,14 +681,25 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 path = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
         return path
 
-    def load_diveroffice_file(self, path, existing_obsids=None, ask_for_names=True):
+    @staticmethod
+    def load_diveroffice_file(path, existing_obsids=None, ask_for_names=True):
         """ Parses a diveroffice csv file into a string
-        
-            The Location attribute is used as obsid and added as a column.
-            Values containing ',' is replaced with '.'
+
+        :param path: The file name
+        :param existing_obsids: A list or tuple with the obsids that exist in the db.
+        :param ask_for_names: (True/False) True to ask for obsid name for every obsid. False to only ask if the obsid is not found in existing_obsids.
+        :return: A string representing a table file. Including '\n' for newlines.
+
+        Assumptions and limitations:
+        * The Location attribute is used as obsid and added as a column.
+        * Values containing ',' is replaced with '.'
+        * Rows with missing "Water head[cm]"-data is skipped.
+
         """    
         filedata = []
         begin_extraction = False
+        delimiter = ';'
+        num_cols = None
         with open(path, 'r') as f:
             obsid = None
             for rawrow in f:
@@ -695,27 +707,49 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 if row.startswith('Location'):
                     obsid = row.split('=')[1].strip()
                     continue
-                cols = row.split(';')
+
+                cols = row.split(delimiter)
+
                 if row.startswith('Date/time'):
-                    cols.append('obsid')
-                    begin_extraction = True
+
+                    #Check that the delimitor is ; or try , or stop.
+                    if not 3 <= len(cols) <= 4:
+                        if 3 <= len(row.split(',')) <= 4:
+                            delimiter = ','
+                        else:
+                            return utils.ask_user_about_stopping("Failure, delimiter did not match ';' or ',' or there was less than 3 or more than 4 columns in the file " + path + "\nDo you want to stop the import? (else it will continue with the next file)")
+
+                    cols = row.split(delimiter)
+                    num_cols = len(cols)
 
                     if ask_for_names:
                         obsid = PyQt4.QtGui.QInputDialog.getText(None, "Submit obsid", "The obsid " + str(obsid) + " was found for " + str(path) + ", accept the found name or change it below", PyQt4.QtGui.QLineEdit.Normal, obsid.capitalize() if obsid is not None else 'None')[0]
                     if existing_obsids is not None:
                         if obsid not in existing_obsids:
-                            obsid = PyQt4.QtGui.QInputDialog.getText(None, "WARNING", "The supplied obsid '" + str(obsid) + "' did not exist in obs_points, please submit it again for " + str(path) + ".", PyQt4.QtGui.QLineEdit.Normal, 'obsid')[0]                        
-                        if obsid not in existing_obsids:
-                            stop_question = utils.askuser("YesNo", "Failure, the obsid '" + obsid + "' did not exist in obs_points, import will fail.\n\nDo you wan't to stop the import? (else it will continue with the next file)")
-                            if stop_question.result:
-                                return 'failed'
+                            if obsid.capitalize() in existing_obsids:
+                                obsid = obsid.capitalize()
                             else:
-                                return 'continue'                        
+                                obsid = PyQt4.QtGui.QInputDialog.getText(None, "WARNING", "The supplied obsid '" + str(obsid) + "' did not exist in obs_points, please submit it again for " + str(path) + ".", PyQt4.QtGui.QLineEdit.Normal, 'obsid')[0]
+                        if obsid not in existing_obsids:
+                            return utils.ask_user_about_stopping("Failure, the obsid '" + obsid + "' did not exist in obs_points, import will fail.\n\nDo you want to stop the import? (else it will continue with the next file)")
+                    if not ask_for_names and existing_obsids is None:
+                        utils.pop_up_info("Failure! A list of obsids could not be read. Must supply obsids manually! Import will stop.")
+                        return 'failed'
+                    cols.append('obsid')
                     filedata.append(';'.join(cols))
+                    begin_extraction = True
                     continue
+
                 if begin_extraction:
                     dateformat = find_date_format(cols[0])
                     if dateformat is not None:
+                        if len(cols) != num_cols:
+                            return utils.ask_user_about_stopping("Failure: The number of data columns in file " + path + " was not equal to the header.\nIs the decimal separator the same as the delimiter?\nDo you want to stop the import? (else it will continue with the next file)")
+                        try:
+                            float(cols[1].replace(',', '.'))
+                        except ValueError:
+                            continue
+
                         date = datetime.strptime(cols[0], dateformat)
                         printrow = [datetime.strftime(date,
                                     '%Y-%m-%d %H:%M:%S')]
@@ -723,6 +757,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                        for col in cols[1:]])
                         printrow.append(obsid)
                         filedata.append(';'.join(printrow))
+        if len(filedata) < 2:
+            return utils.ask_user_about_stopping("Failure, parsing failed for file " + path + "\nNo data found!\nDo you want to stop the import? (else it will continue with the next file)")
         filestring = '\n'.join(filedata)
         return filestring
 

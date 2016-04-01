@@ -82,6 +82,18 @@ class askuser(QtGui.QDialog):
             reply = msgBox.exec_()
             self.result = reply # ALL=0, SELECTED=1
 
+def ask_user_about_stopping(question):
+    """
+    Asks the user a question and returns 'failed' or 'continue' as yes or no
+    :param question: A string to write at the dialog box.
+    :return: The string 'failed' or 'continue' as yes/no
+    """
+    answer = askuser("YesNo", question)
+    if answer.result:
+        return 'failed'
+    else:
+        return 'continue'
+
 class HtmlDialog(QtGui.QDialog):
 
     def __init__(self, title='', filepath=''):
