@@ -60,7 +60,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         parameters = {}
 
         #level parameters:
-        parameters['level'] = {'meas': Parameter('meas', '[cm] from top of tube', 'level')}
+        parameters['level'] = {'meas': Parameter('meas', '[m] from top of tube', 'level')}
         parameters['level']['comment'] = Parameter('comment', 'make comment...', 'level', 'text', True)
 
         #Flow parameters:
@@ -120,9 +120,11 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.sender() is used to find the currently clicked checkbox.
         :return: None
         """
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
         pushbutton = self.sender()
         type_parameter_name = pushbutton.objectName()
         self.select_from_map(type_parameter_name)
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def select_from_map(self, type_parameter_name):
         """
@@ -174,7 +176,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             type_dict = {}
             for typename, parametername in unhidden_types_parameters:
                 checkbox = PyQt4.QtGui.QCheckBox(parent_widget)
-                type_dict.setdefault(typename, {})[parametername] = PyQt4.QtGui.QCheckBox(parent_widget)
+                type_dict.setdefault(typename, {})[parametername] = checkbox
             selection_dict[obsid] = type_dict
         return selection_dict
 
@@ -204,10 +206,12 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.sender() is used to find the currently clicked checkbox.
         :return: None
         """
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
         checkbox = self.sender()
         type_parameter_name = checkbox.objectName()
         check_state = checkbox.isChecked()
         self.select_all(type_parameter_name, check_state)
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def select_all(self, type_parameter_name, check_state):
         """
