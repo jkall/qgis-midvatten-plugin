@@ -19,7 +19,10 @@
  *                                                                         *
  ***************************************************************************/
 """
-
+import atexit
+from qgis.core import QgsApplication, QgsProviderRegistry, QgsMapLayerRegistry
+from PyQt4.QtGui import QApplication
+from PyQt4 import QtCore, QtGui, QtTest
 
 def dict_to_sorted_list(adict):
     """
@@ -44,3 +47,26 @@ def dict_to_sorted_list(adict):
     else:
         result_list.append(str(adict))
     return result_list
+
+
+def init_test():
+    #QApplication.setPrefixPath(r'/usr', True)
+    #app = QApplication() #.initQgis()
+    app = QgsApplication([], True)
+    QtCore.QCoreApplication.setOrganizationName('QGIS')
+    QtCore.QCoreApplication.setApplicationName('QGIS2')
+    app.exec_()
+    return app
+
+class DummyInterface(object):
+    def __getattr__(self, *args, **kwargs):
+        def dummy(*args, **kwargs):
+            return self
+        return dummy
+    def __iter__(self):
+        return self
+    def next(self):
+        raise StopIteration
+    def layers(self):
+        # simulate iface.legendInterface().layers()
+        return QgsMapLayerRegistry.instance().mapLayers().values()
