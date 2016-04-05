@@ -21,7 +21,6 @@
 """
 import atexit
 from qgis.core import QgsApplication, QgsProviderRegistry, QgsMapLayerRegistry
-from PyQt4.QtGui import QApplication
 from PyQt4 import QtCore, QtGui, QtTest
 
 def dict_to_sorted_list(adict):
@@ -48,14 +47,11 @@ def dict_to_sorted_list(adict):
         result_list.append(str(adict))
     return result_list
 
-
 def init_test():
-    #QApplication.setPrefixPath(r'/usr', True)
-    #app = QApplication() #.initQgis()
-    app = QgsApplication([], True)
+    QgsApplication.setPrefixPath(r'/usr', True)
+    app = QgsApplication.initQgis()
     QtCore.QCoreApplication.setOrganizationName('QGIS')
     QtCore.QCoreApplication.setApplicationName('QGIS2')
-    app.exec_()
     return app
 
 class DummyInterface(object):

@@ -29,6 +29,8 @@ from mock import MagicMock
 import mock
 
 class test_dummyiface():
+    """ TODO: This test is not working correctly yet, the QgsApplication is not created for some reason
+    """
     def setUp(self):
         init_test()
         self.iface = DummyInterface()
@@ -38,43 +40,5 @@ class test_dummyiface():
 
     def test_iface(self):
         iface = self.iface
+        print("QgsApplication: " + str(QgsApplication.instance()))
 
-
-class TestCreateParameters():
-    def setUp(self):
-        app = init_test()
-        #print("App: " + QgsApplication.showSettings())
-        print("Application: " + str(app.instance()))
-        self.iface = DummyInterface()
-        widget = QtGui.QWidget()
-        #self.export_fieldlogger = ExportToFieldLogger(widget)
-
-    @mock.patch('midvatten_utils.get_flow_params_and_units', mock_using_return_value({'redoxpotential': 'mV'}).get_v)
-    @mock.patch('midvatten_utils.get_flow_params_and_units', mock_using_return_value({'Momflow': 'l/s'}).get_v)
-    def test_create_parameters(self):
-#        #self.create_parameters()
-#        print("App2: " + QgsApplication.showSettings())
-        pass
-
-    def tearDown(self):
-        QgsApplication.exitQgis
-
-
-
-
-
-
-
-#from export_fieldlogger import ExportToFieldLogger
-#import utils_for_tests
-#from nose.tools import raises
-#from mock import MagicMock, patch
-#
-#class TestCreateParameters():
-#    def setUp(self):
-#        #@patch('utils.get_flow_params_and_units', mock_using_return_value({'redoxpotential': 'mV'}).get_v)
-#        #@patch('utils.get_flow_params_and_units', mock_using_return_value({'Momflow': 'l/s'}).get_v)
-#        self.export_fieldlogger = ExportToFieldLogger(None)
-#
-#    def test_create_parameters(self):
-#        self.create_parameters()
