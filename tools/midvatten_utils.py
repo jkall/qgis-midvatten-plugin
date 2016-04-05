@@ -161,11 +161,15 @@ def get_selected_features_as_tuple(layername):
     obsidtuple = tuple([str(id) for id in selected_obs_points])
     return obsidtuple      
         
-def getselectedobjectnames(thelayer = qgis.utils.iface.activeLayer()):
+def getselectedobjectnames(thelayer='default'):
     """ Returns a list of obsid as unicode
     
         thelayer is an optional argument, if not given then activelayer is used
-    """        
+    """
+    if thelayer == 'default':
+        thelayer = get_active_layer()
+    if not thelayer:
+        return []
     selectedobs = thelayer.selectedFeatures()
     kolumnindex = thelayer.dataProvider().fieldNameIndex('obsid')  #OGR data provier is used to find index for column named 'obsid'
     if kolumnindex == -1:
@@ -380,7 +384,7 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
     return errorsignal    
 
 def verify_layer_selection(errorsignal,selectedfeatures=0):
-    layer = qgis.utils.iface.activeLayer()
+    layer = get_active_layer()
     if layer:
         if not(selection_check(layer) == 'ok'):
             errorsignal += 1
@@ -393,8 +397,15 @@ def verify_layer_selection(errorsignal,selectedfeatures=0):
         errorsignal += 1
     return errorsignal
 
+def get_active_layer():
+    iface = qgis.utils.iface
+    if iface is not None:
+        return iface.activeLayer()
+    else:
+        return False
+
 def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
-    layer = qgis.utils.iface.activeLayer()
+    layer = get_active_layer()
     if not layer:#check there is actually a layer selected
         errorsignal += 1
         qgis.utils.iface.messageBar().pushMessage("Error","You have to select/activate %s layer!"%layername, 2,duration=10)
@@ -526,9 +537,9 @@ def lstrip(word, from_string):
     :return: the new string or the old string if word was not at the beginning of from_string.
 
     >>> lstrip('123', '123abc')
-    abc
+    'abc'
     >>> lstrip('1234', '123abc')
-    123abc
+    '123abc'
     """
     new_word = from_string
     if from_string.startswith(word):
@@ -543,9 +554,9 @@ def rstrip(word, from_string):
     :return: the new string or the old string if word was not at the end of from_string.
 
     >>> rstrip('abc', '123abc')
-    123
+    '123'
     >>> rstrip('abcd', '123abc')
-    123abc
+    '123abc'
     """
     new_word = from_string
     if from_string.endswith(word):
