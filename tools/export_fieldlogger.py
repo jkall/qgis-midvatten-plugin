@@ -30,6 +30,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
     """ Class handling export of data for fieldlogger """
     
     def __init__(self, parent, settingsdict1={}, obsids=None):
+        self.parent = parent
         self.obsids = obsids
 
         self.settingsdict = settingsdict1
@@ -230,9 +231,15 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
     def export_selected(self):
         """ Export the selected obsids and parameters to a file
         """
+        self.write_printlist_to_file(self.create_export_printlist())
+
+    def create_export_printlist(self):
+        """
+        Creates a result list with FieldLogger format from selected obsids and parameters
+        :return: a list with result lines to export to file
+        """
         selection_dict = self.selection_dict
         types_parameters_dict = self.parameters
-        filename = PyQt4.QtGui.QFileDialog.getSaveFileName(None, 'Choose a file name', ' ', 'csv (*.csv)')
 
         latlons = utils.get_latlon_for_all_obsids()
 
@@ -264,6 +271,10 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         printlist.append('NAME;SUBNAME;LAT;LON;INPUTFIELD')
 
         printlist.extend(sorted(obsid_rows))
+        return printlist
+
+    def write_printlist_to_file(self, printlist):
+        filename = PyQt4.QtGui.QFileDialog.getSaveFileName(None, 'Choose a file name', ' ', 'csv (*.csv)')
 
         try:
             with open(filename, 'w') as f:
@@ -297,6 +308,9 @@ class Parameter(object):
             self.hint = utils.returnunicode(hint)
 
         self.full_name = '.'.join((self.parameter_type, self.name))
+
+    def __repr__(self):
+        return self.name
 
     def get_header_word(self):
         if self.header_word is None:

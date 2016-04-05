@@ -19,11 +19,9 @@
  *                                                                         *
  ***************************************************************************/
 """
-from mock import MagicMock
 
-class mock_using_return_value():
+class MockUsingReturnValue(object):
     def __init__(self, v):
         self.v =  v
-    def get_v(self):
+    def get_v(self, *args, **kwargs):
         return self.v
-

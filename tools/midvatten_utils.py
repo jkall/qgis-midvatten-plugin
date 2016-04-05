@@ -438,11 +438,7 @@ def find_nearest_date_from_event(event):
         The x-axis of the artist is assumed to be a date as float or int.
         The found date float is then converted into datetime and returned.
     """
-    #xy_array = event.artist.get_xydata()
     line_nodes = np.array(zip(event.artist.get_xdata(), event.artist.get_ydata()))
-
-    #raise Exception("xdata: " + str(len(event.artist.get_xdata())) + " ydata: " + str(len(event.artist.get_ydata())) + " array: " + str(len(line_nodes)) + " xydata " + str(len(event.artist.get_xydata())) + " ind " + str(event.ind))
-    
     xy_click = np.array((event.mouseevent.xdata, event.mouseevent.ydata))
     nearest_xy = find_nearest_using_pythagoras(xy_click, line_nodes)    
     nearest_date = num2date(nearest_xy[0])
@@ -492,7 +488,7 @@ def calc_mean_diff(coupled_vals):
 def get_latlon_for_all_obsids():
     """
     Returns lat, lon for all obsids
-    :return: A list of tuples with (obsid, lat, lon) for all obsids in obs_points
+    :return: A dict of tuples with like {'obsid': (lat, lon)} for all obsids in obs_points
     """
     latlon_dict = get_sql_result_as_dict('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')
     return latlon_dict
