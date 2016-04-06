@@ -361,7 +361,7 @@ class midvatten:
             
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines           
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
-            OBSID_T = utils.get_selected_features_as_tuple('obs_lines')  
+            OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
 
             #sanity = utils.askuser("YesNo","""You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""",'Are you sure?')
             #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
@@ -379,7 +379,7 @@ class midvatten:
         if err_flag == 0:
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
-            OBSID_T = utils.get_selected_features_as_tuple('obs_lines')  
+            OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
 
             sanity = utils.askuser("YesNo","""This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""",'Are you sure?')
             if sanity.result == 1:
