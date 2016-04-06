@@ -65,7 +65,7 @@ class TestExportFieldlogger():
     @mock.patch('export_fieldlogger.utils.get_flow_params_and_units', flow_params.get_v)
     def test_create_parameters(self):
         parameters = [(parametername, parameter.hint) for types, parameterdict in sorted(self.export_fieldlogger_obj.create_parameters().iteritems()) for parametername, parameter in sorted(parameterdict.iteritems())]
-        assert parameters == [(u'Accvol', u'm'), (u'Momflow', u'l/s'), ('comment', u'make comment...'), ('instrument', u'the measurement instrument id'), ('comment', u'make comment...'), ('meas', u'[m] from top of tube'), ('comment', u'make comment...'), ('flow_lpm', u'the water flow during water quality measurement'), ('instrument', u'the measurement instrument id'), (u'pH', 'self.name'), (u'redoxpotential', u'mV'), (u'syre', u'mg/L')]
+        assert parameters == [(u'Accvol', u'm'), (u'Momflow', u'l/s'), ('comment', u'make comment...'), ('instrument', u'the measurement instrument id'), ('comment', u'make comment...'), ('meas', u'[m] from top of tube'), ('comment', u'make comment...'), ('flow_lpm', u'the water flow during water quality measurement'), ('instrument', u'the measurement instrument id'), (u'pH', u'pH'), (u'redoxpotential', u'mV'), (u'syre', u'mg/L')]
 
     @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', the_latlons.get_v)
     def test_select_all_momflow(self):

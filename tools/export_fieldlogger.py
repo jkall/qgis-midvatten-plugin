@@ -303,7 +303,7 @@ class Parameter(object):
         self.header_word = None
 
         if not hint:
-            self.hint = 'self.name'
+            self.hint = self.name
         else:
             self.hint = utils.returnunicode(hint)
 
