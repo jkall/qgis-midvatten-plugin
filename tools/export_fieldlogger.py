@@ -30,7 +30,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
     """ Class handling export of data for fieldlogger """
     
     def __init__(self, parent, settingsdict1={}, obsids=None):
-        self.parent = parent
+        self.iface = parent
         self.obsids = obsids
 
         self.settingsdict = settingsdict1
@@ -274,8 +274,10 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         return printlist
 
     def write_printlist_to_file(self, printlist):
-        filename = PyQt4.QtGui.QFileDialog.getSaveFileName(None, 'Choose a file name', ' ', 'csv (*.csv)')
+        filename = PyQt4.QtGui.QFileDialog.getSaveFileName(None, 'Choose a file name', '', 'csv (*.csv)')
 
+        if not filename:
+            return
         try:
             with open(filename, 'w') as f:
                 f.write(u'\n'.join(printlist).encode('utf-8'))
@@ -283,6 +285,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             utils.pop_up_info("Writing of file failed!: " + str(e))
         except UnicodeDecodeError, e:
             utils.pop_up_info("Error writing " + str(printlist))
+
 
 
 class Parameter(object):
