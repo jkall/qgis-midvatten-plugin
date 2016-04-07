@@ -52,6 +52,7 @@ class TestExportFieldlogger():
     the_obsids = MockUsingReturnValue((u'Rb1301', u'Rb1302'))
     the_latlons = MockUsingReturnValue({u'Rb1301': (60.0, 10.0), u'Rb1302': (50.0, 4.0)})
     selected_obsids_from_map = MockUsingReturnValue((u'Rb1302',))
+    empty_dict = MockUsingReturnValue({})
 
     @mock.patch('export_fieldlogger.utils.get_qual_params_and_units', qual_params.get_v)
     @mock.patch('export_fieldlogger.utils.get_flow_params_and_units', flow_params.get_v)
@@ -63,6 +64,8 @@ class TestExportFieldlogger():
 
     @mock.patch('export_fieldlogger.utils.get_qual_params_and_units', qual_params.get_v)
     @mock.patch('export_fieldlogger.utils.get_flow_params_and_units', flow_params.get_v)
+    @mock.patch('export_fieldlogger.standard_parameters_for_w_flow', empty_dict.get_v)
+    @mock.patch('export_fieldlogger.standard_parameters_for_w_qual_field', empty_dict.get_v)
     def test_create_parameters(self):
         parameters = [(parametername, parameter.hint) for types, parameterdict in sorted(self.export_fieldlogger_obj.create_parameters().iteritems()) for parametername, parameter in sorted(parameterdict.iteritems())]
         assert parameters == [(u'Accvol', u'm'), (u'Momflow', u'l/s'), ('comment', u'make comment...'), ('instrument', u'the measurement instrument id'), ('comment', u'make comment...'), ('meas', u'[m] from top of tube'), ('comment', u'make comment...'), ('flow_lpm', u'the water flow during water quality measurement'), ('instrument', u'the measurement instrument id'), (u'pH', u'pH'), (u'redoxpotential', u'mV'), (u'syre', u'mg/L')]

@@ -284,6 +284,29 @@ def hydrocolors(): # STRATIGRAPHY PLOT - THIS IS WHERE YOU SHALL CHANGE TO YOUR 
 def stratitable(): # THIS IS THE NAME OF THE table WITH stratigraphy _ MUST NOT BE CHANGED
     return 'stratigraphy'
 
+def standard_parameters_for_w_qual_field():
+    """ Returns a dict with water quality parameters
+    :return: A dict with parameter as key and unit as value
+    """
+    parameters = {u'konduktivitet': u'µS/cm',
+                  u'pH': u'',
+                  u'redoxpotential': u'mV',
+                  u'syre': u'%',
+                  u'syre': u'mg/L',
+                  u'temperatur': u'grC',
+                  u'turbiditet': u'FNU',
+                  }
+    return parameters
+
+def standard_parameters_for_w_flow():
+    """ Returns a dict with water flow parameters
+    :return: A dict with parameter as key and unit as value
+    """
+    parameters = {u'Momflow': u'l/s',
+                  u'Accvol': u'm3'
+                  }
+    return parameters
+
 def PlotTypesDict(international='no'):#sectionplot - dictionary for possible geoshorts
     if international=='no' and  locale.getdefaultlocale()[0] == 'sv_SE': 
         """

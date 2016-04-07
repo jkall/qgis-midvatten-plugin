@@ -22,6 +22,7 @@ import os
 import os.path
 
 import midvatten_utils as utils
+from definitions.midvatten_defs import standard_parameters_for_w_qual_field, standard_parameters_for_w_flow
 
 export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'export_fieldlogger_ui_dialog.ui'))[0]
 
@@ -66,13 +67,15 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         #Flow parameters:
         flow_params_and_units = utils.get_flow_params_and_units()
-        parameters['flow'] = dict([(param, Parameter(param, unit[0], 'flow')) for param, unit in flow_params_and_units.iteritems()])
+        parameters['flow'] = dict([(param, Parameter(param, unit, 'flow')) for param, unit in standard_parameters_for_w_flow().iteritems()])
+        parameters['flow'].update(dict([(param, Parameter(param, unit[0], 'flow')) for param, unit in flow_params_and_units.iteritems()]))
         parameters['flow']['comment'] = Parameter('comment', 'make comment...', 'flow', 'text', True)
         parameters['flow']['instrument'] = Parameter('instrument', 'the measurement instrument id', 'flow', 'text', True)
 
         #Quality parameters
         qual_params_and_units = utils.get_qual_params_and_units()
-        parameters['quality'] = dict([(param, Parameter(param, unit[0], 'quality')) for param, unit in qual_params_and_units.iteritems()])
+        parameters['quality'] = dict([(param, Parameter(param, unit, 'quality')) for param, unit in standard_parameters_for_w_qual_field().iteritems()])
+        parameters['quality'].update(dict([(param, Parameter(param, unit[0], 'quality')) for param, unit in qual_params_and_units.iteritems()]))
         parameters['quality']['comment'] = Parameter('comment', 'make comment...', 'quality', 'text', True)
         parameters['quality']['instrument'] = Parameter('instrument', 'the measurement instrument id', 'quality', 'text', True)
         parameters['quality']['flow_lpm'] = Parameter('flow_lpm', 'the water flow during water quality measurement', 'quality', 'numberDecimal|numberSigned', True)
