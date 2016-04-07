@@ -271,7 +271,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         
     def wlvllogg_import(self):
         """ Method for importing diveroffice csv files """
-        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
         self.prepare_import('temporary_logg_lvl')
         
         result_info = []      
@@ -335,10 +335,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     self.status = 'False'       #Cleaning was not ok and status is false - no import performed
 
                 utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-        utils.pop_up_info('\n'.join(result_info))
+
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-        self.SanityCheckVacuumDB()
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()        
+        if files:
+            utils.pop_up_info('\n'.join(result_info))
+            self.SanityCheckVacuumDB()
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
     def wquallab_import(self): 
         self.prepare_import('temporary_wquallab')
@@ -397,6 +399,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
     def fieldlogger_import(self):
         filename = self.select_files(True)[0].encode(str(self.charsetchoosen[0]))
+        if not filename:
+            return
 
         result_dict = {}
         with io.open(filename, 'r', encoding=str(self.charsetchoosen[0])) as f:

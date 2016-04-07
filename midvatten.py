@@ -279,7 +279,7 @@ class midvatten:
         self.menu.utils =  QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
         self.menu.addMenu(self.menu.utils)
         self.menu.utils.addAction(self.actionPrepareFor2Qgis2ThreeJS)
-        self.menu.utils.addAction(self.action_calculate_statistics_for_all_w_logger_data)
+        #self.menu.utils.addAction(self.action_calculate_statistics_for_all_w_logger_data) #HS: This one is not needed currently, but kept in the code.
 
         self.menu.addSeparator()
 
@@ -947,7 +947,7 @@ class midvatten:
 
             Uses GetStatistics from drillreport for the calculations
         """
-        resultfile = QFileDialog.getSaveFileName(None, 'Enter result file name:', '.', )
+        resultfile = QFileDialog.getSaveFileName(None, 'Enter result file name:', '',)
         QApplication.setOverrideCursor(Qt.WaitCursor)
         myconnection = utils.dbconnection()
         if myconnection.connect2db() == True:
