@@ -25,3 +25,4 @@ class MockUsingReturnValue(object):
         self.v =  v
     def get_v(self, *args, **kwargs):
         return self.v
+

@@ -22,6 +22,8 @@
 import atexit
 from qgis.core import QgsApplication, QgsProviderRegistry, QgsMapLayerRegistry
 from PyQt4 import QtCore, QtGui, QtTest
+import io
+import midvatten_utils as utils
 
 def dict_to_sorted_list(adict):
     """
@@ -38,13 +40,13 @@ def dict_to_sorted_list(adict):
     result_list = []
     if isinstance(adict, dict):
         for k, v in sorted(adict.iteritems()):
-            result_list.append(k)
+            result_list.append(utils.returnunicode(k).encode('utf-8'))
             result_list.extend(dict_to_sorted_list(v))
     elif isinstance(adict, list) or isinstance(adict, tuple):
         for k in adict:
             result_list.extend(dict_to_sorted_list(k))
     else:
-        result_list.append(str(adict))
+        result_list.append(utils.returnunicode(adict).encode('utf-8'))
     return result_list
 
 def init_test():
@@ -66,3 +68,14 @@ class DummyInterface(object):
     def layers(self):
         # simulate iface.legendInterface().layers()
         return QgsMapLayerRegistry.instance().mapLayers().values()
+
+
+class ContextualStringIO(io.StringIO):
+    """ Copied function from stackoverflow
+    """
+    def __enter__(self):
+        return self
+    def __exit__(self, *args):
+        self.close() # icecrime does it, so I guess I should, too
+        return False # Indicate that we haven't handled the exception, if received
+

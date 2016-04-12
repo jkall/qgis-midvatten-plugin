@@ -95,6 +95,160 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
+    def import_interlab4(self, filenames=None):
+        all_lab_results = parse_interlab4()
+
+
+
+        self.send_file_data_to_importer(self, file_data, self.wquallab_import_from_csvlayer)
+
+
+        "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+
+    def parse_interlab4(self, filenames=None):
+        """ Reads the interlab
+        :param filenames:
+        :return:
+        """
+        if filenames is None:
+            filenames = utils.select_files(only_one_file=False, should_ask_for_charset=False)[0]
+
+        all_lab_results = {}
+
+        for filename in filenames:
+            file_error, version, encoding, decimalsign, quotechar = (True, None, None, None, None)
+            file_error, version, encoding, decimalsign, quotechar = self.interlab4_parse_filesettings(filename)
+            if file_error:
+                utils.pop_up_info("Warning: The file information" + filename + " could not be read. Skipping file")
+                continue
+
+            with open(filename, 'rb') as f:
+                if quotechar:
+                    unicode_reader = utils.UnicodeReader(f, encoding=encoding, quotechar=str(quotechar), delimiter=';')
+                else:
+                    unicode_reader = utils.UnicodeReader(f, encoding=encoding, delimiter=';')
+
+                lab_results = {}
+                file_error = False
+                read_metadata_header = False
+                parse_metadata_values = False
+                read_data_header = False
+                parse_data_values = False
+
+                metadata_header = None
+                data_header = None
+
+                for cols in unicode_reader:
+                    if not cols:
+                        continue
+
+                    if cols[0].lower().startswith(u'#slut'):
+                        break
+
+                    if cols[0].lower().startswith(u'#provadm'):
+                        parse_data_values = False
+                        parse_metadata_values = False
+                        read_data_header = False
+                        read_metadata_header = True
+                        data_header = None
+                        metadata_header = None
+                        continue
+
+                    if cols[0].lower().startswith(u'#provdat'):
+                        parse_data_values = False
+                        parse_metadata_values = False
+                        read_metadata_header = False
+                        read_data_header = True
+                        continue
+
+                    if read_metadata_header:
+                        metadata_header = [x.lower() for x in cols]
+                        read_metadata_header = False
+                        parse_metadata_values = True
+                        continue
+
+                    if parse_metadata_values:
+                        metadata = dict([(metadata_header[idx], value.lstrip(' ').rstrip(' ')) for idx, value in enumerate(cols) if value.lstrip(' ').rstrip(' ')])
+                        lab_results.setdefault(metadata[u'lablittera'], {})[u'metadata'] = metadata
+                        continue
+
+                    if read_data_header:
+                        data_header = [x.lower() for x in cols]
+                        read_data_header = False
+                        parse_data_values = True
+                        continue
+
+                    if parse_data_values:
+
+                        data = dict([(data_header[idx], value.lstrip(' ').rstrip(' ')) for idx, value in enumerate(cols) if value.lstrip(' ').rstrip(' ')])
+                        if u'mätvärdetal' in data:
+                            data[u'mätvärdetal'] = data[u'mätvärdetal'].replace(decimalsign, '.')
+                        #TODO: Something with kalium?
+                        if data[u'lablittera'] not in lab_results:
+                            utils.pop_up_info("WARNING: Parsing error. Data for " + data['lablittera'] + " read before it's metadata.")
+                            file_error = True
+                            break
+
+                        lab_results[data[u'lablittera']][data[u'parameter']] = data
+
+                        continue
+                if not file_error:
+                    all_lab_results.update(lab_results)
+
+        return all_lab_results
+
+    def interlab4_parse_filesettings(self, filename):
+        """
+        :param filename: Parses the file settings of an interlab4 file
+        :return: a tuple like (file_error, version, encoding, decimalsign, quotechar)
+        """
+        version = None
+        quotechar = False
+        decimalsign = None
+        file_error = False
+        encoding=None
+        #First find encoding
+        for test_encoding in ['utf-16', 'utf-8', 'iso-8859-1']:
+            try:
+                with io.open(filename, 'r', encoding=test_encoding) as f:
+                    for rawrow in f:
+                        if 'tecken' in rawrow.lower():
+                            row = rawrow.lstrip('#').rstrip('\n').lower()
+                            cols = row.split('=')
+                            encoding = cols[1]
+                            break
+                        if not rawrow.startswith('#'):
+                            break
+            except UnicodeError:
+                continue
+
+        if encoding is None:
+            encoding = utils.ask_for_charset()
+
+        #Parse the filedescriptor
+        with io.open(filename, 'r', encoding=encoding) as f:
+            for rawrow in f:
+                if not rawrow.startswith('#'):
+                    if any(x is  None for x in (version, decimalsign, quotechar)):
+                        file_error = True
+                    break
+
+                row = rawrow.lstrip('#').rstrip('\n').lower()
+                cols = row.split(u'=')
+                if cols[0].lower() == u'version':
+                    version = cols[1]
+                elif cols[0].lower() == u'decimaltecken':
+                    decimalsign = cols[1]
+                elif cols[0].lower() == u'textavgränsare':
+                    if cols[1].lower() == 'ja':
+                        quotechar = '"'
+
+        return (file_error, version, encoding, decimalsign, quotechar)
+
+    def interlab4_to_table(self, data_dict):
+        pass
+
+
     def seismics_import(self):
         self.prepare_import('temporary_seismics')
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
@@ -288,7 +442,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 utils.pop_up_info("The import failed and has been stopped.")
                 break
             elif file_data == 'continue':
-                continue            
+                continue
+
             with utils.tempinput(file_data) as csvpath:
                 self.csvlayer = self.csv2qgsvectorlayer(csvpath)
                 #Continue to next file if the file failed to import
@@ -341,10 +496,18 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             utils.pop_up_info('\n'.join(result_info))
             self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-        
-    def wquallab_import(self): 
-        self.prepare_import('temporary_wquallab')
+
+    def wquallab_import(self):
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
+        self.wquallab_import_from_csvlayer()
+
+    def wquallab_import_from_csvlayer(self):
+        """
+        self.csvlayer must contain columns "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        :return: None
+        """
+        self.prepare_import('temporary_wquallab')
+
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
             self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]#Load column names from sqlite table
@@ -462,7 +625,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 file_data_list.append(u';'.join(printrow))
 
         file_data = u'\n'.join(file_data_list)
-        self.fieldlogger_send_file_data_to_importer(file_data, self.wlvl_import_from_csvlayer)
+        self.send_file_data_to_importer(file_data, self.wlvl_import_from_csvlayer)
 
     def fieldlogger_flow_import(self, obsdict):
         """
@@ -498,7 +661,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         raise Exception(utils.pop_up_info(str(printrow)))
 
         file_data = u'\n'.join(file_data_list)
-        self.fieldlogger_send_file_data_to_importer(file_data, self.wflow_import_from_csvlayer)
+        self.send_file_data_to_importer(file_data, self.wflow_import_from_csvlayer)
 
     def fieldlogger_quality_import(self, obsdict):
         """
@@ -543,9 +706,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     file_data_list.append(u';'.join(printrow))
 
         file_data = u'\n'.join(file_data_list)
-        self.fieldlogger_send_file_data_to_importer(file_data, self.wqualfield_import_from_csvlayer)
+        self.send_file_data_to_importer(file_data, self.wqualfield_import_from_csvlayer)
 
-    def fieldlogger_send_file_data_to_importer(self, file_data, importer):
+    def send_file_data_to_importer(self, file_data, importer):
         self.csvlayer = None
         with utils.tempinput(file_data) as csvpath:
             csvlayer = self.csv2qgsvectorlayer(csvpath)
@@ -658,7 +821,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:
                 csvpath = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
                 csvlayer = [self.csv2qgsvectorlayer(path) for path in csvpath if path]
-            return csvlayer        
+            return csvlayer
             
     def csv2qgsvectorlayer(self, path):
         """ Creates QgsVectorLayer from a csv file """

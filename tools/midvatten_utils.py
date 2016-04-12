@@ -21,6 +21,9 @@
 from PyQt4 import QtCore, QtGui, QtWebKit
 from qgis.core import *
 from qgis.gui import *
+import csv
+import codecs
+import cStringIO
 
 import qgis.utils
 import sys
@@ -222,7 +225,8 @@ def return_lower_ascii_string(textstring):
     return filtered_string
 
 def returnunicode(anything): #takes an input and tries to return it as unicode
-    """
+    ur"""
+
     >>> returnunicode('b')
     u'b'
     >>> returnunicode(1)
@@ -232,23 +236,38 @@ def returnunicode(anything): #takes an input and tries to return it as unicode
     >>> returnunicode([])
     u'[]'
     >>> returnunicode(['a', u'b'])
-    u"['a', u'b']"
+    u"[u'a', u'b']"
     >>> returnunicode(['a', 'b'])
-    u"['a', 'b']"
+    u"[u'a', u'b']"
+    >>> returnunicode(['ä', 'ö'])
+    u"[u'\\xe4', u'\\xf6']"
 
     :param anything: just about anything
     :return: hopefully a unicode converted anything
     """
-    if type(anything) == type(None):
-        text = unicode('')
-    elif isinstance(anything, unicode):
-        text = anything
-    elif (isinstance(anything, list) or
-        isinstance(anything, tuple) or
-        isinstance(anything, float) or
-        isinstance(anything, str)):
-        text = unicode(anything)
-    else:
+    text = None
+    for charset in ['ascii', 'utf-8', 'utf-16', 'cp1252', 'iso-8859-1']:
+        try:
+            if type(anything) == type(None):
+                text = unicode('')
+            elif isinstance(anything, unicode):
+                text = anything
+            elif isinstance(anything, list):
+                text = unicode([returnunicode(x) for x in anything])
+            elif isinstance(anything, tuple):
+                text = unicode(tuple([returnunicode(x) for x in anything]))
+            elif isinstance(anything, float):
+                text = unicode(anything, charset)
+            elif isinstance(anything, str):
+                text = unicode(anything, charset)
+        except UnicodeEncodeError:
+            continue
+        except UnicodeDecodeError:
+            continue
+        else:
+            break
+
+    if text is None:
         try:
             text = unicode(str(anything))
         except:
@@ -558,3 +577,90 @@ def rstrip(word, from_string):
     if from_string.endswith(word):
         new_word = from_string[0:-len(word)]
     return new_word
+
+
+class UTF8Recoder:
+    """
+    Iterator that reads an encoded stream and reencodes the input to UTF-8
+    """
+    def __init__(self, f, encoding):
+        self.reader = codecs.getreader(encoding)(f)
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        return self.reader.next().encode("utf-8")
+
+
+class UnicodeReader:
+    """
+    A CSV reader which will iterate over lines in the CSV file "f",
+    which is encoded in the given encoding.
+    """
+
+    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
+        f = UTF8Recoder(f, encoding)
+        self.reader = csv.reader(f, dialect=dialect, **kwds)
+
+    def next(self):
+        row = self.reader.next()
+        return [unicode(s, "utf-8") for s in row]
+
+    def read(self):
+        self.next()
+
+    def __iter__(self):
+        return self
+
+
+class UnicodeWriter:
+    """
+    A CSV writer which will write rows to CSV file "f",
+    which is encoded in the given encoding.
+    """
+
+    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
+        # Redirect output to a queue
+        self.queue = cStringIO.StringIO()
+        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
+        self.stream = f
+        self.encoder = codecs.getincrementalencoder(encoding)()
+
+    def writerow(self, row):
+        self.writer.writerow([s.encode("utf-8") for s in row])
+        # Fetch UTF-8 output from the queue ...
+        data = self.queue.getvalue()
+        data = data.decode("utf-8")
+        # ... and reencode it into the target encoding
+        data = self.encoder.encode(data)
+        # write to the target stream
+        self.stream.write(data)
+        # empty queue
+        self.queue.truncate(0)
+
+    def writerows(self, rows):
+        for row in rows:
+            self.writerow(row)
+
+
+def select_files(only_one_file=True, extension="csv (*.csv)", should_ask_for_charset=True):
+    """Asks users to select file(s) and charset for the file(s)"""
+    if should_ask_for_charset:
+        charsetchoosen = ask_for_charset()
+    else:
+        charsetchoosen = 'nocharsetchosen'
+    if charsetchoosen and not (charsetchoosen[0]==0 or charsetchoosen[0]==''):
+        if only_one_file:
+            csvpath = QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)
+        else:
+            csvpath = QtGui.QFileDialog.getOpenFileNames(None, "Select Files","", extension)
+        return csvpath, charsetchoosen
+
+def ask_for_charset():
+    try:#MacOSX fix2
+        localencoding = locale.getdefaultlocale()[1]
+        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
+    except:
+        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,'utf-8')
+    return str(charsetchoosen[0])
