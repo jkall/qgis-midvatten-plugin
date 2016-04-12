@@ -32,20 +32,35 @@ from utils_for_tests import dict_to_sorted_list
 from definitions import midvatten_defs
 
 
-class TestStandardParametersForWQualField():
-    def test_standard_parameters_for_w_qual_field_is_dict(self):
-        assert isinstance(midvatten_defs.standard_parameters_for_w_qual_field(), dict)
+class TestStandardParametersForWQuality():
+    def test_standard_parameters_for_wquality_is_dict(self):
+        assert isinstance(midvatten_defs.standard_parameters_for_wquality(), tuple)
 
-    def test_standard_parameters_for_w_qual_field_k_v_is_unicode(self):
-        for k, v in midvatten_defs.standard_parameters_for_w_qual_field().iteritems():
+    def test_standard_parameters_for_wquality_k_v_is_unicode(self):
+        for k, v in midvatten_defs.standard_parameters_for_wquality():
             assert isinstance(k, unicode)
-            assert isinstance(v, unicode)
+            assert isinstance(v, tuple)
+            for x in v:
+                assert isinstance(x, unicode)
             
 class TestStandardParametersForWFlow():
-    def test_standard_parameters_for_w_flow_is_dict(self):
-        assert isinstance(midvatten_defs.standard_parameters_for_w_qual_field(), dict)
+    def test_standard_parameters_for_wflow_is_dict(self):
+        assert isinstance(midvatten_defs.standard_parameters_for_wflow(), tuple)
 
-    def test_standard_parameters_for_w_flow_k_v_is_unicode(self):
-        for k, v in midvatten_defs.standard_parameters_for_w_qual_field().iteritems():
+    def test_standard_parameters_for_wflow_k_v_is_unicode(self):
+        for k, v in midvatten_defs.standard_parameters_for_wflow():
             assert isinstance(k, unicode)
-            assert isinstance(v, unicode)
+            assert isinstance(v, tuple)
+            for x in v:
+                assert isinstance(x, unicode)
+
+class TestStandardParametersForWSamle():
+    def test_standard_parameters_for_wsample_is_dict(self):
+        assert isinstance(midvatten_defs.standard_parameters_for_wsample(), tuple)
+
+    def test_standard_parameters_for_wsample_k_v_is_unicode(self):
+        for k, v in midvatten_defs.standard_parameters_for_wsample():
+            assert isinstance(k, unicode)
+            assert isinstance(v, tuple)
+            for x in v:
+                assert isinstance(x, unicode)
