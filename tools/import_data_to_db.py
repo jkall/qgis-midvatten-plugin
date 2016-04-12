@@ -692,6 +692,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     else:
                         staff = submitted_staff
 
+                if instrument is None:
+                    if submitted_instrument is None:
+                        instrument = PyQt4.QtGui.QInputDialog.getText(None, 'Instrument not found', 'Please submit the name or initials of the person who did the measurement.\nIt will be used for the rest of the import\n', PyQt4.QtGui.QLineEdit.Normal, ' ')[0]
+                        submitted_instrument = instrument
+                    else:
+                        instrument = submitted_instrument
+
                 for parameter, reading_num in _param_dict.iteritems():
                     reading_num = reading_num.replace(',', '.')
                     reading_txt = reading_num

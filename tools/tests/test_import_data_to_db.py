@@ -291,7 +291,6 @@ class TestInterlab4Importer():
             result = self.importinstance.parse_interlab4([testfile])
         result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_interlab4([testfile])))
         reference_string = 'DM-990908-2773;Färgtal;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;metadata;adress;PG Vejdes väg 15;lablittera;DM-990908-2773;namn;MFR;ort;Växjö;postnr;351 96'
-        print(result_string)
         assert result_string == reference_string
 
     def test_parse_interlab4_quotechar_semicolon(self):
@@ -318,6 +317,7 @@ class TestInterlab4Importer():
         assert result_string == reference_string
 
     def test_interlab4_to_table(self):
+        #TODO: Not completed yet
         return
         interlab4_lines = (
             u'#Interlab',
@@ -344,4 +344,9 @@ class TestInterlab4Importer():
                                        u'Demo1 vattenverk;0;Demoproj;DV,2010-09-07 10:15:00;SS-EN ISO 7887-1/4;Färgtal;5;5;mg/l Pt;;'))
 
         assert result_string == reference_string
+
+    def tearDown(self):
+        self.importinstance = None
+        pass
+
 

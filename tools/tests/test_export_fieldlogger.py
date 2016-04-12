@@ -96,4 +96,6 @@ class TestExportFieldlogger():
         assert printlist == ['FileVersion 1;4', 'NAME;INPUTTYPE;HINT', u'quality.comment;text;make comment...', u'quality.flow_lpm;numberDecimal|numberSigned;the water flow during water quality measurement', u'quality.instrument;text;the measurement instrument id', u'quality.syre;numberDecimal|numberSigned;mg/L', 'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1302;Rb1302.quality;50.0;4.0;quality.syre|quality.instrument|quality.comment|quality.flow_lpm']
 
     def tearDown(self):
+        self.iface = None
+        self.export_fieldlogger_obj = None
         pass

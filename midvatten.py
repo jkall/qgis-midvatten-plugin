@@ -663,23 +663,20 @@ class midvatten:
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):
-                if qgis.utils.iface.activeLayer():
-                    longmessage = "You are about to import water head data, water flow or water quality from FieldLogger format."
-                    sanity = utils.askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
-                    if sanity.result == 1:
-                        from import_data_to_db import midv_data_importer
-                        importinstance = midv_data_importer()
-                        importinstance.fieldlogger_import()
-                        if not importinstance.status=='True':
-                            self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
-                        else:
-                            try:
-                                self.midvsettingsdialog.ClearEverything()
-                                self.midvsettingsdialog.LoadAndSelectLastSettings()
-                            except:
-                                pass
-                else:
-                    self.iface.messageBar().pushMessage("Critical","You have to select the obs_points layer!", 2)
+                longmessage = "You are about to import water head data, water flow or water quality from FieldLogger format."
+                sanity = utils.askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
+                if sanity.result == 1:
+                    from import_data_to_db import midv_data_importer
+                    importinstance = midv_data_importer()
+                    importinstance.fieldlogger_import()
+                    if not importinstance.status=='True':
+                        self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    else:
+                        try:
+                            self.midvsettingsdialog.ClearEverything()
+                            self.midvsettingsdialog.LoadAndSelectLastSettings()
+                        except:
+                            pass
             else:
                 self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
 

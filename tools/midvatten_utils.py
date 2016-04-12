@@ -153,15 +153,15 @@ def find_layer(layer_name):
     return None
 
 def get_selected_features_as_tuple(layername):
-    """ Returns all selected obs_points or obs_lines
+    """ Returns all selected features from layername
      
-        Returns a list of tuples where first tuple is the found points and second tuple is the found lines
+        Returns a tuple of obsids stored as unicode
     """
     obs_points_layer = find_layer(layername)
     selected_obs_points = getselectedobjectnames(obs_points_layer)
     #module midv_exporting depends on obsid being a tuple
     #we cannot send unicode as string to sql because it would include the u' so str() is used
-    obsidtuple = tuple([str(id) for id in selected_obs_points])
+    obsidtuple = tuple([returnunicode(id) for id in selected_obs_points])
     return obsidtuple      
         
 def getselectedobjectnames(thelayer='default'):
