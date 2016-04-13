@@ -35,12 +35,14 @@ def dict_to_sorted_list(adict):
     ['a', 'e', 'u', 'o', 'c', '2', 'd', '1', 't', '5', '6']
     >>> dict_to_sorted_list({'a': {'o':{'d': 1, 'c': 2}, 'e': ['u']}, 't': (5, {'k': 8, 'i': 9})})
     ['a', 'e', 'u', 'o', 'c', '2', 'd', '1', 't', '5', 'i', '9', 'k', '8']
+    >>> dict_to_sorted_list({'a': {'o':{'d': 1, 'c': 2}, 'e': ['u']}, 't': (5, {'k': 8, 'i': (9, 29)})})
+    ['a', 'e', 'u', 'o', 'c', '2', 'd', '1', 't', '5', 'i', '9', 29, 'k', '8']
 
     """
     result_list = []
     if isinstance(adict, dict):
         for k, v in sorted(adict.iteritems()):
-            result_list.append(utils.returnunicode(k).encode('utf-8'))
+            result_list.extend(dict_to_sorted_list(k))
             result_list.extend(dict_to_sorted_list(v))
     elif isinstance(adict, list) or isinstance(adict, tuple):
         for k in adict:

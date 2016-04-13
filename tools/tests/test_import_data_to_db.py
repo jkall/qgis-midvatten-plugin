@@ -24,63 +24,235 @@ from import_data_to_db import midv_data_importer
 import utils_for_tests
 import midvatten_utils as utils
 import utils_for_tests as test_utils
+from utils_for_tests import init_test, DummyInterface
 from nose.tools import raises
 from mock import mock_open, patch
+from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict
 import mock
 import io
+import midvatten
 
-class TestMidvDataImporter():
+class TestFieldLoggerImporter():
+    flow_instrument_id = MockReturnUsingDict({u'Instrument not found': [u'testid', u'']}, 1)
+    instrument_staff_questions = MockReturnUsingDict({u'Instrument not found': [u'testid', u''], u'Staff not found': [u'teststaff', u'']}, 1)
+    prev_used_flow_instr_ids = MockUsingReturnValue({u'Rb1615': [(u'Accvol', u'Flm01', u'2015-01-01 00:00:00'), (u'Momflow', u'Flm02', u'2016-01-01 00:00:00')]})
+    quality_instruments = MockUsingReturnValue((u'instr1', u'instr2', u'instr3'))
+    skip_popup = MockUsingReturnValue('')
+
     def setUp(self):
         self.importinstance = midv_data_importer()
 
     @raises(IndexError)
+    @mock.patch('import_data_to_db.utils.pop_up_info', skip_popup.get_v)
     def test_fieldlogger_import_parse_rows_fail_with_header(self):
 
         f = ("LOCATION;DATE;TIME;VALUE;TYPE\n"
-            "Rb1505.quality;30-03-2016;15:29:26;hej;quality.comment\n")
+            "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n")
 
         result_string = str(utils_for_tests.dict_to_sorted_list(self.importinstance.fieldlogger_import_parse_rows(f)))
 
     def test_fieldlogger_import_parse_rows(self):
 
         f = [
-            "Rb1505.quality;30-03-2016;15:29:26;hej;quality.comment\n",
-            "Rb1505.quality;30-03-2016;15:29:26;555;quality.flow_lpm\n",
-            "Rb1505.quality;30-03-2016;15:29:26;TEST;quality.instrument\n",
-            "Rb1505.quality;30-03-2016;15:29:26;863;quality.konduktivitet\n",
-            "Rb1615.flow;30-03-2016;15:30:09;357;flow.Accvol\n",
-            "Rb1615.flow;30-03-2016;15:30:09;gick bra;flow.comment\n",
-            "Rb1615.flow;30-03-2016;15:30:09;4888;flow.instrument\n",
-            "Rb1512.quality;30-03-2016;15:30:39;test;quality.comment\n",
-            "Rb1512.quality;30-03-2016;15:30:39;666;quality.flow_lpm\n",
-            "Rb1512.quality;30-03-2016;15:30:39;flgkg;quality.instrument\n",
-            "Rb1512.quality;30-03-2016;15:30:39;58;quality.syre\n",
-            "Rb1512.quality;30-03-2016;15:30:39;8;quality.temperatur\n",
-            "Rb1512.quality;30-03-2016;15:30:39;899;quality.turbiditet\n",
-            "Rb1202.quality;30-03-2016;15:31:30;hej;quality.comment\n",
-            "Rb1202.quality;30-03-2016;15:31:30;56;quality.flow_lpm\n",
-            "Rb1202.quality;30-03-2016;15:31:30;ffggg;quality.instrument\n",
-            "Rb1202.quality;30-03-2016;15:31:30;555;quality.konduktivitet\n",
-            "Rb1608.quality;30-03-2016;15:33:48;ffg;quality.comment\n",
-            "Rb1608.quality;30-03-2016;15:33:48;841;quality.flow_lpm\n",
-            "Rb1608.quality;30-03-2016;15:33:48;xfg;quality.instrument\n",
-            "Rb1608.quality;30-03-2016;15:33:48;805;quality.konduktivitet\n",
-            "Rb1608.quality;30-03-2016;15:34:02;ffg;quality.comment\n",
-            "Rb1608.quality;30-03-2016;15:34:02;555;quality.flow_lpm\n",
-            "Rb1608.quality;30-03-2016;15:34:02;wer;quality.instrument\n",
-            "Rb1608.quality;30-03-2016;15:34:02;852;quality.konduktivitet\n",
-            "Rb1608.quality;30-03-2016;15:34:13;3fg;quality.comment\n",
-            "Rb1608.quality;30-03-2016;15:34:13;885;quality.flow_lpm\n",
-            "Rb1608.quality;30-03-2016;15:34:13;ergv;quality.instrument\n",
-            "Rb1608.quality;30-03-2016;15:34:13;555;quality.konduktivitet\n",
-            "Rb1608.level;30-03-2016;15:34:13;ergv;level.comment\n",
-            "Rb1608.level;30-03-2016;15:34:13;555;level.meas\n"
+            "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
+            "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
+            "Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
+            "Rb1615.flow;30-03-2016;15:30:09;gick bra;f.comment\n",
+            "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.%\n",
+            "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
+            "Rb1512.sample;30-03-2016;15:31:30;899;s.turbiditet.FNU\n",
+            "Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;ergv;l.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;555;l.meas.m\n",
+            "Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n"
             ]
 
-        result_string = ','.join(utils_for_tests.dict_to_sorted_list(self.importinstance.fieldlogger_import_parse_rows(f)))
-
-        reference_string = "flow,Rb1615,2016-03-30 15:30:09,Accvol,357,comment,gick bra,instrument,4888,level,Rb1608,2016-03-30 15:34:13,comment,ergv,meas,555,quality,Rb1202,2016-03-30 15:31:30,comment,hej,flow_lpm,56,instrument,ffggg,konduktivitet,555,Rb1505,2016-03-30 15:29:26,comment,hej,flow_lpm,555,instrument,TEST,konduktivitet,863,Rb1512,2016-03-30 15:30:39,comment,test,flow_lpm,666,instrument,flgkg,syre,58,temperatur,8,turbiditet,899,Rb1608,2016-03-30 15:33:48,comment,ffg,flow_lpm,841,instrument,xfg,konduktivitet,805,2016-03-30 15:34:02,comment,ffg,flow_lpm,555,instrument,wer,konduktivitet,852,2016-03-30 15:34:13,comment,3fg,flow_lpm,885,instrument,ergv,konduktivitet,555"
+        parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
+        result_list = utils_for_tests.dict_to_sorted_list(parsed_rows)
+        result_string = ','.join(result_list)
+        reference_string = "flow,Rb1615,2016-03-30 15:30:09,Accvol,m3,357,comment,,gick bra,level,Rb1608,2016-03-30 15:34:13,comment,,ergv,meas,m,555,2016-03-30 15:34:40,comment,,testc,quality,Rb1505,2016-03-30 15:29:26,comment,,hej,konduktivitet,µS/cm,863,Rb1512,2016-03-30 15:30:39,comment,,test,syre,%,58,syre,mg/L,58,temperatur,grC,8,sample,Rb1202,2016-03-30 15:31:30,comment,,hej2,Rb1512,2016-03-30 15:31:30,turbiditet,FNU,899"
         assert result_string == reference_string
+
+    @mock.patch('import_data_to_db.utils.pop_up_info', skip_popup.get_v)
+    def test_fieldlogger_import_parse_rows_skip_putcode(self):
+        """ Test that the bug that enters instead of obsname and subname PUTCODE is handled
+        :return:
+        """
+        f = [
+            "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
+            "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
+            "Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
+            "Rb1615.flow;30-03-2016;15:30:09;gick bra;f.comment\n",
+            "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.%\n",
+            "PUTCODE;13-04-2016;10:54:54;3.775;l.meas.m\n",
+            "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
+            "Rb1512.sample;30-03-2016;15:31:30;899;s.turbiditet.FNU\n",
+            "Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;ergv;l.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;555;l.meas.m\n",
+            "Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n"
+            ]
+
+        parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
+        result_list = utils_for_tests.dict_to_sorted_list(parsed_rows)
+        result_string = ','.join(result_list)
+        reference_string = "flow,Rb1615,2016-03-30 15:30:09,Accvol,m3,357,comment,,gick bra,level,Rb1608,2016-03-30 15:34:13,comment,,ergv,meas,m,555,2016-03-30 15:34:40,comment,,testc,quality,Rb1505,2016-03-30 15:29:26,comment,,hej,konduktivitet,µS/cm,863,Rb1512,2016-03-30 15:30:39,comment,,test,syre,%,58,syre,mg/L,58,temperatur,grC,8,sample,Rb1202,2016-03-30 15:31:30,comment,,hej2,Rb1512,2016-03-30 15:31:30,turbiditet,FNU,899"
+        assert result_string == reference_string
+
+    def test_fieldlogger_prepare_level_string(self):
+
+        f = [
+            "Rb1608.level;30-03-2016;15:34:13;ergv;l.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;555;l.meas.m\n",
+            "Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n"
+            ]
+
+        parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
+        file_string = self.importinstance.fieldlogger_prepare_level_string(parsed_rows[u'level'])
+        reference_string = 'obsid;date_time;meas;comment\nRb1608;2016-03-30 15:34:13;555;ergv'
+        assert file_string == reference_string
+
+    def test_fieldlogger_prepare_level_string_first_format(self):
+        """ Test that fhe first format where parameter was named level.meas works to import.
+        :return:
+        """
+
+        f = [
+            "Rb1608.level;30-03-2016;15:34:13;ergv;level.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;555;level.meas\n",
+            "Rb1608.level;30-03-2016;15:34:40;testc;level.comment\n"
+            ]
+
+        parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
+        file_string = self.importinstance.fieldlogger_prepare_level_string(parsed_rows[u'level'])
+        reference_string = 'obsid;date_time;meas;comment\nRb1608;2016-03-30 15:34:13;555;ergv'
+        assert file_string == reference_string
+
+    @mock.patch('import_data_to_db.utils.get_last_used_flow_instruments', prev_used_flow_instr_ids.get_v)
+    @mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', flow_instrument_id.get_v)
+    def test_fieldlogger_prepare_flow_string(self):
+        f = [
+            "Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
+            "Rb1615.flow;30-03-2016;15:30:09;gick bra;f.comment\n",
+            ]
+        parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
+        file_string = self.importinstance.fieldlogger_prepare_flow_string(parsed_rows[u'flow'])
+        reference_string = "obsid;instrumentid;flowtype;date_time;reading;unit;comment\nRb1615;testid;Accvol;2016-03-30 15:30:09;357;m3;gick bra"
+
+        sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
+        sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
+        assert sorted_file_string == sorted_reference_string
+
+    @mock.patch('import_data_to_db.utils.get_last_used_flow_instruments', prev_used_flow_instr_ids.get_v)
+    @mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', flow_instrument_id.get_v)
+    def test_fieldlogger_prepare_flow_string_no_comment(self):
+        f = [
+            "Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
+            "Rb1615.flow;30-03-2016;15:30:10;gick bra;f.comment\n",
+            ]
+        parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
+        file_string = self.importinstance.fieldlogger_prepare_flow_string(parsed_rows[u'flow'])
+        reference_string = "obsid;instrumentid;flowtype;date_time;reading;unit;comment\nRb1615;testid;Accvol;2016-03-30 15:30:09;357;m3;"
+        sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
+        sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
+        assert sorted_file_string == sorted_reference_string
+
+    @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
+    @mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
+    def test_fieldlogger_prepare_quality_string(self):
+
+        f = [
+            "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
+            "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
+            "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.%\n",
+            "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
+            "Rb1512.sample;30-03-2016;15:31:30;899;s.turbiditet.FNU\n",
+            "Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
+            ]
+
+        parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
+        file_string = self.importinstance.fieldlogger_prepare_quality_string(parsed_rows[u'quality'])
+        reference_string = u'obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;flow_lpm;comment\nRb1505;teststaff;2016-03-30 15:29:26;testid;konduktivitet;863;863;µS/cm;;hej\nRb1512;teststaff;2016-03-30 15:30:39;testid;temperatur;8;8;grC;;test'
+        sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
+        sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
+        assert sorted_file_string == sorted_reference_string
+
+    @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
+    @mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
+    def test_fieldlogger_prepare_sample_string(self):
+
+        f = [
+            "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
+            "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
+            "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.%\n",
+            "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
+            "Rb1512.sample;30-03-2016;15:31:30;899;s.turbiditet.FNU\n",
+            "Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
+            ]
+
+        parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
+        file_string = self.importinstance.fieldlogger_prepare_quality_string(parsed_rows[u'sample'])
+        reference_string = u'obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;flow_lpm;comment\nRb1512;teststaff;2016-03-30 15:31:30;testid;turbiditet;899;899;FNU;;'
+        sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
+        sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
+        assert sorted_file_string == sorted_reference_string
+
+    @mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
+    def test_fieldlogger_prepare_notes_string(self):
+        f = [
+            "Rb1505.quality;30-03-2016;15:29:25;comment1;q.comment\n",
+            "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
+            "Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
+            "Rb1615.flow;30-03-2016;15:30:10;comment2;f.comment\n",
+            "Rb1512.quality;30-03-2016;15:30:39;NOTcomment1;q.comment\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.%\n",
+            "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
+            "Rb1512.sample;30-03-2016;15:31:30;899;s.turbiditet.FNU\n",
+            "Rb1202.sample;30-03-2016;15:31:30;comment3;s.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;NOTcomment3;l.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;555;l.meas.m\n",
+            "Rb1608.level;30-03-2016;15:34:40;comment4;l.comment\n"
+            ]
+
+        parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
+        file_string = self.importinstance.fieldlogger_prepare_notes_string(parsed_rows)
+        reference_string = u'obsid;date_time;staff;comment\nRb1202;2016-03-30 15:31:30;teststaff;comment3\nRb1505;2016-03-30 15:29:25;teststaff;comment1\nRb1608;2016-03-30 15:34:40;teststaff;comment4\nRb1615;2016-03-30 15:30:10;teststaff;comment2'
+        sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
+        sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
+        assert sorted_file_string == sorted_reference_string
+
+
+class TestNewMemoryDb():
+    answer_yes_obj = MockUsingReturnValue()
+    answer_yes_obj.result = 1
+    answer_yes = MockUsingReturnValue(answer_yes_obj)
+    CRS_question = MockUsingReturnValue([3006])
+    dbpath_question = MockUsingReturnValue(':memory:')
+
+    def setUp(self):
+        self.iface = DummyInterface()
+        self.midvatten = midvatten.midvatten(self.iface)
+
+    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
+    def test_new_db(self):
+        self.midvatten.new_db()
+
+    def tearDown(self):
+        self.iface = None
+        self.midvatten = None
+
+
 
 class TestInterlab4Importer():
     def setUp(self):

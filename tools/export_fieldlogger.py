@@ -70,7 +70,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         for parameter_type, parameters_units_tuple in types_tuples:
             types[parameter_type] = OrderedDict()
             types[parameter_type].update(self.create_parameters_from_tuple(parameter_type, parameters_units_tuple))
-            types[parameter_type][u'comment'] = Parameter(u'comment', u'make comment...', parameter_type, u'text', u'text', True)
+            types[parameter_type][u'comment'] = Parameter(u'comment', u'make comment...', parameter_type, u'', u'text', True)
 
         return types
 
@@ -321,7 +321,10 @@ class Parameter(object):
         else:
             self.hint = utils.returnunicode(hint)
 
-        self.full_name = '.'.join((self.parameter_type, self.name))
+        if self.name.endswith(self.unit):
+            self.full_name = '.'.join((self.parameter_type[0], self.name))
+        else:
+            self.full_name = '.'.join((self.parameter_type[0], self.name, self.unit))
 
     def __repr__(self):
         return self.name
@@ -330,4 +333,5 @@ class Parameter(object):
         if self.header_word is None:
             self.header_word = ';'.join((self.full_name, self.valuetype, self.hint))
         return self.header_word
+
 
