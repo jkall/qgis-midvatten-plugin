@@ -396,6 +396,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ExistingPlotTypes = []
         self.Hatches = defs.PlotHatchDict()
         self.Colors = defs.PlotColorDict()
+        print(self.Colors)
 
         #self.ms.settingsdict['secplotbw'] = self.barwidthdoubleSpinBox.value()
         ##fix Floating Bar Width in percents of xmax - xmin

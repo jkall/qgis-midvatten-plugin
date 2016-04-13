@@ -85,18 +85,6 @@ class askuser(QtGui.QDialog):
             reply = msgBox.exec_()
             self.result = reply # ALL=0, SELECTED=1
 
-def ask_user_about_stopping(question):
-    """
-    Asks the user a question and returns 'failed' or 'continue' as yes or no
-    :param question: A string to write at the dialog box.
-    :return: The string 'failed' or 'continue' as yes/no
-    """
-    answer = askuser("YesNo", question)
-    if answer.result:
-        return 'failed'
-    else:
-        return 'continue'
-
 class HtmlDialog(QtGui.QDialog):
 
     def __init__(self, title='', filepath=''):
@@ -129,6 +117,42 @@ class HtmlDialog(QtGui.QDialog):
     def closeWindow(self):
         self.close()
 
+def ask_user_about_stopping(question):
+    """
+    Asks the user a question and returns 'failed' or 'continue' as yes or no
+    :param question: A string to write at the dialog box.
+    :return: The string 'failed' or 'continue' as yes/no
+    """
+    answer = askuser("YesNo", question)
+    if answer.result:
+        return 'failed'
+    else:
+        return 'continue'
+
+def create_dict_from_db_2_cols(col1, col2, table):#params are (col1=keys,col2=values,db-table)
+    print(col1, col2, table)
+    sqlstring = r"""select %s, %s from %s"""%(col1,col2,table)
+    print(sqlstring)
+    ConnectionOK, list_of_dict = sql_load_fr_db(sqlstring)
+    if ConnectionOK==True:
+        k=[]
+        v=[]
+        for item in listofdict:
+            k.append(item.get(item[0]))
+            v.append(item.get(item[1]))
+        return True, dict(zip(k, v))
+    else:
+        textstring = """Cannot create dictionary from columns %s and %s in table %s!"""%(col1,col2,table)
+        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)        
+        return False, {'':''}
+
+def find_layer(layer_name):
+    for name, search_layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():
+        if search_layer.name() == layer_name:
+            return search_layer
+
+    return None
+
 def get_all_obsids():
     """ Returns all obsids from obs_points
     :return: All obsids from obs_points
@@ -144,13 +168,6 @@ def get_all_obsids():
         rs.close()
         myconnection.closedb()
     return obsids
-
-def find_layer(layer_name):
-    for name, search_layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():
-        if search_layer.name() == layer_name:
-            return search_layer
-
-    return None
 
 def get_selected_features_as_tuple(layername):
     """ Returns all selected features from layername
@@ -286,11 +303,15 @@ def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list
             conn.close()
             ConnectionOK = True
         except:
-            pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
+            #pop_up_info("Could not connect to DB, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
+            textstring = """DB error, you may need to reset Midvatten settings!\nDB call causing this error:%s\n"""%(sql)
+            qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15) 
             ConnectionOK = False
             result = ''
     else:
-        pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
+        #pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
+        textstring = """DB error, you may need to reset Midvatten settings!\nDB call causing this error:%s\n"""%(sql)
+        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15) 
         ConnectionOK = False
         result = ''
     return ConnectionOK, result
