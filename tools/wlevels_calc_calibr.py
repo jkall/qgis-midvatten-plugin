@@ -129,6 +129,7 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
 class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of the class Calibr_Ui_Dialog is created same time as instance of calibrlogger is created
 
     def __init__(self, parent, settingsdict1={}, obsid=''):
+        PyQt4.QtGui.QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
         self.obsid = obsid
         self.log_pos = None
         self.y_pos = None
@@ -170,6 +171,8 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
         # Populate combobox with obsid from table w_levels_logger
         self.load_obsid_from_db()
+
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def load_obsid_from_db(self):
         self.combobox_obsid.clear()
