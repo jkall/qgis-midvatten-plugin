@@ -129,20 +129,21 @@ def ask_user_about_stopping(question):
     else:
         return 'continue'
 
-def create_dict_from_db_2_cols(col1, col2, table):#params are (col1=keys,col2=values,db-table)
-    print(col1, col2, table)
-    sqlstring = r"""select %s, %s from %s"""%(col1,col2,table)
-    print(sqlstring)
-    ConnectionOK, list_of_dict = sql_load_fr_db(sqlstring)
+def create_dict_from_db_2_cols(params):#col1, col2, table):#params are (col1=keys,col2=values,db-table)
+    print(params)
+    sqlstring = r"""select %s, %s from %s"""%(params)
+    #print(sqlstring)
+    ConnectionOK, list_of_tuples= sql_load_fr_db(sqlstring)
     if ConnectionOK==True:
+        #print(list_of_tuples)#debug
         k=[]
         v=[]
-        for item in listofdict:
-            k.append(item.get(item[0]))
-            v.append(item.get(item[1]))
+        for tuple_item in list_of_tuples:
+            k.append(tuple_item[0])
+            v.append(tuple_item[1])
         return True, dict(zip(k, v))
     else:
-        textstring = """Cannot create dictionary from columns %s and %s in table %s!"""%(col1,col2,table)
+        textstring = """Cannot create dictionary from columns %s and %s in table %s!"""%(params)#col1,col2,table)
         qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)        
         return False, {'':''}
 
