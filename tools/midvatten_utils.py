@@ -568,7 +568,7 @@ def get_sql_result_as_dict(sql):
     connection_ok, result_list = sql_result
 
     if not connection_ok:
-        textstring = """Cannot create dictionary sql """ + sql
+        textstring = """Cannot create dictionary from sql """ + sql
         qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
         return False, {}
 
