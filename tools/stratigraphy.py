@@ -395,7 +395,6 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
 
     def drawSurvey(self, p, sond, sRect, columnWidth, interval):   
         """ draws one survey to rectangle in widget specified by sRect """
-        
         depthTop = sond.top_lvl
         depthBot = depthTop - sond.strata[-1].depthBot
         
@@ -429,10 +428,10 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
     
         scale = dRect.height() / (depthTop - depthBot)
         y = dRect.top()
-    
+
+
         for layer in sond.strata:
             y2 = (layer.depthBot - layer.depthTop) * scale
-
             # column rectangle
             cRect = PyQt4.QtCore.QRect(PyQt4.QtCore.QPoint(dRect.left(), y),
                                  PyQt4.QtCore.QPoint(dRect.right(), y+y2-1))
@@ -440,14 +439,13 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
             # text rectangle
             tRect = PyQt4.QtCore.QRect(PyQt4.QtCore.QPoint(dRect.right()+10, y),
                                  PyQt4.QtCore.QPoint(sRect.right(), y+y2))
-            
+
             bType = self.geoToSymbol(layer.geo_short)  # select brush pattern depending on the geo_short 
             # select brush pattern depending on usage of geo or hydro
             if self.switchGeoHydro == 0:
                 color = self.textToColor(layer.geo_short, 'geo')
             else:
-                color = self.textToColor(layer.hydro, 'hydro')  
-
+                color = self.textToColor(layer.hydro, 'hydro')
             # draw column with background color
             p.setBrush(color)
             p.drawRect(cRect)
@@ -473,6 +471,7 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
 
     def textToColor(self, id='', type=''):    # _ DEFINE (in the class method) AND USE (in this function) A DICTIONARY INSTEAD
         """ returns QColor from the specified text """
+
         if type == 'hydro':
             if id in self.hydroColors:
                 #return eval("PyQt4.QtCore.Qt" + self.hydroColors[id][2])    # Less sofisticated method to create a function call from a string (function syntax is in the string)
@@ -480,15 +479,15 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
             else:
                 return PyQt4.QtCore.Qt.white
         elif type == 'geo':
-            if lower(id) in self.geoColorSymbols:
-                return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[lower(id)][1])
+            if id.lower() in self.geoColorSymbols:
+                return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id.lower()][1])
             else:
                 return PyQt4.QtCore.Qt.white
 
     def geoToSymbol(self, id=''):    # A function to return fill type for the box representing the stratigraphy layer
         """ returns Symbol from the specified text """
-        if lower(id) in self.geoColorSymbols:
-            return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[lower(id)][0])   # Or possibly [0]?
+        if id.lower() in self.geoColorSymbols:
+            return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id.lower()][0])   # Or possibly [0]?
         else:
             return PyQt4.QtCore.Qt.NoBrush
         
