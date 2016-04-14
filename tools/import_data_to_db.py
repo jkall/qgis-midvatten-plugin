@@ -778,7 +778,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def filter_nonexisting_obsids_and_ask(self, file_data, existing_obsids, store_anyway=False):
         filtered_data = []
         data_to_ask_for = []
-        for rownr, row in file_data:
+        for rownr, row in enumerate(file_data):
             if rownr == 0:
                 try:
                     obsid_index = row.index(u'obsid')
@@ -793,20 +793,21 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:
                 filtered_data.append(row)
 
-        for rownr, row in data_to_ask_for:
+        for rownr, row in enumerate(data_to_ask_for):
             current_obsid = row[obsid_index]
+            similar_obsids = utils.find_similar(current_obsid, existing_obsids, hits=5)
 
             while obsid not in existing_obsids:
                 obsid = PyQt4.QtGui.QInputDialog.getText(None, 'WARNING', 'The supplied obsid "' + str(current_obsid) + '" on row:\n"' + u', '.join(row) + '".\ndid not exist in obs_points, please submit it again\n(on ' + str(rownr + 1) + ' of ' + str(len(data_to_ask_for)) + ' obsids not found', PyQt4.QtGui.QLineEdit.Normal, 'obsid')[0]
                 if obsid not in existing_obsids:
                     if store_anyway:
-                        skip_current_obsid = utils.askuser(question="YesNo", msg='The supplied obsid "' + str(current_obsid) + '" on row:\n"' + u', '.join(row) + '".\nstill did not exist in obs_points, do you want store it anyway?\n(else try again)', dialogtitle='Failure',)
-                        if answer.result:
+                        store_anyway_question = utils.askuser(question="YesNo", msg='The supplied obsid "' + str(current_obsid) + '" on row:\n"' + u', '.join(row) + '".\nstill did not exist in obs_points, do you want store it anyway?\n(else try again)', dialogtitle='Failure',)
+                        if store_anyway_question.result:
                             filtered_data.append(row)
                             break
                     else:
                         skip_current_obsid = utils.askuser(question="YesNo", msg='The supplied obsid "' + str(current_obsid) + '" on row:\n"' + u', '.join(row) + '".\nstill did not exist in obs_points, do you want to skip it?\n(else try again)', dialogtitle='Failure',)
-                        if answer.result:
+                        if skip_current_obsid.result:
                             break
                 else:
                     row[obsid_index] = obsid

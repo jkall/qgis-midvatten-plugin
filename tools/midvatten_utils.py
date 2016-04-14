@@ -24,6 +24,7 @@ from qgis.gui import *
 import csv
 import codecs
 import cStringIO
+import difflib
 
 import qgis.utils
 import sys
@@ -533,7 +534,7 @@ def get_latlon_for_all_obsids():
     Returns lat, lon for all obsids
     :return: A dict of tuples with like {'obsid': (lat, lon)} for all obsids in obs_points
     """
-    latlon_dict = get_sql_result_as_dict('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')
+    latlon_dict = get_sql_result_as_dict('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')[1]
     latlon_dict = dict([(obsid, lat_lon[0]) for obsid, lat_lon in latlon_dict.iteritems()])
     return latlon_dict
 
@@ -541,7 +542,7 @@ def get_last_used_flow_instruments():
     """ Returns flow instrumentids
     :return: A dict like {obsid: (flowtype, instrumentid, last date used for obsid)
     """
-    instruments_dict = get_sql_result_as_dict('SELECT obsid, flowtype, instrumentid, max(date_time) FROM w_flow GROUP BY obsid, flowtype, instrumentid')
+    instruments_dict = get_sql_result_as_dict('SELECT obsid, flowtype, instrumentid, max(date_time) FROM w_flow GROUP BY obsid, flowtype, instrumentid')[1]
     return instruments_dict
 
 def get_quality_instruments():
@@ -575,7 +576,7 @@ def get_sql_result_as_dict(sql):
     result_dict = {}
     for res in result_list:
         result_dict.setdefault(res[0], []).append(tuple(res[1:]))
-    return result_dict
+    return True, result_dict
 
 def lstrip(word, from_string):
     """
@@ -710,3 +711,18 @@ def lists_to_string(alist_of_lists):
     u'a;b\n1;2'
     """
     return u'\n'.join([u';'.join([returnunicode(y) for y in x]) if isinstance(x, list) or isinstance(x, tuple) else returnunicode(x) for x in alist_of_lists])
+
+def find_similar(word, wordlist, hits=5):
+    ur"""
+
+    :param word: the word to find similar words for
+    :param wordlist: the word list to find similar in
+    :param hits: the number of hits in first match
+    :return:  a set with the matches
+
+    >>> sorted(find_similar(u'rb1203', [u'Rb1203', u'rb 1203', u'gert', u'rb', u'rb1203', u'b1203', u'rb120', u'rb11', u'rb123', u'rb1203_bgfgf'], 5))
+    [u'Rb1203', u'b1203', u'rb 1203', u'rb120', u'rb1203', u'rb1203_bgfgf', u'rb123']
+    """
+    matches = set(difflib.get_close_matches(word, wordlist, hits))
+    matches.update([x for x in wordlist if any((x.startswith(word.lower()), x.startswith(word.upper()), x.startswith(word.capitalize())))])
+    return matches

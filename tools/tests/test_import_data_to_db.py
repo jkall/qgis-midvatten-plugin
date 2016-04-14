@@ -233,8 +233,11 @@ class TestFieldLoggerImporter():
 
     def test_filter_nonexisting_obsids_and_ask(self):
         #TODO: Test not done yet
-        # f = [(u'obsid', u'r')]
-        pass
+        file_data = [(u'obsid', u'ae'), (u'1', u'b'), (u'2', u'c'), (u'3', u'd')]
+        existing_obsids = [u'2']
+
+        file_data = self.importinstance.filter_nonexisting_obsids_and_ask(file_data, existing_obsids)
+
 
 
 
