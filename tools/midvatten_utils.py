@@ -130,23 +130,24 @@ def ask_user_about_stopping(question):
     else:
         return 'continue'
 
-def create_dict_from_db_2_cols(params):#col1, col2, table):#params are (col1=keys,col2=values,db-table)
-    print(params)
+def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-table)
+    #print(params)#debug
     sqlstring = r"""select %s, %s from %s"""%(params)
     #print(sqlstring)
-    ConnectionOK, list_of_tuples= sql_load_fr_db(sqlstring)
-    if ConnectionOK==True:
-        #print(list_of_tuples)#debug
-        k=[]
-        v=[]
-        for tuple_item in list_of_tuples:
-            k.append(tuple_item[0])
-            v.append(tuple_item[1])
-        return True, dict(zip(k, v))
-    else:
+    connection_ok, list_of_tuples= sql_load_fr_db(sqlstring)
+
+    if not connection_ok:
         textstring = """Cannot create dictionary from columns %s and %s in table %s!"""%(params)#col1,col2,table)
         qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)        
         return False, {'':''}
+
+    #print(list_of_tuples)#debug
+    k=[]
+    v=[]
+    for tuple_item in list_of_tuples:
+        k.append(tuple_item[0])
+        v.append(tuple_item[1])
+    return True, dict(zip(k, v))
 
 def find_layer(layer_name):
     for name, search_layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():

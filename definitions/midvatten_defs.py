@@ -111,177 +111,204 @@ def default_layers_w_form_logics():
     list = ['obs_lines', 'obs_points', 'w_levels', 'w_flow', 'stratigraphy']
     return list
 
-def geocolorsymbols():    # STRATIGRAPHY PLOT - THIS IS WHERE YOU SHALL CHANGE TO YOUR OWN GEOLOGIC CODES, SYMBOLS AND COLORS
-    dictionary  = { '': ('NoBrush', 'white'),
-                ' ': ('NoBrush', 'white'),
-                'berg': ('DiagCrossPattern', 'red'),
-                'Berg': ('DiagCrossPattern', 'red'),
-                'BERG': ('DiagCrossPattern', 'red'),
-                'BERG': ('DiagCrossPattern', 'red'),
-                'B': ('DiagCrossPattern', 'red'),
-                'Rock': ('DiagCrossPattern', 'red'),
-                'rock': ('DiagCrossPattern', 'red'),
-                'Ro': ('DiagCrossPattern', 'red'),
-                'ro': ('DiagCrossPattern', 'red'),
-                'grovgrus': ('Dense7Pattern', 'darkGreen'),
-                'Grovgrus': ('Dense7Pattern', 'darkGreen'),
-                'Grg': ('Dense7Pattern', 'darkGreen'),
-                'grg': ('Dense7Pattern', 'darkGreen'),
-                'Coarse Gravel': ('Dense7Pattern', 'darkGreen'),
-                'coarse Gravel': ('Dense7Pattern', 'darkGreen'),
-                'coarse gravel': ('Dense7Pattern', 'darkGreen'),
-                'CGr': ('Dense7Pattern', 'darkGreen'),
-                'Cgr': ('Dense7Pattern', 'darkGreen'),
-                'cGr': ('Dense7Pattern', 'darkGreen'),
-                'cgr': ('Dense7Pattern', 'darkGreen'),
-                'grus': ('Dense7Pattern', 'darkGreen'),
-                'Grus': ('Dense7Pattern', 'darkGreen'),
-                'GRUS': ('Dense7Pattern', 'darkGreen'),
-                'Gr': ('Dense7Pattern', 'darkGreen'),
-                'gr': ('Dense7Pattern', 'darkGreen'),
-                'Gravel': ('Dense7Pattern', 'darkGreen'),
-                'gravel': ('Dense7Pattern', 'darkGreen'),
-                'mellangrus': ('Dense6Pattern', 'darkGreen'),
-                'Mellangrus': ('Dense6Pattern', 'darkGreen'),
-                'MELLANGRUS': ('Dense6Pattern', 'darkGreen'),
-                'Grm': ('Dense6Pattern', 'darkGreen'),
-                'grm': ('Dense6Pattern', 'darkGreen'),
-                'Medium Gravel': ('Dense6Pattern', 'darkGreen'),
-                'medium Gravel': ('Dense6Pattern', 'darkGreen'),
-                'medium gravel': ('Dense6Pattern', 'darkGreen'),
-                'MGr': ('Dense6Pattern', 'darkGreen'),
-                'mGr': ('Dense6Pattern', 'darkGreen'),
-                'Mgr': ('Dense6Pattern', 'darkGreen'),
-                'mgr': ('Dense6Pattern', 'darkGreen'),
-                'fingrus': ('Dense6Pattern', 'darkGreen'),
-                'Fingrus': ('Dense6Pattern', 'darkGreen'),
-                'FINGRUS': ('Dense6Pattern', 'darkGreen'),
-                'Grf': ('Dense6Pattern', 'darkGreen'),
-                'grf': ('Dense6Pattern', 'darkGreen'),
-                'Fine Gravel': ('Dense6Pattern', 'darkGreen'),
-                'fine Gravel': ('Dense6Pattern', 'darkGreen'),
-                'fine gravel': ('Dense6Pattern', 'darkGreen'),
-                'FGr': ('Dense6Pattern', 'darkGreen'),
-                'Fgr': ('Dense6Pattern', 'darkGreen'),
-                'fGr': ('Dense6Pattern', 'darkGreen'),
-                'fgr': ('Dense6Pattern', 'darkGreen'),
-                'grovsand': ('Dense5Pattern', 'green'),
-                'Grovsand': ('Dense5Pattern', 'green'),
-                'GROVSAND': ('Dense5Pattern', 'green'),
-                'Sag': ('Dense5Pattern', 'green'),
-                'sag': ('Dense5Pattern', 'green'),
-                'Coarse Sand': ('Dense5Pattern', 'green'),
-                'coarse Sand': ('Dense5Pattern', 'green'),
-                'coarse sand': ('Dense5Pattern', 'green'),
-                'CSa': ('Dense5Pattern', 'green'),
-                'Csa': ('Dense5Pattern', 'green'),
-                'cSa': ('Dense5Pattern', 'green'),
-                'csa': ('Dense5Pattern', 'green'),
-                'sand': ('Dense5Pattern', 'green'),
-                'Sand': ('Dense5Pattern', 'green'),
-                'SAND': ('Dense5Pattern', 'green'),
-                'Sa': ('Dense5Pattern', 'green'),
-                'sa': ('Dense5Pattern', 'green'),
-                'mellansand': ('Dense4Pattern', 'green'),
-                'Mellansand': ('Dense4Pattern', 'green'),
-                'MELLANSAND': ('Dense4Pattern', 'green'),
-                'Sam': ('Dense4Pattern', 'green'),
-                'sam': ('Dense4Pattern', 'green'),
-                'Medium Sand': ('Dense4Pattern', 'green'),
-                'medium Sand': ('Dense4Pattern', 'green'),
-                'medium sand': ('Dense4Pattern', 'green'),
-                'MSa': ('Dense4Pattern', 'green'),
-                'Msa': ('Dense4Pattern', 'green'),
-                'msa': ('Dense4Pattern', 'green'),
-                'mSa': ('Dense4Pattern', 'green'),
-                'finsand': ('Dense4Pattern', 'orange'),
-                'Finsand': ('Dense4Pattern', 'orange'),
-                'FINSAND': ('Dense4Pattern', 'orange'),
-                'Saf': ('Dense4Pattern', 'orange'),
-                'saf': ('Dense4Pattern', 'orange'),
-                'Fine Sand': ('Dense4Pattern', 'orange'),
-                'fine Sand': ('Dense4Pattern', 'orange'),
-                'fine Sand': ('Dense4Pattern', 'orange'),
-                'FSa': ('Dense4Pattern', 'orange'),
-                'Fsa': ('Dense4Pattern', 'orange'),
-                'fSa': ('Dense4Pattern', 'orange'),
-                'fsa': ('Dense4Pattern', 'orange'),
-                'silt': ('BDiagPattern', 'yellow'),
-                'Silt': ('BDiagPattern', 'yellow'),
-                'SILT': ('BDiagPattern', 'yellow'),
-                'Si': ('BDiagPattern', 'yellow'),
-                'si': ('BDiagPattern', 'yellow'),
-                'lera': ('HorPattern', 'yellow'),
-                'Lera': ('HorPattern', 'yellow'),
-                'LERA': ('HorPattern', 'yellow'),
-                'Le': ('HorPattern', 'yellow'),
-                'le': ('HorPattern', 'yellow'),
-                'Clay': ('HorPattern', 'yellow'),
-                'clay': ('HorPattern', 'yellow'),
-                'Cl': ('HorPattern', 'yellow'),
-                'cl': ('HorPattern', 'yellow'),
-                'moran': ('CrossPattern', 'cyan'),
-                'Moran': ('CrossPattern', 'cyan'),
-                'MORAN': ('CrossPattern', 'cyan'),
-                'Mn': ('CrossPattern', 'cyan'),
-                'mn': ('CrossPattern', 'cyan'),
-                'Till': ('CrossPattern', 'cyan'),
-                'till': ('CrossPattern', 'cyan'),
-                'Ti': ('CrossPattern', 'cyan'),
-                'ti': ('CrossPattern', 'cyan'),
-                'torv': ('NoBrush', 'darkGray'),
-                'Torv': ('NoBrush', 'darkGray'),
-                'TORV': ('NoBrush', 'darkGray'),
-                'T': ('NoBrush', 'darkGray'),
-                'Peat': ('NoBrush', 'darkGray'),
-                'peat': ('NoBrush', 'darkGray'),
-                'Pt': ('NoBrush', 'darkGray'),
-                'pt': ('NoBrush', 'darkGray'),
-                't': ('NoBrush', 'darkGray'),
-                'fyll': ('DiagCrossPattern', 'white'),
-                'Fyll': ('DiagCrossPattern', 'white'),
-                'FYLL': ('DiagCrossPattern', 'white'),
-                'fyllning': ('DiagCrossPattern', 'white'),
-                'Fyllning': ('DiagCrossPattern', 'white'),
-                'FYLLNING': ('DiagCrossPattern', 'white'),
-                'F': ('DiagCrossPattern', 'white'),
-                'f': ('DiagCrossPattern', 'white'),
-                'Made Ground': ('DiagCrossPattern', 'white'),
-                'Made ground': ('DiagCrossPattern', 'white'),
-                'mage ground': ('DiagCrossPattern', 'white'),
-                'MG': ('DiagCrossPattern', 'white'),
-                'Mg': ('DiagCrossPattern', 'white'),
-                'mg': ('DiagCrossPattern', 'white')
-                }
+def geocolorsymbols():
+    """
+    This dictionary is used for stratigraph plots (Qt) to set color and brush style
+    Default method is to read the database table zz_strat, the user may change zz_strat table to change the stratigraphy plots
+    Fallback methods use color codes and brush styles found in code below
+    """
+    res1, dict_qt = utils.get_sql_result_as_dict('select strat, brush_qt, color_qt from zz_strat')
+    res2, dict_geo = utils.create_dict_from_db_2_cols(('strat','geoshorts','zz_strat'))
+    # fallback method to maintain backwards compatibility
+    if not (res1 and res2):
+        # Fallback method - if using old for old databases where zz_strat is missing, then you may change the code below to reflect your own GEOLOGIC CODES, SYMBOLS AND COLORS
+        print('using fallback method for backwards compat.')
+        dictionary  = { '': ('NoBrush', 'white'),
+                    ' ': ('NoBrush', 'white'),
+                    'berg': ('DiagCrossPattern', 'red'),
+                    'Berg': ('DiagCrossPattern', 'red'),
+                    'BERG': ('DiagCrossPattern', 'red'),
+                    'BERG': ('DiagCrossPattern', 'red'),
+                    'B': ('DiagCrossPattern', 'red'),
+                    'Rock': ('DiagCrossPattern', 'red'),
+                    'rock': ('DiagCrossPattern', 'red'),
+                    'Ro': ('DiagCrossPattern', 'red'),
+                    'ro': ('DiagCrossPattern', 'red'),
+                    'grovgrus': ('Dense7Pattern', 'darkGreen'),
+                    'Grovgrus': ('Dense7Pattern', 'darkGreen'),
+                    'Grg': ('Dense7Pattern', 'darkGreen'),
+                    'grg': ('Dense7Pattern', 'darkGreen'),
+                    'Coarse Gravel': ('Dense7Pattern', 'darkGreen'),
+                    'coarse Gravel': ('Dense7Pattern', 'darkGreen'),
+                    'coarse gravel': ('Dense7Pattern', 'darkGreen'),
+                    'CGr': ('Dense7Pattern', 'darkGreen'),
+                    'Cgr': ('Dense7Pattern', 'darkGreen'),
+                    'cGr': ('Dense7Pattern', 'darkGreen'),
+                    'cgr': ('Dense7Pattern', 'darkGreen'),
+                    'grus': ('Dense7Pattern', 'darkGreen'),
+                    'Grus': ('Dense7Pattern', 'darkGreen'),
+                    'GRUS': ('Dense7Pattern', 'darkGreen'),
+                    'Gr': ('Dense7Pattern', 'darkGreen'),
+                    'gr': ('Dense7Pattern', 'darkGreen'),
+                    'Gravel': ('Dense7Pattern', 'darkGreen'),
+                    'gravel': ('Dense7Pattern', 'darkGreen'),
+                    'mellangrus': ('Dense6Pattern', 'darkGreen'),
+                    'Mellangrus': ('Dense6Pattern', 'darkGreen'),
+                    'MELLANGRUS': ('Dense6Pattern', 'darkGreen'),
+                    'Grm': ('Dense6Pattern', 'darkGreen'),
+                    'grm': ('Dense6Pattern', 'darkGreen'),
+                    'Medium Gravel': ('Dense6Pattern', 'darkGreen'),
+                    'medium Gravel': ('Dense6Pattern', 'darkGreen'),
+                    'medium gravel': ('Dense6Pattern', 'darkGreen'),
+                    'MGr': ('Dense6Pattern', 'darkGreen'),
+                    'mGr': ('Dense6Pattern', 'darkGreen'),
+                    'Mgr': ('Dense6Pattern', 'darkGreen'),
+                    'mgr': ('Dense6Pattern', 'darkGreen'),
+                    'fingrus': ('Dense6Pattern', 'darkGreen'),
+                    'Fingrus': ('Dense6Pattern', 'darkGreen'),
+                    'FINGRUS': ('Dense6Pattern', 'darkGreen'),
+                    'Grf': ('Dense6Pattern', 'darkGreen'),
+                    'grf': ('Dense6Pattern', 'darkGreen'),
+                    'Fine Gravel': ('Dense6Pattern', 'darkGreen'),
+                    'fine Gravel': ('Dense6Pattern', 'darkGreen'),
+                    'fine gravel': ('Dense6Pattern', 'darkGreen'),
+                    'FGr': ('Dense6Pattern', 'darkGreen'),
+                    'Fgr': ('Dense6Pattern', 'darkGreen'),
+                    'fGr': ('Dense6Pattern', 'darkGreen'),
+                    'fgr': ('Dense6Pattern', 'darkGreen'),
+                    'grovsand': ('Dense5Pattern', 'green'),
+                    'Grovsand': ('Dense5Pattern', 'green'),
+                    'GROVSAND': ('Dense5Pattern', 'green'),
+                    'Sag': ('Dense5Pattern', 'green'),
+                    'sag': ('Dense5Pattern', 'green'),
+                    'Coarse Sand': ('Dense5Pattern', 'green'),
+                    'coarse Sand': ('Dense5Pattern', 'green'),
+                    'coarse sand': ('Dense5Pattern', 'green'),
+                    'CSa': ('Dense5Pattern', 'green'),
+                    'Csa': ('Dense5Pattern', 'green'),
+                    'cSa': ('Dense5Pattern', 'green'),
+                    'csa': ('Dense5Pattern', 'green'),
+                    'sand': ('Dense5Pattern', 'green'),
+                    'Sand': ('Dense5Pattern', 'green'),
+                    'SAND': ('Dense5Pattern', 'green'),
+                    'Sa': ('Dense5Pattern', 'green'),
+                    'sa': ('Dense5Pattern', 'green'),
+                    'mellansand': ('Dense4Pattern', 'green'),
+                    'Mellansand': ('Dense4Pattern', 'green'),
+                    'MELLANSAND': ('Dense4Pattern', 'green'),
+                    'Sam': ('Dense4Pattern', 'green'),
+                    'sam': ('Dense4Pattern', 'green'),
+                    'Medium Sand': ('Dense4Pattern', 'green'),
+                    'medium Sand': ('Dense4Pattern', 'green'),
+                    'medium sand': ('Dense4Pattern', 'green'),
+                    'MSa': ('Dense4Pattern', 'green'),
+                    'Msa': ('Dense4Pattern', 'green'),
+                    'msa': ('Dense4Pattern', 'green'),
+                    'mSa': ('Dense4Pattern', 'green'),
+                    'finsand': ('Dense4Pattern', 'orange'),
+                    'Finsand': ('Dense4Pattern', 'orange'),
+                    'FINSAND': ('Dense4Pattern', 'orange'),
+                    'Saf': ('Dense4Pattern', 'orange'),
+                    'saf': ('Dense4Pattern', 'orange'),
+                    'Fine Sand': ('Dense4Pattern', 'orange'),
+                    'fine Sand': ('Dense4Pattern', 'orange'),
+                    'fine Sand': ('Dense4Pattern', 'orange'),
+                    'FSa': ('Dense4Pattern', 'orange'),
+                    'Fsa': ('Dense4Pattern', 'orange'),
+                    'fSa': ('Dense4Pattern', 'orange'),
+                    'fsa': ('Dense4Pattern', 'orange'),
+                    'silt': ('BDiagPattern', 'yellow'),
+                    'Silt': ('BDiagPattern', 'yellow'),
+                    'SILT': ('BDiagPattern', 'yellow'),
+                    'Si': ('BDiagPattern', 'yellow'),
+                    'si': ('BDiagPattern', 'yellow'),
+                    'lera': ('HorPattern', 'yellow'),
+                    'Lera': ('HorPattern', 'yellow'),
+                    'LERA': ('HorPattern', 'yellow'),
+                    'Le': ('HorPattern', 'yellow'),
+                    'le': ('HorPattern', 'yellow'),
+                    'Clay': ('HorPattern', 'yellow'),
+                    'clay': ('HorPattern', 'yellow'),
+                    'Cl': ('HorPattern', 'yellow'),
+                    'cl': ('HorPattern', 'yellow'),
+                    'moran': ('CrossPattern', 'cyan'),
+                    'Moran': ('CrossPattern', 'cyan'),
+                    'MORAN': ('CrossPattern', 'cyan'),
+                    'Mn': ('CrossPattern', 'cyan'),
+                    'mn': ('CrossPattern', 'cyan'),
+                    'Till': ('CrossPattern', 'cyan'),
+                    'till': ('CrossPattern', 'cyan'),
+                    'Ti': ('CrossPattern', 'cyan'),
+                    'ti': ('CrossPattern', 'cyan'),
+                    'torv': ('NoBrush', 'darkGray'),
+                    'Torv': ('NoBrush', 'darkGray'),
+                    'TORV': ('NoBrush', 'darkGray'),
+                    'T': ('NoBrush', 'darkGray'),
+                    'Peat': ('NoBrush', 'darkGray'),
+                    'peat': ('NoBrush', 'darkGray'),
+                    'Pt': ('NoBrush', 'darkGray'),
+                    'pt': ('NoBrush', 'darkGray'),
+                    't': ('NoBrush', 'darkGray'),
+                    'fyll': ('DiagCrossPattern', 'white'),
+                    'Fyll': ('DiagCrossPattern', 'white'),
+                    'FYLL': ('DiagCrossPattern', 'white'),
+                    'fyllning': ('DiagCrossPattern', 'white'),
+                    'Fyllning': ('DiagCrossPattern', 'white'),
+                    'FYLLNING': ('DiagCrossPattern', 'white'),
+                    'F': ('DiagCrossPattern', 'white'),
+                    'f': ('DiagCrossPattern', 'white'),
+                    'Made Ground': ('DiagCrossPattern', 'white'),
+                    'Made ground': ('DiagCrossPattern', 'white'),
+                    'mage ground': ('DiagCrossPattern', 'white'),
+                    'MG': ('DiagCrossPattern', 'white'),
+                    'Mg': ('DiagCrossPattern', 'white'),
+                    'mg': ('DiagCrossPattern', 'white')
+                    }
+        return dictionary
+    # new method create dict from dab table
+    dictionary = {}
+    for key, value in dict_geo.iteritems():
+        geoshort_string = value.replace('not in (','').replace('in (','').replace(')','')
+        #print(geoshort_string)#debug
+        for v in geoshort_string.split(','):
+            dictionary[v] = (dict_qt.get(key)[0])
     return dictionary
     
 def hydrocolors(): # STRATIGRAPHY PLOT - THIS IS WHERE YOU SHALL CHANGE TO YOUR OWN capacity CODES AND COLORS
-    dictionary = { '': ('okant', 'gray'),
-                  ' ': ('okant', 'gray'),
-                  '0': ('okant', 'gray'),
-                  '0 ': ('okant', 'gray'),
-                  '1': ('ovan gvy', 'red'),
-                  '1 ': ('ovan gvy', 'red'),
-                  '2': ('ingen', 'magenta'),
-                  '2 ': ('ingen', 'magenta'),
-                  '3-': ('obetydlig', 'yellow'),
-                  '3': ('obetydlig', 'yellow'),
-                  '3 ': ('obetydlig', 'yellow'),
-                  '3+': ('obetydlig', 'darkYellow'),
-                  '4-': ('mindre god', 'green'),
-                  '4': ('mindre god', 'green'),
-                  '4 ': ('mindre god', 'green'),
-                  '4+': ('mindre god', 'darkGreen'),
-                  '5-': ('god', 'cyan'),
-                  '5': ('god', 'cyan'),
-                  '5 ': ('god', 'cyan'),
-                  '5+': ('god', 'darkCyan'),
-                  '6-': ('mycket god', 'blue'),
-                  '6': ('mycket god', 'blue'),
-                  '6 ': ('mycket god', 'blue'),
-                  '6+': ('mycket god', 'darkBlue'),
-                }
-    return dictionary
+    """
+    This dictionary is used for stratigraph plots (Qt) to set color depending on capacity
+    Default method is to read the database table zz_capacity, the user may change zz_capacity table to change the stratigraphy plots
+    Fallback methods use color codes found in code below
+    """
+    res, dict_qt = utils.get_sql_result_as_dict('select capacity, explanation, color_qt from zz_capacity')
+    # fallback method to maintain backwards compatibility
+    if not res:
+        dict_qt = { '': ('okant', 'gray'),
+                      ' ': ('okant', 'gray'),
+                      '0': ('okant', 'gray'),
+                      '0 ': ('okant', 'gray'),
+                      '1': ('ovan gvy', 'red'),
+                      '1 ': ('ovan gvy', 'red'),
+                      '2': ('ingen', 'magenta'),
+                      '2 ': ('ingen', 'magenta'),
+                      '3-': ('obetydlig', 'yellow'),
+                      '3': ('obetydlig', 'yellow'),
+                      '3 ': ('obetydlig', 'yellow'),
+                      '3+': ('obetydlig', 'darkYellow'),
+                      '4-': ('mindre god', 'green'),
+                      '4': ('mindre god', 'green'),
+                      '4 ': ('mindre god', 'green'),
+                      '4+': ('mindre god', 'darkGreen'),
+                      '5-': ('god', 'cyan'),
+                      '5': ('god', 'cyan'),
+                      '5 ': ('god', 'cyan'),
+                      '5+': ('god', 'darkCyan'),
+                      '6-': ('mycket god', 'blue'),
+                      '6': ('mycket god', 'blue'),
+                      '6 ': ('mycket god', 'blue'),
+                      '6+': ('mycket god', 'darkBlue'),
+                    }
+    return dict_qt
 
 def stratitable(): # THIS IS THE NAME OF THE table WITH stratigraphy _ MUST NOT BE CHANGED
     return 'stratigraphy'
@@ -313,7 +340,14 @@ def standard_parameters_for_wflow():
                   (u'Accvol', (u'm3',)))
     return parameters
 
-def PlotTypesDict(international='no'):#sectionplot - dictionary for possible geoshorts
+def PlotTypesDict(international='no'): 
+    """
+    This dictionary is used by sectionplot (matplotlib) to compare with all possible geoshorts in stratigraphy table
+    (Also used to generate dictionaries for stratigraphy plot (Qt))
+    Default method is to read the database table zz_strat and generate the dictionary from columns 'strat' and 'geoshorts'
+    The user may update these fields in the zz_strat table to use other stratigraphy units and other abbreviations (in geoshorts)
+    Fallback method use dictionary defined in the code below
+    """
     success, Dict = utils.create_dict_from_db_2_cols(('strat','geoshorts','zz_strat'))
     if not success:
         if international=='no' and  locale.getdefaultlocale()[0] == 'sv_SE': 
@@ -384,7 +418,12 @@ def PlotTypesDict(international='no'):#sectionplot - dictionary for possible geo
             ("Fill",u"in ('fyll','fyllning','f','made ground','mg','land fill')")])
     return Dict
 
-def PlotColorDict():#sectionplot - dictionary for geoshort-colors 
+def PlotColorDict():
+    """
+    This dictionary is used by sectionplot (matplotlib) for relating the geoshort names with color codes
+    The user may update these fields in the zz_strat table to use other colors
+    Fallback method use dictionary defined in the code below
+    """
     success, Dict = utils.create_dict_from_db_2_cols(('strat','color_mplot','zz_strat'))
     if not success:
         if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
@@ -421,7 +460,12 @@ def PlotColorDict():#sectionplot - dictionary for geoshort-colors
             "Fill":u"white"}
     return Dict
 
-def PlotHatchDict():#sectionplot - dictionary for geoshort-hatch
+def PlotHatchDict():
+    """
+    This dictionary is used by sectionplot (matplotlib) for relating the geoshort names with hatches in plots
+    The user may update these fields in the zz_strat table to use other hatches
+    Fallback method use dictionary defined in the code below
+    """
     success, Dict = utils.create_dict_from_db_2_cols(('strat','hatch_mplot','zz_strat'))
     if not success:
         # hatch patterns : ('-', '+', 'x', '\\', '*', 'o', 'O', '.','/')
@@ -491,3 +535,10 @@ def SQLiteInternalTables():
                 'geometry_columns',
                 'spatialindex',
                 'SpatialIndex')"""
+
+def sqlite_nonplot_tables():
+    return r"""('about_db',
+                'zz_flowtype',
+                'zz_meteoparam',
+                'zz_strat',
+                'zz_hydro')"""
