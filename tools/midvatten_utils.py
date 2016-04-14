@@ -164,12 +164,15 @@ def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-tab
         return False, {'':''}
 
     #print(list_of_tuples)#debug
-    k=[]
-    v=[]
-    for tuple_item in list_of_tuples:
-        k.append(tuple_item[0])
-        v.append(tuple_item[1])
-    return True, dict(zip(k, v))
+    #k=[]
+    #v=[]
+    #for tuple_item in list_of_tuples:
+    #    k.append(tuple_item[0])
+    #    v.append(tuple_item[1])
+    #return True, dict(zip(k, v))
+
+    adict = dict([(k, v) for k, v in list_of_tuples])
+    return True, adict
 
 def find_layer(layer_name):
     for name, search_layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():
@@ -436,6 +439,40 @@ def strat_selection_check(layer=''):
             return 'ok'        
     else:
         qgis.utils.iface.messageBar().pushMessage("Error","Select a qgis layer with field h_gs!", 2,duration=15)
+
+def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
+    ur"""
+
+    :param anything: just about anything
+    :return: hopefully a utf8 converted anything
+    """
+    #anything = returnunicode(anything)
+    text = None
+    try:
+        if type(anything) == type(None):
+            text = (u'').encode('utf-8')
+        elif isinstance(anything, unicode):
+            text = anything.encode('utf-8')
+        elif isinstance(anything, list):
+            text = ([unicode_2_utf8(x) for x in anything])
+        elif isinstance(anything, tuple):
+            text = (tuple([unicode_2_utf8(x) for x in anything]))
+        elif isinstance(anything, float):
+            text = anything.encode('utf-8')
+        elif isinstance(anything, int):
+            text = anything.encode('utf-8')
+        elif isinstance(anything, dict):
+            text = (dict([(unicode_2_utf8(k), unicode_2_utf8(v)) for k, v in anything.iteritems()]))
+        elif isinstance(anything, str):
+            text = anything
+        elif isinstance(anything, bool):
+            text = anything.encode('utf-8')
+    except:
+        pass
+
+    if text is None:
+        text = 'data type unknown, check database'.encode('utf-8')
+    return text
 
 def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=('')):
     errorsignal = 0

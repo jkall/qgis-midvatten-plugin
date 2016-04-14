@@ -118,7 +118,9 @@ def geocolorsymbols():
     Fallback methods use color codes and brush styles found in code below
     """
     res1, dict_qt = utils.get_sql_result_as_dict('select strat, brush_qt, color_qt from zz_strat')
-    res2, dict_geo = utils.create_dict_from_db_2_cols(('strat','geoshorts','zz_strat'))
+    res2, dict_geo1 = utils.create_dict_from_db_2_cols(('strat','geoshorts','zz_strat'))
+    #print(dict_qt)#debug
+    #print(dict_geo)#debug
     # fallback method to maintain backwards compatibility
     if not (res1 and res2):
         # Fallback method - if using old for old databases where zz_strat is missing, then you may change the code below to reflect your own GEOLOGIC CODES, SYMBOLS AND COLORS
@@ -267,11 +269,16 @@ def geocolorsymbols():
         return dictionary
     # new method create dict from dab table
     dictionary = {}
-    for key, value in dict_geo.iteritems():
-        geoshort_string = value.replace('not in (','').replace('in (','').replace(')','')
+    # skip "unknown"
+    dict_geo = {k: v for k, v in dict_geo1.iteritems() if 'not in' not in v}
+    for key, value in sorted(dict_geo.iteritems()):
+        #if 'not in' in value:
+        #    print('Warning')#debug
+        geoshort_string = value.replace('not in (','').replace('in (','').replace(')','').replace('\'','')
         #print(geoshort_string)#debug
         for v in geoshort_string.split(','):
-            dictionary[v] = (dict_qt.get(key)[0])
+            #print (key,utils.unicode_2_utf8(v), utils.unicode_2_utf8(dict_qt.get(key)[0]))#debug
+            dictionary[utils.unicode_2_utf8(v)] = (utils.unicode_2_utf8(dict_qt.get(key)[0]))
     return dictionary
     
 def hydrocolors(): # STRATIGRAPHY PLOT - THIS IS WHERE YOU SHALL CHANGE TO YOUR OWN capacity CODES AND COLORS
@@ -280,9 +287,14 @@ def hydrocolors(): # STRATIGRAPHY PLOT - THIS IS WHERE YOU SHALL CHANGE TO YOUR 
     Default method is to read the database table zz_capacity, the user may change zz_capacity table to change the stratigraphy plots
     Fallback methods use color codes found in code below
     """
-    res, dict_qt = utils.get_sql_result_as_dict('select capacity, explanation, color_qt from zz_capacity')
+    res, dict_qt1 = utils.get_sql_result_as_dict('select capacity, explanation, color_qt from zz_capacity')
+    #print(dict_qt1)
+    dict_qt = utils.unicode_2_utf8(dict_qt1)
+    for k,v in dict_qt.iteritems():
+        dict_qt[k] = v[0]
     # fallback method to maintain backwards compatibility
     if not res:
+        print('using fallback method for backwards compat.')
         dict_qt = { '': ('okant', 'gray'),
                       ' ': ('okant', 'gray'),
                       '0': ('okant', 'gray'),
@@ -308,6 +320,7 @@ def hydrocolors(): # STRATIGRAPHY PLOT - THIS IS WHERE YOU SHALL CHANGE TO YOUR 
                       '6 ': ('mycket god', 'blue'),
                       '6+': ('mycket god', 'darkBlue'),
                     }
+    #print(dict_qt)
     return dict_qt
 
 def stratitable(): # THIS IS THE NAME OF THE table WITH stratigraphy _ MUST NOT BE CHANGED

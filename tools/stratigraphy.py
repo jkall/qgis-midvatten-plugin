@@ -296,8 +296,9 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
         # transformed to a, a, and o when read from the stratigraphy table
         self.PlotTypes = defs.PlotTypesDict()
         self.geoColorSymbols = defs.geocolorsymbols()
-        print(self.geoColorSymbols)#debug
+        #print(self.geoColorSymbols)#debug
         self.hydroColors = defs.hydrocolors()
+        #print(self.hydroColors)#debug
         self.switchGeoHydro = 0        #Default is to show colors according to geo
         self.GeoOrComment = "geology"     #Default is that text =  geology description
         self.showDesc = True        #Default is to show text
@@ -481,15 +482,19 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
             else:
                 return PyQt4.QtCore.Qt.white
         elif type == 'geo':
-            if id.lower() in self.geoColorSymbols:
-                return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id.lower()][1])
+            #if id.lower() in self.geoColorSymbols:
+            if id in self.geoColorSymbols:
+                #return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id.lower()][1])
+                return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id][1])
             else:
                 return PyQt4.QtCore.Qt.white
 
     def geoToSymbol(self, id=''):    # A function to return fill type for the box representing the stratigraphy layer
         """ returns Symbol from the specified text """
-        if id.lower() in self.geoColorSymbols:
-            return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id.lower()][0])   # Or possibly [0]?
+        #if id.lower() in self.geoColorSymbols:
+        if id in self.geoColorSymbols:
+            #return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id.lower()][0])   # Or possibly [0]?
+            return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id][0])   # Or possibly [0]?
         else:
             return PyQt4.QtCore.Qt.NoBrush
         
