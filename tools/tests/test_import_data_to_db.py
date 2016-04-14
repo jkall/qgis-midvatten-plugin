@@ -38,6 +38,7 @@ class TestFieldLoggerImporter():
     prev_used_flow_instr_ids = MockUsingReturnValue({u'Rb1615': [(u'Accvol', u'Flm01', u'2015-01-01 00:00:00'), (u'Momflow', u'Flm02', u'2016-01-01 00:00:00')]})
     quality_instruments = MockUsingReturnValue((u'instr1', u'instr2', u'instr3'))
     skip_popup = MockUsingReturnValue('')
+    existing_obsids = [u'1', u'2']
 
     def setUp(self):
         self.importinstance = midv_data_importer()
@@ -103,7 +104,7 @@ class TestFieldLoggerImporter():
         reference_string = "flow,Rb1615,2016-03-30 15:30:09,Accvol,m3,357,comment,,gick bra,level,Rb1608,2016-03-30 15:34:13,comment,,ergv,meas,m,555,2016-03-30 15:34:40,comment,,testc,quality,Rb1505,2016-03-30 15:29:26,comment,,hej,konduktivitet,µS/cm,863,Rb1512,2016-03-30 15:30:39,comment,,test,syre,%,58,syre,mg/L,58,temperatur,grC,8,sample,Rb1202,2016-03-30 15:31:30,comment,,hej2,Rb1512,2016-03-30 15:31:30,turbiditet,FNU,899"
         assert result_string == reference_string
 
-    def test_fieldlogger_prepare_level_string(self):
+    def test_fieldlogger_prepare_level_data(self):
 
         f = [
             "Rb1608.level;30-03-2016;15:34:13;ergv;l.comment\n",
@@ -112,11 +113,11 @@ class TestFieldLoggerImporter():
             ]
 
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
-        file_string = self.importinstance.fieldlogger_prepare_level_string(parsed_rows[u'level'])
+        file_string = utils.lists_to_string(self.importinstance.fieldlogger_prepare_level_data(parsed_rows[u'level']))
         reference_string = 'obsid;date_time;meas;comment\nRb1608;2016-03-30 15:34:13;555;ergv'
         assert file_string == reference_string
 
-    def test_fieldlogger_prepare_level_string_first_format(self):
+    def test_fieldlogger_prepare_level_data_first_format(self):
         """ Test that fhe first format where parameter was named level.meas works to import.
         :return:
         """
@@ -128,19 +129,19 @@ class TestFieldLoggerImporter():
             ]
 
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
-        file_string = self.importinstance.fieldlogger_prepare_level_string(parsed_rows[u'level'])
+        file_string = utils.lists_to_string(self.importinstance.fieldlogger_prepare_level_data(parsed_rows[u'level']))
         reference_string = 'obsid;date_time;meas;comment\nRb1608;2016-03-30 15:34:13;555;ergv'
         assert file_string == reference_string
 
     @mock.patch('import_data_to_db.utils.get_last_used_flow_instruments', prev_used_flow_instr_ids.get_v)
     @mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', flow_instrument_id.get_v)
-    def test_fieldlogger_prepare_flow_string(self):
+    def test_fieldlogger_prepare_flow_data(self):
         f = [
             "Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
             "Rb1615.flow;30-03-2016;15:30:09;gick bra;f.comment\n",
             ]
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
-        file_string = self.importinstance.fieldlogger_prepare_flow_string(parsed_rows[u'flow'])
+        file_string = utils.lists_to_string(self.importinstance.fieldlogger_prepare_flow_data(parsed_rows[u'flow']))
         reference_string = "obsid;instrumentid;flowtype;date_time;reading;unit;comment\nRb1615;testid;Accvol;2016-03-30 15:30:09;357;m3;gick bra"
 
         sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
@@ -149,13 +150,13 @@ class TestFieldLoggerImporter():
 
     @mock.patch('import_data_to_db.utils.get_last_used_flow_instruments', prev_used_flow_instr_ids.get_v)
     @mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', flow_instrument_id.get_v)
-    def test_fieldlogger_prepare_flow_string_no_comment(self):
+    def test_fieldlogger_prepare_flow_data_no_comment(self):
         f = [
             "Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
             "Rb1615.flow;30-03-2016;15:30:10;gick bra;f.comment\n",
             ]
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
-        file_string = self.importinstance.fieldlogger_prepare_flow_string(parsed_rows[u'flow'])
+        file_string = utils.lists_to_string(self.importinstance.fieldlogger_prepare_flow_data(parsed_rows[u'flow']))
         reference_string = "obsid;instrumentid;flowtype;date_time;reading;unit;comment\nRb1615;testid;Accvol;2016-03-30 15:30:09;357;m3;"
         sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
         sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
@@ -163,7 +164,7 @@ class TestFieldLoggerImporter():
 
     @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
     @mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
-    def test_fieldlogger_prepare_quality_string(self):
+    def test_fieldlogger_prepare_quality_data(self):
 
         f = [
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
@@ -177,7 +178,7 @@ class TestFieldLoggerImporter():
             ]
 
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
-        file_string = self.importinstance.fieldlogger_prepare_quality_string(parsed_rows[u'quality'])
+        file_string = utils.lists_to_string(self.importinstance.fieldlogger_prepare_quality_data(parsed_rows[u'quality']))
         reference_string = u'obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;flow_lpm;comment\nRb1505;teststaff;2016-03-30 15:29:26;testid;konduktivitet;863;863;µS/cm;;hej\nRb1512;teststaff;2016-03-30 15:30:39;testid;temperatur;8;8;grC;;test'
         sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
         sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
@@ -185,7 +186,7 @@ class TestFieldLoggerImporter():
 
     @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
     @mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
-    def test_fieldlogger_prepare_sample_string(self):
+    def test_fieldlogger_prepare_sample_data(self):
 
         f = [
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
@@ -199,14 +200,14 @@ class TestFieldLoggerImporter():
             ]
 
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
-        file_string = self.importinstance.fieldlogger_prepare_quality_string(parsed_rows[u'sample'])
+        file_string = utils.lists_to_string(self.importinstance.fieldlogger_prepare_quality_data(parsed_rows[u'sample']))
         reference_string = u'obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;flow_lpm;comment\nRb1512;teststaff;2016-03-30 15:31:30;testid;turbiditet;899;899;FNU;;'
         sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
         sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
         assert sorted_file_string == sorted_reference_string
 
     @mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
-    def test_fieldlogger_prepare_notes_string(self):
+    def test_fieldlogger_prepare_notes_data(self):
         f = [
             "Rb1505.quality;30-03-2016;15:29:25;comment1;q.comment\n",
             "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
@@ -224,11 +225,17 @@ class TestFieldLoggerImporter():
             ]
 
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
-        file_string = self.importinstance.fieldlogger_prepare_notes_string(parsed_rows)
+        file_string = utils.lists_to_string(self.importinstance.fieldlogger_prepare_notes_data(parsed_rows))
         reference_string = u'obsid;date_time;staff;comment\nRb1202;2016-03-30 15:31:30;teststaff;comment3\nRb1505;2016-03-30 15:29:25;teststaff;comment1\nRb1608;2016-03-30 15:34:40;teststaff;comment4\nRb1615;2016-03-30 15:30:10;teststaff;comment2'
         sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
         sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
         assert sorted_file_string == sorted_reference_string
+
+    def test_filter_nonexisting_obsids_and_ask(self):
+        #TODO: Test not done yet
+        # f = [(u'obsid', u'r')]
+        pass
+
 
 
 class TestNewMemoryDb():

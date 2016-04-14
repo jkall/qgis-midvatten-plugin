@@ -567,8 +567,9 @@ def get_sql_result_as_dict(sql):
     connection_ok, result_list = sql_result
 
     if not connection_ok:
-        pop_up_info("Getting data from db failed!")
-        return
+        textstring = """Cannot create dictionary sql """ + sql
+        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+        return False, {}
 
     result_dict = {}
     for res in result_list:
@@ -695,3 +696,16 @@ def ask_for_charset():
     except:
         charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,'utf-8')
     return str(charsetchoosen[0])
+
+def lists_to_string(alist_of_lists):
+    ur"""
+
+    :param alist_of_lists:
+    :return: A string with '\n' separating rows and ; separating columns.
+
+    >>> lists_to_string([1])
+    u'1'
+    >>> lists_to_string([('a', 'b'), (1, 2)])
+    u'a;b\n1;2'
+    """
+    return u'\n'.join([u';'.join([returnunicode(y) for y in x]) if isinstance(x, list) or isinstance(x, tuple) else returnunicode(x) for x in alist_of_lists])
