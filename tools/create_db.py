@@ -67,9 +67,15 @@ class newdb():
                 # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
                 # then the syntax defines a Midvatten project db according to the loaded .sql-file
                 if int(versionstext[0][0][0]) > 3: # which file to use depends on spatialite version installed
-                    SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","create_db_splite4.sql")
+                    filenamestring = "create_db_splite4"
                 else:
-                    SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","create_db.sql") 
+                    filenamestring = "create_db"
+                if locale.getdefaultlocale()[0] == 'sv_SE':
+                    filenamestring += "_sv.sql"
+                else:
+                    filenamestring += ".sql"
+                SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
+                print(SQLFile)#debug
                 qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
                 f = open(SQLFile, 'r')
                 linecounter = 1

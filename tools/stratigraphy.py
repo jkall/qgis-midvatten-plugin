@@ -480,15 +480,15 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
             else:
                 return PyQt4.QtCore.Qt.white
         elif type == 'geo':
-            if id in self.geoColorSymbols:
-                return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id][1])
+            if lower(id) in self.geoColorSymbols:
+                return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[lower(id)][1])
             else:
                 return PyQt4.QtCore.Qt.white
 
     def geoToSymbol(self, id=''):    # A function to return fill type for the box representing the stratigraphy layer
         """ returns Symbol from the specified text """
-        if id in self.geoColorSymbols:
-            return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id][0])   # Or possibly [0]?
+        if lower(id) in self.geoColorSymbols:
+            return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[lower(id)][0])   # Or possibly [0]?
         else:
             return PyQt4.QtCore.Qt.NoBrush
         
