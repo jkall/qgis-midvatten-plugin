@@ -20,9 +20,10 @@
 import PyQt4
 import os
 import os.path
+from collections import OrderedDict
 
 import midvatten_utils as utils
-from definitions.midvatten_defs import standard_parameters_for_w_qual_field, standard_parameters_for_w_flow
+from definitions.midvatten_defs import standard_parameters_for_wquality, standard_parameters_for_wflow, standard_parameters_for_wsample
 
 export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'export_fieldlogger_ui_dialog.ui'))[0]
 
@@ -59,27 +60,30 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         """ Creaters self.parameters dict with parameters
         :return: a dict like "{'typename': {'parameter': Parameter()}}"
         """
-        parameters = {}
+        types = {}
 
-        #level parameters:
-        parameters['level'] = {'meas': Parameter('meas', '[m] from top of tube', 'level')}
-        parameters['level']['comment'] = Parameter('comment', 'make comment...', 'level', 'text', True)
+        types_tuples = [(u'level', ((u'meas', (u'm',)),)),
+                        (u'flow', standard_parameters_for_wflow()),
+                        (u'quality', standard_parameters_for_wquality()),
+                        (u'sample', standard_parameters_for_wsample())]
 
-        #Flow parameters:
-        flow_params_and_units = utils.get_flow_params_and_units()
-        parameters['flow'] = dict([(param, Parameter(param, unit, 'flow')) for param, unit in standard_parameters_for_w_flow().iteritems()])
-        parameters['flow'].update(dict([(param, Parameter(param, unit[0], 'flow')) for param, unit in flow_params_and_units.iteritems()]))
-        parameters['flow']['comment'] = Parameter('comment', 'make comment...', 'flow', 'text', True)
-        parameters['flow']['instrument'] = Parameter('instrument', 'the measurement instrument id', 'flow', 'text', True)
+        for parameter_type, parameters_units_tuple in types_tuples:
+            types[parameter_type] = OrderedDict()
+            types[parameter_type].update(self.create_parameters_from_tuple(parameter_type, parameters_units_tuple))
+            types[parameter_type][u'comment'] = Parameter(u'comment', u'make comment...', parameter_type, u'', u'text', True)
 
-        #Quality parameters
-        qual_params_and_units = utils.get_qual_params_and_units()
-        parameters['quality'] = dict([(param, Parameter(param, unit, 'quality')) for param, unit in standard_parameters_for_w_qual_field().iteritems()])
-        parameters['quality'].update(dict([(param, Parameter(param, unit[0], 'quality')) for param, unit in qual_params_and_units.iteritems()]))
-        parameters['quality']['comment'] = Parameter('comment', 'make comment...', 'quality', 'text', True)
-        parameters['quality']['instrument'] = Parameter('instrument', 'the measurement instrument id', 'quality', 'text', True)
-        parameters['quality']['flow_lpm'] = Parameter('flow_lpm', 'the water flow during water quality measurement', 'quality', 'numberDecimal|numberSigned', True)
+        return types
 
+    def create_parameters_from_tuple(self, parameter_type, parameters_units_tuple):
+        parameters = OrderedDict()
+        for param, units in parameters_units_tuple:
+            for unit in units:
+                if len(units) > 1:
+                    paramname = u'.'.join((param, unit))
+                else:
+                    paramname = param
+                hint = unit
+                parameters[paramname] = Parameter(paramname, hint, parameter_type, unit)
         return parameters
 
     def get_unhidden_types_parameters_names(self, parameters):
@@ -260,18 +264,22 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                         chosen_parameters.add(types_parameters_dict[typename][parameter].full_name)
                         chosen_parameters.update([v.full_name for k, v in types_parameters_dict[typename].iteritems() if v.hidden])
 
-                        chosen_parameter_headers.add(types_parameters_dict[typename][parameter].get_header_word())
-                        chosen_parameter_headers.update([v.get_header_word() for k, v in types_parameters_dict[typename].iteritems() if v.hidden])
+                        chosen_parameter_headers.add((typename, parameter))
+                        chosen_parameter_headers.update([(typename, k) for k, v in types_parameters_dict[typename].iteritems() if v.hidden])
 
                 if subname is not None:
                     lat, lon = latlons.get(obsid)
                     obsid_rows.append(';'.join((obsid, subname, str(lat), str(lon), '|'.join(chosen_parameters))))
 
+
+        #Sort the parameters to the same order as they were entered into the ordered types dict.
+        sorted_chosen_parameter_headers = [parameter.get_header_word() for typename, parameters in sorted(types_parameters_dict.iteritems()) for parametername, parameter in parameters.iteritems() if (typename, parametername) in chosen_parameter_headers]
+
         printlist = []
-        printlist.append("FileVersion 1;" + str(len(chosen_parameter_headers)))
-        printlist.append("NAME;INPUTTYPE;HINT")
-        printlist.extend(sorted(chosen_parameter_headers))
-        printlist.append('NAME;SUBNAME;LAT;LON;INPUTFIELD')
+        printlist.append(u"FileVersion 1;" + str(len(sorted_chosen_parameter_headers)))
+        printlist.append(u"NAME;INPUTTYPE;HINT")
+        printlist.extend(sorted_chosen_parameter_headers)
+        printlist.append(u'NAME;SUBNAME;LAT;LON;INPUTFIELD')
 
         printlist.extend(sorted(obsid_rows))
         return printlist
@@ -290,9 +298,8 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             utils.pop_up_info("Error writing " + str(printlist))
 
 
-
 class Parameter(object):
-    def __init__(self, name, hint, parameter_type, valuetype='numberDecimal|numberSigned', hidden=False):
+    def __init__(self, name, hint, parameter_type, unit='', valuetype='numberDecimal|numberSigned', hidden=False):
         """ A class representing a parameter
 
         :param name: The name of the parameter
@@ -303,6 +310,7 @@ class Parameter(object):
         :return: None
         """
         self.name = name
+        self.unit = unit
         self.parameter_type = parameter_type
         self.valuetype = valuetype
         self.hidden = hidden
@@ -313,7 +321,10 @@ class Parameter(object):
         else:
             self.hint = utils.returnunicode(hint)
 
-        self.full_name = '.'.join((self.parameter_type, self.name))
+        if self.name.endswith(self.unit):
+            self.full_name = '.'.join((self.parameter_type[0], self.name))
+        else:
+            self.full_name = '.'.join((self.parameter_type[0], self.name, self.unit))
 
     def __repr__(self):
         return self.name
@@ -322,4 +333,5 @@ class Parameter(object):
         if self.header_word is None:
             self.header_word = ';'.join((self.full_name, self.valuetype, self.hint))
         return self.header_word
+
 

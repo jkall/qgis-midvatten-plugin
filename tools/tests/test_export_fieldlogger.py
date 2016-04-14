@@ -47,53 +47,51 @@ class test_qapplication_is_running():
 
 
 class TestExportFieldlogger():
-    qual_params = MockUsingReturnValue({u'redoxpotential': (u'mV',), u'syre': (u'mg/L',), u'pH': (u'',)})
-    flow_params = MockUsingReturnValue({u'Momflow': (u'l/s',), u'Accvol': (u'm3'),})
+    qual_params = MockUsingReturnValue(((u'redoxpotential', (u'mV',)), (u'syre', (u'mg/L', u'%')), (u'pH', (u'',))))
+    flow_params = MockUsingReturnValue(((u'Momflow', (u'l/s',)), (u'Accvol', (u'm3',))))
+    sample_params = MockUsingReturnValue(((u'turbiditet', (u'FNU',)),))
     the_obsids = MockUsingReturnValue((u'Rb1301', u'Rb1302'))
     the_latlons = MockUsingReturnValue({u'Rb1301': (60.0, 10.0), u'Rb1302': (50.0, 4.0)})
     selected_obsids_from_map = MockUsingReturnValue((u'Rb1302',))
     empty_dict = MockUsingReturnValue({})
 
-    @mock.patch('export_fieldlogger.utils.get_qual_params_and_units', qual_params.get_v)
-    @mock.patch('export_fieldlogger.utils.get_flow_params_and_units', flow_params.get_v)
+    @mock.patch('export_fieldlogger.standard_parameters_for_wquality', qual_params.get_v)
+    @mock.patch('export_fieldlogger.standard_parameters_for_wflow', flow_params.get_v)
+    @mock.patch('export_fieldlogger.standard_parameters_for_wsample', sample_params.get_v)
     @mock.patch('export_fieldlogger.utils.get_all_obsids', the_obsids.get_v)
     def setUp(self):
         self.iface = DummyInterface()
         widget = QtGui.QWidget()
         self.export_fieldlogger_obj = ExportToFieldLogger(widget)
 
-    @mock.patch('export_fieldlogger.utils.get_qual_params_and_units', qual_params.get_v)
-    @mock.patch('export_fieldlogger.utils.get_flow_params_and_units', flow_params.get_v)
-    @mock.patch('export_fieldlogger.standard_parameters_for_w_flow', empty_dict.get_v)
-    @mock.patch('export_fieldlogger.standard_parameters_for_w_qual_field', empty_dict.get_v)
+    @mock.patch('export_fieldlogger.standard_parameters_for_wquality', qual_params.get_v)
+    @mock.patch('export_fieldlogger.standard_parameters_for_wflow', flow_params.get_v)
+    @mock.patch('export_fieldlogger.standard_parameters_for_wsample', sample_params.get_v)
     def test_create_parameters(self):
-        parameters = [(parametername, parameter.hint) for types, parameterdict in sorted(self.export_fieldlogger_obj.create_parameters().iteritems()) for parametername, parameter in sorted(parameterdict.iteritems())]
-        assert parameters == [(u'Accvol', u'm'), (u'Momflow', u'l/s'), ('comment', u'make comment...'), ('instrument', u'the measurement instrument id'), ('comment', u'make comment...'), ('meas', u'[m] from top of tube'), ('comment', u'make comment...'), ('flow_lpm', u'the water flow during water quality measurement'), ('instrument', u'the measurement instrument id'), (u'pH', u'pH'), (u'redoxpotential', u'mV'), (u'syre', u'mg/L')]
+        parameters = [(types, parametername, parameter.hint) for types, parameterdict in sorted(self.export_fieldlogger_obj.create_parameters().iteritems()) for parametername, parameter in sorted(parameterdict.iteritems())]
+        assert parameters == [(u'flow', u'Accvol', u'm3'), (u'flow', u'Momflow', u'l/s'), (u'flow', u'comment', u'make comment...'), (u'level', u'comment', u'make comment...'), (u'level', u'meas', u'm'), (u'quality', u'comment', u'make comment...'), (u'quality', u'pH', u'pH'), (u'quality', u'redoxpotential', u'mV'), (u'quality', u'syre.%', u'%'), (u'quality', u'syre.mg/L', u'mg/L'), (u'sample', u'comment', u'make comment...'), (u'sample', u'turbiditet', u'FNU')]
 
     @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', the_latlons.get_v)
     def test_select_all_momflow(self):
         self.export_fieldlogger_obj.select_all(u'flow.Momflow', True)
         printlist = self.export_fieldlogger_obj.create_export_printlist()
-        assert printlist == ['FileVersion 1;3', 'NAME;INPUTTYPE;HINT', u'flow.Momflow;numberDecimal|numberSigned;l/s', u'flow.comment;text;make comment...', u'flow.instrument;text;the measurement instrument id', 'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1301;Rb1301.flow;60.0;10.0;flow.comment|flow.instrument|flow.Momflow', u'Rb1302;Rb1302.flow;50.0;4.0;flow.comment|flow.instrument|flow.Momflow']
-
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', the_latlons.get_v)
-    def test_select_all(self):
-        self.export_fieldlogger_obj.select_all(u'flow.Momflow', True)
-        printlist = self.export_fieldlogger_obj.create_export_printlist()
-        assert printlist == ['FileVersion 1;3', 'NAME;INPUTTYPE;HINT', u'flow.Momflow;numberDecimal|numberSigned;l/s', u'flow.comment;text;make comment...', u'flow.instrument;text;the measurement instrument id', 'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1301;Rb1301.flow;60.0;10.0;flow.comment|flow.instrument|flow.Momflow', u'Rb1302;Rb1302.flow;50.0;4.0;flow.comment|flow.instrument|flow.Momflow']
-
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', the_latlons.get_v)
-    def test_select_all(self):
-        self.export_fieldlogger_obj.select_all(u'flow.Momflow', True)
-        printlist = self.export_fieldlogger_obj.create_export_printlist()
-        assert printlist == ['FileVersion 1;3', 'NAME;INPUTTYPE;HINT', u'flow.Momflow;numberDecimal|numberSigned;l/s', u'flow.comment;text;make comment...', u'flow.instrument;text;the measurement instrument id', 'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1301;Rb1301.flow;60.0;10.0;flow.comment|flow.instrument|flow.Momflow', u'Rb1302;Rb1302.flow;50.0;4.0;flow.comment|flow.instrument|flow.Momflow']
+        assert printlist == [u'FileVersion 1;2', u'NAME;INPUTTYPE;HINT', u'f.Momflow.l/s;numberDecimal|numberSigned;l/s', u'f.comment;text;make comment...', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1301;Rb1301.flow;60.0;10.0;f.Momflow.l/s|f.comment', u'Rb1302;Rb1302.flow;50.0;4.0;f.Momflow.l/s|f.comment']
 
     @mock.patch('export_fieldlogger.utils.get_selected_features_as_tuple', selected_obsids_from_map.get_v)
     @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', the_latlons.get_v)
     def test_select_from_map_click(self):
-        self.export_fieldlogger_obj.select_from_map(u'quality.syre')
+        self.export_fieldlogger_obj.select_from_map(u'quality.syre.%')
         printlist = self.export_fieldlogger_obj.create_export_printlist()
-        assert printlist == ['FileVersion 1;4', 'NAME;INPUTTYPE;HINT', u'quality.comment;text;make comment...', u'quality.flow_lpm;numberDecimal|numberSigned;the water flow during water quality measurement', u'quality.instrument;text;the measurement instrument id', u'quality.syre;numberDecimal|numberSigned;mg/L', 'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1302;Rb1302.quality;50.0;4.0;quality.syre|quality.instrument|quality.comment|quality.flow_lpm']
+        assert printlist == [u'FileVersion 1;2', u'NAME;INPUTTYPE;HINT', u'q.syre.%;numberDecimal|numberSigned;%', u'q.comment;text;make comment...', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1302;Rb1302.quality;50.0;4.0;q.comment|q.syre.%']
+
+    @mock.patch('export_fieldlogger.utils.get_selected_features_as_tuple', selected_obsids_from_map.get_v)
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', the_latlons.get_v)
+    def test_select_three_from_map_click(self):
+        self.export_fieldlogger_obj.select_from_map(u'quality.syre.%')
+        self.export_fieldlogger_obj.select_from_map(u'quality.syre.mg/L')
+        self.export_fieldlogger_obj.select_from_map(u'sample.turbiditet')
+        printlist = self.export_fieldlogger_obj.create_export_printlist()
+        assert printlist == [u'FileVersion 1;5', u'NAME;INPUTTYPE;HINT', u'q.syre.mg/L;numberDecimal|numberSigned;mg/L', u'q.syre.%;numberDecimal|numberSigned;%', u'q.comment;text;make comment...', u's.turbiditet.FNU;numberDecimal|numberSigned;FNU', u's.comment;text;make comment...', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1302;Rb1302.quality;50.0;4.0;q.comment|q.syre.mg/L|q.syre.%', u'Rb1302;Rb1302.sample;50.0;4.0;s.comment|s.turbiditet.FNU']
 
     def tearDown(self):
         self.iface = None

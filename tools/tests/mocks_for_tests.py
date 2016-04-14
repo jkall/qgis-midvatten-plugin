@@ -19,10 +19,20 @@
  *                                                                         *
  ***************************************************************************/
 """
+import mock
 
 class MockUsingReturnValue(object):
-    def __init__(self, v):
+    def __init__(self, v=None):
         self.v =  v
     def get_v(self, *args, **kwargs):
         return self.v
 
+class MockReturnUsingDict(object):
+    def __init__(self, adict, args_idx):
+        self.adict = adict
+        self.args_idx = args_idx
+
+    def get_v(self, *args, **kwargs):
+        arg = args[self.args_idx]
+        return_value = self.adict[arg]
+        return return_value

@@ -248,7 +248,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def interlab4_to_table(self, data_dict):
         pass
 
-
     def seismics_import(self):
         self.prepare_import('temporary_seismics')
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
@@ -565,6 +564,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if not filename:
             return
 
+        existing_obsids = utils.get_all_obsids()
+
         result_dict = {}
         with io.open(filename, 'r', encoding=str(self.charsetchoosen[0])) as f:
 
@@ -574,14 +575,19 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             result_dict = self.fieldlogger_import_parse_rows(f)
 
         for typename, obsdict in result_dict.iteritems():
-            if typename == 'level':
-                self.fieldlogger_level_import(dict(obsdict))
-            elif typename == 'flow':
-                self.fieldlogger_flow_import(dict(obsdict))
-            elif typename == 'quality':
-                self.fieldlogger_quality_import(dict(obsdict))
+            if typename == u'level':
+                file_data = self.fieldlogger_prepare_level_data(dict(obsdict))
+                self.send_file_data_to_importer(self.filter_nonexisting_obsids_and_ask(file_data, existing_obsids), self.wlvl_import_from_csvlayer)
+            elif typename == u'flow':
+                file_data = self.fieldlogger_prepare_flow_data(dict(obsdict))
+                self.send_file_data_to_importer(self.filter_nonexisting_obsids_and_ask(file_data, existing_obsids), self.wflow_import_from_csvlayer, self.existing_obsids)
+            elif typename in [u'quality', u'sample']:
+                file_data = self.fieldlogger_prepare_quality_data(dict(obsdict))
+                self.send_file_data_to_importer(self.filter_nonexisting_obsids_and_ask(file_data, existing_obsids), self.wqualfield_import_from_csvlayer, self.existing_obsids)
             else:
                 utils.pop_up_info("Unknown type: " + typename)
+        file_data = self.fieldlogger_prepare_notes_data(dict(result_dict))
+        #TODO: self.send_file_data_to_importer(file_string, self.notes_import_from_csvlayer)
 
     @staticmethod
     def fieldlogger_import_parse_rows(f):
@@ -594,126 +600,171 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         """
         result_dict = {}
         for rownr, rawrow in enumerate(f):
-            row = rawrow.rstrip('\r').rstrip('\n')
-            cols = row.split(';')
+            row = utils.returnunicode(rawrow).rstrip(u'\r').rstrip(u'\n')
+            cols = row.split(u';')
             type_obsid = cols[0]
-            typename = type_obsid.split('.')[-1]
-            obsid = utils.rstrip('.' + typename, type_obsid)
+            type_obsid_splitted = type_obsid.split(u'.')
+            if len(type_obsid_splitted) < 2:
+                utils.pop_up_info("The typename and obsid on row: " + row + " could not be read. It will be skipped.")
+                continue
+            typename = type_obsid.split(u'.')[-1]
+            obsid = utils.rstrip(u'.' + typename, type_obsid)
             date = cols[1]
             time = cols[2]
-            date_time = datestring_to_date(date + ' ' + time)
+            date_time = datestring_to_date(date + u' ' + time)
             value = cols[3]
-            type_parameter = cols[4]
-            paramtypename = type_parameter.split('.')[0]
-            parameter = utils.lstrip(paramtypename + '.', type_parameter)
-            result_dict.setdefault(typename, {}).setdefault(obsid, {}).setdefault(date_time, {})[parameter] = value
+            paramtypename_parameter_unit = cols[4].split(u'.')
+            parameter = paramtypename_parameter_unit[1]
+            try:
+                unit = paramtypename_parameter_unit[2]
+            except IndexError:
+                unit = u''
+
+            result_dict.setdefault(typename, {}).setdefault(obsid, {}).setdefault(date_time, {})[(parameter, unit)] = value
         return result_dict
 
-    def fieldlogger_level_import(self, obsdict):
+    @staticmethod
+    def fieldlogger_prepare_level_data(obsdict):
         """
         Produces a filestring with columns "obsid, date_time, meas, comment" and imports it
         :param obsdict: a dict like {obsid: {date_time: {parameter: value}}}
         :return: None
         """
-        file_data_list = [';'.join(['obsid', 'date_time', 'meas', 'comment'])]
+        file_data_list = [u';'.join([u'obsid', u'date_time', u'meas', u'comment'])]
         for obsid, date_time_dict in obsdict.iteritems():
             for date_time, param_dict in sorted(date_time_dict.iteritems()):
                 printrow = [obsid]
                 printrow.append(datetime.strftime(date_time, '%Y-%m-%d %H:%M:%S'))
-                printrow.append(param_dict.get('meas', '').replace(',', '.'))
-                printrow.append(param_dict.get('comment', ''))
-                file_data_list.append(u';'.join(printrow))
 
-        file_data = u'\n'.join(file_data_list)
-        self.send_file_data_to_importer(file_data, self.wlvl_import_from_csvlayer)
+                meas = ''
+                comment = ''
+                for param_unit, value in param_dict.iteritems():
+                    param, unit = param_unit
+                    if param == 'meas':
+                        meas = value.replace(',', '.')
+                    elif param == 'comment':
+                        comment = value
 
-    def fieldlogger_flow_import(self, obsdict):
+                if meas:
+                    printrow.append(meas)
+                    printrow.append(comment)
+                    file_data_list.append(printrow)
+
+        return file_data_list
+
+    @staticmethod
+    def fieldlogger_prepare_flow_data(obsdict):
         """
         Produces a filestring with columns "obsid, instrumentid, flowtype, date_time, reading, unit, comment" and imports it
         :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
         :return:
         """
 
-        file_data_list = [';'.join(['obsid', 'instrumentid', 'flowtype', 'date_time', 'reading', 'unit', 'comment'])]
-
-        flow_params_and_units = utils.get_flow_params_and_units()
+        file_data_list = [u';'.join([u'obsid', u'instrumentid', u'flowtype', u'date_time', u'reading', u'unit', u'comment'])]
+        instrumentids = utils.get_last_used_flow_instruments()
 
         for obsid, date_time_dict in obsdict.iteritems():
             for date_time, param_dict in sorted(date_time_dict.iteritems()):
-                _param_dict = dict(param_dict)
                 datestring = datetime.strftime(date_time, '%Y-%m-%d %H:%M:%S')
 
-                instrumentid = _param_dict.pop('instrument', '')
-                comment = _param_dict.pop('comment', '')
+                comment = ''
+                reading = None
 
-                for flowtype, reading in _param_dict.iteritems():
-                    unit = flow_params_and_units.get(flowtype, None)[0]
-                    if unit is None:
-                        unit = PyQt4.QtGui.QInputDialog.getText(None, 'Unit not found', 'Please submit it for ' + flowtype + '\nIt will be used for all flowtypes of type ' + flowtype + '\n', PyQt4.QtGui.QLineEdit.Normal, ' ')[0]
-                        flow_params_and_units[flowtype] = unit
+                for param_unit, value in param_dict.iteritems():
+                    param, unit = param_unit
+                    if param == u'comment':
+                        comment = value
                     else:
-                        unit = unit[0]
+                        flowtype = param
+                        reading = value.replace(',', '.')
 
-                    printrow = [obsid, instrumentid, flowtype, datestring, reading.replace(',', '.'), unit, comment]
-                    try:
-                        file_data_list.append(u';'.join(printrow))
-                    except:
-                        raise Exception(utils.pop_up_info(str(printrow)))
+                if reading is not None:
+                    used_instrumentids = '\n'.join([', '.join(inner) for inner in instrumentids[obsid]])
+                    instrumentid = utils.returnunicode(PyQt4.QtGui.QInputDialog.getText(None, 'Instrument not found', 'Please submit it for ' + ','.join((obsid, datestring, flowtype)) + '\nPreviously used instruments for ' + obsid + ':\n' + used_instrumentids, PyQt4.QtGui.QLineEdit.Normal, '')[0])
 
-        file_data = u'\n'.join(file_data_list)
-        self.send_file_data_to_importer(file_data, self.wflow_import_from_csvlayer)
+                    printrow = [obsid, instrumentid, flowtype, datestring, reading, unit, comment]
+                    file_data_list.append(printrow)
 
-    def fieldlogger_quality_import(self, obsdict):
+        return file_data_list
+
+    @staticmethod
+    def fieldlogger_prepare_quality_data(obsdict):
         """
         Produces a filestring with columns "obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment" and imports it
         :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
         :return:
         """
-        file_data_list = [';'.join(['obsid', 'staff', 'date_time', 'instrument', 'parameter', 'reading_num', 'reading_txt', 'unit', 'flow_lpm', 'comment'])]
+        file_data_list = [u';'.join([u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'flow_lpm', u'comment'])]
 
-        qual_params_and_units = utils.get_qual_params_and_units()
-
-        submitted_staff =None
+        instrumentids = utils.get_quality_instruments()
+        asked_instrument = None
+        staff = None
 
         for obsid, date_time_dict in obsdict.iteritems():
             for date_time, param_dict in sorted(date_time_dict.iteritems()):
-                _param_dict = dict(param_dict)
                 datestring = datetime.strftime(date_time, '%Y-%m-%d %H:%M:%S')
 
-                instrument = _param_dict.pop('instrument', '')
-                comment = _param_dict.pop('comment', '')
-                flow_lpm = _param_dict.pop('flow_lpm', '').replace(',', '.')
+                comment = u''
+                flow_lpm = u''
+                reading_num = None
 
-                staff = _param_dict.pop('staff', None)
-                if staff is None:
-                    if submitted_staff is None:
-                        staff = PyQt4.QtGui.QInputDialog.getText(None, 'Staff not found', 'Please submit the name or initials of the person who did the measurement.\nIt will be used for the rest of the import\n', PyQt4.QtGui.QLineEdit.Normal, ' ')[0]
-                        submitted_staff = staff
+
+                for param_unit, value in param_dict.iteritems():
+                    param, unit = param_unit
+                    if param == u'comment':
+                        comment = value
                     else:
-                        staff = submitted_staff
+                        parameter = param
+                        reading_num = value.replace(u',', u'.')
+                        reading_txt = reading_num
 
-                if instrument is None:
-                    if submitted_instrument is None:
-                        instrument = PyQt4.QtGui.QInputDialog.getText(None, 'Instrument not found', 'Please submit the name or initials of the person who did the measurement.\nIt will be used for the rest of the import\n', PyQt4.QtGui.QLineEdit.Normal, ' ')[0]
-                        submitted_instrument = instrument
+                if reading_num is not None:
+                    if staff is None:
+                        staff = utils.returnunicode(PyQt4.QtGui.QInputDialog.getText(None, 'Staff not found', 'Please submit the name or initials of the person who did the measurement.\nIt will be used for the rest of the import\n', PyQt4.QtGui.QLineEdit.Normal, u'')[0])
+                    if param == u'temperature':
+                        instrument = u''
+                    elif asked_instrument is None:
+                        asked_instrument = utils.returnunicode(PyQt4.QtGui.QInputDialog.getText(None, 'Instrument not found', 'Please submit it.\nIt will be used for the rest of the import\nPreviously used instruments:\n' + ','.join(instrumentids), PyQt4.QtGui.QLineEdit.Normal, u'')[0])
+                        instrument = asked_instrument
                     else:
-                        instrument = submitted_instrument
-
-                for parameter, reading_num in _param_dict.iteritems():
-                    reading_num = reading_num.replace(',', '.')
-                    reading_txt = reading_num
-                    unit = qual_params_and_units.get(parameter, None)
-                    if unit is None:
-                        unit = PyQt4.QtGui.QInputDialog.getText(None, 'Unit not found', 'Please submit unit for ' + parameter + '\nIt will be used for all parameter of type ' + parameter + '\n', PyQt4.QtGui.QLineEdit.Normal, ' ')[0]
-                        qual_params_and_units[parameter] = unit
-                    else:
-                        unit = unit[0]
-
+                        instrument = asked_instrument
                     printrow = [obsid, staff, datestring, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment]
-                    file_data_list.append(u';'.join(printrow))
+                    file_data_list.append(printrow)
 
-        file_data = u'\n'.join(file_data_list)
-        self.send_file_data_to_importer(file_data, self.wqualfield_import_from_csvlayer)
+        return file_data_list
+
+    @staticmethod
+    def fieldlogger_prepare_notes_data(typesdict):
+        file_data_list = [u';'.join([u'obsid', u'date_time', u'staff', u'comment'])]
+        staff = None
+
+        for obsdict in typesdict.values():
+            for obsid, date_time_dict in obsdict.iteritems():
+                for date_time, param_dict in sorted(date_time_dict.iteritems()):
+                    try:
+                        datestring = datetime.strftime(date_time, '%Y-%m-%d %H:%M:%S')
+                    except TypeError:
+                        utils.pop_up_info("datetime: " + str(date_time))
+                        return
+
+                    comment = ''
+
+                    #If there is no comment, continue to next date_time
+                    try:
+                        comment = param_dict.pop((u'comment', u''))
+                    except KeyError:
+                        continue
+
+                    #If there was more than the comment parameter, the comment should not go to notes.
+                    if len(param_dict) > 0:
+                        continue
+
+                    if staff is None:
+                        staff = utils.returnunicode(PyQt4.QtGui.QInputDialog.getText(None, 'Staff not found', 'Please submit the name or initials of the person who did the measurement.\nIt will be used for the rest of the comments imports\n', PyQt4.QtGui.QLineEdit.Normal, u'')[0])
+
+                    printrow = [obsid, datestring, staff, comment]
+                    file_data_list.append(printrow)
+        return file_data_list
 
     def send_file_data_to_importer(self, file_data, importer):
         self.csvlayer = None
@@ -723,6 +774,43 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 utils.pop_up_info("Creating csvlayer for " + str(importer) + " failed!")
             self.csvlayer = csvlayer
             importer()
+
+    def filter_nonexisting_obsids_and_ask(self, file_data, existing_obsids, store_anyway=False):
+        filtered_data = []
+        data_to_ask_for = []
+        for rownr, row in file_data:
+            if rownr == 0:
+                try:
+                    obsid_index = row.index(u'obsid')
+                except ValueError:
+                    #The word u'obsid' did not exist, returning file_data as it is.
+                    return file_data
+                continue
+
+            obsid = row[obsid_index]
+            if obsid not in existing_obsids:
+                data_to_ask_for.append(row)
+            else:
+                filtered_data.append(row)
+
+        for rownr, row in data_to_ask_for:
+            current_obsid = row[obsid_index]
+
+            while obsid not in existing_obsids:
+                obsid = PyQt4.QtGui.QInputDialog.getText(None, 'WARNING', 'The supplied obsid "' + str(current_obsid) + '" on row:\n"' + u', '.join(row) + '".\ndid not exist in obs_points, please submit it again\n(on ' + str(rownr + 1) + ' of ' + str(len(data_to_ask_for)) + ' obsids not found', PyQt4.QtGui.QLineEdit.Normal, 'obsid')[0]
+                if obsid not in existing_obsids:
+                    if store_anyway:
+                        skip_current_obsid = utils.askuser(question="YesNo", msg='The supplied obsid "' + str(current_obsid) + '" on row:\n"' + u', '.join(row) + '".\nstill did not exist in obs_points, do you want store it anyway?\n(else try again)', dialogtitle='Failure',)
+                        if answer.result:
+                            filtered_data.append(row)
+                            break
+                    else:
+                        skip_current_obsid = utils.askuser(question="YesNo", msg='The supplied obsid "' + str(current_obsid) + '" on row:\n"' + u', '.join(row) + '".\nstill did not exist in obs_points, do you want to skip it?\n(else try again)', dialogtitle='Failure',)
+                        if answer.result:
+                            break
+                else:
+                    row[obsid_index] = obsid
+                    filtered_data.append(row)
 
     def prepare_import(self, temptableName):
         """ Shared stuff as preparation for the import """

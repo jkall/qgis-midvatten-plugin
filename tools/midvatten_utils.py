@@ -276,6 +276,8 @@ def returnunicode(anything): #takes an input and tries to return it as unicode
                 text = unicode(tuple([returnunicode(x) for x in anything]))
             elif isinstance(anything, float):
                 text = unicode(anything, charset)
+            elif isinstance(anything, dict):
+                text = unicode(dict([(returnunicode(k), returnunicode(v)) for k, v in anything.iteritems()]))
             elif isinstance(anything, str):
                 text = unicode(anything, charset)
         except UnicodeEncodeError:
@@ -532,23 +534,29 @@ def get_latlon_for_all_obsids():
     :return: A dict of tuples with like {'obsid': (lat, lon)} for all obsids in obs_points
     """
     latlon_dict = get_sql_result_as_dict('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')
+    latlon_dict = dict([(obsid, lat_lon[0]) for obsid, lat_lon in latlon_dict.iteritems()])
     return latlon_dict
 
-def get_qual_params_and_units():
+def get_last_used_flow_instruments():
+    """ Returns flow instrumentids
+    :return: A dict like {obsid: (flowtype, instrumentid, last date used for obsid)
     """
-    Returns water quality parameters and their units as tuples
-    :return: Tuple with quality parameter names and their units for all parameters in w_qual_field
-    """
-    wqual_dict = get_sql_result_as_dict('SELECT distinct parameter, unit FROM w_qual_field')
-    return wqual_dict
+    instruments_dict = get_sql_result_as_dict('SELECT obsid, flowtype, instrumentid, max(date_time) FROM w_flow GROUP BY obsid, flowtype, instrumentid')
+    return instruments_dict
 
-def get_flow_params_and_units():
+def get_quality_instruments():
     """
-    Return flow parameters and their units as tuples
-    :return: Tuple with water flow parameter name and their units.
+    Returns quality instrumentids
+    :return: A tuple with instrument ids from w_qual_field
     """
-    flow_dict = get_sql_result_as_dict('SELECT distinct flowtype, unit from w_flow')
-    return flow_dict
+    sql_result = sql_load_fr_db('SELECT distinct instrument from w_qual_field')
+    connection_ok, result_list = sql_result
+
+    if not connection_ok:
+        pop_up_info("Getting data from db failed!")
+        return
+
+    return tuple(result_list)
 
 def get_sql_result_as_dict(sql):
     """
@@ -560,10 +568,13 @@ def get_sql_result_as_dict(sql):
     connection_ok, result_list = sql_result
 
     if not connection_ok:
-        pop_up_info("Getting data from db failed!")
-        return
+        textstring = """Cannot create dictionary from sql """ + sql
+        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+        return False, {}
 
-    result_dict = dict([(res[0], tuple(res[1:])) for res in result_list])
+    result_dict = {}
+    for res in result_list:
+        result_dict.setdefault(res[0], []).append(tuple(res[1:]))
     return result_dict
 
 def lstrip(word, from_string):
@@ -686,3 +697,16 @@ def ask_for_charset():
     except:
         charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,'utf-8')
     return str(charsetchoosen[0])
+
+def lists_to_string(alist_of_lists):
+    ur"""
+
+    :param alist_of_lists:
+    :return: A string with '\n' separating rows and ; separating columns.
+
+    >>> lists_to_string([1])
+    u'1'
+    >>> lists_to_string([('a', 'b'), (1, 2)])
+    u'a;b\n1;2'
+    """
+    return u'\n'.join([u';'.join([returnunicode(y) for y in x]) if isinstance(x, list) or isinstance(x, tuple) else returnunicode(x) for x in alist_of_lists])
