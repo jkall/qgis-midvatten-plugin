@@ -230,26 +230,6 @@ class TestFieldLoggerImporter():
         sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
         assert sorted_file_string == sorted_reference_string
 
-    def test_filter_nonexisting_obsids_and_ask(self):
-        return
-        file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
-        existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
-
-        filtered_file_data = self.importinstance.filter_nonexisting_obsids_and_ask(file_data, existing_obsids)
-        print('\ntest_filter_nonexisting_obsids_and_ask result')
-        print(filtered_file_data)
-
-    def test_filter_nonexisting_obsids_and_ask_store_anyway(self):
-        return
-
-        #TODO: Test not done yet
-
-        file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
-        existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
-
-        filtered_file_data = self.importinstance.filter_nonexisting_obsids_and_ask(file_data, existing_obsids, True)
-        print('\ntest_filter_nonexisting_obsids_and_ask_store_anyway result')
-        print(filtered_file_data)
 
 
 
