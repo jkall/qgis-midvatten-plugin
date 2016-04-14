@@ -19,6 +19,7 @@
  ***************************************************************************/
 """
 from PyQt4 import QtCore, QtGui, QtWebKit
+import PyQt4
 from qgis.core import *
 from qgis.gui import *
 import csv
@@ -37,6 +38,8 @@ from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialit
 from pyspatialite.dbapi2 import IntegrityError
 from matplotlib.dates import datestr2num, num2date
 import time
+
+not_found_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
 
 class dbconnection():
     def __init__(self, db=''):
@@ -63,7 +66,7 @@ class dbconnection():
             self.conn.close()
     
 class askuser(QtGui.QDialog):
-    def __init__(self, question="YesNo", msg = '', dialogtitle='User input needed', parent=None, dropdownlist_choices=None):
+    def __init__(self, question="YesNo", msg = '', dialogtitle='User input needed', parent=None):
         self.result = ''
         if question == 'YesNo':         #  Yes/No dialog 
             reply = QtGui.QMessageBox.information(parent, dialogtitle, msg, QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
@@ -85,27 +88,46 @@ class askuser(QtGui.QDialog):
             msgBox.addButton(QtGui.QMessageBox.Cancel)
             reply = msgBox.exec_()
             self.result = reply # ALL=0, SELECTED=1
-        elif question == 'SubmitSkipKeepCancel':
-            button_submit = QtGui.QPushButton("Submit")
-            button_skip = QtGui.QPushButton("Skip")
-            button_keep = QtGui.QPushButton("Keep")
-            msg_box = QtGui.QMessageBox(parent)
-            msg_box.setText(msg)
-            msg_box.setWindowTitle(dialogtitle)
-            if dropdownlist_choices is not None:
-                dropdownlist = QtGui.QComboBox(msg_box)
-                for choice in dropdownlist_choices:
-                    self.dropdownlist.addItem(choice)
-
-            lineedit = QtGui.QLineEdit(msg_box)
-            for button in [button_submit, button_skip, button_keep]:
-                msg_box.addButton(button, QtGui.QMessageBox.ActionRole)
-            msg_box.addButton(QtGui.QMessageBox.Cancel)
 
 
-            reply = msg_box.exec_()
-            self.result = reply # ALL=0, SELECTED=1
+class Userinput(QtGui.QDialog, not_found_dialog):
+    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, parent=None):
+        QtGui.QDialog.__init__(self, parent)
+        self.answer = None
+        self.setupUi(self)
+        self.setWindowTitle(dialogtitle)
+        self.label.setText(msg)
+        self.comboBox.addItem(u'Existing values in db')
+        if existing_list is not None:
+            for existing in existing_list:
+                self.comboBox.addItem(existing)
+        #self.buttonBox.addButton(QtGui.QDialogButtonBox.Ignore
+        button_ignore = QtGui.QPushButton("Ignore")
+        button_cancel = QtGui.QPushButton("Cancel")
+        button_ok = QtGui.QPushButton("Ok")
+        self.buttonBox.addButton(button_ignore, QtGui.QDialogButtonBox.ActionRole)
+        self.buttonBox.addButton(button_cancel, QtGui.QDialogButtonBox.RejectRole)
+        self.buttonBox.addButton(button_ok, QtGui.QDialogButtonBox.AcceptRole)
 
+        self.connect(button_ignore, PyQt4.QtCore.SIGNAL("clicked()"), self.ignored_clicked)
+        reply = self.exec_()
+        self.update_value()
+        if self.answer is None:
+            if reply == 1:
+                self.answer = 'ok'
+            elif reply == 0:
+                self.answer = 'cancel'
+
+    def ignored_clicked(self):
+        self.answer = 'ignore'
+        self.update_value()
+        self.close()
+
+    def update_value(self):
+        if self.comboBox.currentText() != u'Existing values in db':
+            self.value = self.comboBox.currentText()
+        else:
+            self.value = u''
 
 
 class HtmlDialog(QtGui.QDialog):
@@ -792,3 +814,42 @@ def find_similar(word, wordlist, hits=5):
     matches = set(difflib.get_close_matches(word, wordlist, hits))
     matches.update([x for x in wordlist if any((x.startswith(word.lower()), x.startswith(word.upper()), x.startswith(word.capitalize())))])
     return matches
+
+def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[], store_anyway=False):
+    header_value = returnunicode(header_value)
+    filtered_data = []
+    data_to_ask_for = []
+    for rownr, row in enumerate(file_data):
+        if rownr == 0:
+            try:
+                index = row.index(header_value)
+            except ValueError:
+                #The word u'obsid' did not exist, returning file_data as it is.
+                return file_data
+            continue
+
+        value = row[index]
+        if value not in existing_values:
+            data_to_ask_for.append(row)
+        else:
+            filtered_data.append(row)
+
+    for rownr, row in enumerate(data_to_ask_for):
+        current_value = row[index]
+
+        similar_values = find_similar(current_value, existing_values, hits=5)
+        while current_value not in existing_values:
+            question = Userinput(u'WARNING', u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\n', similar_values)
+            answer = question.answer
+            submitted_value = returnunicode(question.value)
+            if answer == 'cancel':
+                return file_data
+            elif answer == 'ignore':
+                current_value = submitted_value
+                break
+            elif answer == 'ok':
+                current_value = submitted_value
+        row[index] = current_value
+        filtered_data.append(row)
+
+    return filtered_data
