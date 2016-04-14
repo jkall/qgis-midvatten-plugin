@@ -63,7 +63,7 @@ class dbconnection():
             self.conn.close()
     
 class askuser(QtGui.QDialog):
-    def __init__(self, question="YesNo", msg = '', dialogtitle='User input needed', parent=None):
+    def __init__(self, question="YesNo", msg = '', dialogtitle='User input needed', parent=None, dropdownlist_choices=None):
         self.result = ''
         if question == 'YesNo':         #  Yes/No dialog 
             reply = QtGui.QMessageBox.information(parent, dialogtitle, msg, QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
@@ -85,6 +85,28 @@ class askuser(QtGui.QDialog):
             msgBox.addButton(QtGui.QMessageBox.Cancel)
             reply = msgBox.exec_()
             self.result = reply # ALL=0, SELECTED=1
+        elif question == 'SubmitSkipKeepCancel':
+            button_submit = QtGui.QPushButton("Submit")
+            button_skip = QtGui.QPushButton("Skip")
+            button_keep = QtGui.QPushButton("Keep")
+            msg_box = QtGui.QMessageBox(parent)
+            msg_box.setText(msg)
+            msg_box.setWindowTitle(dialogtitle)
+            if dropdownlist_choices is not None:
+                dropdownlist = QtGui.QComboBox(msg_box)
+                for choice in dropdownlist_choices:
+                    self.dropdownlist.addItem(choice)
+
+            lineedit = QtGui.QLineEdit(msg_box)
+            for button in [button_submit, button_skip, button_keep]:
+                msg_box.addButton(button, QtGui.QMessageBox.ActionRole)
+            msg_box.addButton(QtGui.QMessageBox.Cancel)
+
+
+            reply = msg_box.exec_()
+            self.result = reply # ALL=0, SELECTED=1
+
+
 
 class HtmlDialog(QtGui.QDialog):
 
@@ -248,7 +270,7 @@ def returnunicode(anything): #takes an input and tries to return it as unicode
 
     >>> returnunicode('b')
     u'b'
-    >>> returnunicode(1)
+    >>> returnunicode(int(1))
     u'1'
     >>> returnunicode(None)
     u''
@@ -260,12 +282,14 @@ def returnunicode(anything): #takes an input and tries to return it as unicode
     u"[u'a', u'b']"
     >>> returnunicode(['ä', 'ö'])
     u"[u'\\xe4', u'\\xf6']"
+    >>> returnunicode(float(1))
+    u'1.0'
 
     :param anything: just about anything
     :return: hopefully a unicode converted anything
     """
     text = None
-    for charset in ['ascii', 'utf-8', 'utf-16', 'cp1252', 'iso-8859-1']:
+    for charset in [u'ascii', u'utf-8', u'utf-16', u'cp1252', u'iso-8859-1']:
         try:
             if type(anything) == type(None):
                 text = unicode('')
@@ -276,11 +300,15 @@ def returnunicode(anything): #takes an input and tries to return it as unicode
             elif isinstance(anything, tuple):
                 text = unicode(tuple([returnunicode(x) for x in anything]))
             elif isinstance(anything, float):
-                text = unicode(anything, charset)
+                text = unicode(anything)
+            elif isinstance(anything, int):
+                text = unicode(anything)
             elif isinstance(anything, dict):
                 text = unicode(dict([(returnunicode(k), returnunicode(v)) for k, v in anything.iteritems()]))
             elif isinstance(anything, str):
                 text = unicode(anything, charset)
+            elif isinstance(anything, bool):
+                text = unicode(anything)
         except UnicodeEncodeError:
             continue
         except UnicodeDecodeError:
