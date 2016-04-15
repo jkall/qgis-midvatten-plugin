@@ -20,7 +20,8 @@
  ***************************************************************************/
 """
 from qgis.core import QgsApplication, QgsProviderRegistry
-from utils_for_tests import init_test, DummyInterface
+from utils_for_tests import init_test
+from tools.tests.mocks_for_tests import DummyInterface
 from PyQt4 import QtCore, QtGui, QtTest
 from export_fieldlogger import ExportToFieldLogger
 from mocks_for_tests import MockUsingReturnValue
@@ -29,22 +30,6 @@ from nose.tools import raises
 from mock import MagicMock
 import mock
 from utils_for_tests import dict_to_sorted_list
-
-app = QtGui.QApplication([])
-
-class test_qapplication_is_running():
-    """ Tests that the QApplication is running
-    """
-    def setUp(self):
-        self.iface = DummyInterface()
-
-    def tearDown(self):
-        pass
-
-    def test_iface(self):
-        iface = self.iface
-        assert QgsApplication.instance() is not None
-
 
 class TestExportFieldlogger():
     qual_params = MockUsingReturnValue(((u'redoxpotential', (u'mV',)), (u'syre', (u'mg/L', u'%')), (u'pH', (u'',))))

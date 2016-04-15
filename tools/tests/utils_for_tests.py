@@ -19,11 +19,27 @@
  *                                                                         *
  ***************************************************************************/
 """
-import atexit
-from qgis.core import QgsApplication, QgsProviderRegistry, QgsMapLayerRegistry
-from PyQt4 import QtCore, QtGui, QtTest
 import io
+
+from PyQt4 import QtCore
+from qgis.core import QgsApplication
+
 import midvatten_utils as utils
+from tools.tests.mocks_for_tests import DummyInterface
+
+
+class test_qapplication_is_running():
+    """ Tests that the QApplication is running
+    """
+    def setUp(self):
+        self.iface = DummyInterface()
+
+    def tearDown(self):
+        pass
+
+    def test_iface(self):
+        iface = self.iface
+        assert QgsApplication.instance() is not None
 
 def dict_to_sorted_list(adict):
     """
@@ -57,19 +73,6 @@ def init_test():
     QtCore.QCoreApplication.setOrganizationName('QGIS')
     QtCore.QCoreApplication.setApplicationName('QGIS2')
     return app
-
-class DummyInterface(object):
-    def __getattr__(self, *args, **kwargs):
-        def dummy(*args, **kwargs):
-            return self
-        return dummy
-    def __iter__(self):
-        return self
-    def next(self):
-        raise StopIteration
-    def layers(self):
-        # simulate iface.legendInterface().layers()
-        return QgsMapLayerRegistry.instance().mapLayers().values()
 
 
 class ContextualStringIO(io.StringIO):

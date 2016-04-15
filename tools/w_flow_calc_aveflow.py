@@ -48,11 +48,7 @@ class calcave(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
 
     def calcall(self):
         obsar = utils.sql_load_fr_db('select distinct obsid from w_flow where flowtype="Accvol"')[1]
-        self.observations= []
-        i=0
-        for obs in obsar:
-                self.observations.append(str(obs[0]))#we cannot send unicode as string to sql because it would include the u'
-                i+=1
+        self.observations = [str(obs[0]) for obs in obsar] #we cannot send unicode as string to sql because it would include the u'
         self.calculateaveflow()
 
     def calcselected(self):

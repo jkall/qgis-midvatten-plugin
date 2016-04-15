@@ -24,7 +24,8 @@ from import_data_to_db import midv_data_importer
 import utils_for_tests
 import midvatten_utils as utils
 import utils_for_tests as test_utils
-from utils_for_tests import init_test, DummyInterface
+from utils_for_tests import init_test
+from tools.tests.mocks_for_tests import DummyInterface
 from nose.tools import raises
 from mock import mock_open, patch
 from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict

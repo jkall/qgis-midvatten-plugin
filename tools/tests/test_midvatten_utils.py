@@ -20,6 +20,8 @@
  ***************************************************************************/
 """
 import midvatten_utils as utils
+import mock
+from mocks_for_tests import MockNotFoundQuestion, MockUsingReturnValue
 pass
 #class TestUserinput(object):
 #    def test_setup(self):
@@ -31,10 +33,15 @@ pass
 #        print(userinput.chosen)
 #        print("\n")
 
-def test_filter_nonexisting_obsids_and_ask():
-        file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
-        existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
+class TestFilterNonexistingObsidsAndAsk(object):
+        notfound = MockNotFoundQuestion('ok', 10)
+        return_notfound = MockUsingReturnValue(notfound)
 
-        filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
-        print('\ntest_filter_nonexisting_obsids_and_ask result')
-        print(filtered_file_data)
+        @mock.patch('midvatten_utils.NotFoundQuestion', return_notfound.get_v)
+        def test_filter_nonexisting_obsids_and_ask(self):
+                file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
+                existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
+
+                filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids, existing_obsids[0])
+                print('\ntest_filter_nonexisting_obsids_and_ask result')
+                print(filtered_file_data)

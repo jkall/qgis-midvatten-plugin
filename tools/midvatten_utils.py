@@ -90,14 +90,14 @@ class askuser(QtGui.QDialog):
             self.result = reply # ALL=0, SELECTED=1
 
 
-class Userinput(QtGui.QDialog, not_found_dialog):
-    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, parent=None):
+class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
+    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None):
         QtGui.QDialog.__init__(self, parent)
         self.answer = None
         self.setupUi(self)
         self.setWindowTitle(dialogtitle)
         self.label.setText(msg)
-        self.comboBox.addItem(u'Existing values in db')
+        self.comboBox.addItem(default_value)
         if existing_list is not None:
             for existing in existing_list:
                 self.comboBox.addItem(existing)
@@ -124,11 +124,7 @@ class Userinput(QtGui.QDialog, not_found_dialog):
         self.close()
 
     def update_value(self):
-        if self.comboBox.currentText() != u'Existing values in db':
-            self.value = self.comboBox.currentText()
-        else:
-            self.value = u''
-
+        self.value = self.comboBox.currentText()
 
 class HtmlDialog(QtGui.QDialog):
 
@@ -767,14 +763,17 @@ def find_similar(word, wordlist, hits=5):
 
     :param word: the word to find similar words for
     :param wordlist: the word list to find similar in
-    :param hits: the number of hits in first match
+    :param hits: the number of hits in first match (more hits will be added than this)
     :return:  a set with the matches
 
-    >>> sorted(find_similar(u'rb1203', [u'Rb1203', u'rb 1203', u'gert', u'rb', u'rb1203', u'b1203', u'rb120', u'rb11', u'rb123', u'rb1203_bgfgf'], 5))
-    [u'Rb1203', u'b1203', u'rb 1203', u'rb120', u'rb1203', u'rb1203_bgfgf', u'rb123']
+    >>> find_similar(u'rb1203', [u'Rb1203', u'rb 1203', u'gert', u'rb', u'rb1203', u'b1203', u'rb120', u'rb11', u'rb123', u'rb1203_bgfgf'], 5)
+    [u'rb 1203', u'b1203', u'rb120', u'Rb1203', u'rb1203_bgfgf', u'rb123', u'rb1203']
     """
     matches = set(difflib.get_close_matches(word, wordlist, hits))
     matches.update([x for x in wordlist if any((x.startswith(word.lower()), x.startswith(word.upper()), x.startswith(word.capitalize())))])
+    nr_of_hits = len(matches)
+    #Sort again to get best hit first
+    matches = list(set(difflib.get_close_matches(word, matches, nr_of_hits)))
     return matches
 
 def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[], store_anyway=False):
@@ -786,7 +785,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
             try:
                 index = row.index(header_value)
             except ValueError:
-                #The word u'obsid' did not exist, returning file_data as it is.
+                #The header_value did not exist, returning file_data as it is.
                 return file_data
             continue
 
@@ -801,7 +800,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
 
         similar_values = find_similar(current_value, existing_values, hits=5)
         while current_value not in existing_values:
-            question = Userinput(u'WARNING', u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\n', similar_values)
+            question = NotFoundQuestion(u'WARNING', u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\n', similar_values, similar_values[0])
             answer = question.answer
             submitted_value = returnunicode(question.value)
             if answer == 'cancel':
