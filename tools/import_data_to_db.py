@@ -443,7 +443,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             elif file_data == 'ignore':
                 continue
 
-            file_string = utils.printlist_to_string(file_data)
+            file_string = utils.lists_to_string(file_data)
 
             with utils.tempinput(file_string) as csvpath:
                 self.csvlayer = self.csv2qgsvectorlayer(csvpath)
@@ -770,7 +770,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
     def send_file_data_to_importer(self, file_data, importer):
         self.csvlayer = None
-        file_string = utils.printlist_to_string(file_data)
+        file_string = utils.lists_to_string(file_data)
         with utils.tempinput(file_string) as csvpath:
             csvlayer = self.csv2qgsvectorlayer(csvpath)
             if not csvlayer:
