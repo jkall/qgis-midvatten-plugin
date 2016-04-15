@@ -796,7 +796,10 @@ def lists_to_string(alist_of_lists):
     >>> lists_to_string([('a', 'b'), (1, 2)])
     u'a;b\n1;2'
     """
-    return u'\n'.join([u';'.join([returnunicode(y) for y in x]) if isinstance(x, list) or isinstance(x, tuple) else returnunicode(x) for x in alist_of_lists])
+    if isinstance(alist_of_lists, list) or isinstance(alist_of_lists, tuple):
+        return u'\n'.join([u';'.join([returnunicode(y) for y in x]) if isinstance(x, list) or isinstance(x, tuple) else returnunicode(x) for x in alist_of_lists])
+    else:
+        return returnunicode(alist_of_lists)
 
 def find_similar(word, wordlist, hits=5):
     ur"""
@@ -868,7 +871,3 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
         filtered_data.append(row)
 
     return filtered_data
-
-
-def printlist_to_string(alist_of_lists):
-    return u'\n'.join([u';'.join(inner_list) for inner_list in alist_of_lists])
