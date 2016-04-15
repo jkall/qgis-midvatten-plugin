@@ -628,7 +628,7 @@ def get_last_used_flow_instruments():
     """ Returns flow instrumentids
     :return: A dict like {obsid: (flowtype, instrumentid, last date used for obsid)
     """
-    instruments_dict = get_sql_result_as_dict('SELECT obsid, flowtype, instrumentid, max(date_time) FROM w_flow GROUP BY obsid, flowtype, instrumentid')[1]
+    instruments_dict = get_sql_result_as_dict('SELECT obsid, flowtype, instrumentid, max(date_time) FROM w_flow GROUP BY obsid, flowtype, instrumentid')
     return instruments_dict
 
 def get_quality_instruments():
@@ -636,14 +636,16 @@ def get_quality_instruments():
     Returns quality instrumentids
     :return: A tuple with instrument ids from w_qual_field
     """
-    sql_result = sql_load_fr_db('SELECT distinct instrument from w_qual_field')
+    sql = 'SELECT distinct instrument from w_qual_field'
+    sql_result = sql_load_fr_db(sql)
     connection_ok, result_list = sql_result
 
     if not connection_ok:
-        pop_up_info("Getting data from db failed!")
-        return
+        textstring = """Failed to get quality instruments from from sql """ + sql
+        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+        return False, tuple()
 
-    return tuple(result_list)
+    return True, tuple(result_list)
 
 def get_sql_result_as_dict(sql):
     """
@@ -811,10 +813,14 @@ def find_similar(word, wordlist, hits=5):
 
     >>> find_similar(u'rb1203', [u'Rb1203', u'rb 1203', u'gert', u'rb', u'rb1203', u'b1203', u'rb120', u'rb11', u'rb123', u'rb1203_bgfgf'], 5)
     [u'rb 1203', u'b1203', u'rb120', u'Rb1203', u'rb1203_bgfgf', u'rb123', u'rb1203']
+    >>> find_similar(u'1', [u'2', u'3'], 5)
+    [u'']
     """
     matches = set(difflib.get_close_matches(word, wordlist, hits))
     matches.update([x for x in wordlist if any((x.startswith(word.lower()), x.startswith(word.upper()), x.startswith(word.capitalize())))])
     nr_of_hits = len(matches)
+    if nr_of_hits == 0:
+        return [u'']
     #Sort again to get best hit first
     matches = list(set(difflib.get_close_matches(word, matches, nr_of_hits)))
     return matches
