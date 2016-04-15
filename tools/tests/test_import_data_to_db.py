@@ -24,10 +24,11 @@ from import_data_to_db import midv_data_importer
 import utils_for_tests
 import midvatten_utils as utils
 import utils_for_tests as test_utils
-from utils_for_tests import init_test, DummyInterface
+from utils_for_tests import init_test
+from tools.tests.mocks_for_tests import DummyInterface
 from nose.tools import raises
 from mock import mock_open, patch
-from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict
+from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn
 import mock
 import io
 import midvatten
@@ -254,6 +255,148 @@ class TestNewMemoryDb():
     def tearDown(self):
         self.iface = None
         self.midvatten = None
+
+
+class TestLoadDiverofficeFile(object):
+    utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
+                                                           'Failure: The number of data columns in file': 'cancel',
+                                                           'Failure, parsing failed for file': 'cancel'},
+                                                          0)
+
+    def setUp(self):
+        self.importinstance = midv_data_importer()
+
+    def test_load_diveroffice_file_utf8(self):
+
+        f = (u'Location=rb1',
+             u'Date/time,Water head[cm],Temperature[°C]',
+             u'2016/03/15 10:30:00,26.9,5.18',
+             u'2016/03/15 11:00:00,157.7,0.6'
+             )
+        existing_obsids = [u'rb1']
+
+        charset_of_diverofficefile = u'utf-8'
+        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
+                ask_for_names = False
+                file_data = self.importinstance.load_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+
+        test_string = ';'.join(utils_for_tests.dict_to_sorted_list(utils_for_tests.dict_to_sorted_list(file_data)))
+        reference_string = 'Date/time;Water head[cm];Temperature[°C];obsid;2016-03-15 10:30:00;26.9;5.18;rb1;2016-03-15 11:00:00;157.7;0.6;rb1'
+        assert test_string == reference_string
+
+    def test_load_diveroffice_file_cp1252(self):
+
+        f = (u'Location=rb1',
+             u'Date/time,Water head[cm],Temperature[°C]',
+             u'2016/03/15 10:30:00,26.9,5.18',
+             u'2016/03/15 11:00:00,157.7,0.6'
+             )
+        existing_obsids = [u'rb1']
+
+        charset_of_diverofficefile = u'cp1252'
+        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
+                ask_for_names = False
+                file_data = self.importinstance.load_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+
+        test_string = ';'.join(utils_for_tests.dict_to_sorted_list(utils_for_tests.dict_to_sorted_list(file_data)))
+        reference_string = 'Date/time;Water head[cm];Temperature[°C];obsid;2016-03-15 10:30:00;26.9;5.18;rb1;2016-03-15 11:00:00;157.7;0.6;rb1'
+        assert test_string == reference_string
+
+    def test_load_diveroffice_file_semicolon_sep(self):
+
+        f = (u'Location=rb1',
+             u'Date/time;Water head[cm];Temperature[°C]',
+             u'2016/03/15 10:30:00;26.9;5.18',
+             u'2016/03/15 11:00:00;157.7;0.6'
+             )
+        existing_obsids = [u'rb1']
+
+        charset_of_diverofficefile = u'cp1252'
+        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
+                ask_for_names = False
+                file_data = self.importinstance.load_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+
+        test_string = ';'.join(utils_for_tests.dict_to_sorted_list(utils_for_tests.dict_to_sorted_list(file_data)))
+        reference_string = 'Date/time;Water head[cm];Temperature[°C];obsid;2016-03-15 10:30:00;26.9;5.18;rb1;2016-03-15 11:00:00;157.7;0.6;rb1'
+        assert test_string == reference_string
+
+    def test_load_diveroffice_file_comma_dec(self):
+
+        f = (u'Location=rb1',
+             u'Date/time;Water head[cm];Temperature[°C]',
+             u'2016/03/15 10:30:00;26,9;5,18',
+             u'2016/03/15 11:00:00;157,7;0,6'
+             )
+        existing_obsids = [u'rb1']
+
+        charset_of_diverofficefile = u'cp1252'
+        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
+                ask_for_names = False
+                file_data = self.importinstance.load_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+
+        test_string = ';'.join(utils_for_tests.dict_to_sorted_list(utils_for_tests.dict_to_sorted_list(file_data)))
+        reference_string = 'Date/time;Water head[cm];Temperature[°C];obsid;2016-03-15 10:30:00;26.9;5.18;rb1;2016-03-15 11:00:00;157.7;0.6;rb1'
+        assert test_string == reference_string
+
+    @mock.patch('import_data_to_db.utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
+    def test_load_diveroffice_file_comma_sep_comma_dec_failed(self):
+
+        f = (u'Location=rb1',
+             u'Date/time,Water head[cm],Temperature[°C]',
+             u'2016/03/15 10:30:00,26,9,5,18',
+             u'2016/03/15 11:00:00,157,7,0,6'
+             )
+        existing_obsids = [u'rb1']
+
+        charset_of_diverofficefile = u'cp1252'
+        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
+                ask_for_names = False
+                file_data = self.importinstance.load_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+
+        test_string = ';'.join(utils_for_tests.dict_to_sorted_list(utils_for_tests.dict_to_sorted_list(file_data)))
+        reference_string = 'cancel'
+        assert test_string == reference_string
+
+    @mock.patch('import_data_to_db.utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
+    def test_load_diveroffice_file_different_separators_failed(self):
+
+        f = (u'Location=rb1',
+             u'Date/time,Water head[cm],Temperature[°C]',
+             u'2016/03/15 10:30:00;26,9;5,18',
+             u'2016/03/15 11:00:00;157,7;0,6'
+             )
+        existing_obsids = [u'rb1']
+
+        charset_of_diverofficefile = u'cp1252'
+        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
+                ask_for_names = False
+                file_data = self.importinstance.load_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+
+        test_string = ';'.join(utils_for_tests.dict_to_sorted_list(utils_for_tests.dict_to_sorted_list(file_data)))
+        reference_string = 'cancel'
+        assert test_string == reference_string
+
+    #@mock.patch('import_data_to_db.utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
+    def test_load_diveroffice_file_try_capitalize(self):
+
+        f = (u'Location=rb1',
+             u'Date/time;Water head[cm];Temperature[°C]',
+             u'2016/03/15 10:30:00;26,9;5,18',
+             u'2016/03/15 11:00:00;157,7;0,6'
+             )
+        existing_obsids = [u'Rb1']
+
+        charset_of_diverofficefile = u'cp1252'
+        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
+                ask_for_names = False
+                file_data = self.importinstance.load_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+
+        test_string = ';'.join(utils_for_tests.dict_to_sorted_list(utils_for_tests.dict_to_sorted_list(file_data)))
+        reference_string = 'Date/time;Water head[cm];Temperature[°C];obsid;2016-03-15 10:30:00;26.9;5.18;Rb1;2016-03-15 11:00:00;157.7;0.6;Rb1'
+        assert test_string == reference_string
+
+
+
 
 
 

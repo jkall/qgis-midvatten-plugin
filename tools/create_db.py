@@ -75,7 +75,7 @@ class newdb():
                 else:
                     filenamestring += ".sql"
                 SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
-                print(SQLFile)#debug
+                #print(SQLFile)#debug
                 qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
                 f = open(SQLFile, 'r')
                 linecounter = 1

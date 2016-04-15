@@ -90,14 +90,14 @@ class askuser(QtGui.QDialog):
             self.result = reply # ALL=0, SELECTED=1
 
 
-class Userinput(QtGui.QDialog, not_found_dialog):
-    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, parent=None):
+class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
+    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None):
         QtGui.QDialog.__init__(self, parent)
         self.answer = None
         self.setupUi(self)
         self.setWindowTitle(dialogtitle)
         self.label.setText(msg)
-        self.comboBox.addItem(u'Existing values in db')
+        self.comboBox.addItem(default_value)
         if existing_list is not None:
             for existing in existing_list:
                 self.comboBox.addItem(existing)
@@ -114,21 +114,17 @@ class Userinput(QtGui.QDialog, not_found_dialog):
         self.update_value()
         if self.answer is None:
             if reply == 1:
-                self.answer = 'ok'
+                self.answer = u'ok'
             elif reply == 0:
-                self.answer = 'cancel'
+                self.answer = u'cancel'
 
     def ignored_clicked(self):
-        self.answer = 'ignore'
+        self.answer = u'ignore'
         self.update_value()
         self.close()
 
     def update_value(self):
-        if self.comboBox.currentText() != u'Existing values in db':
-            self.value = self.comboBox.currentText()
-        else:
-            self.value = u''
-
+        self.value = self.comboBox.currentText()
 
 class HtmlDialog(QtGui.QDialog):
 
@@ -170,9 +166,9 @@ def ask_user_about_stopping(question):
     """
     answer = askuser("YesNo", question)
     if answer.result:
-        return 'failed'
+        return 'cancel'
     else:
-        return 'continue'
+        return 'ignore'
 
 def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-table)
     #print(params)#debug
@@ -559,7 +555,9 @@ def tempinput(data, charset='UTF-8'):
         cleanup instead.
     """
     temp = tempfile.NamedTemporaryFile(delete=False, suffix='.csv')
-    temp.write(returnunicode(data).encode(charset))
+    unicode_data = returnunicode(data)
+    encoded_data = unicode_data.encode(charset)
+    temp.write(encoded_data)
     temp.close()
     yield temp.name
     #os.unlink(temp.name) #TODO: This results in an error: WindowsError: [Error 32] Det går inte att komma åt filen eftersom den används av en annan process: 'c:\\users\\dator\\appdata\\local\\temp\\tmpxvcfna.csv'
@@ -805,17 +803,20 @@ def find_similar(word, wordlist, hits=5):
 
     :param word: the word to find similar words for
     :param wordlist: the word list to find similar in
-    :param hits: the number of hits in first match
+    :param hits: the number of hits in first match (more hits will be added than this)
     :return:  a set with the matches
 
-    >>> sorted(find_similar(u'rb1203', [u'Rb1203', u'rb 1203', u'gert', u'rb', u'rb1203', u'b1203', u'rb120', u'rb11', u'rb123', u'rb1203_bgfgf'], 5))
-    [u'Rb1203', u'b1203', u'rb 1203', u'rb120', u'rb1203', u'rb1203_bgfgf', u'rb123']
+    >>> find_similar(u'rb1203', [u'Rb1203', u'rb 1203', u'gert', u'rb', u'rb1203', u'b1203', u'rb120', u'rb11', u'rb123', u'rb1203_bgfgf'], 5)
+    [u'rb 1203', u'b1203', u'rb120', u'Rb1203', u'rb1203_bgfgf', u'rb123', u'rb1203']
     """
     matches = set(difflib.get_close_matches(word, wordlist, hits))
     matches.update([x for x in wordlist if any((x.startswith(word.lower()), x.startswith(word.upper()), x.startswith(word.capitalize())))])
+    nr_of_hits = len(matches)
+    #Sort again to get best hit first
+    matches = list(set(difflib.get_close_matches(word, matches, nr_of_hits)))
     return matches
 
-def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[], store_anyway=False):
+def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[], try_capitalize=False):
     header_value = returnunicode(header_value)
     filtered_data = []
     data_to_ask_for = []
@@ -824,8 +825,10 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
             try:
                 index = row.index(header_value)
             except ValueError:
-                #The word u'obsid' did not exist, returning file_data as it is.
+                #The header_value did not exist, returning file_data as it is.
                 return file_data
+            else:
+                filtered_data.append(row)
             continue
 
         value = row[index]
@@ -838,18 +841,34 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
         current_value = row[index]
 
         similar_values = find_similar(current_value, existing_values, hits=5)
+
+        not_tried_capitalize = True
+
         while current_value not in existing_values:
-            question = Userinput(u'WARNING', u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\n', similar_values)
+            if try_capitalize and not_tried_capitalize:
+                try:
+                    current_value = current_value.capitalize()
+                except AttributeError:
+                    not_tried_capitalize = False
+                else:
+                    not_tried_capitalize = False
+                    continue
+
+            question = NotFoundQuestion(u'WARNING', u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\n', similar_values, similar_values[0])
             answer = question.answer
             submitted_value = returnunicode(question.value)
-            if answer == 'cancel':
-                return file_data
-            elif answer == 'ignore':
+            if answer == u'cancel':
+                return u'cancel'
+            elif answer == u'ignore':
                 current_value = submitted_value
                 break
-            elif answer == 'ok':
+            elif answer == u'ok':
                 current_value = submitted_value
         row[index] = current_value
         filtered_data.append(row)
 
     return filtered_data
+
+
+def printlist_to_string(alist_of_lists):
+    return u'\n'.join([u';'.join(inner_list) for inner_list in alist_of_lists])

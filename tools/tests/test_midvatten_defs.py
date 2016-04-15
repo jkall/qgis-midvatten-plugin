@@ -20,7 +20,8 @@
  ***************************************************************************/
 """
 from qgis.core import QgsApplication, QgsProviderRegistry
-from utils_for_tests import init_test, DummyInterface
+from utils_for_tests import init_test
+from tools.tests.mocks_for_tests import DummyInterface
 from PyQt4 import QtCore, QtGui, QtTest
 from export_fieldlogger import ExportToFieldLogger
 from mocks_for_tests import MockUsingReturnValue
