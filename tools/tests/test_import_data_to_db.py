@@ -28,7 +28,7 @@ from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from nose.tools import raises
 from mock import mock_open, patch
-from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn
+from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion
 import mock
 import io
 import midvatten
@@ -36,8 +36,8 @@ import midvatten
 class TestFieldLoggerImporter():
     flow_instrument_id = MockReturnUsingDict({u'Instrument not found': [u'testid', u'']}, 1)
     instrument_staff_questions = MockReturnUsingDict({u'Instrument not found': [u'testid', u''], u'Staff not found': [u'teststaff', u'']}, 1)
-    prev_used_flow_instr_ids = MockUsingReturnValue({u'Rb1615': [(u'Accvol', u'Flm01', u'2015-01-01 00:00:00'), (u'Momflow', u'Flm02', u'2016-01-01 00:00:00')]})
-    quality_instruments = MockUsingReturnValue((u'instr1', u'instr2', u'instr3'))
+    prev_used_flow_instr_ids = MockUsingReturnValue((True, {u'Rb1615': [(u'Accvol', u'Flm01', u'2015-01-01 00:00:00'), (u'Momflow', u'Flm02', u'2016-01-01 00:00:00')]}))
+    quality_instruments = MockUsingReturnValue((True, (u'instr1', u'instr2', u'instr3')))
     skip_popup = MockUsingReturnValue('')
 
     def setUp(self):
@@ -232,7 +232,61 @@ class TestFieldLoggerImporter():
         assert sorted_file_string == sorted_reference_string
 
 
+    def test_fieldlogger_import(self):
+        """ Almost full integration test of fieldlogger import
+        :return:
+        """
+        f = [
+            "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
+            "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
+            "Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
+            "Rb1615.flow;30-03-2016;15:30:09;gick bra;f.comment\n",
+            "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.%\n",
+            "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
+            "Rb1512.sample;30-03-2016;15:31:30;899;s.turbiditet.FNU\n",
+            "Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;ergv;l.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;555;l.meas.m\n",
+            "Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n"
+            ]
 
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        with utils.tempinput(''.join(f)) as filename:
+            selected_file = MockUsingReturnValue([filename])
+            return_int = MockUsingReturnValue(int)
+            mocked_iface = MockQgisUtilsIface()
+
+            instrument_staff_questions = MockReturnUsingDict({u'Instrument not found': [u'testid', u''], u'Staff not found': [u'teststaff', u'']}, 1)
+            prev_used_flow_instr_ids = MockUsingReturnValue((True, {u'Rb1615': [(u'Accvol', u'Flm01', u'2015-01-01 00:00:00'), (u'Momflow', u'Flm02', u'2016-01-01 00:00:00')]}))
+            quality_instruments = MockUsingReturnValue((u'instr1', u'instr2', u'instr3'))
+            notfound_ignore = MockUsingReturnValue(MockNotFoundQuestion('ignore', u'Rb1512'))
+            mocked_send_file_data_to_importer = MockUsingReturnValue(int)
+            skip_popup = MockUsingReturnValue('')
+
+            @mock.patch('import_data_to_db.utils.pop_up_info', skip_popup.get_v)
+            @mock.patch('midvatten_utils.NotFoundQuestion', notfound_ignore.get_v)
+            @mock.patch('import_data_to_db.utils.get_last_used_flow_instruments', prev_used_flow_instr_ids.get_v)
+            @mock.patch('import_data_to_db.midv_data_importer.wlvl_import_from_csvlayer', return_int.get_v)
+            @mock.patch('import_data_to_db.midv_data_importer.select_files', selected_file.get_v)
+            @mock.patch('qgis.utils.iface', mocked_iface)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
+            @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
+            @mock.patch('import_data_to_db.midv_data_importer.send_file_data_to_importer', mocked_send_file_data_to_importer.get_v)
+            def _test_fieldlogger_import():
+                self.importinstance.fieldlogger_import()
+
+            _test_fieldlogger_import()
+
+            print(','.join(test_utils.dict_to_sorted_list(mocked_send_file_data_to_importer.args_called_with)))
+
+        #parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
+        #result_list = utils_for_tests.dict_to_sorted_list(parsed_rows)
+        #result_string = ','.join(result_list)
+        #reference_string = "flow,Rb1615,2016-03-30 15:30:09,Accvol,m3,357,comment,,gick bra,level,Rb1608,2016-03-30 15:34:13,comment,,ergv,meas,m,555,2016-03-30 15:34:40,comment,,testc,quality,Rb1505,2016-03-30 15:29:26,comment,,hej,konduktivitet,µS/cm,863,Rb1512,2016-03-30 15:30:39,comment,,test,syre,%,58,syre,mg/L,58,temperatur,grC,8,sample,Rb1202,2016-03-30 15:31:30,comment,,hej2,Rb1512,2016-03-30 15:31:30,turbiditet,FNU,899"
+        #assert result_string == reference_string
 
 
 class TestNewMemoryDb():
@@ -376,7 +430,6 @@ class TestLoadDiverofficeFile(object):
         reference_string = 'cancel'
         assert test_string == reference_string
 
-    #@mock.patch('import_data_to_db.utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
     def test_load_diveroffice_file_try_capitalize(self):
 
         f = (u'Location=rb1',
@@ -394,10 +447,6 @@ class TestLoadDiverofficeFile(object):
         test_string = ';'.join(utils_for_tests.dict_to_sorted_list(utils_for_tests.dict_to_sorted_list(file_data)))
         reference_string = 'Date/time;Water head[cm];Temperature[°C];obsid;2016-03-15 10:30:00;26.9;5.18;Rb1;2016-03-15 11:00:00;157.7;0.6;Rb1'
         assert test_string == reference_string
-
-
-
-
 
 
 class TestInterlab4Importer():
