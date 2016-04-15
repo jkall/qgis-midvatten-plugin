@@ -18,18 +18,10 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.core import QgsApplication, QgsProviderRegistry
-from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from PyQt4 import QtCore, QtGui, QtTest
-from export_fieldlogger import ExportToFieldLogger
-from mocks_for_tests import MockUsingReturnValue, MockQgisUtilsIface
-import midvatten_utils as utils
-from nose.tools import raises
-from mock import MagicMock
+from mocks_for_tests import MockUsingReturnValue, MockQgisUtilsIface, MockReturnUsingDictIn
 import mock
-from utils_for_tests import dict_to_sorted_list
-from midvatten import midvatten
 import w_flow_calc_aveflow
 #
 
@@ -38,6 +30,13 @@ class TestWFlowCalcAveflow(object):
     db_all_distinct_obsids = MockUsingReturnValue([True, [u'1', u'2']])
     selected_obs = MockUsingReturnValue([u'3', u'4'])
     mocked_iface = MockQgisUtilsIface()
+    utilssql_load_fr_db = MockReturnUsingDictIn({'select distinct obsid, instrumentid from': (True, [(u'1', u'inst1'), (u'2', u'inst2')]),
+                                                 'select date_time, reading from w_flow where flowtype': (True, [(u'2015-01-01 00:00:00', u'10'),
+                                                                                                                 (u'2016-01-01 00:00:00', u'20')]),
+                                                 'insert or ignore into w_flow': (True, None)},
+                                                0)
+    return_none = MockUsingReturnValue(None)
+
     def setUp(self):
         self.iface = DummyInterface()
         widget = QtGui.QWidget()
@@ -61,6 +60,15 @@ class TestWFlowCalcAveflow(object):
         assert result_list == reference_list
 
     @mock.patch('qgis.utils.iface', mocked_iface)
+    @mock.patch('w_flow_calc_aveflow.utils.sql_alter_db', return_none.get_v)
+    @mock.patch('w_flow_calc_aveflow.utils.sql_load_fr_db', utilssql_load_fr_db.get_v)
     def test_calculateaveflow(self):
         self.calcave.observations = ['1', '2']
         self.calcave.calculateaveflow()
+        # datestr2num('2015-01-01 00:00:00') == 735599.0
+        # datestr2num('2016-01-01 00:00:00') == 735964.0
+        # DeltaTime = 24*3600*(735964.0 - 735599.0) == 31536000.0
+        #Aveflow = Volume/DeltaTime#L/s == 10000 / 31536000.0 = 0.000317097919838
+
+        reference_list = [u"insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('1','inst1','Aveflow','2016-01-01 00:00:00','0.000317097919838','l/s')", u"insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('2','inst2','Aveflow','2016-01-01 00:00:00','0.000317097919838','l/s')"]
+        assert self.return_none.args_called_with == reference_list

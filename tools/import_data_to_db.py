@@ -436,14 +436,16 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         files = self.select_files()
         for selected_file in files:
-            file_data = self.load_diveroffice_file(selected_file, existing_obsids, confirm_names.result)
-            if file_data == 'failed':
+            file_data = self.load_diveroffice_file(selected_file, self.charsetchoosen, existing_obsids, confirm_names.result)
+            if file_data == 'cancel':
                 utils.pop_up_info("The import failed and has been stopped.")
                 break
-            elif file_data == 'continue':
+            elif file_data == 'ignore':
                 continue
 
-            with utils.tempinput(file_data) as csvpath:
+            file_string = utils.printlist_to_string(file_data)
+
+            with utils.tempinput(file_string) as csvpath:
                 self.csvlayer = self.csv2qgsvectorlayer(csvpath)
                 #Continue to next file if the file failed to import
                 if not self.csvlayer:
@@ -768,7 +770,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
     def send_file_data_to_importer(self, file_data, importer):
         self.csvlayer = None
-        with utils.tempinput(file_data) as csvpath:
+        file_string = utils.printlist_to_string(file_data)
+        with utils.tempinput(file_string) as csvpath:
             csvlayer = self.csv2qgsvectorlayer(csvpath)
             if not csvlayer:
                 utils.pop_up_info("Creating csvlayer for " + str(importer) + " failed!")
@@ -907,7 +910,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         return path
 
     @staticmethod
-    def load_diveroffice_file(path, existing_obsids=None, ask_for_names=True):
+    def load_diveroffice_file(path, charset, existing_obsids=None, ask_for_names=True):
         """ Parses a diveroffice csv file into a string
 
         :param path: The file name
@@ -923,69 +926,75 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         """    
         filedata = []
         begin_extraction = False
-        delimiter = ';'
+        delimiter = u';'
         num_cols = None
-        with open(path, 'r') as f:
+        with io.open(path, u'r', encoding=str(charset)) as f:
             obsid = None
             for rawrow in f:
-                row = rawrow.decode('CP1252').rstrip('\n').rstrip('\r').lstrip()
-                if row.startswith('Location'):
-                    obsid = row.split('=')[1].strip()
+                row = rawrow.rstrip(u'\n').rstrip(u'\r').lstrip()
+
+                #Try to get obsid
+                if row.startswith(u'Location'):
+                    obsid = row.split(u'=')[1].strip()
                     continue
 
                 cols = row.split(delimiter)
 
-                if row.startswith('Date/time'):
-
+                #Parse header
+                if row.startswith(u'Date/time'):
                     #Check that the delimitor is ; or try , or stop.
                     if not 3 <= len(cols) <= 4:
-                        if 3 <= len(row.split(',')) <= 4:
-                            delimiter = ','
+                        if 3 <= len(row.split(u',')) <= 4:
+                            delimiter = u','
                         else:
                             return utils.ask_user_about_stopping("Failure, delimiter did not match ';' or ',' or there was less than 3 or more than 4 columns in the file " + path + "\nDo you want to stop the import? (else it will continue with the next file)")
 
                     cols = row.split(delimiter)
                     num_cols = len(cols)
 
-                    if ask_for_names:
-                        obsid = PyQt4.QtGui.QInputDialog.getText(None, "Submit obsid", "The obsid " + str(obsid) + " was found for " + str(path) + ", accept the found name or change it below", PyQt4.QtGui.QLineEdit.Normal, obsid.capitalize() if obsid is not None else 'None')[0]
-                    if existing_obsids is not None:
-                        if obsid not in existing_obsids:
-                            if obsid.capitalize() in existing_obsids:
-                                obsid = obsid.capitalize()
-                            else:
-                                obsid = PyQt4.QtGui.QInputDialog.getText(None, "WARNING", "The supplied obsid '" + str(obsid) + "' did not exist in obs_points, please submit it again for " + str(path) + ".", PyQt4.QtGui.QLineEdit.Normal, 'obsid')[0]
-                        if obsid not in existing_obsids:
-                            return utils.ask_user_about_stopping("Failure, the obsid '" + obsid + "' did not exist in obs_points, import will fail.\n\nDo you want to stop the import? (else it will continue with the next file)")
-                    if not ask_for_names and existing_obsids is None:
-                        utils.pop_up_info("Failure! A list of obsids could not be read. Must supply obsids manually! Import will stop.")
-                        return 'failed'
-                    cols.append('obsid')
-                    filedata.append(';'.join(cols))
+                    header = cols
                     begin_extraction = True
                     continue
 
+                #Parse data
                 if begin_extraction:
                     dateformat = find_date_format(cols[0])
                     if dateformat is not None:
                         if len(cols) != num_cols:
                             return utils.ask_user_about_stopping("Failure: The number of data columns in file " + path + " was not equal to the header.\nIs the decimal separator the same as the delimiter?\nDo you want to stop the import? (else it will continue with the next file)")
+
+                        #Skip rows without flow value
                         try:
-                            float(cols[1].replace(',', '.'))
+                            float(cols[1].replace(u',', u'.'))
                         except ValueError:
                             continue
 
                         date = datetime.strptime(cols[0], dateformat)
-                        printrow = [datetime.strftime(date,
-                                    '%Y-%m-%d %H:%M:%S')]
-                        printrow.extend([col.replace(',', '.')
-                                       for col in cols[1:]])
-                        printrow.append(obsid)
-                        filedata.append(';'.join(printrow))
-        if len(filedata) < 2:
-            return utils.ask_user_about_stopping("Failure, parsing failed for file " + path + "\nNo data found!\nDo you want to stop the import? (else it will continue with the next file)")
-        filestring = '\n'.join(filedata)
-        return filestring
+                        printrow = [datetime.strftime(date,u'%Y-%m-%d %H:%M:%S')]
+                        printrow.extend([col.replace(u',', u'.') for col in cols[1:]])
+                        filedata.append(printrow)
+
+        if len(filedata) == 0:
+            return utils.ask_user_about_stopping("Failure, parsing failed for file " + path + "\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)")
+
+        if ask_for_names:
+            obsid = utils.filter_nonexisting_values_and_ask([[u'obsid'], [obsid]], u'obsid', existing_obsids, try_capitalize=False)[1][0]
+        else:
+            if obsid not in existing_obsids:
+                obsid = utils.filter_nonexisting_values_and_ask([[u'obsid'], [obsid]], u'obsid', existing_obsids, try_capitalize=True)[1][0]
+
+        if obsid in [u'cancel', u'ignore']:
+            return obsid
+
+        for row in filedata:
+            row.append(obsid)
+
+        header.append(u'obsid')
+        filedata.reverse()
+        filedata.append(header)
+        filedata.reverse()
+
+        return filedata
 
     def csv2qgsvectorlayer(self, path):
         """ Converts a csv path into a QgsVectorLayer """

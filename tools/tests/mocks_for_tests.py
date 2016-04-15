@@ -46,6 +46,20 @@ class MockReturnUsingDict(object):
         return_value = self.adict[arg]
         return return_value
 
+class MockReturnUsingDictIn(object):
+    def __init__(self, adict, args_idx):
+        self.adict = adict
+        self.args_idx = args_idx
+        self.args_called_with = []
+
+    def get_v(self, *args, **kwargs):
+        self.args_called_with.extend(args)
+        self.args_called_with.extend(kwargs)
+        for k, v in self.adict.iteritems():
+            if args[self.args_idx].startswith(k):
+               return_value = v
+        return return_value
+
 
 class MockNotFoundQuestion(object):
     def __init__(self, answer, value):
