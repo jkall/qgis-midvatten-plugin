@@ -546,7 +546,7 @@ def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
     return errorsignal
     
 @contextmanager
-def tempinput(data, charset='UTF-8'):
+def tempinput(data, charset=u'UTF-8'):
     """ Creates and yields a temporary file from data
     
         The file can't be deleted in windows for some strange reason.

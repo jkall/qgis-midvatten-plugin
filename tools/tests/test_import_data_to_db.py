@@ -280,8 +280,9 @@ class TestFieldLoggerImporter():
 
             _test_fieldlogger_import()
 
-            print(','.join(test_utils.dict_to_sorted_list(mocked_send_file_data_to_importer.args_called_with)))
+            #print(','.join(test_utils.dict_to_sorted_list(mocked_send_file_data_to_importer.args_called_with)))
 
+            #TODO: Fix and assert string that works with object instance names.
         #parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
         #result_list = utils_for_tests.dict_to_sorted_list(parsed_rows)
         #result_string = ','.join(result_list)
@@ -447,6 +448,70 @@ class TestLoadDiverofficeFile(object):
         test_string = ';'.join(utils_for_tests.dict_to_sorted_list(utils_for_tests.dict_to_sorted_list(file_data)))
         reference_string = 'Date/time;Water head[cm];Temperature[°C];obsid;2016-03-15 10:30:00;26.9;5.18;Rb1;2016-03-15 11:00:00;157.7;0.6;Rb1'
         assert test_string == reference_string
+
+class TestWlvlloggImport(object):
+    """ Test to make sure wlvllogg_import goes all the way to the end without errors
+    """
+
+    def setUp(self):
+        self.importinstance = midv_data_importer()
+
+    def test_wlvllogg_import(self):
+        files = [(u'Location=rb1',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/03/15 10:30:00,1,10',
+                u'2016/03/15 11:00:00,11,101'),
+                (u'Location=rb2',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/04/15 10:30:00,2,20',
+                u'2016/04/15 11:00:00,21,201'),
+                (u'Location=rb3',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/05/15 10:30:00,3,30',
+                u'2016/05/15 11:00:00,31,301')
+                 ]
+
+        self.importinstance.charsetchoosen = [u'utf-8']
+        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen[0]) as f1:
+            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen[0]) as f2:
+                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen[0]) as f3:
+
+                    #files = MockReturnUsingDict({u'f1': f1, u'f2': f2, u'f3': f3}, 0)
+                    filenames = MockUsingReturnValue([f1, f2, f3])
+                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+                    utils_askuser_answer_no_obj.result = 0
+                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+                    utils_get_all_obsids = MockUsingReturnValue([u'rb1', u'rb2', u'rb3'])
+                    utils_sql_load_fr_db = MockReturnUsingDictIn({u'PRAGMA table_info': (True, [(True, u'a'), (True, u'b'), (True, u'c'), (True, u'd'), (True, u'e')]),
+                                                                  u'SELECT Count(*)': (True, ((3, ),))},
+                                                                 0)
+                    qgiscsv2sqlitetable = MockUsingReturnValue(int)
+                    cleanuploggerdata = MockUsingReturnValue(1)
+                    alterdb = MockUsingReturnValue(int)
+                    mocked_iface = MockQgisUtilsIface()
+                    skip_popup = MockUsingReturnValue('')
+
+                    self.importinstance.columns = [(True, u'a'), (True, u'b'), (True, u'c'), (True, u'd'), (True, u'e')]
+                    self.importinstance.RecordsToImport = ((5,), )
+                    self.importinstance.RecordsBefore = ((5, ), )
+
+                    #@mock.patch('import_data_to_db.midv_data_importer.load_diveroffice_file', files.get_v)
+                    @mock.patch('qgis.utils.iface', mocked_iface)
+                    @mock.patch('import_data_to_db.midv_data_importer.select_files', filenames.get_v)
+                    @mock.patch('import_data_to_db.utils.sql_load_fr_db', utils_sql_load_fr_db.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser', utils_askuser_answer_no.get_v)
+                    @mock.patch('import_data_to_db.utils.sql_alter_db', alterdb.get_v)
+                    @mock.patch('import_data_to_db.utils.get_all_obsids', utils_get_all_obsids.get_v)
+                    @mock.patch('import_data_to_db.midv_data_importer.qgiscsv2sqlitetable', qgiscsv2sqlitetable.get_v)
+                    @mock.patch('import_data_to_db.midv_data_importer.cleanuploggerdata', cleanuploggerdata.get_v)
+                    @mock.patch('import_data_to_db.utils.pop_up_info', skip_popup.get_v)
+                    def test_wlvllogg_import(self):
+                        self.test = 1
+                        self.importinstance.wlvllogg_import()
+
+                    test_wlvllogg_import(self)
+
+                    print(alterdb.args_called_with)
 
 
 class TestInterlab4Importer():
