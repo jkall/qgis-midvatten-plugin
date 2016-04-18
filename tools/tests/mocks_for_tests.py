@@ -43,7 +43,7 @@ class MockReturnUsingDict(object):
         self.args_called_with.extend(args)
         self.args_called_with.extend(kwargs)
         arg = args[self.args_idx]
-        return_value = self.adict[arg]
+        return_value = self.adict.get(arg, None)
         return return_value
 
 class MockReturnUsingDictIn(object):

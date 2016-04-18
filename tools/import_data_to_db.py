@@ -429,68 +429,83 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         
         result_info = []      
         
-        existing_obsids = utils.sql_load_fr_db("""select distinct obsid from '%s'"""%'obs_points')[1]      
-        existing_obsids = [str(obsid[0]) for obsid in existing_obsids]
+        existing_obsids = utils.get_all_obsids()
+        #existing_obsids = [str(obsid[0]) for obsid in existing_obsids]
 
         confirm_names = utils.askuser("YesNo", "Do you want to confirm each logger import name before import?")
 
         files = self.select_files()
+        parsed_files = []
         for selected_file in files:
-            file_data = self.load_diveroffice_file(selected_file, self.charsetchoosen, existing_obsids, confirm_names.result)
+            file_data = self.load_diveroffice_file(selected_file, self.charsetchoosen[0], existing_obsids, confirm_names.result)
             if file_data == 'cancel':
                 utils.pop_up_info("The import failed and has been stopped.")
                 break
             elif file_data == 'ignore':
                 continue
 
-            file_string = utils.lists_to_string(file_data)
+            parsed_files.append(file_data)
 
-            with utils.tempinput(file_string) as csvpath:
-                self.csvlayer = self.csv2qgsvectorlayer(csvpath)
-                #Continue to next file if the file failed to import
-                if not self.csvlayer:
-                    continue
-                    
-                self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
-                cleaningok = self.cleanuploggerdata() # returns 1 if cleaning went well
+        if file_data == 'cancel' or len(parsed_files) == 0:
+            qgis.utils.iface.messageBar().pushMessage("Import Failure","""No files imported""")
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            return
 
-                #HERE IS WHERE DATA IS TRANSFERRED TO w_levels_logger
-                if cleaningok == 1: # If cleaning was OK, then perform the import
-                    self.goalcolumns = utils.sql_load_fr_db("""PRAGMA table_info(w_levels_logger)""")[1]
-                    if len(self.columns) == 5: #No conductivity data
-                        sqlpart1 = """INSERT OR IGNORE INTO "w_levels_logger" ("%s", "%s", "%s", "%s") """%(self.goalcolumns[0][1],self.goalcolumns[1][1],self.goalcolumns[2][1],self.goalcolumns[3][1])     # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
-                        sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as double), CAST("%s" as double)"""%(self.columns[3][1],self.columns[0][1],self.columns[1][1],self.columns[2][1])     
-                        sqlpart3 = """ FROM %s"""%(self.temptableName) 
-                        sql = sqlpart1 + sqlpart2 + sqlpart3
-                        utils.sql_alter_db(sql)     
-                        #utils.pop_up_info(sql, "debug") #debug                
-                        self.status = 'True'        # Cleaning was OK and import perfomed!!
+        #Header
+        file_to_import_to_db =  [parsed_files[0][0]]
+        file_to_import_to_db.extend([row for parsed_file in parsed_files for row in parsed_file[1:]])
 
-                    elif len(self.columns) ==6: #Including conductivity data
-                        sqlpart1 = """INSERT OR IGNORE INTO "w_levels_logger" ("%s", "%s", "%s", "%s", "%s") """%(self.goalcolumns[0][1],self.goalcolumns[1][1],self.goalcolumns[2][1],self.goalcolumns[3][1],self.goalcolumns[4][1])     # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
-                        sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double)"""%(self.columns[4][1],self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1])     
-                        sqlpart3 = """ FROM %s"""%(self.temptableName)    
-                        sql = sqlpart1 + sqlpart2 + sqlpart3
-                        utils.sql_alter_db(sql)     
-                        #utils.pop_up_info(sql, "debug") #debug
-                        self.status = 'True'        # Cleaning was OK and import perfomed!!
+        file_string = utils.lists_to_string(file_data)
+        #print(str(file_to_import_to_db))
 
-                    #Statistics
-                    self.RecordsAfter = utils.sql_load_fr_db("""SELECT Count(*) FROM w_levels_logger""")[1]
-                    NoExcluded = self.RecordsToImport[0][0] - (self.RecordsAfter[0][0] - self.RecordsBefore[0][0])
-                    if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-                        result_info.append("""%s: In total %s measurements were not imported from the file since they would cause duplicates in the database."""%(selected_file, NoExcluded))
-                        #utils.pop_up_info("""In total %s measurements were not imported from the file since they would cause duplicates in the database."""%NoExcluded)
-                    else:  # If some of the imported data already existed in the database, let the user know
-                        result_info.append("""%s: In total %s measurements were imported."""%(selected_file,(self.RecordsAfter[0][0] - self.RecordsBefore[0][0])))
-                        #utils.pop_up_info("""In total %s measurements were imported."""%(self.RecordsAfter[0][0] - self.RecordsBefore[0][0]))
-                elif cleaningok == 0 and not(len(self.columns)==5 or len(self.columns)==6):
-                    utils.pop_up_info("Import file must have exactly three columns!\n(Or four if conductivity is also measured.)", "Import Error for file " + selected_file)
-                    self.status = 'False'
-                else:
-                    self.status = 'False'       #Cleaning was not ok and status is false - no import performed
+        with utils.tempinput(file_string, self.charsetchoosen[0]) as csvpath:
+            self.csvlayer = self.csv2qgsvectorlayer(csvpath)
+            #Continue to next file if the file failed to import
+            if not self.csvlayer:
+                qgis.utils.iface.messageBar().pushMessage("Import Failure","""No files imported""")
+                PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                return
 
-                utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
+            self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
+            cleaningok = self.cleanuploggerdata() # returns 1 if cleaning went well
+
+            #HERE IS WHERE DATA IS TRANSFERRED TO w_levels_logger
+            if cleaningok == 1: # If cleaning was OK, then perform the import
+                self.goalcolumns = utils.sql_load_fr_db("""PRAGMA table_info(w_levels_logger)""")[1]
+                if len(self.columns) == 5: #No conductivity data
+                    sqlpart1 = """INSERT OR IGNORE INTO "w_levels_logger" ("%s", "%s", "%s", "%s") """%(self.goalcolumns[0][1],self.goalcolumns[1][1],self.goalcolumns[2][1],self.goalcolumns[3][1])     # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
+                    sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as double), CAST("%s" as double)"""%(self.columns[3][1],self.columns[0][1],self.columns[1][1],self.columns[2][1])
+                    sqlpart3 = """ FROM %s"""%(self.temptableName)
+                    sql = sqlpart1 + sqlpart2 + sqlpart3
+                    utils.sql_alter_db(sql)
+                    #utils.pop_up_info(sql, "debug") #debug
+                    self.status = 'True'        # Cleaning was OK and import perfomed!!
+
+                elif len(self.columns) ==6: #Including conductivity data
+                    sqlpart1 = """INSERT OR IGNORE INTO "w_levels_logger" ("%s", "%s", "%s", "%s", "%s") """%(self.goalcolumns[0][1],self.goalcolumns[1][1],self.goalcolumns[2][1],self.goalcolumns[3][1],self.goalcolumns[4][1])     # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
+                    sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double)"""%(self.columns[4][1],self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1])
+                    sqlpart3 = """ FROM %s"""%(self.temptableName)
+                    sql = sqlpart1 + sqlpart2 + sqlpart3
+                    utils.sql_alter_db(sql)
+                    #utils.pop_up_info(sql, "debug") #debug
+                    self.status = 'True'        # Cleaning was OK and import perfomed!!
+
+                #Statistics
+                self.RecordsAfter = utils.sql_load_fr_db("""SELECT Count(*) FROM w_levels_logger""")[1]
+                NoExcluded = self.RecordsToImport[0][0] - (self.RecordsAfter[0][0] - self.RecordsBefore[0][0])
+                if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
+                    result_info.append("""%s: In total %s measurements were not imported from the file since they would cause duplicates in the database."""%(selected_file, NoExcluded))
+                    #utils.pop_up_info("""In total %s measurements were not imported from the file since they would cause duplicates in the database."""%NoExcluded)
+                else:  # If some of the imported data already existed in the database, let the user know
+                    result_info.append("""%s: In total %s measurements were imported."""%(selected_file,(self.RecordsAfter[0][0] - self.RecordsBefore[0][0])))
+                    #utils.pop_up_info("""In total %s measurements were imported."""%(self.RecordsAfter[0][0] - self.RecordsBefore[0][0]))
+            elif cleaningok == 0 and not(len(self.columns)==5 or len(self.columns)==6):
+                utils.pop_up_info("Import file must have exactly three columns!\n(Or four if conductivity is also measured.)", "Import Error for file " + selected_file)
+                self.status = 'False'
+            else:
+                self.status = 'False'       #Cleaning was not ok and status is false - no import performed
+
+            utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         if files:
@@ -901,7 +916,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             localencoding = locale.getdefaultlocale()[1]
             self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
         except:
-            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal,'utf-8')
+            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal, 'utf-8')
         if self.charsetchoosen and not (self.charsetchoosen[0]==0 or self.charsetchoosen[0]==''):
             if only_one_file:
                 path = [PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")]
@@ -910,7 +925,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         return path
 
     @staticmethod
-    def load_diveroffice_file(path, charset, existing_obsids=None, ask_for_names=True):
+    def load_diveroffice_file(path, charset, existing_obsids=None, ask_for_names=True, begindate=None, enddate=None):
         """ Parses a diveroffice csv file into a string
 
         :param path: The file name
@@ -970,6 +985,15 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                             continue
 
                         date = datetime.strptime(cols[0], dateformat)
+
+                        #TODO: These checks are not implemented as a dialog yet.
+                        if begindate is not None:
+                            if date < begindate:
+                                continue
+                        if enddate is not None:
+                            if date > enddate:
+                                continue
+
                         printrow = [datetime.strftime(date,u'%Y-%m-%d %H:%M:%S')]
                         printrow.extend([col.replace(u',', u'.') for col in cols[1:]])
                         filedata.append(printrow)
