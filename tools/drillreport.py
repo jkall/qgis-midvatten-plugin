@@ -38,14 +38,14 @@ class drillreport():        # general observation point info for the selected ob
         #write some initiating html, header and also 
         rpt = r"""<meta http-equiv="content-type" content="text/html; charset=utf-8" />""" 
         rpt += r"""<head><title>%s General report from Midvatten plugin for QGIS</title></head>"""%obsid
-        rpt += r"""<html><TABLE WIDTH=100% BORDER=0 CELLPADDING=1 CELLSPACING=1 STYLE="page-break-before: always"><TR VALIGN=TOP><TD WIDTH=15%><h3 style="font-family:'arial';font-size:18pt; font-weight:600">"""
+        rpt += r"""<html><TABLE WIDTH=100% BORDER=0 CELLPADDING=1 CELLSPACING=1><TR VALIGN=TOP><TD WIDTH=15%><h3 style="font-family:'arial';font-size:18pt; font-weight:600">"""
         rpt += obsid
         if  locale.getdefaultlocale()[0] == 'sv_SE':
             rpt += r"""</h3><img src="for_general_report_sv.png" /><br><img src='"""
         else:
             rpt += r"""</h3><img src="for_general_report.png" /><br><img src='"""
         rpt += logopath
-        rpt +="""' /></TD><TD WIDTH=85%><TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-before: always"><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
+        rpt +="""' /></TD><TD WIDTH=85%><TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
         if  locale.getdefaultlocale()[0] == 'sv_SE':
             rpt += u'Allmän information' 
         else:
