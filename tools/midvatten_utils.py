@@ -645,7 +645,22 @@ def get_quality_instruments():
         qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
         return False, tuple()
 
-    return True, tuple(result_list)
+    return True, tuple([x[0] for x in result_list])
+
+def get_staff_list():
+    """
+    :return: A list of staff members from the staff table
+    """
+    sql = 'SELECT distinct initials, name from staff'
+    sql_result = sql_load_fr_db(sql)
+    connection_ok, result_list = sql_result
+
+    if not connection_ok:
+        textstring = """Failed to get existing staff from staff table from sql """ + sql
+        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+        return False, tuple()
+
+    return True, tuple([x[0] for x in result_list])
 
 def get_sql_result_as_dict(sql):
     """

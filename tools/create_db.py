@@ -32,9 +32,9 @@ class newdb():
 
     def __init__(self, verno, user_select_CRS='y', EPSG_code='4326'):
         self.dbpath = ''
-        self.create_new_db(verno,user_select_CRS,EPSG_code)#CreateNewDB(verno)
+        self.create_new_db(verno,user_select_CRS,EPSG_code)  #CreateNewDB(verno)
         
-    def create_new_db(self, verno, user_select_CRS='y', EPSG_code='4326'):#CreateNewDB(self, verno):
+    def create_new_db(self, verno, user_select_CRS='y', EPSG_code='4326'):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
         if user_select_CRS=='y':
             EPSGID=str(self.ask_for_CRS()[0])
@@ -59,8 +59,8 @@ class newdb():
                     self.cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
                 except:
                     utils.pop_up_info("Impossible to connect to selected DataBase")
-                    return ''
                     PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                    return ''
                 #First, find spatialite version
                 versionstext = self.cur.execute('select spatialite_version()').fetchall()
                 #print versionstext#debug
@@ -78,11 +78,19 @@ class newdb():
                 #print(SQLFile)#debug
                 qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
                 f = open(SQLFile, 'r')
-                linecounter = 1
+                f.readline()  # first line is encoding info....
                 for line in f:
-                    if linecounter > 1:    # first line is encoding info....
-                        self.rs = self.cur.execute(line.replace('CHANGETORELEVANTEPSGID',str(EPSGID)).replace('CHANGETOPLUGINVERSION',str(verno)).replace('CHANGETOQGISVERSION',str(qgisverno)).replace('CHANGETOSPLITEVERSION',str(versionstext[0][0]))) # use tags to find and replace SRID and versioning info
-                    linecounter += 1
+                    for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
+                                                       ('CHANGETOPLUGINVERSION', str(verno)),
+                                                       ('CHANGETOQGISVERSION',str(qgisverno)),
+                                                       ('CHANGETOSPLITEVERSION', str(versionstext[0][0]))]:
+                        line = line.replace(replace_word, replace_with)
+                    #replaced_line = line.replace('CHANGETOQGISVERSION',str(qgisverno)).replace('CHANGETOSPLITEVERSION',str(versionstext[0][0]))
+                    try:
+                        self.rs = self.cur.execute(line)  # use tags to find and replace SRID and versioning info
+                    except Exception, e:
+                        utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
+
 
                 self.cur.execute("PRAGMA foreign_keys = OFF")
                 #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS

@@ -593,16 +593,28 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         for typename, obsdict in result_dict.iteritems():
             if typename == u'level':
                 file_data = self.fieldlogger_prepare_level_data(dict(obsdict))
+                if file_data == u'cancel':
+                    self.status = True
+                    return u'cancel'
                 self.send_file_data_to_importer(utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids), self.wlvl_import_from_csvlayer)
             elif typename == u'flow':
                 file_data = self.fieldlogger_prepare_flow_data(dict(obsdict))
+                if file_data == u'cancel':
+                    self.status = True
+                    return u'cancel'
                 self.send_file_data_to_importer(utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids), self.wflow_import_from_csvlayer)
             elif typename in [u'quality', u'sample']:
                 file_data = self.fieldlogger_prepare_quality_data(dict(obsdict))
+                if file_data == u'cancel':
+                    self.status = True
+                    return u'cancel'
                 self.send_file_data_to_importer(utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids), self.wqualfield_import_from_csvlayer)
             else:
                 utils.pop_up_info("Unknown type: " + typename)
         file_data = self.fieldlogger_prepare_notes_data(dict(result_dict))
+        if file_data == u'cancel':
+            self.status = True
+            return u'cancel'
         #TODO: self.send_file_data_to_importer(file_string, self.notes_import_from_csvlayer)
 
     @staticmethod
@@ -695,8 +707,15 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         reading = value.replace(',', '.')
 
                 if reading is not None:
-                    used_instrumentids = '\n'.join([', '.join(inner) for inner in instrumentids[obsid]])
-                    instrumentid = utils.returnunicode(PyQt4.QtGui.QInputDialog.getText(None, u'Instrument not found', 'Please submit it for ' + ','.join((obsid, datestring, flowtype)) + '\nPreviously used instruments for ' + obsid + ':\n' + used_instrumentids, PyQt4.QtGui.QLineEdit.Normal, '')[0])
+                    last_used_instrumentid = sorted([(_date_time, _instrumentid) for _flowtype, _instrumentid, _date_time in instrumentids[obsid] if (_flowtype == flowtype)])[-1][1]
+                    question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
+                                                    msg=u''.join([u'Submit the instrument id for ', u','.join([obsid, datestring, flowtype])]),
+                                                    existing_list=[last_used_instrumentid],
+                                                    default_value=last_used_instrumentid)
+                    answer = question.answer
+                    if answer == u'cancel':
+                        return u'cancel'
+                    instrumentid = utils.returnunicode(question.value)
 
                     printrow = [obsid, instrumentid, flowtype, datestring, reading, unit, comment]
                     file_data_list.append(printrow)
@@ -713,6 +732,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         file_data_list = [u';'.join([u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'flow_lpm', u'comment'])]
 
         instrumentids = utils.get_quality_instruments()[1]
+        existing_staff = utils.get_staff_list()[1]
 
         asked_instrument = None
         staff = None
@@ -725,7 +745,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 flow_lpm = u''
                 reading_num = None
 
-
                 for param_unit, value in param_dict.iteritems():
                     param, unit = param_unit
                     if param == u'comment':
@@ -737,11 +756,23 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
                 if reading_num is not None:
                     if staff is None:
-                        staff = utils.returnunicode(PyQt4.QtGui.QInputDialog.getText(None, u'Staff not found', 'Please submit the name or initials of the person who did the measurement.\nIt will be used for the rest of the import\n', PyQt4.QtGui.QLineEdit.Normal, u'')[0])
+                        question = utils.NotFoundQuestion(dialogtitle=u'Submit field staff',
+                                                       msg=u'Submit the field staff who made the comment. It will be used for the rest of the comment imports',
+                                                       existing_list=existing_staff)
+                        answer = question.answer
+                        if answer == u'cancel':
+                            return u'cancel'
+                        staff = utils.returnunicode(question.value)
                     if param == u'temperature':
                         instrument = u''
                     elif asked_instrument is None:
-                        asked_instrument = utils.returnunicode(PyQt4.QtGui.QInputDialog.getText(None, u'Instrument not found', 'Please submit it.\nIt will be used for the rest of the import\nPreviously used instruments:\n' + ', '.join(instrumentids), PyQt4.QtGui.QLineEdit.Normal, u'')[0])
+                        question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
+                                                       msg=u'Submit the instrument id for the measurement. It will be used for the rest of the quality data import',
+                                                       existing_list=instrumentids)
+                        answer = question.answer
+                        if answer == u'cancel':
+                            return u'cancel'
+                        asked_instrument = utils.returnunicode(question.value)
                         instrument = asked_instrument
                     else:
                         instrument = asked_instrument
@@ -754,6 +785,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def fieldlogger_prepare_notes_data(typesdict):
         file_data_list = [u';'.join([u'obsid', u'date_time', u'staff', u'comment'])]
         staff = None
+        existing_staff = utils.get_staff_list()[1]
 
         for obsdict in typesdict.values():
             for obsid, date_time_dict in obsdict.iteritems():
@@ -777,7 +809,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         continue
 
                     if staff is None:
-                        staff = utils.returnunicode(PyQt4.QtGui.QInputDialog.getText(None, 'Staff not found', 'Please submit the name or initials of the person who did the measurement.\nIt will be used for the rest of the comments imports\n', PyQt4.QtGui.QLineEdit.Normal, u'')[0])
+                        question = utils.NotFoundQuestion(dialogtitle=u'Submit field staff',
+                                                       msg=u'Submit the field staff who made the comment. It will be used for the rest of the comment imports',
+                                                       existing_list=existing_staff)
+                        answer = question.answer
+                        if answer == u'cancel':
+                            return u'cancel'
+                        staff = utils.returnunicode(question.value)
 
                     printrow = [obsid, datestring, staff, comment]
                     file_data_list.append(printrow)
