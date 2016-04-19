@@ -173,7 +173,7 @@ class TestFieldLoggerImporter():
     @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
     @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
     #@mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
-    @mock.patch('import_data_to_db.utils.get_staff_list' , existing_staff.get_v)
+    @mock.patch('import_data_to_db.utils.get_staff_initials_list' , existing_staff.get_v)
     def test_fieldlogger_prepare_quality_data(self):
 
         f = [
@@ -197,7 +197,7 @@ class TestFieldLoggerImporter():
     @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
     @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
     #@mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
-    @mock.patch('import_data_to_db.utils.get_staff_list' , existing_staff.get_v)
+    @mock.patch('import_data_to_db.utils.get_staff_initials_list' , existing_staff.get_v)
     def test_fieldlogger_prepare_sample_data(self):
 
         f = [
@@ -220,7 +220,7 @@ class TestFieldLoggerImporter():
 
     @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
     #@mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
-    @mock.patch('import_data_to_db.utils.get_staff_list' , existing_staff.get_v)
+    @mock.patch('import_data_to_db.utils.get_staff_initials_list' , existing_staff.get_v)
     def test_fieldlogger_prepare_notes_data(self):
         f = [
             "Rb1505.quality;30-03-2016;15:29:25;comment1;q.comment\n",
@@ -240,7 +240,7 @@ class TestFieldLoggerImporter():
 
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
         file_string = utils.lists_to_string(self.importinstance.fieldlogger_prepare_notes_data(parsed_rows))
-        reference_string = u'obsid;date_time;staff;comment\nRb1202;2016-03-30 15:31:30;teststaff;comment3\nRb1505;2016-03-30 15:29:25;teststaff;comment1\nRb1608;2016-03-30 15:34:40;teststaff;comment4\nRb1615;2016-03-30 15:30:10;teststaff;comment2'
+        reference_string = u'obsid;date_time;comment;staff\nRb1202;2016-03-30 15:31:30;comment3;teststaff\nRb1505;2016-03-30 15:29:25;comment1;teststaff\nRb1608;2016-03-30 15:34:40;comment4;teststaff\nRb1615;2016-03-30 15:30:10;comment2;teststaff'
         sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
         sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
         assert sorted_file_string == sorted_reference_string
@@ -292,7 +292,7 @@ class TestFieldLoggerImporter():
             @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
             @mock.patch('import_data_to_db.midv_data_importer.send_file_data_to_importer', mocked_send_file_data_to_importer.get_v)
             @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
-            @mock.patch('import_data_to_db.utils.get_staff_list' , existing_staff.get_v)
+            @mock.patch('import_data_to_db.utils.get_staff_initials_list' , existing_staff.get_v)
             def _test_fieldlogger_import():
                 self.importinstance.fieldlogger_import()
 
@@ -306,6 +306,32 @@ class TestFieldLoggerImporter():
         #result_string = ','.join(result_list)
         #reference_string = "flow,Rb1615,2016-03-30 15:30:09,Accvol,m3,357,comment,,gick bra,level,Rb1608,2016-03-30 15:34:13,comment,,ergv,meas,m,555,2016-03-30 15:34:40,comment,,testc,quality,Rb1505,2016-03-30 15:29:26,comment,,hej,konduktivitet,µS/cm,863,Rb1512,2016-03-30 15:30:39,comment,,test,syre,%,58,syre,mg/L,58,temperatur,grC,8,sample,Rb1202,2016-03-30 15:31:30,comment,,hej2,Rb1512,2016-03-30 15:31:30,turbiditet,FNU,899"
         #assert result_string == reference_string
+
+#class TestCommentsImportFromCsv(object):
+#    utils_verify_table_exists = MockUsingReturnValue(True)
+#    mocked_iface = MockQgisUtilsIface()
+#    alterdb = MockUsingReturnValue(int)
+#
+#    memorydb_obj = MockUsingReturnValue(int)
+#    memorydb_obj.readEntry = lambda x, n: ':memory:'
+#    memorydb = MockUsingReturnValue(memorydb_obj)
+#
+#    def setUp(self):
+#        self.importinstance = midv_data_importer()
+#
+#    @mock.patch('import_data_to_db.QgsProject.instance', memorydb.get_v)
+#    @mock.patch('import_data_to_db.utils.sql_alter_db', alterdb.get_v)
+#    @mock.patch('qgis.utils.iface', mocked_iface)
+#    @mock.patch('import_data_to_db.utils.verify_table_exists', utils_verify_table_exists.get_v)
+#    def test_comments_import_from_csv(self):
+#        """ TODO: NOT IMPLEMENTED TESTThis test is hard to get right due to all the different database calls.
+#        :return:
+#        """
+#        return
+#        file_data = [[u'obsid', u'date_time', u'comment', u'staff'],
+#                     [u'rb1', u'2016-01-01 00:00:00', u'testcomment', u'teststaff']]
+#
+#        self.importinstance.send_file_data_to_importer(file_data, self.importinstance.comments_import_from_csv)
 
 
 class TestNewMemoryDb():

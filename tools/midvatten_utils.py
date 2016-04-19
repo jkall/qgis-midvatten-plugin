@@ -544,6 +544,21 @@ def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
         errorsignal += 1
         qgis.utils.iface.messageBar().pushMessage("Error","You have to select/activate %s layer!"%layername, 2,duration=10)
     return errorsignal
+
+def verify_table_exists(tablename):
+    tablename = returnunicode(tablename)
+    sql = u"""SELECT name FROM sqlite_master WHERE type='table' AND name='%s'"""%(tablename)
+    sql_result = sql_load_fr_db(sql.encode('utf-8'))
+    connection_ok, result_list = sql_result
+
+    if not connection_ok:
+        return False
+
+    if result_list:
+        return True
+    else:
+        return False
+
     
 @contextmanager
 def tempinput(data, charset=u'UTF-8'):
@@ -647,11 +662,11 @@ def get_quality_instruments():
 
     return True, tuple([x[0] for x in result_list])
 
-def get_staff_list():
+def get_staff_initials_list():
     """
     :return: A list of staff members from the staff table
     """
-    sql = 'SELECT distinct initials, name from staff'
+    sql = 'SELECT distinct initials from zz_staff'
     sql_result = sql_load_fr_db(sql)
     connection_ok, result_list = sql_result
 
