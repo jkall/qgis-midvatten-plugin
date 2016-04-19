@@ -333,7 +333,7 @@ def standard_parameters_for_wquality():
     parameters = ((u'temperatur', (u'grC',)),
                   (u'pH', (u'',)),
                   (u'redoxpotential', (u'mV',)),
-                  (u'konduktivitet', (u'µS/cm',)),
+                  (u'konduktivitet', (u'µS/cm', u'mS/cm')),
                   (u'syre', (u'mg/L', u'%')))
     return parameters
 
