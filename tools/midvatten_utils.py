@@ -559,7 +559,6 @@ def verify_table_exists(tablename):
     else:
         return False
 
-    
 @contextmanager
 def tempinput(data, charset=u'UTF-8'):
     """ Creates and yields a temporary file from data

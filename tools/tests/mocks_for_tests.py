@@ -79,17 +79,40 @@ class MockNotFoundQuestion(object):
         self.answer = answer
 
 class MockQgisUtilsIface(object):
+    """
+    Usage:
+    Put variable directly under class:
+    mocked_iface = MockQgisUtilsIface()
+
+    Add as patch before method:
+    @mock.patch('qgis.utils.iface', mocked_iface)
+    def ...
+
+    Messages can be printed if needed:
+    print(str(<classname>.mocked_iface.messagebar.messages))
+    Where <classname> is the name of the current Test class
+    """
     def __init__(self):
-        pass
+        self.messagebar = MessageBar()
     def activeLayer(self, *args, **kwargs):
         return None
     def messageBar(self, *args, **kwargs):
-        messagebar = MessageBar()
-        return MessageBar()
+        return self.messagebar
 
 class MessageBar(object):
+    def __init__(self):
+        self.messages = []
     def pushMessage(self, *args, **kwargs):
+        self.messages.append([arg for arg in args])
+        self.messages.append([arg for arg in kwargs])
         return None
+
+class MockQgsProjectInstance(object):
+    def __init__(self, entry=u''):
+        self.entry = entry
+    def readEntry(self, *args, **kwargs):
+        return self.entry
+
 
 class DummyInterface(object):
     def __init__(self):
