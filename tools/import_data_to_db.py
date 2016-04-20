@@ -19,20 +19,19 @@
  *                                                                         *
  ***************************************************************************/
 """
+import io
+import locale
+import qgis.utils
+from datetime import datetime
+from pyspatialite import dbapi2 as sqlite #could perhaps have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
+from qgis.core import *
+
 import PyQt4.QtCore
 import PyQt4.QtGui
 
-from qgis.core import *
-from qgis.gui import *
-
-import qgis.utils
-import locale
-import os
-import io
-from datetime import datetime
-from pyspatialite import dbapi2 as sqlite #could perhaps have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import midvatten_utils as utils
 from date_utils import find_date_format, datestring_to_date
+
 
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
 
@@ -558,12 +557,23 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
             self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]#Load column names from sqlite table
-            sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[2][1],self.columns[2][1],self.columns[4][1],self.columns[4][1])#Delete empty records from the import table!!!
-            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[2][1],self.columns[4][1],self.temptableName) #Number of distinct data posts in the import table
+
+            obsid = self.columns[0][1]
+            staff = self.columns[1][1]
+            date_time = self.columns[2][1]
+            instrument = self.columns[3][1]
+            parameter = self.columns[4][1]
+            reading_num = self.columns[5][1]
+            reading_txt = self.columns[6][1]
+            unit = self.columns[7][1]
+            comment = self.columns[8][1]
+
+            sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName, obsid, obsid, date_time, date_time, parameter, parameter)#Delete empty records from the import table!!!
+            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s" FROM %s)"""%(obsid, date_time, parameter, self.temptableName) #Number of distinct data posts in the import table
             cleaningok = self.MultipleFieldDuplicates(10,'w_qual_field',sqlremove,'obs_points',sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sqlpart1 = """INSERT OR IGNORE INTO "w_qual_field" (obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment) """
-                sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), (case when "%s"!='' then CAST("%s" as double) else null end), CAST("%s" as text), CAST("%s" as text), (case when "%s"!='' then CAST("%s" as double) else null end), CAST("%s" as text) FROM %s"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.columns[4][1],self.columns[5][1],self.columns[5][1],self.columns[6][1],self.columns[7][1],self.columns[8][1],self.columns[8][1],self.columns[9][1],self.temptableName)
+                sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), (case when "%s"!='' then CAST("%s" as double) else null end), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(obsid, staff, date_time, instrument, parameter, reading_num, reading_num, reading_txt, unit, comment, self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
@@ -729,7 +739,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
         :return:
         """
-        file_data_list = [u';'.join([u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'flow_lpm', u'comment'])]
+        file_data_list = [u';'.join([u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment'])]
 
         instrumentids = utils.get_quality_instruments()[1]
         existing_staff = utils.get_staff_initials_list()[1]
@@ -742,7 +752,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 datestring = datetime.strftime(date_time, '%Y-%m-%d %H:%M:%S')
 
                 comment = u''
-                flow_lpm = u''
                 reading_num = None
 
                 for param_unit, value in param_dict.iteritems():
@@ -776,7 +785,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         instrument = asked_instrument
                     else:
                         instrument = asked_instrument
-                    printrow = [obsid, staff, datestring, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment]
+                    printrow = [obsid, staff, datestring, instrument, parameter, reading_num, reading_txt, unit, comment]
                     file_data_list.append(printrow)
 
         return file_data_list

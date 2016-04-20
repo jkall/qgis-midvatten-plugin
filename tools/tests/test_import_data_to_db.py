@@ -189,7 +189,7 @@ class TestFieldLoggerImporter():
 
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
         file_string = utils.lists_to_string(self.importinstance.fieldlogger_prepare_quality_data(parsed_rows[u'quality']))
-        reference_string = u'obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;flow_lpm;comment\nRb1505;teststaff;2016-03-30 15:29:26;testid;konduktivitet;863;863;µS/cm;;hej\nRb1512;teststaff;2016-03-30 15:30:39;testid;temperatur;8;8;grC;;test'
+        reference_string = u'obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;comment\nRb1505;teststaff;2016-03-30 15:29:26;testid;konduktivitet;863;863;µS/cm;hej\nRb1512;teststaff;2016-03-30 15:30:39;testid;temperatur;8;8;grC;test'
         sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
         sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
         assert sorted_file_string == sorted_reference_string
@@ -198,7 +198,7 @@ class TestFieldLoggerImporter():
     @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
     #@mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
     @mock.patch('import_data_to_db.utils.get_staff_initials_list' , existing_staff.get_v)
-    def test_fieldlogger_prepare_sample_data(self):
+    def test_fieldlogger_prepare_quality_data_sample(self):
 
         f = [
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
@@ -213,7 +213,7 @@ class TestFieldLoggerImporter():
 
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
         file_string = utils.lists_to_string(self.importinstance.fieldlogger_prepare_quality_data(parsed_rows[u'sample']))
-        reference_string = u'obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;flow_lpm;comment\nRb1512;teststaff;2016-03-30 15:31:30;testid;turbiditet;899;899;FNU;;'
+        reference_string = u'obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;comment\nRb1512;teststaff;2016-03-30 15:31:30;testid;turbiditet;899;899;FNU;'
         sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
         sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
         assert sorted_file_string == sorted_reference_string
