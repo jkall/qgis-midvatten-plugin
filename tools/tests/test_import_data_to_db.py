@@ -29,10 +29,11 @@ from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from nose.tools import raises
 from mock import mock_open, patch
-from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion
+from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance
 import mock
 import io
 import midvatten
+import os
 
 
 class TestFieldLoggerImporter():
@@ -189,7 +190,7 @@ class TestFieldLoggerImporter():
 
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
         file_string = utils.lists_to_string(self.importinstance.fieldlogger_prepare_quality_data(parsed_rows[u'quality']))
-        reference_string = u'obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;comment\nRb1505;teststaff;2016-03-30 15:29:26;testid;konduktivitet;863;863;µS/cm;hej\nRb1512;teststaff;2016-03-30 15:30:39;testid;temperatur;8;8;grC;test'
+        reference_string = u'obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;comment\nRb1505;teststaff;2016-03-30 15:29:26;testid;konduktivitet;863;863;µS/cm;hej\nRb1512;teststaff;2016-03-30 15:30:39;;temperatur;8;8;grC;test'
         sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
         sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
         assert sorted_file_string == sorted_reference_string
@@ -239,7 +240,7 @@ class TestFieldLoggerImporter():
             ]
 
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
-        file_string = utils.lists_to_string(self.importinstance.fieldlogger_prepare_notes_data(parsed_rows))
+        file_string = utils.lists_to_string(self.importinstance.fieldlogger_prepare_comments_data(parsed_rows))
         reference_string = u'obsid;date_time;comment;staff\nRb1202;2016-03-30 15:31:30;comment3;teststaff\nRb1505;2016-03-30 15:29:25;comment1;teststaff\nRb1608;2016-03-30 15:34:40;comment4;teststaff\nRb1615;2016-03-30 15:30:10;comment2;teststaff'
         sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
         sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
@@ -825,5 +826,118 @@ class TestInterlab4Importer():
     def tearDown(self):
         self.importinstance = None
         pass
+
+class TestDbCalls(object):
+    temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
+    #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
+    answer_yes_obj = MockUsingReturnValue()
+    answer_yes_obj.result = 1
+    answer_no_obj = MockUsingReturnValue()
+    answer_no_obj.result = 0
+    answer_yes = MockUsingReturnValue(answer_yes_obj)
+    CRS_question = MockUsingReturnValue([3006])
+    dbpath_question = MockUsingReturnValue(temp_db_path)
+    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
+    mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([temp_db_path]))
+    mock_askuser = MockReturnUsingDictIn({'It is a strong': answer_no_obj}, 1)
+    #mocked_qgsproject = MockQgsProject(mocked_qgsinstance)
+
+
+    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
+    def setUp(self):
+        self.iface = DummyInterface()
+        self.midvatten = midvatten.midvatten(self.iface)
+        try:
+            os.remove(TestDbCalls.temp_db_path)
+        except OSError:
+            pass
+        self.midvatten.new_db()
+        self.importinstance = midv_data_importer()
+        #utils.verify_table_exists(u'comments')
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_verify_table_exists(self):
+        exists = utils.verify_table_exists(u'obs_points')
+        assert exists
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_import_staff(self):
+        self.importinstance.staff_import(u'staff1')
+        imported_staff = utils.sql_load_fr_db(u'select * from zz_staff')
+        assert imported_staff == (True, [(u'staff1', u'')])
+
+    @mock.patch('qgis.utils.iface', mocked_iface)
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+    def test_import_obsids(self):
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid2")')
+        result = utils.sql_load_fr_db(u'select * from obs_points')
+
+        msgbar = TestDbCalls.mocked_iface.messagebar.messages
+        if msgbar:
+            print str(msgbar)
+
+        assert result == (True, [(u'obsid1', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None), (u'obsid2', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)])
+
+    @mock.patch('qgis.utils.iface', mocked_iface)
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+    def test_send_file_data_to_importer_and_wflow_import_from_csvlayer(self):
+        """ A test that incorporates a lot of database functionality.
+        :return: None
+        """
+        utils.sql_alter_db("""INSERT INTO obs_points ("obsid") VALUES ('obsid1')""")
+        utils.sql_alter_db("""INSERT INTO obs_points ("obsid") VALUES ('obsid2')""")
+        file_data = ([u'obsid', u'instrumentid', u'flowtype', u'date_time', u'reading', u'unit', u'comment'],
+                     [u'obsid1', u'instrumentid1', u'flowtype1', u'2015-01-01 00:00:00', u'11', u'unit1', u'comment1'],
+                     [u'obsid1', u'instrumentid1', u'flowtype1', u'2015-01-02 00:00:00', u'111', u'unit1', u'comment11'],
+                     [u'obsid2', u'instrumentid2', u'flowtype2', u'2016-01-01 00:00:00', u'222', u'unit2', u'comment2'])
+        self.importinstance.send_file_data_to_importer(file_data, self.importinstance.wflow_import_from_csvlayer)
+
+        reference_flow_data = (True, [(u'obsid1', u'instrumentid1', u'flowtype1', u'2015-01-01 00:00:00', 11.0, u'unit1', u'comment1'), (u'obsid1', u'instrumentid1', u'flowtype1', u'2015-01-02 00:00:00', 111.0, u'unit1', u'comment11'), (u'obsid2', u'instrumentid2', u'flowtype2', u'2016-01-01 00:00:00', 222.0, u'unit2', u'comment2')])
+        test_flow_data = utils.sql_load_fr_db(u'select * from w_flow')
+
+        assert test_flow_data == reference_flow_data
+
+        reference_flow_type = (True, [(u'Accvol', u'Accumulated volume'), (u'Momflow', u'Momentary flow rate'), (u'Aveflow', u'Average flow since last reading'), (u'flowtype1', u''), (u'flowtype2', u'')])
+        test_flow_type = utils.sql_load_fr_db(u'select * from zz_flowtype')
+
+        msgbar = TestDbCalls.mocked_iface.messagebar.messages
+        if msgbar:
+            print str(msgbar)
+
+        assert test_flow_type == reference_flow_type
+
+    @mock.patch('qgis.utils.iface', mocked_iface)
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+    def test_send_file_data_to_importer_and_comments_import_from_csv(self):
+        utils.sql_alter_db("""INSERT INTO obs_points ("obsid") VALUES ('obsid1')""")
+        #obsid, date_time, comment, staff
+        file_data = ([u'obsid', u'date_time', u'comment', u'staff'],
+                     [u'obsid1', u'2015-01-01 00:00.00', u'testcomment1', u'staff1'],
+                     [u'obsid1', u'2016-01-01 00:00.00', u'testcomment2', u'staff2'])
+        self.importinstance.send_file_data_to_importer(file_data, self.importinstance.comments_import_from_csv)
+
+        reference_comments = (True, [(u'obsid1', u'2015-01-01 00:00.00', u'testcomment1', u'staff1'), (u'obsid1', u'2016-01-01 00:00.00', u'testcomment2', u'staff2')])
+        test_comments = utils.sql_load_fr_db(u'select * from comments')
+        assert test_comments == reference_comments
+
+        reference_staff = (True, [(u'staff1', u''), (u'staff2', u'')])
+        test_staff = utils.sql_load_fr_db(u'select * from zz_staff')
+
+        msgbar = TestDbCalls.mocked_iface.messagebar.messages
+        if msgbar:
+            print str(msgbar)
+
+        assert test_staff == reference_staff
+
+    def tearDown(self):
+        #Delete database
+        os.remove(TestDbCalls.temp_db_path)
+
 
 

@@ -455,7 +455,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         file_to_import_to_db.extend([row for parsed_file in parsed_files for row in parsed_file[1:]])
 
         file_string = utils.lists_to_string(file_data)
-        #print(str(file_to_import_to_db))
 
         with utils.tempinput(file_string, self.charsetchoosen[0]) as csvpath:
             self.csvlayer = self.csv2qgsvectorlayer(csvpath)
@@ -570,9 +569,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName, obsid, obsid, date_time, date_time, parameter, parameter)#Delete empty records from the import table!!!
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s" FROM %s)"""%(obsid, date_time, parameter, self.temptableName) #Number of distinct data posts in the import table
-            cleaningok = self.MultipleFieldDuplicates(10,'w_qual_field',sqlremove,'obs_points',sqlNoOfdistinct)
+            cleaningok = self.MultipleFieldDuplicates(9,'w_qual_field',sqlremove,'obs_points',sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
-                sqlpart1 = """INSERT OR IGNORE INTO "w_qual_field" (obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment) """
+                sqlpart1 = """INSERT OR IGNORE INTO "w_qual_field" (obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), (case when "%s"!='' then CAST("%s" as double) else null end), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(obsid, staff, date_time, instrument, parameter, reading_num, reading_num, reading_txt, unit, comment, self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
@@ -621,7 +620,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 self.send_file_data_to_importer(utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids), self.wqualfield_import_from_csvlayer)
             else:
                 utils.pop_up_info("Unknown type: " + typename)
-        file_data = self.fieldlogger_prepare_notes_data(dict(result_dict))
+        file_data = self.fieldlogger_prepare_comments_data(dict(result_dict))
         if file_data == u'cancel':
             self.status = True
             return u'cancel'
@@ -719,7 +718,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 if reading is not None:
                     last_used_instrumentid = sorted([(_date_time, _instrumentid) for _flowtype, _instrumentid, _date_time in instrumentids[obsid] if (_flowtype == flowtype)])[-1][1]
                     question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
-                                                    msg=u''.join([u'Submit the instrument id for ', u','.join([obsid, datestring, flowtype])]),
+                                                    msg=u''.join([u'Submit the instrument id for the measurement:\n ', u','.join([obsid, datestring, flowtype])]),
                                                     existing_list=[last_used_instrumentid],
                                                     default_value=last_used_instrumentid)
                     answer = question.answer
@@ -766,17 +765,17 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 if reading_num is not None:
                     if staff is None:
                         question = utils.NotFoundQuestion(dialogtitle=u'Submit field staff',
-                                                       msg=u'Submit the field staff who made the comment.\nIt will be used for the rest of the comment imports',
+                                                       msg=u'Submit the field staff who made the measurement:\n' + u', '.join([obsid, datestring, param]) + u'\nIt will be used for the rest of the comment imports',
                                                        existing_list=existing_staff)
                         answer = question.answer
                         if answer == u'cancel':
                             return u'cancel'
                         staff = utils.returnunicode(question.value)
-                    if param == u'temperature':
+                    if param in (u'temperature', u'temperatur'):
                         instrument = u''
                     elif asked_instrument is None:
                         question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
-                                                       msg=u'Submit the instrument id for the measurement.\nIt will be used for the rest of the quality data import',
+                                                       msg=u'Submit the instrument id for the measurement:\n' + u', '.join([obsid, datestring, param]) + u'\nIt will be used for the rest of the quality data import',
                                                        existing_list=instrumentids)
                         answer = question.answer
                         if answer == u'cancel':
@@ -791,7 +790,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         return file_data_list
 
     @staticmethod
-    def fieldlogger_prepare_notes_data(typesdict):
+    def fieldlogger_prepare_comments_data(typesdict):
         file_data_list = [u';'.join([u'obsid', u'date_time', u'comment', u'staff'])]
         staff = None
         existing_staff = None
@@ -822,7 +821,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                             existing_staff = utils.get_staff_initials_list()[1]
 
                         question = utils.NotFoundQuestion(dialogtitle=u'Submit field staff',
-                                                       msg=u'Submit the field staff who made the comment.\nIt will be used for the rest of the comment imports',
+                                                       msg=u'Submit the field staff who made the comment:\n' + u', '.join([obsid, datestring, comment]) + u'\nIt will be used for the rest of the comment imports',
                                                        existing_list=existing_staff)
                         answer = question.answer
                         if answer == u'cancel':
@@ -867,10 +866,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if cleaningok == 1: # If cleaning was OK, then fix zz_flowtype and then copy data from the temporary table to the original table in the db
 
                 #Add staffs that does not exist in db
-                staffs = utils.sql_load_fr_db("""select distinct staff from %s"""%self.temptableName)[1]
+                staffs = [x[0] for x in utils.sql_load_fr_db("""select distinct staff from %s"""%self.temptableName)[1]]
 
                 if utils.verify_table_exists('zz_staff'):
-                    self.insert_new_staffs(staffs)
+                    self.staff_import(staffs)
 
                 # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 sqlpart1 = """INSERT OR IGNORE INTO "comments" (obsid, date_time, comment, staff) """
@@ -887,7 +886,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def insert_new_staffs(self, initials):
+    def staff_import(self, initials):
         """ Inserts initials if they don't exist in table staff
         :param initials: a string with initials, or a list of strings with initials
         :return:
@@ -914,8 +913,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
     def VerifyIDInMajorTable(self,MajorTable): #for all tables with foreign key = obsid
         notinmajor = 'False'
-        possibleobsids = utils.sql_load_fr_db("""select distinct obsid from %s"""%MajorTable)[1] 
+        possibleobsids = utils.sql_load_fr_db("""select distinct obsid from %s"""%MajorTable)[1]
+        #obsidstobeimported = []
         obsidstobeimported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[0][1],self.temptableName))[1]
+        #obsidstobeimported.append(tuple([x.toPyObject() if isinstance(x, PyQt4.QtCore.QVariant) else x for y in utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[0][1],self.temptableName))[1] for x in y]))
         for id in obsidstobeimported:
                 if not id in possibleobsids:
                     qgis.utils.iface.messageBar().pushMessage("Import Failure","""The obsid=%s do not exist in %s!"""%(str(id[0]),MajorTable),2)
@@ -1194,6 +1195,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         for feature in self.csvlayer.getFeatures(): 
             values_perso=[]
             for attr in feature.attributes():
+                #If automatic convertion from PyQt4.QtCore.QVariant did not work, it must be done manually
+                if isinstance(attr, PyQt4.QtCore.QVariant):
+                    attr = attr.toPyObject()
                 values_perso.append(attr) # attr is supposed to be unicode and should be kept like that, sometimes though it ends up being a byte string, do not know why....
             #Create line in DB table
             if len(fields)>0:   # NOTE CANNOT USE utils.sql_alter_db() SINCE THE OPTION OF SENDING 2 ARGUMENTS TO .execute IS USED BELOW
