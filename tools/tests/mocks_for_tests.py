@@ -62,6 +62,7 @@ class MockReturnUsingDictIn(object):
     def get_v(self, *args, **kwargs):
         self.args_called_with.extend(args)
         self.args_called_with.extend(kwargs)
+        return_value = None
         if isinstance(self.args_idx, int):
             for k, v in self.adict.iteritems():
                 if args[self.args_idx].startswith(k):
@@ -70,6 +71,8 @@ class MockReturnUsingDictIn(object):
             for k, v in self.adict.iteritems():
                 if kwargs[self.args_idx].startswith(k):
                    return_value = v
+        if return_value == None:
+            raise Exception("MockReturnUsingDictIn: return_value could not be set for: " + str(args) + ' ' + str(kwargs))
         return return_value
 
 
