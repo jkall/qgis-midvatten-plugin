@@ -74,6 +74,28 @@ def init_test():
     QtCore.QCoreApplication.setApplicationName('QGIS2')
     return app
 
+def create_test_string(anything):
+    ur""" Turns anything into a string used for testing
+    :param anything: just about anything
+    :return: A unicode string
+     >>> create_test_string(u'123')
+     u'123'
+     >>> create_test_string([1, 2, 3])
+     u'[1, 2, 3]'
+     >>> create_test_string({3: 'a', 2: 'b', 1: ('c', 'd')})
+     u'{1: (c, d), 2: b, 3: a}'
+    """
+    if isinstance(anything, dict):
+        aunicode = u''.join([u'{', u', '.join([u': '.join([create_test_string(k), create_test_string(v)]) for k, v in sorted(anything.iteritems())]), u'}'])
+    elif isinstance(anything, list):
+        aunicode = u''.join([u'[', u', '.join([create_test_string(x) for x in anything]), u']'])
+    elif isinstance(anything, tuple):
+        aunicode = u''.join([u'(', u', '.join([create_test_string(x) for x in anything]), u')'])
+    elif isinstance(anything, (basestring, float, int)):
+        aunicode = utils.returnunicode(anything)
+    else:
+        aunicode = utils.returnunicode(str(anything))
+    return aunicode
 
 class ContextualStringIO(io.StringIO):
     """ Copied function from stackoverflow

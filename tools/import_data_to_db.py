@@ -22,6 +22,7 @@
 import io
 import locale
 import qgis.utils
+import copy
 from datetime import datetime
 from pyspatialite import dbapi2 as sqlite #could perhaps have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 from qgis.core import *
@@ -568,15 +569,20 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             comment = self.columns[8][1]
 
             sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName, obsid, obsid, date_time, date_time, parameter, parameter)#Delete empty records from the import table!!!
-            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s" FROM %s)"""%(obsid, date_time, parameter, self.temptableName) #Number of distinct data posts in the import table
+            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s", "%s" FROM %s)"""%(obsid, date_time, parameter, unit, self.temptableName) #Number of distinct data posts in the import table
             cleaningok = self.MultipleFieldDuplicates(9,'w_qual_field',sqlremove,'obs_points',sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
+
                 sqlpart1 = """INSERT OR IGNORE INTO "w_qual_field" (obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), (case when "%s"!='' then CAST("%s" as double) else null end), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(obsid, staff, date_time, instrument, parameter, reading_num, reading_num, reading_txt, unit, comment, self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
                 self.recsafter = (utils.sql_load_fr_db("""SELECT Count(*) FROM w_qual_field""")[1])[0][0] #for the statistics
+                if utils.verify_table_exists('zz_staff'):
+                    #Add staffs that does not exist in db
+                    staffs = set([x[0] for x in utils.sql_load_fr_db("""select distinct staff from %s"""%self.temptableName)[1]])
+                    self.staff_import(staffs)
                 self.StatsAfter()
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
@@ -599,27 +605,21 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             result_dict = self.fieldlogger_import_parse_rows(f)
 
+        typename_preparer_importer = {u'level': (self.fieldlogger_prepare_level_data, self.wlvl_import_from_csvlayer),
+                                      u'flow': (self.fieldlogger_prepare_flow_data, self.wflow_import_from_csvlayer),
+                                      u'quality': (self.fieldlogger_prepare_quality_data, self.wqualfield_import_from_csvlayer),
+                                      u'sample': (self.fieldlogger_prepare_quality_data, self.wqualfield_import_from_csvlayer)}
+
         for typename, obsdict in result_dict.iteritems():
-            if typename == u'level':
-                file_data = self.fieldlogger_prepare_level_data(dict(obsdict))
-                if file_data == u'cancel':
-                    self.status = True
-                    return u'cancel'
-                self.send_file_data_to_importer(utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids), self.wlvl_import_from_csvlayer)
-            elif typename == u'flow':
-                file_data = self.fieldlogger_prepare_flow_data(dict(obsdict))
-                if file_data == u'cancel':
-                    self.status = True
-                    return u'cancel'
-                self.send_file_data_to_importer(utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids), self.wflow_import_from_csvlayer)
-            elif typename in [u'quality', u'sample']:
-                file_data = self.fieldlogger_prepare_quality_data(dict(obsdict))
-                if file_data == u'cancel':
-                    self.status = True
-                    return u'cancel'
-                self.send_file_data_to_importer(utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids), self.wqualfield_import_from_csvlayer)
-            else:
-                utils.pop_up_info("Unknown type: " + typename)
+            preparer = typename_preparer_importer[typename][0]
+            importer = typename_preparer_importer[typename][1]
+            file_data = preparer(copy.deepcopy(obsdict))
+            if file_data == u'cancel':
+                self.status = True
+                return u'cancel'
+            self.send_file_data_to_importer(utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids), importer)
+
+        #Import comments
         file_data = self.fieldlogger_prepare_comments_data(dict(result_dict))
         if file_data == u'cancel':
             self.status = True
@@ -667,22 +667,25 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :param obsdict: a dict like {obsid: {date_time: {parameter: value}}}
         :return: None
         """
-        file_data_list = [u';'.join([u'obsid', u'date_time', u'meas', u'comment'])]
-        for obsid, date_time_dict in obsdict.iteritems():
+        file_data_list = [[u'obsid', u'date_time', u'meas', u'comment']]
+        for obsid, date_time_dict in sorted(obsdict.iteritems()):
             for date_time, param_dict in sorted(date_time_dict.iteritems()):
                 printrow = [obsid]
                 printrow.append(datetime.strftime(date_time, '%Y-%m-%d %H:%M:%S'))
 
-                meas = ''
-                comment = ''
-                for param_unit, value in param_dict.iteritems():
-                    param, unit = param_unit
-                    if param == 'meas':
-                        meas = value.replace(',', '.')
-                    elif param == 'comment':
-                        comment = value
+                try:
+                    comment = param_dict.pop((u'comment', u''))
+                except KeyError:
+                    comment = u''
 
-                if meas:
+                meas = None
+
+                for param_unit, value in sorted(param_dict.iteritems()):
+                    param, unit = param_unit
+                    if param == u'meas':
+                        meas = value.replace(u',', u'.')
+
+                if meas is not None:
                     printrow.append(meas)
                     printrow.append(comment)
                     file_data_list.append(printrow)
@@ -697,26 +700,29 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :return:
         """
 
-        file_data_list = [u';'.join([u'obsid', u'instrumentid', u'flowtype', u'date_time', u'reading', u'unit', u'comment'])]
+        file_data_list = [[u'obsid', u'instrumentid', u'flowtype', u'date_time', u'reading', u'unit', u'comment']]
         instrumentids = utils.get_last_used_flow_instruments()[1]
 
-        for obsid, date_time_dict in obsdict.iteritems():
+        for obsid, date_time_dict in sorted(obsdict.iteritems()):
             for date_time, param_dict in sorted(date_time_dict.iteritems()):
                 datestring = datetime.strftime(date_time, '%Y-%m-%d %H:%M:%S')
 
-                comment = ''
-                reading = None
+                try:
+                    comment = param_dict.pop((u'comment', u''))
+                except KeyError:
+                    comment = u''
 
-                for param_unit, value in param_dict.iteritems():
+                for param_unit, value in sorted(param_dict.iteritems()):
                     param, unit = param_unit
-                    if param == u'comment':
-                        comment = value
-                    else:
-                        flowtype = param
-                        reading = value.replace(',', '.')
 
-                if reading is not None:
-                    last_used_instrumentid = sorted([(_date_time, _instrumentid) for _flowtype, _instrumentid, _date_time in instrumentids[obsid] if (_flowtype == flowtype)])[-1][1]
+                    flowtype = param
+                    reading = value.replace(u',', u'.')
+
+                    instrumentids_for_obsid = instrumentids.get(obsid, None)
+                    if instrumentids_for_obsid is None:
+                        last_used_instrumentid = []
+                    else:
+                        last_used_instrumentid = sorted([(_date_time, _instrumentid) for _flowtype, _instrumentid, _date_time in instrumentids[obsid] if (_flowtype == flowtype)])[-1][1]
                     question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
                                                     msg=u''.join([u'Submit the instrument id for the measurement:\n ', u','.join([obsid, datestring, flowtype])]),
                                                     existing_list=[last_used_instrumentid],
@@ -738,7 +744,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
         :return:
         """
-        file_data_list = [u';'.join([u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment'])]
+        file_data_list = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment']]
 
         instrumentids = utils.get_quality_instruments()[1]
         existing_staff = utils.get_staff_initials_list()[1]
@@ -746,36 +752,35 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         asked_instrument = None
         staff = None
 
-        for obsid, date_time_dict in obsdict.iteritems():
+        for obsid, date_time_dict in sorted(obsdict.iteritems()):
             for date_time, param_dict in sorted(date_time_dict.iteritems()):
                 datestring = datetime.strftime(date_time, '%Y-%m-%d %H:%M:%S')
 
-                comment = u''
-                reading_num = None
+                try:
+                    comment = param_dict.pop((u'comment', u''))
+                except KeyError:
+                    comment = u''
 
-                for param_unit, value in param_dict.iteritems():
-                    param, unit = param_unit
-                    if param == u'comment':
-                        comment = value
-                    else:
-                        parameter = param
-                        reading_num = value.replace(u',', u'.')
-                        reading_txt = reading_num
+                for param_unit, value in sorted(param_dict.iteritems()):
+                    parameter, unit = param_unit
 
-                if reading_num is not None:
+                    reading_num = value.replace(u',', u'.')
+                    reading_txt = reading_num
+
                     if staff is None:
                         question = utils.NotFoundQuestion(dialogtitle=u'Submit field staff',
-                                                       msg=u'Submit the field staff who made the measurement:\n' + u', '.join([obsid, datestring, param]) + u'\nIt will be used for the rest of the comment imports',
+                                                       msg=u'Submit the field staff who made the measurement:\n' + u', '.join([obsid, datestring, parameter]) + u'\nIt will be used for the rest of the comment imports',
                                                        existing_list=existing_staff)
                         answer = question.answer
                         if answer == u'cancel':
                             return u'cancel'
                         staff = utils.returnunicode(question.value)
-                    if param in (u'temperature', u'temperatur'):
+
+                    if parameter in (u'temperature', u'temperatur'):
                         instrument = u''
                     elif asked_instrument is None:
                         question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
-                                                       msg=u'Submit the instrument id for the measurement:\n' + u', '.join([obsid, datestring, param]) + u'\nIt will be used for the rest of the quality data import',
+                                                       msg=u'Submit the instrument id for the measurement:\n' + u', '.join([obsid, datestring, parameter]) + u'\nIt will be used for the rest of the quality data import',
                                                        existing_list=instrumentids)
                         answer = question.answer
                         if answer == u'cancel':
@@ -784,6 +789,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         instrument = asked_instrument
                     else:
                         instrument = asked_instrument
+
                     printrow = [obsid, staff, datestring, instrument, parameter, reading_num, reading_txt, unit, comment]
                     file_data_list.append(printrow)
 
@@ -791,12 +797,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
     @staticmethod
     def fieldlogger_prepare_comments_data(typesdict):
-        file_data_list = [u';'.join([u'obsid', u'date_time', u'comment', u'staff'])]
+        file_data_list = [[u'obsid', u'date_time', u'comment', u'staff']]
         staff = None
         existing_staff = None
 
-        for obsdict in typesdict.values():
-            for obsid, date_time_dict in obsdict.iteritems():
+        for typename, obsdict in sorted(typesdict.iteritems()):
+            for obsid, date_time_dict in sorted(obsdict.iteritems()):
                 for date_time, param_dict in sorted(date_time_dict.iteritems()):
                     try:
                         datestring = datetime.strftime(date_time, '%Y-%m-%d %H:%M:%S')
@@ -834,7 +840,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
     def send_file_data_to_importer(self, file_data, importer):
         self.csvlayer = None
-        if len(file_data) == 0:
+        if len(file_data) < 2:
             return
 
         file_string = utils.lists_to_string(file_data)
@@ -865,17 +871,17 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             cleaningok = self.MultipleFieldDuplicates(4,'comments',sqlremove,'obs_points',sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then fix zz_flowtype and then copy data from the temporary table to the original table in the db
 
-                #Add staffs that does not exist in db
-                staffs = [x[0] for x in utils.sql_load_fr_db("""select distinct staff from %s"""%self.temptableName)[1]]
-
-                if utils.verify_table_exists('zz_staff'):
-                    self.staff_import(staffs)
-
                 # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 sqlpart1 = """INSERT OR IGNORE INTO "comments" (obsid, date_time, comment, staff) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(obsid, date_time, comment, staff, self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql)
+
+                #Add staffs that does not exist in db
+                if utils.verify_table_exists('zz_staff'):
+                    staffs = set([x[0] for x in utils.sql_load_fr_db("""select distinct staff from %s"""%self.temptableName)[1]])
+                    self.staff_import(staffs)
+
                 self.status = 'True'  # Cleaning was OK and import perfomed!!
                 self.recsafter = (utils.sql_load_fr_db("""SELECT Count(*) FROM comments""")[1])[0][0] #for the statistics
                 self.StatsAfter()
@@ -891,7 +897,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :param initials: a string with initials, or a list of strings with initials
         :return:
         """
-        existing_staff = [utils.returnunicode(_initials) for _initials in utils.get_staff_initials_list()[1]]
         name = u''
 
         if isinstance(initials, basestring):
@@ -899,7 +904,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         for _initials in initials:
             _initials = utils.returnunicode(_initials)
-            if initials in existing_staff:
+            existing_staff = [utils.returnunicode(x) for x in utils.get_staff_initials_list()[1]]
+            if _initials in existing_staff:
                 continue
             else:
                 sql = u"""insert into "zz_staff" (initials, name) VALUES ("%s", "%s");"""%(_initials, name)
