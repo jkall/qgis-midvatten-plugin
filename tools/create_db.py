@@ -66,35 +66,42 @@ class newdb():
                 #print versionstext#debug
                 # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
                 # then the syntax defines a Midvatten project db according to the loaded .sql-file
-                if int(versionstext[0][0][0]) > 3: # which file to use depends on spatialite version installed
-                    filenamestring = "create_db_splite4"
-                else:
-                    filenamestring = "create_db"
-                if locale.getdefaultlocale()[0] == 'sv_SE':
-                    filenamestring += "_sv.sql"
-                else:
-                    filenamestring += ".sql"
+                if not int(versionstext[0][0][0]) > 3: # which file to use depends on spatialite version installed
+                    utils.pop_up_info("Midvatten plugin needs spatialite4.\nDatabase can not be created")
+                    return ''
+
+                filenamestring = "create_db.sql"
+
                 SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
                 #print(SQLFile)#debug
                 qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
-                f = open(SQLFile, 'r')
-                f.readline()  # first line is encoding info....
-                for line in f:
-                    for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
-                                                       ('CHANGETOPLUGINVERSION', str(verno)),
-                                                       ('CHANGETOQGISVERSION',str(qgisverno)),
-                                                       ('CHANGETOSPLITEVERSION', str(versionstext[0][0]))]:
-                        line = line.replace(replace_word, replace_with)
-                    #replaced_line = line.replace('CHANGETOQGISVERSION',str(qgisverno)).replace('CHANGETOSPLITEVERSION',str(versionstext[0][0]))
-                    try:
-                        self.rs = self.cur.execute(line)  # use tags to find and replace SRID and versioning info
-                    except Exception, e:
-                        utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
+                with open(SQLFile, 'r') as f:
+                    f.readline()  # first line is encoding info....
+                    for line in f:
+                        if not line:
+                            continue
+                        if line.startswith("#"):
+                            continue
+                        for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
+                                                           ('CHANGETOPLUGINVERSION', str(verno)),
+                                                           ('CHANGETOQGISVERSION',str(qgisverno)),
+                                                           ('CHANGETOSPLITEVERSION', str(versionstext[0][0]))]:
+                            line = line.replace(replace_word, replace_with)
+                        #replaced_line = line.replace('CHANGETOQGISVERSION',str(qgisverno)).replace('CHANGETOSPLITEVERSION',str(versionstext[0][0]))
+                        try:
+                            self.cur.execute(line)  # use tags to find and replace SRID and versioning info
+                        except Exception, e:
+                            utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
 
+                self.insert_datadomains()
 
-                self.cur.execute("PRAGMA foreign_keys = OFF")
+                self.add_triggers_to_obs_points()
+
+                #self.cur.execute("PRAGMA foreign_keys = OFF")
+
                 #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
-                self.rs.close()
+                #self.rs.close()
+                self.conn.commit()
                 self.conn.close()
                 #create SpatiaLite Connection in QGIS QSettings
                 settings=PyQt4.QtCore.QSettings()
@@ -119,6 +126,30 @@ class newdb():
             default_crs = 4326
         EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, "Select CRS", "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:",default_crs)
         return EPSGID
+
+    def insert_datadomains(self):
+        filenamestring = 'insert_datadomain'
+        if locale.getdefaultlocale()[0] == 'sv_SE':
+            filenamestring += "_sv.sql"
+        else:
+            filenamestring += ".sql"
+        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring))
+
+    def add_triggers_to_obs_points(self):
+        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", "insert_obs_points_triggers.sql"))
+
+    def excecute_sqlfile(self, sqlfilename):
+        with open(sqlfilename, 'r') as f:
+            f.readline()  # first line is encoding info....
+            for line in f:
+                if not line:
+                    continue
+                if line.startswith("#"):
+                    continue
+                try:
+                    self.cur.execute(line)  # use tags to find and replace SRID and versioning info
+                except Exception, e:
+                    utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
 
 
 class AddLayerStyles():

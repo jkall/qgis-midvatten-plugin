@@ -906,3 +906,62 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
         filtered_data.append(row)
 
     return filtered_data
+
+def add_triggers_to_obs_points():
+    """
+    /*
+    * These are quick-fixes for updating coords from geometry and the other way around
+    * Please notice that these are AFTER insert/update although BEFORE should be preferrable?
+    * Also, srid is not yet read from the
+    */
+
+    -- geometry updated after coordinates are inserted
+    CREATE TRIGGER "after_insert_obs_points_geom_fr_coords" AFTER INSERT ON "obs_points"
+    WHEN (0 < (select count() from obs_points where ((NEW.east is not null) AND (NEW.north is not null) AND (NEW.geometry IS NULL))))
+    BEGIN
+        UPDATE obs_points
+        SET  geometry = MakePoint(east, north, (select srid from geometry_columns where f_table_name = 'obs_points'))
+        WHERE (NEW.east is not null) AND (NEW.north is not null) AND (NEW.geometry IS NULL);
+    END;
+
+    -- coordinates updated after geometries are inserted
+    CREATE TRIGGER "after_insert_obs_points_coords_fr_geom" AFTER INSERT ON "obs_points"
+    WHEN (0 < (select count() from obs_points where ((NEW.east is null) AND (NEW.north is null) AND (NEW.geometry is not NULL))))
+    BEGIN
+        UPDATE obs_points
+        SET  east = X(geometry), north = Y(geometry)
+        WHERE (NEW.east is null) AND (NEW.north is null) AND (NEW.geometry is not NULL);
+    END;
+
+    -- coordinates updated after geometries are updated
+    CREATE TRIGGER "after_update_obs_points_coords_fr_geom" AFTER UPDATE ON "obs_points"
+    WHEN (0 < (select count() from obs_points where NEW.geometry != OLD.geometry) )
+    BEGIN
+        UPDATE obs_points
+        SET  east = X(geometry), north = Y(geometry)
+        WHERE (NEW.geometry != OLD.geometry);
+    END;
+
+    -- geometry updated after coordinates are updated
+    CREATE TRIGGER "after_update_obs_points_geom_fr_coords" AFTER UPDATE ON "obs_points"
+    WHEN (0 < (select count() from obs_points where ((NEW.east != OLD.east) OR (NEW.north != OLD.north))) )
+    BEGIN
+        UPDATE obs_points
+        SET  geometry = MakePoint(east, north, (select srid from geometry_columns where f_table_name = 'obs_points'))
+        WHERE ((NEW.east != OLD.east) OR (NEW.north != OLD.north));
+    END;
+    :return:
+    """
+    excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","insert_obs_points_triggers.sql"), sql_alter_db)
+
+def excecute_sqlfile(sqlfilename, function=sql_alter_db):
+    with open(sqlfilename, 'r') as f:
+        f.readline()  # first line is encoding info....
+        for line in f:
+            if not line:
+                continue
+            if line.startswith("#"):
+                continue
+            function(line)
+
+

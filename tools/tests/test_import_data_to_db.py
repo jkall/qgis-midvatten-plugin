@@ -307,6 +307,7 @@ class TestFieldLoggerImporter():
         #reference_string = "flow,Rb1615,2016-03-30 15:30:09,Accvol,m3,357,comment,,gick bra,level,Rb1608,2016-03-30 15:34:13,comment,,ergv,meas,m,555,2016-03-30 15:34:40,comment,,testc,quality,Rb1505,2016-03-30 15:29:26,comment,,hej,konduktivitet,µS/cm,863,Rb1512,2016-03-30 15:30:39,comment,,test,syre,%,58,syre,mg/L,58,temperatur,grC,8,sample,Rb1202,2016-03-30 15:31:30,comment,,hej2,Rb1512,2016-03-30 15:31:30,turbiditet,FNU,899"
         #assert result_string == reference_string
 
+
 class notimplementedyet():
     pass
         #class TestCommentsImportFromCsv(object):
@@ -828,6 +829,7 @@ class TestInterlab4Importer():
         self.importinstance = None
         pass
 
+
 class TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
@@ -910,8 +912,6 @@ class TestDbCalls(object):
         msgbar = TestDbCalls.mocked_iface.messagebar.messages
         if msgbar:
             print str(msgbar)
-
-
 
         assert test_flow_type == reference_flow_type
 
@@ -1013,6 +1013,199 @@ class TestDbCalls(object):
     def tearDown(self):
         #Delete database
         os.remove(TestDbCalls.temp_db_path)
+
+
+class TestObsPointsTriggers(object):
+    temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
+    #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
+    answer_yes_obj = MockUsingReturnValue()
+    answer_yes_obj.result = 1
+    answer_no_obj = MockUsingReturnValue()
+    answer_no_obj.result = 0
+    answer_yes = MockUsingReturnValue(answer_yes_obj)
+    crs_question = MockUsingReturnValue([3006])
+    dbpath_question = MockUsingReturnValue(temp_db_path)
+    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
+    mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([temp_db_path]))
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
+    skip_popup = MockUsingReturnValue('')
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', crs_question.get_v)
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
+    def setUp(self):
+        self.iface = DummyInterface()
+        self.midvatten = midvatten.midvatten(self.iface)
+        try:
+            os.remove(TestObsPointsTriggers.temp_db_path)
+        except OSError:
+            pass
+        self.midvatten.new_db()
+        self.importinstance = midv_data_importer()
+        utils.sql_alter_db(u"""DROP TRIGGER IF EXISTS after_insert_obs_points_geom_fr_coords""")
+        utils.sql_alter_db(u"""DROP TRIGGER IF EXISTS after_update_obs_points_geom_fr_coords""")
+        utils.sql_alter_db(u"""DROP TRIGGER IF EXISTS after_insert_obs_points_coords_fr_geom""")
+        utils.sql_alter_db(u"""DROP TRIGGER IF EXISTS after_update_obs_points_coords_fr_geom""")
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_add_triggers_not_change_existing(self):
+        """ Adding triggers should not automatically change the db """
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        utils.add_triggers_to_obs_points()
+        reference_string = u'(True, [(rb1, 1.0, 1.0, None)])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_add_geometry_from_east_north(self):
+        """ Test that adding triggers and adding obsid with east, north also adds geometry
+        :return:
+        """
+        utils.add_triggers_to_obs_points()
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 1.0, 1.0, POINT(1 1))])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_add_east_north_from_geometry(self):
+        """ Test that adding triggers and adding obsid with geometry also adds east, north
+        :return:
+        """
+        utils.add_triggers_to_obs_points()
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 1.0, 1.0, POINT(1 1))])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_add_trigger_add_geometry_not_nulling_geometry(self):
+        """ Test that adding triggers and adding obsid don't set null values for previous obsid.
+        :return:
+        """
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
+        #After the first: u'(True, [(rb1, None, None, POINT(1 1))])
+
+        utils.add_triggers_to_obs_points()
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb2', GeomFromText('POINT(2.0 2.0)', 3006))""")
+        #After the second: u'(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, None, None, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_add_trigger_add_geometry_not_nulling_east_north(self):
+        """ Test that adding triggers and adding obsid from geometry don't set null values for previous obsid.
+        :return:
+        """
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, east, north) VALUES ('rb1', 1, 1)""")
+        #After the first: u'(True, [(rb1, None, None, POINT(1 1))])
+
+        utils.add_triggers_to_obs_points()
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb2', GeomFromText('POINT(2.0 2.0)', 3006))""")
+        #After the second: u'(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 1.0, 1.0, None), (rb2, 2.0, 2.0, POINT(2 2))])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_add_trigger_add_east_north_not_nulling_east_north(self):
+        """ Test that adding triggers and adding obsid from east, north don't set null values for previous obsid.
+        :return:
+        """
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, east, north) VALUES ('rb1', 1, 1)""")
+
+        utils.add_triggers_to_obs_points()
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, east, north) VALUES ('rb2', 2, 2)""")
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 1.0, 1.0, None), (rb2, 2.0, 2.0, POINT(2 2))])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_update_geometry_from_east_north(self):
+        """ Test that adding triggers and updating obsid with east, north also updates geometry
+        :return:
+        """
+        utils.add_triggers_to_obs_points()
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
+        utils.sql_alter_db(u'''UPDATE obs_points SET east = 2, north = 2 WHERE (obsid = 'rb1')''')
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 2.0, 2.0, POINT(2 2))])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_update_east_north_from_geometry(self):
+        """ Test that adding triggers and updating obsid with geometry also updates east, north
+        :return:
+        """
+        utils.add_triggers_to_obs_points()
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
+        utils.sql_alter_db(u'''UPDATE obs_points SET geometry = GeomFromText('POINT(2.0 2.0)', 3006) WHERE (obsid = 'rb1')''')
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 2.0, 2.0, POINT(2 2))])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_add_trigger_update_geometry_not_nulling_geometry(self):
+        """ Test that adding triggers and updating obsid don't set null values for previous obsid.
+        :return:
+        """
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb2', GeomFromText('POINT(2.0 2.0)', 3006))""")
+        #After the first: u'(True, [(rb1, None, None, POINT(1 1))])
+
+        utils.add_triggers_to_obs_points()
+        utils.sql_alter_db(u'''UPDATE obs_points SET geometry = GeomFromText('POINT(3.0 3.0)', 3006) WHERE (obsid = 'rb1')''')
+        #After the second: u'(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 3.0, 3.0, POINT(3 3)), (rb2, None, None, POINT(2 2))])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_update_trigger_add_geometry_not_nulling_east_north(self):
+        """ Test that adding triggers and updating obsid from geometry don't set null values for previous obsid.
+        :return:
+        """
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb1', 1, 1, GeomFromText('POINT(1.0 1.0)', 3006))""")
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb2', 2, 2, GeomFromText('POINT(2.0 2.0)', 3006))""")
+        #After the first: u'(True, [(rb1, None, None, POINT(1 1))])
+
+        utils.add_triggers_to_obs_points()
+        utils.sql_alter_db(u'''UPDATE obs_points SET geometry = GeomFromText('POINT(3.0 3.0)', 3006) WHERE (obsid = 'rb1')''')
+        #After the second: u'(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 3.0, 3.0, POINT(3 3)), (rb2, 2.0, 2.0, POINT(2 2))])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_update_trigger_add_east_north_not_nulling_east_north(self):
+        """ Test that adding triggers and updating obsid from east, north don't set null values for previous obsid.
+        :return:
+        """
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb1', 1, 1, GeomFromText('POINT(1.0 1.0)', 3006))""")
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb2', 2, 2, GeomFromText('POINT(2.0 2.0)', 3006))""")
+
+        utils.add_triggers_to_obs_points()
+
+        utils.sql_alter_db(u'''UPDATE obs_points SET east = 3, north = 3 WHERE (obsid = 'rb1')''')
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 3.0, 3.0, POINT(3 3)), (rb2, 2.0, 2.0, POINT(2 2))])'
+        assert test_string == reference_string
+
+    def tearDown(self):
+        #Delete database
+        os.remove(TestObsPointsTriggers.temp_db_path)
 
 
 

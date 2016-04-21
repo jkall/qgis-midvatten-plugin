@@ -71,6 +71,7 @@ class loadlayers():
 
         for layer in layer_list:#now loop over all the layers and set styles etc
             if not layer.isValid():
+                utils.pop_up_info(layer.name() + ' is not valid layer')
                 print(layer.name() + ' is not valid layer')
                 pass
             else:
