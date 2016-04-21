@@ -1260,9 +1260,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-""" Note, thes class below is a quickfix and should be incorporated into the a multi-import class above instead. As soon as there is time for code cleanup..."""
-class wlvlloggimportclass():
 
+class wlvlloggimportclass():
+    """ Note, thes class is a quickfix and have been incorporated into the multi-import class as wlvllogg_import"""
     def __init__(self):
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.csvpath = ''
