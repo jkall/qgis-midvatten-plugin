@@ -24,6 +24,7 @@ from collections import OrderedDict
 
 import midvatten_utils as utils
 from definitions.midvatten_defs import standard_parameters_for_wquality, standard_parameters_for_wflow, standard_parameters_for_wsample
+from import_data_to_db import midv_data_importer
 
 export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'export_fieldlogger_ui_dialog.ui'))[0]
 
@@ -53,6 +54,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.set_obsids_and_parameters_checkboxes(self.gridLayout_selections, self.selection_dict, self.unhidden_types_parameters)
 
         self.connect(self.pushButtonExport, PyQt4.QtCore.SIGNAL("clicked()"), self.export_selected)
+        self.connect(self.pushButtonImportWellsfile, PyQt4.QtCore.SIGNAL("clicked()"), self.select_from_wells)
 
         self.show()
 
@@ -229,11 +231,46 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         :return:
         """
         for obsid, types_dict in self.selection_dict.iteritems():
-            splitted = type_parameter_name.split('.')
+            splitted = type_parameter_name.split(u'.')
             typename = splitted[0]
             parametername = '.'.join(splitted[1:])
             checkbox = types_dict[typename][parametername]
             checkbox.setChecked(check_state)
+
+    def select_from_wells(self):
+        """ Select all from imported wells-file
+        :return:
+        """
+        selection_dict = self.selection_dict
+
+        importinstance = midv_data_importer()
+        obsid_dict = importinstance.parse_wells_file()
+
+        failed_imports = []
+        for obsid, types_dict in obsid_dict.iteritems():
+            for typename, parameters in types_dict.iteritems():
+                for parameter, unit in parameters:
+                    try:
+                        types_dict = selection_dict[obsid]
+                    except KeyError:
+                        failed_imports.append([obsid, typename, parameter, unit])
+                        continue
+                    try:
+                        parameters =  types_dict[typename]
+                    except KeyError:
+                        failed_imports.append([obsid, typename, parameter, unit])
+                        continue
+                    try:
+                        checkbox = parameters[u'.'.join([parameter, unit])]
+                    except KeyError:
+                        try:
+                            checkbox = parameters[parameter]
+                        except KeyError:
+                            failed_imports.append([obsid, typename, parameter, unit])
+                            continue
+                    checkbox.setChecked(True)
+
+        utils.pop_up_info('Failed to import parameters:\n' + '\n'.join([', '.join(x) for x in failed_imports if x[2] != u'comment']))
 
     def export_selected(self):
         """ Export the selected obsids and parameters to a file
