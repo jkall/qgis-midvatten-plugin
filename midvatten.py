@@ -45,7 +45,7 @@ from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
 from wqualreport import wqualreport
-from loaddefaultlayers import loadlayers
+from loaddefaultlayers import LoadLayers
 from prepareforqgis2threejs import PrepareForQgis2Threejs
 import midvatten_utils as utils 
 from definitions import midvatten_defs
@@ -183,6 +183,10 @@ class midvatten:
         self.actionPrepareFor2Qgis2ThreeJS.setWhatsThis("Add spatialite views to be used by Qgis2threejs plugin to create a 3D plot")
         QObject.connect(self.actionPrepareFor2Qgis2ThreeJS, SIGNAL("triggered()"), self.prepare_layers_for_qgis2threejs)
 
+        self.actionloaddatadomains = QAction(QIcon(":/plugins/midvatten/icons/loaddatadomains.png"), "Load data domain tables to qgis", self.iface.mainWindow())
+        self.actionloadthelayers.setWhatsThis("Load the data domain tables from the database")
+        QObject.connect(self.actionloaddatadomains, SIGNAL("activated()"), self.load_data_domains)
+
         self.actionVacuumDB = QAction(QIcon(":/plugins/midvatten/icons/vacuum.png"), "Vacuum the database", self.iface.mainWindow())
         self.actionVacuumDB.setWhatsThis("Perform database vacuuming")
         QObject.connect(self.actionVacuumDB, SIGNAL("triggered()"), self.vacuum_db)
@@ -209,6 +213,7 @@ class midvatten:
         
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
+        self.toolBar.setObjectName("Midvatten")
         self.toolBar.addAction(self.actionsetup)
         #self.toolBar.addAction(self.actionloadthelayers)
         self.toolBar.addAction(self.actionPlotTS)
@@ -278,6 +283,7 @@ class midvatten:
 
         self.menu.utils =  QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
         self.menu.addMenu(self.menu.utils)
+        self.menu.utils.addAction(self.actionloaddatadomains)
         self.menu.utils.addAction(self.actionPrepareFor2Qgis2ThreeJS)
         #self.menu.utils.addAction(self.action_calculate_statistics_for_all_w_logger_data) #HS: This one is not needed currently, but kept in the code.
 
@@ -651,6 +657,7 @@ class midvatten:
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
                     except:
                         pass
+
     def import_fieldlogger(self):
         """
         Imports data from FieldLogger android app format.
@@ -677,6 +684,23 @@ class midvatten:
             else:
                 self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
 
+    def load_data_domains(self):
+        #utils.pop_up_info(msg='This feature is not yet implemented',title='Hold on...')
+        #return
+        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
+        if err_flag == 0:
+            conn_ok, dd_tables = utils.sql_load_fr_db("select name from sqlite_master where name like 'zz_%'")
+            if not conn_ok:
+                return
+            d_domain_tables = [str(dd_table[0]) for dd_table in dd_tables]
+            print d_domain_tables#debug
+            err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms, d_domain_tables)#verify none of the tables are already loaded and in edit mode
+            if err_flag == 0:
+                LoadLayers(qgis.utils.iface, self.ms.settingsdict,'Midvatten_data_domains')
+        QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+        
+
     def loadthelayers(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
@@ -684,7 +708,7 @@ class midvatten:
             if sanity.result == 1:
                 #show the user this may take a long time...
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
-                loadlayers(qgis.utils.iface, self.ms.settingsdict)
+                LoadLayers(qgis.utils.iface, self.ms.settingsdict)
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def new_db(self): 
