@@ -22,6 +22,12 @@
 """
 import midvatten_utils as utils
 
+"""
+PLEASE NOTICE, THIS MODULE IS NO LONGER USED
+
+This module should be removed from the midvatten plugin
+"""
+
 class updatecoordinates():
 
     def __init__(self, observations=[]):#observations is supposed to be a list of unicode strings

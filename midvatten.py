@@ -84,11 +84,11 @@ class midvatten:
         self.actionabout = QAction(QIcon(":/plugins/midvatten/icons/about.png"), "About", self.iface.mainWindow())
         QObject.connect(self.actionabout, SIGNAL("triggered()"), self.about)
         
-        self.actionupdatecoord = QAction(QIcon(":/plugins/midvatten/icons/updatecoordfrpos.png"), "Update coordinates from map position", self.iface.mainWindow())
-        QObject.connect(self.actionupdatecoord , SIGNAL("triggered()"), self.updatecoord)
+        #self.actionupdatecoord = QAction(QIcon(":/plugins/midvatten/icons/updatecoordfrpos.png"), "Update coordinates from map position", self.iface.mainWindow())
+        #QObject.connect(self.actionupdatecoord , SIGNAL("triggered()"), self.updatecoord)
         
-        self.actionupdateposition = QAction(QIcon(":/plugins/midvatten/icons/updateposfrcoord.png"), "Update map position from coordinates", self.iface.mainWindow())
-        QObject.connect(self.actionupdateposition , SIGNAL("triggered()"), self.updateposition)
+        #self.actionupdateposition = QAction(QIcon(":/plugins/midvatten/icons/updateposfrcoord.png"), "Update map position from coordinates", self.iface.mainWindow())
+        #QObject.connect(self.actionupdateposition , SIGNAL("triggered()"), self.updateposition)
         
         self.action_import_wlvl = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_manual.png"), "Import w level measurements", self.iface.mainWindow())
         QObject.connect(self.action_import_wlvl , SIGNAL("triggered()"), self.import_wlvl)
@@ -251,8 +251,8 @@ class midvatten:
         self.menu.addMenu(self.menu.add_data_menu)
         self.menu.add_data_menu.addAction(self.action_wlvlcalculate)   
         self.menu.add_data_menu.addAction(self.action_wlvlloggcalibrate)   
-        self.menu.add_data_menu.addAction(self.actionupdatecoord)   
-        self.menu.add_data_menu.addAction(self.actionupdateposition)   
+        #self.menu.add_data_menu.addAction(self.actionupdatecoord)   
+        #self.menu.add_data_menu.addAction(self.actionupdateposition)   
         self.menu.add_data_menu.addAction(self.action_aveflowcalculate)   
 
         self.menu.plot_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&View plot"))
@@ -440,7 +440,7 @@ class midvatten:
         allcritical_layers = ('obs_points')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo","""You are about to import observation points data, from a text file which must have one header row and 26 columns (see plugin web page for further explanation):\n\n1. obsid, 2. name, 3. place, 4. type, 5. length, 6. drillstop, 7. diam, 8. material, 9. screen, 10. capacity, 11. drilldate, 12. wmeas_yn, 13. wlogg_yn, 14. east, 15. north, 16. ne_accur, 17. ne_source, 18. h_toc, 19. h_tocags, 20. h_gs, 21. h_accur, 22. h_syst, 23. h_source, 24. source, 25. com_onerow, 26. com_html\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in string fields.\nEmpty or null values are not allowed for obsid and there must not be any duplicates of obsid.\nEast and north values must correspond to the database SRID.\n\nContinue?""",'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import observation points data, from a text file which must have one header row and 26 columns (see plugin web page for further explanation):\n\n1. obsid, 2. name, 3. place, 4. type, 5. length, 6. drillstop, 7. diam, 8. material, 9. screen, 10. capacity, 11. drilldate, 12. wmeas_yn, 13. wlogg_yn, 14. east, 15. north, 16. ne_accur, 17. ne_source, 18. h_toc, 19. h_tocags, 20. h_gs, 21. h_accur, 22. h_syst, 23. h_source, 24. source, 25. com_onerow, 26. com_html\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in string fields.\nEmpty or null values are not allowed for obsid and there must not be any duplicates of obsid.\nEast and north values must correspond to the database SRID.\nIf the East and north values are missing, the corresponding point will assigned a position at coordinate 0,0.  \n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
@@ -449,7 +449,7 @@ class midvatten:
                 #utils.pop_up_info(returnvalue) #debugging
                 #utils.pop_up_info(importinstance.status) #debugging
                 if importinstance.status=='True':      # 
-                    utils.pop_up_info("%s observation points were imported to the database.\nTo display the imported points on map, select them in\nthe obs_points attribute table then update map position:\nMidvatten - Edit data in database - Update map position from coordinates"%str(importinstance.recsafter - importinstance.recsbefore))
+                    utils.pop_up_info("%s observation points were imported to the database.\nGeometries (map position) were automatically created based on east and north coordinates."%str(importinstance.recsafter - importinstance.recsbefore))
                     #self.iface.messageBar().pushMessage("Info","%s observation points were imported to the database.\nTo display the imported points on map, select them in\nthe obs_points attribute table then update map position:\nMidvatten - Edit data in database - Update map position from coordinates"%str(importinstance.recsafter - importinstance.recsbefore), 0)                    
                     try:
                         self.midvsettingsdialog.ClearEverything()
@@ -822,7 +822,7 @@ class midvatten:
         except:
             self.midvsettingsdialog = midvsettingsdialog.midvsettingsdialogdock(self.iface.mainWindow(),self.iface, self.ms)#self.iface as arg?
 
-    def updatecoord(self):
+    def updatecoord(self):# no longer used, to be removed
         all_critical_layers=('obs_points')
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, all_critical_layers)#verify midv settings are loaded
         layername = 'obs_points'
@@ -849,7 +849,7 @@ class midvatten:
                         from coords_and_position import updatecoordinates
                         updatecoordinates(observations)
 
-    def updateposition(self):
+    def updateposition(self):# no longer used, to be removed
         all_critical_layers=('obs_points')
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, all_critical_layers)#verify midv settings are loaded
         layername = 'obs_points'
