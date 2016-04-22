@@ -77,7 +77,7 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
             sql1 += str(fr_d_t)
             sql1 += """' AND date_time <= '"""
             sql1 += str(to_d_t)
-            sql1 += """' """        
+            sql1 += """' """
             utils.sql_alter_db(sql1)
             sql2 = """UPDATE OR IGNORE w_levels SET level_masl = h_toc - meas WHERE """
             sql2 += """date_time >= '"""

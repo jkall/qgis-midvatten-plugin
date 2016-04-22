@@ -399,12 +399,12 @@ def sql_alter_db(sql=''):
         try:
             resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
         except IntegrityError, e:
-            raise IntegrityError(str(e) + "\nAn obsid chosen for import probably didn't exist in the obs_point table")
+            raise IntegrityError(str(e))
     else:
         try:
             resultfromsql = curs.executemany(sql2[0], sql2[1])
         except IntegrityError, e:
-            raise IntegrityError(str(e) + "\nAn obsid chosen for import probably didn't exist in the obs_point table")
+            raise IntegrityError(str(e))
 
     result = resultfromsql.fetchall()
     conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command

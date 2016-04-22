@@ -81,6 +81,30 @@ class TestFieldLoggerImporter():
         reference_string = "flow,Rb1615,2016-03-30 15:30:09,Accvol,m3,357,comment,,gick bra,level,Rb1608,2016-03-30 15:34:13,comment,,ergv,meas,m,555,2016-03-30 15:34:40,comment,,testc,quality,Rb1505,2016-03-30 15:29:26,comment,,hej,konduktivitet,µS/cm,863,Rb1512,2016-03-30 15:30:39,comment,,test,syre,%,58,syre,mg/L,58,temperatur,grC,8,sample,Rb1202,2016-03-30 15:31:30,comment,,hej2,Rb1512,2016-03-30 15:31:30,turbiditet,FNU,899"
         assert result_string == reference_string
 
+    def test_fieldlogger_import_parse_rows_shift_date(self):
+
+        f = [
+            "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
+            "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
+            "Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
+            "Rb1615.flow;30-03-2016;15:30:09;gick bra;f.comment\n",
+            "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;58;q.syre.%\n",
+            "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
+            "Rb1512.sample;30-03-2016;15:31:30;899;s.turbiditet.FNU\n",
+            "Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;ergv;l.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;555;l.meas.m\n",
+            "Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n"
+            ]
+
+        parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f, [u'-1', u'hours'])
+        result_list = utils_for_tests.dict_to_sorted_list(parsed_rows)
+        result_string = ','.join(result_list)
+        reference_string = "flow,Rb1615,2016-03-30 14:30:09,Accvol,m3,357,comment,,gick bra,level,Rb1608,2016-03-30 14:34:13,comment,,ergv,meas,m,555,2016-03-30 14:34:40,comment,,testc,quality,Rb1505,2016-03-30 14:29:26,comment,,hej,konduktivitet,µS/cm,863,Rb1512,2016-03-30 14:30:39,comment,,test,syre,%,58,syre,mg/L,58,temperatur,grC,8,sample,Rb1202,2016-03-30 14:31:30,comment,,hej2,Rb1512,2016-03-30 14:31:30,turbiditet,FNU,899"
+        assert result_string == reference_string
+
     @mock.patch('import_data_to_db.utils.pop_up_info', skip_popup.get_v)
     def test_fieldlogger_import_parse_rows_skip_putcode(self):
         """ Test that the bug that enters instead of obsname and subname PUTCODE is handled
@@ -880,7 +904,7 @@ class TestInterlab4Importer():
         pass
 
 
-class TestDbCalls(object):
+class _TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -1067,7 +1091,7 @@ class TestDbCalls(object):
         os.remove(TestDbCalls.temp_db_path)
 
 
-class TestObsPointsTriggers(object):
+class _TestObsPointsTriggers(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -1253,6 +1277,19 @@ class TestObsPointsTriggers(object):
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
         reference_string = u'(True, [(rb1, 3.0, 3.0, POINT(3 3)), (rb2, 2.0, 2.0, POINT(2 2))])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_add_trigger_add_obsid_without_anything(self):
+        """ Test that adding triggers and updating obsid from east, north don't set null values for previous obsid.
+        :return:
+        """
+        utils.add_triggers_to_obs_points()
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('rb1')""")
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('rb2')""")
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, None, None, None), (rb2, None, None, None)])'
         assert test_string == reference_string
 
     def tearDown(self):
