@@ -88,7 +88,23 @@ class askuser(QtGui.QDialog):
             msgBox.addButton(QtGui.QMessageBox.Cancel)
             reply = msgBox.exec_()
             self.result = reply # ALL=0, SELECTED=1
-
+        elif question == 'DateShift':
+            supported_units = [u'microseconds', u'milliseconds', u'seconds', u'minutes', u'hours', u'days', u'weeks']
+            while True:
+                answer = str(PyQt4.QtGui.QInputDialog.getText(None, "User input needed", "Give needed adjustment of date/time for the data.\nSupported format: +- X <resolution>\nEx: 1 hours, -1 hours, -1 days\nSupported units:\n" + ', '.join(supported_units), PyQt4.QtGui.QLineEdit.Normal, u'0 hours')[0])
+                if not answer:
+                    self.result = u'cancel'
+                    break
+                else:
+                    adjustment_unit = answer.split()
+                    if len(adjustment_unit) == 2:
+                        if adjustment_unit[1] in supported_units:
+                            self.result = adjustment_unit
+                            break
+                        else:
+                            pop_up_info("Failure:\nOnly support resolutions\n " + ', '.join(supported_units))
+                    else:
+                        pop_up_info("Failure:\nMust write time resolution also.\n")
 
 class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
     def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None):
@@ -169,6 +185,8 @@ def ask_user_about_stopping(question):
         return 'cancel'
     else:
         return 'ignore'
+
+
 
 def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-table)
     #print(params)#debug

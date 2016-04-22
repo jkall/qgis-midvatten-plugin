@@ -66,6 +66,8 @@ def dateshift(adate, n, step_lenght):
     >>> dateshift('2016-03-01', -24, 'hours')
     datetime.datetime(2016, 2, 29, 0, 0)
     """
+    if isinstance(n, (basestring)):
+        n = float(n)
     adate = datestring_to_date(adate)    
     if step_lenght == 'microseconds':
         td = datetime.timedelta(microseconds=n)
