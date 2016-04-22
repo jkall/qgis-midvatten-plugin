@@ -76,3 +76,18 @@ class TestTempinput(object):
                 res = f.readlines()
         reference_list = [u'543\n', u'21']
         assert res == reference_list
+
+
+class TestAskUser(object):
+    PyQt4_QtGui_QInputDialog_getText = MockUsingReturnValue([u'-1 hours'])
+    cancel = MockUsingReturnValue([u''])
+
+    @mock.patch('PyQt4.QtGui.QInputDialog.getText', PyQt4_QtGui_QInputDialog_getText.get_v)
+    def test_askuser_dateshift(self):
+        question = utils.askuser('DateShift')
+        assert question.result == ['-1', 'hours']
+
+    @mock.patch('PyQt4.QtGui.QInputDialog.getText', cancel.get_v)
+    def test_askuser_dateshift_cancel(self):
+        question = utils.askuser('DateShift')
+        assert question.result == u'cancel'

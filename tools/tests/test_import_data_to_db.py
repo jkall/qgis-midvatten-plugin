@@ -142,7 +142,6 @@ class TestFieldLoggerImporter():
 
     @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
     @mock.patch('import_data_to_db.utils.get_last_used_flow_instruments', prev_used_flow_instr_ids.get_v)
-    #@mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', flow_instrument_id.get_v)
     def test_fieldlogger_prepare_flow_data(self):
         f = [
             "Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -158,7 +157,6 @@ class TestFieldLoggerImporter():
 
     @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
     @mock.patch('import_data_to_db.utils.get_last_used_flow_instruments', prev_used_flow_instr_ids.get_v)
-    #@mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', flow_instrument_id.get_v)
     def test_fieldlogger_prepare_flow_data_no_comment(self):
         f = [
             "Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -173,7 +171,6 @@ class TestFieldLoggerImporter():
 
     @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
     @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
-    #@mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
     @mock.patch('import_data_to_db.utils.get_staff_initials_list' , existing_staff.get_v)
     def test_fieldlogger_prepare_quality_data(self):
         f = [
@@ -195,7 +192,6 @@ class TestFieldLoggerImporter():
 
     @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
     @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
-    #@mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
     @mock.patch('import_data_to_db.utils.get_staff_initials_list' , existing_staff.get_v)
     def test_fieldlogger_prepare_quality_data_sample(self):
 
@@ -218,7 +214,6 @@ class TestFieldLoggerImporter():
         assert sorted_file_string == sorted_reference_string
 
     @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
-    #@mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
     @mock.patch('import_data_to_db.utils.get_staff_initials_list' , existing_staff.get_v)
     def test_fieldlogger_prepare_notes_data(self):
         f = [
@@ -243,7 +238,6 @@ class TestFieldLoggerImporter():
         sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
         sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
         assert sorted_file_string == sorted_reference_string
-
 
     def test_fieldlogger_import(self):
         """ Almost full integration test of fieldlogger import
@@ -281,14 +275,23 @@ class TestFieldLoggerImporter():
             skip_popup = MockUsingReturnValue('')
             notfound_ok = MockUsingReturnValue(MockNotFoundQuestion('ok', 'testvalue'))
             existing_staff = MockUsingReturnValue((True, (u'a', u'b')))
+            PyQt4_QtGui_QInputDialog_getText = MockUsingReturnValue([u'-0 hours'])
 
+            answer_no_obj = MockUsingReturnValue()
+            answer_no_obj.result = 0
+            answer_shift_date_obj = MockUsingReturnValue()
+            answer_shift_date_obj.result = [u'0', u'hours']
+
+            mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'User input needed': answer_shift_date_obj}, 1)
+
+            @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText', PyQt4_QtGui_QInputDialog_getText.get_v)
             @mock.patch('import_data_to_db.utils.pop_up_info', skip_popup.get_v)
             @mock.patch('midvatten_utils.NotFoundQuestion', notfound_ignore.get_v)
             @mock.patch('import_data_to_db.utils.get_last_used_flow_instruments', prev_used_flow_instr_ids.get_v)
             @mock.patch('import_data_to_db.midv_data_importer.wlvl_import_from_csvlayer', return_int.get_v)
             @mock.patch('import_data_to_db.midv_data_importer.select_files', selected_file.get_v)
             @mock.patch('qgis.utils.iface', mocked_iface)
-            #@mock.patch('import_data_to_db.PyQt4.QtGui.QInputDialog.getText', instrument_staff_questions.get_v)
             @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
             @mock.patch('import_data_to_db.midv_data_importer.send_file_data_to_importer', mocked_send_file_data_to_importer.get_v)
             @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
@@ -301,11 +304,11 @@ class TestFieldLoggerImporter():
             #print(','.join(test_utils.dict_to_sorted_list(mocked_send_file_data_to_importer.args_called_with)))
 
             #TODO: Fix and assert string that works with object instance names.
-        #parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
-        #result_list = utils_for_tests.dict_to_sorted_list(parsed_rows)
-        #result_string = ','.join(result_list)
-        #reference_string = "flow,Rb1615,2016-03-30 15:30:09,Accvol,m3,357,comment,,gick bra,level,Rb1608,2016-03-30 15:34:13,comment,,ergv,meas,m,555,2016-03-30 15:34:40,comment,,testc,quality,Rb1505,2016-03-30 15:29:26,comment,,hej,konduktivitet,µS/cm,863,Rb1512,2016-03-30 15:30:39,comment,,test,syre,%,58,syre,mg/L,58,temperatur,grC,8,sample,Rb1202,2016-03-30 15:31:30,comment,,hej2,Rb1512,2016-03-30 15:31:30,turbiditet,FNU,899"
-        #assert result_string == reference_string
+            #parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
+            #result_list = utils_for_tests.dict_to_sorted_list(parsed_rows)
+            #result_string = ','.join(result_list)
+            #reference_string = "flow,Rb1615,2016-03-30 15:30:09,Accvol,m3,357,comment,,gick bra,level,Rb1608,2016-03-30 15:34:13,comment,,ergv,meas,m,555,2016-03-30 15:34:40,comment,,testc,quality,Rb1505,2016-03-30 15:29:26,comment,,hej,konduktivitet,µS/cm,863,Rb1512,2016-03-30 15:30:39,comment,,test,syre,%,58,syre,mg/L,58,temperatur,grC,8,sample,Rb1202,2016-03-30 15:31:30,comment,,hej2,Rb1512,2016-03-30 15:31:30,turbiditet,FNU,899"
+            #assert result_string == reference_string
 
 
 class TestImportWellsFile(object):
@@ -877,7 +880,7 @@ class TestInterlab4Importer():
         pass
 
 
-class _TestDbCalls(object):
+class TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -1026,7 +1029,9 @@ class _TestDbCalls(object):
             answer_no_obj.result = 0
             answer_yes_obj = MockUsingReturnValue()
             answer_yes_obj.result = 1
-            mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
+            answer_shift_date_obj = MockUsingReturnValue()
+            answer_shift_date_obj.result = [u'0', u'hours']
+            mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj, u'User input needed': answer_shift_date_obj}, 1)
 
             @mock.patch('midvatten_utils.QgsProject.instance', TestDbCalls.mock_dbpath.get_v)
             @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
@@ -1062,7 +1067,7 @@ class _TestDbCalls(object):
         os.remove(TestDbCalls.temp_db_path)
 
 
-class _TestObsPointsTriggers(object):
+class TestObsPointsTriggers(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()

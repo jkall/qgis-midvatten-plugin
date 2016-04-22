@@ -31,7 +31,7 @@ import PyQt4.QtCore
 import PyQt4.QtGui
 
 import midvatten_utils as utils
-from date_utils import find_date_format, datestring_to_date
+from date_utils import find_date_format, datestring_to_date, dateshift
 
 
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
@@ -98,11 +98,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def import_interlab4(self, filenames=None):
         all_lab_results = parse_interlab4()
 
-
-
         self.send_file_data_to_importer(self, file_data, self.wquallab_import_from_csvlayer)
 
-
+        self.SanityCheckVacuumDB()
         "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
 
     def parse_interlab4(self, filenames=None):
@@ -323,6 +321,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def wflow_import(self):
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         self.wflow_import_from_csvlayer()
+        self.SanityCheckVacuumDB()
 
     def wflow_import_from_csvlayer(self): #please note the particular behaviour of adding additional flowtypes to table zz_flowtype
         """
@@ -356,7 +355,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
     def meteo_import(self): #please note the particular behaviour of adding additional flowtypes to table zz_meteoparam
@@ -394,6 +392,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def wlvl_import(self):
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         self.wlvl_import_from_csvlayer()
+        self.SanityCheckVacuumDB()
 
     def wlvl_import_from_csvlayer(self):
         """
@@ -419,7 +418,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         
     def wlvllogg_import(self):
@@ -438,15 +436,15 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         parsed_files = []
         for selected_file in files:
             file_data = self.load_diveroffice_file(selected_file, self.charsetchoosen[0], existing_obsids, confirm_names.result)
-            if file_data == 'cancel':
-                utils.pop_up_info("The import failed and has been stopped.")
-                break
-            elif file_data == 'ignore':
+            if file_data == u'cancel':
+                self.status = True
+                return u'cancel'
+            elif file_data == u'ignore':
                 continue
 
             parsed_files.append(file_data)
 
-        if file_data == 'cancel' or len(parsed_files) == 0:
+        if file_data == u'cancel' or len(parsed_files) == 0:
             qgis.utils.iface.messageBar().pushMessage("Import Failure","""No files imported""")
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return
@@ -515,6 +513,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def wquallab_import(self):
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         self.wquallab_import_from_csvlayer()
+        self.SanityCheckVacuumDB()
 
     def wquallab_import_from_csvlayer(self):
         """
@@ -541,12 +540,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def wqualfield_import(self):
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         self.wqualfield_import_from_csvlayer()
+        self.SanityCheckVacuumDB()
 
     def wqualfield_import_from_csvlayer(self):
         """
@@ -588,12 +587,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def fieldlogger_import(self):
-
         result_dict = self.fieldlogger_import_select_and_parse_rows()
+        if result_dict == u'cancel':
+            self.status = True
+            return u'cancel'
 
         existing_obsids = utils.get_all_obsids()
 
@@ -617,22 +617,30 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = True
             return u'cancel'
         self.send_file_data_to_importer(file_data, self.comments_import_from_csv)
+        self.SanityCheckVacuumDB()
 
     def fieldlogger_import_select_and_parse_rows(self):
         filename = self.select_files(True)[0].encode(str(self.charsetchoosen[0]))
         if not filename:
-            return
+            self.status = True
+            return u'cancel'
+
+        #Ask user if the date should be shifted
+        question = utils.askuser(u'DateShift', u'User input needed')
+        if question.result == u'cancel':
+            self.status = True
+            return u'cancel'
+        shift_date = question.result
 
         result_dict = {}
         with io.open(filename, 'r', encoding=str(self.charsetchoosen[0])) as f:
             #Skip header
             f.readline()
-
-            result_dict = self.fieldlogger_import_parse_rows(f)
+            result_dict = self.fieldlogger_import_parse_rows(f, shift_date)
         return result_dict
 
     @staticmethod
-    def fieldlogger_import_parse_rows(f):
+    def fieldlogger_import_parse_rows(f, shift_date=[u'0', u'hours']):
         """
         Parses rows from fieldlogger format into a dict
         :param f: File_data, often an open file or a list of rows
@@ -654,6 +662,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             date = cols[1]
             time = cols[2]
             date_time = datestring_to_date(date + u' ' + time)
+            date_time = dateshift(date_time, shift_date[0], shift_date[1])
             value = cols[3]
             paramtypename_parameter_unit = cols[4].split(u'.')
             parameter = paramtypename_parameter_unit[1]
@@ -725,7 +734,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
                     instrumentids_for_obsid = instrumentids.get(obsid, None)
                     if instrumentids_for_obsid is None:
-                        last_used_instrumentid = []
+                        last_used_instrumentid = u''
                     else:
                         last_used_instrumentid = sorted([(_date_time, _instrumentid) for _flowtype, _instrumentid, _date_time in instrumentids[obsid] if (_flowtype == flowtype)])[-1][1]
                     question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
@@ -894,7 +903,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def staff_import(self, initials):
