@@ -592,18 +592,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def fieldlogger_import(self):
-        filename = self.select_files(True)[0].encode(str(self.charsetchoosen[0]))
-        if not filename:
-            return
+
+        result_dict = self.fieldlogger_import_select_and_parse_rows()
 
         existing_obsids = utils.get_all_obsids()
-
-        result_dict = {}
-        with io.open(filename, 'r', encoding=str(self.charsetchoosen[0])) as f:
-            #Skip header
-            f.readline()
-
-            result_dict = self.fieldlogger_import_parse_rows(f)
 
         typename_preparer_importer = {u'level': (self.fieldlogger_prepare_level_data, self.wlvl_import_from_csvlayer),
                                       u'flow': (self.fieldlogger_prepare_flow_data, self.wflow_import_from_csvlayer),
@@ -626,6 +618,19 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return u'cancel'
         self.send_file_data_to_importer(file_data, self.comments_import_from_csv)
 
+    def fieldlogger_import_select_and_parse_rows(self):
+        filename = self.select_files(True)[0].encode(str(self.charsetchoosen[0]))
+        if not filename:
+            return
+
+        result_dict = {}
+        with io.open(filename, 'r', encoding=str(self.charsetchoosen[0])) as f:
+            #Skip header
+            f.readline()
+
+            result_dict = self.fieldlogger_import_parse_rows(f)
+        return result_dict
+
     @staticmethod
     def fieldlogger_import_parse_rows(f):
         """
@@ -639,13 +644,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         for rownr, rawrow in enumerate(f):
             row = utils.returnunicode(rawrow).rstrip(u'\r').rstrip(u'\n')
             cols = row.split(u';')
-            type_obsid = cols[0]
-            type_obsid_splitted = type_obsid.split(u'.')
-            if len(type_obsid_splitted) < 2:
+            obsid_type = cols[0]
+            obsid_type_splitted = obsid_type.split(u'.')
+            if len(obsid_type_splitted) < 2:
                 utils.pop_up_info("The typename and obsid on row: " + row + " could not be read. It will be skipped.")
                 continue
-            typename = type_obsid.split(u'.')[-1]
-            obsid = utils.rstrip(u'.' + typename, type_obsid)
+            typename = obsid_type.split(u'.')[-1]
+            obsid = utils.rstrip(u'.' + typename, obsid_type)
             date = cols[1]
             time = cols[2]
             date_time = datestring_to_date(date + u' ' + time)
@@ -972,6 +977,59 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 return 1
             else:
                 return 0
+
+    def parse_wells_file(self):
+        """ Opens a wells file and returns a parsed dict
+        :return: A dict like {obsid: {typename: [parameter, unit]}}
+        """
+        path = self.select_files(only_one_file=True)[0]
+        charset = self.charsetchoosen
+
+        if not path:
+            return {}
+        with io.open(path, u'r', encoding=str(charset[0])) as f:
+            obsid_dict = self.wells_parse_rows(f)
+        return obsid_dict
+
+    @staticmethod
+    def wells_parse_rows(f):
+        """
+        Parses rows from a wells file
+        :return: A dict like {obsid: {typename: [parameter, unit]}}
+        """
+        obsid_dict = {}
+        start_import = False
+        for rawrow in f:
+            row = utils.returnunicode(rawrow).rstrip(u'\r').rstrip(u'\n')
+
+            if row == u'NAME;SUBNAME;LAT;LON;INPUTFIELD':
+                start_import = True
+                continue
+
+            if not start_import:
+                continue
+
+            cols = row.split(u';')
+            obsid_type = cols[1]
+            obsid_type_splitted = obsid_type.split(u'.')
+
+            if len(obsid_type_splitted) < 2:
+                utils.pop_up_info("The typename and obsid on row: " + row + " could not be read. It will be skipped.")
+                continue
+            typename = obsid_type.split(u'.')[-1]
+            obsid = utils.rstrip(u'.' + typename, obsid_type)
+            parameters = cols[4].split(u'|')
+
+            for parameter in parameters:
+                type_parameter_unit =  parameter.split(u'.')
+                parameter = type_parameter_unit[1]
+                try:
+                    unit = type_parameter_unit[2]
+                except IndexError:
+                    unit = u''
+
+                obsid_dict.setdefault(obsid, {}).setdefault(typename, []).append((parameter, unit))
+        return obsid_dict
 
     def SingleFieldDuplicates(self,NoCols,GoalTable,sqlremove,idcol): #For major tables obs_points and obs_lines: Sanity checks and removes duplicates
         """perform some sanity checks of the imported data and removes duplicates and empty records"""

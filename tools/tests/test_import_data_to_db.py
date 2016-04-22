@@ -308,6 +308,55 @@ class TestFieldLoggerImporter():
         #assert result_string == reference_string
 
 
+class TestImportWellsFile(object):
+
+    def setUp(self):
+        self.importinstance = midv_data_importer()
+
+    def test_wells_parse_rows(self):
+        f = (
+            u'FileVersion 1;X',
+            u'NAME;INPUTTYPE;HINT',
+            u'parameters...',
+            u'NAME;SUBNAME;LAT;LON;INPUTFIELD',
+            u'Rb1301;Rb1301.quality;60.5549041639;14.1875295081;q.comment|q.syre.mg/L|q.syre.%|q.konduktivitet.µS/cm|q.redoxpotential.mV|q.pH',
+            u'Rb1301;Rb1301.sample;60.5549041639;14.1875295081;s.temperatur.grC|s.comment|s.turbiditet.FNU',
+            u'Rb1301;Rb1301.level;60.5640220837;14.1901808137;l.comment|l.meas.m',
+            u'Rb1302;Rb1302.quality;60.5640220837;14.1901808137;q.comment|q.syre.mg/L|q.konduktivitet.µS/cm|q.redoxpotential.mV|q.pH',
+            u'Rb1302;Rb1302.sample;60.5640220837;14.1901808137;s.temperatur.grC|s.comment|s.turbiditet.FNU'
+            )
+        test_string = utils_for_tests.create_test_string(self.importinstance.wells_parse_rows(f))
+
+        reference_string = u'{Rb1301: {level: [(comment, ), (meas, m)], quality: [(comment, ), (syre, mg/L), (syre, %), (konduktivitet, µS/cm), (redoxpotential, mV), (pH, )], sample: [(temperatur, grC), (comment, ), (turbiditet, FNU)]}, Rb1302: {quality: [(comment, ), (syre, mg/L), (konduktivitet, µS/cm), (redoxpotential, mV), (pH, )], sample: [(temperatur, grC), (comment, ), (turbiditet, FNU)]}}'
+        assert test_string == reference_string
+
+    def test_parse_wells_file(self):
+        f = (
+            u'FileVersion 1;X',
+            u'NAME;INPUTTYPE;HINT',
+            u'parameters...',
+            u'NAME;SUBNAME;LAT;LON;INPUTFIELD',
+            u'Rb1301;Rb1301.quality;60.5549041639;14.1875295081;q.comment|q.syre.mg/L|q.syre.%|q.konduktivitet.µS/cm|q.redoxpotential.mV|q.pH',
+            u'Rb1301;Rb1301.sample;60.5549041639;14.1875295081;s.temperatur.grC|s.comment|s.turbiditet.FNU',
+            u'Rb1301;Rb1301.level;60.5640220837;14.1901808137;l.comment|l.meas.m',
+            u'Rb1302;Rb1302.quality;60.5640220837;14.1901808137;q.comment|q.syre.mg/L|q.konduktivitet.µS/cm|q.redoxpotential.mV|q.pH',
+            u'Rb1302;Rb1302.sample;60.5640220837;14.1901808137;s.temperatur.grC|s.comment|s.turbiditet.FNU'
+            )
+
+        self.importinstance.charsetchoosen = (u'utf-8', True)
+        with utils.tempinput(u'\n'.join(f), self.importinstance.charsetchoosen[0]) as filename:
+            selected_file = MockUsingReturnValue([filename])
+
+            @mock.patch('import_data_to_db.midv_data_importer.select_files', selected_file.get_v)
+            def _test_parse_wells_file(self):
+
+                test_string = utils_for_tests.create_test_string(self.importinstance.parse_wells_file())
+                reference_string = u'{Rb1301: {level: [(comment, ), (meas, m)], quality: [(comment, ), (syre, mg/L), (syre, %), (konduktivitet, µS/cm), (redoxpotential, mV), (pH, )], sample: [(temperatur, grC), (comment, ), (turbiditet, FNU)]}, Rb1302: {quality: [(comment, ), (syre, mg/L), (konduktivitet, µS/cm), (redoxpotential, mV), (pH, )], sample: [(temperatur, grC), (comment, ), (turbiditet, FNU)]}}'
+                assert test_string == reference_string
+
+            _test_parse_wells_file(self)
+
+
 class notimplementedyet():
     pass
         #class TestCommentsImportFromCsv(object):
@@ -558,8 +607,6 @@ class TestWlvlloggImport(object):
                         self.importinstance.wlvllogg_import()
 
                     test_wlvllogg_import(self)
-
-                    #print(alterdb.args_called_with)
 
 
 class TestInterlab4Importer():
@@ -830,7 +877,7 @@ class TestInterlab4Importer():
         pass
 
 
-class TestDbCalls(object):
+class _TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -1015,7 +1062,7 @@ class TestDbCalls(object):
         os.remove(TestDbCalls.temp_db_path)
 
 
-class TestObsPointsTriggers(object):
+class _TestObsPointsTriggers(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
