@@ -94,7 +94,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ms.save_settings('xydotmarkers')
                 
     def ChangedCheckBoxStepPlot(self):
-        self.ms.settingsdict['tsstepplot']=self.ChangedCheckBoxStepPlot.checkState()
+        self.ms.settingsdict['tsstepplot']=self.checkBoxStepPlot.checkState()
         self.ms.save_settings('tsstepplot')
     
     def ChangedListOfColumns(self):
