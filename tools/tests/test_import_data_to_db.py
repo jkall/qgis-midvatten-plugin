@@ -904,7 +904,7 @@ class TestInterlab4Importer():
         pass
 
 
-class _TestDbCalls(object):
+class TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -1091,7 +1091,7 @@ class _TestDbCalls(object):
         os.remove(TestDbCalls.temp_db_path)
 
 
-class _TestObsPointsTriggers(object):
+class TestObsPointsTriggers(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
