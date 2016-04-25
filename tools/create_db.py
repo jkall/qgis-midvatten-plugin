@@ -30,11 +30,11 @@ import midvatten_utils as utils
 
 class newdb():
 
-    def __init__(self, verno, user_select_CRS='y', EPSG_code='4326'):
+    def __init__(self, verno, user_select_CRS='y', EPSG_code='4326', set_locale=False):
         self.dbpath = ''
-        self.create_new_db(verno,user_select_CRS,EPSG_code)  #CreateNewDB(verno)
+        self.create_new_db(verno,user_select_CRS,EPSG_code, set_locale)  #CreateNewDB(verno)
         
-    def create_new_db(self, verno, user_select_CRS='y', EPSG_code='4326'):  #CreateNewDB(self, verno):
+    def create_new_db(self, verno, user_select_CRS='y', EPSG_code='4326', set_locale=False):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
         if user_select_CRS=='y':
             EPSGID=str(self.ask_for_CRS()[0])
@@ -93,7 +93,7 @@ class newdb():
                         except Exception, e:
                             utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
 
-                self.insert_datadomains()
+                self.insert_datadomains(set_locale)
 
                 self.add_triggers_to_obs_points()
 
@@ -127,9 +127,9 @@ class newdb():
         EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, "Select CRS", "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:",default_crs)
         return EPSGID
 
-    def insert_datadomains(self):
+    def insert_datadomains(self, set_locale=False):
         filenamestring = 'insert_datadomain'
-        if locale.getdefaultlocale()[0] == 'sv_SE':
+        if locale.getdefaultlocale()[0] == 'sv_SE' or set_locale == u'sv_SE':
             filenamestring += "_sv.sql"
         else:
             filenamestring += ".sql"
