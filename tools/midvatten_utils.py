@@ -18,7 +18,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4 import QtCore, QtGui, QtWebKit
+from PyQt4 import QtCore, QtGui, QtWebKit, uic
 import PyQt4
 from qgis.core import *
 from qgis.gui import *
@@ -39,7 +39,7 @@ from pyspatialite.dbapi2 import IntegrityError
 from matplotlib.dates import datestr2num, num2date
 import time
 
-not_found_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
+not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
 
 class dbconnection():
     def __init__(self, db=''):
