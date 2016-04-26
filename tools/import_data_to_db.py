@@ -122,7 +122,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 sql_list.append(r""", CAST("%s" as text)"""%capacity)
                 sql_list.append(r""", CAST("%s" as text)"""%drilldate)
                 sql_list.append(r""", (case when "%s"!='' then CAST("%s" as integer) else null end)"""%(wmeas_yn, wmeas_yn))
-                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as integer) else null end)"""%(wlogg_yn, wmeas_yn))
+                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as integer) else null end)"""%(wlogg_yn, wlogg_yn))
                 sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(east, east))
                 sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(north, north))
                 sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(ne_accur, ne_accur))
