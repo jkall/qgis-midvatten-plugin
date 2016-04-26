@@ -329,3 +329,4 @@ class TestObsPointsTriggers(object):
     def tearDown(self):
         #Delete database
         os.remove(TestObsPointsTriggers.temp_db_path)
+

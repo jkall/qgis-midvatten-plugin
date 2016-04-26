@@ -77,13 +77,67 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
             self.columns = (utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName)[1])#Load column names from sqlite table
-            sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1]) #CHANGE HERE!!!
+
+            obsid = self.columns[0][1]
+            name = self.columns[1][1]
+            place = self.columns[2][1]
+            type = self.columns[3][1]
+            length = self.columns[4][1]
+            drillstop = self.columns[5][1]
+            diam = self.columns[6][1]
+            material = self.columns[7][1]
+            screen = self.columns[8][1]
+            capacity = self.columns[9][1]
+            drilldate = self.columns[10][1]
+            wmeas_yn = self.columns[11][1]
+            wlogg_yn = self.columns[12][1]
+            east = self.columns[13][1]
+            north = self.columns[14][1]
+            ne_accur = self.columns[15][1]
+            ne_source = self.columns[16][1]
+            h_toc = self.columns[17][1]
+            h_tocags = self.columns[18][1]
+            h_gs = self.columns[19][1]
+            h_accur = self.columns[20][1]
+            h_syst = self.columns[21][1]
+            h_source = self.columns[22][1]
+            source = self.columns[23][1]
+            com_onerow = self.columns[24][1]
+            com_html = self.columns[25][1]
+
+            sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null"""%(self.temptableName, obsid, obsid) #CHANGE HERE!!!
             cleaningok = self.SingleFieldDuplicates(26,'obs_points',sqlremove,0) # This is where duplicates are removed  LAST ARGUMENT IS COLUMN FOR ID 
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
-                sql = r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'"""
-                sqlpart1 = """INSERT OR IGNORE INTO "obs_points" (obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html) """
-                sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as double), CAST("%s" as text), CAST("%s" as double), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as integer), CAST("%s" as integer), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as text), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(self.columns[0][1], self.columns[1][1], self.columns[2][1], self.columns[3][1], self.columns[4][1], self.columns[5][1], self.columns[6][1], self.columns[7][1], self.columns[8][1], self.columns[9][1], self.columns[10][1], self.columns[11][1], self.columns[12][1], self.columns[13][1], self.columns[14][1], self.columns[15][1], self.columns[16][1], self.columns[17][1], self.columns[18][1], self.columns[19][1], self.columns[20][1], self.columns[21][1], self.columns[22][1], self.columns[23][1], self.columns[24][1], self.columns[25][1],self.temptableName)
-                sql = sqlpart1 + sqlpart2
+                sql_list = []
+                sql_list.append(r"""INSERT OR IGNORE INTO "obs_points" (obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html) """)
+                sql_list.append(r"""SELECT CAST("%s" as text)"""%obsid)
+                sql_list.append(r""", CAST("%s" as text)"""%name)
+                sql_list.append(r""", CAST("%s" as text)"""%place)
+                sql_list.append(r""", CAST("%s" as text)"""%type)
+                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(length, length))
+                sql_list.append(r""", CAST("%s" as text)"""%drillstop)
+                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(diam, diam))
+                sql_list.append(r""", CAST("%s" as text)"""%material)
+                sql_list.append(r""", CAST("%s" as text)"""%screen)
+                sql_list.append(r""", CAST("%s" as text)"""%capacity)
+                sql_list.append(r""", CAST("%s" as text)"""%drilldate)
+                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as integer) else null end)"""%(wmeas_yn, wmeas_yn))
+                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as integer) else null end)"""%(wlogg_yn, wmeas_yn))
+                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(east, east))
+                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(north, north))
+                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(ne_accur, ne_accur))
+                sql_list.append(r""", CAST("%s" as text)"""%ne_source)
+                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(h_toc, h_toc))
+                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(h_tocags, h_tocags))
+                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(h_gs, h_gs))
+                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(h_accur, h_accur))
+                sql_list.append(r""", CAST("%s" as text)"""%h_syst)
+                sql_list.append(r""", CAST("%s" as text)"""%h_source)
+                sql_list.append(r""", CAST("%s" as text)"""%source)
+                sql_list.append(r""", CAST("%s" as text)"""%com_onerow)
+                sql_list.append(r""", CAST("%s" as text)"""%com_html)
+                sql_list.append(r"""FROM %s"""%self.temptableName)
+                sql = ''.join(sql_list)
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
                 self.recsafter = (utils.sql_load_fr_db("""SELECT Count(*) FROM obs_points""")[1])[0][0] #for the statistics
