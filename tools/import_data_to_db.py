@@ -81,7 +81,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             obsid = self.columns[0][1]
             name = self.columns[1][1]
             place = self.columns[2][1]
-            type = self.columns[3][1]
+            atype = self.columns[3][1]
             length = self.columns[4][1]
             drillstop = self.columns[5][1]
             diam = self.columns[6][1]
@@ -113,7 +113,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 sql_list.append(r"""SELECT CAST("%s" as text)"""%obsid)
                 sql_list.append(r""", CAST("%s" as text)"""%name)
                 sql_list.append(r""", CAST("%s" as text)"""%place)
-                sql_list.append(r""", CAST("%s" as text)"""%type)
+                sql_list.append(r""", CAST("%s" as text)"""%atype)
                 sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(length, length))
                 sql_list.append(r""", CAST("%s" as text)"""%drillstop)
                 sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(diam, diam))

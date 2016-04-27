@@ -775,11 +775,9 @@ class midvatten:
         selectedobspoints = utils.getselectedobjectnames(obs_points_layer)
         obsidlist = []
         if len(selectedobspoints)>1:
-            i=0
-            for id in selectedobspoints:
-                obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
-                i+=1
-            OBSID = tuple(obsidlist)#because module sectionplot depends on obsid being a tuple
+            # We cannot send unicode as string to sql because it would include the u'
+            # Made into tuple because module sectionplot depends on obsid being a tuple
+            OBSID = tuple([str(id) for id in selectedobspoints])
         else:
             msg = 'You must select at least two objects in the obs_points layer'
         
