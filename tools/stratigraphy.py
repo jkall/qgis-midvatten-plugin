@@ -181,7 +181,7 @@ class SurveyStore:
             # create a cursor
             curs = myconnection.conn.cursor()
             for (obsid, survey) in surveys.iteritems(): 
-                sql =r"""SELECT stratid, depthtop, depthbot, geology, geoshort, capacity, comment, development FROM """
+                sql =r"""SELECT stratid, depthtop, depthbot, geology, lower(geoshort), capacity, comment, development FROM """
                 sql += self.stratitable #MacOSX fix1
                 sql += r""" WHERE obsid = '"""    
                 sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRATIGRAPHY FOR CHOOSEN obsid
