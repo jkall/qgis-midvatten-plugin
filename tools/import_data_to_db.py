@@ -626,16 +626,18 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             cleaningok = self.MultipleFieldDuplicates(9,'w_qual_field',sqlremove,'obs_points',sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
 
+                if utils.verify_table_exists('zz_staff'):
+                    #Add staffs that does not exist in db
+                    staffs = set([x[0] for x in utils.sql_load_fr_db("""select distinct staff from %s"""%self.temptableName)[1]])
+                    self.staff_import(staffs)
+
                 sqlpart1 = """INSERT OR IGNORE INTO "w_qual_field" (obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), (case when "%s"!='' then CAST("%s" as double) else null end), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(obsid, staff, date_time, instrument, parameter, reading_num, reading_num, reading_txt, unit, comment, self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
                 self.recsafter = (utils.sql_load_fr_db("""SELECT Count(*) FROM w_qual_field""")[1])[0][0] #for the statistics
-                if utils.verify_table_exists('zz_staff'):
-                    #Add staffs that does not exist in db
-                    staffs = set([x[0] for x in utils.sql_load_fr_db("""select distinct staff from %s"""%self.temptableName)[1]])
-                    self.staff_import(staffs)
+
                 self.StatsAfter()
             else:   
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
@@ -663,6 +665,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if file_data == u'cancel':
                 self.status = True
                 return u'cancel'
+            elif len(file_data) < 2:
+                continue
             self.send_file_data_to_importer(utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids), importer)
 
         #Import comments
@@ -670,7 +674,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if file_data == u'cancel':
             self.status = True
             return u'cancel'
-        self.send_file_data_to_importer(file_data, self.comments_import_from_csv)
+        elif len(file_data) > 1:
+            self.send_file_data_to_importer(file_data, self.comments_import_from_csv)
+        self.status = True
         self.SanityCheckVacuumDB()
 
     def fieldlogger_import_select_and_parse_rows(self):
@@ -927,6 +933,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             csvlayer = self.csv2qgsvectorlayer(csvpath)
             if not csvlayer:
                 utils.pop_up_info("Creating csvlayer for " + str(importer) + " failed!")
+                return
             self.csvlayer = csvlayer
             importer()
 
@@ -950,16 +957,16 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             cleaningok = self.MultipleFieldDuplicates(4,'comments',sqlremove,'obs_points',sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then fix zz_flowtype and then copy data from the temporary table to the original table in the db
 
+                #Add staffs that does not exist in db
+                if utils.verify_table_exists('zz_staff'):
+                    staffs = set([x[0] for x in utils.sql_load_fr_db("""select distinct staff from %s"""%self.temptableName)[1]])
+                    self.staff_import(staffs)
+
                 # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 sqlpart1 = """INSERT OR IGNORE INTO "comments" (obsid, date_time, comment, staff) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(obsid, date_time, comment, staff, self.temptableName)
                 sql = sqlpart1 + sqlpart2
                 utils.sql_alter_db(sql)
-
-                #Add staffs that does not exist in db
-                if utils.verify_table_exists('zz_staff'):
-                    staffs = set([x[0] for x in utils.sql_load_fr_db("""select distinct staff from %s"""%self.temptableName)[1]])
-                    self.staff_import(staffs)
 
                 self.status = 'True'  # Cleaning was OK and import perfomed!!
                 self.recsafter = (utils.sql_load_fr_db("""SELECT Count(*) FROM comments""")[1])[0][0] #for the statistics
@@ -1149,18 +1156,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 csvpath = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
                 csvlayer = [self.csv2qgsvectorlayer(path) for path in csvpath if path]
             return csvlayer
-            
-    def csv2qgsvectorlayer(self, path):
-        """ Creates QgsVectorLayer from a csv file """
-        if not path:
-            qgis.utils.iface.messageBar().pushMessage("Failure, no csv file was selected.")
-            return False
-        csvlayer = QgsVectorLayer(path, "temporary_csv_layer", "ogr")
-        if not csvlayer.isValid():
-            qgis.utils.iface.messageBar().pushMessage("Failure","Impossible to Load File in QGis:\n" + str(path), 2)
-            return False
-        csvlayer.setProviderEncoding(str(self.charsetchoosen[0]))                 #Set the Layer Encoding                                        
-        return csvlayer            
 
     def select_files(self, only_one_file=False):
         try:#MacOSX fix2
@@ -1272,7 +1267,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         return filedata
 
     def csv2qgsvectorlayer(self, path):
-        """ Converts a csv path into a QgsVectorLayer """
+        """ Creates QgsVectorLayer from a csv file """
         if not path:
             qgis.utils.iface.messageBar().pushMessage("Failure, no csv file was selected.")
             return False        

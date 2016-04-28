@@ -38,6 +38,7 @@ from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialit
 from pyspatialite.dbapi2 import IntegrityError
 from matplotlib.dates import datestr2num, num2date
 import time
+from collections import OrderedDict
 
 not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
 
@@ -107,7 +108,7 @@ class askuser(QtGui.QDialog):
                         pop_up_info("Failure:\nMust write time resolution also.\n")
 
 class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
-    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None):
+    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None, button_names=[u'Ignore', u'Cancel', u'Ok']):
         QtGui.QDialog.__init__(self, parent)
         self.answer = None
         self.setupUi(self)
@@ -117,35 +118,21 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
         if existing_list is not None:
             for existing in existing_list:
                 self.comboBox.addItem(existing)
-        #self.buttonBox.addButton(QtGui.QDialogButtonBox.Ignore
-        button_ignore = QtGui.QPushButton("Accept")
-        button_cancel = QtGui.QPushButton("Cancel")
-        button_ok = QtGui.QPushButton("Try chosen")
-        button_skip = QtGui.QPushButton("Skip to next")
 
-        self.buttonBox.addButton(button_ignore, QtGui.QDialogButtonBox.ActionRole)
-        self.buttonBox.addButton(button_cancel, QtGui.QDialogButtonBox.RejectRole)
-        self.buttonBox.addButton(button_ok, QtGui.QDialogButtonBox.AcceptRole)
-        self.buttonBox.addButton(button_skip, QtGui.QDialogButtonBox.ActionRole)
+        for button_name in button_names:
+            button = QtGui.QPushButton(button_name)
+            button.setObjectName(button_name.lower())
+            self.buttonBox.addButton(button, QtGui.QDialogButtonBox.ActionRole)
+            self.connect(button, PyQt4.QtCore.SIGNAL("clicked()"), self.button_clicked)
 
-        self.connect(button_ignore, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.button_clicked(u'ignore'))
-        self.connect(button_skip, PyQt4.QtCore.SIGNAL("clicked()"),  lambda : self.button_clicked(u'skip'))
+        self.exec_()
 
-        reply = self.exec_()
-        self.update_value()
-        if self.answer is None:
-            if reply == 1:
-                self.answer = u'ok'
-            elif reply == 0:
-                self.answer = u'cancel'
-
-    def button_clicked(self, answer):
-        self.answer = answer
-        self.update_value()
-        self.close()
-
-    def update_value(self):
+    def button_clicked(self):
+        button = self.sender()
+        button_object_name = button.objectName()
+        self.answer = button_object_name
         self.value = self.comboBox.currentText()
+        self.close()
 
 class HtmlDialog(QtGui.QDialog):
 
@@ -916,7 +903,11 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
                     not_tried_capitalize = False
                     continue
 
-            question = NotFoundQuestion(u'WARNING', u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\n', similar_values, similar_values[0])
+            question = NotFoundQuestion(dialogtitle=u'WARNING',
+                                        msg=u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\n',
+                                        existing_list=similar_values,
+                                        default_value=similar_values[0],
+                                        button_names=[u'Ignore', u'Cancel', u'Ok', u'Skip'])
             answer = question.answer
             submitted_value = returnunicode(question.value)
             if answer == u'cancel':
