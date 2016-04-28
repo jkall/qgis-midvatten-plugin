@@ -118,14 +118,19 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
             for existing in existing_list:
                 self.comboBox.addItem(existing)
         #self.buttonBox.addButton(QtGui.QDialogButtonBox.Ignore
-        button_ignore = QtGui.QPushButton("Ignore")
+        button_ignore = QtGui.QPushButton("Accept")
         button_cancel = QtGui.QPushButton("Cancel")
-        button_ok = QtGui.QPushButton("Ok")
+        button_ok = QtGui.QPushButton("Try chosen")
+        button_skip = QtGui.QPushButton("Skip to next")
+
         self.buttonBox.addButton(button_ignore, QtGui.QDialogButtonBox.ActionRole)
         self.buttonBox.addButton(button_cancel, QtGui.QDialogButtonBox.RejectRole)
         self.buttonBox.addButton(button_ok, QtGui.QDialogButtonBox.AcceptRole)
+        self.buttonBox.addButton(button_skip, QtGui.QDialogButtonBox.ActionRole)
 
-        self.connect(button_ignore, PyQt4.QtCore.SIGNAL("clicked()"), self.ignored_clicked)
+        self.connect(button_ignore, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.button_clicked(u'ignore'))
+        self.connect(button_skip, PyQt4.QtCore.SIGNAL("clicked()"),  lambda : self.button_clicked(u'skip'))
+
         reply = self.exec_()
         self.update_value()
         if self.answer is None:
@@ -134,8 +139,8 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
             elif reply == 0:
                 self.answer = u'cancel'
 
-    def ignored_clicked(self):
-        self.answer = u'ignore'
+    def button_clicked(self, answer):
+        self.answer = answer
         self.update_value()
         self.close()
 
@@ -900,6 +905,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
 
         not_tried_capitalize = True
 
+        answer = None
         while current_value not in existing_values:
             if try_capitalize and not_tried_capitalize:
                 try:
@@ -920,8 +926,11 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
                 break
             elif answer == u'ok':
                 current_value = submitted_value
-        row[index] = current_value
-        filtered_data.append(row)
+            elif answer == u'skip':
+                break
+        if answer != u'skip':
+            row[index] = current_value
+            filtered_data.append(row)
 
     return filtered_data
 

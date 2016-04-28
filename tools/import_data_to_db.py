@@ -702,17 +702,16 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         f must not have a header.
         """
+
+        typeshortnames_typelongnames = {u's': u'sample',
+                                        u'q': u'quality',
+                                        u'l': u'level',
+                                        u'f': u'flow'}
+
         result_dict = {}
         for rownr, rawrow in enumerate(f):
             row = utils.returnunicode(rawrow).rstrip(u'\r').rstrip(u'\n')
             cols = row.split(u';')
-            obsid_type = cols[0]
-            obsid_type_splitted = obsid_type.split(u'.')
-            if len(obsid_type_splitted) < 2:
-                utils.pop_up_info("The typename and obsid on row: " + row + " could not be read. It will be skipped.")
-                continue
-            typename = obsid_type.split(u'.')[-1]
-            obsid = utils.rstrip(u'.' + typename, obsid_type)
             date = cols[1]
             time = cols[2]
             date_time = datestring_to_date(date + u' ' + time)
@@ -724,8 +723,20 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 unit = paramtypename_parameter_unit[2]
             except IndexError:
                 unit = u''
+            typeshortname = paramtypename_parameter_unit[0]
 
-            result_dict.setdefault(typename, {}).setdefault(obsid, {}).setdefault(date_time, {})[(parameter, unit)] = value
+            obsid_type = cols[0]
+            typelongname = obsid_type.split(u'.')[-1]
+            obsid = utils.rstrip(u'.' + typelongname, obsid_type)
+
+            if typelongname not in typeshortnames_typelongnames.values():
+                if typeshortname in typeshortnames_typelongnames:
+                    typelongname = typeshortnames_typelongnames[typeshortname]
+                else:
+                    utils.pop_up_info("The typename on row: " + row + " could not be parsed. The row will be skipped.")
+                    continue
+
+            result_dict.setdefault(typelongname, {}).setdefault(obsid, {}).setdefault(date_time, {})[(parameter, unit)] = value
         return result_dict
 
     @staticmethod

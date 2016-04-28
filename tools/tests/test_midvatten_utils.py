@@ -25,33 +25,45 @@ from mocks_for_tests import MockNotFoundQuestion, MockUsingReturnValue
 import io
 
 class TestFilterNonexistingObsidsAndAsk(object):
-    notfound_ok = MockUsingReturnValue(MockNotFoundQuestion('ok', 10))
-    notfound_ignore = MockUsingReturnValue(MockNotFoundQuestion('ignore', 10))
-    notfound_cancel = MockUsingReturnValue(MockNotFoundQuestion('cancel', 10))
-
-    @mock.patch('midvatten_utils.NotFoundQuestion', notfound_ok.get_v)
-    def test_filter_nonexisting_obsids_and_ask_ok(self):
+    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    def test_filter_nonexisting_obsids_and_ask_ok(self, mock_notfound):
+            mock_notfound.return_value.answer = u'ok'
+            mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'10', u'b'], [u'10', u'h']]
             assert filtered_file_data == reference_list
 
-    @mock.patch('midvatten_utils.NotFoundQuestion', notfound_ignore.get_v)
-    def test_filter_nonexisting_obsids_and_ask_ignore(self):
+    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    def test_filter_nonexisting_obsids_and_ask_ignore(self, mock_notfound):
+            mock_notfound.return_value.answer = u'ignore'
+            mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'10', u'b'], [u'10', u'h']]
             assert filtered_file_data == reference_list
 
-    @mock.patch('midvatten_utils.NotFoundQuestion', notfound_cancel.get_v)
-    def test_filter_nonexisting_obsids_and_ask_cancel(self):
+    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    def test_filter_nonexisting_obsids_and_ask_cancel(self, mock_notfound):
+            mock_notfound.return_value.answer = u'cancel'
+            mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
             reference_list = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             assert filtered_file_data == u'cancel'
+
+    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    def test_filter_nonexisting_obsids_and_ask_skip(self, mock_notfound):
+            mock_notfound.return_value.answer = u'skip'
+            mock_notfound.return_value.value = 10
+            file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
+            existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
+            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
+            reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g']]
+            assert filtered_file_data == reference_list
 
     def test_filter_nonexisting_obsids_and_ask_header_not_found(self):
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]

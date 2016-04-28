@@ -106,8 +106,10 @@ class TestFieldLoggerImporter():
         assert result_string == reference_string
 
     @mock.patch('import_data_to_db.utils.pop_up_info', skip_popup.get_v)
-    def test_fieldlogger_import_parse_rows_skip_putcode(self):
-        """ Test that the bug that enters instead of obsname and subname PUTCODE is handled
+    def _test_fieldlogger_import_parse_rows_skip_putcode(self):
+        """ Test that the bug that enters PUTCODE instead of obsname and subname is handled
+            This is not needed anymore since the import user will be asked for
+            a correct obsid.
         :return:
         """
         f = [
