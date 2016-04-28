@@ -760,7 +760,8 @@ class midvatten:
 
         SectionLineLayer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
         msg = None
-        if SectionLineLayer.selectedFeatureCount()==1:#First verify only one feature is selected in the active layer...
+        nrofselected = SectionLineLayer.selectedFeatureCount()
+        if nrofselected == 1:#First verify only one feature is selected in the active layer...
             for feat in SectionLineLayer.getFeatures():
                 geom = feat.geometry()
                 if geom.wkbType() == QGis.WKBLineString:#...and that the active layer is a line vector layer
