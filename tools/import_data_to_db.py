@@ -579,13 +579,52 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
             self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]#Load column names from sqlite table
-            sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or ("%s" in ('', ' ') or "%s" is null) and ("%s" in ('', ' ') or "%s" is null)and ("%s" in ('', ' ') or "%s" is null)"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[2][1],self.columns[2][1],self.columns[5][1],self.columns[5][1],self.columns[7][1],self.columns[7][1],self.columns[8][1],self.columns[8][1],self.columns[9][1],self.columns[9][1],self.columns[11][1],self.columns[11][1])#Delete empty records from the import table!!!
-            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[2][1],self.columns[7][1],self.temptableName) #Number of distinct data posts in the import table
+
+            obsid = self.columns[0][1]
+            depth = self.columns[1][1]
+            report = self.columns[2][1]
+            project = self.columns[3][1]
+            staff = self.columns[4][1]
+            date_time = self.columns[5][1]
+            anameth = self.columns[6][1]
+            parameter = self.columns[7][1]
+            reading_num = self.columns[8][1]
+            reading_txt = self.columns[9][1]
+            unit = self.columns[10][1]
+            comment = self.columns[11][1]
+
+            #Delete empty records from the import table!!!
+            sqlremove_list = []
+            sqlremove_list.append(r"""DELETE FROM "%s" """%(self.temptableName))
+            sqlremove_list.append(r"""where "%s" in ('', ' ') or "%s" is null """%(obsid, obsid))
+            sqlremove_list.append(r"""or "%s" in ('', ' ') or "%s" is null """%(report, report))
+            sqlremove_list.append(r"""or "%s" in ('', ' ') or "%s" is null """%(date_time, date_time))
+            sqlremove_list.append(r"""or "%s" in ('', ' ') or "%s" is null """%(parameter, parameter))
+            sqlremove_list.append(r"""or ("%s" in ('', ' ') or "%s" is null) """%(reading_num, reading_num))
+            sqlremove_list.append(r"""and ("%s" in ('', ' ') or "%s" is null) """%(reading_txt, reading_txt))
+            sqlremove_list.append(r"""and ("%s" in ('', ' ') or "%s" is null)"""%(comment, comment))
+            sqlremove = ''.join(sqlremove_list)
+
+            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(report,parameter,self.temptableName) #Number of distinct data posts in the import table
             cleaningok = self.MultipleFieldDuplicates(12,'w_qual_lab',sqlremove,'obs_points',sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
-                sqlpart1 = """INSERT OR IGNORE INTO "w_qual_lab" (obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment) """
-                sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as double), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text),  (case when "%s"!='' then CAST("%s" as double) else null end), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.columns[4][1],self.columns[5][1],self.columns[6][1],self.columns[7][1],self.columns[8][1],self.columns[8][1],self.columns[9][1],self.columns[10][1],self.columns[11][1],self.temptableName)
-                sql = sqlpart1 + sqlpart2
+                sql_list = []
+                sql_list.append(r"""INSERT OR IGNORE INTO "w_qual_lab" (obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment) """)
+                sql_list.append(r"""SELECT CAST("%s" as text), """%obsid)
+                sql_list.append(r"""(case when "%s"!='' then CAST("%s" as double) else null end), """%(depth, depth))
+                sql_list.append(r"""CAST("%s" as text), """%(report))
+                sql_list.append(r"""CAST("%s" as text), """%(project))
+                sql_list.append(r"""CAST("%s" as text), """%(staff))
+                sql_list.append(r"""CAST("%s" as text), """%(date_time))
+                sql_list.append(r"""CAST("%s" as text), """%(anameth))
+                sql_list.append(r"""CAST("%s" as text), """%(parameter))
+                sql_list.append(r"""(case when "%s"!='' then CAST("%s" as double) else null end), """%(reading_num, reading_num))
+                sql_list.append(r"""CAST("%s" as text), """%(reading_txt))
+                sql_list.append(r"""CAST("%s" as text), """%(unit))
+                sql_list.append(r"""CAST("%s" as text)           """%(comment))
+                sql_list.append(r"""FROM %s"""%(self.temptableName))
+                sql = ''.join(sql_list)
+
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
                 self.recsafter = (utils.sql_load_fr_db("""SELECT Count(*) FROM w_qual_lab""")[1])[0][0] #for the statistics

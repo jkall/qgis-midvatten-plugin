@@ -29,7 +29,7 @@ from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from nose.tools import raises
 from mock import mock_open, patch
-from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance
+from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance, DummyInterface2
 import mock
 import io
 import midvatten
@@ -1167,6 +1167,97 @@ class TestImportObsPoints(object):
         assert test_string == reference_string
 
 
+class TestWquallabImport(object):
+    temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
+    answer_yes_obj = MockUsingReturnValue()
+    answer_yes_obj.result = 1
+    answer_no_obj = MockUsingReturnValue()
+    answer_no_obj.result = 0
+    answer_yes = MockUsingReturnValue(answer_yes_obj)
+    CRS_question = MockUsingReturnValue([3006])
+    dbpath_question = MockUsingReturnValue(temp_db_path)
+    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
+    mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([temp_db_path]))
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
+    skip_popup = MockUsingReturnValue('')
+    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.QgsProject.instance', autospec=True)
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+        mock_crsquestion.return_value = [3006]
+        mock_savefilename.return_value = TestWquallabImport.temp_db_path
 
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
+        self.midvatten = midvatten.midvatten(self.iface)
+
+        try:
+            os.remove(TestWquallabImport.temp_db_path)
+        except OSError:
+            pass
+        self.midvatten.new_db()
+        self.importinstance = midv_data_importer()
+
+    def tearDown(self):
+        #Delete database
+        os.remove(TestWquallabImport.temp_db_path)
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_wquallab_import(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        f = [[u'obsid', u'depth', u'report', u'project', u'staff', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment'],
+             [u'obsid1', u'2', u'testreport', u'testproject', u'teststaff', u'2011-10-19 12:30:00', u'testmethod', u'1,2-Dikloretan', u'1.5', u'<1.5', u'µg/l', u'testcomment']]
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+
+            @mock.patch('midvatten_utils.QgsProject.instance', TestWquallabImport.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestWquallabImport.mock_askuser.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
+            def _test_wquallab_import(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface):
+                mock_filename.return_value = filename
+                mock_encoding.return_value = [True, u'utf-8']
+                self.mock_iface = mock_iface
+                self.importinstance.wquallab_import()
+            _test_wquallab_import(self, filename)
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
+
+        reference_string = ur'''(True, [(obsid1, 2.0, testreport, testproject, teststaff, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_wquallab_import_depth_empty_string(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        f = [[u'obsid', u'depth', u'report', u'project', u'staff', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment'],
+             [u'obsid1', u'', u'testreport', u'testproject', u'teststaff', u'2011-10-19 12:30:00', u'testmethod', u'1,2-Dikloretan', u'1.5', u'<1.5', u'µg/l', u'testcomment']]
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+
+            @mock.patch('midvatten_utils.QgsProject.instance', TestWquallabImport.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestWquallabImport.mock_askuser.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
+            def _test_wquallab_import(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface):
+                mock_filename.return_value = filename
+                mock_encoding.return_value = [True, u'utf-8']
+                self.mock_iface = mock_iface
+                self.importinstance.wquallab_import()
+            _test_wquallab_import(self, filename)
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
+
+        reference_string = ur'''(True, [(obsid1, None, testreport, testproject, teststaff, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
+        assert test_string == reference_string
 
