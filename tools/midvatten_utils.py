@@ -838,9 +838,11 @@ def lists_to_string(alist_of_lists):
     u'a;b\n1;2'
     """
     if isinstance(alist_of_lists, list) or isinstance(alist_of_lists, tuple):
-        return u'\n'.join([u';'.join([returnunicode(y) for y in x]) if isinstance(x, list) or isinstance(x, tuple) else returnunicode(x) for x in alist_of_lists])
+        return_string = u'\n'.join([u';'.join([returnunicode(y) for y in x]) if isinstance(x, list) or isinstance(x, tuple) else returnunicode(x) for x in alist_of_lists])
     else:
-        return returnunicode(alist_of_lists)
+        return_string = returnunicode(alist_of_lists)
+
+    return return_string
 
 def find_similar(word, wordlist, hits=5):
     ur"""
