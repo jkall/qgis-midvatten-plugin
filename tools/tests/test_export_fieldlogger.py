@@ -81,13 +81,26 @@ class TestExportFieldlogger():
         printlist = self.export_fieldlogger_obj.create_export_printlist()
         assert printlist == [u'FileVersion 1;5', u'NAME;INPUTTYPE;HINT', u'q.syre.mg/L;numberDecimal|numberSigned;mg/L', u'q.syre.%;numberDecimal|numberSigned;%', u'q.comment;text;make comment...', u's.turbiditet.FNU;numberDecimal|numberSigned;FNU', u's.comment;text;make comment...', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1302;Rb1302.quality;50.0;4.0;q.comment|q.syre.mg/L|q.syre.%', u'Rb1302;Rb1302.sample;50.0;4.0;s.comment|s.turbiditet.FNU']
 
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', the_latlons.get_v)
-    @mock.patch('export_fieldlogger.midv_data_importer', importinstance.get_v)
-    @mock.patch('import_data_to_db.utils.pop_up_info', skip_popup.get_v)
-    def test_select_from_wells(self):
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', autospec=True)
+    @mock.patch('export_fieldlogger.midv_data_importer', autospec=True)
+    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+    def test_select_from_wells(self, mock_skip_popup, mock_midv_data_importer, mock_latlons):
+        mock_midv_data_importer.return_value.parse_wells_file.return_value = {u'Rb1301': {u'level': [(u'comment', u''), (u'meas', u'm')], u'quality': [(u'comment', u''), (u'syre', u'mg/L'), (u'konduktivitet', u'µS/cm'), (u'redoxpotential', u'mV'), (u'pH', u'')], u'sample': [(u'temperatur', u'grC'), (u'comment', u''), (u'turbiditet', u'FNU')]}, u'Rb1302': {u'quality': [(u'comment', u''), (u'syre', u'mg/L'), (u'konduktivitet', u'µS/cm'), (u'redoxpotential', u'mV'), (u'pH', u'')], u'sample': [(u'temperatur', u'grC'), (u'comment', u''), (u'turbiditet', u'FNU')]}}
+        mock_latlons.return_value = {u'Rb1301': (60.0, 10.0), u'Rb1302': (50.0, 4.0)}
         self.export_fieldlogger_obj.select_from_wells()
         printlist = self.export_fieldlogger_obj.create_export_printlist()
         assert printlist == [u'FileVersion 1;8', u'NAME;INPUTTYPE;HINT', u'l.meas.m;numberDecimal|numberSigned;m', u'l.comment;text;make comment...', u'q.redoxpotential.mV;numberDecimal|numberSigned;mV', u'q.syre.mg/L;numberDecimal|numberSigned;mg/L', u'q.pH;numberDecimal|numberSigned;pH', u'q.comment;text;make comment...', u's.turbiditet.FNU;numberDecimal|numberSigned;FNU', u's.comment;text;make comment...', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1301;Rb1301.level;60.0;10.0;l.comment|l.meas.m', u'Rb1301;Rb1301.quality;60.0;10.0;q.pH|q.syre.mg/L|q.redoxpotential.mV|q.comment', u'Rb1301;Rb1301.sample;60.0;10.0;s.comment|s.turbiditet.FNU', u'Rb1302;Rb1302.quality;50.0;4.0;q.pH|q.syre.mg/L|q.redoxpotential.mV|q.comment', u'Rb1302;Rb1302.sample;50.0;4.0;s.comment|s.turbiditet.FNU']
+
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', autospec=True)
+    @mock.patch('export_fieldlogger.midv_data_importer', autospec=True)
+    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+    def test_select_from_wells_cancel(self, mock_skip_popup, mock_midv_data_importer, mock_latlons):
+        mock_midv_data_importer.return_value.parse_wells_file.return_value = {}
+        mock_latlons.return_value = {u'Rb1301': (60.0, 10.0), u'Rb1302': (50.0, 4.0)}
+        self.export_fieldlogger_obj.select_from_wells()
+        printlist = self.export_fieldlogger_obj.create_export_printlist()
+        assert printlist == [u'FileVersion 1;0', u'NAME;INPUTTYPE;HINT', u'NAME;SUBNAME;LAT;LON;INPUTFIELD']
+
 
     def tearDown(self):
         self.iface = None

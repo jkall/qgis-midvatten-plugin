@@ -24,44 +24,85 @@ from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from PyQt4 import QtCore, QtGui, QtTest
 from export_fieldlogger import ExportToFieldLogger
-from mocks_for_tests import MockUsingReturnValue
+from mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance, DummyInterface2
 import midvatten_utils as utils
 from nose.tools import raises
 from mock import MagicMock
 import mock
 from utils_for_tests import dict_to_sorted_list
 from definitions import midvatten_defs
+from nose.plugins.skip import SkipTest
+import os
+import midvatten
+
+TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
+MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
+DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestStandardParametersForWQuality():
-    def test_standard_parameters_for_wquality_is_dict(self):
-        assert isinstance(midvatten_defs.standard_parameters_for_wquality(), tuple)
+class TestStandadParameters():
+    answer_yes_obj = MockUsingReturnValue()
+    answer_yes_obj.result = 1
+    answer_no_obj = MockUsingReturnValue()
+    answer_no_obj.result = 0
+    answer_yes = MockUsingReturnValue(answer_yes_obj)
 
-    def test_standard_parameters_for_wquality_k_v_is_unicode(self):
-        for k, v in midvatten_defs.standard_parameters_for_wquality():
+
+    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.QgsProject.instance', autospec=True)
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+        mock_crsquestion.return_value = [3006]
+        mock_savefilename.return_value = TEMP_DB_PATH
+
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
+        self.midvatten = midvatten.midvatten(self.iface)
+
+        try:
+            os.remove(TEMP_DB_PATH)
+        except OSError:
+            pass
+        self.midvatten.new_db()
+
+    def tearDown(self):
+        #Delete database
+        os.remove(TEMP_DB_PATH)
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    @mock.patch('qgis.utils.iface', autospec=True)
+    def test_standard_parameters_for_wquality(self, mock_iface):
+        res = midvatten_defs.standard_parameters_for_wquality()
+        assert res
+        assert isinstance(res, tuple)
+        for k, v in res:
             assert isinstance(k, unicode)
             assert isinstance(v, tuple)
             for x in v:
                 assert isinstance(x, unicode)
-            
-class TestStandardParametersForWFlow():
-    def test_standard_parameters_for_wflow_is_dict(self):
-        assert isinstance(midvatten_defs.standard_parameters_for_wflow(), tuple)
 
-    def test_standard_parameters_for_wflow_k_v_is_unicode(self):
-        for k, v in midvatten_defs.standard_parameters_for_wflow():
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    @mock.patch('qgis.utils.iface', autospec=True)
+    def test_standard_parameters_for_wflow(self, mock_iface):
+        res = midvatten_defs.standard_parameters_for_wflow()
+        assert res
+        assert isinstance(res, tuple)
+        for k, v in res:
             assert isinstance(k, unicode)
             assert isinstance(v, tuple)
             for x in v:
                 assert isinstance(x, unicode)
 
-class TestStandardParametersForWSamle():
-    def test_standard_parameters_for_wsample_is_dict(self):
-        assert isinstance(midvatten_defs.standard_parameters_for_wsample(), tuple)
-
-    def test_standard_parameters_for_wsample_k_v_is_unicode(self):
-        for k, v in midvatten_defs.standard_parameters_for_wsample():
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    @mock.patch('qgis.utils.iface', autospec=True)
+    def test_standard_parameters_for_wsample(self, mock_iface):
+        res = midvatten_defs.standard_parameters_for_wsample()
+        assert res
+        assert isinstance(res, tuple)
+        for k, v in res:
             assert isinstance(k, unicode)
             assert isinstance(v, tuple)
             for x in v:
                 assert isinstance(x, unicode)
+

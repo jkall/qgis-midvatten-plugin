@@ -156,12 +156,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def import_interlab4(self, filenames=None):
-        all_lab_results = parse_interlab4()
+        all_lab_results = self.parse_interlab4()
 
-        self.send_file_data_to_importer(self, file_data, self.wquallab_import_from_csvlayer)
+        self.send_file_data_to_importer(self, all_lab_results, self.wquallab_import_from_csvlayer)
 
         self.SanityCheckVacuumDB()
-        "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        #"obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
 
     def parse_interlab4(self, filenames=None):
         """ Reads the interlab
@@ -314,7 +314,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]#Load column names from sqlite table
             sqlremove = """DELETE FROM "%s" where "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1]) #Delete empty records from the import table!!!
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.temptableName) # To select distinct data posts from the import table
-            cleaningok = self.MultipleFieldDuplicates(6,'seismic_data',sqlremove,'obs_lines',sqlNoOfdistinct)
+            cleaningok = self.multiple_field_duplicates(6, 'seismic_data', sqlremove, 'obs_lines', sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sqlpart1 = """INSERT OR IGNORE INTO "seismic_data" (obsid, length, ground, bedrock, gw_table, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as text) FROM %s"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.columns[4][1],self.columns[5][1],self.temptableName)
@@ -338,7 +338,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]#Load column names from sqlite table
             sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1]) #Delete empty records from the import table!!!
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.temptableName) #Number of distinct data posts in the import table
-            cleaningok = self.MultipleFieldDuplicates(9,'stratigraphy',sqlremove,'obs_points',sqlNoOfdistinct)
+            cleaningok = self.multiple_field_duplicates(9, 'stratigraphy', sqlremove, 'obs_points', sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sqlpart1 = """INSERT OR IGNORE INTO "stratigraphy" (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as integer), CAST("%s" as double), CAST("%s" as double), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(self.columns[0][1], self.columns[1][1], self.columns[2][1], self.columns[3][1], self.columns[4][1], self.columns[5][1], self.columns[6][1], self.columns[7][1], self.columns[8][1],self.temptableName)
@@ -362,7 +362,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.columns = (utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1])#Load column names from sqlite table
             sqlremove = """DELETE FROM "%s" where "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1])#Delete empty records from the import table!!!
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.temptableName) #Number of distinct data posts in the import table
-            cleaningok = self.MultipleFieldDuplicates(5,'vlf_data',sqlremove,'obs_lines',sqlNoOfdistinct)
+            cleaningok = self.multiple_field_duplicates(5, 'vlf_data', sqlremove, 'obs_lines', sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sqlpart1 = """INSERT OR IGNORE INTO "vlf_data" (obsid, length, real_comp, imag_comp, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as double), CAST("%s" as double), CAST("%s" as double), CAST("%s" as text) FROM %s"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.columns[4][1],self.temptableName)
@@ -389,14 +389,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]#Load column names from sqlite table
             sqlremove = """DELETE FROM "%s" where "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1],self.columns[2][1],self.columns[2][1],self.columns[2][1],self.columns[3][1],self.columns[3][1],self.columns[3][1])#Delete empty records from the import table!!!
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.temptableName) #Number of distinct data posts in the import table
-            cleaningok = self.MultipleFieldDuplicates(7,'w_flow',sqlremove,'obs_points',sqlNoOfdistinct)
+            cleaningok = self.multiple_field_duplicates(7, 'w_flow', sqlremove, 'obs_points', sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then fix zz_flowtype and then copy data from the temporary table to the original table in the db
                 #check for flowtypes and add those that are not present in db table zz_flowtype the obsid actually exists in obs_points
-                FlTypesInDb = utils.sql_load_fr_db('select distinct type from zz_flowtype')[1] 
-                FlTypes2BImported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[2][1],self.temptableName))[1]
+                FlTypesInDb = utils.sql_load_fr_db('select distinct type, unit from zz_flowtype')[1]
+                FlTypes2BImported = utils.sql_load_fr_db("""select distinct "%s", "%s" from %s"""%(self.columns[2][1], self.columns[5][1],self.temptableName))[1]
                 for tp in FlTypes2BImported:
-                        if not tp in FlTypesInDb:
-                            sql = """insert into "zz_flowtype" (type, explanation) VALUES ("%s", '');"""%str(tp[0])
+                        if tp not in FlTypesInDb:
+                            sql = """insert into "zz_flowtype" (type, unit, explanation) VALUES ("%s", "%s", '');"""%(str(tp[0]), tp[1])
                             utils.sql_alter_db(sql)
             
                 sqlpart1 = """INSERT OR IGNORE INTO "w_flow" (obsid, instrumentid, flowtype, date_time, reading, unit, comment) """
@@ -420,7 +420,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]#Load column names from sqlite table
             sqlremove = """DELETE FROM "%s" where "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1],self.columns[2][1],self.columns[2][1],self.columns[2][1],self.columns[3][1],self.columns[3][1],self.columns[3][1])#Delete empty records from the import table!!!
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.temptableName) #Number of distinct data posts in the import table
-            cleaningok = self.MultipleFieldDuplicates(8,'meteo',sqlremove,'obs_points',sqlNoOfdistinct)#
+            cleaningok = self.multiple_field_duplicates(8, 'meteo', sqlremove, 'obs_points', sqlNoOfdistinct)#
             if cleaningok == 1: # If cleaning was OK, then fix zz_meteoparam and then copy data from the temporary table to the original table in the db
                 #check for parameters and add those that are not present in db table zz_meteoparam
                 FlTypesInDb = utils.sql_load_fr_db('select distinct parameter from zz_meteoparam')[1] 
@@ -455,7 +455,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]#Load column names from sqlite table
             sqlremove = """DELETE FROM "%s" where ("%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null) or (("%s"='' or "%s"=' ' or "%s" is null) and ("%s"='' or "%s"=' ' or "%s" is null))"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1],self.columns[2][1],self.columns[2][1],self.columns[2][1],self.columns[3][1],self.columns[3][1],self.columns[3][1])#Delete empty records from the import table!!!
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.temptableName) #Number of distinct data posts in the import table
-            cleaningok = self.MultipleFieldDuplicates(4,'w_levels',sqlremove,'obs_points',sqlNoOfdistinct)
+            cleaningok = self.multiple_field_duplicates(4, 'w_levels', sqlremove, 'obs_points', sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sqlpart1 = """INSERT OR IGNORE INTO "w_levels" (obsid, date_time, meas, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), (case when "%s"!='' then CAST("%s" as double) else null end), CAST("%s" as text) FROM %s"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[2][1],self.columns[3][1],self.temptableName)
@@ -549,6 +549,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     qgis.utils.iface.messageBar().pushMessage("ERROR Import failed: Column '" + _column + " did not exist in the csvfile.")
                     return
 
+            #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
+            nr_before = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1]
+            utils.sql_alter_db(u'''delete from "%s" where obsid || date_time || ':00' in ( select obsid || date_time from w_levels_logger)'''%(self.temptableName))
+            utils.sql_alter_db(u'''delete from "%s" where SUBSTR(obsid || date_time, 1, length(obsid || date_time) - 3) in ( select obsid || date_time from w_levels_logger)'''%(self.temptableName))
+            nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1]
+            if nr_after > nr_before:
+                qgis.utils.iface.messageBar().pushMessage("""In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported."""%(str(nr_after - nr_before)))
+
             #Delete empty records from the import table!!! (Temperature and conductivity is allowed to be NULL.
             sqlremove_list = []
             sqlremove_list.append(ur"""DELETE FROM "%s" where """%(self.temptableName))
@@ -556,7 +564,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             sqlremove = u''.join(sqlremove_list).encode(u'utf-8')
 
             sqlNoOfdistinct = u"""SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(column_headers[u'date_time'], column_headers[u'obsid'], self.temptableName) #Number of distinct data posts in the import table
-            cleaningok = self.MultipleFieldDuplicates(len(column_headers), u'w_levels_logger', sqlremove, u'obs_points', sqlNoOfdistinct)
+            cleaningok = self.multiple_field_duplicates(len(column_headers), u'w_levels_logger', sqlremove, u'obs_points', sqlNoOfdistinct)
 
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 # Add level_masl column and fill with data
@@ -624,7 +632,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             sqlremove = ''.join(sqlremove_list)
 
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(report,parameter,self.temptableName) #Number of distinct data posts in the import table
-            cleaningok = self.MultipleFieldDuplicates(12,'w_qual_lab',sqlremove,'obs_points',sqlNoOfdistinct)
+            cleaningok = self.multiple_field_duplicates(12, 'w_qual_lab', sqlremove, 'obs_points', sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sql_list = []
                 sql_list.append(r"""INSERT OR IGNORE INTO "w_qual_lab" (obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment) """)
@@ -675,7 +683,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName, obsid, obsid, date_time, date_time, parameter, parameter)#Delete empty records from the import table!!!
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s", "%s" FROM %s)"""%(obsid, date_time, parameter, unit, self.temptableName) #Number of distinct data posts in the import table
-            cleaningok = self.MultipleFieldDuplicates(9,'w_qual_field',sqlremove,'obs_points',sqlNoOfdistinct)
+            cleaningok = self.multiple_field_duplicates(9, 'w_qual_field', sqlremove, 'obs_points', sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
 
                 if utils.verify_table_exists('zz_staff'):
@@ -708,7 +716,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         typename_preparer_importer = {u'level': (self.fieldlogger_prepare_level_data, self.wlvl_import_from_csvlayer),
                                       u'flow': (self.fieldlogger_prepare_flow_data, self.wflow_import_from_csvlayer),
                                       u'quality': (self.fieldlogger_prepare_quality_data, self.wqualfield_import_from_csvlayer),
-                                      u'sample': (self.fieldlogger_prepare_quality_data, self.wqualfield_import_from_csvlayer)}
+                                      u'sample': (self.fieldlogger_prepare_sample_data, self.wqualfield_import_from_csvlayer)}
 
         for typename, obsdict in result_dict.iteritems():
             preparer = typename_preparer_importer[typename][0]
@@ -874,11 +882,20 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         return file_data_list
 
+    def fieldlogger_prepare_sample_data(self, obsdict):
+        file_data_list = self.fieldlogger_prepare_quality_and_sample(obsdict, quality_or_water_sample=u'water sample')
+        return file_data_list
+
+    def fieldlogger_prepare_quality_data(self, obsdict):
+        file_data_list = self.fieldlogger_prepare_quality_and_sample(obsdict, quality_or_water_sample=u'water quality')
+        return file_data_list
+
     @staticmethod
-    def fieldlogger_prepare_quality_data(obsdict):
+    def fieldlogger_prepare_quality_and_sample(obsdict, quality_or_water_sample=u'water quality'):
         """
         Produces a filestring with columns "obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment" and imports it
         :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
+        :param quality_or_water_sample: Word written at user question: u'quality' or u'water sample'.
         :return:
         """
         file_data_list = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment']]
@@ -906,7 +923,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
                     if staff is None:
                         question = utils.NotFoundQuestion(dialogtitle=u'Submit field staff',
-                                                       msg=u'Submit the field staff who made the measurement:\n' + u', '.join([obsid, datestring, parameter]) + u'\nIt will be used for the rest of the comment imports',
+                                                       msg=u'Submit the field staff who made the ' + quality_or_water_sample + u' measurement:\n' + u', '.join([obsid, datestring, parameter]) + u'\nIt will be used for the rest of the ' + quality_or_water_sample + u' imports',
                                                        existing_list=existing_staff)
                         answer = question.answer
                         if answer == u'cancel':
@@ -917,7 +934,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         instrument = u''
                     elif asked_instrument is None:
                         question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
-                                                       msg=u'Submit the instrument id for the measurement:\n' + u', '.join([obsid, datestring, parameter]) + u'\nIt will be used for the rest of the quality data import',
+                                                       msg=u'Submit the instrument id for the ' + quality_or_water_sample + u' measurement:\n' + u', '.join([obsid, datestring, parameter]) + u'\nIt will be used for the rest of the ' + quality_or_water_sample + u' imports',
                                                        existing_list=instrumentids)
                         answer = question.answer
                         if answer == u'cancel':
@@ -1006,8 +1023,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             sqlremove = """DELETE FROM "%s" where "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null"""%(self.temptableName, obsid, obsid, obsid, date_time, date_time, date_time, comment, comment, comment, staff, staff, staff)  #Delete empty records from the import table!!!
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s", "%s" FROM %s)"""%(obsid, date_time, comment, staff,self.temptableName)  #Number of distinct data posts in the import table
-            cleaningok = self.MultipleFieldDuplicates(4,'comments',sqlremove,'obs_points',sqlNoOfdistinct)
-            if cleaningok == 1: # If cleaning was OK, then fix zz_flowtype and then copy data from the temporary table to the original table in the db
+            cleaningok = self.multiple_field_duplicates(4, 'comments', sqlremove, 'obs_points', sqlNoOfdistinct)
+            if cleaningok == 1:
 
                 #Add staffs that does not exist in db
                 if utils.verify_table_exists('zz_staff'):
@@ -1077,7 +1094,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if id in possibleobsids:
                 qgis.utils.iface.messageBar().pushMessage("Warning","""obsid=%s do already exist in the database and will not be imported again!"""%str(id[0]),1,duration=10)
 
-    def MultipleFieldDuplicates(self,NoCols,GoalTable,sqlremove,MajorTable,sqlNoOfdistinct):  #For secondary tables linking to obs_points and obs_lines: Sanity checks and removes duplicates
+    def multiple_field_duplicates(self, NoCols, GoalTable, sqlremove, MajorTable, sqlNoOfdistinct, ):  #For secondary tables linking to obs_points and obs_lines: Sanity checks and removes duplicates
         """perform some sanity checks of the imported data and removes duplicates and empty records"""
         if len(self.columns)<NoCols: 
             qgis.utils.iface.messageBar().pushMessage("Import failure","Import file must have at least " + str(NoCols) + " columns!\nCheck your data and try again.",2)
@@ -1114,11 +1131,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         """ Opens a wells file and returns a parsed dict
         :return: A dict like {obsid: {typename: [parameter, unit]}}
         """
-        path = self.select_files(only_one_file=True)[0]
+        try:
+            path = self.select_files(only_one_file=True)[0]
+        except IndexError:
+            return u'cancel'
         charset = self.charsetchoosen
 
         if not path:
-            return {}
+            return None
         with io.open(path, u'r', encoding=str(charset[0])) as f:
             obsid_dict = self.wells_parse_rows(f)
         return obsid_dict
@@ -1210,6 +1230,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return csvlayer
 
     def select_files(self, only_one_file=False):
+        path = []
         try:#MacOSX fix2
             localencoding = locale.getdefaultlocale()[1]
             self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
@@ -1220,6 +1241,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 path = [PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")]
             else:
                 path = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
+        #Filter all empty strings
+        path = [p for p in path if p]
         return path
 
     @staticmethod
@@ -1299,11 +1322,18 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if len(filedata) == 0:
             return utils.ask_user_about_stopping("Failure, parsing failed for file " + path + "\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)")
 
+        answer = None
         if ask_for_names:
-            obsid = utils.filter_nonexisting_values_and_ask([[u'obsid'], [obsid]], u'obsid', existing_obsids, try_capitalize=False)[1][0]
+            answer = utils.filter_nonexisting_values_and_ask([[u'obsid'], [obsid]], u'obsid', existing_obsids, try_capitalize=False)
         else:
             if obsid not in existing_obsids:
-                obsid = utils.filter_nonexisting_values_and_ask([[u'obsid'], [obsid]], u'obsid', existing_obsids, try_capitalize=True)[1][0]
+                answer = utils.filter_nonexisting_values_and_ask([[u'obsid'], [obsid]], u'obsid', existing_obsids, try_capitalize=True)
+
+        if answer is not None:
+            if isinstance(answer, (list, tuple)):
+                obsid = answer[1][0]
+            else:
+                obsid = answer
 
         if obsid in [u'cancel', u'ignore']:
             return obsid

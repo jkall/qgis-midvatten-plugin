@@ -20,6 +20,7 @@
 import PyQt4
 import os
 import os.path
+import qgis.utils
 from collections import OrderedDict
 
 import midvatten_utils as utils
@@ -245,6 +246,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         importinstance = midv_data_importer()
         obsid_dict = importinstance.parse_wells_file()
+        if obsid_dict == u'cancel':
+            qgis.utils.iface.messageBar().pushMessage("Select from wells file: No file was chosen or no rows could be parsed.")
+            return u'cancel'
 
         failed_imports = []
         for obsid, types_dict in obsid_dict.iteritems():
@@ -269,8 +273,8 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                             failed_imports.append([obsid, typename, parameter, unit])
                             continue
                     checkbox.setChecked(True)
-
-        utils.pop_up_info('Failed to import parameters:\n' + '\n'.join([', '.join(x) for x in failed_imports if x[2] != u'comment']))
+        if obsid_dict:
+            utils.pop_up_info('Failed to import parameters:\n' + '\n'.join([', '.join(x) for x in failed_imports if x[2] != u'comment']))
 
     def export_selected(self):
         """ Export the selected obsids and parameters to a file

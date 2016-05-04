@@ -556,8 +556,29 @@ class TestParseDiverofficeFile(object):
         reference_string = u'[[obsid, date_time, head_cm, temp_degc, cond_mscm], [Rb1, 2016-03-15 10:30:00, 26.9, 5.18, ], [Rb1, 2016-03-15 11:00:00, 157.7, 0.6, ]]'
         assert test_string == reference_string
 
+    @mock.patch('import_data_to_db.utils.NotFoundQuestion', autospec=True)
+    def test_parse_diveroffice_file_cancel(self, mock_notfoundquestion):
+        mock_notfoundquestion.return_value.answer = u'cancel'
+        mock_notfoundquestion.return_value.value = u''
 
-class _TestWlvllogImportFromDiverofficeFiles(object):
+        f = (u'Location=rb1',
+             u'Date/time,Water head[cm],Temperature[°C]',
+             u'2016/03/15 10:30:00,26.9,5.18',
+             u'2016/03/15 11:00:00,157.7,0.6'
+             )
+        existing_obsids = [u'rb2']
+
+        charset_of_diverofficefile = u'utf-8'
+        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
+                ask_for_names = False
+                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+
+        test_string = utils_for_tests.create_test_string(file_data)
+        reference_string = u'cancel'
+        assert test_string == reference_string
+
+
+class TestWlvllogImportFromDiverofficeFiles(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes_obj = MockUsingReturnValue()
@@ -597,7 +618,7 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
         os.remove(TEMP_DB_PATH)
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    def test_wlvllogg_import_from_diveroffice_files_no_db(self):
+    def test_wlvllogg_import_from_diveroffice_files(self):
         files = [(u'Location=rb1',
                 u'Date/time,Water head[cm],Temperature[°C]',
                 u'2016/03/15 10:30:00,1,10',
@@ -641,6 +662,54 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, -1000.0, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, -1010.0, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, -1001.0, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, -1020.0, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, -1002.0, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, -1030.0, None)])'''
+                    assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_wlvllogg_import_from_diveroffice_files_skip_duplicates(self):
+        files = [(u'Location=rb1',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/03/15 10:30:00,1,10',
+                u'2016/03/15 11:00:00,11,101'),
+                (u'Location=rb2',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/04/15 10:30:00,2,20',
+                u'2016/04/15 11:00:00,21,201'),
+                (u'Location=rb3',
+                u'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
+                u'2016/05/15 10:30:00,3,30,5',
+                u'2016/05/15 11:00:00,31,301,6')
+                 ]
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
+        utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:30', '5.0')''')
+
+        self.importinstance.charsetchoosen = [u'utf-8']
+        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen[0]) as f1:
+            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen[0]) as f2:
+                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen[0]) as f3:
+
+                    filenames = [f1, f2, f3]
+                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+                    utils_askuser_answer_no_obj.result = 0
+                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+                    @mock.patch('midvatten_utils.QgsProject.instance', TestWlvllogImportFromDiverofficeFiles.mock_dbpath.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser', utils_askuser_answer_no.get_v)
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch('import_data_to_db.midv_data_importer.select_files')
+                    def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface):
+                        mock_filenames.return_value = filenames
+                        mock_encoding.return_value = [True, u'utf-8']
+                        self.importinstance.wlvllogg_import_from_diveroffice_files()
+
+                    _test_wlvllogg_import_from_diveroffice_files(self, filenames)
+
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, -1010.0, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, -1001.0, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, -1020.0, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, -1002.0, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, -1030.0, None)])'''
                     assert test_string == reference_string
 
 
@@ -1162,7 +1231,7 @@ class TestDbCalls(object):
         assert test_flow_data == reference_flow_data
 
         reference_flow_type = (True, [(u'Accvol', u'Accumulated volume'), (u'Momflow', u'Momentary flow rate'), (u'Aveflow', u'Average flow since last reading'), (u'flowtype1', u''), (u'flowtype2', u'')])
-        test_flow_type = utils.sql_load_fr_db(u'select * from zz_flowtype')
+        test_flow_type = utils.sql_load_fr_db(u'select type, explanation from zz_flowtype')
 
         msgbar = TestDbCalls.mocked_iface.messagebar.messages
         if msgbar:
@@ -1248,11 +1317,16 @@ class TestDbCalls(object):
             @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
             #@mock.patch('import_data_to_db.utils.get_staff_initials_list' , existing_staff.get_v)
             def _test_fieldlogger_import(mocked_iface):
-                utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("Rb1505")')
-                utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("Rb1615")')
-                utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("Rb1512")')
-                utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("Rb1202")')
-                utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("Rb1608")')
+                utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
+                utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
+                utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
+                utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
+                utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
+                utils.sql_alter_db(u'''INSERT OR IGNORE INTO zz_w_qual_field_parameters ("parameter", "unit") VALUES ("syre", "mg/L")''')
+                utils.sql_alter_db(u'''INSERT OR IGNORE INTO zz_w_qual_field_parameters ("parameter", "unit") VALUES ("syre", "%")''')
+                utils.sql_alter_db(u'''INSERT OR IGNORE INTO zz_w_qual_field_parameters ("parameter", "unit") VALUES ("konduktivitet", "µS/cm")''')
+                utils.sql_alter_db(u'''INSERT OR IGNORE INTO zz_w_qual_field_parameters ("parameter", "unit") VALUES ("turbiditet", "FNU")''')
+                utils.sql_alter_db(u'''INSERT OR IGNORE INTO zz_w_qual_field_parameters ("parameter", "unit") VALUES ("temperatur", "grC")''')
                 self.importinstance.fieldlogger_import()
                 test_data = utils_for_tests.create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
                 reference_data = u"{comments: (True, [(Rb1608, 2016-03-30 15:34:40, testc, teststaff), (Rb1202, 2016-03-30 15:31:30, hej2, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, ), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, test), (Rb1512, teststaff, 2016-03-30 15:30:39, , temperatur, 8.0, 8, grC, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, )]), zz_staff: (True, [(teststaff, )])}"

@@ -330,11 +330,14 @@ def standard_parameters_for_wquality():
     """ Returns a dict with water quality parameters
     :return: A dict with parameter as key and unit as value
     """
-    parameters = ((u'temperatur', (u'grC',)),
-                  (u'pH', (u'',)),
-                  (u'redoxpotential', (u'mV',)),
-                  (u'konduktivitet', (u'µS/cm', u'mS/cm')),
-                  (u'syre', (u'mg/L', u'%')))
+    parameters_from_table = utils.returnunicode(utils.sql_load_fr_db(u'''select parameter, unit from zz_w_qual_field_parameters''')[1], True)
+
+    parameters_dict = {}
+    for parameter, unit in parameters_from_table:
+        parameters_dict.setdefault(parameter, []).append(unit)
+
+    parameters = tuple([(k, tuple(v)) for k, v in parameters_dict.iteritems()])
+
     return parameters
 
 def standard_parameters_for_wsample():
@@ -349,8 +352,13 @@ def standard_parameters_for_wflow():
     """ Returns a dict with water flow parameters
     :return: A dict with parameter as key and unit as value
     """
-    parameters = ((u'Momflow', (u'l/s',)),
-                  (u'Accvol', (u'm3',)))
+    parameters_from_table = utils.returnunicode(utils.sql_load_fr_db(u'''select type, unit from zz_flowtype''')[1], True)
+    parameters_dict = {}
+    for parameter, unit in parameters_from_table:
+        parameters_dict.setdefault(parameter, []).append(unit)
+
+    parameters = tuple([(k, tuple(v)) for k, v in parameters_dict.iteritems()])
+
     return parameters
 
 def PlotTypesDict(international='no'): 

@@ -297,7 +297,7 @@ def return_lower_ascii_string(textstring):
     filtered_string = filtered_string.lower()
     return filtered_string
 
-def returnunicode(anything): #takes an input and tries to return it as unicode
+def returnunicode(anything, keep_containers=False): #takes an input and tries to return it as unicode
     ur"""
 
     >>> returnunicode('b')
@@ -316,6 +316,10 @@ def returnunicode(anything): #takes an input and tries to return it as unicode
     u"[u'\\xe4', u'\\xf6']"
     >>> returnunicode(float(1))
     u'1.0'
+    >>> returnunicode(None)
+    u''
+    >>> returnunicode([(1, ), {2: 'a'}], True)
+    [(u'1',), {u'2': u'a'}]
 
     :param anything: just about anything
     :return: hopefully a unicode converted anything
@@ -323,24 +327,27 @@ def returnunicode(anything): #takes an input and tries to return it as unicode
     text = None
     for charset in [u'ascii', u'utf-8', u'utf-16', u'cp1252', u'iso-8859-1']:
         try:
-            if type(anything) == type(None):
-                text = unicode('')
-            elif isinstance(anything, unicode):
-                text = anything
+            if anything == None:
+                text = u''
             elif isinstance(anything, list):
-                text = unicode([returnunicode(x) for x in anything])
+                text = [returnunicode(x, keep_containers) for x in anything]
             elif isinstance(anything, tuple):
-                text = unicode(tuple([returnunicode(x) for x in anything]))
-            elif isinstance(anything, float):
-                text = unicode(anything)
-            elif isinstance(anything, int):
-                text = unicode(anything)
+                text = tuple([returnunicode(x, keep_containers) for x in anything])
             elif isinstance(anything, dict):
-                text = unicode(dict([(returnunicode(k), returnunicode(v)) for k, v in anything.iteritems()]))
-            elif isinstance(anything, str):
-                text = unicode(anything, charset)
-            elif isinstance(anything, bool):
-                text = unicode(anything)
+                text = dict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
+            else:
+                text = anything
+
+            if isinstance(text, (list, tuple, dict)):
+                if not keep_containers:
+                    text = unicode(text)
+            elif isinstance(text, str):
+                text = unicode(text, charset)
+            elif isinstance(text, unicode):
+                pass
+            else:
+                text = unicode(text)
+
         except UnicodeEncodeError:
             continue
         except UnicodeDecodeError:
@@ -913,7 +920,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
             answer = question.answer
             submitted_value = returnunicode(question.value)
             if answer == u'cancel':
-                return u'cancel'
+                return answer
             elif answer == u'ignore':
                 current_value = submitted_value
                 break
