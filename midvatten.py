@@ -113,6 +113,9 @@ class midvatten:
         
         self.action_import_wlvllogg = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), "Import w level from logger", self.iface.mainWindow())
         QObject.connect(self.action_import_wlvllogg , SIGNAL("triggered()"), self.import_wlvllogg)
+
+        self.action_import_wlvllogg_general_format = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), "Import w level from logger, general format", self.iface.mainWindow())
+        QObject.connect(self.action_import_wlvllogg_general_format , SIGNAL("triggered()"), self.import_wlvllogg_general_format)
         
         self.action_import_diverofficedata = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), "Import w level from diveroffice files", self.iface.mainWindow())
         QObject.connect(self.action_import_diverofficedata, SIGNAL("triggered()"), self.import_diverofficedata)
@@ -234,6 +237,7 @@ class midvatten:
         self.menu.import_data_menu.addAction(self.actionimport_obs_points)   
         self.menu.import_data_menu.addAction(self.action_import_wlvl)   
         self.menu.import_data_menu.addAction(self.action_import_wlvllogg)
+        self.menu.import_data_menu.addAction(self.action_import_wlvllogg_general_format)
         self.menu.import_data_menu.addAction(self.action_import_diverofficedata)         
         self.menu.import_data_menu.addAction(self.actionimport_wqual_lab)
         self.menu.import_data_menu.addAction(self.actionimport_wqual_field)   
@@ -524,7 +528,7 @@ class midvatten:
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
-                importinstance.wflow_import()
+                importinstance.default_import(importinstance.wflow_import_from_csvlayer)
                 if importinstance.status=='True':      # 
                     self.iface.messageBar().pushMessage("Info","%s water flow readings were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
                     try:
@@ -541,7 +545,7 @@ class midvatten:
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
-                importinstance.wlvl_import()
+                importinstance.default_import(importinstance.wlvl_import_from_csvlayer)
                 if importinstance.status=='True': 
                     self.iface.messageBar().pushMessage("Info","%s water level measurements were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
                     try:
@@ -561,7 +565,7 @@ class midvatten:
                 if sanity.result == 1:
                     from import_data_to_db import midv_data_importer
                     importinstance = midv_data_importer()
-                    importinstance.wlvllogg_import()
+                    importinstance.wlvllogg_import_from_diveroffice_files()
                     if not importinstance.status=='True':
                         self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
                     else:
@@ -572,15 +576,15 @@ class midvatten:
                             pass
             else: 
                 self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
-                        
-    def import_wlvllogg(self):#  - should be rewritten 
+
+    def import_wlvllogg(self):#  - should be rewritten
         allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
-        if err_flag == 0:   
+        if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):
                 if qgis.utils.iface.activeLayer():
-                    if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':                
-                        obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())                    
+                    if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':
+                        obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
                         longmessage = """You are about to import water head data, recorded with a\nLevel Logger (e.g. Diver), for """
                         longmessage += obsid[0]
                         longmessage +=u""".\nData is supposed to be imported from a semicolon or comma\nseparated text file. The text file must have one header row and columns:\n\nDate/time,Water head[cm],Temperature[°C]\nor\nDate/time,Water head[cm],Temperature[°C],1:Conductivity[mS/cm]\n\nColumn names are unimportant although column order is.\nAlso, date-time must have format yyyy-mm-dd hh:mm(:ss) and\nthe other columns must be real numbers with point(.) as decimal separator and no separator for thousands.\nRemember to not use comma in the comment field!\n\nAlso, records where any fields are empty will be excluded from the report!\n\nContinue?"""
@@ -588,16 +592,40 @@ class midvatten:
                         if sanity.result == 1:
                             from import_data_to_db import wlvlloggimportclass
                             importinstance = wlvlloggimportclass()
-                            if not importinstance.status=='True':      
+                            if not importinstance.status=='True':
                                 self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
                             else:
                                 try:
                                     self.midvsettingsdialog.ClearEverything()
                                     self.midvsettingsdialog.LoadAndSelectLastSettings()
                                 except:
-                                    pass                            
+                                    pass
                 else:
                     self.iface.messageBar().pushMessage("Critical","You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!", 2)
+            else:
+                self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
+
+    def import_wlvllogg_general_format(self):
+        allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:   
+            if not (self.ms.settingsdict['database'] == ''):
+                obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
+                longmessage = u"""You are about to import water head data, recorded with a\nLevel Logger (e.g. Diver)."""
+                longmessage +=u""".\nData is supposed to be imported from a semicolon or comma\nseparated text file. The text file must have one header with\nmandatory columns: "obsid, date_time, head_cm"\nand optional columns: "columns temp_degc, cond_mscm"\n\nColumn names are important and obsid must be first column.\nAlso, date-time must have format yyyy-mm-dd hh:mm(:ss) and\nthe other columns must be real numbers with point(.) as decimal separator and no separator for thousands.\nRemember to not use comma in the comment field!\n\nAlso, records where obsid, date_time or head_cm are empty will be excluded from the report!\n\nContinue?"""
+                sanity = utils.askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
+                if sanity.result == 1:
+                    from import_data_to_db import midv_data_importer
+                    importinstance = midv_data_importer()
+                    importinstance.default_import(importinstance.wlvllogg_import_from_csvlayer)
+                    if not importinstance.status=='True':
+                        self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    else:
+                        try:
+                            self.midvsettingsdialog.ClearEverything()
+                            self.midvsettingsdialog.LoadAndSelectLastSettings()
+                        except:
+                            pass
             else: 
                 self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
 
@@ -610,7 +638,7 @@ class midvatten:
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
-                importinstance.wqualfield_import()
+                importinstance.default_import(importinstance.wqualfield_import_from_csvlayer)
                 if importinstance.status=='True':      # 
                     self.iface.messageBar().pushMessage("Info","%s water quality paramters were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
                     try:
@@ -627,7 +655,7 @@ class midvatten:
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
-                importinstance.wquallab_import()
+                importinstance.default_import(importinstance.wquallab_import_from_csvlayer)
                 if importinstance.status=='True':      # 
                     self.iface.messageBar().pushMessage("Info","%s water quality parameters were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
                     try:
@@ -673,7 +701,7 @@ class midvatten:
                     from import_data_to_db import midv_data_importer
                     importinstance = midv_data_importer()
                     importinstance.fieldlogger_import()
-                    if not importinstance.status=='True':
+                    if not importinstance.status == 'True' and not importinstance.status:
                         self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
                     else:
                         try:
@@ -759,7 +787,8 @@ class midvatten:
 
         SectionLineLayer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
         msg = None
-        if SectionLineLayer.selectedFeatureCount()==1:#First verify only one feature is selected in the active layer...
+        nrofselected = SectionLineLayer.selectedFeatureCount()
+        if nrofselected == 1:#First verify only one feature is selected in the active layer...
             for feat in SectionLineLayer.getFeatures():
                 geom = feat.geometry()
                 if geom.wkbType() == QGis.WKBLineString:#...and that the active layer is a line vector layer
@@ -774,11 +803,9 @@ class midvatten:
         selectedobspoints = utils.getselectedobjectnames(obs_points_layer)
         obsidlist = []
         if len(selectedobspoints)>1:
-            i=0
-            for id in selectedobspoints:
-                obsidlist.append(str(id))#we cannot send unicode as string to sql because it would include the u'
-                i+=1
-            OBSID = tuple(obsidlist)#because module sectionplot depends on obsid being a tuple
+            # We cannot send unicode as string to sql because it would include the u'
+            # Made into tuple because module sectionplot depends on obsid being a tuple
+            OBSID = tuple([str(id) for id in selectedobspoints])
         else:
             msg = 'You must select at least two objects in the obs_points layer'
         

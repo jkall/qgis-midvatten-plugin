@@ -38,6 +38,7 @@ from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialit
 from pyspatialite.dbapi2 import IntegrityError
 from matplotlib.dates import datestr2num, num2date
 import time
+from collections import OrderedDict
 
 not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
 
@@ -107,7 +108,7 @@ class askuser(QtGui.QDialog):
                         pop_up_info("Failure:\nMust write time resolution also.\n")
 
 class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
-    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None):
+    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None, button_names=[u'Ignore', u'Cancel', u'Ok']):
         QtGui.QDialog.__init__(self, parent)
         self.answer = None
         self.setupUi(self)
@@ -117,30 +118,21 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
         if existing_list is not None:
             for existing in existing_list:
                 self.comboBox.addItem(existing)
-        #self.buttonBox.addButton(QtGui.QDialogButtonBox.Ignore
-        button_ignore = QtGui.QPushButton("Ignore")
-        button_cancel = QtGui.QPushButton("Cancel")
-        button_ok = QtGui.QPushButton("Ok")
-        self.buttonBox.addButton(button_ignore, QtGui.QDialogButtonBox.ActionRole)
-        self.buttonBox.addButton(button_cancel, QtGui.QDialogButtonBox.RejectRole)
-        self.buttonBox.addButton(button_ok, QtGui.QDialogButtonBox.AcceptRole)
 
-        self.connect(button_ignore, PyQt4.QtCore.SIGNAL("clicked()"), self.ignored_clicked)
-        reply = self.exec_()
-        self.update_value()
-        if self.answer is None:
-            if reply == 1:
-                self.answer = u'ok'
-            elif reply == 0:
-                self.answer = u'cancel'
+        for button_name in button_names:
+            button = QtGui.QPushButton(button_name)
+            button.setObjectName(button_name.lower())
+            self.buttonBox.addButton(button, QtGui.QDialogButtonBox.ActionRole)
+            self.connect(button, PyQt4.QtCore.SIGNAL("clicked()"), self.button_clicked)
 
-    def ignored_clicked(self):
-        self.answer = u'ignore'
-        self.update_value()
-        self.close()
+        self.exec_()
 
-    def update_value(self):
+    def button_clicked(self):
+        button = self.sender()
+        button_object_name = button.objectName()
+        self.answer = button_object_name
         self.value = self.comboBox.currentText()
+        self.close()
 
 class HtmlDialog(QtGui.QDialog):
 
@@ -305,7 +297,7 @@ def return_lower_ascii_string(textstring):
     filtered_string = filtered_string.lower()
     return filtered_string
 
-def returnunicode(anything): #takes an input and tries to return it as unicode
+def returnunicode(anything, keep_containers=False): #takes an input and tries to return it as unicode
     ur"""
 
     >>> returnunicode('b')
@@ -324,6 +316,10 @@ def returnunicode(anything): #takes an input and tries to return it as unicode
     u"[u'\\xe4', u'\\xf6']"
     >>> returnunicode(float(1))
     u'1.0'
+    >>> returnunicode(None)
+    u''
+    >>> returnunicode([(1, ), {2: 'a'}], True)
+    [(u'1',), {u'2': u'a'}]
 
     :param anything: just about anything
     :return: hopefully a unicode converted anything
@@ -331,24 +327,27 @@ def returnunicode(anything): #takes an input and tries to return it as unicode
     text = None
     for charset in [u'ascii', u'utf-8', u'utf-16', u'cp1252', u'iso-8859-1']:
         try:
-            if type(anything) == type(None):
-                text = unicode('')
-            elif isinstance(anything, unicode):
-                text = anything
+            if anything == None:
+                text = u''
             elif isinstance(anything, list):
-                text = unicode([returnunicode(x) for x in anything])
+                text = [returnunicode(x, keep_containers) for x in anything]
             elif isinstance(anything, tuple):
-                text = unicode(tuple([returnunicode(x) for x in anything]))
-            elif isinstance(anything, float):
-                text = unicode(anything)
-            elif isinstance(anything, int):
-                text = unicode(anything)
+                text = tuple([returnunicode(x, keep_containers) for x in anything])
             elif isinstance(anything, dict):
-                text = unicode(dict([(returnunicode(k), returnunicode(v)) for k, v in anything.iteritems()]))
-            elif isinstance(anything, str):
-                text = unicode(anything, charset)
-            elif isinstance(anything, bool):
-                text = unicode(anything)
+                text = dict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
+            else:
+                text = anything
+
+            if isinstance(text, (list, tuple, dict)):
+                if not keep_containers:
+                    text = unicode(text)
+            elif isinstance(text, str):
+                text = unicode(text, charset)
+            elif isinstance(text, unicode):
+                pass
+            else:
+                text = unicode(text)
+
         except UnicodeEncodeError:
             continue
         except UnicodeDecodeError:
@@ -846,9 +845,11 @@ def lists_to_string(alist_of_lists):
     u'a;b\n1;2'
     """
     if isinstance(alist_of_lists, list) or isinstance(alist_of_lists, tuple):
-        return u'\n'.join([u';'.join([returnunicode(y) for y in x]) if isinstance(x, list) or isinstance(x, tuple) else returnunicode(x) for x in alist_of_lists])
+        return_string = u'\n'.join([u';'.join([returnunicode(y) for y in x]) if isinstance(x, list) or isinstance(x, tuple) else returnunicode(x) for x in alist_of_lists])
     else:
-        return returnunicode(alist_of_lists)
+        return_string = returnunicode(alist_of_lists)
+
+    return return_string
 
 def find_similar(word, wordlist, hits=5):
     ur"""
@@ -900,6 +901,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
 
         not_tried_capitalize = True
 
+        answer = None
         while current_value not in existing_values:
             if try_capitalize and not_tried_capitalize:
                 try:
@@ -910,18 +912,25 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
                     not_tried_capitalize = False
                     continue
 
-            question = NotFoundQuestion(u'WARNING', u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\n', similar_values, similar_values[0])
+            question = NotFoundQuestion(dialogtitle=u'WARNING',
+                                        msg=u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\n',
+                                        existing_list=similar_values,
+                                        default_value=similar_values[0],
+                                        button_names=[u'Ignore', u'Cancel', u'Ok', u'Skip'])
             answer = question.answer
             submitted_value = returnunicode(question.value)
             if answer == u'cancel':
-                return u'cancel'
+                return answer
             elif answer == u'ignore':
                 current_value = submitted_value
                 break
             elif answer == u'ok':
                 current_value = submitted_value
-        row[index] = current_value
-        filtered_data.append(row)
+            elif answer == u'skip':
+                break
+        if answer != u'skip':
+            row[index] = current_value
+            filtered_data.append(row)
 
     return filtered_data
 

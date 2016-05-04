@@ -60,7 +60,7 @@
          <property name="text">
           <string>Select
 from
-wells-file</string>
+wells file</string>
          </property>
         </widget>
        </item>

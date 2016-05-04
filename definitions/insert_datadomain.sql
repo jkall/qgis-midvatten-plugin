@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
-insert into zz_flowtype(type, explanation) values("Accvol", "Accumulated volume");
-insert into zz_flowtype(type, explanation) values("Momflow", "Momentary flow rate");
-insert into zz_flowtype(type, explanation) values("Aveflow", "Average flow since last reading");
+insert into zz_flowtype(type, unit, explanation) values("Accvol", "m3", "Accumulated volume");
+insert into zz_flowtype(type, unit, explanation) values("Momflow", "l/s", "Momentary flow rate");
+insert into zz_flowtype(type, unit, explanation) values("Aveflow", "l/s", "Average flow since last reading");
 insert into zz_meteoparam(parameter, explanation) values("precip", "Precipitation");
 insert into zz_meteoparam(parameter, explanation) values("temp", "Air temperature");
 insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('unknown','white','','white','NoBrush','not in (''berg'',''b'',''rock'',''ro'',''grovgrus'',''grg'',''coarse gravel'',''cgr'',''grus'',''gr'',''gravel'',''mellangrus'',''grm'',''medium gravel'',''mgr'',''fingrus'',''grf'',''fine gravel'',''fgr'',''grovsand'',''sag'',''coarse sand'',''csa'',''sand'',''sa'',''mellansand'',''sam'',''medium sand'',''msa'',''finsand'',''saf'',''fine sand'',''fsa'',''silt'',''si'',''lera'',''ler'',''le'',''clay'',''cl'',''morän'',''moran'',''mn'',''till'',''ti'',''torv'',''t'',''peat'',''pt'',''fyll'',''fyllning'',''f'',''made ground'',''mg'',''land fill'')');
@@ -43,3 +43,13 @@ insert into "zz_capacity" (capacity,explanation,color_qt) values('6-','mycket go
 insert into "zz_capacity" (capacity,explanation,color_qt) values('6','mycket god', 'blue');
 insert into "zz_capacity" (capacity,explanation,color_qt) values('6 ','mycket god', 'blue');
 insert into "zz_capacity" (capacity,explanation,color_qt) values('6+','mycket god', 'darkBlue');
+insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('DO%', '%', null);
+insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('DO', 'mg/L', null);
+insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Konduktivitet', 'µS/cm', null);
+insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('pH', null, null);
+insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Redox', 'mV', null);
+insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Temp', 'grC', null);
+insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Turb', 'FTU', null);
+insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Lufttryck', 'hPa', null);
+insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Turb', 'FNU', null);
+insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Turb', 'NTU', null);

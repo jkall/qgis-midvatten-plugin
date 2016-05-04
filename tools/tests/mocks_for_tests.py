@@ -116,7 +116,6 @@ class MockQgsProjectInstance(object):
     def readEntry(self, *args, **kwargs):
         return self.entry
 
-
 class DummyInterface(object):
     def __init__(self):
         self.widget = QtGui.QWidget()
@@ -136,3 +135,19 @@ class DummyInterface(object):
     def layers(self):
         # simulate iface.legendInterface().layers()
         return QgsMapLayerRegistry.instance().mapLayers().values()
+
+class DummyInterface2(object):
+    """ This should probably be used instead of DummyInterface
+        Based on mock instad of an own type of object.
+
+        Usage:
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
+    """
+    def __init__(self):
+        self.mock = mock.MagicMock()
+        self.widget = QtGui.QWidget()
+        self.mainwindow = QtGui.QMainWindow(self.widget)
+        self.mock.mainWindow.return_value = self.mainwindow
+        self.mock.layers.return_value = QgsMapLayerRegistry.instance().mapLayers().values()
+

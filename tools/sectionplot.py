@@ -133,7 +133,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #load user settings from the ui
         self.ms.settingsdict['secplotwlvltab'] = unicode(self.wlvltableComboBox.currentText())
         temporarystring = self.datetimetextEdit.toPlainText() #this needs some cleanup
-        self.ms.settingsdict['secplotdates']=temporarystring.split()
+        try:
+            self.ms.settingsdict['secplotdates']=temporarystring.split()
+        except TypeError:
+            self.ms.settingsdict['secplotdates']=u''
         self.ms.settingsdict['secplottext'] = self.textcolComboBox.currentText()
         self.ms.settingsdict['secplotbw'] = self.barwidthdoubleSpinBox.value()
         self.ms.settingsdict['secplotdrillstop'] = self.drillstoplineEdit.text()

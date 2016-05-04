@@ -117,7 +117,7 @@ class TestCreateDb(object):
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     @mock.patch('create_db.locale.getdefaultlocale', autospec=True)
-    def test_create_db_locale_se(self, mock_locale):
+    def test_create_db_locale_en(self, mock_locale):
         mock_locale.return_value = [u'en_US']
         self.midvatten.new_db()
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select * from zz_strat'))
@@ -329,3 +329,4 @@ class TestObsPointsTriggers(object):
     def tearDown(self):
         #Delete database
         os.remove(TestObsPointsTriggers.temp_db_path)
+
