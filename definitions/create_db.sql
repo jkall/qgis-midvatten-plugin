@@ -13,7 +13,7 @@ insert into about_db values('comments', '*', '', '', '', '', '', 'comments conne
 insert into about_db values('comments', 'obsid', 'text', '1', '', '1', '1', 'ID for the observation point, eg Well01, Br1201, Rb1201', '', '');
 insert into about_db values('comments', 'date_time', 'text', '1', '', '1', '', 'Date and Time for the comment, on format yyyy-mm-dd hh:mm:ss', '', '');
 insert into about_db values('comments', 'comment', 'text', '1', '', '', '', 'comments connected to obsids', '', '');
-insert into about_db values('comments', 'staff', 'text', '1', '', '', '', 'comments connected to obsids', '', '');
+insert into about_db values('comments', 'staff', 'text', '1', '', '', '1', 'comments connected to obsids', '', '');
 insert into about_db values('meteo', '*', '', '', '', '', '', 'meteorological observations', '', '');
 insert into about_db values('meteo', 'obsid', 'text', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '');
 insert into about_db values('meteo', 'instrumentid', 'text', '1', '', '1', '', 'Instrument Id, may use several different temperature sensors or precipitaion meters at same station', '', '');
