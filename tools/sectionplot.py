@@ -102,6 +102,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.selected_obsids = LengthAlongTable.obs_id
         self.LengthAlong = LengthAlongTable.length
 
+        # hidden feature, printout to python console
+        print([x for x in self.selected_obsids])
+        print([x for x in self.LengthAlong])
+        
         self.fill_dem_list()
         
         #drop temporary table

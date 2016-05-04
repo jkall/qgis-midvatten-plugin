@@ -101,7 +101,8 @@ class LoadLayers():
                     group_index = self.legend.groups().index(self.group_name) 
                     self.legend.moveLayer (self.legend.layers()[0],group_index)
 
-                layer.setEditorLayout(1)#perhaps this is unnecessary since it gets set from the loaded qml below?
+                if self.group_name == 'Midvatten_OBS_DB':
+                    layer.setEditorLayout(1)#perhaps this is unnecessary since it gets set from the loaded qml below?
 
                 #now try to load the style file
                 stylefile_sv = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + "_sv.qml")
