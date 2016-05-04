@@ -700,7 +700,6 @@ class midvatten:
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict,'Midvatten_data_domains')
         QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
         
-
     def loadthelayers(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
