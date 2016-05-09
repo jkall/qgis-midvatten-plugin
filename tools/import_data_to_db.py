@@ -394,7 +394,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 #check for flowtypes and add those that are not present in db table zz_flowtype the obsid actually exists in obs_points
                 FlTypesInDb = utils.sql_load_fr_db('select distinct type, unit from zz_flowtype')[1]
                 FlTypes2BImported = utils.sql_load_fr_db("""select distinct "%s", "%s" from %s"""%(self.columns[2][1], self.columns[5][1],self.temptableName))[1]
-                utils.pop_up_info("FlTypesInDb: " + str(FlTypesInDb) + " \n and FlTypes2BImported: " + str(FlTypes2BImported))
 
                 try:
                     for tp in FlTypes2BImported:

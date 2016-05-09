@@ -1711,7 +1711,6 @@ class TestWflowImport(object):
             _test_wflow_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_flow'''))
-        print(test_string)
         reference_string = ur'''(True, [(obsid1, testid, Momflow, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
 
