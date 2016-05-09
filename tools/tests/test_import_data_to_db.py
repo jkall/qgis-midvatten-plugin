@@ -1652,6 +1652,70 @@ class TestWquallabImport(object):
         assert test_string == reference_string
 
 
+class TestWflowImport(object):
+    answer_yes_obj = MockUsingReturnValue()
+    answer_yes_obj.result = 1
+    answer_no_obj = MockUsingReturnValue()
+    answer_no_obj.result = 0
+    answer_yes = MockUsingReturnValue(answer_yes_obj)
+    CRS_question = MockUsingReturnValue([3006])
+    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
+    skip_popup = MockUsingReturnValue('')
+    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
+
+    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.QgsProject.instance', autospec=True)
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+        mock_crsquestion.return_value = [3006]
+        mock_savefilename.return_value = TEMP_DB_PATH
+
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
+        self.midvatten = midvatten.midvatten(self.iface)
+
+        try:
+            os.remove(TEMP_DB_PATH)
+        except OSError:
+            pass
+        self.midvatten.new_db()
+        self.importinstance = midv_data_importer()
+
+    def tearDown(self):
+        #Delete database
+        os.remove(TEMP_DB_PATH)
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_wflow_import_from_csvlayer(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        f = [[u'obsid', u'instrumentid', u'flowtype', u'date_time', u'reading', u'unit', u'comment'],
+             [u'obsid1', u'testid', u'Momflow', u'2011-10-19 12:30:00', u'2', u'l/s', u'testcomment']]
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestWflowImport.mock_askuser.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
+            def _test_wflow_import_from_csvlayer(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface):
+                mock_filename.return_value = filename
+                mock_encoding.return_value = [True, u'utf-8']
+                self.mock_iface = mock_iface
+                self.importinstance.default_import(self.importinstance.wflow_import_from_csvlayer)
+            _test_wflow_import_from_csvlayer(self, filename)
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_flow'''))
+        print(test_string)
+        reference_string = ur'''(True, [(obsid1, testid, Momflow, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
+        assert test_string == reference_string
+
+
 class TestFilterDatesFromFiledata(object):
 
     def setUp(self):
