@@ -65,7 +65,8 @@ class dbconnection():
         
     def closedb(self):
             self.conn.close()
-    
+
+
 class askuser(QtGui.QDialog):
     def __init__(self, question="YesNo", msg = '', dialogtitle='User input needed', parent=None):
         self.result = ''
@@ -107,6 +108,7 @@ class askuser(QtGui.QDialog):
                     else:
                         pop_up_info("Failure:\nMust write time resolution also.\n")
 
+
 class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
     def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None, button_names=[u'Ignore', u'Cancel', u'Ok']):
         QtGui.QDialog.__init__(self, parent)
@@ -133,6 +135,7 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
         self.answer = button_object_name
         self.value = self.comboBox.currentText()
         self.close()
+
 
 class HtmlDialog(QtGui.QDialog):
 
@@ -166,6 +169,72 @@ class HtmlDialog(QtGui.QDialog):
     def closeWindow(self):
         self.close()
 
+
+class UTF8Recoder:
+    """
+    Iterator that reads an encoded stream and reencodes the input to UTF-8
+    """
+    def __init__(self, f, encoding):
+        self.reader = codecs.getreader(encoding)(f)
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        return self.reader.next().encode("utf-8")
+
+
+class UnicodeReader:
+    """
+    A CSV reader which will iterate over lines in the CSV file "f",
+    which is encoded in the given encoding.
+    """
+
+    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
+        f = UTF8Recoder(f, encoding)
+        self.reader = csv.reader(f, dialect=dialect, **kwds)
+
+    def next(self):
+        row = self.reader.next()
+        return [unicode(s, "utf-8") for s in row]
+
+    def read(self):
+        self.next()
+
+    def __iter__(self):
+        return self
+
+
+class UnicodeWriter:
+    """
+    A CSV writer which will write rows to CSV file "f",
+    which is encoded in the given encoding.
+    """
+
+    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
+        # Redirect output to a queue
+        self.queue = cStringIO.StringIO()
+        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
+        self.stream = f
+        self.encoder = codecs.getincrementalencoder(encoding)()
+
+    def writerow(self, row):
+        self.writer.writerow([s.encode("utf-8") for s in row])
+        # Fetch UTF-8 output from the queue ...
+        data = self.queue.getvalue()
+        data = data.decode("utf-8")
+        # ... and reencode it into the target encoding
+        data = self.encoder.encode(data)
+        # write to the target stream
+        self.stream.write(data)
+        # empty queue
+        self.queue.truncate(0)
+
+    def writerows(self, rows):
+        for row in rows:
+            self.writerow(row)
+
+
 def ask_user_about_stopping(question):
     """
     Asks the user a question and returns 'failed' or 'continue' as yes or no
@@ -177,8 +246,6 @@ def ask_user_about_stopping(question):
         return 'cancel'
     else:
         return 'ignore'
-
-
 
 def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-table)
     #print(params)#debug
@@ -645,7 +712,6 @@ def calc_mean_diff(coupled_vals):
     """
     return np.mean([float(m) - float(l) for m, l in coupled_vals if not math.isnan(m) or math.isnan(l)])
 
-
 def get_latlon_for_all_obsids():
     """
     Returns lat, lon for all obsids
@@ -659,8 +725,11 @@ def get_last_used_flow_instruments():
     """ Returns flow instrumentids
     :return: A dict like {obsid: (flowtype, instrumentid, last date used for obsid)
     """
-    instruments_dict = get_sql_result_as_dict('SELECT obsid, flowtype, instrumentid, max(date_time) FROM w_flow GROUP BY obsid, flowtype, instrumentid')
-    return instruments_dict
+    return get_sql_result_as_dict('SELECT obsid, flowtype, instrumentid, max(date_time) FROM w_flow GROUP BY obsid, flowtype, instrumentid')
+
+def get_last_logger_dates():
+    ok_or_not, obsid_last_imported_dates = get_sql_result_as_dict('select obsid, max(date_time) from w_levels_logger group by obsid')
+    return obsid_last_imported_dates
 
 def get_quality_instruments():
     """
@@ -745,72 +814,6 @@ def rstrip(word, from_string):
     if from_string.endswith(word):
         new_word = from_string[0:-len(word)]
     return new_word
-
-
-class UTF8Recoder:
-    """
-    Iterator that reads an encoded stream and reencodes the input to UTF-8
-    """
-    def __init__(self, f, encoding):
-        self.reader = codecs.getreader(encoding)(f)
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        return self.reader.next().encode("utf-8")
-
-
-class UnicodeReader:
-    """
-    A CSV reader which will iterate over lines in the CSV file "f",
-    which is encoded in the given encoding.
-    """
-
-    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
-        f = UTF8Recoder(f, encoding)
-        self.reader = csv.reader(f, dialect=dialect, **kwds)
-
-    def next(self):
-        row = self.reader.next()
-        return [unicode(s, "utf-8") for s in row]
-
-    def read(self):
-        self.next()
-
-    def __iter__(self):
-        return self
-
-
-class UnicodeWriter:
-    """
-    A CSV writer which will write rows to CSV file "f",
-    which is encoded in the given encoding.
-    """
-
-    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
-        # Redirect output to a queue
-        self.queue = cStringIO.StringIO()
-        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
-        self.stream = f
-        self.encoder = codecs.getincrementalencoder(encoding)()
-
-    def writerow(self, row):
-        self.writer.writerow([s.encode("utf-8") for s in row])
-        # Fetch UTF-8 output from the queue ...
-        data = self.queue.getvalue()
-        data = data.decode("utf-8")
-        # ... and reencode it into the target encoding
-        data = self.encoder.encode(data)
-        # write to the target stream
-        self.stream.write(data)
-        # empty queue
-        self.queue.truncate(0)
-
-    def writerows(self, rows):
-        for row in rows:
-            self.writerow(row)
-
 
 def select_files(only_one_file=True, extension="csv (*.csv)", should_ask_for_charset=True):
     """Asks users to select file(s) and charset for the file(s)"""

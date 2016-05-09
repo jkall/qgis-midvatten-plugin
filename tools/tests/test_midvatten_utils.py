@@ -21,8 +21,17 @@
 """
 import midvatten_utils as utils
 import mock
-from mocks_for_tests import MockNotFoundQuestion, MockUsingReturnValue
+import midvatten
+from import_data_to_db import midv_data_importer
+import utils_for_tests
+from mocks_for_tests import MockNotFoundQuestion, MockUsingReturnValue, MockQgsProjectInstance, MockQgisUtilsIface, MockReturnUsingDictIn, DummyInterface2
 import io
+import os
+
+TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
+MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
+DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
+
 
 class TestFilterNonexistingObsidsAndAsk(object):
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
@@ -103,3 +112,53 @@ class TestAskUser(object):
     def test_askuser_dateshift_cancel(self):
         question = utils.askuser('DateShift')
         assert question.result == u'cancel'
+
+
+class TestGetFunctions(object):
+    answer_yes_obj = MockUsingReturnValue()
+    answer_yes_obj.result = 1
+    answer_no_obj = MockUsingReturnValue()
+    answer_no_obj.result = 0
+    answer_yes = MockUsingReturnValue(answer_yes_obj)
+    CRS_question = MockUsingReturnValue([3006])
+    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
+    skip_popup = MockUsingReturnValue('')
+    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
+
+    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.QgsProject.instance', autospec=True)
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+        mock_crsquestion.return_value = [3006]
+        mock_savefilename.return_value = TEMP_DB_PATH
+
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
+        self.midvatten = midvatten.midvatten(self.iface)
+
+        try:
+            os.remove(TEMP_DB_PATH)
+        except OSError:
+            pass
+        self.midvatten.new_db()
+        self.importinstance = midv_data_importer()
+
+    def tearDown(self):
+        #Delete database
+        os.remove(TEMP_DB_PATH)
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_get_last_logger_dates(self):
+        utils.sql_alter_db('''insert into obs_points (obsid) values ('rb1')''')
+        utils.sql_alter_db('''insert into obs_points (obsid) values ('rb2')''')
+        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2015-01-01 00:00')''')
+        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2015-01-01 00:00:00')''')
+        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2014-01-01 00:00:00')''')
+        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2013-01-01 00:00:00')''')
+        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2016-01-01 00:00')''')
+
+        test_string = utils_for_tests.create_test_string(utils.get_last_logger_dates())
+        reference_string = u'''{rb1: [(2015-01-01 00:00:00)], rb2: [(2016-01-01 00:00)]}'''
+        assert test_string == reference_string

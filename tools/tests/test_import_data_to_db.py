@@ -24,6 +24,7 @@
 from import_data_to_db import midv_data_importer
 import utils_for_tests
 import midvatten_utils as utils
+from date_utils import datestring_to_date
 import utils_for_tests as test_utils
 from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
@@ -710,6 +711,106 @@ class TestWlvllogImportFromDiverofficeFiles(object):
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, -1010.0, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, -1001.0, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, -1020.0, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, -1002.0, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, -1030.0, None)])'''
+                    assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_wlvllogg_import_from_diveroffice_files_filter_dates(self):
+        files = [(u'Location=rb1',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/03/15 10:30:00,1,10',
+                u'2016/03/15 11:00:00,11,101'),
+                (u'Location=rb2',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/04/15 10:30:00,2,20',
+                u'2016/04/15 11:00:00,21,201'),
+                (u'Location=rb3',
+                u'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
+                u'2016/05/15 10:30:00,3,30,5',
+                u'2016/05/15 11:00:00,31,301,6')
+                 ]
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
+        utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
+
+        self.importinstance.charsetchoosen = [u'utf-8']
+        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen[0]) as f1:
+            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen[0]) as f2:
+                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen[0]) as f3:
+
+                    filenames = [f1, f2, f3]
+                    answer_no_obj = MockUsingReturnValue(None)
+                    answer_no_obj.result = 0
+                    answer_yes_obj = MockUsingReturnValue(None)
+                    answer_yes_obj.result = 1
+                    mock_askuser = MockReturnUsingDictIn({u'Do you want to confirm': answer_no_obj, u'Do you want to import': answer_yes_obj, u'It is a strong recommendation': answer_no_obj}, 1)
+
+                    @mock.patch('midvatten_utils.QgsProject.instance', TestWlvllogImportFromDiverofficeFiles.mock_dbpath.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch('import_data_to_db.midv_data_importer.select_files')
+                    def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface):
+                        mock_filenames.return_value = filenames
+                        mock_encoding.return_value = [True, u'utf-8']
+                        self.importinstance.wlvllogg_import_from_diveroffice_files()
+
+                    _test_wlvllogg_import_from_diveroffice_files(self, filenames)
+
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, -1010.0, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, -1001.0, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, -1020.0, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, -1002.0, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, -1030.0, None)])'''
+                    assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_wlvllogg_import_from_diveroffice_files_all_dates(self):
+        files = [(u'Location=rb1',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/03/15 10:30:00,1,10',
+                u'2016/03/15 11:00:00,11,101'),
+                (u'Location=rb2',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/04/15 10:30:00,2,20',
+                u'2016/04/15 11:00:00,21,201'),
+                (u'Location=rb3',
+                u'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
+                u'2016/05/15 10:30:00,3,30,5',
+                u'2016/05/15 11:00:00,31,301,6')
+                 ]
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
+        utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
+
+        self.importinstance.charsetchoosen = [u'utf-8']
+        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen[0]) as f1:
+            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen[0]) as f2:
+                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen[0]) as f3:
+
+                    filenames = [f1, f2, f3]
+                    answer_no_obj = MockUsingReturnValue(None)
+                    answer_no_obj.result = 0
+                    answer_yes_obj = MockUsingReturnValue(None)
+                    answer_yes_obj.result = 1
+                    mock_askuser = MockReturnUsingDictIn({u'Do you want to confirm': answer_no_obj, u'Do you want to import': answer_no_obj, u'It is a strong recommendation': answer_no_obj}, 1)
+
+                    @mock.patch('midvatten_utils.QgsProject.instance', TestWlvllogImportFromDiverofficeFiles.mock_dbpath.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch('import_data_to_db.midv_data_importer.select_files')
+                    def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface):
+                        mock_filenames.return_value = filenames
+                        mock_encoding.return_value = [True, u'utf-8']
+                        self.importinstance.wlvllogg_import_from_diveroffice_files()
+
+                    _test_wlvllogg_import_from_diveroffice_files(self, filenames)
+
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, -1000.0, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, -1010.0, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, -1001.0, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, -1020.0, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, -1002.0, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, -1030.0, None)])'''
                     assert test_string == reference_string
 
 
@@ -1549,4 +1650,22 @@ class TestWquallabImport(object):
 
         reference_string = ur'''(True, [(obsid1, None, testreport, testproject, teststaff, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
         assert test_string == reference_string
+
+
+class TestFilterDatesFromFiledata(object):
+
+    def setUp(self):
+        self.importinstance = midv_data_importer()
+
+    def test_filter_dates_from_filedata(self):
+
+        file_data = [[u'obsid', u'date_time'], [u'rb1', u'2015-05-01 00:00:00'], [u'rb1', u'2016-05-01 00:00'], [u'rb2', u'2015-05-01 00:00:00'], [u'rb2', u'2016-05-01 00:00'], [u'rb3', u'2015-05-01 00:00:00'], [u'rb3', u'2016-05-01 00:00']]
+        obsid_last_imported_dates = {u'rb1': [(datestring_to_date(u'2016-01-01 00:00:00'),)], u'rb2': [(datestring_to_date(u'2017-01-01 00:00:00'),)]}
+        test_file_data = utils_for_tests.create_test_string(self.importinstance.filter_dates_from_filedata(file_data, obsid_last_imported_dates))
+
+        reference_file_data = u'''[[obsid, date_time], [rb1, 2016-05-01 00:00], [rb3, 2015-05-01 00:00:00], [rb3, 2016-05-01 00:00]]'''
+
+        assert test_file_data == reference_file_data
+
+
 

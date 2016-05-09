@@ -480,6 +480,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         confirm_names = utils.askuser("YesNo", "Do you want to confirm each logger import name before import?")
 
+        import_from_last_date = utils.askuser("YesNo", "Do you want to import data after last imported date?\n(Else all data will be imported)")
+
         files = self.select_files()
         parsed_files = []
         for selected_file in files:
@@ -500,6 +502,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         #Header
         file_to_import_to_db =  [parsed_files[0][0]]
         file_to_import_to_db.extend([row for parsed_file in parsed_files for row in parsed_file[1:]])
+
+        if import_from_last_date.result:
+            file_to_import_to_db = self.filter_dates_from_filedata(file_to_import_to_db, utils.get_last_logger_dates())
 
         file_string = utils.lists_to_string(file_to_import_to_db)
 
@@ -1362,6 +1367,24 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         sorted_filedata = [[row[translated_header.index(v)] for v in translation_dict_in_order.values()] for row in filedata]
 
         return sorted_filedata
+
+    @staticmethod
+    def filter_dates_from_filedata(file_data, obsid_last_imported_dates, obsid_header_name=u'obsid', date_time_header_name=u'date_time'):
+        """
+        :param file_data: a list of lists like [[u'obsid', u'date_time', ...], [obsid1, date_time1, ...]]
+        :param obsid_last_imported_dates: a dict like {u'obsid1': last_date_in_db, ...}
+        :param obsid_header_name: the name of the obsid header
+        :param date_time_header_name: the name of the date_time header
+        :return: A filtered list with only dates after last date is included for each obsid.
+        """
+        obsid_idx = file_data[0].index(obsid_header_name)
+        date_time_idx = file_data[0].index(date_time_header_name)
+        filtered_file_data = [row for row in file_data[1:] if datestring_to_date(row[date_time_idx]) > datestring_to_date(obsid_last_imported_dates.get(row[obsid_idx], [(u'0001-01-01 00:00:00',)])[0][0])]
+        filtered_file_data.reverse()
+        filtered_file_data.append(file_data[0])
+        filtered_file_data.reverse()
+        return filtered_file_data
+        #return 1
 
     def csv2qgsvectorlayer(self, path):
         """ Creates QgsVectorLayer from a csv file """
