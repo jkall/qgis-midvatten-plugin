@@ -394,11 +394,15 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 #check for flowtypes and add those that are not present in db table zz_flowtype the obsid actually exists in obs_points
                 FlTypesInDb = utils.sql_load_fr_db('select distinct type, unit from zz_flowtype')[1]
                 FlTypes2BImported = utils.sql_load_fr_db("""select distinct "%s", "%s" from %s"""%(self.columns[2][1], self.columns[5][1],self.temptableName))[1]
-                for tp in FlTypes2BImported:
+
+                try:
+                    for tp in FlTypes2BImported:
                         if tp not in FlTypesInDb:
                             sql = """insert into "zz_flowtype" (type, unit, explanation) VALUES ("%s", "%s", '');"""%(str(tp[0]), tp[1])
                             utils.sql_alter_db(sql)
-            
+                except TypeError:
+                    qgis.utils.iface.messageBar().pushMessage("Import warning","""Flow type could not be updated. Table zz_flowtype needs to be upgraded to latest version.""")
+
                 sqlpart1 = """INSERT OR IGNORE INTO "w_flow" (obsid, instrumentid, flowtype, date_time, reading, unit, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), (case when "%s"!='' then CAST("%s" as double) else null end), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[3][1],self.columns[4][1],self.columns[4][1],self.columns[5][1],self.columns[6][1],self.temptableName)
                 sql = sqlpart1 + sqlpart2
