@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1062</width>
-    <height>644</height>
+    <height>714</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
           <item>
            <widget class="QTabWidget" name="tabWidget">
             <property name="currentIndex">
-             <number>0</number>
+             <number>2</number>
             </property>
             <widget class="QWidget" name="tab_1">
              <attribute name="title">
@@ -430,6 +430,20 @@
                    </property>
                   </item>
                  </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="4" column="0" rowspan="2">
+               <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0">
+                <item>
+                 <widget class="QLabel" name="label_11">
+                  <property name="text">
+                   <string>Unit transformation factor</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="lineEditFactor1"/>
                 </item>
                </layout>
               </item>
@@ -839,6 +853,20 @@
                 </item>
                </layout>
               </item>
+              <item row="3" column="0">
+               <layout class="QHBoxLayout" name="horizontalLayout_9">
+                <item>
+                 <widget class="QLabel" name="label_12">
+                  <property name="text">
+                   <string>Unit transformation factor</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="lineEditFactor2"/>
+                </item>
+               </layout>
+              </item>
              </layout>
             </widget>
             <widget class="QWidget" name="tab_3">
@@ -1241,6 +1269,20 @@
                     <string>step-post</string>
                    </property>
                   </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="3" column="0">
+               <layout class="QHBoxLayout" name="horizontalLayout_10">
+                <item>
+                 <widget class="QLineEdit" name="lineEditFactor3"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_13">
+                  <property name="text">
+                   <string>Y-axis  scaling factor</string>
+                  </property>
                  </widget>
                 </item>
                </layout>
@@ -1872,7 +1914,7 @@
      <x>0</x>
      <y>0</y>
      <width>1062</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
   </widget>

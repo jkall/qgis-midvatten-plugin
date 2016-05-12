@@ -43,13 +43,18 @@ insert into "zz_capacity" (capacity,explanation,color_qt) values('6-','mycket go
 insert into "zz_capacity" (capacity,explanation,color_qt) values('6','mycket god', 'blue');
 insert into "zz_capacity" (capacity,explanation,color_qt) values('6 ','mycket god', 'blue');
 insert into "zz_capacity" (capacity,explanation,color_qt) values('6+','mycket god', 'darkBlue');
-insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('DO%', '%', null);
-insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('DO', 'mg/L', null);
-insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Konduktivitet', 'µS/cm', null);
-insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('pH', null, null);
-insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Redox', 'mV', null);
-insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Temp', 'grC', null);
-insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Turb', 'FTU', null);
-insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Lufttryck', 'hPa', null);
-insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Turb', 'FNU', null);
-insert into "zz_w_qual_field_parameters" (parameter, unit, explanation) values('Turb', 'NTU', null);
+insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('DO', 'DO', '%', 'dissolved free non-compound oxygen');
+insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('DO', 'DO', 'mg/L', 'dissolved free non-compound oxygen saturation');
+insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('conductivity', 'cond', 'µS/cm', 'ability to conduct electricity (a measure of ionic content of a solution)');
+insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('pH', 'pH', NULL, 'negative logarithm of the hydrogen ion activity');
+insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('reduction potential', 'redox', 'mV', 'tendency to acquire electrons');
+insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('temperature', 'temp', 'grC', 'water temperature');
+insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('turbidity', 'turb', 'FNU', 'reduction of transparency of a liquid caused by the presence of undissolved matter');
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('DO', '%', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('DO', 'mg/L', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('conductivity', 'µS/cm', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('pH', NULL, 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('reduction potential', 'mV', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('temperature', 'grC', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('turbidity', 'FNU', 'sample')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('temperature', 'grC', 'sample')

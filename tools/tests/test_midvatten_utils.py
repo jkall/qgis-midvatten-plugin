@@ -162,3 +162,13 @@ class TestGetFunctions(object):
         test_string = utils_for_tests.create_test_string(utils.get_last_logger_dates())
         reference_string = u'''{rb1: [(2015-01-01 00:00:00)], rb2: [(2016-01-01 00:00)]}'''
         assert test_string == reference_string
+
+
+class TestSqlToParametersUnitsTuple(object):
+    @mock.patch('midvatten_utils.sql_load_fr_db', autospec=True)
+    def test_sql_to_parameters_units_tuple(self, mock_sqlload):
+        mock_sqlload.return_value = (True, [(u'par1', u'un1'), (u'par2', u'un2')])
+
+        test_string = utils_for_tests.create_test_string(utils.sql_to_parameters_units_tuple(u'sql'))
+        reference_string = u'''((par1, (un1)), (par2, (un2)))'''
+        assert test_string == reference_string

@@ -330,36 +330,25 @@ def standard_parameters_for_wquality():
     """ Returns a dict with water quality parameters
     :return: A dict with parameter as key and unit as value
     """
-    parameters_from_table = utils.returnunicode(utils.sql_load_fr_db(u'''select parameter, unit from zz_w_qual_field_parameters''')[1], True)
-
-    parameters_dict = {}
-    for parameter, unit in parameters_from_table:
-        parameters_dict.setdefault(parameter, []).append(unit)
-
-    parameters = tuple([(k, tuple(v)) for k, v in parameters_dict.iteritems()])
-
-    return parameters
+    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "group" = 'quality' ''')
+    shortname_parameter_unit = utils.get_w_qual_field_parameters()
+    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
+    return shortname_unit
 
 def standard_parameters_for_wsample():
     """ Returns a dict with water sample parameters
     :return: A dict with parameter as key and unit as value
     """
-    parameters = ((u'turbiditet', (u'FNU',)),
-                  (u'temperatur', (u'grC',)))
-    return parameters
+    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "group" = 'sample' ''')
+    shortname_parameter_unit = utils.get_w_qual_field_parameters()
+    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
+    return shortname_unit
 
 def standard_parameters_for_wflow():
     """ Returns a dict with water flow parameters
     :return: A dict with parameter as key and unit as value
     """
-    parameters_from_table = utils.returnunicode(utils.sql_load_fr_db(u'''select type, unit from zz_flowtype''')[1], True)
-    parameters_dict = {}
-    for parameter, unit in parameters_from_table:
-        parameters_dict.setdefault(parameter, []).append(unit)
-
-    parameters = tuple([(k, tuple(v)) for k, v in parameters_dict.iteritems()])
-
-    return parameters
+    return utils.sql_to_parameters_units_tuple(u'''select type, unit from zz_flowtype''')
 
 def PlotTypesDict(international='no'): 
     """

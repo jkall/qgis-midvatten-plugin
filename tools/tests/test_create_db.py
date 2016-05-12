@@ -56,7 +56,7 @@ class TestCreateMemoryDb():
         self.midvatten = None
 
 
-class TestCreateDb(object):
+class _TestCreateDb(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -125,7 +125,7 @@ class TestCreateDb(object):
         assert test_string == reference_string
 
 
-class TestObsPointsTriggers(object):
+class _TestObsPointsTriggers(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
