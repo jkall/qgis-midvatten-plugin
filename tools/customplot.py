@@ -269,7 +269,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             table2.values[pos] = np.nan
         if plottype == "marker":
             MarkVar = 'o'  
-        elif plottype  == "line" or "frequency":
+        elif plottype in ("line","frequency"):
             MarkVar = '-'  
         elif plottype  == "line and cross":
             MarkVar = '+-'  
