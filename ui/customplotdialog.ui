@@ -27,7 +27,7 @@
           <item>
            <widget class="QTabWidget" name="tabWidget">
             <property name="currentIndex">
-             <number>2</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="tab_1">
              <attribute name="title">
@@ -840,6 +840,11 @@
                     <string>step-post</string>
                    </property>
                   </item>
+                  <item>
+                   <property name="text">
+                    <string>frequency</string>
+                   </property>
+                  </item>
                  </widget>
                 </item>
                </layout>
@@ -1244,6 +1249,11 @@
                   <item>
                    <property name="text">
                     <string>step-post</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>frequency</string>
                    </property>
                   </item>
                  </widget>
