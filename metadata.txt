@@ -23,7 +23,7 @@ changelog=
         - automatic updates of attribute table coordinates when an obs_point is created/moved, and vice versa
         - multiple import of logger files from diver office software
         - improved calibration feature for water level from loggers
-        - automatic updates of attribute table coordinates when an obs_point is created/moved, and vice versa
+        - on-the-fly conversion from pulse counts to frequency in the custom plot
         - stratigraphy units, plot color and symbols are now editable by the user, so is also the water capacity (as given in stratigraphy table
         - some database design changes (some new tables and more)
         - from now the plugin needs spatialite 4
