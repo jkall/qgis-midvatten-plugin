@@ -257,7 +257,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
         if plottype == "marker":
             MarkVar = 'o'  
-        elif plottype  == "line":
+        elif plottype in ("line","frequency"):
             MarkVar = '-'  
         elif plottype  == "line and cross":
             MarkVar = '+-'  
