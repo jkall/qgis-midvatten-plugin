@@ -86,6 +86,20 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.layoutplot.addWidget( self.mpltoolbar )
         
         self.show()
+
+    def calc_frequency(self,table2):
+        freqs = np.zeros(len(table2.values),dtype=float)
+        for j, row in enumerate(table2):                
+            if j>0:#we can not calculate frequency for first row
+                try:
+                    diff = (table2.values[j] - table2.values[j-1])
+                    """ Get help from function datestr2num to get date and time into float"""
+                    delta_time = 24*3600*(datestr2num(table2.date_time[j]) - datestr2num(table2.date_time[j-1]))#convert to seconds since numtime is days
+                except:
+                    pass #just skip inaccurate data values and use previous frequency
+                freqs[j] = diff/delta_time
+        freqs[0]=freqs[1]#assuming start frequency to get a nicer plot
+        return freqs 
         
     def drawPlot(self):
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))#show the user this may take a long time...
@@ -277,7 +291,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
         if plottype == "marker":
             MarkVar = 'o'  
-        elif plottype  == "line":
+        elif plottype in ("line","frequency"):
             MarkVar = '-'  
         elif plottype  == "line and cross":
             MarkVar = '+-'  
@@ -290,6 +304,10 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-post', linestyle='-', marker='None',c=np.random.rand(3,1),label=self.plabels[i])
         elif FlagTimeXY == "time" and plottype == "line and cross":
             self.p[i], = self.axes.plot_date(numtime, table2.values,  MarkVar,markersize = 6, label=self.plabels[i])
+        elif FlagTimeXY == "time" and plottype == "frequency":
+            freqs = self.calc_frequency(table2)
+            self.p[i], = self.axes.plot_date(numtime, freqs,  MarkVar,markersize = 6, label='frequency '+str(self.plabels[i]))
+            self.plabels[i]='frequency '+str(self.plabels[i])
         elif FlagTimeXY == "time":
             self.p[i], = self.axes.plot_date(numtime, table2.values,  MarkVar,label=self.plabels[i])
         elif FlagTimeXY == "XY" and plottype == "step-pre":

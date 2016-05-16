@@ -429,6 +429,11 @@
                     <string>step-post</string>
                    </property>
                   </item>
+                  <item>
+                   <property name="text">
+                    <string>frequency</string>
+                   </property>
+                  </item>
                  </widget>
                 </item>
                </layout>
@@ -849,6 +854,11 @@
                     <string>step-post</string>
                    </property>
                   </item>
+                  <item>
+                   <property name="text">
+                    <string>frequency</string>
+                   </property>
+                  </item>
                  </widget>
                 </item>
                </layout>
@@ -1267,6 +1277,11 @@
                   <item>
                    <property name="text">
                     <string>step-post</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>frequency</string>
                    </property>
                   </item>
                  </widget>
@@ -1920,6 +1935,47 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>table_ComboBox_1</tabstop>
+  <tabstop>xcol_ComboBox_1</tabstop>
+  <tabstop>ycol_ComboBox_1</tabstop>
+  <tabstop>Filter1_ComboBox_1</tabstop>
+  <tabstop>Filter1_QListWidget_1</tabstop>
+  <tabstop>Filter2_ComboBox_1</tabstop>
+  <tabstop>Filter2_QListWidget_1</tabstop>
+  <tabstop>PlotType_comboBox_1</tabstop>
+  <tabstop>table_ComboBox_2</tabstop>
+  <tabstop>xcol_ComboBox_2</tabstop>
+  <tabstop>ycol_ComboBox_2</tabstop>
+  <tabstop>Filter1_ComboBox_2</tabstop>
+  <tabstop>Filter1_QListWidget_2</tabstop>
+  <tabstop>Filter2_ComboBox_2</tabstop>
+  <tabstop>Filter2_QListWidget_2</tabstop>
+  <tabstop>PlotType_comboBox_2</tabstop>
+  <tabstop>table_ComboBox_3</tabstop>
+  <tabstop>xcol_ComboBox_3</tabstop>
+  <tabstop>ycol_ComboBox_3</tabstop>
+  <tabstop>Filter1_ComboBox_3</tabstop>
+  <tabstop>Filter1_QListWidget_3</tabstop>
+  <tabstop>Filter2_ComboBox_3</tabstop>
+  <tabstop>Filter2_QListWidget_3</tabstop>
+  <tabstop>PlotType_comboBox_3</tabstop>
+  <tabstop>spnmaxtstep</tabstop>
+  <tabstop>PlotChart_QPushButton</tabstop>
+  <tabstop>title_QLineEdit</tabstop>
+  <tabstop>xtitle_QLineEdit</tabstop>
+  <tabstop>ytitle_QLineEdit</tabstop>
+  <tabstop>spnMinX</tabstop>
+  <tabstop>spnMaxX</tabstop>
+  <tabstop>spnMinY</tabstop>
+  <tabstop>spnMaxY</tabstop>
+  <tabstop>spnLegX</tabstop>
+  <tabstop>spnLegY</tabstop>
+  <tabstop>Legend_checkBox</tabstop>
+  <tabstop>Grid_checkBox</tabstop>
+  <tabstop>Redraw_pushButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
