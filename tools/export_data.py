@@ -19,6 +19,7 @@
 """
 import sqlite3 as sqlite, csv, codecs, cStringIO, os, os.path
 import midvatten_utils as utils
+import qgis.utils
 
 class ExportData():
 
@@ -34,6 +35,7 @@ class ExportData():
         self.exportfolder = exportfolder
         self.write_data(self.to_csv, self.ID_obs_points, ['obs_points', 'comments', 'w_levels', 'w_levels_logger', 'w_flow', 'w_qual_lab', 'w_qual_field', 'stratigraphy', 'meteo'], utils.verify_table_exists)
         self.write_data(self.to_csv, self.ID_obs_lines, ['obs_lines', 'vlf_data', 'seismic_data'], utils.verify_table_exists)
+        self.write_data(self.zz_to_csv, u'no_obsids', ['zz_flowtype', 'zz_meteoparam', 'zz_staff', 'zz_strat', 'zz_capacity', 'zz_w_qual_field_parameters'], utils.verify_table_exists)
         database.closedb()
 
     def export_2_splite(self,target_db,source_db, EPSG_code):
@@ -48,6 +50,7 @@ class ExportData():
         conn.commit()
         self.write_data(self.to_sql, self.ID_obs_lines, ['obs_lines', 'vlf_data', 'seismic_data'], self.verify_table_in_attached_db, 'a.')
         conn.commit()
+        self.write_data(self.zz_to_sql, u'no_obsids', ['zz_flowtype', 'zz_meteoparam', 'zz_staff', 'zz_strat', 'zz_capacity', 'zz_w_qual_field_parameters'], self.verify_table_in_attached_db, 'a.')
 
         self.curs.execute(r"""DETACH DATABASE a""")
         self.curs.execute('vacuum')
@@ -82,15 +85,19 @@ class ExportData():
         return no_of_obs
 
     def write_data(self, to_writer, obsids, ptabs, verify_table_exists, tname_prefix=''):
-        if len(obsids)>0:#only if there are any obs_points selected at all
+        if len(obsids) > 0 or obsids == u'no_obsids':#only if there are any obs_points selected at all
             for tname in ptabs:
                 tname_with_prefix = tname_prefix + tname
                 if not verify_table_exists(tname):
                     continue
-                no_of_obs = self.get_number_of_obsids(obsids, tname_with_prefix)
 
-                if no_of_obs[0][0] > 0:#only go on if there are any observations for this obsid
-                    to_writer(tname, tname_with_prefix, obsids)
+                if obsids != u'no_obsids':
+                    no_of_obs = self.get_number_of_obsids(obsids, tname_with_prefix)
+
+                    if no_of_obs[0][0] > 0:#only go on if there are any observations for this obsid
+                        to_writer(tname, tname_with_prefix, obsids)
+                else:
+                    to_writer(tname, tname_with_prefix)
 
     def to_csv(self, tname, tname_with_prefix, obsids):
         output = UnicodeWriter(file(os.path.join(self.exportfolder, tname + ".csv"), 'w'))
@@ -99,33 +106,33 @@ class ExportData():
         filter(None, (output.writerow(row) for row in self.curs))
 
     def to_sql(self, tname, tname_with_prefix, obsids):
-        print("\nTable: " + tname + "\n")
         foreign_keys = self.get_foreign_keys(tname)
 
         for reference_table, from_to_fields in foreign_keys.iteritems():
             from_list = [x[0] for x in from_to_fields]
             to_list = [x[1] for x in from_to_fields]
 
-            #DETTA FUNGERAR INTE PERFEKT!
-            if tname == 'zz_w_qual_field_parameters':
-                from_list.append('parameter')
-                to_list.append('shortname')
             sql = r"""insert or ignore into %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
             self.curs.execute(sql)
-            print("reference_table " + reference_table + " from_list " + str(from_list) + " to_list " + str(to_list))
-            print(sql)
-
 
         sql = r"insert into %s select * from %s where obsid in %s" %(tname, tname_with_prefix, self.format_obsids(obsids))
         try:
             self.curs.execute(sql)
         except Exception, e:
-            print("FAILED:")
-            print(sql)
-            print("msg:\n" + str(e))
-            print(str(self.curs.execute('''select * from obs_points''').fetchall()))
-            print(str(self.curs.execute('''select * from zz_w_qual_field_parameters''').fetchall()))
-            print(str(self.curs.execute('''select * from zz_staff''').fetchall()))
+            qgis.utils.iface.messageBar().pushMessage("Export warning, sql failed: " + sql + "\nmsg: " + str(e))
+
+    def zz_to_csv(self, tname, tname_with_prefix):
+        output = UnicodeWriter(file(os.path.join(self.exportfolder, tname + ".csv"), 'w'))
+        self.curs.execute(r"select * from %s"%(tname))
+        output.writerow([col[0] for col in self.curs.description])
+        filter(None, (output.writerow(row) for row in self.curs))
+
+    def zz_to_sql(self, tname, tname_with_prefix):
+        sql = r"insert into %s select * from %s" %(tname, tname_with_prefix)
+        try:
+            self.curs.execute(sql)
+        except Exception, e:
+            qgis.utils.iface.messageBar().pushMessage("Export warning, sql failed: " + sql + "\nmsg: " + str(e))
 
     def get_foreign_keys(self, tname):
         result_list = self.curs.execute("""PRAGMA foreign_key_list(%s)"""%(tname)).fetchall()

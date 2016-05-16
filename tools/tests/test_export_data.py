@@ -33,6 +33,7 @@ import os
 import utils_for_tests
 import unittest
 import sqlite3 as sqlite
+import io
 from qgis.core import QgsMapLayerRegistry, QgsDataSourceURI, QgsVectorLayer
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
@@ -54,9 +55,8 @@ class TextExportCsv(unittest.TestCase):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
     skip_popup = MockUsingReturnValue('')
     mock_selection = MockReturnUsingDictIn({u'obs_points': (u'P1', ), u'obs_lines': (u'L1', )}, 0)
-
-
-    exported_csv_files = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv']]
+    exported_csv_files = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv', 'zz_flowtype.csv', 'zz_meteoparam.csv', 'zz_staff.csv', 'zz_strat.csv', 'zz_capacity.csv', 'zz_w_qual_field_parameters.csv']]
+    exported_csv_files_no_zz = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv']]
 
     @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance', autospec=True)
@@ -118,14 +118,13 @@ class TextExportCsv(unittest.TestCase):
         self.midvatten.export_csv()
 
         file_contents = []
-        for filename in TextExportCsv.exported_csv_files:
-            with open(filename, 'r') as f:
+        for filename in TextExportCsv.exported_csv_files_no_zz:
+            with io.open(filename, 'r', encoding='utf-8') as f:
                 file_contents.append(os.path.basename(filename) + '\n')
                 file_contents.append([l.replace('\r', '') for l in f])
-                #file_contents.append([l.rstrip('\n') for l in f])
         test_string = utils_for_tests.create_test_string(file_contents)
 
-        with open('/tmp/refstring.txt', 'w') as of:
+        with io.open('/tmp/refstring.txt', 'w', encoding='utf-8') as of:
             of.write(test_string)
 
         reference_string = '\n'.join([
@@ -172,17 +171,10 @@ class TextExportCsv(unittest.TestCase):
     @mock.patch('midvatten.qgis.utils.iface', autospec=True)
     def test_export_spatialite(self, mock_iface, mock_find_layer, mock_newdbpath, mock_verify):
 
-        #mock_crs = MagicMock()
-        #mock_crs.authid.return_value = u'EPSG:3006'
-        #mock_find_layer.return_value.crs.return_value = mock_crs
         mock_find_layer.return_value.crs.return_value.authid.return_value = u'EPSG:3006'
-
-        #EPSG_code = str(CRS.authid()[5:])
 
         mock_newdbpath.return_value = EXPORT_DB_PATH
         mock_verify.return_value = 0
-
-        #EPSG_code = str(CRS.authid()[5:])
 
         utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(633466, 711659)', 3006))''')
         utils.sql_alter_db(u'''insert into zz_staff (staff) values ('s1')''')
@@ -225,8 +217,34 @@ class TextExportCsv(unittest.TestCase):
         conn.close()
 
         test_string = utils_for_tests.create_test_string(test_list)
+        reference_string = [u'''[''',
+                            u'''select obsid from obs_points''',
+                            u''', [(P1)], ''',
+                            u'''select staff from zz_staff''',
+                            u''', [(s1)], ''',
+                            u'''select obsid, date_time, staff, comment from comments''',
+                            u''', [(P1, 2015-01-01 00:00:00, s1, comment1)], ''',
+                            u'''select obsid, parameter, report, staff from w_qual_lab''',
+                            u''', [(P1, labpar1, report1, s1)], ''',
+                            u'''select parameter, unit, shortname from zz_w_qual_field_parameters''',
+                            u''', [(DO, %, DO), (DO, mg/L, DO), (conductivity, µS/cm, cond), (pH, None, pH), (reduction potential, mV, redox), (temperature, grC, temp), (turbidity, FNU, turb), (par1, unit1, None)], ''',
+                            u'''select obsid, parameter, staff, date_time, comment from w_qual_field''',
+                            u''', [(P1, par1, s1, 2015-01-01 01:00:00, None)], ''',
+                            u'''select obsid, instrumentid, flowtype, date_time, unit from w_flow''',
+                            u''', [(P1, inst1, Momflow, 2015-04-13 00:00:00, l/s)], ''',
+                            u'''select obsid, date_time, meas from w_levels''',
+                            u''', [(P1, 2015-01-02 00:00:01, 2.0)], ''',
+                            u'''select obsid, stratid from stratigraphy''',
+                            u''', [(P1, strat1)], ''',
+                            u'''select obsid from obs_lines''',
+                            u''', [(L1)], ''',
+                            u'''select obsid, length from seismic_data''',
+                            u''', [(L1, 5.0)], ''',
+                            u'''select obsid, instrumentid, parameter, date_time from meteo''',
+                            u''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)]]''']
+        reference_string = u'\n'.join(reference_string)
 
-        print(test_string)
+        assert test_string == reference_string
 
-        assert False
+
 

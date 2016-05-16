@@ -150,7 +150,7 @@ insert into about_db values('zz_capacity', 'explanation', 'text', '1', '', '', '
 insert into about_db values('zz_capacity', 'color_qt', 'text', '1', '', '', '', 'hatchcolor codes for Qt plots', '', '');
 insert into about_db values('zz_w_qual_field_parameters', '*', '', '', '', '', '', 'data domain for parameters connected to water quality field measurements', '', '');
 insert into about_db values('zz_w_qual_field_parameters', 'parameter', 'text', '1', '', '1', '', 'parameter name', '', '');
-insert into about_db values('zz_w_qual_field_parameters', 'shortname', 'text', '1', '', '1', '', 'parameter short name used by the fieldlogger export and import', '', '');
+insert into about_db values('zz_w_qual_field_parameters', 'shortname', 'text', '', '', '', '', 'parameter short name used by the fieldlogger export and import', '', '');
 insert into about_db values('zz_w_qual_field_parameters', 'unit', 'text', '', '', '1', '', 'unit', '', '');
 insert into about_db values('zz_w_qual_field_parameters', 'explanation', 'text', '', '', '', '', 'explanation of the parameter', '', '');
 insert into about_db values('zz_w_qual_field_parameter_groups', '*', '', '', '', '', '', 'data domain connecting water quality field parameters to groups used by FieldLogger', '', '');
@@ -198,7 +198,7 @@ CREATE INDEX idx_wquallab_odtpu ON w_qual_lab(obsid, date_time, parameter, unit)
 CREATE INDEX idx_wqualfield_odtpu ON w_qual_field(obsid, date_time, parameter, unit);
 CREATE TABLE "comments" ("obsid" text not null, "date_time" text not null, "comment" text not null, "staff" text not null, primary key("obsid", "date_time"), foreign key(obsid) references obs_points(obsid), foreign key(staff) references zz_staff(staff));
 CREATE TABLE "zz_staff" ("staff" text not null, "name" text, primary key("staff"));
-CREATE TABLE "zz_w_qual_field_parameters" ("parameter" text not null, "shortname" text not null, "unit" text, "explanation" text, primary key ("parameter", "unit"));
+CREATE TABLE "zz_w_qual_field_parameters" ("parameter" text not null, "shortname", "unit" text, "explanation" text, primary key ("parameter", "unit"));
 CREATE TABLE "zz_w_qual_field_parameter_groups" ("parameter" text not null, "unit" text, "group" text not null, primary key ("parameter", "unit", "group"), foreign key(parameter, unit) references zz_w_qual_field_parameters("parameter", "unit"));
 
 

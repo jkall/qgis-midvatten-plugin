@@ -42,7 +42,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class _TestFieldLoggerImporterNoDb():
+class TestFieldLoggerImporterNoDb():
     #flow_instrument_id = MockReturnUsingDict({u'Instrument not found': [u'testid', u'']}, 1)
     instrument_staff_questions = MockReturnUsingDict({u'Submit instrument id': MockNotFoundQuestion(u'ok', u'testid'), u'Submit field staff': MockNotFoundQuestion(u'ok', u'teststaff')}, u'dialogtitle')
     prev_used_flow_instr_ids = MockUsingReturnValue((True, {u'Rb1615': [(u'Accvol', u'Flm01', u'2015-01-01 00:00:00'), (u'Momflow', u'Flm02', u'2016-01-01 00:00:00')]}))
@@ -252,7 +252,7 @@ class _TestFieldLoggerImporterNoDb():
         assert sorted_file_string == sorted_reference_string
 
 
-class _TestFieldLoggerImporterDb(object):
+class TestFieldLoggerImporterDb(object):
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
@@ -410,7 +410,7 @@ class _TestFieldLoggerImporterDb(object):
         assert test_staff == reference_staff
 
 
-class _TestImportWellsFile(object):
+class TestImportWellsFile(object):
 
     def setUp(self):
         self.importinstance = midv_data_importer()
@@ -459,7 +459,7 @@ class _TestImportWellsFile(object):
             _test_parse_wells_file(self)
 
 
-class _TestParseDiverofficeFile(object):
+class TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
                                                            'Failure, parsing failed for file': 'cancel'},
@@ -618,7 +618,7 @@ class _TestParseDiverofficeFile(object):
         assert test_string == reference_string
 
 
-class _TestWlvllogImportFromDiverofficeFiles(object):
+class TestWlvllogImportFromDiverofficeFiles(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes_obj = MockUsingReturnValue()
@@ -853,7 +853,7 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     assert test_string == reference_string
 
 
-class _TestDefaultImport(object):
+class TestDefaultImport(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes_obj = MockUsingReturnValue()
@@ -1040,7 +1040,7 @@ class _TestDefaultImport(object):
                     assert test_string == reference_string
 
 
-class _TestInterlab4Importer():
+class TestInterlab4Importer():
     def setUp(self):
         self.importinstance = midv_data_importer()
 
@@ -1308,7 +1308,7 @@ class _TestInterlab4Importer():
         pass
 
 
-class _TestDbCalls(object):
+class TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -1360,7 +1360,7 @@ class _TestDbCalls(object):
         assert imported_staff == u'(True, [(staff1, ), (staff2, )])'
 
 
-class _TestImportObsPoints(object):
+class TestImportObsPoints(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -1471,7 +1471,7 @@ class _TestImportObsPoints(object):
         assert test_string == reference_string
 
 
-class _TestWquallabImport(object):
+class TestWquallabImport(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
@@ -1570,7 +1570,7 @@ class _TestWquallabImport(object):
         assert test_string == reference_string
 
 
-class _TestWflowImport(object):
+class TestWflowImport(object):
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
@@ -1633,7 +1633,7 @@ class _TestWflowImport(object):
         assert test_string == reference_string
 
 
-class _TestFilterDatesFromFiledata(object):
+class TestFilterDatesFromFiledata(object):
 
     def setUp(self):
         self.importinstance = midv_data_importer()
