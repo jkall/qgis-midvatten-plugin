@@ -928,8 +928,19 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
         else:
             filtered_data.append(row)
 
+    already_asked_values = {}
+
     for rownr, row in enumerate(data_to_ask_for):
-        current_value = row[index]
+
+        #First check if the current value already has been asked for and if so
+        # use the same answer again.
+        try:
+            row[index] = already_asked_values[row[index]]
+        except KeyError:
+            current_value = row[index]
+        else:
+            filtered_data.append(row)
+            continue
 
         similar_values = find_similar(current_value, existing_values, hits=5)
 
@@ -947,7 +958,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
                     continue
 
             question = NotFoundQuestion(dialogtitle=u'WARNING',
-                                        msg=u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\n',
+                                        msg=u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\nIt will be used for all occurences of the same ' + header_value + u'\n',
                                         existing_list=similar_values,
                                         default_value=similar_values[0],
                                         button_names=[u'Ignore', u'Cancel', u'Ok', u'Skip'])
@@ -965,6 +976,9 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
         if answer != u'skip':
             row[index] = current_value
             filtered_data.append(row)
+
+        if row[index] not in already_asked_values:
+            already_asked_values[row[index]] = current_value
 
     return filtered_data
 

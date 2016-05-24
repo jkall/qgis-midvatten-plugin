@@ -1276,7 +1276,6 @@ class TestInterlab4Importer():
 
     def test_interlab4_to_table(self):
         #TODO: Not completed yet
-        return
         interlab4_lines = (
             u'#Interlab',
             u'#Version=4.0',
@@ -1295,12 +1294,10 @@ class TestInterlab4Importer():
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse_interlab4([testfile])
 
-        result_string = self.importinstance.interlab4_to_table(parsed_result)
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'\n'.join((u'obsid;depth;report;project;staff;date_time;anameth;parameter;reading_num;reading_txt;unit;comment',
-                                       u'Demo1 vattenverk;0;Demoproj;DV,2010-09-07 10:15:00;SS-EN ISO 7887-1/4;Färgtal;5;5;mg/l Pt;;'))
-
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, 5, mg/l Pt, ]]'
         assert result_string == reference_string
 
     def tearDown(self):

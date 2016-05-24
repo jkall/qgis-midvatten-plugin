@@ -125,6 +125,9 @@ class midvatten:
 
         self.actionimport_wqual_lab = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_lab.png"), "Import w quality from lab", self.iface.mainWindow())
         QObject.connect(self.actionimport_wqual_lab, SIGNAL("triggered()"), self.import_wqual_lab)
+
+        self.actionimport_wqual_lab_from_interlab4 = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_lab.png"), "Import w quality from lab interlab4 format", self.iface.mainWindow())
+        QObject.connect(self.actionimport_wqual_lab_from_interlab4, SIGNAL("triggered()"), self.import_wqual_lab_from_interlab4)
         
         self.actionimport_wqual_field = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import w quality from field", self.iface.mainWindow())
         QObject.connect(self.actionimport_wqual_field, SIGNAL("triggered()"), self.import_wqual_field)
@@ -240,6 +243,7 @@ class midvatten:
         self.menu.import_data_menu.addAction(self.action_import_wlvllogg_general_format)
         self.menu.import_data_menu.addAction(self.action_import_diverofficedata)         
         self.menu.import_data_menu.addAction(self.actionimport_wqual_lab)
+        self.menu.import_data_menu.addAction(self.actionimport_wqual_lab_from_interlab4)
         self.menu.import_data_menu.addAction(self.actionimport_wqual_field)   
         self.menu.import_data_menu.addAction(self.action_import_wflow)   
         self.menu.import_data_menu.addAction(self.actionimport_stratigraphy)
@@ -657,6 +661,23 @@ class midvatten:
                 importinstance = midv_data_importer()
                 importinstance.default_import(importinstance.wquallab_import_from_csvlayer)
                 if importinstance.status=='True':      # 
+                    self.iface.messageBar().pushMessage("Info","%s water quality parameters were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
+                    try:
+                        self.midvsettingsdialog.ClearEverything()
+                        self.midvsettingsdialog.LoadAndSelectLastSettings()
+                    except:
+                        pass
+
+    def import_wqual_lab_from_interlab4(self):
+        allcritical_layers = ('obs_points', 'w_qual_lab')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:        # unless none of the critical layers are in editing mode
+            sanity = utils.askuser("YesNo","""You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.\nSpecifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf\n\nContinue?""",'Are you sure?')
+            if sanity.result == 1:
+                from import_data_to_db import midv_data_importer
+                importinstance = midv_data_importer()
+                importinstance.import_interlab4()
+                if importinstance.status=='True':      #
                     self.iface.messageBar().pushMessage("Info","%s water quality parameters were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
                     try:
                         self.midvsettingsdialog.ClearEverything()

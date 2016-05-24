@@ -157,9 +157,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def import_interlab4(self, filenames=None):
-        all_lab_results = self.parse_interlab4()
+        all_lab_results = self.parse_interlab4(filenames)
+        if all_lab_results == u'cancel':
+            self.status = False
+            return u'cancel'
 
-        self.send_file_data_to_importer(self, all_lab_results, self.wquallab_import_from_csvlayer)
+        wquallab_data_table = self.interlab4_to_table(all_lab_results)
+
+        self.send_file_data_to_importer(self, wquallab_data_table, self.wquallab_import_from_csvlayer, self.check_obsids)
 
         self.SanityCheckVacuumDB()
         #"obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
@@ -167,10 +172,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def parse_interlab4(self, filenames=None):
         """ Reads the interlab
         :param filenames:
-        :return:
+        :return: A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
         """
         if filenames is None:
             filenames = utils.select_files(only_one_file=False, should_ask_for_charset=False)[0]
+        if not filenames:
+            return u'cancel'
 
         all_lab_results = {}
 
@@ -304,8 +311,60 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         return (file_error, version, encoding, decimalsign, quotechar)
 
-    def interlab4_to_table(self, data_dict):
-        pass
+    def interlab4_to_table(self, _data_dict):
+        """
+        Converts a parsed interlab4 dict into a table for w_qual_lab import
+
+        :param _data_dict:A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
+        :return: a list like [[u'obsid, depth, report, project, staff, date_time, anameth, reading_num, reading_txt, unit, comment'], rows with values]
+
+        The translation from svensktvatten interlab4-keywords to w_qual_lab is from
+        http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf
+
+        """
+        data_dict = copy.deepcopy(_data_dict)
+        #Here we must have the conversion of the parsed dict into a table matching w_qual_lab.
+        #All w_qual_lab columns must get a match from interlab4 terms. Maybe some terms should concat to a comment also.
+        # Original dict: {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
+
+        file_data = [[u'obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment']]
+        for lablittera, lab_results in data_dict.iteritems():
+            metadata = lab_results.pop(u'metadata')
+
+            obsid = metadata[u'provplatsid']
+            depth = None
+            report = lablittera
+            project = metadata.get(u'projekt', None)
+            staff = metadata.get(u'provtagare', None)
+            date_time = datetime.strftime(datestring_to_date(u' '.join([metadata[u'provtagningsdatum'], metadata[u'provtagningstid']])), u'%Y-%m-%d %H:%M:%S')
+            meta_comment = metadata.get(u'kommentar', None)
+
+            for parameter, parameter_dict in lab_results.iteritems():
+                anameth = parameter_dict.get(u'metodbeteckning', u'')
+                reading_num = parameter_dict[u'mätvärdetal']
+
+                try:
+                    reading_txt = parameter_dict[u'mätvärdetext']
+                except KeyError:
+                    reading_txt = reading_num
+
+                unit = parameter_dict[u'enhet']
+                parameter_comment = parameter_dict.get(u'kommentar', u'')
+
+                file_data.append([obsid,
+                                  depth,
+                                  report,
+                                  project,
+                                  staff,
+                                  date_time,
+                                  anameth,
+                                  parameter,
+                                  reading_num,
+                                  reading_txt,
+                                  unit,
+                                  u'. '.join([comment for comment in [parameter_comment, meta_comment] if comment is not None])]
+                                 )
+        return file_data
 
     def seismics_import(self):
         self.prepare_import('temporary_seismics')
@@ -644,6 +703,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(report,parameter,self.temptableName) #Number of distinct data posts in the import table
             cleaningok = self.multiple_field_duplicates(12, 'w_qual_lab', sqlremove, 'obs_points', sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
+
+                if utils.verify_table_exists('zz_staff'):
+                    #Add staffs that does not exist in db
+                    staffs = set([x[0] for x in utils.sql_load_fr_db("""select distinct staff from %s"""%self.temptableName)[1]])
+                    self.staff_import(staffs)
+
                 sql_list = []
                 sql_list.append(r"""INSERT OR IGNORE INTO "w_qual_lab" (obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment) """)
                 sql_list.append(r"""SELECT CAST("%s" as text), """%obsid)
@@ -665,11 +730,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
                 self.recsafter = (utils.sql_load_fr_db("""SELECT Count(*) FROM w_qual_lab""")[1])[0][0] #for the statistics
                 self.StatsAfter()
-            else:   
+            else:
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
+
+    def check_obsids(self, file_data):
+        return utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(), try_capitalize=False)
 
     def wqualfield_import_from_csvlayer(self):
         """
@@ -1042,10 +1110,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.fieldlogger_staff = utils.returnunicode(question.value)
         return self.fieldlogger_staff
 
-    def send_file_data_to_importer(self, file_data, importer):
+    def send_file_data_to_importer(self, file_data, importer, cleaning_function=None):
         self.csvlayer = None
         if len(file_data) < 2:
             return
+
+        if cleaning_function is not None:
+            file_data = cleaning_function(file_data)
 
         file_string = utils.lists_to_string(file_data)
 
@@ -1280,18 +1351,27 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 csvlayer = [self.csv2qgsvectorlayer(path) for path in csvpath if path]
             return csvlayer
 
-    def select_files(self, only_one_file=False):
-        path = []
-        try:#MacOSX fix2
-            localencoding = locale.getdefaultlocale()[1]
-            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
-        except:
-            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal, 'utf-8')
-        if self.charsetchoosen and not (self.charsetchoosen[0]==0 or self.charsetchoosen[0]==''):
+    def select_files(self, only_one_file=False, should_ask_for_charset=True):
+
+        def get_path(only_one_file):
             if only_one_file:
                 path = [PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")]
             else:
                 path = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
+            return path
+
+        path = []
+
+        if not should_ask_for_charset:
+            path = get_path(only_one_file)
+        else:
+            try:#MacOSX fix2
+                localencoding = locale.getdefaultlocale()[1]
+                self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
+            except:
+                self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal, 'utf-8')
+            if self.charsetchoosen and not (self.charsetchoosen[0]==0 or self.charsetchoosen[0]==''):
+                path = get_path(only_one_file)
         #Filter all empty strings
         path = [p for p in path if p]
         return path
