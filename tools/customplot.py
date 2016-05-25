@@ -285,9 +285,13 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         elif FlagTimeXY == "time" and plottype == "line and cross":
             self.p[i], = self.axes.plot_date(numtime, table2.values,  MarkVar,markersize = 6, label=self.plabels[i])
         elif FlagTimeXY == "time" and plottype == "frequency":
-            freqs = self.calc_frequency(table2)
-            self.p[i], = self.axes.plot_date(numtime, freqs,  MarkVar,markersize = 6, label='frequency '+str(self.plabels[i]))
-            self.plabels[i]='frequency '+str(self.plabels[i])
+            try:
+                freqs = self.calc_frequency(table2)
+                self.p[i], = self.axes.plot_date(numtime, freqs,  MarkVar,markersize = 6, label='frequency '+str(self.plabels[i]))
+                self.plabels[i]='frequency '+str(self.plabels[i])
+            except:
+                self.p[i], = self.axes.plot_date(np.array([]),np.array([]),  MarkVar,markersize = 6, label='frequency '+str(self.plabels[i]))
+                self.plabels[i]='frequency '+str(self.plabels[i])
         elif FlagTimeXY == "time":
             self.p[i], = self.axes.plot_date(numtime, table2.values,  MarkVar,label=self.plabels[i])
         elif FlagTimeXY == "XY" and plottype == "step-pre":
