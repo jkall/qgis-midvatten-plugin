@@ -461,11 +461,11 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                         #lists for plotting annotation 
                         self.x_txt.append(x[i])#+ self.barwidth/2)#x-coord for text
                         self.z_txt.append(Bottom[i] + recs[j][0]/2)#Z-value for text
-                        self.geology_txt.append(utils.returnunicode(recs[j][2]))
-                        self.geoshort_txt.append(utils.returnunicode(recs[j][3]))
-                        self.capacity_txt.append(utils.returnunicode(recs[j][4]))
-                        self.development_txt.append(utils.returnunicode(recs[j][5]))
-                        self.comment_txt.append(utils.returnunicode(recs[j][6]))
+                        self.geology_txt.append(utils.null_2_empty_string(utils.returnunicode(recs[j][2])))
+                        self.geoshort_txt.append(utils.null_2_empty_string(utils.returnunicode(recs[j][3])))
+                        self.capacity_txt.append(utils.null_2_empty_string(utils.returnunicode(recs[j][4])))
+                        self.development_txt.append(utils.null_2_empty_string(utils.returnunicode(recs[j][5])))
+                        self.comment_txt.append(utils.null_2_empty_string(utils.returnunicode(recs[j][6])))
                         #print obs + " " + Typ + " " + self.geology_txt[l] + " " + self.geoshort_txt[l] + " " + self.capacity_txt[l] + " " + self.development_txt[l] + " " + self.comment_txt[l]#debug
                         
                         i +=1

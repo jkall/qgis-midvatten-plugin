@@ -1,5 +1,6 @@
 *.pyc
 *~
+*.conf
 tools/date_utils - Kopia.py
 tools/wlevels_calc_calibr - Kopia (2).py
 tools/wlevels_calc_calibr - Kopia.py

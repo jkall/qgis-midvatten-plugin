@@ -350,6 +350,9 @@ def isdate(str):
             pass
     return result
 
+def null_2_empty_string(input_string):
+    return(input_string.replace('NULL','').replace('null',''))
+
 def pop_up_info(msg='',title='Information',parent=None):
     """Display an info message via Qt box"""
     QtGui.QMessageBox.information(parent, title, '%s' % (msg))
