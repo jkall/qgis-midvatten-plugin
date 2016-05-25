@@ -336,7 +336,7 @@
       <attributeEditorContainer name="observationspunkten">
         <attributeEditorField index="0" name="obsid"/>
       </attributeEditorContainer>
-      <attributeEditorContainer name="koordinater i plan - Ej automatiskt kopplade till kartposition">
+      <attributeEditorContainer name="koordinater i plan - kopplade till läget på kartan">
         <attributeEditorField index="13" name="east"/>
         <attributeEditorField index="14" name="north"/>
         <attributeEditorField index="15" name="ne_accur"/>
