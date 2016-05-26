@@ -829,10 +829,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.SanityCheckVacuumDB()
 
     def fieldlogger_import_select_and_parse_rows(self):
-        filename = self.select_files(True)[0].encode(str(self.charsetchoosen[0]))
+        filename = self.select_files(True)
         if not filename:
             self.status = True
             return u'cancel'
+
+        filename = filename[0].encode(str(self.charsetchoosen[0]))
 
         #Ask user if the date should be shifted
         question = utils.askuser(u'DateShift', u'User input needed')
