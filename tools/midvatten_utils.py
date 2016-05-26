@@ -900,7 +900,21 @@ def find_similar(word, wordlist, hits=5):
     [u'rb 1203', u'b1203', u'rb120', u'Rb1203', u'rb1203_bgfgf', u'rb123', u'rb1203']
     >>> find_similar(u'1', [u'2', u'3'], 5)
     [u'']
+    >>> find_similar(None, [u'2', u'3'], 5)
+    [u'']
+    >>> find_similar(None, None, 5)
+    [u'']
+    >>> find_similar(u'1', [], 5)
+    [u'']
+    >>> find_similar(u'1', False, 5)
+    [u'']
+    >>> find_similar(False, [u'2', u'3'], 5)
+    [u'']
+
     """
+    if None in [word, wordlist] or not wordlist or not word:
+        return [u'']
+
     matches = set(difflib.get_close_matches(word, wordlist, hits))
     matches.update([x for x in wordlist if any((x.startswith(word.lower()), x.startswith(word.upper()), x.startswith(word.capitalize())))])
     nr_of_hits = len(matches)
