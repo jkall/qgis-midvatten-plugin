@@ -544,7 +544,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         confirm_names = utils.askuser("YesNo", "Do you want to confirm each logger import name before import?")
 
-        import_from_last_date = utils.askuser("YesNo", "Do you want to import data after last imported date?\n(Else all data will be imported)")
+        import_all_data = utils.askuser("YesNo", "Do you want to import all data?\n(if answering No then only new data, after the latest import for each obsid, will be added to the database)")
 
         files = self.select_files()
         parsed_files = []
@@ -567,7 +567,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         file_to_import_to_db =  [parsed_files[0][0]]
         file_to_import_to_db.extend([row for parsed_file in parsed_files for row in parsed_file[1:]])
 
-        if import_from_last_date.result:
+        if not import_all_data.result:
             file_to_import_to_db = self.filter_dates_from_filedata(file_to_import_to_db, utils.get_last_logger_dates())
 
         file_string = utils.lists_to_string(file_to_import_to_db)
