@@ -326,7 +326,7 @@
       <attributeEditorContainer name="observation point">
         <attributeEditorField index="0" name="obsid"/>
       </attributeEditorContainer>
-      <attributeEditorContainer name="planar coordinates - not auto-linked to map pos.">
+      <attributeEditorContainer name="planar coordinates - auto-linked to map pos.">
         <attributeEditorField index="13" name="east"/>
         <attributeEditorField index="14" name="north"/>
         <attributeEditorField index="15" name="ne_accur"/>
