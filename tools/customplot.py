@@ -130,7 +130,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.p.extend([None]*nop)#list for plot objects
             self.plabels.extend([None]*nop)# List for plot labels
             try:
-                factor1 = float(self.lineEditFactor2.text())
+                factor1 = float(self.lineEditFactor1.text())
             except ValueError:
                 factor1 = 1.0
 
@@ -251,7 +251,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.refreshPlot()
         QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
-    def createsingleplotobject(self,sql,i,My_format,curs,plottype='line', factor=1):
+    def createsingleplotobject(self,sql,i,My_format,curs,plottype='line', factor=1.0):
         rs = curs.execute(sql) #Send SQL-syntax to cursor
         recs = rs.fetchall()  # All data are stored in recs
         # late fix for xy-plots
@@ -259,29 +259,21 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         #Transform data to a numpy.recarray
         try:
             table = np.array(recs, dtype=My_format)  #NDARRAY
+
+            table = utils.scale_nparray_column(table, 1, factor)
+
             table2=table.view(np.recarray)   # RECARRAY transform the 2 cols into callable objects
-            myTimestring = []  #LIST
             FlagTimeXY = 'time'
-            j = 0
-            for row in table2: 
-                myTimestring.append(table2.date_time[j])
-                j = j + 1
+            myTimestring = list(table2.date_time)
             numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
         except:
             table = np.array(recs, dtype=My_format2)  #NDARRAY
-            table2=table.view(np.recarray)   # RECARRAY transform the 2 cols into callable objects
-            myXYstring = []  #LIST
-            FlagTimeXY = 'XY'
-            j = 0
-            for row in table2: #
-                myXYstring.append(table2.numx[j])
-                j = j + 1
-            numtime = myXYstring
 
-        #Multiply by factor
-        #TODO:
-        #utils.pop_up_info("Table2: " + str(table2))
-        #table2[:,1] *= factor #Not working yet.
+            table = utils.scale_nparray_column(table, 1, factor)
+
+            table2=table.view(np.recarray)   # RECARRAY transform the 2 cols into callable objects
+            FlagTimeXY = 'XY'
+            numtime = list(table2.numx)
 
         # from version 0.2 there is a possibility to make discontinuous plot if timestep bigger than maxtstep
         if self.spnmaxtstep.value() > 0: # if user selected a time step bigger than zero than thre may be discontinuous plots

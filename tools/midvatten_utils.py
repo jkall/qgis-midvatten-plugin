@@ -26,7 +26,8 @@ import csv
 import codecs
 import cStringIO
 import difflib
-
+import datetime
+import copy
 import qgis.utils
 import sys
 import os
@@ -1063,4 +1064,28 @@ def sql_to_parameters_units_tuple(sql):
         parameters_dict.setdefault(parameter, []).append(unit)
     parameters = tuple([(k, tuple(v)) for k, v in sorted(parameters_dict.iteritems())])
     return parameters
+
+def scale_nparray_column(table, column, factor):
+    """
+
+    :param table:
+    :param column:
+    :param factor:
+    :return:
+
+    #These look identical, but fore some reason isn't for the doctest.
+    #>>> scale_nparray_column(np.array([('2016', 1), ('2017', 2)], dtype=[('d', datetime.datetime), ('v', float)]), 1, 10)
+    #array([('2016', 10.0), ('2017', 20.0)],\n          dtype=[('d', 'O'), ('v', '<f8')])
+    """
+    scaled = copy.deepcopy(table)
+    if factor != 1:
+        try:
+            for x in scaled:
+                v = x[column] * factor
+                x[column] *= factor
+        except:
+            pass
+        else:
+            table = scaled
+    return table
 
