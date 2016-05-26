@@ -556,6 +556,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             file_data = self.parse_diveroffice_file(selected_file, self.charsetchoosen[0], existing_obsids, confirm_names.result)
             if file_data == u'cancel':
                 self.status = True
+                PyQt4.QtGui.QApplication.restoreOverrideCursor()
                 return u'cancel'
             elif file_data == u'ignore':
                 continue
