@@ -207,18 +207,18 @@ def geocolorsymbols():
                     'Msa': ('Dense4Pattern', 'green'),
                     'msa': ('Dense4Pattern', 'green'),
                     'mSa': ('Dense4Pattern', 'green'),
-                    'finsand': ('Dense4Pattern', 'orange'),
-                    'Finsand': ('Dense4Pattern', 'orange'),
-                    'FINSAND': ('Dense4Pattern', 'orange'),
-                    'Saf': ('Dense4Pattern', 'orange'),
-                    'saf': ('Dense4Pattern', 'orange'),
-                    'Fine Sand': ('Dense4Pattern', 'orange'),
-                    'fine Sand': ('Dense4Pattern', 'orange'),
-                    'fine Sand': ('Dense4Pattern', 'orange'),
-                    'FSa': ('Dense4Pattern', 'orange'),
-                    'Fsa': ('Dense4Pattern', 'orange'),
-                    'fSa': ('Dense4Pattern', 'orange'),
-                    'fsa': ('Dense4Pattern', 'orange'),
+                    'finsand': ('Dense4Pattern', 'darkYellow'),
+                    'Finsand': ('Dense4Pattern', 'darkYellow'),
+                    'FINSAND': ('Dense4Pattern', 'darkYellow'),
+                    'Saf': ('Dense4Pattern', 'darkYellow'),
+                    'saf': ('Dense4Pattern', 'darkYellow'),
+                    'Fine Sand': ('Dense4Pattern', 'darkYellow'),
+                    'fine Sand': ('Dense4Pattern', 'darkYellow'),
+                    'fine Sand': ('Dense4Pattern', 'darkYellow'),
+                    'FSa': ('Dense4Pattern', 'darkYellow'),
+                    'Fsa': ('Dense4Pattern', 'darkYellow'),
+                    'fSa': ('Dense4Pattern', 'darkYellow'),
+                    'fsa': ('Dense4Pattern', 'darkYellow'),
                     'silt': ('BDiagPattern', 'yellow'),
                     'Silt': ('BDiagPattern', 'yellow'),
                     'SILT': ('BDiagPattern', 'yellow'),
@@ -330,36 +330,25 @@ def standard_parameters_for_wquality():
     """ Returns a dict with water quality parameters
     :return: A dict with parameter as key and unit as value
     """
-    parameters_from_table = utils.returnunicode(utils.sql_load_fr_db(u'''select parameter, unit from zz_w_qual_field_parameters''')[1], True)
-
-    parameters_dict = {}
-    for parameter, unit in parameters_from_table:
-        parameters_dict.setdefault(parameter, []).append(unit)
-
-    parameters = tuple([(k, tuple(v)) for k, v in parameters_dict.iteritems()])
-
-    return parameters
+    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "group" = 'quality' ''')
+    shortname_parameter_unit = utils.get_w_qual_field_parameters()
+    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
+    return shortname_unit
 
 def standard_parameters_for_wsample():
     """ Returns a dict with water sample parameters
     :return: A dict with parameter as key and unit as value
     """
-    parameters = ((u'turbiditet', (u'FNU',)),
-                  (u'temperatur', (u'grC',)))
-    return parameters
+    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "group" = 'sample' ''')
+    shortname_parameter_unit = utils.get_w_qual_field_parameters()
+    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
+    return shortname_unit
 
 def standard_parameters_for_wflow():
     """ Returns a dict with water flow parameters
     :return: A dict with parameter as key and unit as value
     """
-    parameters_from_table = utils.returnunicode(utils.sql_load_fr_db(u'''select type, unit from zz_flowtype''')[1], True)
-    parameters_dict = {}
-    for parameter, unit in parameters_from_table:
-        parameters_dict.setdefault(parameter, []).append(unit)
-
-    parameters = tuple([(k, tuple(v)) for k, v in parameters_dict.iteritems()])
-
-    return parameters
+    return utils.sql_to_parameters_units_tuple(u'''select type, unit from zz_flowtype''')
 
 def PlotTypesDict(international='no'): 
     """

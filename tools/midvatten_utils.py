@@ -39,6 +39,7 @@ from pyspatialite.dbapi2 import IntegrityError
 from matplotlib.dates import datestr2num, num2date
 import time
 from collections import OrderedDict
+import re
 
 not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
 
@@ -132,9 +133,19 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
     def button_clicked(self):
         button = self.sender()
         button_object_name = button.objectName()
-        self.answer = button_object_name
-        self.value = self.comboBox.currentText()
+        self.set_answer_and_value(button_object_name)
         self.close()
+
+    def set_answer_and_value(self, answer):
+        self.answer = answer
+        self.value = self.comboBox.currentText()
+
+    def closeEvent(self, event):
+        if self.answer == None:
+            self.set_answer_and_value(u'cancel')
+        super(NotFoundQuestion, self).closeEvent(event)
+
+        #self.close()
 
 
 class HtmlDialog(QtGui.QDialog):
@@ -468,7 +479,7 @@ def sql_alter_db(sql=''):
         try:
             resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
         except IntegrityError, e:
-            raise IntegrityError(str(e))
+            raise IntegrityError("The sql failed:\n" + sql2 + "\nmsg:\n" + str(e))
     else:
         try:
             resultfromsql = curs.executemany(sql2[0], sql2[1])
@@ -732,7 +743,7 @@ def get_last_used_flow_instruments():
 
 def get_last_logger_dates():
     ok_or_not, obsid_last_imported_dates = get_sql_result_as_dict('select obsid, max(date_time) from w_levels_logger group by obsid')
-    return obsid_last_imported_dates
+    return returnunicode(obsid_last_imported_dates, True)
 
 def get_quality_instruments():
     """
@@ -748,13 +759,33 @@ def get_quality_instruments():
         qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
         return False, tuple()
 
-    return True, tuple([x[0] for x in result_list])
+    return True, returnunicode([x[0] for x in result_list], True)
 
-def get_staff_initials_list():
+def get_last_used_quality_instruments():
+    """
+    Returns quality instrumentids
+    :return: A tuple with instrument ids from w_qual_field
+    """
+    sql = 'select parameter, unit, instrument, staff, max(date_time) from w_qual_field group by parameter, unit, instrument, staff'
+    connection_ok, result_dict = get_sql_result_as_dict(sql)
+    return returnunicode(result_dict, True)
+
+def get_w_qual_field_parameters():
+    sql = 'select shortname, parameter, unit from zz_w_qual_field_parameters'
+    sql_result = sql_load_fr_db(sql)
+    connection_ok, result_list = sql_result
+
+    if not connection_ok:
+        textstring = """Cannot get data from sql """ + sql
+        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+
+    return returnunicode(result_list, True)
+
+def get_staff_list():
     """
     :return: A list of staff members from the staff table
     """
-    sql = 'SELECT distinct initials from zz_staff'
+    sql = 'SELECT distinct staff from zz_staff'
     sql_result = sql_load_fr_db(sql)
     connection_ok, result_list = sql_result
 
@@ -763,7 +794,7 @@ def get_staff_initials_list():
         qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
         return False, tuple()
 
-    return True, tuple([x[0] for x in result_list])
+    return True, returnunicode(tuple([x[0] for x in result_list]), True)
 
 def get_sql_result_as_dict(sql):
     """
@@ -900,8 +931,19 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
         else:
             filtered_data.append(row)
 
+    already_asked_values = {}
+
     for rownr, row in enumerate(data_to_ask_for):
-        current_value = row[index]
+
+        #First check if the current value already has been asked for and if so
+        # use the same answer again.
+        try:
+            row[index] = already_asked_values[row[index]]
+        except KeyError:
+            current_value = row[index]
+        else:
+            filtered_data.append(row)
+            continue
 
         similar_values = find_similar(current_value, existing_values, hits=5)
 
@@ -919,7 +961,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
                     continue
 
             question = NotFoundQuestion(dialogtitle=u'WARNING',
-                                        msg=u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\n',
+                                        msg=u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\nIt will be used for all occurences of the same ' + header_value + u'\n',
                                         existing_list=similar_values,
                                         default_value=similar_values[0],
                                         button_names=[u'Ignore', u'Cancel', u'Ok', u'Skip'])
@@ -937,6 +979,9 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
         if answer != u'skip':
             row[index] = current_value
             filtered_data.append(row)
+
+        if row[index] not in already_asked_values:
+            already_asked_values[row[index]] = current_value
 
     return filtered_data
 
@@ -997,4 +1042,11 @@ def excecute_sqlfile(sqlfilename, function=sql_alter_db):
                 continue
             function(line)
 
+def sql_to_parameters_units_tuple(sql):
+    parameters_from_table = returnunicode(sql_load_fr_db(sql)[1], True)
+    parameters_dict = {}
+    for parameter, unit in parameters_from_table:
+        parameters_dict.setdefault(parameter, []).append(unit)
+    parameters = tuple([(k, tuple(v)) for k, v in sorted(parameters_dict.iteritems())])
+    return parameters
 

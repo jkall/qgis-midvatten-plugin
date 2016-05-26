@@ -46,6 +46,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.recsinfile = 0
         self.temptablename = ''
         self.charsetchoosen = ('','')
+        self.fieldlogger_staff = None
 
     def default_import(self, importer):
         self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
@@ -156,9 +157,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def import_interlab4(self, filenames=None):
-        all_lab_results = self.parse_interlab4()
+        all_lab_results = self.parse_interlab4(filenames)
+        if all_lab_results == u'cancel':
+            self.status = False
+            return u'cancel'
 
-        self.send_file_data_to_importer(self, all_lab_results, self.wquallab_import_from_csvlayer)
+        wquallab_data_table = self.interlab4_to_table(all_lab_results)
+
+        self.send_file_data_to_importer(self, wquallab_data_table, self.wquallab_import_from_csvlayer, self.check_obsids)
 
         self.SanityCheckVacuumDB()
         #"obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
@@ -166,10 +172,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def parse_interlab4(self, filenames=None):
         """ Reads the interlab
         :param filenames:
-        :return:
+        :return: A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
         """
         if filenames is None:
             filenames = utils.select_files(only_one_file=False, should_ask_for_charset=False)[0]
+        if not filenames:
+            return u'cancel'
 
         all_lab_results = {}
 
@@ -303,8 +311,60 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         return (file_error, version, encoding, decimalsign, quotechar)
 
-    def interlab4_to_table(self, data_dict):
-        pass
+    def interlab4_to_table(self, _data_dict):
+        """
+        Converts a parsed interlab4 dict into a table for w_qual_lab import
+
+        :param _data_dict:A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
+        :return: a list like [[u'obsid, depth, report, project, staff, date_time, anameth, reading_num, reading_txt, unit, comment'], rows with values]
+
+        The translation from svensktvatten interlab4-keywords to w_qual_lab is from
+        http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf
+
+        """
+        data_dict = copy.deepcopy(_data_dict)
+        #Here we must have the conversion of the parsed dict into a table matching w_qual_lab.
+        #All w_qual_lab columns must get a match from interlab4 terms. Maybe some terms should concat to a comment also.
+        # Original dict: {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
+
+        file_data = [[u'obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment']]
+        for lablittera, lab_results in data_dict.iteritems():
+            metadata = lab_results.pop(u'metadata')
+
+            obsid = metadata[u'provplatsid']
+            depth = None
+            report = lablittera
+            project = metadata.get(u'projekt', None)
+            staff = metadata.get(u'provtagare', None)
+            date_time = datetime.strftime(datestring_to_date(u' '.join([metadata[u'provtagningsdatum'], metadata[u'provtagningstid']])), u'%Y-%m-%d %H:%M:%S')
+            meta_comment = metadata.get(u'kommentar', None)
+
+            for parameter, parameter_dict in lab_results.iteritems():
+                anameth = parameter_dict.get(u'metodbeteckning', u'')
+                reading_num = parameter_dict[u'mätvärdetal']
+
+                try:
+                    reading_txt = parameter_dict[u'mätvärdetext']
+                except KeyError:
+                    reading_txt = reading_num
+
+                unit = parameter_dict[u'enhet']
+                parameter_comment = parameter_dict.get(u'kommentar', u'')
+
+                file_data.append([obsid,
+                                  depth,
+                                  report,
+                                  project,
+                                  staff,
+                                  date_time,
+                                  anameth,
+                                  parameter,
+                                  reading_num,
+                                  reading_txt,
+                                  unit,
+                                  u'. '.join([comment for comment in [parameter_comment, meta_comment] if comment is not None])]
+                                 )
+        return file_data
 
     def seismics_import(self):
         self.prepare_import('temporary_seismics')
@@ -643,6 +703,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(report,parameter,self.temptableName) #Number of distinct data posts in the import table
             cleaningok = self.multiple_field_duplicates(12, 'w_qual_lab', sqlremove, 'obs_points', sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
+
+                if utils.verify_table_exists('zz_staff'):
+                    #Add staffs that does not exist in db
+                    staffs = set([x[0] for x in utils.sql_load_fr_db("""select distinct staff from %s"""%self.temptableName)[1]])
+                    self.staff_import(staffs)
+
                 sql_list = []
                 sql_list.append(r"""INSERT OR IGNORE INTO "w_qual_lab" (obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment) """)
                 sql_list.append(r"""SELECT CAST("%s" as text), """%obsid)
@@ -664,11 +730,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
                 self.recsafter = (utils.sql_load_fr_db("""SELECT Count(*) FROM w_qual_lab""")[1])[0][0] #for the statistics
                 self.StatsAfter()
-            else:   
+            else:
                 self.status = 'False'       #Cleaning was not ok and status is false - no import performed
             utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
+
+    def check_obsids(self, file_data):
+        return utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(), try_capitalize=False)
 
     def wqualfield_import_from_csvlayer(self):
         """
@@ -700,9 +769,20 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     staffs = set([x[0] for x in utils.sql_load_fr_db("""select distinct staff from %s"""%self.temptableName)[1]])
                     self.staff_import(staffs)
 
-                sqlpart1 = """INSERT OR IGNORE INTO "w_qual_field" (obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, comment) """
-                sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), (case when "%s"!='' then CAST("%s" as double) else null end), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text) FROM %s"""%(obsid, staff, date_time, instrument, parameter, reading_num, reading_num, reading_txt, unit, comment, self.temptableName)
-                sql = sqlpart1 + sqlpart2
+                sql_list = []
+                sql_list.append(r"""INSERT OR IGNORE INTO "w_qual_field" (obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, comment) """)
+                sql_list.append(r"""SELECT CAST("%s" as text), """%(obsid))
+                sql_list.append(r"""CAST("%s" as text), """%(staff))
+                sql_list.append(r"""CAST("%s" as text), """%(date_time))
+                sql_list.append(r"""CAST("%s" as text), """%(instrument))
+                sql_list.append(r"""CAST("%s" as text), """%(parameter))
+                sql_list.append(r"""(case when "%s"!='' then CAST("%s" as double) else null end), """%(reading_num, reading_num))
+                sql_list.append(r"""CAST("%s" as text), """%(reading_txt))
+                sql_list.append(r"""(case when "%s"!='' then CAST("%s" as text) else null end), """%(unit, unit))
+                sql_list.append(r"""CAST("%s" as text) """%(comment))
+                sql_list.append(r"""FROM %s"""%(self.temptableName))
+                sql = ''.join(sql_list)
+
                 utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
                 self.status = 'True'        # Cleaning was OK and import perfomed!!
                 self.recsafter = (utils.sql_load_fr_db("""SELECT Count(*) FROM w_qual_field""")[1])[0][0] #for the statistics
@@ -715,6 +795,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def fieldlogger_import(self):
+        self.fieldlogger_staff = None
         result_dict = self.fieldlogger_import_select_and_parse_rows()
         if result_dict == u'cancel':
             self.status = True
@@ -724,8 +805,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         typename_preparer_importer = {u'level': (self.fieldlogger_prepare_level_data, self.wlvl_import_from_csvlayer),
                                       u'flow': (self.fieldlogger_prepare_flow_data, self.wflow_import_from_csvlayer),
-                                      u'quality': (self.fieldlogger_prepare_quality_data, self.wqualfield_import_from_csvlayer),
-                                      u'sample': (self.fieldlogger_prepare_sample_data, self.wqualfield_import_from_csvlayer)}
+                                      u'quality': (self.fieldlogger_prepare_quality_and_sample, self.wqualfield_import_from_csvlayer)}
 
         for typename, obsdict in result_dict.iteritems():
             preparer = typename_preparer_importer[typename][0]
@@ -778,7 +858,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         f must not have a header.
         """
 
-        typeshortnames_typelongnames = {u's': u'sample',
+        #Here sample and quality are merged, because they are going to the same place
+        typeshortnames_typelongnames = {u's': u'quality',
                                         u'q': u'quality',
                                         u'l': u'level',
                                         u'f': u'flow'}
@@ -891,16 +972,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         return file_data_list
 
-    def fieldlogger_prepare_sample_data(self, obsdict):
-        file_data_list = self.fieldlogger_prepare_quality_and_sample(obsdict, quality_or_water_sample=u'water sample')
-        return file_data_list
-
-    def fieldlogger_prepare_quality_data(self, obsdict):
-        file_data_list = self.fieldlogger_prepare_quality_and_sample(obsdict, quality_or_water_sample=u'water quality')
-        return file_data_list
-
-    @staticmethod
-    def fieldlogger_prepare_quality_and_sample(obsdict, quality_or_water_sample=u'water quality'):
+    def fieldlogger_prepare_quality_and_sample(self, obsdict):
         """
         Produces a filestring with columns "obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment" and imports it
         :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
@@ -910,10 +982,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         file_data_list = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment']]
 
         instrumentids = utils.get_quality_instruments()[1]
-        existing_staff = utils.get_staff_initials_list()[1]
+        last_used_quality_instruments = utils.get_last_used_quality_instruments()
+        w_qual_field_parameters = utils.get_w_qual_field_parameters()
+        existing_parameter_units = [u','.join([utils.returnunicode(v[1]), utils.returnunicode(v[2])]) for v in w_qual_field_parameters]
 
-        asked_instrument = None
-        staff = None
+        instrument_question = utils.askuser("YesNo", """Do you want to confirm instrument id:s for water quality parameters?\nElse the last used instrument for each parameter by current staff will be used.""","Warning!")
+
+        asked_instruments = {}
+        asked_parameters_units = {}
 
         for obsid, date_time_dict in sorted(obsdict.iteritems()):
             for date_time, param_dict in sorted(date_time_dict.iteritems()):
@@ -925,44 +1001,71 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     comment = u''
 
                 for param_unit, value in sorted(param_dict.iteritems()):
-                    parameter, unit = param_unit
+                    parameter_shortname, unit = param_unit
+                    parameter = None
+
+                    #Get the parameter name from the shortname and unit
+                    if (parameter_shortname, unit) in asked_parameters_units:
+                        parameter, unit = asked_parameters_units[(parameter_shortname, unit)]
+                    else:
+                        #Try to match the parameter short names
+                        parameter_unit = [(_parameter, _unit) for _shortname, _parameter, _unit in w_qual_field_parameters if (parameter_shortname, unit) == (_shortname, _unit)]
+                        #If that didn't work, try to match the shortname to parameter name instead.
+                        if not len(parameter_unit) == 1:
+                            parameter_unit = [(_parameter, _unit) for _shortname, _parameter, _unit in w_qual_field_parameters if (parameter_shortname, unit) == (_parameter, _unit)]
+
+                        if len(parameter_unit) == 1:
+                            parameter, unit = parameter_unit[0]
+                        #If that didn't work either, ask the user for it.
+                        else:
+                            question = utils.NotFoundQuestion(dialogtitle=u'Submit parameter and unit',
+                                                           msg=u'The parameter and unit was not found in db\n\nSubmit parameter and unit separated by comma for the row:\n' + u', '.join([obsid, datestring, parameter_shortname, unit]) + u'\n\nIt will be used for the rest of the water quality imports\nwith the same parameter, unit combination.',
+                                                           existing_list=existing_parameter_units)
+                            answer = question.answer
+                            if answer == u'cancel':
+                                return u'cancel'
+                            parameter, unit = utils.returnunicode(question.value).split(u',')
+                        asked_parameters_units[(parameter_shortname, unit)] = (parameter, unit)
+
+                    staff = self.ask_for_staff()
+                    if staff == u'cancel':
+                        return u'cancel'
+
+                    instrument = asked_instruments.get((parameter, unit), None)
+                    if instrument is None:
+                        if instrument_question.result == 0:
+                            try:
+                                instrument = utils.returnunicode([_instrument for _unit, _staff, _instrument, _date_time in last_used_quality_instruments[parameter] if _staff == staff and _unit == unit][0])
+                            except KeyError:
+                                pass
+                            except IndexError:
+                                pass
+                            except Exception, e:
+                                qgis.utils.iface.messageBar().pushMessage("Getting instruments from db failed: " + str(e))
+                                pass
+
+                        if instrument is None:
+                            question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
+                                                           msg=u'The instrument was not found\n\nSubmit the instrument id for the water quality measurement:\n' + u', '.join([obsid, datestring, parameter, unit]) + u'\n\nIt will be used for the rest of the water quality imports\nfor the current parameter and unit.',
+                                                           existing_list=instrumentids)
+                            answer = question.answer
+                            if answer == u'cancel':
+                                return u'cancel'
+                            instrument = utils.returnunicode(question.value)
+                            if instrument not in instrumentids:
+                                instrumentids.append(instrument)
+                    asked_instruments[(parameter, unit)] = instrument
 
                     reading_num = value.replace(u',', u'.')
                     reading_txt = reading_num
-
-                    if staff is None:
-                        question = utils.NotFoundQuestion(dialogtitle=u'Submit field staff',
-                                                       msg=u'Submit the field staff who made the ' + quality_or_water_sample + u' measurement:\n' + u', '.join([obsid, datestring, parameter]) + u'\nIt will be used for the rest of the ' + quality_or_water_sample + u' imports',
-                                                       existing_list=existing_staff)
-                        answer = question.answer
-                        if answer == u'cancel':
-                            return u'cancel'
-                        staff = utils.returnunicode(question.value)
-
-                    if parameter in (u'temperature', u'temperatur'):
-                        instrument = u''
-                    elif asked_instrument is None:
-                        question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
-                                                       msg=u'Submit the instrument id for the ' + quality_or_water_sample + u' measurement:\n' + u', '.join([obsid, datestring, parameter]) + u'\nIt will be used for the rest of the ' + quality_or_water_sample + u' imports',
-                                                       existing_list=instrumentids)
-                        answer = question.answer
-                        if answer == u'cancel':
-                            return u'cancel'
-                        asked_instrument = utils.returnunicode(question.value)
-                        instrument = asked_instrument
-                    else:
-                        instrument = asked_instrument
 
                     printrow = [obsid, staff, datestring, instrument, parameter, reading_num, reading_txt, unit, comment]
                     file_data_list.append(printrow)
 
         return file_data_list
 
-    @staticmethod
-    def fieldlogger_prepare_comments_data(typesdict):
+    def fieldlogger_prepare_comments_data(self, typesdict):
         file_data_list = [[u'obsid', u'date_time', u'comment', u'staff']]
-        staff = None
-        existing_staff = None
 
         for typename, obsdict in sorted(typesdict.iteritems()):
             for obsid, date_time_dict in sorted(obsdict.iteritems()):
@@ -985,28 +1088,38 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     if len(param_dict) > 0:
                         continue
 
-                    if staff is None:
-                        if existing_staff is None:
-                            existing_staff = utils.get_staff_initials_list()[1]
-
-                        question = utils.NotFoundQuestion(dialogtitle=u'Submit field staff',
-                                                       msg=u'Submit the field staff who made the comment:\n' + u', '.join([obsid, datestring, comment]) + u'\nIt will be used for the rest of the comment imports',
-                                                       existing_list=existing_staff)
-                        answer = question.answer
-                        if answer == u'cancel':
-                            return u'cancel'
-                        staff = utils.returnunicode(question.value)
+                    staff = self.ask_for_staff()
+                    if staff == u'cancel':
+                        return u'cancel'
 
                     printrow = [obsid, datestring, comment, staff]
                     file_data_list.append(printrow)
         return file_data_list
 
-    def send_file_data_to_importer(self, file_data, importer):
+    def ask_for_staff(self):
+        existing_staff = utils.get_staff_list()[1]
+
+        if self.fieldlogger_staff is None:
+            question = utils.NotFoundQuestion(dialogtitle=u'Submit field staff',
+                                           msg=u'Submit the field staff who made the FieldLogger measurements.\nIt will be used for the rest of the import',
+                                           existing_list=existing_staff)
+            answer = question.answer
+            if answer == u'cancel':
+                return u'cancel'
+
+            self.fieldlogger_staff = utils.returnunicode(question.value)
+        return self.fieldlogger_staff
+
+    def send_file_data_to_importer(self, file_data, importer, cleaning_function=None):
         self.csvlayer = None
         if len(file_data) < 2:
             return
 
+        if cleaning_function is not None:
+            file_data = cleaning_function(file_data)
+
         file_string = utils.lists_to_string(file_data)
+
         with utils.tempinput(file_string) as csvpath:
             csvlayer = self.csv2qgsvectorlayer(csvpath)
             if not csvlayer:
@@ -1055,23 +1168,23 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def staff_import(self, initials):
+    def staff_import(self, staff):
         """ Inserts initials if they don't exist in table staff
         :param initials: a string with initials, or a list of strings with initials
         :return:
         """
         name = u''
 
-        if isinstance(initials, basestring):
-            initials = [initials]
+        if isinstance(staff, basestring):
+            staff = [staff]
 
-        for _initials in initials:
-            _initials = utils.returnunicode(_initials)
-            existing_staff = [utils.returnunicode(x) for x in utils.get_staff_initials_list()[1]]
-            if _initials in existing_staff:
+        for _staff in staff:
+            _staff = utils.returnunicode(_staff)
+            existing_staff = [utils.returnunicode(x) for x in utils.get_staff_list()[1]]
+            if _staff in existing_staff:
                 continue
             else:
-                sql = u"""insert into "zz_staff" (initials, name) VALUES ("%s", "%s");"""%(_initials, name)
+                sql = u"""insert into "zz_staff" (staff, name) VALUES ("%s", "%s");"""%(_staff, name)
                 utils.sql_alter_db(sql.encode('utf-8'))
 
     def prepare_import(self, temptableName):
@@ -1238,18 +1351,27 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 csvlayer = [self.csv2qgsvectorlayer(path) for path in csvpath if path]
             return csvlayer
 
-    def select_files(self, only_one_file=False):
-        path = []
-        try:#MacOSX fix2
-            localencoding = locale.getdefaultlocale()[1]
-            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
-        except:
-            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal, 'utf-8')
-        if self.charsetchoosen and not (self.charsetchoosen[0]==0 or self.charsetchoosen[0]==''):
+    def select_files(self, only_one_file=False, should_ask_for_charset=True):
+
+        def get_path(only_one_file):
             if only_one_file:
                 path = [PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")]
             else:
                 path = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
+            return path
+
+        path = []
+
+        if not should_ask_for_charset:
+            path = get_path(only_one_file)
+        else:
+            try:#MacOSX fix2
+                localencoding = locale.getdefaultlocale()[1]
+                self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
+            except:
+                self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal, 'utf-8')
+            if self.charsetchoosen and not (self.charsetchoosen[0]==0 or self.charsetchoosen[0]==''):
+                path = get_path(only_one_file)
         #Filter all empty strings
         path = [p for p in path if p]
         return path
