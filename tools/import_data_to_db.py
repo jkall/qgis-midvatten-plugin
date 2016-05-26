@@ -544,7 +544,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         confirm_names = utils.askuser("YesNo", "Do you want to confirm each logger import name before import?")
 
-        import_all_data = utils.askuser("YesNo", "Do you want to import all data?\n(if answering No then only new data, after the latest import for each obsid, will be added to the database)")
+        import_all_data = utils.askuser("YesNo", "Do you want to import all data?\n\n" +
+                                        "'No' = only new data after the latest date in the database,\n" +
+                                        "for each observation point, will be imported.\n\n" +
+                                        "'Yes' = any data not matching an exact datetime in the database\n" +
+                                        " for the corresponding obs_point will be imported.")
 
         files = self.select_files()
         parsed_files = []
@@ -816,7 +820,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 return u'cancel'
             elif len(file_data) < 2:
                 continue
-            self.send_file_data_to_importer(utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids), importer)
+            filtered_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
+            if filtered_data == u'cancel':
+                self.status = True
+                return u'cancel'
+            self.send_file_data_to_importer(filtered_data, importer)
 
         #Import comments
         file_data = self.fieldlogger_prepare_comments_data(copy.deepcopy(result_dict))
