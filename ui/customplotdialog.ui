@@ -27,7 +27,7 @@
           <item>
            <widget class="QTabWidget" name="tabWidget">
             <property name="currentIndex">
-             <number>2</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="tab_1">
              <attribute name="title">
@@ -443,7 +443,7 @@
                 <item>
                  <widget class="QLabel" name="label_11">
                   <property name="text">
-                   <string>Unit transformation factor</string>
+                   <string>Y-axis  scaling factor</string>
                   </property>
                  </widget>
                 </item>
@@ -868,7 +868,7 @@
                 <item>
                  <widget class="QLabel" name="label_12">
                   <property name="text">
-                   <string>Unit transformation factor</string>
+                   <string>Y-axis  scaling factor</string>
                   </property>
                  </widget>
                 </item>
@@ -1291,14 +1291,14 @@
               <item row="3" column="0">
                <layout class="QHBoxLayout" name="horizontalLayout_10">
                 <item>
-                 <widget class="QLineEdit" name="lineEditFactor3"/>
-                </item>
-                <item>
                  <widget class="QLabel" name="label_13">
                   <property name="text">
                    <string>Y-axis  scaling factor</string>
                   </property>
                  </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="lineEditFactor3"/>
                 </item>
                </layout>
               </item>
