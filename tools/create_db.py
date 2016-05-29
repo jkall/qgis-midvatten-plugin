@@ -85,21 +85,23 @@ class newdb():
                 qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
                 with open(SQLFile, 'r') as f:
                     f.readline()  # first line is encoding info....
-                    for line in f:
-                        if not line:
-                            continue
-                        if line.startswith("#"):
-                            continue
-                        for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
-                                                           ('CHANGETOPLUGINVERSION', str(verno)),
-                                                           ('CHANGETOQGISVERSION',str(qgisverno)),
-                                                           ('CHANGETOSPLITEVERSION', str(versionstext[0][0]))]:
-                            line = line.replace(replace_word, replace_with)
-                        #replaced_line = line.replace('CHANGETOQGISVERSION',str(qgisverno)).replace('CHANGETOSPLITEVERSION',str(versionstext[0][0]))
-                        try:
+                    try:                        
+                        for line in f:
+                            if not line:
+                                continue
+                            if line.startswith("#"):
+                                continue
+                            for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
+                                                               ('CHANGETOPLUGINVERSION', str(verno)),
+                                                               ('CHANGETOQGISVERSION',str(qgisverno)),
+                                                               ('CHANGETOSPLITEVERSION', str(versionstext[0][0]))]:
+                                line = line.replace(replace_word, replace_with)
+                            #replaced_line = line.replace('CHANGETOQGISVERSION',str(qgisverno)).replace('CHANGETOSPLITEVERSION',str(versionstext[0][0]))
                             self.cur.execute(line)  # use tags to find and replace SRID and versioning info
-                        except Exception, e:
-                            utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
+                    except Exception, e:
+                        utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
+                    except:
+                        utils.pop_up_info('Failed to create DB!')
 
                 self.insert_datadomains(set_locale)
 
