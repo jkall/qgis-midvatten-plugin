@@ -51,6 +51,14 @@ class newdb():
                 return ''
             #create Spatialite database
             else:
+                #delete the file if exists
+                if os.path.exists(self.dbpath):
+                    try:
+                        os.remove(self.dbpath)
+                    except OSError, e:
+                        utils.pop_up_info("Error: %s - %s." % (e.filename,e.strerror))
+                        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                        return ''
                 try:
                     # creating/connecting the test_db
                     self.conn = sqlite.connect(self.dbpath) 
