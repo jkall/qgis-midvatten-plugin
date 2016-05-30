@@ -50,11 +50,11 @@ insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanatio
 insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('reduction potential', 'redox', 'mV', 'tendency to acquire electrons');
 insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('temperature', 'temp', 'grC', 'water temperature');
 insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('turbidity', 'turb', 'FNU', 'reduction of transparency of a liquid caused by the presence of undissolved matter');
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('DO', '%', 'quality')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('DO', 'mg/L', 'quality')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('conductivity', 'µS/cm', 'quality')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('pH', NULL, 'quality')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('reduction potential', 'mV', 'quality')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('temperature', 'grC', 'quality')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('turbidity', 'FNU', 'sample')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "group") values('temperature', 'grC', 'sample')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('DO', '%', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('DO', 'mg/L', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('conductivity', 'µS/cm', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('pH', NULL, 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('reduction potential', 'mV', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('temperature', 'grC', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('turbidity', 'FNU', 'sample')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('temperature', 'grC', 'sample')

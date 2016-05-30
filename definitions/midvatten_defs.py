@@ -330,7 +330,7 @@ def standard_parameters_for_wquality():
     """ Returns a dict with water quality parameters
     :return: A dict with parameter as key and unit as value
     """
-    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "group" = 'quality' ''')
+    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "groupname" = 'quality' ''')
     shortname_parameter_unit = utils.get_w_qual_field_parameters()
     shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
     return shortname_unit
@@ -339,7 +339,7 @@ def standard_parameters_for_wsample():
     """ Returns a dict with water sample parameters
     :return: A dict with parameter as key and unit as value
     """
-    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "group" = 'sample' ''')
+    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "groupname" = 'sample' ''')
     shortname_parameter_unit = utils.get_w_qual_field_parameters()
     shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
     return shortname_unit

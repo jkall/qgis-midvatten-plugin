@@ -42,7 +42,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestFieldLoggerImporterNoDb():
+class _TestFieldLoggerImporterNoDb():
     #flow_instrument_id = MockReturnUsingDict({u'Instrument not found': [u'testid', u'']}, 1)
     instrument_staff_questions = MockReturnUsingDict({u'Submit instrument id': MockNotFoundQuestion(u'ok', u'testid'), u'Submit field staff': MockNotFoundQuestion(u'ok', u'teststaff')}, u'dialogtitle')
     prev_used_flow_instr_ids = MockUsingReturnValue((True, {u'Rb1615': [(u'Accvol', u'Flm01', u'2015-01-01 00:00:00'), (u'Momflow', u'Flm02', u'2016-01-01 00:00:00')]}))
@@ -252,7 +252,7 @@ class TestFieldLoggerImporterNoDb():
         assert sorted_file_string == sorted_reference_string
 
 
-class TestFieldLoggerImporterDb(object):
+class _TestFieldLoggerImporterDb(object):
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
@@ -410,7 +410,7 @@ class TestFieldLoggerImporterDb(object):
         assert test_staff == reference_staff
 
 
-class TestImportWellsFile(object):
+class _TestImportWellsFile(object):
 
     def setUp(self):
         self.importinstance = midv_data_importer()
@@ -800,6 +800,8 @@ class TestWlvllogImportFromDiverofficeFiles(object):
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, -1010.0, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, -1001.0, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, -1020.0, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, -1002.0, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, -1030.0, None)])'''
+                    print("Filter dates:\n")
+                    print(test_string)
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
@@ -850,10 +852,12 @@ class TestWlvllogImportFromDiverofficeFiles(object):
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, -1000.0, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, -1010.0, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, -1001.0, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, -1020.0, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, -1002.0, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, -1030.0, None)])'''
+                    print("All dates:\n")
+                    print(test_string)
                     assert test_string == reference_string
 
 
-class TestDefaultImport(object):
+class _TestDefaultImport(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes_obj = MockUsingReturnValue()
@@ -1040,7 +1044,7 @@ class TestDefaultImport(object):
                     assert test_string == reference_string
 
 
-class TestInterlab4Importer():
+class _TestInterlab4Importer():
     def setUp(self):
         self.importinstance = midv_data_importer()
 
@@ -1305,7 +1309,7 @@ class TestInterlab4Importer():
         pass
 
 
-class TestDbCalls(object):
+class _TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -1357,7 +1361,7 @@ class TestDbCalls(object):
         assert imported_staff == u'(True, [(staff1, ), (staff2, )])'
 
 
-class TestImportObsPoints(object):
+class _TestImportObsPoints(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -1468,7 +1472,7 @@ class TestImportObsPoints(object):
         assert test_string == reference_string
 
 
-class TestWquallabImport(object):
+class _TestWquallabImport(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
@@ -1567,7 +1571,7 @@ class TestWquallabImport(object):
         assert test_string == reference_string
 
 
-class TestWflowImport(object):
+class _TestWflowImport(object):
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
@@ -1630,7 +1634,7 @@ class TestWflowImport(object):
         assert test_string == reference_string
 
 
-class TestFilterDatesFromFiledata(object):
+class _TestFilterDatesFromFiledata(object):
 
     def setUp(self):
         self.importinstance = midv_data_importer()

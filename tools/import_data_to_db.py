@@ -1495,7 +1495,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                  (u'Temperature[°C]', u'temp_degc'),
                                                  (u'Conductivity[mS/cm]', u'cond_mscm')])
 
-        translated_header = [translation_dict_in_order[headername] for headername in header]
+        try:
+            translated_header = [translation_dict_in_order[headername] for headername in header]
+        except KeyError:
+            qgis.utils.iface.messageBar().pushMessage("Failure, the file " + path + "\ndid not have the correct headers and will not be imported.\nMake sure its barocompensated!\n")
+            return u'ignore'
 
         filedata.reverse()
         filedata.append(translated_header)
