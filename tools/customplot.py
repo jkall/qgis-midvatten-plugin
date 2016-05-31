@@ -31,8 +31,11 @@ from sqlite3 import dbapi2 as sqlite
 import numpy as np
 import matplotlib.pyplot as plt   
 from matplotlib.dates import datestr2num
+from matplotlib import ticker
+import matplotlib.dates as mdates
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
 import datetime
 import matplotlib.ticker as tick
 #import midvatten_utils as utils
@@ -79,12 +82,12 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.custplotfigure = plt.figure() 
         self.axes = self.custplotfigure.add_subplot( 111 )
         self.canvas = FigureCanvas( self.custplotfigure )
-        self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot )
+        self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot)
         lstActions = self.mpltoolbar.actions()
         self.mpltoolbar.removeAction( lstActions[ 7 ] )
         self.layoutplot.addWidget( self.canvas )
         self.layoutplot.addWidget( self.mpltoolbar )
-        
+
         self.show()
 
     def calc_frequency(self,table2):
@@ -105,6 +108,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))#show the user this may take a long time...
 
         self.axes.clear()
+        self.axes.legend_ = None
         My_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array
         
         myconnection = utils.dbconnection()
@@ -248,14 +252,18 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
         #rs.close() # close the cursor
         myconnection.closedb()  # close the database
+
+        self.xaxis_formatters = (self.axes.xaxis.get_major_formatter(), self.axes.xaxis.get_major_locator())
+
         self.refreshPlot()
+
         QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def createsingleplotobject(self,sql,i,My_format,curs,plottype='line', factor=1.0):
         rs = curs.execute(sql) #Send SQL-syntax to cursor
         recs = rs.fetchall()  # All data are stored in recs
         # late fix for xy-plots
-        My_format2 = [('numx', float), ('values', float)]#define a format for xy-plot (to use if not datetime on x-axis)
+
         #Transform data to a numpy.recarray
         try:
             table = np.array(recs, dtype=My_format)  #NDARRAY
@@ -267,7 +275,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             myTimestring = list(table2.date_time)
             numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
         except:
-            table = np.array(recs, dtype=My_format2)  #NDARRAY
+            table = np.array(recs, dtype=[('numx', float), ('values', float)])  #NDARRAY #define a format for xy-plot (to use if not datetime on x-axis)
 
             table = utils.scale_nparray_column(table, 1, factor)
 
@@ -313,103 +321,40 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         elif FlagTimeXY == "XY" and plottype == "line and cross":
             self.p[i], = self.axes.plot(numtime, table2.values,  MarkVar,markersize = 6, label=self.plabels[i])
         else: 
-            self.p[i], = self.axes.plot(numtime, table2.values,  MarkVar,label=self.plabels[i]) 
+            self.p[i], = self.axes.plot(numtime, table2.values,  MarkVar,label=self.plabels[i])
 
     def LastSelections(self):#set same selections as last plot
-        #table1
-        searchindex = self.table_ComboBox_1.findText(self.ms.settingsdict['custplot_table1'])
-        if searchindex >= 0:
-            self.table_ComboBox_1.setCurrentIndex(searchindex)
-            self.Table1Changed()
-            searchindex = self.xcol_ComboBox_1.findText(self.ms.settingsdict['custplot_xcol1'])
-            if searchindex >= 0:
-                self.xcol_ComboBox_1.setCurrentIndex(searchindex)
-            searchindex = self.ycol_ComboBox_1.findText(self.ms.settingsdict['custplot_ycol1'])
-            if searchindex >= 0:
-                self.ycol_ComboBox_1.setCurrentIndex(searchindex)
+
+        last_selection_arg_tuples = [(self.table_ComboBox_1, self.xcol_ComboBox_1, self.ycol_ComboBox_1, 'custplot_table1', 'custplot_xcol1', 'custplot_ycol1', self.Table1Changed),
+                                     (self.table_ComboBox_2, self.xcol_ComboBox_2, self.ycol_ComboBox_2, 'custplot_table2', 'custplot_xcol2', 'custplot_ycol2', self.Table2Changed),
+                                     (self.table_ComboBox_3, self.xcol_ComboBox_3, self.ycol_ComboBox_3, 'custplot_table3', 'custplot_xcol3', 'custplot_ycol3', self.Table3Changed)]
+
+        for table_combobox, xcol_combobox, ycol_combobox, custplot_table, custplot_xcol, custplot_ycol, table_changed in last_selection_arg_tuples:
+            self.set_last_selection(table_combobox, xcol_combobox, ycol_combobox, custplot_table, custplot_xcol, custplot_ycol, table_changed)
+
         #table2
         self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['custplot_tabwidget']))
-        searchindex = self.table_ComboBox_2.findText(self.ms.settingsdict['custplot_table2'])
-        if searchindex >= 0:
-            self.table_ComboBox_2.setCurrentIndex(searchindex)
-            self.Table2Changed()
-            searchindex = self.xcol_ComboBox_2.findText(self.ms.settingsdict['custplot_xcol2'])
-            if searchindex >= 0:
-                self.xcol_ComboBox_2.setCurrentIndex(searchindex)
-            searchindex = self.ycol_ComboBox_2.findText(self.ms.settingsdict['custplot_ycol2'])
-            if searchindex >= 0:
-                self.ycol_ComboBox_2.setCurrentIndex(searchindex)
-        #table3
-        searchindex = self.table_ComboBox_3.findText(self.ms.settingsdict['custplot_table3'])
-        if searchindex >= 0:
-            self.table_ComboBox_3.setCurrentIndex(searchindex)
-            self.Table3Changed()
-            searchindex = self.xcol_ComboBox_3.findText(self.ms.settingsdict['custplot_xcol3'])
-            if searchindex >= 0:
-                self.xcol_ComboBox_3.setCurrentIndex(searchindex)
-            searchindex = self.ycol_ComboBox_3.findText(self.ms.settingsdict['custplot_ycol3'])
-            if searchindex >= 0:
-                self.ycol_ComboBox_3.setCurrentIndex(searchindex)
-        #filtre1_1
-        searchindex = self.Filter1_ComboBox_1.findText(self.ms.settingsdict['custplot_filter1_1'])
-        if searchindex >= 0:
-            self.Filter1_ComboBox_1.setCurrentIndex(searchindex)
-            self.FilterChanged(1, 1)
-        #filtre2_1
-        searchindex = self.Filter2_ComboBox_1.findText(self.ms.settingsdict['custplot_filter2_1'])
-        if searchindex >= 0:
-            self.Filter2_ComboBox_1.setCurrentIndex(searchindex)
-            self.FilterChanged(2, 1)
-        #filtre1_2
-        searchindex = self.Filter1_ComboBox_2.findText(self.ms.settingsdict['custplot_filter1_2'])
-        if searchindex >= 0:
-            self.Filter1_ComboBox_2.setCurrentIndex(searchindex)
-            self.FilterChanged( 1, 2)
-        #filtre2_2
-        searchindex = self.Filter2_ComboBox_2.findText(self.ms.settingsdict['custplot_filter2_2'])
-        if searchindex >= 0:
-            self.Filter2_ComboBox_2.setCurrentIndex(searchindex)
-            self.FilterChanged(2, 2)
-        #filtre1_3
-        searchindex = self.Filter1_ComboBox_3.findText(self.ms.settingsdict['custplot_filter1_3'])
-        if searchindex >= 0:
-            self.Filter1_ComboBox_3.setCurrentIndex(searchindex)
-            self.FilterChanged(1, 3)
-        #filtre2_3
-        searchindex = self.Filter2_ComboBox_3.findText(self.ms.settingsdict['custplot_filter2_3'])
-        if searchindex >= 0:
-            self.Filter2_ComboBox_3.setCurrentIndex(searchindex)
-            self.FilterChanged(2, 3) 
-        #filtre1_1_selection
-        for index in xrange(self.Filter1_QListWidget_1.count()):
-            for item in self.ms.settingsdict['custplot_filter1_1_selection']:
-                if self.Filter1_QListWidget_1.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
-                     self.Filter1_QListWidget_1.item(index).setSelected(True)
-        #filtre2_1_selection
-        for index in xrange(self.Filter2_QListWidget_1.count()):
-            for item in self.ms.settingsdict['custplot_filter2_1_selection']:
-                if self.Filter2_QListWidget_1.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
-                     self.Filter2_QListWidget_1.item(index).setSelected(True)
-        #filtre1_2_selection
-        for index in xrange(self.Filter1_QListWidget_2.count()):
-            for item in self.ms.settingsdict['custplot_filter1_2_selection']:
-                if self.Filter1_QListWidget_2.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
-                     self.Filter1_QListWidget_2.item(index).setSelected(True)
-        #filtre2_2_selection
-        for index in xrange(self.Filter2_QListWidget_2.count()):
-            for item in self.ms.settingsdict['custplot_filter2_2_selection']:
-                if self.Filter2_QListWidget_2.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
-                     self.Filter2_QListWidget_2.item(index).setSelected(True)
-        #filtre1_3_selection
-        for index in xrange(self.Filter1_QListWidget_3.count()):
-            for item in self.ms.settingsdict['custplot_filter1_3_selection']:
-                if self.Filter1_QListWidget_3.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
-                     self.Filter1_QListWidget_3.item(index).setSelected(True)
-        #filtre2_3_selection
-        for index in xrange(self.Filter2_QListWidget_3.count()):
-            for item in self.ms.settingsdict['custplot_filter2_3_selection']:
-                if self.Filter2_QListWidget_3.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
-                     self.Filter2_QListWidget_3.item(index).setSelected(True)
+
+        filter_tuples = [(self.Filter1_ComboBox_1, 'custplot_filter1_1', 1, 1),
+                         (self.Filter2_ComboBox_1, 'custplot_filter2_1', 2, 1),
+                         (self.Filter1_ComboBox_2, 'custplot_filter1_2', 1, 2),
+                         (self.Filter2_ComboBox_2, 'custplot_filter2_2', 2, 2),
+                         (self.Filter1_ComboBox_3, 'custplot_filter1_3', 1, 3),
+                         (self.Filter2_ComboBox_3, 'custplot_filter2_3', 2, 3)]
+
+        for filter_combobox, custplot_filter, filterno1, filterno2 in filter_tuples:
+            self.set_filters(filter_combobox, custplot_filter, filterno1, filterno2)
+
+        filter_selection_tuples = [(self.Filter1_QListWidget_1, 'custplot_filter1_1_selection'),
+                                   (self.Filter2_QListWidget_1, 'custplot_filter2_1_selection'),
+                                   (self.Filter1_QListWidget_2, 'custplot_filter1_2_selection'),
+                                   (self.Filter2_QListWidget_2, 'custplot_filter2_2_selection'),
+                                   (self.Filter1_QListWidget_3, 'custplot_filter1_3_selection'),
+                                   (self.Filter2_QListWidget_3, 'custplot_filter2_3_selection')]
+
+        for filter_qlistwidget, custplot_filter_selection in filter_selection_tuples:
+            self.filter_selections(filter_qlistwidget, custplot_filter_selection)
+
         #plottype1
         searchindex = self.PlotType_comboBox_1.findText(self.ms.settingsdict['custplot_plottype1'])
         if searchindex >= 0:
@@ -438,6 +383,32 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.Grid_checkBox.setChecked(True)
         else:
             self.Grid_checkBox.setChecked(False)
+
+    def set_last_selection(self, table_combobox, xcol_combobox, ycol_combobox, custplot_table, custplot_xcol, custplot_ycol, table_changed):
+        searchindex = table_combobox.findText(self.ms.settingsdict[custplot_table])
+        if searchindex >= 0:
+            table_combobox.setCurrentIndex(searchindex)
+            table_changed()
+            searchindex = xcol_combobox.findText(self.ms.settingsdict[custplot_xcol])
+            if searchindex >= 0:
+                xcol_combobox.setCurrentIndex(searchindex)
+            searchindex = ycol_combobox.findText(self.ms.settingsdict[custplot_ycol])
+            if searchindex >= 0:
+                ycol_combobox.setCurrentIndex(searchindex)
+
+    def set_filters(self, filter_combobox, custplot_filter, filterno1, filterno2):
+        #filtre1_1
+        searchindex = filter_combobox.findText(self.ms.settingsdict[custplot_filter])
+        if searchindex >= 0:
+            filter_combobox.setCurrentIndex(searchindex)
+            self.FilterChanged(filterno1, filterno2)
+
+    def filter_selections(self, filter_qlistwidget, custplot_filter_selection):
+        #filtre1_1_selection
+        for index in xrange(filter_qlistwidget.count()):
+            for item in self.ms.settingsdict[custplot_filter_selection]:
+                if filter_qlistwidget.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
+                     filter_qlistwidget.item(index).setSelected(True)
             
     def LoadTablesFromDB( self ):    # Open the SpatiaLite file to extract info about tables 
         self.table_ComboBox_1.clear()  
@@ -567,7 +538,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
     def refreshPlot( self ):
         self.storesettings()    #all custom plot related settings are stored when plotting data (or pressing "redraw")
-        self.axes.legend_=None
         datemin = self.spnMinX.dateTime().toPyDateTime()
         datemax = self.spnMaxX.dateTime().toPyDateTime()
         if datemin == datemax: #xaxis-limits
@@ -579,7 +549,9 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         else:
             self.axes.set_ylim(min(self.spnMaxY.value(), self.spnMinY.value()),max(self.spnMaxY.value(), self.spnMinY.value()))            
         self.axes.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))#yaxis-format
-        self.custplotfigure.autofmt_xdate()#xaxis-format
+        self.axes.xaxis.set_major_formatter(self.xaxis_formatters[0])
+        self.axes.xaxis.set_major_locator(self.xaxis_formatters[1])
+
         self.axes.grid(self.Grid_checkBox.isChecked() )#grid
         if not self.title_QLineEdit.text()=='':#title
             self.axes.set_title(self.title_QLineEdit.text())
@@ -587,28 +559,36 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.axes.set_xlabel(self.xtitle_QLineEdit.text())
         if not self.ytitle_QLineEdit.text()=='':#yaxis label
             self.axes.set_ylabel(self.ytitle_QLineEdit.text())
+
         for label in self.axes.xaxis.get_ticklabels():
             label.set_fontsize(10)
+            try:
+                label.set_rotation(10)
+            except:
+                pass
         for label in self.axes.yaxis.get_ticklabels():
             label.set_fontsize(10)
+
         # finally, the legend
         if self.Legend_checkBox.isChecked():
-            if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
-                leg = self.axes.legend(self.p, self.plabels)
-            else:
-                leg = self.axes.legend(self.p, self.plabels, bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
+            if self.axes.legend_ is None:
+                if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
+                    leg = self.axes.legend(self.p, self.plabels)
+                else:
+                    leg = self.axes.legend(self.p, self.plabels, bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
+            #else:
+            leg = self.axes.legend()
             leg.draggable(state=True)
-            frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
-            frame.set_facecolor('1')    # set the frame face color to white                
-            frame.set_fill(False)    # set the frame face color to white                
+            frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
+            frame.set_facecolor('1')    # set the frame face color to white
+            frame.set_fill(False)    # set the frame face color to white
             for t in leg.get_texts():
                 t.set_fontsize(10)    # the legend text fontsize
         else:
-            self.axes.legend_=None
+            self.axes.legend_ = None
 
-        self.custplotfigure.autofmt_xdate()
         self.canvas.draw()
-        plt.close(self.custplotfigure)#this closes reference to self.custplotfigure 
+        plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
 
     def storesettings(self):
         self.ms.settingsdict['custplot_table1'] = unicode(self.table_ComboBox_1.currentText())
