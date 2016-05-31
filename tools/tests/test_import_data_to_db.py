@@ -783,7 +783,7 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     answer_no_obj.result = 0
                     answer_yes_obj = MockUsingReturnValue(None)
                     answer_yes_obj.result = 1
-                    mock_askuser = MockReturnUsingDictIn({u'Do you want to confirm': answer_no_obj, u'Do you want to import': answer_yes_obj, u'It is a strong recommendation': answer_no_obj}, 1)
+                    mock_askuser = MockReturnUsingDictIn({u'Do you want to confirm': answer_no_obj, u'Do you want to import': answer_no_obj, u'It is a strong recommendation': answer_no_obj}, 1)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', TestWlvllogImportFromDiverofficeFiles.mock_dbpath.get_v)
                     @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
@@ -800,8 +800,6 @@ class TestWlvllogImportFromDiverofficeFiles(object):
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, -1010.0, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, -1001.0, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, -1020.0, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, -1002.0, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, -1030.0, None)])'''
-                    print("Filter dates:\n")
-                    print(test_string)
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
@@ -835,7 +833,7 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     answer_no_obj.result = 0
                     answer_yes_obj = MockUsingReturnValue(None)
                     answer_yes_obj.result = 1
-                    mock_askuser = MockReturnUsingDictIn({u'Do you want to confirm': answer_no_obj, u'Do you want to import': answer_no_obj, u'It is a strong recommendation': answer_no_obj}, 1)
+                    mock_askuser = MockReturnUsingDictIn({u'Do you want to confirm': answer_no_obj, u'Do you want to import': answer_yes_obj, u'It is a strong recommendation': answer_no_obj}, 1)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', TestWlvllogImportFromDiverofficeFiles.mock_dbpath.get_v)
                     @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
@@ -852,8 +850,6 @@ class TestWlvllogImportFromDiverofficeFiles(object):
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, -1000.0, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, -1010.0, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, -1001.0, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, -1020.0, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, -1002.0, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, -1030.0, None)])'''
-                    print("All dates:\n")
-                    print(test_string)
                     assert test_string == reference_string
 
 
