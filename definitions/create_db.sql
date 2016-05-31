@@ -156,7 +156,7 @@ insert into about_db values('zz_w_qual_field_parameters', 'explanation', 'text',
 insert into about_db values('zz_w_qual_field_parameter_groups', '*', '', '', '', '', '', 'data domain connecting water quality field parameters to groups used by FieldLogger', '', '');
 insert into about_db values('zz_w_qual_field_parameter_groups', 'parameter', 'text', '1', '', '1', 'zz_w_qual_field_parameters(parameter)', 'data domain connecting water quality field parameters to groups used by FieldLogger', '', '');
 insert into about_db values('zz_w_qual_field_parameter_groups', 'unit', 'text', '', '', '1', 'zz_w_qual_field_parameters(unit)', 'data domain connecting water quality field parameters to groups used by FieldLogger', '', '');
-insert into about_db values('zz_w_qual_field_parameter_groups', 'group', 'text', '1', '', '1', '', 'data domain connecting water quality field parameters to groups used by FieldLogger. Should have values quality or sample', '', '');
+insert into about_db values('zz_w_qual_field_parameter_groups', 'groupname', 'text', '1', '', '1', '', 'data domain connecting water quality field parameters to groups used by FieldLogger. Should have values quality or sample', '', '');
 create table "obs_points" ( "obsid" text not null, "name" text, "place" text, "type" text, "length" double, "drillstop" text, "diam" double, "material" text, "screen" text, "capacity" text, "drilldate" text, "wmeas_yn" integer, "wlogg_yn" integer, "east" double, "north" double, "ne_accur" double, "ne_source" text,  "h_toc" double, "h_tocags" double, "h_gs" double, "h_accur" double, "h_syst" text, "h_source" text, "source" text, "com_onerow" text, "com_html" text, primary key (obsid));
 SELECT AddGeometryColumn("obs_points", "geometry", CHANGETORELEVANTEPSGID, "POINT", "XY", 0);
 create table "obs_lines" ("obsid" text  not null, name text, place text, type text, source text, primary key (obsid));
@@ -199,6 +199,6 @@ CREATE INDEX idx_wqualfield_odtpu ON w_qual_field(obsid, date_time, parameter, u
 CREATE TABLE "comments" ("obsid" text not null, "date_time" text not null, "comment" text not null, "staff" text not null, primary key("obsid", "date_time"), foreign key(obsid) references obs_points(obsid), foreign key(staff) references zz_staff(staff));
 CREATE TABLE "zz_staff" ("staff" text not null, "name" text, primary key("staff"));
 CREATE TABLE "zz_w_qual_field_parameters" ("parameter" text not null, "shortname", "unit" text, "explanation" text, primary key ("parameter", "unit"));
-CREATE TABLE "zz_w_qual_field_parameter_groups" ("parameter" text not null, "unit" text, "group" text not null, primary key ("parameter", "unit", "group"), foreign key(parameter, unit) references zz_w_qual_field_parameters("parameter", "unit"));
+CREATE TABLE "zz_w_qual_field_parameter_groups" ("parameter" text not null, "unit" text, "groupname" text not null, primary key ("parameter", "unit", "groupname"), foreign key(parameter, unit) references zz_w_qual_field_parameters("parameter", "unit"));
 
 
