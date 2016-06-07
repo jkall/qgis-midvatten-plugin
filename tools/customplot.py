@@ -573,8 +573,17 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         for label in self.axes.yaxis.get_ticklabels():
             label.set_fontsize(10)
 
-        # finally, the legend
+        #The legend
         if self.Legend_checkBox.isChecked():
+            #Here a private _bbox is used. This could malfunction for other versions of matplotlib possibly.
+            leg = self.axes.legend_
+            utils.pop_up_info("Legend: " + str(leg))
+            if leg is not None:
+                bbox_bounds = leg.get_bbox_to_anchor()._bbox.bounds
+                utils.pop_up_info("bounds: " + str(bbox_bounds))
+                #self.spnLegX.setValue(bbox_bounds[0])
+                #self.spnLegY.setValue(bbox_bounds[1])
+
             if self.axes.legend_ is None:
                 if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
                     leg = self.axes.legend(self.p, self.plabels)
@@ -591,8 +600,14 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             frame.set_fill(False)    # set the frame face color to white
             for t in leg.get_texts():
                 t.set_fontsize(10)    # the legend text fontsize
+
+            bbox_bounds = self.axes.legend_.get_bbox_to_anchor()._bbox.bounds
+            utils.pop_up_info("bounds: " + str(bbox_bounds))
+
         else:
             self.axes.legend_ = None
+
+
 
         self.canvas.draw()
         plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
