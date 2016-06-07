@@ -56,6 +56,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.LastSelections()#fill comboboxes etc with last selected values
         #on close:
         #del self.axes.collections[:]#this should delete all plot objects related to axes and hence not intefere with following tsplots
+        self.drawn = False
         
     def initUI(self):
         self.table_ComboBox_1.clear()  
@@ -255,6 +256,12 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
         self.xaxis_formatters = (self.axes.xaxis.get_major_formatter(), self.axes.xaxis.get_major_locator())
 
+        self.axes.set_title(self.ms.settingsdict['custplot_title'])
+        self.axes.set_xlabel(self.ms.settingsdict['custplot_xtitle'])
+        self.axes.set_ylabel(self.ms.settingsdict['custplot_ytitle'])
+
+        self.drawn = True
+
         self.refreshPlot()
 
         QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
@@ -369,12 +376,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.PlotType_comboBox_3.setCurrentIndex(searchindex)
         #max time step, titles, grid, legend
         self.spnmaxtstep.setValue(self.ms.settingsdict['custplot_maxtstep'])
-        if len(self.ms.settingsdict['custplot_title'])>0:
-            self.title_QLineEdit.setText(self.ms.settingsdict['custplot_title'])
-        if len(self.ms.settingsdict['custplot_xtitle'])>0:
-            self.xtitle_QLineEdit.setText(self.ms.settingsdict['custplot_xtitle'])
-        if len(self.ms.settingsdict['custplot_ytitle'])>0:
-            self.ytitle_QLineEdit.setText(self.ms.settingsdict['custplot_ytitle'])
+
         if self.ms.settingsdict['custplot_legend']==2:
             self.Legend_checkBox.setChecked(True)
         else:
@@ -537,6 +539,10 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             getattr(self, QListWidgetname).addItem(item)
 
     def refreshPlot( self ):
+        #If the user has not pressed "draw" before, do nothing
+        if not self.drawn:
+            return None
+
         self.storesettings()    #all custom plot related settings are stored when plotting data (or pressing "redraw")
         datemin = self.spnMinX.dateTime().toPyDateTime()
         datemax = self.spnMaxX.dateTime().toPyDateTime()
@@ -553,12 +559,10 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.axes.xaxis.set_major_locator(self.xaxis_formatters[1])
 
         self.axes.grid(self.Grid_checkBox.isChecked() )#grid
-        if not self.title_QLineEdit.text()=='':#title
-            self.axes.set_title(self.title_QLineEdit.text())
-        if not self.xtitle_QLineEdit.text()=='':#xaxis label
-            self.axes.set_xlabel(self.xtitle_QLineEdit.text())
-        if not self.ytitle_QLineEdit.text()=='':#yaxis label
-            self.axes.set_ylabel(self.ytitle_QLineEdit.text())
+
+        self.ms.settingsdict['custplot_title'] = self.axes.get_title()
+        self.ms.settingsdict['custplot_xtitle'] = self.axes.get_xlabel()
+        self.ms.settingsdict['custplot_ytitle'] = self.axes.get_ylabel()
 
         for label in self.axes.xaxis.get_ticklabels():
             label.set_fontsize(10)
@@ -633,8 +637,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.ms.settingsdict['custplot_maxtstep'] = self.spnmaxtstep.value()
         self.ms.settingsdict['custplot_legend']=self.Legend_checkBox.checkState()
         self.ms.settingsdict['custplot_grid']=self.Grid_checkBox.checkState()
-        self.ms.settingsdict['custplot_title'] = unicode(self.title_QLineEdit.text())
-        self.ms.settingsdict['custplot_xtitle'] = unicode(self.xtitle_QLineEdit.text())
-        self.ms.settingsdict['custplot_ytitle'] = unicode(self.ytitle_QLineEdit.text())
+        self.ms.settingsdict['custplot_title'] = unicode(self.axes.get_title())
+        self.ms.settingsdict['custplot_xtitle'] = unicode(self.axes.get_xlabel())
+        self.ms.settingsdict['custplot_ytitle'] = unicode(self.axes.get_ylabel())
         self.ms.settingsdict['custplot_tabwidget'] = self.tabWidget.currentIndex()
         self.ms.save_settings()
