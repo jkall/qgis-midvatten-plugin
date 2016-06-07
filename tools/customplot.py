@@ -576,8 +576,11 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                     leg = self.axes.legend(self.p, self.plabels)
                 else:
                     leg = self.axes.legend(self.p, self.plabels, bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
-            #else:
-            leg = self.axes.legend()
+            else:
+                if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
+                    leg = self.axes.legend()
+                else:
+                    leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
             leg.draggable(state=True)
             frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
             frame.set_facecolor('1')    # set the frame face color to white
