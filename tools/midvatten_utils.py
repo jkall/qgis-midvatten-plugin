@@ -1065,27 +1065,27 @@ def sql_to_parameters_units_tuple(sql):
     parameters = tuple([(k, tuple(v)) for k, v in sorted(parameters_dict.iteritems())])
     return parameters
 
-def scale_nparray_column(table, column, factor):
+def scale_nparray(x, a=1, b=0):
     """
+    Scales a 1d numpy array using linear equation
+    :param x: A numpy 1darray, x in y=kx+m
+    :param a: k in y=ax+b
+    :param b: m in y=ax+b
+    :return: A numpy 1darray, y in y=ax+b
 
-    :param table:
-    :param column:
-    :param factor:
-    :return:
-
-    #These look identical, but fore some reason isn't for the doctest.
-    #>>> scale_nparray_column(np.array([('2016', 1), ('2017', 2)], dtype=[('d', datetime.datetime), ('v', float)]), 1, 10)
-    #array([('2016', 10.0), ('2017', 20.0)],\n          dtype=[('d', 'O'), ('v', '<f8')])
+    >>> scale_nparray(np.array([2,3,1,0]), b=10)
+    array([12, 13, 11, 10])
+    array([12, 13, 11, 10])
+    >>> scale_nparray(np.array([2,3,1,0]), b=10, a=4)
+    array([18, 22, 14, 10])
+    >>> scale_nparray(np.array([2,3,1,0]), 2)
+    array([4, 6, 2, 0])
+    >>> scale_nparray(np.array([2,3,1,0]), 2, -5)
+    array([-1,  1, -3, -5])
+    >>> scale_nparray(np.array([2,3,1,0]), -2, -5)
+    array([ -9, -11,  -7,  -5])
     """
-    scaled = copy.deepcopy(table)
-    if factor != 1:
-        try:
-            for x in scaled:
-                v = x[column] * factor
-                x[column] *= factor
-        except:
-            pass
-        else:
-            table = scaled
-    return table
+    return a * copy.deepcopy(x) + b
+
+
 
