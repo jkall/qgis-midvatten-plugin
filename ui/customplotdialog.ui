@@ -26,6 +26,15 @@
           </item>
           <item>
            <widget class="QTabWidget" name="tabWidget">
+            <property name="toolTip">
+             <string notr="true"/>
+            </property>
+            <property name="statusTip">
+             <string notr="true"/>
+            </property>
+            <property name="whatsThis">
+             <string notr="true"/>
+            </property>
             <property name="currentIndex">
              <number>0</number>
             </property>
@@ -442,13 +451,71 @@
                <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0">
                 <item>
                  <widget class="QLabel" name="label_11">
+                  <property name="toolTip">
+                   <string notr="true" comment="a in y=ax+b" extracomment="a in y=ax+b"/>
+                  </property>
+                  <property name="statusTip">
+                   <string comment="a in y=ax+b" extracomment="a in y=ax+b"/>
+                  </property>
+                  <property name="whatsThis">
+                   <string notr="true" comment="a in y=ax+b" extracomment="a in y=ax+b"/>
+                  </property>
                   <property name="text">
-                   <string>Y-axis  scaling factor</string>
+                   <string>y scaling factor (gain)</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="lineEditFactor1"/>
+                 <widget class="QDoubleSpinBox" name="doubleSpinBoxFactor1">
+                  <property name="toolTip">
+                   <string extracomment="a in y=ax+b"/>
+                  </property>
+                  <property name="whatsThis">
+                   <string extracomment="a in y=ax+b"/>
+                  </property>
+                  <property name="minimum">
+                   <double>-999999999.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>999999999.000000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>1.000000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="8" column="0">
+               <layout class="QHBoxLayout" name="horizontalLayout_11">
+                <item>
+                 <widget class="QLabel" name="label_14">
+                  <property name="toolTip">
+                   <string extracomment="b in y=ax+b"/>
+                  </property>
+                  <property name="whatsThis">
+                   <string extracomment="b in y=ax+b"/>
+                  </property>
+                  <property name="text">
+                   <string>y offset</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="doubleSpinBoxOffset1">
+                  <property name="toolTip">
+                   <string extracomment="b in y=ax+b"/>
+                  </property>
+                  <property name="whatsThis">
+                   <string extracomment="b in y=ax+b"/>
+                  </property>
+                  <property name="minimum">
+                   <double>-999999999.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>999999999.000000000000000</double>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </item>
@@ -868,12 +935,43 @@
                 <item>
                  <widget class="QLabel" name="label_12">
                   <property name="text">
-                   <string>Y-axis  scaling factor</string>
+                   <string>y scaling factor (gain)</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="lineEditFactor2"/>
+                 <widget class="QDoubleSpinBox" name="doubleSpinBoxFactor2">
+                  <property name="minimum">
+                   <double>-999999999.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>999999999.000000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>1.000000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="4" column="0">
+               <layout class="QHBoxLayout" name="horizontalLayout_12">
+                <item>
+                 <widget class="QLabel" name="label_15">
+                  <property name="text">
+                   <string>y offset</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="doubleSpinBoxOffset2">
+                  <property name="minimum">
+                   <double>-999999999.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>999999999.000000000000000</double>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </item>
@@ -1293,12 +1391,43 @@
                 <item>
                  <widget class="QLabel" name="label_13">
                   <property name="text">
-                   <string>Y-axis  scaling factor</string>
+                   <string>y scaling factor (gain)</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="lineEditFactor3"/>
+                 <widget class="QDoubleSpinBox" name="doubleSpinBoxFactor3">
+                  <property name="minimum">
+                   <double>-999999999.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>999999999.000000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>1.000000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="4" column="0">
+               <layout class="QHBoxLayout" name="horizontalLayout_13">
+                <item>
+                 <widget class="QLabel" name="label_16">
+                  <property name="text">
+                   <string>y offset</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="doubleSpinBoxOffset3">
+                  <property name="minimum">
+                   <double>-999999999.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>999999999.000000000000000</double>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </item>
