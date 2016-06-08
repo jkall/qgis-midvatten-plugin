@@ -466,21 +466,12 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBoxFactor1">
+                 <widget class="QLineEdit" name="LineEditFactor1">
                   <property name="toolTip">
                    <string>a in y=ax+b</string>
                   </property>
-                  <property name="whatsThis">
-                   <string/>
-                  </property>
-                  <property name="minimum">
-                   <double>-999999999.000000000000000</double>
-                  </property>
-                  <property name="maximum">
-                   <double>999999999.000000000000000</double>
-                  </property>
-                  <property name="value">
-                   <double>1.000000000000000</double>
+                  <property name="text">
+                   <string>1</string>
                   </property>
                  </widget>
                 </item>
@@ -502,18 +493,12 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBoxOffset1">
+                 <widget class="QLineEdit" name="LineEditOffset1">
                   <property name="toolTip">
                    <string>b in y=ax+b</string>
                   </property>
-                  <property name="whatsThis">
-                   <string/>
-                  </property>
-                  <property name="minimum">
-                   <double>-999999999.000000000000000</double>
-                  </property>
-                  <property name="maximum">
-                   <double>999999999.000000000000000</double>
+                  <property name="text">
+                   <string>0</string>
                   </property>
                  </widget>
                 </item>
@@ -943,18 +928,12 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBoxFactor2">
+                 <widget class="QLineEdit" name="LineEditFactor2">
                   <property name="toolTip">
                    <string>a in y=ax+b</string>
                   </property>
-                  <property name="minimum">
-                   <double>-999999999.000000000000000</double>
-                  </property>
-                  <property name="maximum">
-                   <double>999999999.000000000000000</double>
-                  </property>
-                  <property name="value">
-                   <double>1.000000000000000</double>
+                  <property name="text">
+                   <string>1</string>
                   </property>
                  </widget>
                 </item>
@@ -973,15 +952,12 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBoxOffset2">
+                 <widget class="QLineEdit" name="LineEditOffset2">
                   <property name="toolTip">
                    <string>b in y=ax+b</string>
                   </property>
-                  <property name="minimum">
-                   <double>-999999999.000000000000000</double>
-                  </property>
-                  <property name="maximum">
-                   <double>999999999.000000000000000</double>
+                  <property name="text">
+                   <string>0</string>
                   </property>
                  </widget>
                 </item>
@@ -1411,18 +1387,12 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBoxFactor3">
+                 <widget class="QLineEdit" name="LineEditFactor3">
                   <property name="toolTip">
                    <string>a in y=ax+b</string>
                   </property>
-                  <property name="minimum">
-                   <double>-999999999.000000000000000</double>
-                  </property>
-                  <property name="maximum">
-                   <double>999999999.000000000000000</double>
-                  </property>
-                  <property name="value">
-                   <double>1.000000000000000</double>
+                  <property name="text">
+                   <string>1</string>
                   </property>
                  </widget>
                 </item>
@@ -1441,15 +1411,12 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBoxOffset3">
+                 <widget class="QLineEdit" name="LineEditOffset3">
                   <property name="toolTip">
                    <string>b in y=ax+b</string>
                   </property>
-                  <property name="minimum">
-                   <double>-999999999.000000000000000</double>
-                  </property>
-                  <property name="maximum">
-                   <double>999999999.000000000000000</double>
+                  <property name="text">
+                   <string>0</string>
                   </property>
                  </widget>
                 </item>
