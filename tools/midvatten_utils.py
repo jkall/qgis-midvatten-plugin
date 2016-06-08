@@ -1075,7 +1075,6 @@ def scale_nparray(x, a=1, b=0):
 
     >>> scale_nparray(np.array([2,3,1,0]), b=10)
     array([12, 13, 11, 10])
-    array([12, 13, 11, 10])
     >>> scale_nparray(np.array([2,3,1,0]), b=10, a=4)
     array([18, 22, 14, 10])
     >>> scale_nparray(np.array([2,3,1,0]), 2)
