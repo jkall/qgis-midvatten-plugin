@@ -30,6 +30,7 @@ import datetime
 import copy
 import qgis.utils
 import sys
+import locale
 import os
 import math
 import numpy as np
@@ -858,7 +859,7 @@ def select_files(only_one_file=True, extension="csv (*.csv)", should_ask_for_cha
         charsetchoosen = 'nocharsetchosen'
     if charsetchoosen and not (charsetchoosen[0]==0 or charsetchoosen[0]==''):
         if only_one_file:
-            csvpath = QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)
+            csvpath = [QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)]
         else:
             csvpath = QtGui.QFileDialog.getOpenFileNames(None, "Select Files","", extension)
         return csvpath, charsetchoosen

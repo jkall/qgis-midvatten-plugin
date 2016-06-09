@@ -338,6 +338,22 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             staff = metadata.get(u'provtagare', None)
             date_time = datetime.strftime(datestring_to_date(u' '.join([metadata[u'provtagningsdatum'], metadata[u'provtagningstid']])), u'%Y-%m-%d %H:%M:%S')
             meta_comment = metadata.get(u'kommentar', None)
+            additional_meta_comments = [u'provtagningsorsak',
+                                        u'provtyp',
+                                        u'provtypspecifikation',
+                                        u'bedömning',
+                                        u'kemisk bedömning',
+                                        u'mikrobiologisk bedömning',
+                                        u'mätvärdetalanm',
+                                        u'rapporteringsgräns',
+                                        u'detektionsgräns',
+                                        u'mätosäkerhet',
+                                        u'mätvärdespår',
+                                        u'parameterbedömning']
+            #Only keep the comments that really has a value.
+            more_meta_comments = u'. '.join([u': '.join([_x, metadata[_x]]) for _x in [_y for _y in additional_meta_comments if _y in metadata]  if all([metadata[_x], metadata[_x] is not None])])
+            if not more_meta_comments:
+                more_meta_comments = None
 
             for parameter, parameter_dict in lab_results.iteritems():
                 anameth = parameter_dict.get(u'metodbeteckning', u'')
@@ -349,7 +365,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     reading_txt = reading_num
 
                 unit = parameter_dict[u'enhet']
-                parameter_comment = parameter_dict.get(u'kommentar', u'')
+                parameter_comment = parameter_dict.get(u'kommentar', None)
 
                 file_data.append([obsid,
                                   depth,
@@ -362,7 +378,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                   reading_num,
                                   reading_txt,
                                   unit,
-                                  u'. '.join([comment for comment in [parameter_comment, meta_comment] if comment is not None])]
+                                  u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments] if comment is not None])]
                                  )
         return file_data
 
