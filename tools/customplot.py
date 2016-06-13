@@ -89,6 +89,16 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.layoutplot.addWidget( self.canvas )
         self.layoutplot.addWidget( self.mpltoolbar )
 
+        #Validator for QlineEdit that should contain only floats, any number of decimals with either point(.) or comma(,) as a decimal separater
+        regexp = QtCore.QRegExp('[+-]?\\d*[\\.,]?\\d+') 
+        validator = QtGui.QRegExpValidator(regexp)
+        self.LineEditFactor1.setValidator(validator)
+        self.LineEditFactor2.setValidator(validator)
+        self.LineEditFactor3.setValidator(validator)
+        self.LineEditOffset1.setValidator(validator)
+        self.LineEditOffset2.setValidator(validator)
+        self.LineEditOffset3.setValidator(validator)
+        
         self.show()
 
     def calc_frequency(self,table2):
@@ -136,11 +146,11 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.p.extend([None]*nop)#list for plot objects
             self.plabels.extend([None]*nop)# List for plot labels
             try:
-                factor1 = float(self.doubleSpinBoxFactor1.value())
+                factor1 = float(self.LineEditFactor1.text().replace(',','.'))
             except ValueError:
                 factor1 = 1.0
             try:
-                offset1 = float(self.doubleSpinBoxOffset1.value())
+                offset1 = float(self.LineEditOffset1.text().replace(',','.'))
             except ValueError:
                 offset1 = 0.0
 
@@ -183,11 +193,11 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.p.extend([None]*nop)#list for plot objects
             self.plabels.extend([None]*nop)# List for plot labels
             try:
-                factor2 = float(self.doubleSpinBoxFactor2.value())
+                factor2 = float(self.LineEditFactor2.text().replace(',','.'))
             except ValueError:
                 factor2 = 1.0
             try:
-                offset2 = float(self.doubleSpinBoxOffset2.value())
+                offset2 = float(self.LineEditOffset2.text().replace(',','.'))
             except ValueError:
                 offset2 = 0.0
 
@@ -230,11 +240,11 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.p.extend([None]*nop)#list for plot objects
             self.plabels.extend([None]*nop)# List for plot labels
             try:
-                factor3 = float(self.doubleSpinBoxFactor3.value())
+                factor3 = float(self.LineEditFactor3.text().replace(',','.'))
             except ValueError:
                 factor3 = 1.0
             try:
-                offset3 = float(self.doubleSpinBoxOffset3.value())
+                offset3 = float(self.LineEditOffset3.text().replace(',','.'))
             except ValueError:
                 offset3 = 0.0
 

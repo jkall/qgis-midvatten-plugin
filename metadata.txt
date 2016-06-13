@@ -3,7 +3,7 @@
 name=Midvatten
 qgisMinimumVersion=2.4
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.3.4
+version=Version 1.3.6
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 
@@ -24,8 +24,10 @@ changelog=
         - multiple import of logger files from diver office software
         - improved calibration feature for water level from loggers
         - on-the-fly conversion from pulse counts to frequency in the custom plot
+        - on-the-fly scaling (gain) and offset for y-values in the custom plot
         - stratigraphy units, plot color and symbols are now editable by the user, so is also the water capacity (as given in stratigraphy table)
         - some database design changes (some new tables and more)
+        - work-around in custom plot to fix xaxis date-time format when using  the matplotlib "figure options" to change labels and curves
         - from now the plugin needs spatialite 4
         Version 1.3.3
         - bugfix
