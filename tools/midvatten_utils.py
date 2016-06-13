@@ -867,12 +867,17 @@ def select_files(only_one_file=True, extension="csv (*.csv)", should_ask_for_cha
         csvpath = [p for p in csvpath if p]
         return csvpath, charsetchoosen
 
-def ask_for_charset():
+def ask_for_charset(default_enchoding=None):
     try:#MacOSX fix2
         localencoding = locale.getdefaultlocale()[1]
-        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
+        if default_enchoding is None:
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
+        else:
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,default_enchoding)
     except:
-        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,'utf-8')
+        if default_enchoding is None:
+            default_enchoding = 'utf-8'
+        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,default_enchoding)
     return str(charsetchoosen[0])
 
 def lists_to_string(alist_of_lists):

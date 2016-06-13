@@ -163,11 +163,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return u'cancel'
 
         wquallab_data_table = self.interlab4_to_table(all_lab_results)
-
-        self.send_file_data_to_importer(wquallab_data_table, self.wquallab_import_from_csvlayer, self.check_obsids)
-
-        self.SanityCheckVacuumDB()
-        #"obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        if not wquallab_data_table == u'error':
+            self.send_file_data_to_importer(wquallab_data_table, self.wquallab_import_from_csvlayer, self.check_obsids)
+            self.SanityCheckVacuumDB()
 
     def parse_interlab4(self, filenames=None):
         """ Reads the interlab
@@ -307,7 +305,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             try:
                 with io.open(filename, 'r', encoding=test_encoding) as f:
                     for rawrow in f:
-                        if 'tecken' in rawrow.lower():
+                        if '#tecken=' in rawrow.lower():
                             row = rawrow.lstrip('#').rstrip('\n').lower()
                             cols = row.split('=')
                             encoding = cols[1]
@@ -318,7 +316,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 continue
 
         if encoding is None:
-            encoding = utils.ask_for_charset()
+            encoding = utils.ask_for_charset('utf-16')
 
         #Parse the filedescriptor
         with io.open(filename, 'r', encoding=encoding) as f:
@@ -360,7 +358,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         for lablittera, lab_results in data_dict.iteritems():
             metadata = lab_results.pop(u'metadata')
 
-            obsid = metadata[u'provplatsid']
+            try:
+                obsid = metadata[u'provplatsid']
+            except KeyError, e:
+                qgis.utils.iface.messageBar().pushMessage('Interlab4 import error: There was no obsid present in the file. Check Provadm column "ProvplatsID"')
+                return u'error'
             depth = None
             report = lablittera
             project = metadata.get(u'projekt', None)
