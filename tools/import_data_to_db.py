@@ -163,11 +163,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return u'cancel'
 
         wquallab_data_table = self.interlab4_to_table(all_lab_results)
-
-        self.send_file_data_to_importer(self, wquallab_data_table, self.wquallab_import_from_csvlayer, self.check_obsids)
-
-        self.SanityCheckVacuumDB()
-        #"obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        if not wquallab_data_table == u'error':
+            self.send_file_data_to_importer(wquallab_data_table, self.wquallab_import_from_csvlayer, self.check_obsids)
+            self.SanityCheckVacuumDB()
 
     def parse_interlab4(self, filenames=None):
         """ Reads the interlab
@@ -249,11 +247,40 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         data = dict([(data_header[idx], value.lstrip(' ').rstrip(' ')) for idx, value in enumerate(cols) if value.lstrip(' ').rstrip(' ')])
                         if u'mätvärdetal' in data:
                             data[u'mätvärdetal'] = data[u'mätvärdetal'].replace(decimalsign, '.')
-                        #TODO: Something with kalium?
+
+                        if not u'parameter' in data:
+                            utils.pop_up_info("WARNING: Parsing error. The parameter is missing on row " + str(cols))
+                            continue
+
                         if data[u'lablittera'] not in lab_results:
                             utils.pop_up_info("WARNING: Parsing error. Data for " + data['lablittera'] + " read before it's metadata.")
                             file_error = True
                             break
+
+                        """
+                        Kalium (This part is VERY specific to Midvatten data analyses and probably doesn't affect anyone else)
+
+                        Kalium is (in our very specific case) measured using two different methods. A high and a low resolution method.
+                        The lowest value for low resolution method is '<2,5' (in the parameter 'mätvärdetext') and '<1' for the high resolution method.
+                        If two kalium is present, we try to extract the high resolution method and store that one in the database.
+                        If kalium is between 1 and 2,5, the high resolution method will show 1,5 (for example) while the low resolution will show '<2,5'.
+                        If kalium is below 1, they will have values '<2,5' and '<1' in 'mätvärdetext'
+                        If both are above 2,5, there is no good way to separate them. In that case, use the last one.
+                        """
+                        if data[u'parameter'] == u'kalium':
+                            if u'kalium' not in lab_results[data[u'lablittera']]:
+                                #kalium has not been parsed yet. Keep the current one.
+                                pass
+                            else:
+                                if data.get(u'mätvärdetext', u'').strip(u' ') == u'<1' or lab_results[data[u'lablittera']][u'kalium'].get(u'mätvärdetext', u'').strip(u' ').replace(u',', u'.') == u'<2.5':
+                                    #The current one is the high resolution one. Keep it to overwrite the other one.
+                                    pass
+                                elif data.get(u'mätvärdetext', u'').strip(u' ').replace(u',', u'.') == u'<2.5' or lab_results[data[u'lablittera']][u'kalium'].get(u'mätvärdetext', u'').strip(u' ') == u'<1':
+                                    #The current one is the low resolution one, skip it.
+                                    continue
+                                else:
+                                    #Hope that the current one (the last one) is the high resolution one and let it overwrite the existing one
+                                    pass
 
                         lab_results[data[u'lablittera']][data[u'parameter']] = data
 
@@ -278,7 +305,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             try:
                 with io.open(filename, 'r', encoding=test_encoding) as f:
                     for rawrow in f:
-                        if 'tecken' in rawrow.lower():
+                        if '#tecken=' in rawrow.lower():
                             row = rawrow.lstrip('#').rstrip('\n').lower()
                             cols = row.split('=')
                             encoding = cols[1]
@@ -289,7 +316,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 continue
 
         if encoding is None:
-            encoding = utils.ask_for_charset()
+            encoding = utils.ask_for_charset('utf-16')
 
         #Parse the filedescriptor
         with io.open(filename, 'r', encoding=encoding) as f:
@@ -323,33 +350,61 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         """
         data_dict = copy.deepcopy(_data_dict)
-        #Here we must have the conversion of the parsed dict into a table matching w_qual_lab.
-        #All w_qual_lab columns must get a match from interlab4 terms. Maybe some terms should concat to a comment also.
-        # Original dict: {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
 
-        file_data = [[u'obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment']]
+        file_data = [[u'obsid', u'depth', u'report', u'project', u'staff', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment']]
         for lablittera, lab_results in data_dict.iteritems():
             metadata = lab_results.pop(u'metadata')
 
-            obsid = metadata[u'provplatsid']
+            try:
+                obsid = metadata[u'provplatsid']
+            except KeyError, e:
+                qgis.utils.iface.messageBar().pushMessage('Interlab4 import error: There was no obsid present in the file. Check Provadm column "ProvplatsID"')
+                return u'error'
             depth = None
             report = lablittera
             project = metadata.get(u'projekt', None)
             staff = metadata.get(u'provtagare', None)
-            date_time = datetime.strftime(datestring_to_date(u' '.join([metadata[u'provtagningsdatum'], metadata[u'provtagningstid']])), u'%Y-%m-%d %H:%M:%S')
+
+            sampledate = metadata.get(u'provtagningsdatum', None)
+            if sampledate is None:
+                qgis.utils.iface.messageBar().pushMessage('Interlab4 import warning: There was no sample date found (column "provtagningsdatum"). Importing without it.')
+                date_time = None
+            else:
+                sampletime = metadata.get(u'provtagningstid', None)
+                if sampletime is not None:
+                    date_time = datetime.strftime(datestring_to_date(u' '.join([sampledate, sampletime])), u'%Y-%m-%d %H:%M:%S')
+                else:
+                    date_time = datetime.strftime(datestring_to_date(sampledate), u'%Y-%m-%d %H:%M:%S')
+
             meta_comment = metadata.get(u'kommentar', None)
+            additional_meta_comments = [u'provtagningsorsak',
+                                        u'provtyp',
+                                        u'provtypspecifikation',
+                                        u'bedömning',
+                                        u'kemisk bedömning',
+                                        u'mikrobiologisk bedömning',
+                                        u'mätvärdetalanm',
+                                        u'rapporteringsgräns',
+                                        u'detektionsgräns',
+                                        u'mätosäkerhet',
+                                        u'mätvärdespår',
+                                        u'parameterbedömning']
+            #Only keep the comments that really has a value.
+            more_meta_comments = u'. '.join([u': '.join([_x, metadata[_x]]) for _x in [_y for _y in additional_meta_comments if _y in metadata]  if all([metadata[_x], metadata[_x] is not None])])
+            if not more_meta_comments:
+                more_meta_comments = None
 
             for parameter, parameter_dict in lab_results.iteritems():
-                anameth = parameter_dict.get(u'metodbeteckning', u'')
-                reading_num = parameter_dict[u'mätvärdetal']
+                anameth = parameter_dict.get(u'metodbeteckning', None)
+                reading_num = parameter_dict.get(u'mätvärdetal', None)
 
                 try:
                     reading_txt = parameter_dict[u'mätvärdetext']
                 except KeyError:
                     reading_txt = reading_num
 
-                unit = parameter_dict[u'enhet']
-                parameter_comment = parameter_dict.get(u'kommentar', u'')
+                unit = parameter_dict.get(u'enhet', None)
+                parameter_comment = parameter_dict.get(u'kommentar', None)
 
                 file_data.append([obsid,
                                   depth,
@@ -362,7 +417,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                   reading_num,
                                   reading_txt,
                                   unit,
-                                  u'. '.join([comment for comment in [parameter_comment, meta_comment] if comment is not None])]
+                                  u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments] if comment is not None])]
                                  )
         return file_data
 
@@ -1366,9 +1421,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         def get_path(only_one_file):
             if only_one_file:
-                path = [PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")]
+                path = PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")
             else:
                 path = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
+            if not isinstance(path, (list, tuple)):
+                path = [path]
             return path
 
         path = []

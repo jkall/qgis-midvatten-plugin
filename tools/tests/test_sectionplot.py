@@ -38,7 +38,7 @@ from PyQt4 import QtCore
 
 
 
-class _TestSectionPlot(object):
+class TestSectionPlot(object):
     """ The test doesn't go through the whole section plot unfortunately
     """
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'

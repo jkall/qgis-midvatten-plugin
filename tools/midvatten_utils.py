@@ -30,6 +30,7 @@ import datetime
 import copy
 import qgis.utils
 import sys
+import locale
 import os
 import math
 import numpy as np
@@ -861,14 +862,22 @@ def select_files(only_one_file=True, extension="csv (*.csv)", should_ask_for_cha
             csvpath = QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)
         else:
             csvpath = QtGui.QFileDialog.getOpenFileNames(None, "Select Files","", extension)
+        if not isinstance(csvpath, (list, tuple)):
+            csvpath = [csvpath]
+        csvpath = [p for p in csvpath if p]
         return csvpath, charsetchoosen
 
-def ask_for_charset():
+def ask_for_charset(default_enchoding=None):
     try:#MacOSX fix2
         localencoding = locale.getdefaultlocale()[1]
-        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
+        if default_enchoding is None:
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
+        else:
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,default_enchoding)
     except:
-        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,'utf-8')
+        if default_enchoding is None:
+            default_enchoding = 'utf-8'
+        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,default_enchoding)
     return str(charsetchoosen[0])
 
 def lists_to_string(alist_of_lists):
@@ -1075,7 +1084,6 @@ def scale_nparray(x, a=1, b=0):
 
     >>> scale_nparray(np.array([2,3,1,0]), b=10)
     array([12, 13, 11, 10])
-    array([12, 13, 11, 10])
     >>> scale_nparray(np.array([2,3,1,0]), b=10, a=4)
     array([18, 22, 14, 10])
     >>> scale_nparray(np.array([2,3,1,0]), 2)
@@ -1086,6 +1094,3 @@ def scale_nparray(x, a=1, b=0):
     array([ -9, -11,  -7,  -5])
     """
     return a * copy.deepcopy(x) + b
-
-
-

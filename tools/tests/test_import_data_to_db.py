@@ -20,8 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
+#
 
-from import_data_to_db import midv_data_importer
 import utils_for_tests
 import midvatten_utils as utils
 from date_utils import datestring_to_date
@@ -30,19 +30,20 @@ from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from nose.tools import raises
 from mock import mock_open, patch
-from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance, DummyInterface2
+from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance, DummyInterface2, mock_answer
 import mock
 import io
 import midvatten
 import os
 import PyQt4
+from import_data_to_db import midv_data_importer
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class _TestFieldLoggerImporterNoDb():
+class TestFieldLoggerImporterNoDb():
     #flow_instrument_id = MockReturnUsingDict({u'Instrument not found': [u'testid', u'']}, 1)
     instrument_staff_questions = MockReturnUsingDict({u'Submit instrument id': MockNotFoundQuestion(u'ok', u'testid'), u'Submit field staff': MockNotFoundQuestion(u'ok', u'teststaff')}, u'dialogtitle')
     prev_used_flow_instr_ids = MockUsingReturnValue((True, {u'Rb1615': [(u'Accvol', u'Flm01', u'2015-01-01 00:00:00'), (u'Momflow', u'Flm02', u'2016-01-01 00:00:00')]}))
@@ -50,8 +51,6 @@ class _TestFieldLoggerImporterNoDb():
     skip_popup = MockUsingReturnValue('')
     notfound_ok = MockUsingReturnValue(MockNotFoundQuestion(u'ok', u'testvalue'))
     existing_staff = MockUsingReturnValue((True, (u'a', u'b')))
-    answer_yes_obj = MockUsingReturnValue()
-    answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
     answer_no_obj.result = 0
     mock_askuser = MockReturnUsingDictIn({u'Do you want to confirm': answer_no_obj}, 1)
@@ -252,15 +251,12 @@ class _TestFieldLoggerImporterNoDb():
         assert sorted_file_string == sorted_reference_string
 
 
-class _TestFieldLoggerImporterDb(object):
-    answer_yes_obj = MockUsingReturnValue()
-    answer_yes_obj.result = 1
-    answer_no_obj = MockUsingReturnValue()
-    answer_no_obj.result = 0
-    answer_yes = MockUsingReturnValue(answer_yes_obj)
+class TestFieldLoggerImporterDb(object):
+    answer_yes = mock_answer('yes')
+    answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
     mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
 
     @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
@@ -312,13 +308,11 @@ class _TestFieldLoggerImporterDb(object):
 
             instrument_staff_questions = MockReturnUsingDict({u'Submit instrument id': MockNotFoundQuestion(u'ok', u'testid'), u'Submit field staff': MockNotFoundQuestion(u'ok', u'teststaff')}, u'dialogtitle')
             quality_instruments = MockUsingReturnValue((u'instr1', u'instr2', u'instr3'))
-            answer_no_obj = MockUsingReturnValue()
-            answer_no_obj.result = 0
-            answer_yes_obj = MockUsingReturnValue()
-            answer_yes_obj.result = 1
+            answer_yes = mock_answer('yes')
+            answer_no = mock_answer('no')
             answer_shift_date_obj = MockUsingReturnValue()
             answer_shift_date_obj.result = [u'0', u'hours']
-            mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj, u'User input needed': answer_shift_date_obj, u'Do you want to confirm instrument': answer_no_obj}, 1)
+            mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'User input needed': answer_shift_date_obj, u'Do you want to confirm instrument': answer_no.get_v()}, 1)
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
             @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
@@ -410,7 +404,7 @@ class _TestFieldLoggerImporterDb(object):
         assert test_staff == reference_staff
 
 
-class _TestImportWellsFile(object):
+class TestImportWellsFile(object):
 
     def setUp(self):
         self.importinstance = midv_data_importer()
@@ -621,16 +615,13 @@ class TestParseDiverofficeFile(object):
 class TestWlvllogImportFromDiverofficeFiles(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
-    answer_yes_obj = MockUsingReturnValue()
-    answer_yes_obj.result = 1
-    answer_no_obj = MockUsingReturnValue()
-    answer_no_obj.result = 0
-    answer_yes = MockUsingReturnValue(answer_yes_obj)
+    answer_yes = mock_answer('yes')
+    answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
     dbpath_question = MockUsingReturnValue(TEMP_DB_PATH)
     mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
     mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
@@ -829,11 +820,9 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                 with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen[0]) as f3:
 
                     filenames = [f1, f2, f3]
-                    answer_no_obj = MockUsingReturnValue(None)
-                    answer_no_obj.result = 0
-                    answer_yes_obj = MockUsingReturnValue(None)
-                    answer_yes_obj.result = 1
-                    mock_askuser = MockReturnUsingDictIn({u'Do you want to confirm': answer_no_obj, u'Do you want to import': answer_yes_obj, u'It is a strong recommendation': answer_no_obj}, 1)
+                    answer_yes = mock_answer('yes')
+                    answer_no = mock_answer('no')
+                    mock_askuser = MockReturnUsingDictIn({u'Do you want to confirm': answer_no.get_v(), u'Do you want to import': answer_yes.get_v(), u'It is a strong recommendation': answer_no.get_v()}, 1)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', TestWlvllogImportFromDiverofficeFiles.mock_dbpath.get_v)
                     @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
@@ -853,17 +842,14 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     assert test_string == reference_string
 
 
-class _TestDefaultImport(object):
+class TestDefaultImport(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
-    answer_yes_obj = MockUsingReturnValue()
-    answer_yes_obj.result = 1
-    answer_no_obj = MockUsingReturnValue()
-    answer_no_obj.result = 0
-    answer_yes = MockUsingReturnValue(answer_yes_obj)
+    answer_yes = mock_answer('yes')
+    answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
     mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
@@ -1040,7 +1026,7 @@ class _TestDefaultImport(object):
                     assert test_string == reference_string
 
 
-class _TestInterlab4Importer():
+class TestInterlab4Importer():
     def setUp(self):
         self.importinstance = midv_data_importer()
 
@@ -1275,7 +1261,6 @@ class _TestInterlab4Importer():
         assert result_string == reference_string
 
     def test_interlab4_to_table(self):
-        #TODO: Not completed yet
         interlab4_lines = (
             u'#Interlab',
             u'#Version=4.0',
@@ -1297,7 +1282,85 @@ class _TestInterlab4Importer():
         result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, 5, mg/l Pt, ]]'
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, 5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
+        assert result_string == reference_string
+
+    def test_interlab4_to_table_kalium_above_2_5(self):
+        interlab4_lines = (
+            u'#Interlab',
+            u'#Version=4.0',
+            u'#Tecken=UTF-8',
+            u'#Textavgränsare=Nej',
+            u'#Decimaltecken=,',
+            u'#Provadm',
+            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
+            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            u'#Provdat',
+            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;5;5;;mg/l Pt;;;;;;;',
+            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;4;4;;mg/l Pt;;;;;;;',
+            u'#Slut'
+                )
+
+        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
+            parsed_result = self.importinstance.parse_interlab4([testfile])
+
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+
+        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 4, 4, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
+        assert result_string == reference_string
+
+    def test_interlab4_to_table_kalium_between_1_and_2_5(self):
+        interlab4_lines = (
+            u'#Interlab',
+            u'#Version=4.0',
+            u'#Tecken=UTF-8',
+            u'#Textavgränsare=Nej',
+            u'#Decimaltecken=,',
+            u'#Provadm',
+            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
+            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            u'#Provdat',
+            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<2,5;2,5;;mg/l Pt;;;;;;;',
+            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;1,5;1,5;;mg/l Pt;;;;;;;',
+            u'#Slut'
+                )
+
+        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
+            parsed_result = self.importinstance.parse_interlab4([testfile])
+
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+
+        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.5, 1,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
+        assert result_string == reference_string
+
+    def test_interlab4_to_table_kalium_below_1(self):
+        interlab4_lines = (
+            u'#Interlab',
+            u'#Version=4.0',
+            u'#Tecken=UTF-8',
+            u'#Textavgränsare=Nej',
+            u'#Decimaltecken=,',
+            u'#Provadm',
+            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
+            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            u'#Provdat',
+            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<2,5;2,5;;mg/l Pt;;;;;;;',
+            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
+            u'#Slut'
+                )
+
+        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
+            parsed_result = self.importinstance.parse_interlab4([testfile])
+
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+
+        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
         assert result_string == reference_string
 
     def tearDown(self):
@@ -1305,19 +1368,89 @@ class _TestInterlab4Importer():
         pass
 
 
-class _TestDbCalls(object):
+class TestInterlab4ImporterDB(object):
+    answer_yes = mock_answer('yes')
+    answer_no = mock_answer('no')
+    CRS_question = MockUsingReturnValue([3006])
+    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
+    skip_popup = MockUsingReturnValue('')
+    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
+
+    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.QgsProject.instance', autospec=True)
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+        mock_crsquestion.return_value = [3006]
+        mock_savefilename.return_value = TEMP_DB_PATH
+
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
+        self.midvatten = midvatten.midvatten(self.iface)
+
+        try:
+            os.remove(TEMP_DB_PATH)
+        except OSError:
+            pass
+        self.midvatten.new_db()
+        self.importinstance = midv_data_importer()
+
+    def tearDown(self):
+        #Delete database
+        os.remove(TEMP_DB_PATH)
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_interlab4_full_test_to_db(self):
+
+        utils.sql_alter_db(u'''insert into zz_staff (staff) values ('DV')''')
+
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("Demo1 vattenverk")')
+
+        interlab4_lines = (
+            u'#Interlab',
+            u'#Version=4.0',
+            u'#Tecken=UTF-8',
+            u'#Textavgränsare=Nej',
+            u'#Decimaltecken=,',
+            u'#Provadm',
+            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
+            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            u'#Provdat',
+            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<2,5;2,5;;mg/l Pt;;;;;;;',
+            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
+            u'#Slut'
+                )
+
+        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as filename:
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestInterlab4ImporterDB.mock_askuser.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileNames')
+            def _test_interlab4_full_test_to_db(self, filename, mock_filenames, mock_skippopup, mock_iface):
+                mock_filenames.return_value = filename
+                self.mock_iface = mock_iface
+                self.importinstance.import_interlab4()
+                test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
+                return test_string
+
+            test_string = _test_interlab4_full_test_to_db(self, filename)
+        reference_string = ur'''(True, [(Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt)])'''
+        assert test_string == reference_string
+
+
+class TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
-    answer_yes_obj = MockUsingReturnValue()
-    answer_yes_obj.result = 1
-    answer_no_obj = MockUsingReturnValue()
-    answer_no_obj.result = 0
-    answer_yes = MockUsingReturnValue(answer_yes_obj)
+    answer_yes = mock_answer('yes')
+    answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
     dbpath_question = MockUsingReturnValue(temp_db_path)
     mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
     mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([temp_db_path]))
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
     #mocked_qgsproject = MockQgsProject(mocked_qgsinstance)
 
@@ -1357,19 +1490,16 @@ class _TestDbCalls(object):
         assert imported_staff == u'(True, [(staff1, ), (staff2, )])'
 
 
-class _TestImportObsPoints(object):
+class TestImportObsPoints(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
-    answer_yes_obj = MockUsingReturnValue()
-    answer_yes_obj.result = 1
-    answer_no_obj = MockUsingReturnValue()
-    answer_no_obj.result = 0
-    answer_yes = MockUsingReturnValue(answer_yes_obj)
+    answer_yes = mock_answer('yes')
+    answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
     dbpath_question = MockUsingReturnValue(temp_db_path)
     mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
     mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([temp_db_path]))
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
     #mocked_qgsproject = MockQgsProject(mocked_qgsinstance)
@@ -1468,18 +1598,15 @@ class _TestImportObsPoints(object):
         assert test_string == reference_string
 
 
-class _TestWquallabImport(object):
+class TestWquallabImport(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
-    answer_yes_obj = MockUsingReturnValue()
-    answer_yes_obj.result = 1
-    answer_no_obj = MockUsingReturnValue()
-    answer_no_obj.result = 0
-    answer_yes = MockUsingReturnValue(answer_yes_obj)
+    answer_yes = mock_answer('yes')
+    answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
     dbpath_question = MockUsingReturnValue(temp_db_path)
     mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
     mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([temp_db_path]))
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
@@ -1567,15 +1694,12 @@ class _TestWquallabImport(object):
         assert test_string == reference_string
 
 
-class _TestWflowImport(object):
-    answer_yes_obj = MockUsingReturnValue()
-    answer_yes_obj.result = 1
-    answer_no_obj = MockUsingReturnValue()
-    answer_no_obj.result = 0
-    answer_yes = MockUsingReturnValue(answer_yes_obj)
+class TestWflowImport(object):
+    answer_yes = mock_answer('yes')
+    answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
     mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
@@ -1630,7 +1754,7 @@ class _TestWflowImport(object):
         assert test_string == reference_string
 
 
-class _TestFilterDatesFromFiledata(object):
+class TestFilterDatesFromFiledata(object):
 
     def setUp(self):
         self.importinstance = midv_data_importer()
