@@ -1094,6 +1094,3 @@ def scale_nparray(x, a=1, b=0):
     array([ -9, -11,  -7,  -5])
     """
     return a * copy.deepcopy(x) + b
-
-
-

@@ -350,9 +350,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         """
         data_dict = copy.deepcopy(_data_dict)
-        #Here we must have the conversion of the parsed dict into a table matching w_qual_lab.
-        #All w_qual_lab columns must get a match from interlab4 terms. Maybe some terms should concat to a comment also.
-        # Original dict: {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
 
         file_data = [[u'obsid', u'depth', u'report', u'project', u'staff', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment']]
         for lablittera, lab_results in data_dict.iteritems():
@@ -367,7 +364,18 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             report = lablittera
             project = metadata.get(u'projekt', None)
             staff = metadata.get(u'provtagare', None)
-            date_time = datetime.strftime(datestring_to_date(u' '.join([metadata[u'provtagningsdatum'], metadata[u'provtagningstid']])), u'%Y-%m-%d %H:%M:%S')
+
+            sampledate = metadata.get(u'provtagningsdatum', None)
+            if sampledate is None:
+                qgis.utils.iface.messageBar().pushMessage('Interlab4 import warning: There was no sample date found (column "provtagningsdatum"). Importing without it.')
+                date_time = None
+            else:
+                sampletime = metadata.get(u'provtagningstid', None)
+                if sampletime is not None:
+                    date_time = datetime.strftime(datestring_to_date(u' '.join([sampledate, sampletime])), u'%Y-%m-%d %H:%M:%S')
+                else:
+                    date_time = datetime.strftime(datestring_to_date(sampledate), u'%Y-%m-%d %H:%M:%S')
+
             meta_comment = metadata.get(u'kommentar', None)
             additional_meta_comments = [u'provtagningsorsak',
                                         u'provtyp',
@@ -387,15 +395,15 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 more_meta_comments = None
 
             for parameter, parameter_dict in lab_results.iteritems():
-                anameth = parameter_dict.get(u'metodbeteckning', u'')
-                reading_num = parameter_dict[u'mätvärdetal']
+                anameth = parameter_dict.get(u'metodbeteckning', None)
+                reading_num = parameter_dict.get(u'mätvärdetal', None)
 
                 try:
                     reading_txt = parameter_dict[u'mätvärdetext']
                 except KeyError:
                     reading_txt = reading_num
 
-                unit = parameter_dict[u'enhet']
+                unit = parameter_dict.get(u'enhet', None)
                 parameter_comment = parameter_dict.get(u'kommentar', None)
 
                 file_data.append([obsid,
