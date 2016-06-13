@@ -43,7 +43,7 @@ MOCK_EXPORT_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([EXPORT_DB_PATH
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 TEMP_DIR = u'/tmp/'
 
-class TextExportCsv(unittest.TestCase):
+class TestExport(unittest.TestCase):
     """
     """
     answer_yes_obj = MockUsingReturnValue()
@@ -77,7 +77,7 @@ class TextExportCsv(unittest.TestCase):
         self.midvatten.new_db()
         self.midvatten.ms.settingsareloaded = True
 
-        for filename in TextExportCsv.exported_csv_files:
+        for filename in TestExport.exported_csv_files:
             try:
                 os.remove(filename)
             except OSError:
@@ -90,7 +90,7 @@ class TextExportCsv(unittest.TestCase):
                 os.remove(dbs)
             except OSError:
                 pass
-        for filename in TextExportCsv.exported_csv_files:
+        for filename in TestExport.exported_csv_files:
             try:
                 os.remove(filename)
             except OSError:
@@ -118,7 +118,7 @@ class TextExportCsv(unittest.TestCase):
         self.midvatten.export_csv()
 
         file_contents = []
-        for filename in TextExportCsv.exported_csv_files_no_zz:
+        for filename in TestExport.exported_csv_files_no_zz:
             with io.open(filename, 'r', encoding='utf-8') as f:
                 file_contents.append(os.path.basename(filename) + '\n')
                 file_contents.append([l.replace('\r', '') for l in f])

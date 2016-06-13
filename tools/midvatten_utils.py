@@ -859,9 +859,12 @@ def select_files(only_one_file=True, extension="csv (*.csv)", should_ask_for_cha
         charsetchoosen = 'nocharsetchosen'
     if charsetchoosen and not (charsetchoosen[0]==0 or charsetchoosen[0]==''):
         if only_one_file:
-            csvpath = [QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)]
+            csvpath = QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)
         else:
             csvpath = QtGui.QFileDialog.getOpenFileNames(None, "Select Files","", extension)
+        if not isinstance(csvpath, (list, tuple)):
+            csvpath = [csvpath]
+        csvpath = [p for p in csvpath if p]
         return csvpath, charsetchoosen
 
 def ask_for_charset():

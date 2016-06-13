@@ -164,7 +164,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         wquallab_data_table = self.interlab4_to_table(all_lab_results)
 
-        self.send_file_data_to_importer(self, wquallab_data_table, self.wquallab_import_from_csvlayer, self.check_obsids)
+        self.send_file_data_to_importer(wquallab_data_table, self.wquallab_import_from_csvlayer, self.check_obsids)
 
         self.SanityCheckVacuumDB()
         #"obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
@@ -249,11 +249,40 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         data = dict([(data_header[idx], value.lstrip(' ').rstrip(' ')) for idx, value in enumerate(cols) if value.lstrip(' ').rstrip(' ')])
                         if u'mätvärdetal' in data:
                             data[u'mätvärdetal'] = data[u'mätvärdetal'].replace(decimalsign, '.')
-                        #TODO: Something with kalium?
+
+                        if not u'parameter' in data:
+                            utils.pop_up_info("WARNING: Parsing error. The parameter is missing on row " + str(cols))
+                            continue
+
                         if data[u'lablittera'] not in lab_results:
                             utils.pop_up_info("WARNING: Parsing error. Data for " + data['lablittera'] + " read before it's metadata.")
                             file_error = True
                             break
+
+                        """
+                        Kalium (This part is VERY specific to Midvatten data analyses and probably doesn't affect anyone else)
+
+                        Kalium is (in our very specific case) measured using two different methods. A high and a low resolution method.
+                        The lowest value for low resolution method is '<2,5' (in the parameter 'mätvärdetext') and '<1' for the high resolution method.
+                        If two kalium is present, we try to extract the high resolution method and store that one in the database.
+                        If kalium is between 1 and 2,5, the high resolution method will show 1,5 (for example) while the low resolution will show '<2,5'.
+                        If kalium is below 1, they will have values '<2,5' and '<1' in 'mätvärdetext'
+                        If both are above 2,5, there is no good way to separate them. In that case, use the last one.
+                        """
+                        if data[u'parameter'] == u'kalium':
+                            if u'kalium' not in lab_results[data[u'lablittera']]:
+                                #kalium has not been parsed yet. Keep the current one.
+                                pass
+                            else:
+                                if data.get(u'mätvärdetext', u'').strip(u' ') == u'<1' or lab_results[data[u'lablittera']][u'kalium'].get(u'mätvärdetext', u'').strip(u' ').replace(u',', u'.') == u'<2.5':
+                                    #The current one is the high resolution one. Keep it to overwrite the other one.
+                                    pass
+                                elif data.get(u'mätvärdetext', u'').strip(u' ').replace(u',', u'.') == u'<2.5' or lab_results[data[u'lablittera']][u'kalium'].get(u'mätvärdetext', u'').strip(u' ') == u'<1':
+                                    #The current one is the low resolution one, skip it.
+                                    continue
+                                else:
+                                    #Hope that the current one (the last one) is the high resolution one and let it overwrite the existing one
+                                    pass
 
                         lab_results[data[u'lablittera']][data[u'parameter']] = data
 
@@ -327,7 +356,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         #All w_qual_lab columns must get a match from interlab4 terms. Maybe some terms should concat to a comment also.
         # Original dict: {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
 
-        file_data = [[u'obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment']]
+        file_data = [[u'obsid', u'depth', u'report', u'project', u'staff', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment']]
         for lablittera, lab_results in data_dict.iteritems():
             metadata = lab_results.pop(u'metadata')
 
@@ -1382,9 +1411,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         def get_path(only_one_file):
             if only_one_file:
-                path = [PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")]
+                path = PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")
             else:
                 path = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
+            if not isinstance(path, (list, tuple)):
+                path = [path]
             return path
 
         path = []

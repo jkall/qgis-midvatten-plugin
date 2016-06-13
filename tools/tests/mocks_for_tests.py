@@ -81,6 +81,7 @@ class MockNotFoundQuestion(object):
         self.value = value
         self.answer = answer
 
+
 class MockQgisUtilsIface(object):
     """
     Usage:
@@ -102,6 +103,7 @@ class MockQgisUtilsIface(object):
     def messageBar(self, *args, **kwargs):
         return self.messagebar
 
+
 class MessageBar(object):
     def __init__(self):
         self.messages = []
@@ -110,11 +112,13 @@ class MessageBar(object):
         self.messages.append([arg for arg in kwargs])
         return None
 
+
 class MockQgsProjectInstance(object):
     def __init__(self, entry=u''):
         self.entry = entry
     def readEntry(self, *args, **kwargs):
         return self.entry
+
 
 class DummyInterface(object):
     def __init__(self):
@@ -136,6 +140,7 @@ class DummyInterface(object):
         # simulate iface.legendInterface().layers()
         return QgsMapLayerRegistry.instance().mapLayers().values()
 
+
 class DummyInterface2(object):
     """ This should probably be used instead of DummyInterface
         Based on mock instad of an own type of object.
@@ -151,3 +156,9 @@ class DummyInterface2(object):
         self.mock.mainWindow.return_value = self.mainwindow
         self.mock.layers.return_value = QgsMapLayerRegistry.instance().mapLayers().values()
 
+def mock_answer(yes_or_no='yes'):
+    ans = {'yes': 1, 'no': 0}
+    answer_obj = MockUsingReturnValue()
+    answer_obj.result = ans.get(yes_or_no, yes_or_no)
+    answer = MockUsingReturnValue(answer_obj)
+    return answer
