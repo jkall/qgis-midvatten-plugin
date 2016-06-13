@@ -887,8 +887,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if file_data == u'cancel':
             self.status = True
             return u'cancel'
-        elif len(file_data) > 1:
-            self.send_file_data_to_importer(file_data, self.comments_import_from_csv)
+        filtered_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
+        if filtered_data == u'cancel':
+            self.status = True
+            return u'cancel'
+        if len(filtered_data) > 1:
+            self.send_file_data_to_importer(filtered_data, self.comments_import_from_csv)
         self.status = True
         self.SanityCheckVacuumDB()
 
