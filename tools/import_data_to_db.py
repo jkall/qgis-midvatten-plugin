@@ -937,6 +937,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         result_dict = {}
         for rownr, rawrow in enumerate(f):
             row = utils.returnunicode(rawrow).rstrip(u'\r').rstrip(u'\n')
+            if not row:
+                continue
             cols = row.split(u';')
             date = cols[1]
             time = cols[2]
