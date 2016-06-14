@@ -128,7 +128,7 @@ class ExportData():
         filter(None, (output.writerow(row) for row in self.curs))
 
     def zz_to_sql(self, tname, tname_with_prefix):
-        sql = r"insert into %s select * from %s" %(tname, tname_with_prefix)
+        sql = r"insert or ignore into %s select * from %s" %(tname, tname_with_prefix)
         try:
             self.curs.execute(sql)
         except Exception, e:
