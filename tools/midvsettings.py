@@ -37,7 +37,7 @@ class midvsettings():
         self.readingSettings = True  
         # map data types to function names
         prj = QgsProject.instance()
-        functions = { 'str' : prj.readEntry,
+        functions = {'str' : prj.readEntry,
                      'str' : prj.readEntry, # SIP API UPDATE 2.0
                      'int' : prj.readNumEntry,
                      'float' : prj.readDoubleEntry,
@@ -66,12 +66,12 @@ class midvsettings():
             if key =='': #if no argument, then save all settings according to dictionary
                 for (key, value) in self.settingsdict.items():        
                     try: # write plugin settings to QgsProject
-                        QgsProject.instance().writeEntry("Midvatten",key, value ) 
+                        QgsProject.instance().writeEntry("Midvatten",key, value )
                     except TypeError: 
                         print("debug info; midvsettings found that "+key+" had type: "+str(type(value))+" which is not appropriate")
             else:#otherwise only save specific setting as per given key
                 try:
-                    QgsProject.instance().writeEntry("Midvatten",key, self.settingsdict[key]) 
+                    QgsProject.instance().writeEntry("Midvatten",key, self.settingsdict[key])
                     #print ('debug info, wrote %s value %s' %(key, self.settingsdict[key]))#debug
                 except TypeError: 
                     print("debug info; midvsettings found that "+key+" had type: "+str(type(self.settingsdict[key]))+" which is not appropriate")
