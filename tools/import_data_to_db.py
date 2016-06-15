@@ -173,7 +173,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :return: A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
         """
         if filenames is None:
-            filenames = utils.select_files(only_one_file=False, should_ask_for_charset=False)[0]
+            filenames = utils.select_files(only_one_file=False, should_ask_for_charset=False, extension="lab (*.lab)")[0]
         if not filenames:
             return u'cancel'
 
