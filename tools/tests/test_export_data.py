@@ -58,13 +58,15 @@ class TestExport(unittest.TestCase):
     exported_csv_files = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv', 'zz_flowtype.csv', 'zz_meteoparam.csv', 'zz_staff.csv', 'zz_strat.csv', 'zz_capacity.csv', 'zz_w_qual_field_parameters.csv']]
     exported_csv_files_no_zz = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv']]
 
+
     @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance', autospec=True)
+    @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
     def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
+        mock_qgsproject_instance.return_value.instance.readEntry.return_value = [u'en_US']
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
@@ -243,7 +245,6 @@ class TestExport(unittest.TestCase):
                             u'''select obsid, instrumentid, parameter, date_time from meteo''',
                             u''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)]]''']
         reference_string = u'\n'.join(reference_string)
-
         assert test_string == reference_string
 
 

@@ -39,6 +39,8 @@ import PyQt4
 from import_data_to_db import midv_data_importer
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
+MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
+
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
@@ -626,12 +628,13 @@ class TestWlvllogImportFromDiverofficeFiles(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance', autospec=True)
+    @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
     def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
+        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
@@ -853,12 +856,13 @@ class TestDefaultImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance', autospec=True)
+    @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
     def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
+        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
@@ -1378,12 +1382,13 @@ class TestInterlab4ImporterDB(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance', autospec=True)
+    @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
     def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
+        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
@@ -1611,12 +1616,13 @@ class TestWquallabImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance', autospec=True)
+    @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
     def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TestWquallabImport.temp_db_path
+        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
@@ -1704,12 +1710,13 @@ class TestWflowImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance', autospec=True)
+    @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
     def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
+        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock

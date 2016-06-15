@@ -127,12 +127,13 @@ class TestGetFunctions(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance', autospec=True)
+    @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
     def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
+        mock_qgsproject_instance.return_value.instance.readEntry.return_value = [u'en_US']
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock

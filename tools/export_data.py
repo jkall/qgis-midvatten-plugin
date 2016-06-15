@@ -128,7 +128,14 @@ class ExportData():
         filter(None, (output.writerow(row) for row in self.curs))
 
     def zz_to_sql(self, tname, tname_with_prefix):
-        sql = r"insert or ignore into %s select * from %s" %(tname, tname_with_prefix)
+
+        #Null-values as primary keys don't equal each other and can therefore cause duplicates.
+        #This part concatenates the primary keys to make a string comparison for equality instead.
+        primary_keys = self.get_primary_keys(tname)
+        ifnull_primary_keys = [''.join(["ifnull(", pk, ",'')"]) for pk in primary_keys]
+        concatenated_primary_keys = ' || '.join(ifnull_primary_keys)
+
+        sql = r"insert or ignore into %s select * from %s where %s not in (select %s from %s"%(tname, tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
         try:
             self.curs.execute(sql)
         except Exception, e:
@@ -140,6 +147,11 @@ class ExportData():
         for row in result_list:
             foreign_keys.setdefault(row[2], []).append((row[3], row[4]))
         return foreign_keys
+
+    def get_primary_keys(self, tname):
+        result_list = self.curs.execute("""PRAGMA table_info(%s)"""%(tname)).fetchall()
+        primary_keys = [column_tuple[1] for column_tuple in result_list if column_tuple[5] != 0]
+        return primary_keys
 
     def verify_table_in_attached_db(self, tname):
         result = self.curs.execute(u"""SELECT name FROM a.sqlite_master WHERE type='table' AND name='%s'"""%(tname)).fetchall()
