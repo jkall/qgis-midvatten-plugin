@@ -30,14 +30,14 @@ import midvatten_utils as utils
 
 class newdb():
 
-    def __init__(self, verno, user_select_CRS='y', EPSG_code='4326', set_locale=False):
+    def __init__(self, verno, user_select_CRS='y', EPSG_code=u'4326', set_locale=False):
         self.dbpath = ''
         self.create_new_db(verno,user_select_CRS,EPSG_code, set_locale)  #CreateNewDB(verno)
         
-    def create_new_db(self, verno, user_select_CRS='y', EPSG_code='4326', set_locale=False):  #CreateNewDB(self, verno):
+    def create_new_db(self, verno, user_select_CRS='y', EPSG_code=u'4326', set_locale=False):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
         if user_select_CRS=='y':
-            EPSGID=str(self.ask_for_CRS()[0])
+            EPSGID=str(self.ask_for_CRS(set_locale)[0])
         else:
             EPSGID=EPSG_code
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
@@ -128,9 +128,9 @@ class newdb():
                 """
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def ask_for_CRS(self):
+    def ask_for_CRS(self, set_locale):
         # USER MUST SELECT CRS FIRST!! 
-        if locale.getdefaultlocale()[0]=='sv_SE':
+        if set_locale == u'sv_SE':
             default_crs = 3006
         else:
             default_crs = 4326
@@ -139,7 +139,7 @@ class newdb():
 
     def insert_datadomains(self, set_locale=False):
         filenamestring = 'insert_datadomain'
-        if locale.getdefaultlocale()[0] == 'sv_SE' or set_locale == u'sv_SE':
+        if set_locale == u'sv_SE':
             filenamestring += "_sv.sql"
         else:
             filenamestring += ".sql"

@@ -91,7 +91,8 @@ def settingsdict():    #These are the default settings, they shall not be change
             'piper_k':'Kalium, K',
             'piper_ca':'Kalcium, Ca',
             'piper_mg':'Magnesium, Mg',
-            'piper_markers':'type'
+            'piper_markers':'type',
+            'locale': ''
             }
     return dictionary
     
@@ -360,7 +361,7 @@ def PlotTypesDict(international='no'):
     """
     success, Dict = utils.create_dict_from_db_2_cols(('strat','geoshorts','zz_strat'))
     if not success:
-        if international=='no' and  locale.getdefaultlocale()[0] == 'sv_SE': 
+        if international=='no' and  utils.getcurrentlocale() == 'sv_SE':
             """
             Dict = {u"Okänt" : u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')",
             "Berg"  : u"in ('berg','b','rock','ro')",
@@ -436,7 +437,7 @@ def PlotColorDict():
     """
     success, Dict = utils.create_dict_from_db_2_cols(('strat','color_mplot','zz_strat'))
     if not success:
-        if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
+        if  utils.getcurrentlocale() == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
             Dict = {u"Okänt" : u"white",
             "Berg"  : u"red",
             "Grovgrus" : u"DarkGreen",
@@ -479,7 +480,7 @@ def PlotHatchDict():
     success, Dict = utils.create_dict_from_db_2_cols(('strat','hatch_mplot','zz_strat'))
     if not success:
         # hatch patterns : ('-', '+', 'x', '\\', '*', 'o', 'O', '.','/')
-        if  locale.getdefaultlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
+        if  utils.getcurrentlocale() == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
             Dict = {u"Okänt" : u"",
             "Berg"  : u"x",
             "Grovgrus" : u"O",

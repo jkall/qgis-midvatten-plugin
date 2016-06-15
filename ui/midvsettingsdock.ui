@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>381</width>
+    <width>433</width>
     <height>688</height>
    </rect>
   </property>
@@ -86,7 +86,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="TAB_TSPLOT_2">
        <attribute name="title">
@@ -106,7 +106,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>339</width>
+             <width>391</width>
              <height>553</height>
             </rect>
            </property>
@@ -264,7 +264,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>339</width>
+             <width>391</width>
              <height>553</height>
             </rect>
            </property>
@@ -499,7 +499,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>339</width>
+             <width>391</width>
              <height>553</height>
             </rect>
            </property>
@@ -736,7 +736,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>339</width>
+             <width>391</width>
              <height>553</height>
             </rect>
            </property>
@@ -840,7 +840,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>325</width>
+             <width>377</width>
              <height>685</height>
             </rect>
            </property>
@@ -1168,6 +1168,84 @@
                  </size>
                 </property>
                </spacer>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="TAB_GENERAL">
+       <attribute name="title">
+        <string>General</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_14">
+        <item row="0" column="0">
+         <widget class="QScrollArea" name="scrollArea_6">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_3">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>391</width>
+             <height>553</height>
+            </rect>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_13">
+            <item row="0" column="0">
+             <layout class="QGridLayout" name="gridLayout_12" rowstretch="0,0,0,0">
+              <item row="2" column="0">
+               <widget class="QComboBox" name="locale_combobox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Affects zz_tables during database creation</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <spacer name="verticalSpacer_6">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_locale">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Affects zz_tables during database creation</string>
+                </property>
+                <property name="text">
+                 <string>Locale:</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>

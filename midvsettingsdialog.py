@@ -15,6 +15,7 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import uic
+from PyQt4.QtCore import QLocale
 
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency  
 import os.path
@@ -45,6 +46,10 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ClearEverything()
         if len(self.ms.settingsdict['database'])>0:
             self.LoadAndSelectLastSettings()
+
+        #Load general settings
+        self.load_and_select_general_settings()
+
         # SIGNALS
         #move dockwidget
         self.connect(self, SIGNAL("dockLocationChanged(Qt::DockWidgetArea)"), self.set_location)
@@ -79,7 +84,8 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.paramK, SIGNAL("activated(int)"), partial(self.ChangedParamK)) 
         self.connect(self.paramCa, SIGNAL("activated(int)"), partial(self.ChangedParamCa)) 
         self.connect(self.paramMg, SIGNAL("activated(int)"), partial(self.ChangedParamMg))         
-        self.connect(self.MarkerComboBox, SIGNAL("activated(int)"), partial(self.ChangedPiperMarkerComboBox))         
+        self.connect(self.MarkerComboBox, SIGNAL("activated(int)"), partial(self.ChangedPiperMarkerComboBox))
+        self.connect(self.locale_combobox, SIGNAL("activated(int)"), partial(self.ChangedLocale))
 
         #Draw the widget
         self.iface.addDockWidget(max(self.ms.settingsdict['settingslocation'],1), self)
@@ -169,6 +175,10 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ms.settingsdict['piper_markers']=self.MarkerComboBox.currentText()
         self.ms.save_settings('piper_markers')
 
+    def ChangedLocale(self):
+        self.ms.settingsdict['locale'] = self.locale_combobox.currentText()
+        self.ms.save_settings('locale')
+
     def ClearColumnLists(self):
         self.ListOfColumns.clear()
         self.ListOfColumns_2.clear()
@@ -185,6 +195,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ClearTableLists()
         self.ClearColumnLists()
         self.ClearPiperParams()
+        self.ClearGeneral()
 
     def ClearTableLists(self):
         self.ListOfTables.clear()    
@@ -200,6 +211,9 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.paramK.clear()
         self.paramCa.clear()
         self.paramMg.clear()
+
+    def ClearGeneral(self):
+        self.locale_combobox.clear()
 
     def ColumnsToComboBox(self, comboboxname='', table=None):
         getattr(self, comboboxname).clear()
@@ -231,7 +245,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
             #piper diagram settings
             self.load_and_select_last_piper_settings()
-            
+
             # finally, set dockwidget to last choosen tab
             self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['tabwidget']))
         else:
@@ -347,6 +361,17 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             self.checkBoxDataPoints_2.setChecked(True)
         else:
             self.checkBoxDataPoints_2.setChecked(False)
+
+    def load_and_select_general_settings(self):
+        self.locales = [QLocale(QLocale.Swedish, QLocale.Sweden), QLocale(QLocale.English, QLocale.UnitedStates)]
+
+        for localeobj in self.locales:
+            self.locale_combobox.addItem(localeobj.name())
+
+        current_locale = self.ms.settingsdict[u'locale']
+        if current_locale:
+            idx = self.locale_combobox.findText(current_locale)
+            self.locale_combobox.setCurrentIndex(idx)
 
     def LoadColumnsFromTable(self, table=''):
         """ This method returns a list with all the columns in the table"""
