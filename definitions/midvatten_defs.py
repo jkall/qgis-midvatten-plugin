@@ -101,7 +101,7 @@ def default_layers ():        #These may be changed
     return list
 
 def default_nonspatlayers():            # These may be changed
-    list =  ['stratigraphy', 'w_levels', 'w_flow', 'w_qual_lab', 'w_qual_field']
+    list =  ['stratigraphy', 'w_levels', 'w_flow', 'w_qual_lab', 'w_qual_field','comments']
     return list
     
 def default_layers_w_ui():
