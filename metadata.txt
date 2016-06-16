@@ -18,6 +18,8 @@ experimental=False
 deprecated=False
 
 changelog=
+        Version 1.3.6
+        - locale is a selectable option in Midvatten settings
         Version 1.3.4
         - support for exporting/importing files for the FieldLogger android/iPhone app
         - automatic updates of attribute table coordinates when an obs_point is created/moved, and vice versa

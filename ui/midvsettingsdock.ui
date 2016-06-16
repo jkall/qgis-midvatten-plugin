@@ -86,7 +86,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>5</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="TAB_TSPLOT_2">
        <attribute name="title">
@@ -264,8 +264,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
-             <height>553</height>
+             <width>182</width>
+             <height>442</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_21">
@@ -499,8 +499,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
-             <height>553</height>
+             <width>197</width>
+             <height>568</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -736,8 +736,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
-             <height>553</height>
+             <width>102</width>
+             <height>148</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_19">
@@ -840,8 +840,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>377</width>
-             <height>685</height>
+             <width>195</width>
+             <height>757</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">
