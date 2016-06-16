@@ -966,7 +966,8 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
         except KeyError:
             current_value = row[index]
         else:
-            filtered_data.append(row)
+            if row[index] is not None:
+                filtered_data.append(row)
             continue
 
         similar_values = find_similar(current_value, existing_values, hits=5)
@@ -1000,12 +1001,15 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
                 current_value = submitted_value
             elif answer == u'skip':
                 break
-        if answer != u'skip':
+
+        if answer == u'skip':
+            if row[index] not in already_asked_values:
+                already_asked_values[row[index]] = None
+        else:
+            if row[index] not in already_asked_values:
+                already_asked_values[row[index]] = current_value
             row[index] = current_value
             filtered_data.append(row)
-
-        if row[index] not in already_asked_values:
-            already_asked_values[row[index]] = current_value
 
     return filtered_data
 

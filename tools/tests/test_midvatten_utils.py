@@ -88,6 +88,31 @@ class TestFilterNonexistingObsidsAndAsk(object):
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'A', u'b']]
             assert filtered_file_data == reference_list
 
+    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    def test_filter_nonexisting_obsids_only_ask_once(self, mock_notfound):
+            mock_notfound.return_value.answer = u'ok'
+            mock_notfound.return_value.value = 10
+            file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h'], [u'1', u'i']]
+            existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
+            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
+            reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'10', u'b'], [u'10', u'h'], [u'10', u'i']]
+            assert filtered_file_data == reference_list
+            #The mock should only be called twice. First for 1, then for 21, and then 1 again should use the already given answer.
+            assert len(mock_notfound.mock_calls) == 2
+
+    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    def test_filter_nonexisting_obsids_and_ask_skip_only_ask_once(self, mock_notfound):
+            mock_notfound.return_value.answer = u'skip'
+            mock_notfound.return_value.value = 10
+            file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h'], [u'1', u'i']]
+            existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
+            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
+            reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g']]
+            assert filtered_file_data == reference_list
+            #The mock should only be called twice. First for 1, then for 21, and then 1 again should use the already given answer.
+            assert len(mock_notfound.mock_calls) == 2
+
+
 
 class TestTempinput(object):
     def test_tempinput(self):
