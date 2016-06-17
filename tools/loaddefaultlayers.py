@@ -69,15 +69,11 @@ class LoadLayers():
                 uristring= 'dbname="' + self.settingsdict['database'] + '" table="' + tablename + '"'
                 layer = QgsVectorLayer(uristring,tablename, 'spatialite')
                 layer_list.append(layer)
-                if layer.name()=='comments':
-                    comments_layer = layer
 
             for tablename in self.default_layers:    # then all the spatial ones
                 uri.setDataSource('',tablename, 'Geometry')
                 layer = QgsVectorLayer(uri.uri(), tablename, 'spatialite') # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
                 layer_list.append(layer)
-                if layer.name()=='obs_points':
-                    obs_points_layer = layer
 
         elif self.group_name == 'Midvatten_data_domains': #if self.group_name == 'Midvatten_data_domains':
             conn_ok, dd_tables = utils.sql_load_fr_db("select name from sqlite_master where name like 'zz_%'")
@@ -134,28 +130,42 @@ class LoadLayers():
                 else:
                     pass
 
+        #finally refresh canvas
+        canvas.refresh()
+
         # create layer relations
         if self.group_name == 'Midvatten_OBS_DB':
-            rel = QgsRelation()
-            rel.setReferencingLayer( comments_layer.id() )
-            rel.setReferencedLayer( obs_points_layer.id() )
-            rel.addFieldPair( 'obsid', 'obsid' )
-            rel.setRelationId( 'obs_p_comments_id' )
-            rel.setRelationName( 'obs_p_comments' )
-            if rel.isValid(): # It will only be added if it is valid. If not, check the ids and field names
-                QgsProject.instance().relationManager().addRelation( rel )
+            rel1 = QgsRelation()
+            rel1.setReferencingLayer( utils.find_layer('comments').id() )
+            rel1.setReferencedLayer( utils.find_layer('obs_points').id() )
+            rel1.addFieldPair( 'obsid', 'obsid' )
+            rel1.setRelationId( 'obs_p_comments_id' )
+            rel1.setRelationName( 'obs_p_comments' )
+            if rel1.isValid(): # It will only be added if it is valid. If not, check the ids and field names
+                QgsProject.instance().relationManager().addRelation( rel1 )
             else:
                 qgis.utils.iface.messageBar().pushMessage("Error","""Failed to create relation between obs_points and comments!""",2)
 
+            rel2 = QgsRelation()
+            rel2.setReferencingLayer( utils.find_layer('stratigraphy').id())
+            rel2.setReferencedLayer(utils.find_layer('obs_points').id() )
+            rel2.addFieldPair( 'obsid', 'obsid' )
+            rel2.setRelationId( 'obs_p_stratigraphy_id' )
+            rel2.setRelationName( 'obs_p_stratigraphy' )
+            if rel2.isValid(): # It will only be added if it is valid. If not, check the ids and field names
+                QgsProject.instance().relationManager().addRelation( rel2 )
+            else:
+                qgis.utils.iface.messageBar().pushMessage("Error","""Failed to create relation between obs_points and stratigraphy!""",2)
+
             #now try to load the style file for obs_points again, including the new relation --------------------   NOT YET WÓRKING!!!
-            stylefile_sv = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",obs_points_layer.name() + "_sv.qml")
-            stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",obs_points_layer.name() + ".qml")
+            stylefile_sv = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",utils.find_layer('obs_points').name() + "_sv.qml")
+            stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",utils.find_layer('obs_points').name() + ".qml")
             if  utils.getcurrentlocale() == 'sv_SE' and os.path.isfile( stylefile_sv ): #swedish forms are loaded only if locale settings indicate sweden
                 try:
-                    obs_points_layer.loadNamedStyle(stylefile_sv)
+                    utils.find_layer('obs_points').loadNamedStyle(stylefile_sv)
                 except:
                     try:
-                        obs_points_layer.loadNamedStyle(stylefile)
+                        utils.find_layer('obs_points').loadNamedStyle(stylefile)
                     except:
                         pass
             else:

@@ -361,6 +361,10 @@
         <attributeEditorField index="12" name="wlogg_yn"/>
       </attributeEditorContainer>
     </attributeEditorContainer>
+    <attributeEditorContainer name="lagerföljd">
+      <attributeEditorField index="5" name="drillstop"/>
+      <attributeEditorRelation relation="obs_p_stratigraphy_id" name="obs_p_stratigraphy_id"/>
+    </attributeEditorContainer>
     <attributeEditorContainer name="kommentarer">
       <attributeEditorRelation relation="obs_p_comments_id" name="obs_p_comments_id"/>
     </attributeEditorContainer>

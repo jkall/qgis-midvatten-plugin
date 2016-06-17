@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis version="2.8.8-Wien" minimumScale="-4.65661e-10" maximumScale="1e+08" simplifyDrawingHints="0" minLabelScale="1" maxLabelScale="1e+08" simplifyDrawingTol="1" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
+<qgis version="2.8.8-Wien" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="0" minLabelScale="1" maxLabelScale="1e+08" simplifyDrawingTol="1" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
   <edittypes>
     <edittype widgetv2type="TextEdit" name="obsid">
       <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
@@ -353,6 +353,10 @@
         <attributeEditorField index="11" name="wmeas_yn"/>
         <attributeEditorField index="12" name="wlogg_yn"/>
       </attributeEditorContainer>
+    </attributeEditorContainer>
+    <attributeEditorContainer name="stratigraphy">
+      <attributeEditorField index="5" name="drillstop"/>
+      <attributeEditorRelation relation="obs_p_stratigraphy_id" name="obs_p_stratigraphy_id"/>
     </attributeEditorContainer>
     <attributeEditorContainer name="comments">
       <attributeEditorRelation relation="obs_p_comments_id" name="obs_p_comments_id"/>
