@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis version="2.6.1-Brighton" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="0" minLabelScale="1" maxLabelScale="1e+08" simplifyDrawingTol="1" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
+<qgis version="2.8.8-Wien" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="0" minLabelScale="1" maxLabelScale="1e+08" simplifyDrawingTol="1" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
   <edittypes>
     <edittype widgetv2type="TextEdit" name="obsid">
       <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
@@ -79,9 +79,6 @@
     <edittype widgetv2type="TextEdit" name="com_html">
       <widgetv2config IsMultiline="1" fieldEditable="1" UseHtml="1" labelOnTop="1"/>
     </edittype>
-    <edittype widgetv2type="TextEdit" name="geometry">
-      <widgetv2config IsMultiline="0" fieldEditable="1" UseHtml="0" labelOnTop="0"/>
-    </edittype>
   </edittypes>
   <renderer-v2 symbollevels="0" type="singleSymbol">
     <symbols>
@@ -141,7 +138,7 @@
     <property key="labeling/fontBold" value="false"/>
     <property key="labeling/fontCapitals" value="0"/>
     <property key="labeling/fontFamily" value="Arial"/>
-    <property key="labeling/fontItalic" value="false"/>
+    <property key="labeling/fontItalic" value="true"/>
     <property key="labeling/fontLetterSpacing" value="0"/>
     <property key="labeling/fontLimitPixelSize" value="false"/>
     <property key="labeling/fontMaxPixelSize" value="10000"/>
@@ -169,7 +166,7 @@
     <property key="labeling/minFeatureSize" value="0"/>
     <property key="labeling/multilineAlign" value="0"/>
     <property key="labeling/multilineHeight" value="1"/>
-    <property key="labeling/namedStyle" value="Normal"/>
+    <property key="labeling/namedStyle" value="Italic"/>
     <property key="labeling/obstacle" value="true"/>
     <property key="labeling/placeDirectionSymbol" value="0"/>
     <property key="labeling/placement" value="0"/>
@@ -363,6 +360,9 @@
         <attributeEditorField index="11" name="wmeas_yn"/>
         <attributeEditorField index="12" name="wlogg_yn"/>
       </attributeEditorContainer>
+    </attributeEditorContainer>
+    <attributeEditorContainer name="kommentarer">
+      <attributeEditorRelation relation="obs_p_comments_id" name="obs_p_comments_id"/>
     </attributeEditorContainer>
   </attributeEditorForm>
   <attributeactions/>
