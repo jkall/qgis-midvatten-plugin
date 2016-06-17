@@ -354,13 +354,6 @@
         <attributeEditorField index="12" name="wlogg_yn"/>
       </attributeEditorContainer>
     </attributeEditorContainer>
-    <attributeEditorContainer name="stratigraphy">
-      <attributeEditorField index="5" name="drillstop"/>
-      <attributeEditorRelation relation="obs_p_stratigraphy_id" name="obs_p_stratigraphy_id"/>
-    </attributeEditorContainer>
-    <attributeEditorContainer name="comments">
-      <attributeEditorRelation relation="obs_p_comments_id" name="obs_p_comments_id"/>
-    </attributeEditorContainer>
   </attributeEditorForm>
   <attributeactions/>
 </qgis>
