@@ -200,12 +200,6 @@ class LoadLayers():
                     self.legend.setLayerVisible(layer,False)
 
     def remove_layers(self):
-        # remove relations
-        for key in QgsProject.instance().relationManager().relations().iterkeys():
-            if key in (u'obs_p_comments_id',u'obs_p_stratigraphy_id'):
-                del QgsProject.instance().relationManager().relations()[key]
-                print('removed relation %s'%str(key))
-
         try:#qgis>2.6
             remove_group = self.root.findGroup(self.group_name)
             self.root.removeChildNode(remove_group)
