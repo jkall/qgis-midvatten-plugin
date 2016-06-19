@@ -39,8 +39,11 @@ class LoadLayers():
         self.iface = iface
         self.root = QgsProject.instance().layerTreeRoot()
         self.legend = self.iface.legendInterface()
+        self.remove_relations()
         self.remove_layers()
         self.add_layers()
+        if self.group_name == 'Midvatten_OBS_DB':
+            self.create_relations()
 
     def add_layers(self):
         """
@@ -199,13 +202,69 @@ class LoadLayers():
                 elif tablename == 'w_lvls_last_geom':#we do not want w_lvls_last_geom to be visible by default
                     self.legend.setLayerVisible(layer,False)
 
-    def remove_layers(self):
-        # remove relations
-        for key in QgsProject.instance().relationManager().relations().iterkeys():
-            if key in (u'obs_p_comments_id',u'obs_p_stratigraphy_id'):
-                del QgsProject.instance().relationManager().relations()[key]
-                print('removed relation %s'%str(key))
+    def create_relations(self):#THIS IS YET NOT WORKING AS EXPECTED, ONLY RANDOMLY CREATING BOTH RELATIONS!!!  ALSO, SOMETIMES QGIS CRASH WHEN OPENING FORMS
+        """
+        1. create project relations obs_points-comments and obs_points-stratigraphy
+        2. add 2 tabs to the obs_points form and fill those tabs with related layers comments and stratigraphy
+        """
+        # create relations        
+        rel1 = QgsRelation()
+        rel1.setReferencingLayer( utils.find_layer('comments').id() )
+        rel1.setReferencedLayer( utils.find_layer('obs_points').id() )
+        rel1.addFieldPair( 'obsid', 'obsid' )
+        rel1.setRelationId( 'obs_p_comments_id' )
+        rel1.setRelationName( 'obs_p_comments' )
+        if rel1.isValid(): # It will only be added if it is valid. If not, check the ids and field names                
+            QgsProject.instance().relationManager().addRelation(rel1)
+            #validate
+            for key in QgsProject.instance().relationManager().relations().iterkeys():
+                if str(key)==rel1.id():
+                    print('added relation comments-obs_points')
+        else:
+            qgis.utils.iface.messageBar().pushMessage("Error","""Failed to create relation between obs_points and comments!""",2)
+            print("""Failed to create relation between obs_points and comments!""")
 
+        rel2 = QgsRelation()
+        rel2.setReferencingLayer( utils.find_layer('stratigraphy').id())
+        rel2.setReferencedLayer(utils.find_layer('obs_points').id() )
+        rel2.addFieldPair( 'obsid', 'obsid' )
+        rel2.setRelationId( 'obs_p_stratigraphy_id' )
+        rel2.setRelationName( 'obs_p_stratigraphy' )
+        if rel2.isValid(): # It will only be added if it is valid. If not, check the ids and field names
+            QgsProject.instance().relationManager().addRelation(rel2)
+            for key in QgsProject.instance().relationManager().relations().iterkeys():
+                if str(key)==rel2.id():
+                    print('added relation stratigraphy-obs_points')
+        else:
+            qgis.utils.iface.messageBar().pushMessage("Error","""Failed to create relation between obs_points and stratigraphy!""",2)
+            print("""Failed to create relation between obs_points and stratigraphy!""")
+
+        #now add attribute editor tabs with theses relations
+        layer = utils.find_layer('obs_points')
+        # skapa en container
+        if  utils.getcurrentlocale() == 'sv_SE':
+            tab1name = 'kommentarer'
+            tab2name = 'lageföljder'
+        else:
+            tab1name = 'comments'
+            tab2name = 'stratigraphy'
+        x = QgsAttributeEditorContainer (tab1name,layer)
+        # ange att containern är av tab-typ (True=group box, False=Tab)
+        x.setIsGroupBox (False)
+        # lägg till den till lagret
+        layer.addAttributeEditorWidget(x)
+        # skapar först en en attribute-editor-relation
+        p= QgsAttributeEditorRelation('obs_points_comments_id',rel1,x)
+        # sen ska den läggas till attributecontainer
+        x.addChildElement(p)
+        ## sedan samma för lagerföljder
+        y = QgsAttributeEditorContainer (tab2name,layer)
+        y.setIsGroupBox (False)
+        layer.addAttributeEditorWidget(y)
+        q= QgsAttributeEditorRelation('stratigraphy_id',rel2,y)
+        y.addChildElement(q)
+
+    def remove_layers(self):
         try:#qgis>2.6
             remove_group = self.root.findGroup(self.group_name)
             self.root.removeChildNode(remove_group)
@@ -230,6 +289,13 @@ class LoadLayers():
             while self.group_name in self.legend.groups():
                 group_index = self.legend.groups().index(self.group_name) 
                 self.legend.removeGroup(group_index)
+
+    def remove_relations(self):
+        # remove relations
+        for key in QgsProject.instance().relationManager().relations().iterkeys():
+            if key in (u'obs_p_comments_id',u'obs_p_stratigraphy_id'):
+                del QgsProject.instance().relationManager().relations()[key]
+                print('removed relation %s'%str(key))
 
     def selection_layer_in_db_or_not(self): #this is not used, it might be if using layer_styles stored in the db
         sql = r"""select name from sqlite_master where name = 'layer_styles'"""
