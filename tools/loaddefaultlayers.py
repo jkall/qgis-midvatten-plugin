@@ -132,67 +132,6 @@ class LoadLayers():
 
         #finally refresh canvas
         canvas.refresh()
-
-        # create layer relations    ------ THIS IS YET NOT WORKING AS EXPECTED, ONLY RANDOMLY CREATING BOTH RELATIONS!!!
-        if self.group_name == 'Midvatten_OBS_DB':
-            rel1 = QgsRelation()
-            rel1.setReferencingLayer( utils.find_layer('comments').id() )
-            rel1.setReferencedLayer( utils.find_layer('obs_points').id() )
-            rel1.addFieldPair( 'obsid', 'obsid' )
-            rel1.setRelationId( 'obs_p_comments_id' )
-            rel1.setRelationName( 'obs_p_comments' )
-            if rel1.isValid(): # It will only be added if it is valid. If not, check the ids and field names
-                
-                QgsProject.instance().relationManager().addRelation(rel1)
-                #validate
-                for key in QgsProject.instance().relationManager().relations().iterkeys():
-                    if str(key)==rel1.id():
-                        print('added relation comments-obs_points')
-            else:
-                qgis.utils.iface.messageBar().pushMessage("Error","""Failed to create relation between obs_points and comments!""",2)
-                print("""Failed to create relation between obs_points and comments!""")
-
-            rel2 = QgsRelation()
-            rel2.setReferencingLayer( utils.find_layer('stratigraphy').id())
-            rel2.setReferencedLayer(utils.find_layer('obs_points').id() )
-            rel2.addFieldPair( 'obsid', 'obsid' )
-            rel2.setRelationId( 'obs_p_stratigraphy_id' )
-            rel2.setRelationName( 'obs_p_stratigraphy' )
-            if rel2.isValid(): # It will only be added if it is valid. If not, check the ids and field names
-                QgsProject.instance().relationManager().addRelation(rel2)
-                for key in QgsProject.instance().relationManager().relations().iterkeys():
-                    if str(key)==rel2.id():
-                        print('added relation stratigraphy-obs_points')
-            else:
-                qgis.utils.iface.messageBar().pushMessage("Error","""Failed to create relation between obs_points and stratigraphy!""",2)
-                print("""Failed to create relation between obs_points and stratigraphy!""")
-
-            """
-            #now add attribute editor tabs with theses relations
-            layer = utils.find_layer('obs_points')
-            # skapa en container
-            if  utils.getcurrentlocale() == 'sv_SE':
-                tab1name = 'kommentarer'
-                tab2name = 'lageföljder'
-            else:
-                tab1name = 'comments'
-                tab2name = 'stratigraphy'
-            x = QgsAttributeEditorContainer (tab1name,layer)
-            # ange att containern är av tab-typ (True=group box, False=Tab)
-            x.setIsGroupBox (False)
-            # lägg till den till lagret
-            layer.addAttributeEditorWidget(x)
-            # skapar först en en attribute-editor-relation
-            p= QgsAttributeEditorRelation('obs_points_comments_id',rel1,x)
-            # sen ska den läggas till attributecontainer
-            x.addChildElement(p)
-            ## sedan samma för lagerföljder
-            y = QgsAttributeEditorContainer (tab2name,layer)
-            y.setIsGroupBox (False)
-            layer.addAttributeEditorWidget(y)
-            q= QgsAttributeEditorRelation('stratigraphy_id',rel2,y)
-            y.addChildElement(q)
-            """
                 
     def add_layers_old_method(self):
         """
