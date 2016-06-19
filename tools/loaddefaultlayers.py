@@ -157,22 +157,30 @@ class LoadLayers():
             else:
                 qgis.utils.iface.messageBar().pushMessage("Error","""Failed to create relation between obs_points and stratigraphy!""",2)
 
-            #now try to load the style file for obs_points again, including the new relation --------------------   NOT YET WÓRKING!!!
-            stylefile_sv = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",utils.find_layer('obs_points').name() + "_sv.qml")
-            stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",utils.find_layer('obs_points').name() + ".qml")
-            if  utils.getcurrentlocale() == 'sv_SE' and os.path.isfile( stylefile_sv ): #swedish forms are loaded only if locale settings indicate sweden
-                try:
-                    utils.find_layer('obs_points').loadNamedStyle(stylefile_sv)
-                except:
-                    try:
-                        utils.find_layer('obs_points').loadNamedStyle(stylefile)
-                    except:
-                        pass
+            #now add attribute editor tabs with theses relations
+            layer = utils.find_layer('obs_points')
+            # skapa en container
+            if  utils.getcurrentlocale() == 'sv_SE':
+                tab1name = 'kommentarer'
+                tab2name = 'lageföljder'
             else:
-                try:
-                    obs_points_layer.loadNamedStyle(stylefile)
-                except:
-                    pass
+                tab1name = 'comments'
+                tab2name = 'stratigraphy'
+            x = QgsAttributeEditorContainer (tab1name,layer)
+            # ange att containern är av tab-typ (True=group box, False=Tab)
+            x.setIsGroupBox (False)
+            # lägg till den till lagret
+            layer.addAttributeEditorWidget(x)
+            # skapar först en en attribute-editor-relation
+            p= QgsAttributeEditorRelation('obs_points_comments_id',rel1,x)
+            # sen ska den läggas till attributecontainer
+            x.addChildElement(p)
+            ## sedan samma för lagerföljder
+            y = QgsAttributeEditorContainer (tab2name,layer)
+            y.setIsGroupBox (False)
+            layer.addAttributeEditorWidget(y)
+            q= QgsAttributeEditorRelation('stratigraphy_id',rel2,y)
+            y.addChildElement(q)
             
         #finally refresh canvas
         canvas.refresh()
