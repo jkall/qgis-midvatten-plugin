@@ -133,7 +133,7 @@ class LoadLayers():
         #finally refresh canvas
         canvas.refresh()
 
-        # create layer relations
+        # create layer relations    ------ THIS IS YET NOT WORKING AS EXPECTED, ONLY RANDOMLY CREATING BOTH RELATIONS!!!
         if self.group_name == 'Midvatten_OBS_DB':
             rel1 = QgsRelation()
             rel1.setReferencingLayer( utils.find_layer('comments').id() )
@@ -142,9 +142,15 @@ class LoadLayers():
             rel1.setRelationId( 'obs_p_comments_id' )
             rel1.setRelationName( 'obs_p_comments' )
             if rel1.isValid(): # It will only be added if it is valid. If not, check the ids and field names
-                QgsProject.instance().relationManager().addRelation( rel1 )
+                
+                QgsProject.instance().relationManager().addRelation(rel1)
+                #validate
+                for key in QgsProject.instance().relationManager().relations().iterkeys():
+                    if str(key)==rel1.id():
+                        print('added relation comments-obs_points')
             else:
                 qgis.utils.iface.messageBar().pushMessage("Error","""Failed to create relation between obs_points and comments!""",2)
+                print("""Failed to create relation between obs_points and comments!""")
 
             rel2 = QgsRelation()
             rel2.setReferencingLayer( utils.find_layer('stratigraphy').id())
@@ -153,10 +159,15 @@ class LoadLayers():
             rel2.setRelationId( 'obs_p_stratigraphy_id' )
             rel2.setRelationName( 'obs_p_stratigraphy' )
             if rel2.isValid(): # It will only be added if it is valid. If not, check the ids and field names
-                QgsProject.instance().relationManager().addRelation( rel2 )
+                QgsProject.instance().relationManager().addRelation(rel2)
+                for key in QgsProject.instance().relationManager().relations().iterkeys():
+                    if str(key)==rel2.id():
+                        print('added relation stratigraphy-obs_points')
             else:
                 qgis.utils.iface.messageBar().pushMessage("Error","""Failed to create relation between obs_points and stratigraphy!""",2)
+                print("""Failed to create relation between obs_points and stratigraphy!""")
 
+            """
             #now add attribute editor tabs with theses relations
             layer = utils.find_layer('obs_points')
             # skapa en container
@@ -181,9 +192,7 @@ class LoadLayers():
             layer.addAttributeEditorWidget(y)
             q= QgsAttributeEditorRelation('stratigraphy_id',rel2,y)
             y.addChildElement(q)
-            
-        #finally refresh canvas
-        canvas.refresh()
+            """
                 
     def add_layers_old_method(self):
         """
@@ -252,6 +261,12 @@ class LoadLayers():
                     self.legend.setLayerVisible(layer,False)
 
     def remove_layers(self):
+        # remove relations
+        for key in QgsProject.instance().relationManager().relations().iterkeys():
+            if key in (u'obs_p_comments_id',u'obs_p_stratigraphy_id'):
+                del QgsProject.instance().relationManager().relations()[key]
+                print('removed relation %s'%str(key))
+
         try:#qgis>2.6
             remove_group = self.root.findGroup(self.group_name)
             self.root.removeChildNode(remove_group)
