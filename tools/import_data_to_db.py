@@ -32,6 +32,8 @@ import PyQt4.QtCore
 import PyQt4.QtGui
 
 import midvatten_utils as utils
+from definitions import midvatten_defs as defs
+
 from date_utils import find_date_format, datestring_to_date, dateshift
 
 
@@ -1055,7 +1057,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         instrumentids = utils.get_quality_instruments()[1]
         last_used_quality_instruments = utils.get_last_used_quality_instruments()
-        w_qual_field_parameters = utils.get_w_qual_field_parameters()
+        w_qual_field_parameters = defs.w_qual_field_parameters()
         existing_parameter_units = [u','.join([utils.returnunicode(v[1]), utils.returnunicode(v[2])]) for v in w_qual_field_parameters]
 
         instrument_question = utils.askuser("YesNo", """Do you want to confirm instrument id:s for water quality parameters?\nElse the last used instrument for each parameter by current staff will be used.""","Warning!")
@@ -1169,7 +1171,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         return file_data_list
 
     def ask_for_staff(self):
-        existing_staff = utils.get_staff_list()[1]
+        existing_staff = defs.staff_list()[1]
 
         if self.fieldlogger_staff is None:
             question = utils.NotFoundQuestion(dialogtitle=u'Submit field staff',
@@ -1252,7 +1254,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         for _staff in staff:
             _staff = utils.returnunicode(_staff)
-            existing_staff = [utils.returnunicode(x) for x in utils.get_staff_list()[1]]
+            existing_staff = [utils.returnunicode(x) for x in defs.staff_list()[1]]
             if _staff in existing_staff:
                 continue
             else:

@@ -19,6 +19,11 @@ $ cd ~/pythoncode/qgis_plugins/midvatten && pyrcc4 -o resources.py resources.qrc
 - for ui where direct load is not possible, compile new ui-files (i.e. create corresponding py files):
 $ cd ~/pythoncode/qgis_plugins/midvatten/ui && pyuic4 -xo myui.py myui.ui
 
+# ----------- Tests -------------
+cd path/to/midvatten/plugin/
+nosetests -vv --with-doctest --nocapture
+
+
 # ---------- prepare for upload to qgis plugin repo ---------------
 make a zipped archive of midvatten folder, excluding: 
 - *.pyc

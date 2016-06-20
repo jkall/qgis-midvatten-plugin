@@ -24,6 +24,7 @@
 
 import utils_for_tests
 import midvatten_utils as utils
+from definitions import midvatten_defs as defs
 from date_utils import datestring_to_date
 import utils_for_tests as test_utils
 from utils_for_tests import init_test
@@ -208,8 +209,8 @@ class TestFieldLoggerImporterNoDb():
     @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
     @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
     @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
-    @mock.patch('import_data_to_db.utils.get_staff_list' , existing_staff.get_v)
-    @mock.patch('import_data_to_db.utils.get_w_qual_field_parameters', autospec=True)
+    @mock.patch('import_data_to_db.defs.staff_list' , existing_staff.get_v)
+    @mock.patch('import_data_to_db.defs.w_qual_field_parameters', autospec=True)
     @mock.patch('midvatten_utils.qgis.utils.iface', autospec=True)
     @mock.patch('import_data_to_db.utils.get_last_used_quality_instruments', autospec=True)
     def test_fieldlogger_prepare_quality_data(self, mock_last_used_instruments, mock_iface, mock_parameters):
@@ -233,8 +234,8 @@ class TestFieldLoggerImporterNoDb():
     @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
     @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
     @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
-    @mock.patch('import_data_to_db.utils.get_staff_list' , existing_staff.get_v)
-    @mock.patch('import_data_to_db.utils.get_w_qual_field_parameters', autospec=True)
+    @mock.patch('import_data_to_db.defs.staff_list' , existing_staff.get_v)
+    @mock.patch('import_data_to_db.defs.w_qual_field_parameters', autospec=True)
     @mock.patch('midvatten_utils.qgis.utils.iface', autospec=True)
     @mock.patch('import_data_to_db.utils.get_last_used_quality_instruments', autospec=True)
     def test_fieldlogger_prepare_quality_data_sample(self, mock_last_used_instruments, mock_iface, mock_parameters):
@@ -323,7 +324,7 @@ class TestFieldLoggerImporterDb(object):
             @mock.patch('qgis.utils.iface', mocked_iface)
             @mock.patch('import_data_to_db.utils.get_quality_instruments', quality_instruments.get_v)
             @mock.patch('midvatten_utils.NotFoundQuestion', instrument_staff_questions.get_v)
-            @mock.patch('import_data_to_db.utils.get_w_qual_field_parameters', autospec=True)
+            @mock.patch('import_data_to_db.defs.w_qual_field_parameters', autospec=True)
             @mock.patch('import_data_to_db.utils.get_last_used_quality_instruments', autospec=True)
             def _test_fieldlogger_import(self, mocked_iface, mock_last_used_instruments, mock_parameters):
                 mock_last_used_instruments.return_value = {u'konduktivitet': [(u'µS/cm', u'teststaff', u'testid', u'')], u'syre': [(u'mg/L', u'teststaff', u'testid' , u''), (u'%', u'teststaff', u'testid' , u'')], u'temperatur': [(u'grC', u'teststaff', None, u'')], u'turbiditet': [(u'FNU', u'teststaff', u'testid', u'')]}

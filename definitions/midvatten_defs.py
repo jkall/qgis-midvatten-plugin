@@ -108,10 +108,6 @@ def default_layers_w_ui():
     list = ['obs_lines', 'obs_points', 'w_lvls_last_geom']
     return list
 
-def default_layers_w_form_logics():
-    list = ['obs_lines', 'obs_points', 'w_levels', 'w_flow', 'stratigraphy']
-    return list
-
 def geocolorsymbols():
     """
     This dictionary is used for stratigraph plots (Qt) to set color and brush style
@@ -282,7 +278,7 @@ def geocolorsymbols():
             dictionary[utils.unicode_2_utf8(v)] = (utils.unicode_2_utf8(dict_qt.get(key)[0]))
     return dictionary
     
-def hydrocolors(): # STRATIGRAPHY PLOT - THIS IS WHERE YOU SHALL CHANGE TO YOUR OWN capacity CODES AND COLORS
+def hydrocolors():
     """
     This dictionary is used for stratigraph plots (Qt) to set color depending on capacity
     Default method is to read the database table zz_capacity, the user may change zz_capacity table to change the stratigraphy plots
@@ -324,32 +320,8 @@ def hydrocolors(): # STRATIGRAPHY PLOT - THIS IS WHERE YOU SHALL CHANGE TO YOUR 
     #print(dict_qt)
     return dict_qt
 
-def stratitable(): # THIS IS THE NAME OF THE table WITH stratigraphy _ MUST NOT BE CHANGED
+def stratitable():
     return 'stratigraphy'
-
-def standard_parameters_for_wquality():
-    """ Returns a dict with water quality parameters
-    :return: A dict with parameter as key and unit as value
-    """
-    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "groupname" = 'quality' ''')
-    shortname_parameter_unit = utils.get_w_qual_field_parameters()
-    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
-    return shortname_unit
-
-def standard_parameters_for_wsample():
-    """ Returns a dict with water sample parameters
-    :return: A dict with parameter as key and unit as value
-    """
-    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "groupname" = 'sample' ''')
-    shortname_parameter_unit = utils.get_w_qual_field_parameters()
-    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
-    return shortname_unit
-
-def standard_parameters_for_wflow():
-    """ Returns a dict with water flow parameters
-    :return: A dict with parameter as key and unit as value
-    """
-    return utils.sql_to_parameters_units_tuple(u'''select type, unit from zz_flowtype''')
 
 def PlotTypesDict(international='no'): 
     """
@@ -513,7 +485,46 @@ def PlotHatchDict():
             "Peat" : u"+",
             "Fill":u"+"}
     return Dict
+
+def staff_list():
+    """
+    :return: A list of staff members from the staff table
+    """
+    sql = 'SELECT distinct staff from zz_staff'
+    sql_result = sql_load_fr_db(sql)
+    connection_ok, result_list = sql_result
+
+    if not connection_ok:
+        textstring = """Failed to get existing staff from staff table from sql """ + sql
+        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+        return False, tuple()
+
+    return True, returnunicode(tuple([x[0] for x in result_list]), True)
     
+def standard_parameters_for_wquality():
+    """ Returns a dict with water quality parameters
+    :return: A dict with parameter as key and unit as value
+    """
+    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "groupname" = 'quality' ''')
+    shortname_parameter_unit = w_qual_field_parameters()
+    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
+    return shortname_unit
+
+def standard_parameters_for_wsample():
+    """ Returns a dict with water sample parameters
+    :return: A dict with parameter as key and unit as value
+    """
+    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "groupname" = 'sample' ''')
+    shortname_parameter_unit = w_qual_field_parameters()
+    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
+    return shortname_unit
+
+def standard_parameters_for_wflow():
+    """ Returns a dict with water flow parameters
+    :return: A dict with parameter as key and unit as value
+    """
+    return utils.sql_to_parameters_units_tuple(u'''select type, unit from zz_flowtype''')
+
 def SQLiteInternalTables():
     return r"""('geom_cols_ref_sys',
                 'geometry_columns',
@@ -553,3 +564,14 @@ def sqlite_nonplot_tables():
                 'zz_meteoparam',
                 'zz_strat',
                 'zz_hydro')"""
+
+def w_qual_field_parameters():
+    sql = 'select shortname, parameter, unit from zz_w_qual_field_parameters'
+    sql_result = sql_load_fr_db(sql)
+    connection_ok, result_list = sql_result
+
+    if not connection_ok:
+        textstring = """Cannot get data from sql """ + sql
+        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+
+    return returnunicode(result_list, True)

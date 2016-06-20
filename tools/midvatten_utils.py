@@ -772,32 +772,6 @@ def get_last_used_quality_instruments():
     connection_ok, result_dict = get_sql_result_as_dict(sql)
     return returnunicode(result_dict, True)
 
-def get_w_qual_field_parameters():
-    sql = 'select shortname, parameter, unit from zz_w_qual_field_parameters'
-    sql_result = sql_load_fr_db(sql)
-    connection_ok, result_list = sql_result
-
-    if not connection_ok:
-        textstring = """Cannot get data from sql """ + sql
-        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
-
-    return returnunicode(result_list, True)
-
-def get_staff_list():
-    """
-    :return: A list of staff members from the staff table
-    """
-    sql = 'SELECT distinct staff from zz_staff'
-    sql_result = sql_load_fr_db(sql)
-    connection_ok, result_list = sql_result
-
-    if not connection_ok:
-        textstring = """Failed to get existing staff from staff table from sql """ + sql
-        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
-        return False, tuple()
-
-    return True, returnunicode(tuple([x[0] for x in result_list]), True)
-
 def get_sql_result_as_dict(sql):
     """
     Runs sql and returns result as dict
