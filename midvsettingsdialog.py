@@ -365,6 +365,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def load_and_select_general_settings(self):
         self.locales = [QLocale(QLocale.Swedish, QLocale.Sweden), QLocale(QLocale.English, QLocale.UnitedStates)]
 
+        self.locale_combobox.addItem(u'')
         for localeobj in self.locales:
             self.locale_combobox.addItem(localeobj.name())
 
