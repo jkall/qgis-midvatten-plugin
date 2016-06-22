@@ -1464,7 +1464,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         * Values containing ',' is replaced with '.'
         * Rows with missing "Water head[cm]"-data is skipped.
 
-        """    
+        """
+        #These can be set to paritally import files.
+        #begindate = datetime.strptime(u'2016-06-08 20:00:00',u'%Y-%m-%d %H:%M:%S')
+        #enddate = datetime.strptime(u'2016-06-08 19:00:00',u'%Y-%m-%d %H:%M:%S')
+
         filedata = []
         begin_extraction = False
         delimiter = u';'
@@ -1588,7 +1592,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         filtered_file_data.append(file_data[0])
         filtered_file_data.reverse()
         return filtered_file_data
-        #return 1
 
     def csv2qgsvectorlayer(self, path):
         """ Creates QgsVectorLayer from a csv file """
