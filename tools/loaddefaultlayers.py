@@ -218,6 +218,7 @@ class LoadLayers():
             QgsProject.instance().relationManager().addRelation(rel1)
             #validate
             for key in QgsProject.instance().relationManager().relations().iterkeys():
+                print(key)
                 if str(key)==rel1.id():
                     print('added relation comments-obs_points')
         else:
@@ -233,6 +234,7 @@ class LoadLayers():
         if rel2.isValid(): # It will only be added if it is valid. If not, check the ids and field names
             QgsProject.instance().relationManager().addRelation(rel2)
             for key in QgsProject.instance().relationManager().relations().iterkeys():
+                print(key)
                 if str(key)==rel2.id():
                     print('added relation stratigraphy-obs_points')
         else:
@@ -244,7 +246,7 @@ class LoadLayers():
         # skapa en container
         if  utils.getcurrentlocale() == 'sv_SE':
             tab1name = 'kommentarer'
-            tab2name = 'lageföljder'
+            tab2name = u'lagerföljder'
         else:
             tab1name = 'comments'
             tab2name = 'stratigraphy'
