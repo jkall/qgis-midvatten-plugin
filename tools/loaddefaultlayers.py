@@ -35,7 +35,6 @@ class LoadLayers():
         self.group_name = group_name
         self.default_layers =  defs.default_layers() 
         self.default_nonspatlayers = defs.default_nonspatlayers()
-        self.default_layers_w_form_logics = defs.default_layers_w_form_logics()
         self.iface = iface
         self.root = QgsProject.instance().layerTreeRoot()
         self.legend = self.iface.legendInterface()
