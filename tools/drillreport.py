@@ -18,7 +18,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QUrl
+from PyQt4.QtCore import QUrl, QDir
 from PyQt4.QtGui import QDesktopServices
 
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
@@ -31,8 +31,12 @@ class drillreport():        # general observation point info for the selected ob
     
     def __init__(self, obsid='', settingsdict = {}):
          #open connection to report file
-        reportpath = os.path.join(os.sep,os.path.dirname(__file__),"..","reports","drill_report.html")
+        reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
+        if not os.path.exists(reportfolder):
+            os.makedirs(reportfolder)
+        reportpath = os.path.join(reportfolder, "drill_report.html")
         logopath = os.path.join(os.sep,os.path.dirname(__file__),"..","about","midvatten_logga.png")
+        imgpath = os.path.join(os.sep,os.path.dirname(__file__),"..","reports")
         f = codecs.open(reportpath, "wb", "utf-8")
         
         #write some initiating html, header and also 
@@ -41,9 +45,11 @@ class drillreport():        # general observation point info for the selected ob
         rpt += r"""<html><TABLE WIDTH=100% BORDER=0 CELLPADDING=1 CELLSPACING=1><TR VALIGN=TOP><TD WIDTH=15%><h3 style="font-family:'arial';font-size:18pt; font-weight:600">"""
         rpt += obsid
         if  utils.getcurrentlocale() == 'sv_SE':
-            rpt += r"""</h3><img src="for_general_report_sv.png" /><br><img src='"""
+            rpt += ''.join([r'''</h3><img src="''', os.path.join(imgpath, 'for_general_report_sv.png'), r'''" /><br><img src=''', r"""'"""])
+            #rpt += r"""</h3><img src="for_general_report_sv.png" /><br><img src='"""
         else:
-            rpt += r"""</h3><img src="for_general_report.png" /><br><img src='"""
+            rpt += ''.join([r'''</h3><img src="''', os.path.join(imgpath, 'for_general_report.png'), r'''" /><br><img src=''', r"""'"""])
+            #rpt += r"""</h3><img src="for_general_report.png" /><br><img src='"""
         rpt += logopath
         rpt +="""' /></TD><TD WIDTH=85%><TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
         if  utils.getcurrentlocale() == 'sv_SE':

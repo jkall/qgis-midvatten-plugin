@@ -20,9 +20,11 @@
 """
 # Import the PyQt and QGIS libraries
 from PyQt4.QtCore import *
+from PyQt4.QtCore import QDir
 from PyQt4.QtGui import *
 from qgis.core import *
 import qgis.utils
+import shutil
 import resources  # Initialize Qt resources from file resources.py
 
 # Import some general python modules
@@ -337,7 +339,12 @@ class midvatten:
         homepage = str(iniText.value('homepage'))
 
         ABOUT_templatefile = os.path.join(os.sep,os.path.dirname(__file__),"about","about_template.htm")
-        ABOUT_outputfile = os.path.join(os.sep,os.path.dirname(__file__),"about","about.htm")
+        ABOUT_outpath = os.path.join(QDir.tempPath(), 'midvatten_about')
+        if not os.path.exists(ABOUT_outpath):
+            os.makedirs(ABOUT_outpath)
+        ABOUT_outputfile = os.path.join(ABOUT_outpath, "about.htm")
+        shutil.copy2(os.path.join(os.path.dirname(ABOUT_templatefile), 'midvatten_logga.png'), os.path.join(ABOUT_outpath, 'midvatten_logga.png'))
+
         f_in = open(ABOUT_templatefile, 'r')
         f_out = open(ABOUT_outputfile, 'w')
         wholefile = f_in.read()
