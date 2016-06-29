@@ -164,10 +164,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = False
             return u'cancel'
 
-        wquallab_data_table = self.interlab4_to_table(all_lab_results)
-        if not wquallab_data_table == u'error':
-            self.send_file_data_to_importer(wquallab_data_table, self.wquallab_import_from_csvlayer, self.check_obsids)
-            self.SanityCheckVacuumDB()
+        wquallab_data_table = self.interlab4_to_table(all_lab_results, utils.get_all_obsids())
+        if wquallab_data_table in [u'cancel', u'error']:
+            self.status = False
+            return wquallab_data_table
+
+        self.send_file_data_to_importer(wquallab_data_table, self.wquallab_import_from_csvlayer, self.check_obsids)
+        self.SanityCheckVacuumDB()
+
 
     def parse_interlab4(self, filenames=None):
         """ Reads the interlab
@@ -340,7 +344,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         return (file_error, version, encoding, decimalsign, quotechar)
 
-    def interlab4_to_table(self, _data_dict):
+    def interlab4_to_table(self, _data_dict, existing_obsids=[]):
         """
         Converts a parsed interlab4 dict into a table for w_qual_lab import
 
@@ -360,8 +364,26 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             try:
                 obsid = metadata[u'provplatsid']
             except KeyError, e:
-                qgis.utils.iface.messageBar().pushMessage('Interlab4 import error: There was no obsid present in the file. Check Provadm column "ProvplatsID"')
-                return u'error'
+                obsid = None
+
+            if obsid not in existing_obsids:
+                metadata_as_text = [u': '.join([u'lablittera', lablittera])]
+                metadata_as_text.extend([u': '.join([k, v]) for k, v in sorted(metadata.iteritems())])
+                metadata_as_text = u'\n'.join(metadata_as_text)
+
+                question = utils.NotFoundQuestion(dialogtitle=u'Submit obsid',
+                                                  msg=u''.join([u'Submit the obsid for the metadata:\n ', metadata_as_text]),
+                                                  existing_list=existing_obsids,
+                                                  default_value=u'',
+                                                  button_names=[u'Skip', u'Ok', u'Cancel'])
+                answer = question.answer
+                if answer == u'cancel':
+                    return u'cancel'
+                elif answer == u'skip':
+                    continue
+
+                obsid = utils.returnunicode(question.value)
+
             depth = None
             report = lablittera
             project = metadata.get(u'projekt', None)
@@ -377,6 +399,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     date_time = datetime.strftime(datestring_to_date(u' '.join([sampledate, sampletime])), u'%Y-%m-%d %H:%M:%S')
                 else:
                     date_time = datetime.strftime(datestring_to_date(sampledate), u'%Y-%m-%d %H:%M:%S')
+                    qgis.utils.iface.messageBar().pushMessage('Interlab4 import warning: There was no sample time found (column "provtagningstid"). Importing without it.')
 
             meta_comment = metadata.get(u'kommentar', None)
             additional_meta_comments = [u'provtagningsorsak',
@@ -392,7 +415,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                         u'mätvärdespår',
                                         u'parameterbedömning']
             #Only keep the comments that really has a value.
-            more_meta_comments = u'. '.join([u': '.join([_x, metadata[_x]]) for _x in [_y for _y in additional_meta_comments if _y in metadata]  if all([metadata[_x], metadata[_x] is not None])])
+            more_meta_comments = u'. '.join([u': '.join([_x, metadata[_x]]) for _x in [_y for _y in additional_meta_comments if _y in metadata]  if all([metadata[_x], metadata[_x] is not None, metadata[_x].lower() != u'ej bedömt'])])
             if not more_meta_comments:
                 more_meta_comments = None
 

@@ -960,7 +960,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
                     continue
 
             question = NotFoundQuestion(dialogtitle=u'WARNING',
-                                        msg=u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + current_value + u'" on row:\n"' + u', '.join(row) + u'".\ndid not exist in db.\n\nPlease submit it again!\nIt will be used for all occurences of the same ' + header_value + u'\n',
+                                        msg=u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'" on row:\n"' + u', '.join(returnunicode(row, keep_containers=True)) + u'".\ndid not exist in db.\n\nPlease submit it again!\nIt will be used for all occurences of the same ' + header_value + u'\n',
                                         existing_list=similar_values,
                                         default_value=similar_values[0],
                                         button_names=[u'Ignore', u'Cancel', u'Ok', u'Skip'])

@@ -1284,7 +1284,7 @@ class TestInterlab4Importer():
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse_interlab4([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result, [u'Demo1 vattenverk']))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, 5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
@@ -1310,7 +1310,7 @@ class TestInterlab4Importer():
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse_interlab4([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result, [u'Demo1 vattenverk']))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 4, 4, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
@@ -1336,7 +1336,7 @@ class TestInterlab4Importer():
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse_interlab4([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result, [u'Demo1 vattenverk']))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.5, 1,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
@@ -1362,7 +1362,7 @@ class TestInterlab4Importer():
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse_interlab4([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result, [u'Demo1 vattenverk']))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'

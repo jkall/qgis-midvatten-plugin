@@ -74,6 +74,16 @@ class TestFilterNonexistingObsidsAndAsk(object):
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g']]
             assert filtered_file_data == reference_list
 
+    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    def test_filter_nonexisting_obsids_and_ask_none_value_skip(self, mock_notfound):
+            mock_notfound.return_value.answer = u'skip'
+            mock_notfound.return_value.value = 10
+            file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [None, u'h']]
+            existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
+            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
+            reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g']]
+            assert filtered_file_data == reference_list
+
     def test_filter_nonexisting_obsids_and_ask_header_not_found(self):
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
