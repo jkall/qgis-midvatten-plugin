@@ -17,7 +17,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QUrl, Qt
+from PyQt4.QtCore import QUrl, Qt, QDir
 from PyQt4.QtGui import QDesktopServices, QApplication, QCursor
 
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
@@ -38,7 +38,11 @@ class wqualreport():        # extracts water quality data for selected objects, 
         kolumnindex = provider.fieldNameIndex('obsid') # To find the column named 'obsid'
         observations = layer.selectedFeatures()
         i = 0
-        reportpath = os.path.join(os.sep,os.path.dirname(__file__),"..","reports","w_qual_report.html")
+
+        reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
+        if not os.path.exists(reportfolder):
+            os.makedirs(reportfolder)
+        reportpath = os.path.join(reportfolder, "w_qual_report.html")
         #f = open(reportpath, "wb" )
         f = codecs.open(reportpath, "wb", "utf-8")
 
