@@ -13,7 +13,7 @@ insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshort
 insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('grovsand','green','*','green','Dense5Pattern','in (''grovsand'',''sag'',''coarse sand'',''csa'')');
 insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('sand','green','*','green','Dense5Pattern','in (''sand'',''sa'')');
 insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('mellansand','green','.','green','Dense4Pattern','in (''mellansand'',''sam'',''medium sand'',''msa'')');
-insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('finsand','DarkOrange','.','darkYellow','Dense4Pattern','in (''finsand'',''saf'',''fine sand'',''fsa'')');
+insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('finsand','DarkOrange','.','orange','Dense5Pattern','in (''finsand'',''saf'',''fine sand'',''fsa'')');
 insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('silt','yellow','\\','yellow','BDiagPattern','in (''silt'',''si'')');
 insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('lera','yellow','-','yellow','HorPattern','in (''lera'',''ler'',''le'',''clay'',''cl'')');
 insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('morän','cyan','/','yellow','CrossPattern','in (''morän'',''moran'',''mn'',''till'',''ti'')');

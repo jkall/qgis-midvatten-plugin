@@ -112,6 +112,7 @@ def geocolorsymbols():
     """
     This dictionary is used for stratigraph plots (Qt) to set color and brush style
     Default method is to read the database table zz_strat, the user may change zz_strat table to change the stratigraphy plots
+    Predefined Qt colors are allowed (http://doc.qt.io/qt-4.8/qcolor.html#predefined-colors) and so is also svg 1.0 names (https://www.w3.org/TR/SVG/types.html#ColorKeywords)
     Fallback methods use color codes and brush styles found in code below
     """
     res1, dict_qt = utils.get_sql_result_as_dict('select strat, brush_qt, color_qt from zz_strat')

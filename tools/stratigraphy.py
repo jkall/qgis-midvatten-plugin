@@ -484,8 +484,11 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
         elif type == 'geo':
             #if id.lower() in self.geoColorSymbols:
             if id in self.geoColorSymbols:
-                #return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id.lower()][1])
-                return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id][1])
+                try:# first we assume it is a predefined Qt color, hence use PyQt4.QtCore.Qt  
+                    #return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id.lower()][1])
+                    return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id][1])
+                except: # otherwise it must be a SVG 1.0 color name, then it must be created by QtGui.QColor instead
+                    return PyQt4.QtGui.QColor(self.geoColorSymbols[id][1])
             else:
                 return PyQt4.QtCore.Qt.white
 
