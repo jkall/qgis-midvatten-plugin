@@ -651,7 +651,7 @@ class midvatten:
                 importinstance = midv_data_importer()
                 importinstance.default_import(importinstance.wqualfield_import_from_csvlayer)
                 if importinstance.status=='True':      # 
-                    self.iface.messageBar().pushMessage("Info","%s water quality paramters were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
+                    self.iface.messageBar().pushMessage("Info","%s water quality parameters were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
                     try:
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
