@@ -20,6 +20,7 @@
 
 import locale
 from collections import OrderedDict
+import qgis.utils
 
 import midvatten_utils as utils
 
