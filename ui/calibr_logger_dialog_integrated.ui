@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>991</width>
-    <height>482</height>
+    <height>590</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,6 +15,77 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="1">
+     <widget class="QWidget" name="widgetPlot" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>300</width>
+        <height>100</height>
+       </size>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_5">
+       <item row="0" column="0">
+        <layout class="QVBoxLayout" name="layoutplot"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QCheckBox" name="loggerLineNodes">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Circle nodes for logger line</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QCheckBox" name="plot_logger_head">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Plot original logger head</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0" colspan="2">
@@ -142,7 +213,7 @@ Please note that this will change the database.</string>
          </font>
         </property>
         <property name="text">
-         <string></string>
+         <string/>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
@@ -151,7 +222,7 @@ Please note that this will change the database.</string>
          <bool>true</bool>
         </property>
        </widget>
-      </item>      
+      </item>
       <item row="4" column="0" colspan="2">
        <widget class="Line" name="line_2">
         <property name="sizePolicy">
@@ -171,46 +242,46 @@ Please note that this will change the database.</string>
         </property>
        </widget>
       </item>
-     <item row="5" column="0" colspan="2">
+      <item row="5" column="0" colspan="2">
        <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QPushButton" name="pushButtonupdateplot">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Update plot</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="2">
-       <widget class="Line" name="line_3">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
+        <item row="0" column="0">
+         <widget class="QPushButton" name="pushButtonupdateplot">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Update plot</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="2">
+         <widget class="Line" name="line_3">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_8">
           <property name="sizePolicy">
@@ -235,7 +306,7 @@ Please note that this will change the database.</string>
            <number>3</number>
           </property>
          </widget>
-        </item>        
+        </item>
         <item row="3" column="0">
          <widget class="QDateTimeEdit" name="FromDateTime">
           <property name="sizePolicy">
@@ -286,25 +357,25 @@ Please note that this will change the database.</string>
           </property>
          </widget>
         </item>
-      <item row="3" column="1">
-       <widget class="QPushButton" name="pushButtonFrom">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Select from</string>
-        </property>
-       </widget>
-      </item>     
+        <item row="3" column="1">
+         <widget class="QPushButton" name="pushButtonFrom">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Select from</string>
+          </property>
+         </widget>
+        </item>
         <item row="4" column="0">
          <widget class="QLabel" name="label_9">
           <property name="sizePolicy">
@@ -329,7 +400,7 @@ Please note that this will change the database.</string>
            <number>3</number>
           </property>
          </widget>
-        </item>   
+        </item>
         <item row="5" column="0">
          <widget class="QDateTimeEdit" name="ToDateTime">
           <property name="sizePolicy">
@@ -380,44 +451,44 @@ Please note that this will change the database.</string>
           </property>
          </widget>
         </item>
-      <item row="5" column="1">
-       <widget class="QPushButton" name="pushButtonTo">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Select to</string>
-        </property>
-       </widget>
-      </item>   
-      <item row="6" column="0" colspan="2">
-       <widget class="Line" name="line_4">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
+        <item row="5" column="1">
+         <widget class="QPushButton" name="pushButtonTo">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Select to</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0" colspan="2">
+         <widget class="Line" name="line_4">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
         <item row="7" column="0" rowspan="2">
          <widget class="QLabel" name="label_11">
           <property name="font">
@@ -459,50 +530,50 @@ Please note that this will change the database.</string>
           </property>
          </widget>
         </item>
-    <item row="9" column="1">    
-     <widget class="QPushButton" name="loggerpos_masl_or_offset">    
-      <property name="sizePolicy">    
-       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">    
-        <horstretch>0</horstretch>    
-        <verstretch>0</verstretch>    
-       </sizepolicy>    
-      </property>    
-      <property name="minimumSize">    
-       <size>    
-        <width>0</width>    
-        <height>0</height>    
-       </size>    
-      </property>    
-      <property name="font">    
-       <font>    
-        <family>Arial</family>    
-        <pointsize>10</pointsize>    
-       </font>    
-      </property>
-      <property name="text">
-       <string>Change to offset</string>
-      </property>      
-     </widget>    
-    </item>        
-      <item row="10" column="0" colspan="2">
-       <widget class="Line" name="line_5">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
+        <item row="9" column="1">
+         <widget class="QPushButton" name="loggerpos_masl_or_offset">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Change to offset</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="0" colspan="2">
+         <widget class="Line" name="line_5">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
         <item row="11" column="0" colspan="2">
          <widget class="QLabel" name="label_adjustment_info">
           <property name="font">
@@ -519,44 +590,44 @@ Please note that this will change the database.</string>
           </property>
          </widget>
         </item>
-      <item row="12" column="0">
-       <widget class="QPushButton" name="pushButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Calibrate</string>
-        </property>
-       </widget>
-      </item>
-      <item row="13" column="0">
-       <widget class="QPushButton" name="pushButtonLpos">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Calibrate by selection in plot</string>
-        </property>
-       </widget>
-      </item>   
+        <item row="12" column="0">
+         <widget class="QPushButton" name="pushButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Calibrate</string>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="0">
+         <widget class="QPushButton" name="pushButtonLpos">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Calibrate by selection in plot</string>
+          </property>
+         </widget>
+        </item>
         <item row="14" column="1">
          <widget class="QLabel" name="label_tolerance">
           <property name="sizePolicy">
@@ -582,25 +653,25 @@ Please note that this will change the database.</string>
           </property>
          </widget>
         </item>
-      <item row="15" column="0">
-       <widget class="QPushButton" name="pushButtonCalcBestFit">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Calibrate by best fit</string>
-        </property>
-       </widget>
-      </item> 
+        <item row="15" column="0">
+         <widget class="QPushButton" name="pushButtonCalcBestFit">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Calibrate by best fit</string>
+          </property>
+         </widget>
+        </item>
         <item row="15" column="1">
          <widget class="QLineEdit" name="bestFitTolerance">
           <property name="sizePolicy">
@@ -625,104 +696,66 @@ Please note that this will change the database.</string>
            <set>Qt::ImhPreferNumbers</set>
           </property>
          </widget>
-     <item row="16" column="0" colspan="2" rowspan="3">
-       <widget class="QLabel" name="calib_help">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <family>Arial</family>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string></string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>    
-        </item>  
+        </item>
+        <item row="17" column="0" rowspan="3" colspan="2">
+         <widget class="QLabel" name="calib_help">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="21" column="0">
+         <widget class="QPushButton" name="pushButton_delete_logger">
+          <property name="text">
+           <string>Delete logger data</string>
+          </property>
+         </widget>
+        </item>
+        <item row="21" column="1">
+         <widget class="QPushButton" name="pushButton_delete_meas">
+          <property name="text">
+           <string>Delete measurement data</string>
+          </property>
+         </widget>
+        </item>
+        <item row="20" column="0" colspan="2">
+         <widget class="Line" name="line_16">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
        </layout>
-      </item>             
+      </item>
      </layout>
     </item>
-    <item row="0" column="1">
-     <widget class="QWidget" name="widgetPlot" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>300</width>
-        <height>100</height>
-       </size>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_5">
-       <item row="0" column="0">
-        <layout class="QVBoxLayout" name="layoutplot"/>
-       </item>
-    <item row="1" column="0">    
-     <widget class="QCheckBox" name="loggerLineNodes">    
-      <property name="sizePolicy">    
-       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">    
-        <horstretch>0</horstretch>    
-        <verstretch>0</verstretch>    
-       </sizepolicy>    
-      </property>    
-      <property name="minimumSize">    
-       <size>    
-        <width>0</width>    
-        <height>0</height>    
-       </size>    
-      </property>    
-      <property name="font">    
-       <font>    
-        <family>Arial</family>    
-        <pointsize>10</pointsize>    
-       </font>    
-      </property>
-      <property name="text">
-       <string>Circle nodes for logger line</string>
-      </property>      
-     </widget>    
-    </item>     
-    <item row="2" column="0">    
-     <widget class="QCheckBox" name="plot_logger_head">    
-      <property name="sizePolicy">    
-       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">    
-        <horstretch>0</horstretch>    
-        <verstretch>0</verstretch>    
-       </sizepolicy>    
-      </property>    
-      <property name="minimumSize">    
-       <size>    
-        <width>0</width>    
-        <height>0</height>    
-       </size>    
-      </property>    
-      <property name="font">    
-       <font>    
-        <family>Arial</family>    
-        <pointsize>10</pointsize>    
-       </font>    
-      </property>
-      <property name="text">
-       <string>Plot original logger head</string>
-      </property>      
-     </widget>    
-    </item>             
-      </layout>
-     </widget>
-    </item>        
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">

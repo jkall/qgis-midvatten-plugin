@@ -167,6 +167,9 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.connect(self.pushButtonLpos, PyQt4.QtCore.SIGNAL("clicked()"), self.calibrate_from_plot_selection)
         self.connect(self.pushButtonCalcBestFit, PyQt4.QtCore.SIGNAL("clicked()"), self.calc_best_fit)
 
+        self.connect(self.pushButton_delete_logger, PyQt4.QtCore.SIGNAL("clicked()"), lambda: self.delete_selected_range(u'w_levels_logger'))
+        self.connect(self.pushButton_delete_meas, PyQt4.QtCore.SIGNAL("clicked()"), lambda: self.delete_selected_range(u'w_levels'))
+
         self.get_tolerance()
 
         # Populate combobox with obsid from table w_levels_logger
@@ -313,7 +316,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         p=[None]*2 # List for plot objects
     
         # Load manual reading (full time series) for the obsid
-        self.plot_recarray(self.axes, self.meas_ts, obsid, 'o-', 0)
+        self.plot_recarray(self.axes, self.meas_ts, obsid, 'o-', 10)
         
         # Load Loggerlevels (full time series) for the obsid
         if self.loggerLineNodes.isChecked():
@@ -324,7 +327,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
         #Plot the original head_cm
         if self.plot_logger_head.isChecked():
-            self.plot_recarray(self.axes, self.head_ts, obsid + unicode(' original logger head', 'utf-8'), '-', 0)
+            self.plot_recarray(self.axes, self.head_ts, obsid + unicode(' original logger head', 'utf-8'), logger_line_style, 10)
 
         """ Finish plot """
         self.axes.grid(True)
@@ -601,4 +604,33 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         elif self.mpltoolbar._active == "ZOOM":
             self.mpltoolbar.zoom()
 
-        
+    def delete_selected_range(self, table_name):
+        """ Deletes the current selected range from the database from w_levels_logger
+        :return: De
+        """
+        current_loaded_obsid = self.obsid
+        selected_obsid = self.load_obsid_and_init()
+        if current_loaded_obsid != selected_obsid:
+            utils.pop_up_info("Error!\n The obsid selection has been changed but the plot has not been updated. No deletion done.\nUpdating plot.")
+            self.update_plot()
+            return
+
+        fr_d_t = str((self.FromDateTime.dateTime().toPyDateTime() - datetime.datetime(1970,1,1)).total_seconds())
+        to_d_t = str((self.ToDateTime.dateTime().toPyDateTime() - datetime.datetime(1970,1,1)).total_seconds())
+
+        sql_list = []
+        sql_list.append(r"""delete from "%s" """%table_name)
+        sql_list.append(r"""where obsid = '%s' """%selected_obsid)
+        sql_list.append(r"""AND CAST(strftime('%s', date_time) AS NUMERIC) """)
+        sql_list.append(r""" >= '%s' """%fr_d_t)
+        sql_list.append(r"""AND CAST(strftime('%s', date_time) AS NUMERIC) """)
+        sql_list.append(r""" <= '%s' """%to_d_t)
+        sql = ''.join(sql_list)
+
+        really_delete = utils.askuser("YesNo", "Do you want to delete the period " +
+                                      str(self.FromDateTime.dateTime().toPyDateTime()) + " to " +
+                                      str(self.ToDateTime.dateTime().toPyDateTime()) +
+                                      " for obsid " + selected_obsid + " from table " + table_name + "?").result
+        if really_delete:
+            utils.sql_alter_db(sql)
+            self.update_plot()
