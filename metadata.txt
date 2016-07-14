@@ -3,7 +3,7 @@
 name=Midvatten
 qgisMinimumVersion=2.4
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.3.6
+version=Version 1.3.7
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 
@@ -20,6 +20,8 @@ deprecated=False
 changelog=
         Version 1.3.6
         - locale is a selectable option in Midvatten settings
+        - stratigraphy plot can use svg color names (set in zz_strat table)
+        - import of interlab 4 files
         Version 1.3.4
         - support for exporting/importing files for the FieldLogger android/iPhone app
         - automatic updates of attribute table coordinates when an obs_point is created/moved, and vice versa

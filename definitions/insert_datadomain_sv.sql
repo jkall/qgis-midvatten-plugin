@@ -13,7 +13,7 @@ insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshort
 insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('grovsand','green','*','green','Dense5Pattern','in (''grovsand'',''sag'',''coarse sand'',''csa'')');
 insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('sand','green','*','green','Dense5Pattern','in (''sand'',''sa'')');
 insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('mellansand','green','.','green','Dense4Pattern','in (''mellansand'',''sam'',''medium sand'',''msa'')');
-insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('finsand','DarkOrange','.','darkYellow','Dense4Pattern','in (''finsand'',''saf'',''fine sand'',''fsa'')');
+insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('finsand','DarkOrange','.','orange','Dense5Pattern','in (''finsand'',''saf'',''fine sand'',''fsa'')');
 insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('silt','yellow','\\','yellow','BDiagPattern','in (''silt'',''si'')');
 insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('lera','yellow','-','yellow','HorPattern','in (''lera'',''ler'',''le'',''clay'',''cl'')');
 insert into "zz_strat" (strat,color_mplot,hatch_mplot,color_qt,brush_qt,geoshorts) values('morän','cyan','/','yellow','CrossPattern','in (''morän'',''moran'',''mn'',''till'',''ti'')');
@@ -50,6 +50,7 @@ insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanatio
 insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('redoxpotential', 'redox', 'mV', 'förmåga att ta upp elektroner');
 insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('temperatur', 'temp', 'grC', 'vattentemperatur');
 insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('turbiditet', 'turb', 'FNU', 'suspension av olösta partiklar');
+<<<<<<< HEAD
 insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('DO', '%', 'quality');
 insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('DO', 'mg/L', 'quality');
 insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('konduktivitet', 'µS/cm', 'quality');
@@ -58,3 +59,13 @@ insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname"
 insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('temperatur', 'grC', 'quality');
 insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('turbiditet', 'FNU', 'sample');
 insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('temperatur', 'grC', 'sample');
+=======
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('DO', '%', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('DO', 'mg/L', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('konduktivitet', 'µS/cm', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('pH', NULL, 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('redoxpotential', 'mV', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('temperatur', 'grC', 'quality')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('turbiditet', 'FNU', 'sample')
+insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('temperatur', 'grC', 'sample')
+>>>>>>> fe469d489001cd40bc6fc15d696771bef992680c
