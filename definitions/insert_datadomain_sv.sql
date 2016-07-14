@@ -50,7 +50,6 @@ insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanatio
 insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('redoxpotential', 'redox', 'mV', 'förmåga att ta upp elektroner');
 insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('temperatur', 'temp', 'grC', 'vattentemperatur');
 insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('turbiditet', 'turb', 'FNU', 'suspension av olösta partiklar');
-<<<<<<< HEAD
 insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('DO', '%', 'quality');
 insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('DO', 'mg/L', 'quality');
 insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('konduktivitet', 'µS/cm', 'quality');
@@ -59,13 +58,4 @@ insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname"
 insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('temperatur', 'grC', 'quality');
 insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('turbiditet', 'FNU', 'sample');
 insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('temperatur', 'grC', 'sample');
-=======
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('DO', '%', 'quality')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('DO', 'mg/L', 'quality')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('konduktivitet', 'µS/cm', 'quality')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('pH', NULL, 'quality')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('redoxpotential', 'mV', 'quality')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('temperatur', 'grC', 'quality')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('turbiditet', 'FNU', 'sample')
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('temperatur', 'grC', 'sample')
->>>>>>> fe469d489001cd40bc6fc15d696771bef992680c
+
