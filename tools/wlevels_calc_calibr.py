@@ -187,19 +187,25 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             rs.close()
             myconnection.closedb()
 
-    def load_obsid_and_init(self, update_level_masl=True):
+    def load_obsid_and_init(self):
+        """ Checks the current obsid and reloads all ts.
+        :return: obsid
+
+        Info: Before, some time series was only reloaded when the obsid was changed, but this caused a problem if the
+        data was changed in the background in for example spatialite gui. Now all time series are reloaded always.
+        It's rather fast anyway.
+        """
         obsid = unicode(self.combobox_obsid.currentText())
         if not obsid:
             utils.pop_up_info("ERROR: no obsid is chosen")
-        if self.obsid != obsid:
-            meas_sql = r"""SELECT date_time, level_masl FROM w_levels WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
-            self.meas_ts = self.sql_into_recarray(meas_sql)
-            head_sql = r"""SELECT date_time as 'date [datetime]', head_cm / 100 FROM w_levels_logger WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
-            self.head_ts = self.sql_into_recarray(head_sql)
-            self.obsid = obsid
-        if update_level_masl:
-            level_masl_ts_sql = r"""SELECT date_time as 'date [datetime]', level_masl FROM w_levels_logger WHERE obsid = '""" + self.obsid + """' ORDER BY date_time"""
-            self.level_masl_ts = self.sql_into_recarray(level_masl_ts_sql)
+
+        meas_sql = r"""SELECT date_time, level_masl FROM w_levels WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
+        self.meas_ts = self.sql_into_recarray(meas_sql)
+        head_sql = r"""SELECT date_time as 'date [datetime]', head_cm / 100 FROM w_levels_logger WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
+        self.head_ts = self.sql_into_recarray(head_sql)
+        self.obsid = obsid
+        level_masl_ts_sql = r"""SELECT date_time as 'date [datetime]', level_masl FROM w_levels_logger WHERE obsid = '""" + self.obsid + """' ORDER BY date_time"""
+        self.level_masl_ts = self.sql_into_recarray(level_masl_ts_sql)
         return obsid
 
     def getlastcalibration(self):
@@ -227,7 +233,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     def calibrate(self):
         self.calib_help.setText("Calibrating")
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        obsid = self.load_obsid_and_init(False)
+        obsid = self.load_obsid_and_init()
         if not obsid=='':        
             sanity1sql = """select count(obsid) from w_levels_logger where obsid = '""" +  obsid[0] + """'"""
             sanity2sql = """select count(obsid) from w_levels_logger where head_cm not null and head_cm !='' and obsid = '""" +  obsid[0] + """'"""
