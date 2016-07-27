@@ -35,8 +35,8 @@ class drillreport():        # general observation point info for the selected ob
         if not os.path.exists(reportfolder):
             os.makedirs(reportfolder)
         reportpath = os.path.join(reportfolder, "drill_report.html")
-        logopath = os.path.join(os.sep,os.path.dirname(__file__),"..","about","midvatten_logga.png")
-        imgpath = os.path.join(os.sep,os.path.dirname(__file__),"..","reports")
+        logopath = os.path.join(os.sep,os.path.dirname(__file__),"..","templates","midvatten_logga.png")
+        imgpath = os.path.join(os.sep,os.path.dirname(__file__),"..","templates")
         f = codecs.open(reportpath, "wb", "utf-8")
         
         #write some initiating html, header and also 

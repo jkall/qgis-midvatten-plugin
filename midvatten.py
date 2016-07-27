@@ -338,7 +338,7 @@ class midvatten:
         email = str(iniText.value('email'))
         homepage = str(iniText.value('homepage'))
 
-        ABOUT_templatefile = os.path.join(os.sep,os.path.dirname(__file__),"about","about_template.htm")
+        ABOUT_templatefile = os.path.join(os.sep,os.path.dirname(__file__),"templates","about_template.htm")
         ABOUT_outpath = os.path.join(QDir.tempPath(), 'midvatten_about')
         if not os.path.exists(ABOUT_outpath):
             os.makedirs(ABOUT_outpath)
