@@ -295,13 +295,13 @@ class midvatten:
         self.menu.addMenu(self.menu.utils)
         self.menu.utils.addAction(self.actionloaddatadomains)
         self.menu.utils.addAction(self.actionPrepareFor2Qgis2ThreeJS)
+        self.menu.utils.addAction(self.actionresetSettings)
         #self.menu.utils.addAction(self.action_calculate_statistics_for_all_w_logger_data) #HS: This one is not needed currently, but kept in the code.
 
         self.menu.addSeparator()
 
         self.menu.addAction(self.actionloadthelayers)   
         self.menu.addAction(self.actionsetup)
-        self.menu.addAction(self.actionresetSettings)
         self.menu.addAction(self.actionabout)
         #self.iface.addPluginToMenu("&Midvatten", self.actionsetup)
         #self.iface.addPluginToMenu("&Midvatten", self.actionresetSettings)
