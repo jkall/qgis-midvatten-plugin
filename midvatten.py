@@ -235,7 +235,19 @@ class midvatten:
         #self.toolBar.addAction(self.actionChartMaker)
         
         # Add plugins menu items
-        self.menu = QMenu("Midvatten")
+        #self.menu = QMenu("Midvatten")
+        self.menu = None
+        # Check if the menu exists and get it
+        for child in self.iface.mainWindow().menuBar().children(): 
+            if isinstance(child,QMenu):
+                if child.title() == "Midvatten": 
+                    self.menu = child
+        # If the menu does not exist, create it!
+        if not self.menu:
+            self.menu = QMenu( "Midvatten", self.iface.mainWindow().menuBar() )
+            menuBar = self.iface.mainWindow().menuBar()
+            menuBar.addMenu(self.menu)
+
         self.menu.import_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Import data to database"))
         #self.iface.addPluginToMenu("&Midvatten", self.menu.add_data_menu.menuAction())
         self.menu.addMenu(self.menu.import_data_menu)
@@ -303,11 +315,9 @@ class midvatten:
         self.menu.addAction(self.actionloadthelayers)   
         self.menu.addAction(self.actionsetup)
         self.menu.addAction(self.actionabout)
-        #self.iface.addPluginToMenu("&Midvatten", self.actionsetup)
-        #self.iface.addPluginToMenu("&Midvatten", self.actionresetSettings)
-        #self.iface.addPluginToMenu("&Midvatten", self.actionabout)
-        menuBar = self.iface.mainWindow().menuBar()
-        menuBar.addMenu(self.menu)
+
+        #menuBar = self.iface.mainWindow().menuBar()
+        #menuBar.addMenu(self.menu)
 
         # QGIS iface connections
         self.iface.projectRead.connect(self.project_opened)
@@ -315,8 +325,14 @@ class midvatten:
 
     def unload(self):    
         # Remove the plugin menu items and icons
+        self.menu.removeAction(self.actionloadthelayers)
+        self.menu.removeAction(self.actionsetup)
+        self.menu.removeAction(self.actionabout)
+        
+        menubar = self.menu.parentWidget()
+        menubar.removeAction(self.menu.menuAction())
         self.menu.deleteLater()
-
+        
         # remove tool bar
         del self.toolBar
         
