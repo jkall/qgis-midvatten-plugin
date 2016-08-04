@@ -34,8 +34,12 @@ from matplotlib.dates import datestr2num
 from matplotlib import ticker
 import matplotlib.dates as mdates
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
+try:#assume matplotlib >=1.5.1
+    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT    
+except:
+    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
 import datetime
 import matplotlib.ticker as tick
 #import midvatten_utils as utils

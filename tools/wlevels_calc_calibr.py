@@ -38,7 +38,10 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
 from matplotlib.dates import datestr2num, num2date
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+try:#assume matplotlib >=1.5.1
+    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+except:
+    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import datetime
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import midvatten_utils as utils
