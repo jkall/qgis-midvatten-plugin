@@ -93,7 +93,7 @@ class newdb():
                                 continue
                             for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
                                                                ('CHANGETOPLUGINVERSION', str(verno)),
-                                                               ('CHANGETOQGISVERSION',str(qgisverno)),
+                                                               ('CHANGETOQGISVERSION',qgisverno),
                                                                ('CHANGETOSPLITEVERSION', str(versionstext[0][0]))]:
                                 line = line.replace(replace_word, replace_with)
                             #replaced_line = line.replace('CHANGETOQGISVERSION',str(qgisverno)).replace('CHANGETOSPLITEVERSION',str(versionstext[0][0]))
