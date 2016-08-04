@@ -71,7 +71,6 @@ class newdb():
                     return ''
                 #First, find spatialite version
                 versionstext = self.cur.execute('select spatialite_version()').fetchall()
-                #print versionstext#debug
                 # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
                 # then the syntax defines a Midvatten project db according to the loaded .sql-file
                 if not int(versionstext[0][0][0]) > 3: # which file to use depends on spatialite version installed
@@ -81,7 +80,6 @@ class newdb():
                 filenamestring = "create_db.sql"
 
                 SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
-                #print(SQLFile)#debug
                 qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
                 with open(SQLFile, 'r') as f:
                     f.readline()  # first line is encoding info....
@@ -96,7 +94,6 @@ class newdb():
                                                                ('CHANGETOQGISVERSION',qgisverno),
                                                                ('CHANGETOSPLITEVERSION', str(versionstext[0][0]))]:
                                 line = line.replace(replace_word, replace_with)
-                            #replaced_line = line.replace('CHANGETOQGISVERSION',str(qgisverno)).replace('CHANGETOSPLITEVERSION',str(versionstext[0][0]))
                             self.cur.execute(line)  # use tags to find and replace SRID and versioning info
                     except Exception, e:
                         utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
@@ -107,16 +104,13 @@ class newdb():
 
                 self.add_triggers_to_obs_points()
 
-                #self.cur.execute("PRAGMA foreign_keys = OFF")
 
                 #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
-                #self.rs.close()
                 self.conn.commit()
                 self.conn.close()
                 #create SpatiaLite Connection in QGIS QSettings
                 settings=PyQt4.QtCore.QSettings()
                 settings.beginGroup('/SpatiaLite/connections')
-                #settings.setValue(u'%s/sqlitepath'%os.path.basename(str(self.dbpath)),'%s'%self.dbpath)
                 settings.setValue(u'%s/sqlitepath'%os.path.basename(self.dbpath),'%s'%self.dbpath)
                 settings.endGroup()
 
@@ -203,7 +197,6 @@ class AddLayerStyles():
     def style_from_file_into_db(self,layer,qml_file, sld_file):
         with open(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",qml_file), 'r') as content_file:
             content = content_file.read()
-        #print(content)#debug
         self.cur.execute("update layer_styles set styleQML=? where f_table_name=?",(content,layer))#Use parameterized arguments to allow sqlite3 to escape the quotes for you. (It also helps prevent SQL injection.
         #"UPDATE posts SET html = ? WHERE id = ?", (html ,temp[i][1])
         with open(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",sld_file), 'r') as content_file:

@@ -1,5 +1,4 @@
 ﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
-select 'drop table ' || name || ';' from sqlite_master where type = 'table';
 select InitSpatialMetadata(1);
 create table about_db ("table" text, "column" text, "data_type" text, "not_null" text, "default_value" text, "primary_key" text, "foreign_key" text, "description" text, "upd_date" text, "upd_sign" text);
 insert into about_db values('*', '*', '', '', '', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION, running QGIS version CHANGETOQGISVERSION on top of SpatiaLite version CHANGETOSPLITEVERSION', '', '');
