@@ -1,4 +1,4 @@
-Midvatten plugin for QGIS is a toolset to manage data from hydrogeological investigations.
+A toolset for managing and working with hydrogeological observational data. Distributed under the terms of the GNU GPL License v2.
 
 The following features are included:
 
