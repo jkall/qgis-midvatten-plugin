@@ -243,7 +243,9 @@ class midvatten:
                 if child.title() == "Midvatten": 
                     self.menu = child
         # If the menu does not exist, create it!
+        self.owns_midv_menu = False #indicator that this plugin must not clean up the midvatten menu
         if not self.menu:
+            self.owns_midv_menu = True #indicator that this plugin must clean up the midvatten menu
             self.menu = QMenu( "Midvatten", self.iface.mainWindow().menuBar() )
             menuBar = self.iface.mainWindow().menuBar()
             menuBar.addMenu(self.menu)
@@ -325,13 +327,17 @@ class midvatten:
 
     def unload(self):    
         # Remove the plugin menu items and icons
-        self.menu.removeAction(self.actionloadthelayers)
-        self.menu.removeAction(self.actionsetup)
-        self.menu.removeAction(self.actionabout)
-        
-        menubar = self.menu.parentWidget()
-        menubar.removeAction(self.menu.menuAction())
-        self.menu.deleteLater()
+        try:
+            self.menu.removeAction(self.actionloadthelayers)
+            self.menu.removeAction(self.actionsetup)
+            self.menu.removeAction(self.actionabout)
+        except:
+            pass
+
+        if self.owns_midv_menu: #indicator that this plugin must clean up the midvatten menu
+            menubar = self.menu.parentWidget()
+            menubar.removeAction(self.menu.menuAction())
+            self.menu.deleteLater()
         
         # remove tool bar
         del self.toolBar
