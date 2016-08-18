@@ -135,7 +135,7 @@ class ExportData():
         ifnull_primary_keys = [''.join(["ifnull(", pk, ",'')"]) for pk in primary_keys]
         concatenated_primary_keys = ' || '.join(ifnull_primary_keys)
 
-        sql = r"insert or ignore into %s select * from %s where %s not in (select %s from %s"%(tname, tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
+        sql = r"insert or ignore into %s select * from %s where %s not in (select %s from %s)"%(tname, tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
         try:
             self.curs.execute(sql)
         except Exception, e:
