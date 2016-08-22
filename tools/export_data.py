@@ -39,6 +39,14 @@ class ExportData():
         database.closedb()
 
     def export_2_splite(self,target_db,source_db, EPSG_code):
+        """
+        Exports a datagbase to a new spatialite database file
+        :param target_db: The name of the new database file
+        :param source_db: The name of the source database file
+        :param EPSG_code:
+        :return:
+
+        """
         conn = sqlite.connect(target_db,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
         self.curs = conn.cursor()
         self.curs.execute("PRAGMA foreign_keys = ON")
@@ -100,6 +108,13 @@ class ExportData():
                     to_writer(tname, tname_with_prefix)
 
     def to_csv(self, tname, tname_with_prefix, obsids):
+        """
+        Write
+        :param tname: The destination database
+        :param tname_with_prefix: The source database
+        :param obsids:
+        :return:
+        """
         output = UnicodeWriter(file(os.path.join(self.exportfolder, tname + ".csv"), 'w'))
         self.curs.execute(r"select * from %s where obsid in %s"%(tname, self.format_obsids(obsids)))
         output.writerow([col[0] for col in self.curs.description])
@@ -112,10 +127,15 @@ class ExportData():
             from_list = [x[0] for x in from_to_fields]
             to_list = [x[1] for x in from_to_fields]
 
-            sql = r"""insert or ignore into %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
+            #If the current table contains obsid, filter only the chosen ones.
+            try:
+                sql = r"""insert or ignore into %s (%s) select distinct %s from  %s where obsid in %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix, self.format_obsids(obsids))
+            except:
+                sql = r"""insert or ignore into %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
             self.curs.execute(sql)
 
-        sql = r"insert into %s select * from %s where obsid in %s" %(tname, tname_with_prefix, self.format_obsids(obsids))
+        column_names = self.get_column_names(tname)
+        sql = r"insert into %s select %s from %s where obsid in %s" %(tname, column_names, tname_with_prefix, self.format_obsids(obsids))
         try:
             self.curs.execute(sql)
         except Exception, e:
@@ -135,7 +155,8 @@ class ExportData():
         ifnull_primary_keys = [''.join(["ifnull(", pk, ",'')"]) for pk in primary_keys]
         concatenated_primary_keys = ' || '.join(ifnull_primary_keys)
 
-        sql = r"insert or ignore into %s select * from %s where %s not in (select %s from %s)"%(tname, tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
+        column_names = self.get_column_names(tname)
+        sql = r"insert or ignore into %s select %s from %s where %s not in (select %s from %s)"%(tname, column_names, tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
         try:
             self.curs.execute(sql)
         except Exception, e:
@@ -160,6 +181,16 @@ class ExportData():
         else:
             return False
 
+    def get_column_names(self, tname):
+        sql = """PRAGMA table_info(%s)"""%tname
+        try:
+            result_list = self.curs.execute(sql).fetchall()
+        except Exception, e:
+            qgis.utils.iface.messageBar().pushMessage("Export warning, sql failed: " + sql + "\nmsg: " + str(e))
+
+        #Make a string of all column names in the new db.
+        columns = ', '.join([col[1] for col in result_list]) #Load column names from sqlite table
+        return columns
 
 class UnicodeWriter:
     """

@@ -168,6 +168,18 @@ class TestObsPointsTriggers(object):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_add_triggers_not_deleting_geom_when_east_north_null(self):
+        """ Adding triggers should not automatically delete geometry when east north is NULL """
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
+        #After the first: u'(True, [(rb1, None, None, POINT(1 1))])
+
+        utils.add_triggers_to_obs_points()
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, None, None, POINT(1 1))])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     def test_add_geometry_from_east_north(self):
         """ Test that adding triggers and adding obsid with east, north also adds geometry
         :return:
