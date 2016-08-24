@@ -162,14 +162,26 @@ class TestObsPointsTriggers(object):
     def test_add_triggers_not_change_existing(self):
         """ Adding triggers should not automatically change the db """
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
         utils.add_triggers_to_obs_points()
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
         reference_string = u'(True, [(rb1, 1.0, 1.0, None)])'
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_add_triggers_add_east_north(self):
+        """ Updating coordinates from NULL should create geometry. """
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', NULL, NULL)''')
+
+        utils.add_triggers_to_obs_points()
+
+        utils.sql_alter_db(u"""update obs_points set east='1.0', north='2.0'""")
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 1.0, 2.0, POINT(1 2))])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     def test_add_triggers_not_deleting_geom_when_east_north_null(self):
-        """ Adding triggers should not automatically delete geometry when east north is NULL """
+        """ Adding triggers should not automatically delete geometry when east AND north is NULL """
         utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
         #After the first: u'(True, [(rb1, None, None, POINT(1 1))])
 
@@ -177,6 +189,49 @@ class TestObsPointsTriggers(object):
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
         reference_string = u'(True, [(rb1, None, None, POINT(1 1))])'
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_add_triggers_not_deleting_geom_when_one_east_north_null(self):
+        """ Adding triggers should not automatically delete geometry when east OR north is NULL """
+        utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
+
+        utils.add_triggers_to_obs_points()
+
+        utils.sql_alter_db(u"""update obs_points set east=X(geometry) where east is null and geometry is not null""")
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 1.0, None, POINT(1 1))])'
+        assert test_string == reference_string
+
+        utils.sql_alter_db(u"""update obs_points set east='2.0'""")
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 2.0, None, POINT(1 1))])'
+        assert test_string == reference_string
+
+        utils.sql_alter_db(u"""update obs_points set east=NULL""")
+        utils.sql_alter_db(u"""update obs_points set north='2.0'""")
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, None, 2.0, POINT(1 1))])'
+        assert test_string == reference_string
+
+        utils.sql_alter_db(u"""update obs_points set east='3.0'""")
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 3.0, 2.0, POINT(3 2))])'
+        assert test_string == reference_string
+
+        utils.sql_alter_db(u"""update obs_points set east='4.0'""")
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 4.0, 2.0, POINT(4 2))])'
+        assert test_string == reference_string
+
+        utils.sql_alter_db(u"""update obs_points set east=NULL, north=NULL""")
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, None, None, POINT(4 2))])'
+        assert test_string == reference_string
+
+        utils.sql_alter_db(u"""update obs_points set east='5.0', north='6.0'""")
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
+        reference_string = u'(True, [(rb1, 5.0, 6.0, POINT(5 6))])'
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)

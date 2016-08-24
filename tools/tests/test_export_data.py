@@ -171,7 +171,8 @@ class TestExport(unittest.TestCase):
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
     @mock.patch('midvatten.utils.find_layer', autospec=True)
     @mock.patch('midvatten.qgis.utils.iface', autospec=True)
-    def test_export_spatialite(self, mock_iface, mock_find_layer, mock_newdbpath, mock_verify):
+    @mock.patch('export_data.utils.pop_up_info', autospec=True)
+    def test_export_spatialite(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify):
 
         mock_find_layer.return_value.crs.return_value.authid.return_value = u'EPSG:3006'
 

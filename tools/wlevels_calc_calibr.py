@@ -204,6 +204,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         obsid = unicode(self.combobox_obsid.currentText())
         if not obsid:
             utils.pop_up_info("ERROR: no obsid is chosen")
+            return None
 
         meas_sql = r"""SELECT date_time, level_masl FROM w_levels WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
         self.meas_ts = self.sql_into_recarray(meas_sql)
@@ -615,6 +616,10 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         selected_obsid = self.load_obsid_and_init()
         if current_loaded_obsid != selected_obsid:
             utils.pop_up_info("Error!\n The obsid selection has been changed but the plot has not been updated. No deletion done.\nUpdating plot.")
+            self.update_plot()
+            return
+        elif selected_obsid is None:
+            utils.pop_up_info("Error!\n No obsid was selected. No deletion done.\nUpdating plot.")
             self.update_plot()
             return
 
