@@ -172,7 +172,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.send_file_data_to_importer(wquallab_data_table, self.wquallab_import_from_csvlayer, self.check_obsids)
         self.SanityCheckVacuumDB()
 
-
     def parse_interlab4(self, filenames=None):
         """ Reads the interlab
         :param filenames:
@@ -597,9 +596,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if self.csvlayer:
             self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
             self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]#Load column names from sqlite table
-            sqlremove = """DELETE FROM "%s" where ("%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null) or (("%s"='' or "%s"=' ' or "%s" is null) and ("%s"='' or "%s"=' ' or "%s" is null))"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1],self.columns[2][1],self.columns[2][1],self.columns[2][1],self.columns[3][1],self.columns[3][1],self.columns[3][1])#Delete empty records from the import table!!!
-            sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.temptableName) #Number of distinct data posts in the import table
-            cleaningok = self.multiple_field_duplicates(4, 'w_levels', sqlremove, 'obs_points', sqlNoOfdistinct)
+            if len(self.columns) < 4:
+                qgis.utils.iface.messageBar().pushMessage("Import Failure","""The file had less than the required 4 columns""")
+                cleaningok = 0
+            else:
+                sqlremove = """DELETE FROM "%s" where ("%s"='' or "%s"=' ' or "%s" is null or "%s"='' or "%s"=' ' or "%s" is null) or (("%s"='' or "%s"=' ' or "%s" is null) and ("%s"='' or "%s"=' ' or "%s" is null))"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1],self.columns[1][1],self.columns[2][1],self.columns[2][1],self.columns[2][1],self.columns[3][1],self.columns[3][1],self.columns[3][1])#Delete empty records from the import table!!!
+                sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s" FROM %s)"""%(self.columns[0][1],self.columns[1][1],self.temptableName) #Number of distinct data posts in the import table
+                cleaningok = self.multiple_field_duplicates(4, 'w_levels', sqlremove, 'obs_points', sqlNoOfdistinct)
+
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
                 sqlpart1 = """INSERT OR IGNORE INTO "w_levels" (obsid, date_time, meas, comment) """
                 sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), (case when "%s"!='' then CAST("%s" as double) else null end), CAST("%s" as text) FROM %s"""%(self.columns[0][1],self.columns[1][1],self.columns[2][1],self.columns[2][1],self.columns[3][1],self.temptableName)

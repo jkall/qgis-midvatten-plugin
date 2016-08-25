@@ -59,9 +59,16 @@ class ExportData():
         self.write_data(self.to_sql, self.ID_obs_lines, ['obs_lines', 'vlf_data', 'seismic_data'], self.verify_table_in_attached_db, 'a.')
         conn.commit()
         self.write_data(self.zz_to_sql, u'no_obsids', ['zz_flowtype', 'zz_meteoparam', 'zz_staff', 'zz_strat', 'zz_capacity', 'zz_w_qual_field_parameters'], self.verify_table_in_attached_db, 'a.')
+        conn.commit()
+
+        #Statistics
+        statistics = self.get_table_rows_with_differences()
 
         self.curs.execute(r"""DETACH DATABASE a""")
         self.curs.execute('vacuum')
+
+        utils.pop_up_info("Export done.\n\nTables with different number of rows:\n" + statistics)
+
         conn.commit()
         conn.close()
 
@@ -191,6 +198,42 @@ class ExportData():
         #Make a string of all column names in the new db.
         columns = ', '.join([col[1] for col in result_list]) #Load column names from sqlite table
         return columns
+
+    def get_table_rows_with_differences(self, db_aliases_and_prefixes=[(u'exported_db', u''), (u'source_db', u'a.')]):
+        """
+        Counts rows for all tables in new and old database and returns those that differ.
+        self.cursor is required where the new database is the regular one and the old database is the attached one
+        :param db_aliases_and_prefixes: A list of tuples like ('new', '')
+        :return:  a printable list of nr of rows for all tables
+        """
+        results = {}
+        for alias, prefix in db_aliases_and_prefixes:
+            sql = u"""SELECT name FROM %s WHERE type='table';"""%(prefix + u'sqlite_master')
+            tablenames = self.curs.execute(sql).fetchall()
+            for tablename in tablenames:
+                tablename = tablename[0]
+                sql = u"""SELECT count(*) FROM %s"""%(prefix + tablename)
+                nr_of_rows = self.curs.execute(sql).fetchall()[0][0]
+                results.setdefault(tablename, {})[alias] = str(nr_of_rows)
+
+        printable_results = []
+
+        #Create header
+        header = [u'tablename']
+        db_aliases = sorted([_x[0] for _x in db_aliases_and_prefixes])
+        header.extend(db_aliases)
+        printable_results.append(header)
+
+        #Create table result rows
+        for tablename, dbdict in sorted(results.iteritems()):
+            vals = [tablename]
+            vals.extend([str(dbdict.get(alias, u'table_missing')) for alias in sorted(db_aliases)])
+            if vals[1] != vals[2]:
+                printable_results.append(vals)
+
+        printable_msg = '\n'.join(['{0:40}{1:15}{2:15}'.format(result_row[0], result_row[1], result_row[2]) for result_row in printable_results])
+        return printable_msg
+
 
 class UnicodeWriter:
     """
