@@ -148,7 +148,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.setWindowTitle("Calibrate logger") # Set the title for the dialog
         self.connect(self.pushButton, PyQt4.QtCore.SIGNAL("clicked()"), self.calibrateandplot)
         self.INFO.setText("Select the observation point with logger data to be calibrated.")
-        self.log_calc_manual.setText("<a href=\"https://sites.google.com/site/midvattenpluginforqgis/usage/3-edit-data?pli=1#TOC-Calibrate-water-level-measurements-from-data-logger-\">Midvatten manual</a>")
+        self.log_calc_manual.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/4.-Edit-data\">Midvatten manual</a>")
       
         # Create a plot window with one single subplot
         self.calibrplotfigure = plt.figure() 
