@@ -116,10 +116,10 @@ def geocolorsymbols():
     Predefined Qt colors are allowed (http://doc.qt.io/qt-4.8/qcolor.html#predefined-colors) and so is also svg 1.0 names (https://www.w3.org/TR/SVG/types.html#ColorKeywords)
     Fallback methods use color codes and brush styles found in code below
     """
-    res1, dict_qt = utils.get_sql_result_as_dict('select strat, brush_qt, color_qt from zz_strat')
-    res2, dict_geo1 = utils.create_dict_from_db_2_cols(('strat','geoshorts','zz_strat'))
+    res1, dict_qt = utils.get_sql_result_as_dict('select strata, brush_qt, color_qt from zz_stratigraphy_plots')
+    res2, dict_geo1 = utils.create_dict_from_db_2_cols(('strata','geoshort','zz_strat'))
     #print(dict_qt)#debug
-    #print(dict_geo)#debug
+    #print(dict_geo1)#debug
     # fallback method to maintain backwards compatibility
     if not (res1 and res2):
         # Fallback method - if using old for old databases where zz_strat is missing, then you may change the code below to reflect your own GEOLOGIC CODES, SYMBOLS AND COLORS
@@ -266,8 +266,17 @@ def geocolorsymbols():
                     'mg': ('DiagCrossPattern', 'white')
                     }
         return dictionary
-    # new method create dict from dab table
-    dictionary = {}
+    # new method create dict from db table
+    #dict_geo1 is just a start, not yet populated with tuples of geoshorts for each strata, time to do so
+    dictionary={}
+    for key, value in sorted(dict_geo1.iteritems()):
+        temp_list = utils.sql_load_fr_db("select geoshort from zz_strat where strata = '%s'"%key)[1]
+        dummy=()
+        for item in temp_list:
+            dummy = dummy + (utils.unicode_2_utf8(item[0]),)
+        dictionary[utils.unicode_2_utf8(key)] = (utils.unicode_2_utf8(dummy))
+    """
+    # this was temporary method to deal with zz_stratigraphy table existing in plugin version 1.3.x
     # skip "unknown"
     dict_geo = {k: v for k, v in dict_geo1.iteritems() if 'not in' not in v}
     for key, value in sorted(dict_geo.iteritems()):
@@ -278,6 +287,8 @@ def geocolorsymbols():
         for v in geoshort_string.split(','):
             #print (key,utils.unicode_2_utf8(v), utils.unicode_2_utf8(dict_qt.get(key)[0]))#debug
             dictionary[utils.unicode_2_utf8(v)] = (utils.unicode_2_utf8(dict_qt.get(key)[0]))
+    """
+    #print(dictionary)#debug
     return dictionary
     
 def hydrocolors():
@@ -286,7 +297,7 @@ def hydrocolors():
     Default method is to read the database table zz_capacity, the user may change zz_capacity table to change the stratigraphy plots
     Fallback methods use color codes found in code below
     """
-    res, dict_qt1 = utils.get_sql_result_as_dict('select capacity, explanation, color_qt from zz_capacity')
+    res, dict_qt1 = utils.get_sql_result_as_dict('select a.capacity, a.explanation, b.color_qt from zz_capacity a, zz_capacity_plots b where a.capacity = b.capacity')
     #print(dict_qt1)
     dict_qt = utils.unicode_2_utf8(dict_qt1)
     for k,v in dict_qt.iteritems():
@@ -333,7 +344,7 @@ def PlotTypesDict(international='no'):
     The user may update these fields in the zz_strat table to use other stratigraphy units and other abbreviations (in geoshorts)
     Fallback method use dictionary defined in the code below
     """
-    success, Dict = utils.create_dict_from_db_2_cols(('strat','geoshorts','zz_strat'))
+    success, Dict = utils.create_dict_from_db_2_cols(('strata','geoshort','zz_strat'))
     if not success:
         if international=='no' and  utils.getcurrentlocale() == 'sv_SE':
             """
@@ -409,7 +420,7 @@ def PlotColorDict():
     The user may update these fields in the zz_strat table to use other colors
     Fallback method use dictionary defined in the code below
     """
-    success, Dict = utils.create_dict_from_db_2_cols(('strat','color_mplot','zz_strat'))
+    success, Dict = utils.create_dict_from_db_2_cols(('strata','color_mplot','zz_stratigraphy_plots'))
     if not success:
         if  utils.getcurrentlocale() == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
             Dict = {u"Okänt" : u"white",
@@ -451,7 +462,7 @@ def PlotHatchDict():
     The user may update these fields in the zz_strat table to use other hatches
     Fallback method use dictionary defined in the code below
     """
-    success, Dict = utils.create_dict_from_db_2_cols(('strat','hatch_mplot','zz_strat'))
+    success, Dict = utils.create_dict_from_db_2_cols(('strata','hatch_mplot','zz_stratigraphy_plots'))
     if not success:
         # hatch patterns : ('-', '+', 'x', '\\', '*', 'o', 'O', '.','/')
         if  utils.getcurrentlocale() == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
