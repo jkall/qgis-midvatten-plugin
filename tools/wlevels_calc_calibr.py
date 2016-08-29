@@ -593,8 +593,8 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
             log_vals = []
 
-            while logger_step is not None and logger_step <= step_end and logger_step <= outer_end:
-                if not math.isnan(float(l[1])) or l[1] == 'nan' or l[1] == 'NULL':
+            while logger_step is not None and step_begin <= logger_step <= step_end and outer_begin <= logger_step <= outer_end:
+                if not math.isnan(float(l[1])) or l[1] in ('nan', 'NULL'):
                     log_vals.append(float(l[1]))
                 try:
                     l = next(logger_gen)

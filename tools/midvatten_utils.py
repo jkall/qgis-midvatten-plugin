@@ -725,6 +725,9 @@ def calc_mean_diff(coupled_vals):
     """ Calculates the mean difference for all value couples in a list of tuples 
     
         Nan-values are excluded from the mean.
+
+    >>> calc_mean_diff(([5, 2] , [8, 1]))
+    5.0
     """
     return np.mean([float(m) - float(l) for m, l in coupled_vals if not math.isnan(m) or math.isnan(l)])
 
