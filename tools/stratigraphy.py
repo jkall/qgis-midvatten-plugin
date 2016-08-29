@@ -294,7 +294,6 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
         #------------------Please note!---------------------
         # Due to unicode normalize in getData function below, swedish national characters will be 
         # transformed to a, a, and o when read from the stratigraphy table
-        self.PlotTypes = defs.PlotTypesDict()
         self.geoColorSymbols = defs.geocolorsymbols()
         #print(self.geoColorSymbols)#debug
         self.hydroColors = defs.hydrocolors()

@@ -261,23 +261,13 @@ def ask_user_about_stopping(question):
         return 'ignore'
 
 def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-table)
-    print(params)#debug
     sqlstring = r"""select %s, %s from %s"""%(params)
-    print(sqlstring)
     connection_ok, list_of_tuples= sql_load_fr_db(sqlstring)
 
     if not connection_ok:
         textstring = """Cannot create dictionary from columns %s and %s in table %s!"""%(params)#col1,col2,table)
         qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)        
         return False, {'':''}
-
-    #print(list_of_tuples)#debug
-    #k=[]
-    #v=[]
-    #for tuple_item in list_of_tuples:
-    #    k.append(tuple_item[0])
-    #    v.append(tuple_item[1])
-    #return True, dict(zip(k, v))
 
     adict = dict([(k, v) for k, v in list_of_tuples])
     return True, adict
@@ -458,13 +448,13 @@ def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list
             ConnectionOK = True
         except:
             #pop_up_info("Could not connect to DB, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
-            textstring = """DB error, you may need to reset Midvatten settings!\nDB call causing this error:%s\n"""%(sql)
+            textstring = """DB error!\nDB call causing this error:%s\n"""%(sql)
             qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15) 
             ConnectionOK = False
             result = ''
     else:
         #pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
-        textstring = """DB error, you may need to reset Midvatten settings!\nDB call causing this error:%s\n"""%(sql)
+        textstring = """Could not connect to db %s!\nDB call causing this error:%s\n"""%(dbpath[0],sql)
         qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15) 
         ConnectionOK = False
         result = ''
@@ -785,11 +775,11 @@ def get_sql_result_as_dict(sql):
         textstring = """Cannot create dictionary from sql """ + sql
         qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
         return False, {}
-
+    
     result_dict = {}
     for res in result_list:
         result_dict.setdefault(res[0], []).append(tuple(res[1:]))
-    return True, result_dict
+    return True, OrderedDict(result_dict)
 
 def lstrip(word, from_string):
     """
