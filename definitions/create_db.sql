@@ -171,8 +171,10 @@ create table "zz_flowtype" (type text not null, unit text not null, explanation 
 create table "w_flow" (obsid text not null, instrumentid text not null, flowtype text not null, date_time text not null, reading double, unit text, comment text, primary key (obsid, instrumentid, flowtype, date_time), foreign key(obsid) references obs_points(obsid), foreign key (flowtype, unit) references zz_flowtype(type, unit));
 CREATE TABLE "zz_meteoparam" (parameter text not null,explanation text, primary key(parameter));
 CREATE TABLE "meteo" (obsid text not null, instrumentid text not null, parameter text not null, date_time text not null, reading_num double, reading_txt text, unit text, comment text, primary key (obsid, instrumentid, parameter, date_time), foreign key(obsid) references obs_points(obsid), foreign key (parameter) references zz_meteoparam(parameter));
-CREATE TABLE "zz_strat" (strat text not null, color_mplot text not null, hatch_mplot text not null, color_qt text not null, brush_qt text not null,geoshorts text not null, primary key(strat));
-CREATE TABLE "zz_capacity" (capacity text not null, explanation text not null, color_qt text not null, primary key(capacity));
+CREATE TABLE "zz_strat" (geoshort text not null, strata text not null, primary key(geoshort));
+CREATE TABLE "zz_stratigraphy_plots" (strata text not null, color_mplot text not null, hatch_mplot text not null, color_qt text not null, brush_qt text not null, primary key(strata));
+CREATE TABLE "zz_capacity" (capacity text not null, explanation text not null, primary key(capacity));
+CREATE TABLE "zz_capacity_plots" (capacity text not null, color_qt text not null, primary key(capacity), foreign key(capacity) references zz_capacity(capacity));
 create view obs_p_w_qual_field as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "w_qual_field" as "b" using ("obsid");
 insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) values ('obs_p_w_qual_field', 'geometry', 'rowid', 'obs_points', 'geometry',1);
 create view obs_p_w_qual_lab as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "w_qual_lab" as "b" using ("obsid");

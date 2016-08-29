@@ -20,6 +20,7 @@
 import PyQt4.QtCore
 import PyQt4.QtGui
 from qgis.core import QGis
+import qgis.utils
 
 import os
 import locale

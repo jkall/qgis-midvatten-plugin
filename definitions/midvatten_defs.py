@@ -116,13 +116,11 @@ def geocolorsymbols():
     Predefined Qt colors are allowed (http://doc.qt.io/qt-4.8/qcolor.html#predefined-colors) and so is also svg 1.0 names (https://www.w3.org/TR/SVG/types.html#ColorKeywords)
     Fallback methods use color codes and brush styles found in code below
     """
-    res1, dict_qt = utils.get_sql_result_as_dict('select strat, brush_qt, color_qt from zz_strat')
-    res2, dict_geo1 = utils.create_dict_from_db_2_cols(('strat','geoshorts','zz_strat'))
-    #print(dict_qt)#debug
-    #print(dict_geo)#debug
+    res1, dict_qt = utils.get_sql_result_as_dict('select strata, brush_qt, color_qt from zz_stratigraphy_plots')
+    res2, dict_geo1 = utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
     # fallback method to maintain backwards compatibility
     if not (res1 and res2):
-        # Fallback method - if using old for old databases where zz_strat is missing, then you may change the code below to reflect your own GEOLOGIC CODES, SYMBOLS AND COLORS
+        # Fallback method - if using old databases where zz_strat is missing, then you may change the code below to reflect your own GEOLOGIC CODES, SYMBOLS AND COLORS
         print('using fallback method for backwards compat.')
         dictionary  = { '': ('NoBrush', 'white'),
                     ' ': ('NoBrush', 'white'),
@@ -266,8 +264,17 @@ def geocolorsymbols():
                     'mg': ('DiagCrossPattern', 'white')
                     }
         return dictionary
-    # new method create dict from dab table
-    dictionary = {}
+    # new method create dict from db table
+    #dict_geo1 is just a start, not yet populated with tuples of geoshorts for each strata, time to do so
+    dictionary={}
+    for key, value in sorted(dict_geo1.iteritems()):
+        for geoshort in value:
+            try:
+                dictionary[geoshort[0]]=dict_qt[str(key)][0]
+            except:
+                dictionary[geoshort[0]]=(u'NoBrush', u'white')
+    """
+    # this was temporary method to deal with zz_stratigraphy table existing in plugin version 1.3.x
     # skip "unknown"
     dict_geo = {k: v for k, v in dict_geo1.iteritems() if 'not in' not in v}
     for key, value in sorted(dict_geo.iteritems()):
@@ -278,6 +285,7 @@ def geocolorsymbols():
         for v in geoshort_string.split(','):
             #print (key,utils.unicode_2_utf8(v), utils.unicode_2_utf8(dict_qt.get(key)[0]))#debug
             dictionary[utils.unicode_2_utf8(v)] = (utils.unicode_2_utf8(dict_qt.get(key)[0]))
+    """
     return dictionary
     
 def hydrocolors():
@@ -286,8 +294,7 @@ def hydrocolors():
     Default method is to read the database table zz_capacity, the user may change zz_capacity table to change the stratigraphy plots
     Fallback methods use color codes found in code below
     """
-    res, dict_qt1 = utils.get_sql_result_as_dict('select capacity, explanation, color_qt from zz_capacity')
-    #print(dict_qt1)
+    res, dict_qt1 = utils.get_sql_result_as_dict('select a.capacity, a.explanation, b.color_qt from zz_capacity a, zz_capacity_plots b where a.capacity = b.capacity')
     dict_qt = utils.unicode_2_utf8(dict_qt1)
     for k,v in dict_qt.iteritems():
         dict_qt[k] = v[0]
@@ -319,7 +326,6 @@ def hydrocolors():
                       '6 ': ('mycket god', 'blue'),
                       '6+': ('mycket god', 'darkBlue'),
                     }
-    #print(dict_qt)
     return dict_qt
 
 def stratitable():
@@ -333,8 +339,11 @@ def PlotTypesDict(international='no'):
     The user may update these fields in the zz_strat table to use other stratigraphy units and other abbreviations (in geoshorts)
     Fallback method use dictionary defined in the code below
     """
-    success, Dict = utils.create_dict_from_db_2_cols(('strat','geoshorts','zz_strat'))
+    #success, Dict = utils.create_dict_from_db_2_cols(('strata','geoshort','zz_strat'))
+    success, Dict = utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
+    succss_strata, strata_order = utils.sql_load_fr_db('select strata from zz_stratigraphy_plots order by ROWID')
     if not success:
+        print('fallback method using PlotTypesDict from code')
         if international=='no' and  utils.getcurrentlocale() == 'sv_SE':
             """
             Dict = {u"Okänt" : u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')",
@@ -353,7 +362,7 @@ def PlotTypesDict(international='no'):
             "Torv" : u"in ('torv','t','peat','pt')",
             "Fyll":u"in ('fyll','fyllning','f','made ground','mg','land fill')"}
             """
-            Dict = OrderedDict([(u"Okänt" , u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')"),
+            dictionary = OrderedDict([(u"Okänt" , u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')"),
             ("Berg"  , u"in ('berg','b','rock','ro')"),
             ("Grovgrus" , u"in ('grovgrus','grg','coarse gravel','cgr')"),
             ("Grus" , u"in ('grus','gr','gravel')"),
@@ -386,7 +395,7 @@ def PlotTypesDict(international='no'):
             "Peat" : u"in ('torv','t','peat','pt')",
             "Fill":u"in ('fyll','fyllning','f','made ground','mg','land fill')"}
             """
-            Dict = OrderedDict([("Unknown" , u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')"),
+            dictionary = OrderedDict([("Unknown" , u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')"),
             ("Rock"  , u"in ('berg','b','rock','ro')"),
             ("Coarse gravel" , u"in ('grovgrus','grg','coarse gravel','cgr')"),
             ("Gravel" , u"in ('grus','gr','gravel')"),
@@ -401,7 +410,21 @@ def PlotTypesDict(international='no'):
             ("Till" , u"in ('morän','moran','mn','till','ti')"),
             ("Peat" , u"in ('torv','t','peat','pt')"),
             ("Fill",u"in ('fyll','fyllning','f','made ground','mg','land fill')")])
-    return Dict
+    else:
+        """manually create dictionary to reuse old code"""
+        dictionary = OrderedDict({})
+        #all_geoshorts = r"""not in ('"""
+        #for key, value in sorted(Dict.iteritems()):
+        for strata in strata_order:
+            tl = r"""in ('"""
+            for geoshort in Dict[strata[0]]:
+                tl+=geoshort[0] + r"""', '"""
+                #all_geoshorts+=geoshort[0] + r"""', '"""
+            tl = utils.rstrip(r""", '""",tl) + r""")"""
+            #all_geoshorts = utils.rstrip(r""", '""",all_geoshorts) + r""")"""
+            dictionary[strata[0]]=tl
+        #all_geoshorts+=r"""')"""
+    return dictionary
 
 def PlotColorDict():
     """
@@ -409,8 +432,9 @@ def PlotColorDict():
     The user may update these fields in the zz_strat table to use other colors
     Fallback method use dictionary defined in the code below
     """
-    success, Dict = utils.create_dict_from_db_2_cols(('strat','color_mplot','zz_strat'))
+    success, Dict = utils.create_dict_from_db_2_cols(('strata','color_mplot','zz_stratigraphy_plots'))
     if not success:
+        print('fallback method with PlotColorDict from code')
         if  utils.getcurrentlocale() == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
             Dict = {u"Okänt" : u"white",
             "Berg"  : u"red",
@@ -443,6 +467,7 @@ def PlotColorDict():
             "Till" : u"cyan",
             "Peat" : u"DarkGray",
             "Fill":u"white"}
+    #print Dict#debug!
     return Dict
 
 def PlotHatchDict():
@@ -451,8 +476,9 @@ def PlotHatchDict():
     The user may update these fields in the zz_strat table to use other hatches
     Fallback method use dictionary defined in the code below
     """
-    success, Dict = utils.create_dict_from_db_2_cols(('strat','hatch_mplot','zz_strat'))
+    success, Dict = utils.create_dict_from_db_2_cols(('strata','hatch_mplot','zz_stratigraphy_plots'))
     if not success:
+        print('fallback method with PlotHatchDict from code')
         # hatch patterns : ('-', '+', 'x', '\\', '*', 'o', 'O', '.','/')
         if  utils.getcurrentlocale() == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
             Dict = {u"Okänt" : u"",
