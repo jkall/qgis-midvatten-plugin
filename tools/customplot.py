@@ -448,7 +448,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         if myconnection.connect2db() == True:
             # skapa en cursor
             curs = myconnection.conn.cursor()
-            rs=curs.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + midvatten_defs.SQLiteInternalTables() + r""")  and not (name in""" + midvatten_defs.sqlite_nonplot_tables() + r""") ORDER BY tbl_name""")  #SQL statement to get the relevant tables in the spatialite database
+            rs=curs.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + midvatten_defs.SQLiteInternalTables() + r""")  and not name like 'zz_%' and not (name in""" + midvatten_defs.sqlite_nonplot_tables() + r""") ORDER BY tbl_name""")  #SQL statement to get the relevant tables in the spatialite database
             #self.dbTables = {} 
             self.table_ComboBox_1.addItem('')
             self.table_ComboBox_2.addItem('')

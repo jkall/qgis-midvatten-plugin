@@ -588,6 +588,7 @@ def SQLiteInternalTables():
 
 def sqlite_nonplot_tables():
     return r"""('about_db',
+                'comments',
                 'zz_flowtype',
                 'zz_meteoparam',
                 'zz_strat',
