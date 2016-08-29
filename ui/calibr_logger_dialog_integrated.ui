@@ -722,7 +722,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QLineEdit" name="bestFitTolerance">
+                   <widget class="QLineEdit" name="bestFitSearchRadius">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                       <horstretch>0</horstretch>
