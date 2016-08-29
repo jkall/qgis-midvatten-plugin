@@ -29,6 +29,7 @@ import resources  # Initialize Qt resources from file resources.py
 
 # Import some general python modules
 import os.path
+from os import unlink, remove
 import sys
 import datetime
 import zipfile
@@ -37,6 +38,7 @@ try:
     compression = zipfile.ZIP_DEFLATED
 except:
     compression = zipfile.ZIP_STORED
+from tempfile import NamedTemporaryFile
 
 #add midvatten plugin directory to pythonpath (needed here to allow importing modules from subfolders)
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -64,6 +66,7 @@ class midvatten:
         #sys.path.append(os.path.dirname(os.path.abspath(__file__))) #add midvatten plugin directory to pythonpath
         self.iface = iface
         self.ms = midvsettings()#self.ms.settingsdict is created when ms is imported
+        self.logfile =  NamedTemporaryFile( suffix=".tmp", prefix="midvatten_", delete=False )
         
     def initGui(self):
         # Create actions that will start plugin configuration
@@ -326,6 +329,12 @@ class midvatten:
         self.iface.newProjectCreated.connect(self.project_created)
 
     def unload(self):    
+        # remove temporary logfile
+        try:
+            unlink(self.logfile)
+            remove(self.logfile)
+        except:
+            pass
         # Remove the plugin menu items and icons
         try:
             self.menu.removeAction(self.actionloadthelayers)
@@ -434,7 +443,7 @@ class midvatten:
                 iniText = QSettings(filenamepath , QSettings.IniFormat)
                 verno = str(iniText.value('version')) 
                 from create_db import newdb
-                newdbinstance = newdb(verno,'n',EPSG_code, set_locale=utils.getcurrentlocale())#flag 'n' to avoid user selection of EPSG
+                newdbinstance = newdb(verno,self.logfile,'n',EPSG_code, set_locale=utils.getcurrentlocale())#flag 'n' to avoid user selection of EPSG
                 if not newdbinstance.dbpath=='':
                     newdb = newdbinstance.dbpath
                     exportinstance = ExportData(OBSID_P, OBSID_L)
@@ -798,7 +807,7 @@ class midvatten:
             iniText = QSettings(filenamepath , QSettings.IniFormat)
             verno = str(iniText.value('version')) 
             from create_db import newdb
-            newdbinstance = newdb(verno, set_locale=set_locale)
+            newdbinstance = newdb(verno, self.logfile,set_locale=set_locale)
             if not newdbinstance.dbpath=='':
                 db = newdbinstance.dbpath
                 self.ms.settingsdict['database'] = db

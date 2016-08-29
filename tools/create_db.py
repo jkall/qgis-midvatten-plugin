@@ -30,7 +30,8 @@ import midvatten_utils as utils
 
 class newdb():
 
-    def __init__(self, verno, user_select_CRS='y', EPSG_code=u'4326', set_locale=False):
+    def __init__(self, verno, logfile,user_select_CRS='y', EPSG_code=u'4326', set_locale=False):
+        self.logfile = logfile
         self.dbpath = ''
         self.create_new_db(verno,user_select_CRS,EPSG_code, set_locale)  #CreateNewDB(verno)
         
@@ -56,7 +57,10 @@ class newdb():
                     try:
                         os.remove(self.dbpath)
                     except OSError, e:
-                        utils.pop_up_info("Error: %s - %s." % (e.filename,e.strerror))
+                        qgis.utils.iface.messageBar().pushMessage("sqlite error, see logfile %s"%self.logfile.name, 2,duration=10)
+                        self.logfile.write("%s - %s." % (e.filename,e.strerror))
+                        self.logfile.flush()
+                        #utils.pop_up_info("Error: %s - %s." % (e.filename,e.strerror))
                         PyQt4.QtGui.QApplication.restoreOverrideCursor()
                         return ''
                 try:
@@ -66,7 +70,8 @@ class newdb():
                     self.cur = self.conn.cursor()
                     self.cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
                 except:
-                    utils.pop_up_info("Impossible to connect to selected DataBase")
+                    qgis.utils.iface.messageBar().pushMessage("Impossible to connect to selected DataBase", 2,duration=3)
+                    #utils.pop_up_info("Impossible to connect to selected DataBase")
                     PyQt4.QtGui.QApplication.restoreOverrideCursor()
                     return ''
                 #First, find spatialite version
@@ -96,9 +101,13 @@ class newdb():
                                 line = line.replace(replace_word, replace_with)
                             self.cur.execute(line)  # use tags to find and replace SRID and versioning info
                     except Exception, e:
-                        utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
+                        #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
+                        qgis.utils.iface.messageBar().pushMessage("sqlite error, see logfile %s"%self.logfile.name, 2,duration=5)
+                        self.logfile.write('Failed to create DB! sql failed: \n%serror msg: %s\n\n'%(line ,str(e)))
+                        self.logfile.flush()
                     except:
-                        utils.pop_up_info('Failed to create DB!')
+                        qgis.utils.iface.messageBar().pushMessage("Failed to create database", 2,duration=3)
+                        #utils.pop_up_info('Failed to create DB!')
 
                 self.insert_datadomains(set_locale)
 
@@ -153,8 +162,10 @@ class newdb():
                 try:
                     self.cur.execute(line)  # use tags to find and replace SRID and versioning info
                 except Exception, e:
-                    utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
-
+                    #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
+                    qgis.utils.iface.messageBar().pushMessage("Error","sql failed, see logfile %s"%self.logfile.name, 2,duration=5)
+                    self.logfile.write('sql failed:\n%s\nerror msg:\n%s\n'%(line ,str(e)))
+                    self.logfile.flush()
 
 class AddLayerStyles():
     """ currently this class is not used although it should be, when storing layer styles in the database works better """
