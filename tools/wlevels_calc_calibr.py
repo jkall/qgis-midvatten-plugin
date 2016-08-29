@@ -91,7 +91,7 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
             utils.sql_alter_db(sql2)
             self.close()
         else:
-            utils.pop_up_info('Calculation aborted! There seems to be NULL values in your table obs_points, column h_toc.','Error')
+            utils.pop_up_info('Adjustment aborted! There seems to be NULL values in your table obs_points, column h_toc.','Error')
             self.close()
             
     def calcselected(self):
@@ -146,7 +146,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         self.setWindowTitle("Calculate water level from logger") # Set the title for the dialog
-        self.INFO.setText("Select the observation point with logger data to be calibrated.")
+        self.INFO.setText("Select the observation point with logger data to be adjusted.")
         self.log_calc_manual.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/4.-Edit-data\">Midvatten manual</a>")
       
         # Create a plot window with one single subplot
@@ -158,6 +158,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.mpltoolbar.removeAction( lstActions[ 7 ] )
         self.layoutplot.addWidget( self.canvas )
         self.layoutplot.addWidget( self.mpltoolbar )
+        self.calibrplotfigure.tight_layout()
         self.show()
 
         self.cid =[]
@@ -172,14 +173,10 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.connect(self.pushButtonLpos, PyQt4.QtCore.SIGNAL("clicked()"), self.catch_old_level)
         self.connect(self.pushButtonMpos, PyQt4.QtCore.SIGNAL("clicked()"), self.catch_new_level)
         self.pushButtonMpos.setEnabled(False)
-        self.connect(self.pushButtonAdjustFromPlotSelect, PyQt4.QtCore.SIGNAL("clicked()"), self.adjust_from_plot_selections)
-        self.pushButtonAdjustFromPlotSelect.setEnabled(False)
         self.connect(self.pushButtonCalcBestFit, PyQt4.QtCore.SIGNAL("clicked()"), self.logger_pos_best_fit)
         self.connect(self.pushButtonCalcBestFit2, PyQt4.QtCore.SIGNAL("clicked()"), self.level_masl_best_fit)
 
         self.connect(self.pushButton_delete_logger, PyQt4.QtCore.SIGNAL("clicked()"), lambda: self.delete_selected_range(u'w_levels_logger'))
-        self.connect(self.pushButton_delete_meas, PyQt4.QtCore.SIGNAL("clicked()"), lambda: self.delete_selected_range(u'w_levels'))
-
 
         self.get_search_radius()
 
@@ -236,9 +233,9 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             if self.lastcalibr[0][1] and self.lastcalibr[0][0]:
                 text = """Last pos. for logger in """
                 text += obsid
-                text += """\nwas """ + str(self.lastcalibr[0][1]) + """ masl\nat """ +  str(self.lastcalibr[0][0])
+                text += """ was """ + str(self.lastcalibr[0][1]) + """ masl at """ +  str(self.lastcalibr[0][0])
             else:
-                text = """There is no earlier known\nposition for the logger\nin """ + unicode(self.combobox_obsid.currentText())#self.obsid[0]
+                text = """There is no earlier known position for the logger in """ + unicode(self.combobox_obsid.currentText())#self.obsid[0]
             self.INFO.setText(text)
 
     def set_logger_pos(self):
@@ -292,9 +289,9 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         sql += """ + level_masl WHERE obsid = '"""
         sql += obsid
         # Sqlite seems to have problems with date comparison date_time >= a_date, so they have to be converted into total seconds first.
-        sql += """' AND CAST(strftime('%s', date_time) AS NUMERIC) >= """
+        sql += """' AND CAST(strftime('%s', date_time) AS NUMERIC) > """
         sql += str((fr_d_t - datetime.datetime(1970,1,1)).total_seconds())
-        sql += """ AND CAST(strftime('%s', date_time) AS NUMERIC) <= """
+        sql += """ AND CAST(strftime('%s', date_time) AS NUMERIC) < """
         sql += str((to_d_t - datetime.datetime(1970,1,1)).total_seconds())
         sql += """ """
         dummy = utils.sql_alter_db(sql)
@@ -311,10 +308,10 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         sql += str(newzref)
         sql += """ + head_cm / 100 WHERE obsid = '"""
         sql += obsid
-        # Sqlite seems to have problems with date comparison date_time >= a_date, so they have to be converted into total seconds first.
-        sql += """' AND CAST(strftime('%s', date_time) AS NUMERIC) >= """
+        # Sqlite seems to have problems with date comparison date_time >= a_date, so they have to be converted into total seconds first (but now we changed to > but kept .total_seconds())
+        sql += """' AND CAST(strftime('%s', date_time) AS NUMERIC) > """
         sql += str((fr_d_t - datetime.datetime(1970,1,1)).total_seconds())
-        sql += """ AND CAST(strftime('%s', date_time) AS NUMERIC) <= """
+        sql += """ AND CAST(strftime('%s', date_time) AS NUMERIC) < """
         sql += str((to_d_t - datetime.datetime(1970,1,1)).total_seconds())
         sql += """ """
         dummy = utils.sql_alter_db(sql)
@@ -360,16 +357,19 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.axes.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
         self.calibrplotfigure.autofmt_xdate()
         self.axes.set_ylabel(unicode('Level (masl)', 'utf-8'))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
-        self.axes.set_title(unicode('Calibration plot for ', 'utf-8') + str(obsid))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
+        self.axes.set_title(unicode('Plot for ', 'utf-8') + str(obsid))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
         for label in self.axes.xaxis.get_ticklabels():
             label.set_fontsize(10)
         for label in self.axes.yaxis.get_ticklabels():
             label.set_fontsize(10)
         #plt.show()
+        self.calibrplotfigure.tight_layout()
         self.canvas.draw()
         plt.close(self.calibrplotfigure)#this closes reference to self.calibrplotfigure
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.calib_help.setText("")
+
+        self.getlastcalibration()
 
     def plot_recarray(self, axes, a_recarray, lable, line_style, picker=10):
         """ Plots a recarray to the supplied axes object """
@@ -436,10 +436,11 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         if self.log_pos is not None:
             self.calib_help.setText("Select a y position to move to.")
             self.cid.append(self.canvas.mpl_connect('button_press_event', self.set_y_pos_from_y_click))
+            self.calib_help.setText("")
         else:
             self.calib_help.setText("Something wrong, click \"Current\" and try again.")
 
-    def adjust_from_plot_selections(self):
+    def calculate_offset(self):
         """ Part of adjustment method 3. adjust level_masl by clicking in plot.
         this method extracts the head from head_ts with the same date as the line node.
             4. Calculating y-position - head (or level_masl) and setting self.LoggerPos.
@@ -470,17 +471,13 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-                self.add_to_level_masl()
-
-            self.calib_help.setText("")
         self.pushButtonMpos.setEnabled(False)
-        self.pushButtonAdjustFromPlotSelect.setEnabled(False)
         
     def set_log_pos_from_node_date_click(self, event):
         """ Sets self.log_pos variable to the date (x-axis) from the node nearest the pick event """
         found_date = utils.find_nearest_date_from_event(event)
         #self.calib_help.setText("Logger node " + str(found_date) + " selected, click button \"Calibrate by selection in plot\" again.")
-        self.calib_help.setText("Logger node " + str(found_date) + " selected, click \"New\" and select new level.")
+        self.calib_help.setText("Logger node " + str(found_date) + " selected, click \"new\" and select new level.")
         self.log_pos = found_date
         self.reset_cid()
         self.pushButtonMpos.setEnabled(True)
@@ -489,9 +486,9 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         """ Sets the self.y_pos variable to the y value of the click event """
         self.y_pos = event.ydata
         #self.calib_help.setText("Y position set, click button \"Calibrate by selection in plot\" again for calibration.")
-        self.calib_help.setText("New level is set, now click \"Adjust\".")
+        self.calculate_offset()
+        self.calib_help.setText("Offset is calculated, now click \"add\".")
         self.reset_cid()
-        self.pushButtonAdjustFromPlotSelect.setEnabled(True)
 
     def logger_pos_best_fit(self):
         self.loggerpos_masl_or_offset_state = 1
