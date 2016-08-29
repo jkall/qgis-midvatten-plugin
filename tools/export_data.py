@@ -19,6 +19,7 @@
 """
 import sqlite3 as sqlite, csv, codecs, cStringIO, os, os.path
 import midvatten_utils as utils
+from definitions import midvatten_defs as defs
 import qgis.utils
 
 class ExportData():
@@ -33,9 +34,9 @@ class ExportData():
         self.curs = database.conn.cursor()#get a cursor
 
         self.exportfolder = exportfolder
-        self.write_data(self.to_csv, self.ID_obs_points, ['obs_points', 'comments', 'w_levels', 'w_levels_logger', 'w_flow', 'w_qual_lab', 'w_qual_field', 'stratigraphy', 'meteo'], utils.verify_table_exists)
-        self.write_data(self.to_csv, self.ID_obs_lines, ['obs_lines', 'vlf_data', 'seismic_data'], utils.verify_table_exists)
-        self.write_data(self.zz_to_csv, u'no_obsids', ['zz_flowtype', 'zz_meteoparam', 'zz_staff', 'zz_strat', 'zz_capacity', 'zz_w_qual_field_parameters'], utils.verify_table_exists)
+        self.write_data(self.to_csv, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='obs_points'), utils.verify_table_exists)
+        self.write_data(self.to_csv, self.ID_obs_lines, defs.get_subset_of_tables_fr_db(category='obs_lines'), utils.verify_table_exists)
+        self.write_data(self.zz_to_csv, u'no_obsids', defs.get_subset_of_tables_fr_db(category='data_domains'), utils.verify_table_exists)
         database.closedb()
 
     def export_2_splite(self,target_db,source_db, EPSG_code):
@@ -54,11 +55,11 @@ class ExportData():
         self.curs.execute(r"""ATTACH DATABASE '%s' AS a"""%source_db)
         conn.commit()#commit sql statements so far
 
-        self.write_data(self.to_sql, self.ID_obs_points, ['obs_points', 'comments', 'w_levels', 'w_levels_logger', 'w_flow', 'w_qual_lab', 'w_qual_field', 'stratigraphy', 'meteo'], self.verify_table_in_attached_db, 'a.')
+        self.write_data(self.to_sql, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='obs_points'), self.verify_table_in_attached_db, 'a.')
         conn.commit()
-        self.write_data(self.to_sql, self.ID_obs_lines, ['obs_lines', 'vlf_data', 'seismic_data'], self.verify_table_in_attached_db, 'a.')
+        self.write_data(self.to_sql, self.ID_obs_lines, defs.get_subset_of_tables_fr_db(category='obs_lines'), self.verify_table_in_attached_db, 'a.')
         conn.commit()
-        self.write_data(self.zz_to_sql, u'no_obsids', ['zz_flowtype', 'zz_meteoparam', 'zz_staff', 'zz_strat', 'zz_capacity', 'zz_w_qual_field_parameters'], self.verify_table_in_attached_db, 'a.')
+        self.write_data(self.zz_to_sql, u'no_obsids', defs.get_subset_of_tables_fr_db(category='data_domains'), self.verify_table_in_attached_db, 'a.')
         conn.commit()
 
         #Statistics

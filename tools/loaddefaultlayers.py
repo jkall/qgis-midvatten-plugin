@@ -33,8 +33,8 @@ class LoadLayers():
     def __init__(self, iface, settingsdict={},group_name='Midvatten_OBS_DB'):
         self.settingsdict = settingsdict
         self.group_name = group_name
-        self.default_layers =  defs.default_layers() 
-        self.default_nonspatlayers = defs.default_nonspatlayers()
+        self.default_layers =  defs.get_subset_of_tables_fr_db(category='default_layers') 
+        self.default_nonspatlayers = defs.get_subset_of_tables_fr_db(category='default_nonspatlayers')
         self.iface = iface
         self.root = QgsProject.instance().layerTreeRoot()
         self.legend = self.iface.legendInterface()
@@ -176,7 +176,7 @@ class LoadLayers():
                 filename = tablename + ".qml"
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filename)
                 layer.loadNamedStyle(stylefile)
-                if tablename in defs.default_layers_w_ui():        #=   THE ONES WITH CUSTOM UI FORMS
+                if tablename in defs.get_subset_of_tables_fr_db(category='default_layers_w_ui'):        #=   THE ONES WITH CUSTOM UI FORMS
                     if utils.getcurrentlocale() == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
                         filename = tablename + ".ui"
                     else:

@@ -62,7 +62,6 @@ class Stratigraphy:
 
     def initStore(self):
         try: # return from SurveyStore is stored in self.store only if no object belonging to DataError class is created
-            #self.store = SurveyStore(self.dataPath, self.stratitable)
             self.store = SurveyStore(self.dataPath, self.stratitable)  
         except DataError, e: # if an object 'e' belonging to DataError is created, then do following
             print "Load failed due: " + e.problem

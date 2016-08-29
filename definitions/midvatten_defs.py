@@ -96,18 +96,6 @@ def settingsdict():    #These are the default settings, they shall not be change
             'locale': ''
             }
     return dictionary
-    
-def default_layers ():        #These may be changed
-    list = ['obs_lines', 'obs_points', 'obs_p_w_qual_field', 'obs_p_w_qual_lab', 'obs_p_w_lvl', 'obs_p_w_strat', 'w_lvls_last_geom']    # This should be a list with all relevant tables and views that are to be loaded
-    return list
-
-def default_nonspatlayers():            # These may be changed
-    list =  ['stratigraphy', 'w_levels', 'w_flow', 'w_qual_lab', 'w_qual_field','comments']
-    return list
-    
-def default_layers_w_ui():
-    list = ['obs_lines', 'obs_points', 'w_lvls_last_geom']
-    return list
 
 def geocolorsymbols():
     """
@@ -287,7 +275,33 @@ def geocolorsymbols():
             dictionary[utils.unicode_2_utf8(v)] = (utils.unicode_2_utf8(dict_qt.get(key)[0]))
     """
     return dictionary
-    
+
+def get_subset_of_tables_fr_db(category='obs_points'):
+    """returns various subsets of tables from the db, argument category is one of:
+        'obs_points' - returns all tables containing observational data related to obs_points
+        'obs_lines' - returns all tables containing observational data related to obs_lines
+        'data_domains' - returns all tables containing various data domains, i.e. zz_tables
+        'default_layers' - returns all tables that are loaded as default spatial layers in qgis
+        'default_nonspatlayers'  - returns all tables that are loaded as default non-spatial layers in qgis
+        'default_layers_w_ui'  - returns all tables that are loaded as default spatial layers in qgis, having a custom ui form
+    """
+    if category=='obs_points':
+        return ['obs_points', 'comments', 'w_levels', 'w_levels_logger', 'w_flow', 'w_qual_lab', 'w_qual_field', 'stratigraphy', 'meteo']
+    elif category == 'obs_lines':
+        return ['obs_lines', 'vlf_data', 'seismic_data']
+    elif category == 'data_domains':
+        return ['zz_flowtype', 'zz_meteoparam', 'zz_staff', 'zz_strat', 'zz_stratigraphy', 'zz_capacity', 'zz_w_qual_field_parameters', 'zz_w_qual_field_parameters_groups']
+    elif category == 'default_layers':
+        return ['obs_lines', 'obs_points', 'obs_p_w_qual_field', 'obs_p_w_qual_lab', 'obs_p_w_lvl', 'obs_p_w_strat', 'w_lvls_last_geom']
+    elif category == 'default_nonspatlayers':
+        return ['stratigraphy', 'w_levels', 'w_flow', 'w_qual_lab', 'w_qual_field','comments']
+    elif category == 'default_layers_w_ui':
+        return ['obs_lines', 'obs_points', 'w_lvls_last_geom']
+    elif category == 'stratitable':#not yet in use
+        return ['stratigraphy']
+    else:
+        return []
+
 def hydrocolors():
     """
     This dictionary is used for stratigraph plots (Qt) to set color depending on capacity
@@ -327,9 +341,6 @@ def hydrocolors():
                       '6+': ('mycket god', 'darkBlue'),
                     }
     return dict_qt
-
-def stratitable():
-    return 'stratigraphy'
 
 def PlotTypesDict(international='no'): 
     """
