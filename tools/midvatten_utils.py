@@ -261,9 +261,9 @@ def ask_user_about_stopping(question):
         return 'ignore'
 
 def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-table)
-    #print(params)#debug
+    print(params)#debug
     sqlstring = r"""select %s, %s from %s"""%(params)
-    #print(sqlstring)
+    print(sqlstring)
     connection_ok, list_of_tuples= sql_load_fr_db(sqlstring)
 
     if not connection_ok:

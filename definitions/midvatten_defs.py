@@ -270,11 +270,9 @@ def geocolorsymbols():
     #dict_geo1 is just a start, not yet populated with tuples of geoshorts for each strata, time to do so
     dictionary={}
     for key, value in sorted(dict_geo1.iteritems()):
-        temp_list = utils.sql_load_fr_db("select geoshort from zz_strat where strata = '%s'"%key)[1]
-        dummy=()
-        for item in temp_list:
-            dummy = dummy + (utils.unicode_2_utf8(item[0]),)
-        dictionary[utils.unicode_2_utf8(key)] = (utils.unicode_2_utf8(dummy))
+        #temp_list = utils.sql_load_fr_db("select geoshort from zz_strat where strata = '%s'"%key)[1]
+        for geoshort in value:
+            dictionary[geoshort]=dict_qt[str(key)]
     """
     # this was temporary method to deal with zz_stratigraphy table existing in plugin version 1.3.x
     # skip "unknown"
@@ -288,7 +286,7 @@ def geocolorsymbols():
             #print (key,utils.unicode_2_utf8(v), utils.unicode_2_utf8(dict_qt.get(key)[0]))#debug
             dictionary[utils.unicode_2_utf8(v)] = (utils.unicode_2_utf8(dict_qt.get(key)[0]))
     """
-    #print(dictionary)#debug
+    print(dictionary)#debug
     return dictionary
     
 def hydrocolors():
