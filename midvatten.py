@@ -405,7 +405,7 @@ class midvatten:
             drillreport(obsid[0],self.ms.settingsdict)
 
     def export_csv(self):
-        allcritical_layers = ('obs_points', 'obs_lines', 'w_levels','w_flow','w_qual_lab','w_qual_field','stratigraphy') #none of these layers must be in editing mode
+        allcritical_layers = tuple(midvatten_defs.get_subset_of_tables_fr_db('obs_points') + midvatten_defs.get_subset_of_tables_fr_db('obs_lines') + midvatten_defs.get_subset_of_tables_fr_db('data_domains') + midvatten_defs.get_subset_of_tables_fr_db('default_layers') +  midvatten_defs.get_subset_of_tables_fr_db('default_nonspatlayers') )#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
         if err_flag == 0:     
@@ -419,13 +419,13 @@ class midvatten:
             #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
             exportfolder = QFileDialog.getExistingDirectory(None, 'Select a folder where the csv files will be created:', '.',QFileDialog.ShowDirsOnly)
             if len(exportfolder) > 0:
-                exportinstance = ExportData(OBSID_P, OBSID_L)
+                exportinstance = ExportData(OBSID_P, OBSID_L,self.logfile)
                 exportinstance.export_2_csv(exportfolder)
                 
             QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def export_spatialite(self):
-        allcritical_layers = ('obs_points', 'obs_lines', 'w_levels','w_flow','w_qual_lab','w_qual_field','stratigraphy') #none of these layers must be in editing mode
+        allcritical_layers = tuple(midvatten_defs.get_subset_of_tables_fr_db('obs_points') + midvatten_defs.get_subset_of_tables_fr_db('obs_lines') + midvatten_defs.get_subset_of_tables_fr_db('data_domains') + midvatten_defs.get_subset_of_tables_fr_db('default_layers') +  midvatten_defs.get_subset_of_tables_fr_db('default_nonspatlayers') )#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
         if err_flag == 0:
@@ -451,11 +451,11 @@ class midvatten:
                 newdbinstance = newdb(verno,self.logfile,'n',EPSG_code, set_locale=utils.getcurrentlocale())#flag 'n' to avoid user selection of EPSG
                 if not newdbinstance.dbpath=='':
                     newdb = newdbinstance.dbpath
-                    exportinstance = ExportData(OBSID_P, OBSID_L)
+                    exportinstance = ExportData(OBSID_P, OBSID_L,self.logfile)
                     exportinstance.export_2_splite(newdb,self.ms.settingsdict['database'],EPSG_code)
             
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
-                
+
     def export_fieldlogger(self):
         """
         Exports data to FieldLogger android app format
@@ -791,7 +791,7 @@ class midvatten:
             if err_flag == 0:
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict,'Midvatten_data_domains')
         QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
-        
+
     def loadthelayers(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:

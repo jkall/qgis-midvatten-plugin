@@ -116,6 +116,7 @@ class newdb():
 
                 self.add_triggers_to_obs_points()
 
+                self.cur.execute('vacuum')
 
                 #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
                 self.conn.commit()

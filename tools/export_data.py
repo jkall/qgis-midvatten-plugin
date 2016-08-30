@@ -24,9 +24,10 @@ import qgis.utils
 
 class ExportData():
 
-    def __init__(self, OBSID_P, OBSID_L):
+    def __init__(self, OBSID_P, OBSID_L,logfile):
         self.ID_obs_points = OBSID_P
         self.ID_obs_lines = OBSID_L
+        self.logfile = logfile
 
     def export_2_csv(self,exportfolder):
         database = utils.dbconnection()
@@ -68,7 +69,11 @@ class ExportData():
         self.curs.execute(r"""DETACH DATABASE a""")
         self.curs.execute('vacuum')
 
-        utils.pop_up_info("Export done.\n\nTables with different number of rows:\n" + statistics)
+        text_string_message="Export done.\n\nTables with different number of rows:\n" + statistics
+        self.logfile.write(text_string_message)
+        self.logfile.flush()
+
+        utils.pop_up_info(text_string_message + "\n\n also written to %s"%self.logfile.name)
 
         conn.commit()
         conn.close()
