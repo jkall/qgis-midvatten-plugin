@@ -290,7 +290,7 @@ def get_subset_of_tables_fr_db(category='obs_points'):
     elif category == 'obs_lines':
         return ['obs_lines', 'vlf_data', 'seismic_data']
     elif category == 'data_domains':
-        return ['zz_flowtype', 'zz_meteoparam', 'zz_staff', 'zz_strat', 'zz_stratigraphy', 'zz_capacity', 'zz_w_qual_field_parameters', 'zz_w_qual_field_parameters_groups']
+        return ['zz_flowtype', 'zz_meteoparam', 'zz_staff', 'zz_strat', 'zz_stratigraphy', 'zz_stratigraphy_plots', 'zz_capacity', 'zz_w_qual_field_parameters', 'zz_w_qual_field_parameters_groups']
     elif category == 'default_layers':
         return ['obs_lines', 'obs_points', 'obs_p_w_qual_field', 'obs_p_w_qual_lab', 'obs_p_w_lvl', 'obs_p_w_strat', 'w_lvls_last_geom']
     elif category == 'default_nonspatlayers':

@@ -51,7 +51,7 @@ class ExportData():
         conn = sqlite.connect(target_db,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
         self.curs = conn.cursor()
         self.curs.execute("PRAGMA foreign_keys = ON")
-        self.curs.execute(r"""delete from spatial_ref_sys where NOT (srid='%s')"""%EPSG_code)
+        self.curs.execute(r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')"""%EPSG_code)
         self.curs.execute(r"""ATTACH DATABASE '%s' AS a"""%source_db)
         conn.commit()#commit sql statements so far
 
