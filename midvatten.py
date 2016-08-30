@@ -419,7 +419,7 @@ class midvatten:
             #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
             exportfolder = QFileDialog.getExistingDirectory(None, 'Select a folder where the csv files will be created:', '.',QFileDialog.ShowDirsOnly)
             if len(exportfolder) > 0:
-                exportinstance = ExportData(OBSID_P, OBSID_L)
+                exportinstance = ExportData(OBSID_P, OBSID_L,self.logfile)
                 exportinstance.export_2_csv(exportfolder)
                 
             QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
@@ -451,7 +451,7 @@ class midvatten:
                 newdbinstance = newdb(verno,self.logfile,'n',EPSG_code, set_locale=utils.getcurrentlocale())#flag 'n' to avoid user selection of EPSG
                 if not newdbinstance.dbpath=='':
                     newdb = newdbinstance.dbpath
-                    exportinstance = ExportData(OBSID_P, OBSID_L)
+                    exportinstance = ExportData(OBSID_P, OBSID_L,self.logfile)
                     exportinstance.export_2_splite(newdb,self.ms.settingsdict['database'],EPSG_code)
             
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
