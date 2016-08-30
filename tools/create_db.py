@@ -35,7 +35,7 @@ class newdb():
         self.logfile = logfile
         self.dbpath = ''
         self.create_new_db(verno,user_select_CRS,EPSG_code, set_locale)  #CreateNewDB(verno)
-        
+
     def create_new_db(self, verno, user_select_CRS='y', EPSG_code=u'4326', set_locale=False):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
         if user_select_CRS=='y':
@@ -66,7 +66,7 @@ class newdb():
                         return ''
                 try:
                     # creating/connecting the test_db
-                    self.conn = sqlite.connect(self.dbpath) 
+                    self.conn = sqlite.connect(self.dbpath)
                     # creating a Cursor
                     self.cur = self.conn.cursor()
                     self.cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
@@ -89,7 +89,7 @@ class newdb():
                 qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
                 with open(SQLFile, 'r') as f:
                     f.readline()  # first line is encoding info....
-                    try:                        
+                    try:
                         for line in f:
                             if not line:
                                 continue
@@ -109,6 +109,8 @@ class newdb():
                     except:
                         qgis.utils.iface.messageBar().pushMessage("Failed to create database", 2,duration=3)
                         #utils.pop_up_info('Failed to create DB!')
+
+                self.cur.execute(r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID)
 
                 self.insert_datadomains(set_locale)
 
@@ -173,11 +175,11 @@ class AddLayerStyles():
     def __init__(self, dbpath):
         self.dbpath = dbpath
         # creating/connecting the test_db
-        self.conn = sqlite.connect(self.dbpath) 
+        self.conn = sqlite.connect(self.dbpath)
         # creating a Cursor
         self.cur = self.conn.cursor()
         self.cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
-        
+
         #add layer styles
         self.add_layer_styles_2_db()
 
@@ -195,7 +197,7 @@ class AddLayerStyles():
         #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
         self.rs.close()
         self.conn.close()
-    
+
     def add_layer_styles_2_db(self):
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","add_layer_styles_2_db.sql")
         datetimestring = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

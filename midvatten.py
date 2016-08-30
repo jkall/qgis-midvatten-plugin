@@ -437,7 +437,12 @@ class midvatten:
             if sanity.result == 1:
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
                 obsp_layer = utils.find_layer('obs_points')
-                CRS = obsp_layer.crs()
+                try:
+                    CRS = obsp_layer.crs()
+                except AttributeError:
+                    utils.pop_up_info("Export error!\n\nMust use \"load default db-layers to qgis\" from Midvatten menu (or key F7) first!")
+                    QApplication.restoreOverrideCursor()  # now this long process is done and the cursor is back as normal
+                    return None
                 EPSG_code = str(CRS.authid()[5:])
                 filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
                 iniText = QSettings(filenamepath , QSettings.IniFormat)
