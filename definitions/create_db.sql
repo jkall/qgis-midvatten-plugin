@@ -165,12 +165,16 @@ create table "w_levels_logger" ("obsid" text not null, "date_time" text not null
 create table "stratigraphy" (obsid text not null, stratid integer not null, depthtop double, depthbot double, geology text, geoshort text, capacity text, development text,  comment text, primary key (obsid, stratid), foreign key(obsid) references obs_points(obsid));
 create table "w_qual_field" (obsid text not null, staff text, date_time text not null, instrument text, parameter text not null, reading_num double, reading_txt text, unit text, comment text, primary key(obsid, date_time, parameter, unit), foreign key(obsid) references obs_points(obsid), foreign key(parameter, unit) references zz_w_qual_field_parameters(parameter, unit), foreign key(staff) references zz_staff(staff));
 create table "w_qual_lab" ("obsid" text not null, "depth" double, "report" text not null, "project" text, "staff" text, "date_time" text, "anameth" text, "parameter" text not null, "reading_num" double, "reading_txt" text, "unit" text, "comment" text, primary key(report, parameter), foreign key(obsid) references obs_points(obsid), foreign key(staff) references zz_staff(staff));
+create table "w_flow" (obsid text not null, instrumentid text not null, flowtype text not null, date_time text not null, reading double, unit text, comment text, primary key (obsid, instrumentid, flowtype, date_time), foreign key(obsid) references obs_points(obsid), foreign key (flowtype, unit) references zz_flowtype(type, unit));
+CREATE TABLE "meteo" (obsid text not null, instrumentid text not null, parameter text not null, date_time text not null, reading_num double, reading_txt text, unit text, comment text, primary key (obsid, instrumentid, parameter, date_time), foreign key(obsid) references obs_points(obsid), foreign key (parameter) references zz_meteoparam(parameter));
 create table "seismic_data" (obsid text not null, length double not null, ground double, bedrock double, gw_table double, comment text, primary key (obsid, Length), foreign key (obsid) references obs_lines(obsid));
 create table "vlf_data" (obsid text not null, length double not null, real_comp double, imag_comp double, comment text, primary key (obsid, Length), foreign key (obsid) references obs_lines(obsid));
+CREATE TABLE "comments" ("obsid" text not null, "date_time" text not null, "comment" text not null, "staff" text not null, primary key("obsid", "date_time"), foreign key(obsid) references obs_points(obsid), foreign key(staff) references zz_staff(staff));
+CREATE TABLE "zz_staff" ("staff" text not null, "name" text, primary key("staff"));
+CREATE TABLE "zz_w_qual_field_parameters" ("parameter" text not null, "shortname", "unit" text, "explanation" text, primary key ("parameter", "unit"));
+CREATE TABLE "zz_w_qual_field_parameter_groups" ("parameter" text not null, "unit" text, "groupname" text not null, primary key ("parameter", "unit", "groupname"), foreign key(parameter, unit) references zz_w_qual_field_parameters("parameter", "unit"));
 create table "zz_flowtype" (type text not null, unit text not null, explanation text, primary key(type, unit));
-create table "w_flow" (obsid text not null, instrumentid text not null, flowtype text not null, date_time text not null, reading double, unit text, comment text, primary key (obsid, instrumentid, flowtype, date_time), foreign key(obsid) references obs_points(obsid), foreign key (flowtype, unit) references zz_flowtype(type, unit));
 CREATE TABLE "zz_meteoparam" (parameter text not null,explanation text, primary key(parameter));
-CREATE TABLE "meteo" (obsid text not null, instrumentid text not null, parameter text not null, date_time text not null, reading_num double, reading_txt text, unit text, comment text, primary key (obsid, instrumentid, parameter, date_time), foreign key(obsid) references obs_points(obsid), foreign key (parameter) references zz_meteoparam(parameter));
 CREATE TABLE "zz_strat" (geoshort text not null, strata text not null, primary key(geoshort));
 CREATE TABLE "zz_stratigraphy_plots" (strata text not null, color_mplot text not null, hatch_mplot text not null, color_qt text not null, brush_qt text not null, primary key(strata));
 CREATE TABLE "zz_capacity" (capacity text not null, explanation text not null, primary key(capacity));
@@ -197,9 +201,3 @@ create view w_flow_accvol as select "obsid" as "obsid","instrumentid" as "instru
 CREATE INDEX idx_wquallab_odtp ON w_qual_lab(obsid, date_time, parameter);
 CREATE INDEX idx_wquallab_odtpu ON w_qual_lab(obsid, date_time, parameter, unit);
 CREATE INDEX idx_wqualfield_odtpu ON w_qual_field(obsid, date_time, parameter, unit);
-CREATE TABLE "comments" ("obsid" text not null, "date_time" text not null, "comment" text not null, "staff" text not null, primary key("obsid", "date_time"), foreign key(obsid) references obs_points(obsid), foreign key(staff) references zz_staff(staff));
-CREATE TABLE "zz_staff" ("staff" text not null, "name" text, primary key("staff"));
-CREATE TABLE "zz_w_qual_field_parameters" ("parameter" text not null, "shortname", "unit" text, "explanation" text, primary key ("parameter", "unit"));
-CREATE TABLE "zz_w_qual_field_parameter_groups" ("parameter" text not null, "unit" text, "groupname" text not null, primary key ("parameter", "unit", "groupname"), foreign key(parameter, unit) references zz_w_qual_field_parameters("parameter", "unit"));
-
-
