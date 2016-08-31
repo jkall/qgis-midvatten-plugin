@@ -29,7 +29,6 @@ import resources  # Initialize Qt resources from file resources.py
 
 # Import some general python modules
 import os.path
-from os import unlink, remove
 import sys
 import datetime
 import zipfile
@@ -66,7 +65,7 @@ class midvatten:
         #sys.path.append(os.path.dirname(os.path.abspath(__file__))) #add midvatten plugin directory to pythonpath
         self.iface = iface
         self.ms = midvsettings()#self.ms.settingsdict is created when ms is imported
-        self.logfile =  NamedTemporaryFile( suffix=".tmp", prefix="midvatten_", delete=False )
+        self.logfile =  NamedTemporaryFile( suffix=".tmp", prefix="midvatten_", delete=True )
         
     def initGui(self):
         # Create actions that will start plugin configuration
@@ -331,10 +330,8 @@ class midvatten:
     def unload(self):    
         # remove temporary logfile
         try:
-            unlink(self.logfile)
-            remove(self.logfile)
+            self.logfile.close()
         except:
-            pass
         # Remove the plugin menu items and icons
         try:
             self.menu.removeAction(self.actionloadthelayers)
