@@ -31,8 +31,7 @@ import midvatten_utils as utils
 
 class newdb():
 
-    def __init__(self, verno, logfile,user_select_CRS='y', EPSG_code=u'4326', set_locale=False):
-        self.logfile = logfile
+    def __init__(self, verno, user_select_CRS='y', EPSG_code=u'4326', set_locale=False):
         self.dbpath = ''
         self.create_new_db(verno,user_select_CRS,EPSG_code, set_locale)  #CreateNewDB(verno)
 
@@ -58,10 +57,8 @@ class newdb():
                     try:
                         os.remove(self.dbpath)
                     except OSError, e:
-                        qgis.utils.iface.messageBar().pushMessage("sqlite error, see logfile %s"%self.logfile.name, 2,duration=10)
-                        self.logfile.write("%s - %s." % (e.filename,e.strerror))
-                        self.logfile.flush()
-                        #utils.pop_up_info("Error: %s - %s." % (e.filename,e.strerror))
+                        utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", "%s - %s." % (e.filename,e.strerror), duration=10)
+
                         PyQt4.QtGui.QApplication.restoreOverrideCursor()
                         return ''
                 try:
@@ -103,9 +100,7 @@ class newdb():
                             self.cur.execute(line)  # use tags to find and replace SRID and versioning info
                     except Exception, e:
                         #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
-                        qgis.utils.iface.messageBar().pushMessage("sqlite error, see logfile %s"%self.logfile.name, 2,duration=5)
-                        self.logfile.write('Failed to create DB! sql failed: \n%serror msg: %s\n\n'%(line ,str(e)))
-                        self.logfile.flush()
+                        utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n'%(line ,str(e)), duration=5)
                     except:
                         qgis.utils.iface.messageBar().pushMessage("Failed to create database", 2,duration=3)
                         #utils.pop_up_info('Failed to create DB!')
@@ -167,9 +162,8 @@ class newdb():
                     self.cur.execute(line)  # use tags to find and replace SRID and versioning info
                 except Exception, e:
                     #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
-                    qgis.utils.iface.messageBar().pushMessage("Error","sql failed, see logfile %s"%self.logfile.name, 2,duration=5)
-                    self.logfile.write('sql failed:\n%s\nerror msg:\n%s\n'%(line ,str(e)))
-                    self.logfile.flush()
+                    utils.MessagebarAndLog.critical("Error: sql failed, see qgis Log Message Panel", 'sql failed:\n%s\nerror msg:\n%s\n'%(line ,str(e)), duration=5)
+
 
 class AddLayerStyles():
     """ currently this class is not used although it should be, when storing layer styles in the database works better """

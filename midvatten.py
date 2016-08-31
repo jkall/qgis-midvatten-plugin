@@ -65,7 +65,6 @@ class midvatten:
         #sys.path.append(os.path.dirname(os.path.abspath(__file__))) #add midvatten plugin directory to pythonpath
         self.iface = iface
         self.ms = midvsettings()#self.ms.settingsdict is created when ms is imported
-        self.logfile =  NamedTemporaryFile( suffix=".tmp", prefix="midvatten_", delete=True )
         
     def initGui(self):
         # Create actions that will start plugin configuration
@@ -307,7 +306,7 @@ class midvatten:
         self.menu.db_manage_menu.addAction(self.actionVacuumDB)
         self.menu.db_manage_menu.addAction(self.actionZipDB)
 
-        self.menu.utils =  QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
+        self.menu.utils = QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
         self.menu.addMenu(self.menu.utils)
         self.menu.utils.addAction(self.actionloaddatadomains)
         self.menu.utils.addAction(self.actionPrepareFor2Qgis2ThreeJS)
@@ -327,12 +326,13 @@ class midvatten:
         self.iface.projectRead.connect(self.project_opened)
         self.iface.newProjectCreated.connect(self.project_created)
 
+        #Connect message log to logfile.
+        #Log file name must be set as env. variable QGIS_LOG_FILE in
+        # settings > options > system > environment.
+        QgsMessageLog.instance().messageReceived.connect(utils.write_qgs_log_to_file)
+
+
     def unload(self):    
-        # remove temporary logfile
-        try:
-            self.logfile.close()
-        except:
-        # Remove the plugin menu items and icons
         try:
             self.menu.removeAction(self.actionloadthelayers)
             self.menu.removeAction(self.actionsetup)
@@ -416,7 +416,7 @@ class midvatten:
             #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
             exportfolder = QFileDialog.getExistingDirectory(None, 'Select a folder where the csv files will be created:', '.',QFileDialog.ShowDirsOnly)
             if len(exportfolder) > 0:
-                exportinstance = ExportData(OBSID_P, OBSID_L,self.logfile)
+                exportinstance = ExportData(OBSID_P, OBSID_L)
                 exportinstance.export_2_csv(exportfolder)
                 
             QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
@@ -445,10 +445,10 @@ class midvatten:
                 iniText = QSettings(filenamepath , QSettings.IniFormat)
                 verno = str(iniText.value('version')) 
                 from create_db import newdb
-                newdbinstance = newdb(verno,self.logfile,'n',EPSG_code, set_locale=utils.getcurrentlocale())#flag 'n' to avoid user selection of EPSG
+                newdbinstance = newdb(verno,'n',EPSG_code, set_locale=utils.getcurrentlocale())#flag 'n' to avoid user selection of EPSG
                 if not newdbinstance.dbpath=='':
                     newdb = newdbinstance.dbpath
-                    exportinstance = ExportData(OBSID_P, OBSID_L,self.logfile)
+                    exportinstance = ExportData(OBSID_P, OBSID_L)
                     exportinstance.export_2_splite(newdb,self.ms.settingsdict['database'],EPSG_code)
             
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
@@ -809,7 +809,7 @@ class midvatten:
             iniText = QSettings(filenamepath , QSettings.IniFormat)
             verno = str(iniText.value('version')) 
             from create_db import newdb
-            newdbinstance = newdb(verno, self.logfile,set_locale=set_locale)
+            newdbinstance = newdb(verno, set_locale=set_locale)
             if not newdbinstance.dbpath=='':
                 db = newdbinstance.dbpath
                 self.ms.settingsdict['database'] = db

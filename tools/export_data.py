@@ -21,13 +21,13 @@ import sqlite3 as sqlite, csv, codecs, cStringIO, os, os.path
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 import qgis.utils
+from qgis.core import QgsMessageLog
 
 class ExportData():
 
-    def __init__(self, OBSID_P, OBSID_L,logfile):
+    def __init__(self, OBSID_P, OBSID_L):
         self.ID_obs_points = OBSID_P
         self.ID_obs_lines = OBSID_L
-        self.logfile = logfile
 
     def export_2_csv(self,exportfolder):
         database = utils.dbconnection()
@@ -69,11 +69,7 @@ class ExportData():
         self.curs.execute(r"""DETACH DATABASE a""")
         self.curs.execute('vacuum')
 
-        text_string_message="Export done.\n\nTables with different number of rows:\n" + statistics
-        self.logfile.write(text_string_message)
-        self.logfile.flush()
-
-        utils.pop_up_info(text_string_message + "\n\n also written to %s"%self.logfile.name)
+        utils.MessagebarAndLog.info("Export done, see differences in log message panel", "Tables with different number of rows:\n" + statistics)
 
         conn.commit()
         conn.close()
@@ -152,7 +148,7 @@ class ExportData():
         try:
             self.curs.execute(sql)
         except Exception, e:
-            qgis.utils.iface.messageBar().pushMessage("Export warning, sql failed: " + sql + "\nmsg: " + str(e))
+            utils.MessagebarAndLog.critical("Export warning: sql failed. See message log.", sql + "\nmsg: " + str(e))
 
     def zz_to_csv(self, tname, tname_with_prefix):
         output = UnicodeWriter(file(os.path.join(self.exportfolder, tname + ".csv"), 'w'))
@@ -173,7 +169,9 @@ class ExportData():
         try:
             self.curs.execute(sql)
         except Exception, e:
-            qgis.utils.iface.messageBar().pushMessage("Export warning, sql failed: " + sql + "\nmsg: " + str(e))
+            utils.MessagebarAndLog.critical(
+                "Export warning: sql failed. See message log.",
+                sql + "\nmsg: " + str(e))
 
     def get_foreign_keys(self, tname):
         result_list = self.curs.execute("""PRAGMA foreign_key_list(%s)"""%(tname)).fetchall()
@@ -199,7 +197,9 @@ class ExportData():
         try:
             result_list = self.curs.execute(sql).fetchall()
         except Exception, e:
-            qgis.utils.iface.messageBar().pushMessage("Export warning, sql failed: " + sql + "\nmsg: " + str(e))
+            utils.MessagebarAndLog.critical(
+                "Export warning: sql failed. See message log.",
+                sql + "\nmsg: " + str(e))
 
         #Make a string of all column names in the new db.
         columns = ', '.join([col[1] for col in result_list]) #Load column names from sqlite table
