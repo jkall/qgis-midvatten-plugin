@@ -80,11 +80,29 @@ def show_message_log(pop_error=False):
 
 
 class MessagebarAndLog():
-    """
-    Source: based on qgis code
+    """ Class that sends logmessages to messageBar and or to QgsMessageLog
+
+    Usage: MessagebarAndLog.info(bar_msg='a', log_msg='b', duration=10,
+    messagebar_level=QgsMessageBar.INFO, log_level=QgsMessageLog.INFO,
+    button=True)
+
     :param bar_msg: A short msg displayed in messagebar and log.
     :param log_msg: A long msg displayed only in log.
+    :param messagebar_level: The message level of the messageBar.
+    :param log_level: The message level of the QgsMessageLog.
+    :param duration: The duration of the messageBar.
+    :param button: (True/False, default True) If False, the button to the
+                   QgsMessageLog does not appear at the messageBar.
+
     :return:
+
+    The message bar_msg is written to both messageBar and QgsMessageLog
+    The log_msg is only written to QgsMessageLog
+
+    * If the user only supplies bar_msg, a messageBar popup appears without button to message log.
+    * If the user supplies only log_msg, the message is only written to message log.
+    * If the user supplies both, a messageBar with bar_msg appears with a button to open message log.
+      In the message log, the bar_msg and log_msg is written.
     """
     def __init__(self):
         pass
