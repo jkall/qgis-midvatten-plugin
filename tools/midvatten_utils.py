@@ -69,6 +69,56 @@ class dbconnection():
     def closedb(self):
             self.conn.close()
 
+def show_message_log(pop_error=False):
+    """
+    Source: qgis code
+     """
+    if pop_error:
+        qgis.utils.iface.messageBar().popWidget()
+
+    qgis.utils.iface.openMessageLog()
+
+
+class MessagebarAndLog():
+    """
+    Source: based on qgis code
+    :param bar_msg: A short msg displayed in messagebar and log.
+    :param log_msg: A long msg displayed only in log.
+    :return:
+    """
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def log(bar_msg=None, log_msg=None, duration=10, messagebar_level=QgsMessageBar.INFO, log_level=QgsMessageLog.INFO, button=True):
+        if bar_msg is not None:
+            widget = qgis.utils.iface.messageBar().createMessage(bar_msg)
+            log_button = QtGui.QPushButton("View message log", pressed=show_message_log)
+            if log_msg is not None and button:
+                widget.layout().addWidget(log_button)
+            qgis.utils.iface.messageBar().pushWidget(widget, level=messagebar_level, duration=duration)
+        QgsMessageLog.logMessage(bar_msg, 'Midvatten', level=log_level)
+        if log_msg is not None:
+            QgsMessageLog.logMessage(log_msg, 'Midvatten', level=log_level)
+
+    @staticmethod
+    def info(bar_msg=None, log_msg=None, duration=10, button=True):
+        MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.INFO, QgsMessageLog.INFO, button)
+
+    @staticmethod
+    def warning(bar_msg=None, log_msg=None, duration=10, button=True):
+        MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.WARNING, QgsMessageLog.WARNING, button)
+
+    @staticmethod
+    def critical(bar_msg=None, log_msg=None, duration=10, button=True):
+        MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.CRITICAL, QgsMessageLog.CRITICAL, button)
+
+
+def write_qgs_log_to_file(message, tag, level):
+    logfile = QgsLogger.logFile()
+    if logfile is not None:
+        QgsLogger.logMessageToFile('{}({}): {}'.format(tag, level, message))
+
 
 class askuser(QtGui.QDialog):
     def __init__(self, question="YesNo", msg = '', dialogtitle='User input needed', parent=None):
