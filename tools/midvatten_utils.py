@@ -135,7 +135,7 @@ class MessagebarAndLog():
 def write_qgs_log_to_file(message, tag, level):
     logfile = QgsLogger.logFile()
     if logfile is not None:
-        QgsLogger.logMessageToFile('{}({}): {}'.format(tag, level, message))
+        QgsLogger.logMessageToFile('{}({}): {}'.format(tag, level, '%s: %s'%(get_date_time(),return_lower_ascii_string(message))))
 
 
 class askuser(QtGui.QDialog):
@@ -363,6 +363,10 @@ def get_all_obsids():
         myconnection.closedb()
     return obsids
 
+def get_date_time():
+    """returns date and time as a string in a pre-formatted format"""
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
 def get_selected_features_as_tuple(layername):
     """ Returns all selected features from layername
      
@@ -374,7 +378,7 @@ def get_selected_features_as_tuple(layername):
     #we cannot send unicode as string to sql because it would include the u' so str() is used
     obsidtuple = tuple([returnunicode(id) for id in selected_obs_points])
     return obsidtuple      
-        
+
 def getselectedobjectnames(thelayer='default'):
     """ Returns a list of obsid as unicode
     
@@ -390,7 +394,7 @@ def getselectedobjectnames(thelayer='default'):
         kolumnindex = thelayer.dataProvider().fieldNameIndex('OBSID')  #backwards compatibility
     observations = [obs[kolumnindex] for obs in selectedobs] # value in column obsid is stored as unicode
     return observations
-    
+
 def getQgisVectorLayers():
     """Return list of all valid QgsVectorLayer in QgsMapLayerRegistry"""
     layermap = QgsMapLayerRegistry.instance().mapLayers()
@@ -399,7 +403,7 @@ def getQgisVectorLayers():
         if layer.isValid() and layer.type() == QgsMapLayer.VectorLayer:
                 layerlist.append( layer )
     return layerlist
-    
+
 def isfloat(str):
     try: float(str)
     except ValueError: return False
@@ -595,7 +599,7 @@ def sql_alter_db_by_param_subst(sql='',*subst_params):
         ConnectionOK = False
         result = ''
     return ConnectionOK, result
-    
+
 def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatures=0 is for a check if any features are selected at all, the number is unimportant
     if layer.dataProvider().fieldNameIndex('obsid')  > -1 or layer.dataProvider().fieldNameIndex('OBSID')  > -1: # 'OBSID' to get backwards compatibility
         if selectedfeatures == 0 and layer.selectedFeatureCount() > 0:
@@ -609,7 +613,7 @@ def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatur
             qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15)
     else:
         pop_up_info("Select a qgis layer that has a field obsid!")
-        
+
 def strat_selection_check(layer=''):
     if layer.dataProvider().fieldNameIndex('h_gs')  > -1 or layer.dataProvider().fieldNameIndex('h_toc')  > -1  or layer.dataProvider().fieldNameIndex('SURF_LVL')  > -1: # SURF_LVL to enable backwards compatibility
             return 'ok'        
@@ -762,7 +766,7 @@ def find_nearest_using_pythagoras(xy_point, xy_array):
     distances = [math.sqrt((float(xy_point[0]) - float(xy_array[x][0]))**2 + (float(xy_point[1]) - float(xy_array[x][1]))**2) for x in xrange(len(xy_array))]
     min_index = distances.index(min(distances))
     return xy_array[min_index]
-    
+
 def ts_gen(ts):
     """ A generator that supplies one tuple from a list of tuples at a time
 
@@ -778,7 +782,7 @@ def ts_gen(ts):
     """        
     for idx in xrange(len(ts)):
         yield (ts[idx][0], ts[idx][1])  
-  
+
 def calc_mean_diff(coupled_vals):
     """ Calculates the mean difference for all value couples in a list of tuples 
     
