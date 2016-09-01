@@ -110,14 +110,14 @@ class MessagebarAndLog():
     @staticmethod
     def log(bar_msg=None, log_msg=None, duration=10, messagebar_level=QgsMessageBar.INFO, log_level=QgsMessageLog.INFO, button=True):
         if bar_msg is not None:
-            widget = qgis.utils.iface.messageBar().createMessage(bar_msg)
-            log_button = QtGui.QPushButton("View message log", pressed=show_message_log)
+            widget = qgis.utils.iface.messageBar().createMessage(returnunicode(bar_msg))
+            log_button = QtGui.QPushButton(u"View message log", pressed=show_message_log)
             if log_msg is not None and button:
                 widget.layout().addWidget(log_button)
             qgis.utils.iface.messageBar().pushWidget(widget, level=messagebar_level, duration=duration)
-        QgsMessageLog.logMessage(bar_msg, 'Midvatten', level=log_level)
+        QgsMessageLog.logMessage(returnunicode(bar_msg), u'Midvatten', level=log_level)
         if log_msg is not None:
-            QgsMessageLog.logMessage(log_msg, 'Midvatten', level=log_level)
+            QgsMessageLog.logMessage(returnunicode(log_msg), u'Midvatten', level=log_level)
 
     @staticmethod
     def info(bar_msg=None, log_msg=None, duration=10, button=True):
@@ -135,7 +135,7 @@ class MessagebarAndLog():
 def write_qgs_log_to_file(message, tag, level):
     logfile = QgsLogger.logFile()
     if logfile is not None:
-        QgsLogger.logMessageToFile('{}({}): {}'.format(tag, level, '%s: %s'%(get_date_time(),return_lower_ascii_string(message))))
+        QgsLogger.logMessageToFile(u'{}({}): {}'.format(returnunicode(tag), returnunicode(level), u'%s: %s'%(returnunicode(get_date_time()), returnunicode(message))))
 
 
 class askuser(QtGui.QDialog):
