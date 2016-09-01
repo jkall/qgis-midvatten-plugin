@@ -89,7 +89,7 @@ class MessagebarAndLog():
     :param bar_msg: A short msg displayed in messagebar and log.
     :param log_msg: A long msg displayed only in log.
     :param messagebar_level: The message level of the messageBar.
-    :param log_level: The message level of the QgsMessageLog.
+    :param log_level: The message level of the QgsMessageLog  { INFO = 0, WARNING = 1, CRITICAL = 2 }.
     :param duration: The duration of the messageBar.
     :param button: (True/False, default True) If False, the button to the
                    QgsMessageLog does not appear at the messageBar.
@@ -334,7 +334,8 @@ def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-tab
 
     if not connection_ok:
         textstring = """Cannot create dictionary from columns %s and %s in table %s!"""%(params)#col1,col2,table)
-        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)        
+        #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)        
+        MessagebarAndLog.warning(bar_msg='Some sql failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
         return False, {'':''}
 
     adict = dict([(k, v) for k, v in list_of_tuples])
@@ -521,13 +522,15 @@ def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list
         except:
             #pop_up_info("Could not connect to DB, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
             textstring = """DB error!\nDB call causing this error:%s\n"""%(sql)
-            qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15) 
+            #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15)
+            MessagebarAndLog.warning(bar_msg='Some sql failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
             ConnectionOK = False
             result = ''
     else:
         #pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
         textstring = """Could not connect to db %s!\nDB call causing this error:%s\n"""%(dbpath[0],sql)
-        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15) 
+        #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15)
+        MessagebarAndLog.critical(bar_msg='Db connection failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
         ConnectionOK = False
         result = ''
     return ConnectionOK, result
@@ -607,10 +610,10 @@ def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatur
         elif not(selectedfeatures==0) and layer.selectedFeatureCount()==selectedfeatures:
             return 'ok'
         elif selectedfeatures == 0 and not(layer.selectedFeatureCount() > 0):
-            qgis.utils.iface.messageBar().pushMessage("Error","Select at least one object in the qgis layer!", 2,duration=15)
+            qgis.utils.iface.messageBar().pushMessage("Error","Select at least one object in the qgis layer!", 2,duration=10)
         else:
             textstring = """Select exactly %s object in the qgis layer!"""%str(selectedfeatures)
-            qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15)
+            qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
     else:
         pop_up_info("Select a qgis layer that has a field obsid!")
 
@@ -618,7 +621,7 @@ def strat_selection_check(layer=''):
     if layer.dataProvider().fieldNameIndex('h_gs')  > -1 or layer.dataProvider().fieldNameIndex('h_toc')  > -1  or layer.dataProvider().fieldNameIndex('SURF_LVL')  > -1: # SURF_LVL to enable backwards compatibility
             return 'ok'        
     else:
-        qgis.utils.iface.messageBar().pushMessage("Error","Select a qgis layer with field h_gs!", 2,duration=15)
+        qgis.utils.iface.messageBar().pushMessage("Error","Select a qgis layer with field h_gs!", 2,duration=10)
 
 def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
     ur"""
@@ -848,7 +851,8 @@ def get_sql_result_as_dict(sql):
 
     if not connection_ok:
         textstring = """Cannot create dictionary from sql """ + sql
-        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+        #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+        MessagebarAndLog.warning(bar_msg='Some sql failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
         return False, {}
     
     result_dict = {}
