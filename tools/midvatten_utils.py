@@ -135,7 +135,7 @@ class MessagebarAndLog():
 def write_qgs_log_to_file(message, tag, level):
     logfile = QgsLogger.logFile()
     if logfile is not None:
-        QgsLogger.logMessageToFile(u'{}({}): {}'.format(returnunicode(tag), returnunicode(level), u'%s: %s'%(returnunicode(get_date_time()), returnunicode(message))))
+        QgsLogger.logMessageToFile(u'{}: {}({}): {} '.format(u'%s'%(returnunicode(get_date_time())), returnunicode(tag), returnunicode(level), u'%s'%(returnunicode(message))))
 
 
 class askuser(QtGui.QDialog):
