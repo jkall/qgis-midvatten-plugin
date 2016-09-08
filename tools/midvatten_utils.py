@@ -1146,7 +1146,7 @@ def getcurrentlocale():
     current_locale = QgsProject.instance().readEntry("Midvatten", "locale")[0]
     return current_locale
 
-def get_db_statistics():
+def calculate_db_table_rows():
     results = {}
 
     sql = u"""SELECT name FROM sqlite_master WHERE type='table'"""
@@ -1186,5 +1186,5 @@ def get_db_statistics():
             ['{0:40}{1:15}'.format(table_name, _nr_of_rows) for
              table_name, _nr_of_rows in sorted(results.iteritems())])
         MessagebarAndLog.info(
-            bar_msg='Statistics done, see log for results.',
+            bar_msg='Calculation done, see log for results.',
             log_msg=printable_msg, duration=15, button=True)
