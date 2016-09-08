@@ -24,11 +24,12 @@ import mock
 import midvatten
 from import_data_to_db import midv_data_importer
 import utils_for_tests
-from mocks_for_tests import MockNotFoundQuestion, MockUsingReturnValue, MockQgsProjectInstance, MockQgisUtilsIface, MockReturnUsingDictIn, DummyInterface2
+from mocks_for_tests import MockNotFoundQuestion, MockUsingReturnValue, MockQgsProjectInstance, MockQgisUtilsIface, MockReturnUsingDictIn, DummyInterface2, mock_answer
 import io
 import os
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
+MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
@@ -208,3 +209,51 @@ class TestSqlToParametersUnitsTuple(object):
         test_string = utils_for_tests.create_test_string(utils.sql_to_parameters_units_tuple(u'sql'))
         reference_string = u'''((par1, (un1)), (par2, (un2)))'''
         assert test_string == reference_string
+
+class TestGetDbStatistics(object):
+    answer_yes = mock_answer('yes')
+    answer_no = mock_answer('no')
+    CRS_question = MockUsingReturnValue([3006])
+    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
+    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
+
+    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+        mock_crsquestion.return_value = [3006]
+        mock_savefilename.return_value = TEMP_DB_PATH
+        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
+
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
+        self.midvatten = midvatten.midvatten(self.iface)
+
+        try:
+            os.remove(TEMP_DB_PATH)
+        except OSError:
+            pass
+        self.midvatten.new_db()
+        self.importinstance = midv_data_importer()
+
+    def tearDown(self):
+        #Delete database
+        os.remove(TEMP_DB_PATH)
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    @mock.patch('qgis.utils.iface', autospec=True)
+    def test_get_db_statistics(self, mock_iface):
+        """
+        Test that get_db_statistics can be run without major error
+        :param mock_iface:
+        :return:
+        """
+        utils.get_db_statistics()
+
+        calls = [str(call) for call in mock_iface.mock_calls]
+
+        assert """call.messageBar().createMessage(u'Some sql failure, see log for additional info.')""" not in calls
+        assert """call.messageBar().createMessage(u'Statistics done, see log for results.')""" in calls
+

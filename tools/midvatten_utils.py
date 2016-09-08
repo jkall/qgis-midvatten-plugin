@@ -1145,3 +1145,46 @@ def scale_nparray(x, a=1, b=0):
 def getcurrentlocale():
     current_locale = QgsProject.instance().readEntry("Midvatten", "locale")[0]
     return current_locale
+
+def get_db_statistics():
+    results = {}
+
+    sql = u"""SELECT name FROM sqlite_master WHERE type='table'"""
+    sql_result = sql_load_fr_db(sql)
+    connection_ok, tablenames = sql_result
+
+    if not connection_ok:
+        textstring = """get_db_table_rows: Sql failed: """ + sql
+        MessagebarAndLog.warning(
+            bar_msg='Sql failure, see log for additional info.',
+            log_msg=textstring, duration=4, button=True)
+        return None
+
+    sql_failed = []
+    for tablename in tablenames:
+        tablename = tablename[0]
+        sql = u"""SELECT count(*) FROM %s""" % (tablename)
+
+        sql_result = sql_load_fr_db(sql)
+        connection_ok, nr_of_rows = sql_result
+
+        if not connection_ok:
+            sql_failed.append(sql)
+            continue
+
+        results[tablename] = str(nr_of_rows[0][0])
+
+    if sql_failed:
+        textstring = 'Sql failed:\n' + '\n'.join(sql_failed) + '\n'
+        MessagebarAndLog.warning(
+            bar_msg='Sql failure, see log for additional info.',
+            log_msg=textstring, duration=15, button=True)
+
+    if results:
+        printable_msg = '{0:40}{1:15}'.format('Tablename', 'Nr of rows\n')
+        printable_msg += '\n'.join(
+            ['{0:40}{1:15}'.format(table_name, _nr_of_rows) for
+             table_name, _nr_of_rows in sorted(results.iteritems())])
+        MessagebarAndLog.info(
+            bar_msg='Statistics done, see log for results.',
+            log_msg=printable_msg, duration=15, button=True)
