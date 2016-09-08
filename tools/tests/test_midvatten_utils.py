@@ -210,7 +210,7 @@ class TestSqlToParametersUnitsTuple(object):
         reference_string = u'''((par1, (un1)), (par2, (un2)))'''
         assert test_string == reference_string
 
-class TestGetDbStatistics(object):
+class TestCalculateDbTableRows(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -246,14 +246,14 @@ class TestGetDbStatistics(object):
     @mock.patch('qgis.utils.iface', autospec=True)
     def test_get_db_statistics(self, mock_iface):
         """
-        Test that get_db_statistics can be run without major error
+        Test that calculate_db_table_rows can be run without major error
         :param mock_iface:
         :return:
         """
-        utils.get_db_statistics()
+        utils.calculate_db_table_rows()
 
         calls = [str(call) for call in mock_iface.mock_calls]
 
         assert """call.messageBar().createMessage(u'Some sql failure, see log for additional info.')""" not in calls
-        assert """call.messageBar().createMessage(u'Statistics done, see log for results.')""" in calls
+        assert """call.messageBar().createMessage(u'Calculation done, see log for results.')""" in calls
 

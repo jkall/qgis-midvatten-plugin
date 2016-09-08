@@ -220,9 +220,9 @@ class midvatten:
         self.action_calculate_statistics_for_all_w_logger_data.setWhatsThis(self.calculate_statistics_for_all_w_logger_data.__doc__)
         QObject.connect(self.action_calculate_statistics_for_all_w_logger_data, SIGNAL("triggered()"), self.calculate_statistics_for_all_w_logger_data)
 
-        self.action_get_db_statistics = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), "Get statistics for database", self.iface.mainWindow())
-        self.action_calculate_statistics_for_all_w_logger_data.setWhatsThis(self.get_db_statistics.__doc__)
-        QObject.connect(self.action_get_db_statistics, SIGNAL("triggered()"), self.get_db_statistics)
+        self.action_calculate_db_table_rows = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), "Calculate database table rows", self.iface.mainWindow())
+        self.action_calculate_statistics_for_all_w_logger_data.setWhatsThis(self.calculate_db_table_rows.__doc__)
+        QObject.connect(self.action_calculate_db_table_rows, SIGNAL("triggered()"), self.calculate_db_table_rows)
 
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
@@ -309,14 +309,14 @@ class midvatten:
         self.menu.db_manage_menu.addAction(self.actionNewDB)
         self.menu.db_manage_menu.addAction(self.actionVacuumDB)
         self.menu.db_manage_menu.addAction(self.actionZipDB)
-        self.menu.db_manage_menu.addAction(self.action_get_db_statistics)
 
         self.menu.utils = QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
         self.menu.addMenu(self.menu.utils)
         self.menu.utils.addAction(self.actionloaddatadomains)
         self.menu.utils.addAction(self.actionPrepareFor2Qgis2ThreeJS)
         self.menu.utils.addAction(self.actionresetSettings)
-        #self.menu.utils.addAction(self.action_calculate_statistics_for_all_w_logger_data) #HS: This one is not needed currently, but kept in the code.
+        self.menu.utils.addAction(self.action_calculate_statistics_for_all_w_logger_data)
+        self.menu.utils.addAction(self.action_calculate_db_table_rows)
 
         self.menu.addSeparator()
 
@@ -1060,7 +1060,6 @@ class midvatten:
 
             Uses GetStatistics from drillreport for the calculations
         """
-        resultfile = QFileDialog.getSaveFileName(None, 'Enter result file name:', '',)
         QApplication.setOverrideCursor(Qt.WaitCursor)
         myconnection = utils.dbconnection()
         if myconnection.connect2db() == True:
@@ -1073,14 +1072,17 @@ class midvatten:
             from drillreport import GetStatistics
             dbname = unicode(self.ms.settingsdict['database'])
             printlist = [obsid + "\t" + '\t'.join([str(x) for x in GetStatistics(obsid)[1]]) for obsid in sorted(obsids)]
+            printlist.reverse()
+            printlist.append('Obsid\tMin\tMedian\tNr of values\tMax')
+            printlist.reverse()
+            utils.MessagebarAndLog.info(
+                bar_msg='Statistics done, see log for results.',
+                log_msg='\n'.join(printlist), duration=15, button=True)
 
-            with open(resultfile, 'w') as f:
-                f.write('Obsid\tMin\tMedian\tNr of values\tMax\n')
-                f.write('\n'.join(printlist))
         QApplication.restoreOverrideCursor()
 
-    def get_db_statistics(self):
+    def calculate_db_table_rows(self):
         """ Counts the number of rows for all tables in the database """
         QApplication.setOverrideCursor(Qt.WaitCursor)
-        utils.get_db_statistics()
+        utils.calculate_db_table_rows()
         QApplication.restoreOverrideCursor()
