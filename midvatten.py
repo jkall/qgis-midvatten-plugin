@@ -219,7 +219,11 @@ class midvatten:
         self.action_calculate_statistics_for_all_w_logger_data = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), "Calculate statistics for all w logger data", self.iface.mainWindow())
         self.action_calculate_statistics_for_all_w_logger_data.setWhatsThis(self.calculate_statistics_for_all_w_logger_data.__doc__)
         QObject.connect(self.action_calculate_statistics_for_all_w_logger_data, SIGNAL("triggered()"), self.calculate_statistics_for_all_w_logger_data)
-        
+
+        self.action_get_db_statistics = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), "Get statistics for database", self.iface.mainWindow())
+        self.action_calculate_statistics_for_all_w_logger_data.setWhatsThis(self.get_db_statistics.__doc__)
+        QObject.connect(self.action_get_db_statistics, SIGNAL("triggered()"), self.get_db_statistics)
+
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
         self.toolBar.setObjectName("Midvatten")
@@ -305,6 +309,7 @@ class midvatten:
         self.menu.db_manage_menu.addAction(self.actionNewDB)
         self.menu.db_manage_menu.addAction(self.actionVacuumDB)
         self.menu.db_manage_menu.addAction(self.actionZipDB)
+        self.menu.db_manage_menu.addAction(self.action_get_db_statistics)
 
         self.menu.utils = QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
         self.menu.addMenu(self.menu.utils)
@@ -1072,4 +1077,10 @@ class midvatten:
             with open(resultfile, 'w') as f:
                 f.write('Obsid\tMin\tMedian\tNr of values\tMax\n')
                 f.write('\n'.join(printlist))
+        QApplication.restoreOverrideCursor()
+
+    def get_db_statistics(self):
+        """ Counts the number of rows for all tables in the database """
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        utils.get_db_statistics()
         QApplication.restoreOverrideCursor()
