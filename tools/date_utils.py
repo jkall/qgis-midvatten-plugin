@@ -51,8 +51,9 @@ def find_date_format(datestring):
         else:
             found_format = dateformat
             break
+
     return found_format
-    
+
 def dateshift(adate, n, step_lenght):
     """
     Shifts a date n step_lenghts and returns a new date object
@@ -68,7 +69,12 @@ def dateshift(adate, n, step_lenght):
     """
     if isinstance(n, (basestring)):
         n = float(n)
-    adate = datestring_to_date(adate)    
+    adate = datestring_to_date(adate)
+
+    step_lenght = step_lenght.lower()
+    if not step_lenght.endswith('s'):
+        step_lenght += 's'
+
     if step_lenght == 'microseconds':
         td = datetime.timedelta(microseconds=n)
     elif step_lenght == 'milliseconds':
@@ -82,14 +88,16 @@ def dateshift(adate, n, step_lenght):
     elif step_lenght == 'days':
         td = datetime.timedelta(days=n)
     elif step_lenght == 'weeks':
-        td = datetime.timedelta(weeks=n)       
+        td = datetime.timedelta(weeks=n)
+    else:
+        return None
     new_date = adate + td
     return new_date
-    
-def datestring_to_date(astring):
+
+def datestring_to_date(astring, now=datetime.datetime.now()):
     """
     Takes a string representing a date and converts it to datetime
-    :param astring: A string or a datetime-object representing a date, ex: '2015-01-01 12:00'
+    :param astring: A string or a datetime-object representing a date, ex: '2015-01-01 12:00' or an epoch number.
     :return: A datetime object representing the string/datetime astring
 
     If astring is a datetime object, it is untouched and returned.
@@ -101,9 +109,26 @@ def datestring_to_date(astring):
     >>> datestring_to_date(datetime.datetime(2015, 1, 1, 12, 0))
     datetime.datetime(2015, 1, 1, 12, 0)
     """
-    if isinstance(astring, datetime.date):    
+    if isinstance(astring, datetime.date):
         return astring
     else:
-        adate = datetime.datetime.strptime(astring, find_date_format(astring))
+        format = find_date_format(astring)
+        if format is not None:
+            adate = datetime.datetime.strptime(astring, find_date_format(astring))
+        else:
+            splitted = astring.split()
+            if len(splitted) == 2:
+                n, step_lenght = splitted
+                adate = dateshift(now, n, step_lenght)
+            else:
+                try:
+                    adate = datetime.datetime.fromtimestamp(float(astring))
+                except:
+                    adate = None
     return adate
-        
+
+def long_dateformat(astring):
+    return datetime.datetime.strftime(datestring_to_date(astring), '%Y-%m-%d %H:%M:%S')
+
+def date_to_epoch(astring):
+    return datestring_to_date(astring) - datetime.datetime(1970, 1, 1)
