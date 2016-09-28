@@ -978,6 +978,22 @@ def find_similar(word, wordlist, hits=5):
     return matches
 
 def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[], try_capitalize=False):
+    """
+
+    The class NotFoundQuestion is used with 4 buttons; u'Ignore', u'Cancel', u'Ok', u'Skip'.
+    Ignore = use the chosen value and move to the next obsid.
+    Cancel = Returns u'cancel' to the calling function.
+    Ok = Tries the currently submitted obsid against the existing once. If it doesn't exist, it asks again.
+    Skip = None is used as obsid and the row is removed from the file_data
+
+    :param file_data:
+    :param header_value:
+    :param existing_values:
+    :param try_capitalize:
+    :return:
+
+
+    """
     header_value = returnunicode(header_value)
     filtered_data = []
     data_to_ask_for = []
@@ -1043,6 +1059,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
             elif answer == u'ok':
                 current_value = submitted_value
             elif answer == u'skip':
+                current_value = None
                 break
 
         if answer == u'skip':

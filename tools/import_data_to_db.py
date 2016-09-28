@@ -642,13 +642,16 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 self.status = True
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
                 return u'cancel'
-            elif file_data == u'ignore':
+            elif file_data == u'skip':
+                continue
+            elif not isinstance(file_data, list):
+                utils.MessagebarAndLog.critical(bar_msg="Import Failure: Something went wrong with file " + str(selected_file))
                 continue
 
             parsed_files.append(file_data)
 
         if len(parsed_files) == 0:
-            qgis.utils.iface.messageBar().pushMessage("Import Failure","""No files imported""")
+            utils.MessagebarAndLog.critical(bar_msg="Import Failure: No files imported""")
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return
 
@@ -1567,14 +1570,15 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if obsid not in existing_obsids:
                 answer = utils.filter_nonexisting_values_and_ask([[u'obsid'], [obsid]], u'obsid', existing_obsids, try_capitalize=True)
 
+        if answer == u'cancel':
+            return answer
+
         if answer is not None:
             if isinstance(answer, (list, tuple)):
-                obsid = answer[1][0]
-            else:
-                obsid = answer
-
-        if obsid in [u'cancel', u'ignore']:
-            return obsid
+                if len(answer) > 1:
+                    obsid = answer[1][0]
+                else:
+                    return u'skip'
 
         header.append(u'obsid')
         for row in filedata:
@@ -1594,8 +1598,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         try:
             translated_header = [translation_dict_in_order[headername] for headername in header]
         except KeyError:
-            qgis.utils.iface.messageBar().pushMessage("Failure, the file " + path + "\ndid not have the correct headers and will not be imported.\nMake sure its barocompensated!\n")
-            return u'ignore'
+            utils.MessagebarAndLog.critical(bar_msg=u"Failure during import. See log for more information", log_msg=u"Failure, the file " + utils.returnunicode(path) + u"\ndid not have the correct headers and will not be imported.\nMake sure its barocompensated!\nSupported headers are obsid, Date/time, Water head[cm], Temperature[°C] and optionally Conductivity[mS/cm].")
+            return u'skip'
 
         filedata.reverse()
         filedata.append(translated_header)
@@ -1613,7 +1617,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :param obsid_header_name: the name of the obsid header
         :param date_time_header_name: the name of the date_time header
         :return: A filtered list with only dates after last date is included for each obsid.
+
+        >>> midv_data_importer.filter_dates_from_filedata([['obsid', 'date_time'], ['obs1', '2016-09-28'], ['obs1', '2016-09-29']], {'obs1': [('2016-09-28', )]})
+        [['obsid', 'date_time'], ['obs1', '2016-09-29']]
         """
+        if len(file_data) == 1:
+            return file_data
+
         obsid_idx = file_data[0].index(obsid_header_name)
         date_time_idx = file_data[0].index(date_time_header_name)
         filtered_file_data = [row for row in file_data[1:] if datestring_to_date(row[date_time_idx]) > datestring_to_date(obsid_last_imported_dates.get(row[obsid_idx], [(u'0001-01-01 00:00:00',)])[0][0])]
