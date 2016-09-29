@@ -446,15 +446,16 @@ class midvatten:
                     QApplication.restoreOverrideCursor()  # now this long process is done and the cursor is back as normal
                     return None
                 EPSG_code = str(CRS.authid()[5:])
+                user_chosen_EPSG_code = utils.ask_for_export_crs(EPSG_code)
                 filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
                 iniText = QSettings(filenamepath , QSettings.IniFormat)
                 verno = str(iniText.value('version')) 
                 from create_db import newdb
-                newdbinstance = newdb(verno,'n',EPSG_code, set_locale=utils.getcurrentlocale())#flag 'n' to avoid user selection of EPSG
+                newdbinstance = newdb(verno,'n',user_chosen_EPSG_code, set_locale=utils.getcurrentlocale())#flag 'n' to avoid user selection of EPSG
                 if not newdbinstance.dbpath=='':
                     newdb = newdbinstance.dbpath
                     exportinstance = ExportData(OBSID_P, OBSID_L)
-                    exportinstance.export_2_splite(newdb,self.ms.settingsdict['database'],EPSG_code)
+                    exportinstance.export_2_splite(newdb,self.ms.settingsdict['database'],user_chosen_EPSG_code)
             
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 

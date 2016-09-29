@@ -923,6 +923,9 @@ def ask_for_charset(default_enchoding=None):
         charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,default_enchoding)
     return str(charsetchoosen[0])
 
+def ask_for_export_crs(default_crs=u''):
+    return str(QtGui.QInputDialog.getText(None, "Set export crs", "Give the crs for the exported database.\n",QtGui.QLineEdit.Normal,default_crs)[0])
+
 def lists_to_string(alist_of_lists):
     ur"""
 
