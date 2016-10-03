@@ -214,7 +214,7 @@ class TestFieldLoggerImporterNoDb():
     @mock.patch('midvatten_utils.qgis.utils.iface', autospec=True)
     @mock.patch('import_data_to_db.utils.get_last_used_quality_instruments', autospec=True)
     def test_fieldlogger_prepare_quality_data(self, mock_last_used_instruments, mock_iface, mock_parameters):
-        mock_last_used_instruments.return_value = {u'konduktivitet': [(u'µS/cm', u'teststaff', u'testid', u'')], u'syre': [(u'mg/L', u'teststaff', u'testid' , u''), (u'%', u'teststaff', u'testid' , u'')], u'temperatur': [(u'grC', u'teststaff', None, u'')]}
+        mock_last_used_instruments.return_value = {u'konduktivitet': [(u'µS/cm', u'teststaff', u'testid1', u'')], u'syre': [(u'mg/L', u'teststaff', u'testid2' , u''), (u'%', u'teststaff', u'testid3' , u'')], u'temperatur': [(u'grC', u'teststaff', None, u'')]}
         mock_parameters.return_value = [(u'konduktivitet', u'konduktivitet', u'µS/cm'), (u'syre', u'syre', u'mg/L'), (u'syre', u'syre', u'%'), (u'temperatur', u'temperatur', u'grC')]
         f = [
             "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
@@ -225,10 +225,12 @@ class TestFieldLoggerImporterNoDb():
             "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
             ]
 
+        #NOTE: The instrument id is always set to quality_instruments due to the mock!
+
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
         result_list = self.importinstance.fieldlogger_prepare_quality_and_sample(parsed_rows[u'quality'])
         test_string = utils_for_tests.create_test_string(result_list)
-        reference_string = u'[[obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, comment], [Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863, 863, µS/cm, hej], [Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 58, 58, %, test], [Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67, 67, mg/L, test], [Rb1512, teststaff, 2016-03-30 15:30:39, , temperatur, 8, 8, grC, test]]'
+        reference_string = u'[[obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment], [Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863, 863, µS/cm, , hej], [Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 58, 58, %, , test], [Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67, 67, mg/L, , test], [Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8, 8, grC, , test]]'
         assert test_string == reference_string
 
     @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
@@ -248,7 +250,7 @@ class TestFieldLoggerImporterNoDb():
 
         parsed_rows = self.importinstance.fieldlogger_import_parse_rows(f)
         file_string = utils_for_tests.create_test_string(self.importinstance.fieldlogger_prepare_quality_and_sample(parsed_rows[u'quality']))
-        reference_string = u'[[obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, comment], [Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899, 899, FNU, ]]'
+        reference_string = u"[[obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment], [Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899, 899, FNU, , ]]"
         sorted_file_string = u'\n'.join(sorted(file_string.split(u'\n')))
         sorted_reference_string = u'\n'.join(sorted(reference_string.split(u'\n')))
         assert sorted_file_string == sorted_reference_string
@@ -343,12 +345,14 @@ class TestFieldLoggerImporterDb(object):
 
                 self.importinstance.fieldlogger_import()
                 test_data = utils_for_tests.create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
-                reference_data = u'{comments: (True, [(Rb1608, 2016-03-30 15:34:40, testc, teststaff), (Rb1202, 2016-03-30 15:31:30, hej2, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, test), (Rb1512, teststaff, 2016-03-30 15:30:39, , temperatur, 8.0, 8, grC, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, ), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, )]), zz_staff: (True, [(teststaff, )])}'
+                reference_data = u'{comments: (True, [(Rb1608, 2016-03-30 15:34:40, testc, teststaff), (Rb1202, 2016-03-30 15:31:30, hej2, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, ), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, )]), zz_staff: (True, [(teststaff, )])}'
 
                 #print("Messagebar: \n" + str(mock_askuser.args_called_with) + " \n")
                 msgbar = mocked_iface.messagebar.messages
                 if msgbar:
                     print str(msgbar)
+
+                # NOTE: The instrument id is always set to quality_instruments due to the mock!
 
                 assert test_data == reference_data
 
@@ -1761,6 +1765,97 @@ class TestWflowImport(object):
         reference_string = ur'''(True, [(obsid1, testid, Momflow, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
 
+
+class TestWqualfieldImport(object):
+    answer_yes = mock_answer('yes')
+    answer_no = mock_answer('no')
+    CRS_question = MockUsingReturnValue([3006])
+    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
+    skip_popup = MockUsingReturnValue('')
+    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
+
+    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+        mock_crsquestion.return_value = [3006]
+        mock_savefilename.return_value = TEMP_DB_PATH
+        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
+
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
+        self.midvatten = midvatten.midvatten(self.iface)
+
+        try:
+            os.remove(TEMP_DB_PATH)
+        except OSError:
+            pass
+        self.midvatten.new_db()
+        self.importinstance = midv_data_importer()
+
+    def tearDown(self):
+        #Delete database
+        os.remove(TEMP_DB_PATH)
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_w_qual_field_import_from_csvlayer(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        f = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'depth', u'comment'],
+             [u'obsid1', u'teststaff', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment']]
+
+        #utils.sql_alter_db(u'''insert into w_qual_field (obsid, date_time, parameter, reading_num, unit) values ('1', '2011-10-19 12:30:01', 'testp', '123', 'testunit')''')
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestWqualfieldImport.mock_askuser.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
+            def _test_w_qual_field_import_from_csvlayer(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface):
+                mock_filename.return_value = filename
+                mock_encoding.return_value = [True, u'utf-8']
+                self.mock_iface = mock_iface
+                self.importinstance.default_import(self.importinstance.wqualfield_import_from_csvlayer)
+            _test_w_qual_field_import_from_csvlayer(self, filename)
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_field'''))
+        reference_string = ur'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_w_qual_field_import_from_csvlayer_no_depth(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        f = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'depth', u'comment'],
+             [u'obsid1', u'teststaff', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'', u'testcomment']]
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestWqualfieldImport.mock_askuser.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
+            def _test_w_qual_field_import_from_csvlayer(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface):
+                mock_filename.return_value = filename
+                mock_encoding.return_value = [True, u'utf-8']
+                self.mock_iface = mock_iface
+                self.importinstance.default_import(self.importinstance.wqualfield_import_from_csvlayer)
+            _test_w_qual_field_import_from_csvlayer(self, filename)
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_field'''))
+        reference_string = ur'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, None, testcomment)])'''
+        assert test_string == reference_string
+
+
 class TestWlvlImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
@@ -1849,6 +1944,8 @@ class TestWlvlImport(object):
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_levels'''))
         reference_string = ur'''(True, [])'''
         assert test_string == reference_string
+
+
 
 
 class TestFilterDatesFromFiledata(object):

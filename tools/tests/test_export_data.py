@@ -35,6 +35,7 @@ import unittest
 import sqlite3 as sqlite
 import io
 from qgis.core import QgsMapLayerRegistry, QgsDataSourceURI, QgsVectorLayer
+from export_data import ExportData
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
@@ -146,8 +147,8 @@ class TestExport(unittest.TestCase):
             ", [obsid;depth;report;project;staff;date_time;anameth;parameter;reading_num;reading_txt;unit;comment",
             ", P1;;report1;;s1;;;labpar1;;;;",
             "], w_qual_field.csv",
-            ", [obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;comment",
-            ", P1;s1;2015-01-01 01:00:00;;labpar1;;;;",
+            ", [obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;depth;comment",
+            ", P1;s1;2015-01-01 01:00:00;;labpar1;;;;;",
             "], stratigraphy.csv",
             ", [obsid;stratid;depthtop;depthbot;geology;geoshort;capacity;development;comment",
             ", P1;strat1;;;;;;;",
@@ -247,6 +248,7 @@ class TestExport(unittest.TestCase):
                             u''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)]]''']
         reference_string = u'\n'.join(reference_string)
         assert test_string == reference_string
+
 
 
 

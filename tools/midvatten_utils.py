@@ -181,13 +181,14 @@ class askuser(QtGui.QDialog):
 
 
 class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
-    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None, button_names=[u'Ignore', u'Cancel', u'Ok']):
+    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None, button_names=[u'Ignore', u'Cancel', u'Ok'], combobox_label=u'Similar values found in db (choose or edit):'):
         QtGui.QDialog.__init__(self, parent)
         self.answer = None
         self.setupUi(self)
         self.setWindowTitle(dialogtitle)
         self.label.setText(msg)
         self.comboBox.addItem(default_value)
+        self.label_2.setText(combobox_label)
         if existing_list is not None:
             for existing in existing_list:
                 self.comboBox.addItem(existing)

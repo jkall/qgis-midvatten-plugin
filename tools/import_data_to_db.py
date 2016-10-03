@@ -849,7 +849,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             reading_num = self.columns[5][1]
             reading_txt = self.columns[6][1]
             unit = self.columns[7][1]
-            comment = self.columns[8][1]
+            depth = self.columns[8][1]
+            comment = self.columns[9][1]
 
             sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName, obsid, obsid, date_time, date_time, parameter, parameter)#Delete empty records from the import table!!!
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s", "%s" FROM %s)"""%(obsid, date_time, parameter, unit, self.temptableName) #Number of distinct data posts in the import table
@@ -862,7 +863,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     self.staff_import(staffs)
 
                 sql_list = []
-                sql_list.append(r"""INSERT OR IGNORE INTO "w_qual_field" (obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, comment) """)
+                sql_list.append(r"""INSERT OR IGNORE INTO "w_qual_field" (obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment) """)
                 sql_list.append(r"""SELECT CAST("%s" as text), """%(obsid))
                 sql_list.append(r"""CAST("%s" as text), """%(staff))
                 sql_list.append(r"""CAST("%s" as text), """%(date_time))
@@ -871,6 +872,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 sql_list.append(r"""(case when "%s"!='' then CAST("%s" as double) else null end), """%(reading_num, reading_num))
                 sql_list.append(r"""CAST("%s" as text), """%(reading_txt))
                 sql_list.append(r"""(case when "%s"!='' then CAST("%s" as text) else null end), """%(unit, unit))
+                sql_list.append(r"""(case when "%s"!='' then CAST("%s" as double) else null end), """%(depth, depth))
                 sql_list.append(r"""CAST("%s" as text) """%(comment))
                 sql_list.append(r"""FROM %s"""%(self.temptableName))
                 sql = ''.join(sql_list)
@@ -929,12 +931,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.SanityCheckVacuumDB()
 
     def fieldlogger_import_select_and_parse_rows(self):
-        filename = self.select_files(True)
+        filename = self.select_files(only_one_file=True, should_ask_for_charset=True)
         if not filename:
             self.status = True
             return u'cancel'
 
-        filename = filename[0].encode(str(self.charsetchoosen[0]))
+        filename = utils.returnunicode(filename[0])
 
         #Ask user if the date should be shifted
         question = utils.askuser(u'DateShift', u'User input needed')
@@ -1065,7 +1067,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
                                                     msg=u''.join([u'Submit the instrument id for the measurement:\n ', u','.join([obsid, datestring, flowtype])]),
                                                     existing_list=[last_used_instrumentid],
-                                                    default_value=last_used_instrumentid)
+                                                    default_value=last_used_instrumentid,
+                                                    combobox_label=u'Instrument id:s in database.\nThe last used instrument for the for the current obsid is prefilled:')
                     answer = question.answer
                     if answer == u'cancel':
                         return u'cancel'
@@ -1078,19 +1081,17 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
     def fieldlogger_prepare_quality_and_sample(self, obsdict):
         """
-        Produces a filestring with columns "obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment" and imports it
+        Produces a filestring with columns "obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment" and imports it
         :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
         :param quality_or_water_sample: Word written at user question: u'quality' or u'water sample'.
         :return:
         """
-        file_data_list = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment']]
+        file_data_list = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'depth', u'comment']]
 
-        instrumentids = utils.get_quality_instruments()[1]
+        instrumentids = sorted(utils.get_quality_instruments()[1])
         last_used_quality_instruments = utils.get_last_used_quality_instruments()
         w_qual_field_parameters = defs.w_qual_field_parameters()
         existing_parameter_units = [u','.join([utils.returnunicode(v[1]), utils.returnunicode(v[2])]) for v in w_qual_field_parameters]
-
-        instrument_question = utils.askuser("YesNo", """Do you want to confirm instrument id:s for water quality parameters?\nElse the last used instrument for each parameter by current staff will be used.""","Warning!")
 
         asked_instruments = {}
         asked_parameters_units = {}
@@ -1103,6 +1104,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     comment = param_dict.pop((u'comment', u''))
                 except KeyError:
                     comment = u''
+
+                try:
+                    depth = param_dict.pop((u'depth', u''))
+                except KeyError:
+                    depth = u''
 
                 for param_unit, value in sorted(param_dict.iteritems()):
                     parameter_shortname, unit = param_unit
@@ -1137,33 +1143,34 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
                     instrument = asked_instruments.get((parameter, unit), None)
                     if instrument is None:
-                        if instrument_question.result == 0:
-                            try:
-                                instrument = utils.returnunicode([_instrument for _unit, _staff, _instrument, _date_time in last_used_quality_instruments[parameter] if _staff == staff and _unit == unit][0])
-                            except KeyError:
-                                pass
-                            except IndexError:
-                                pass
-                            except Exception, e:
-                                qgis.utils.iface.messageBar().pushMessage("Getting instruments from db failed: " + str(e))
-                                pass
+                        current_last_used_instrument = u''
+                        try:
+                            current_last_used_instrument = utils.returnunicode([_instrument for _unit, _staff, _instrument, _date_time in last_used_quality_instruments[parameter] if _staff == staff and _unit == unit][0])
+                        except KeyError:
+                            pass
+                        except IndexError:
+                            pass
+                        except Exception, e:
+                            utils.MessagebarAndLog.warning(bar_msg=u'Import warning!, see Log Message Panel', log_msg=u'Getting instruments from db failed: ' + str(e))
+                            pass
 
-                        if instrument is None:
-                            question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
-                                                           msg=u'The instrument was not found\n\nSubmit the instrument id for the water quality measurement:\n' + u', '.join([obsid, datestring, parameter, unit]) + u'\n\nIt will be used for the rest of the water quality imports\nfor the current parameter and unit.',
-                                                           existing_list=instrumentids)
-                            answer = question.answer
-                            if answer == u'cancel':
-                                return u'cancel'
-                            instrument = utils.returnunicode(question.value)
-                            if instrument not in instrumentids:
-                                instrumentids.append(instrument)
+                        question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
+                                                       msg=u'Submit the instrument id for the water quality measurement:\n' + u', '.join([obsid, datestring, parameter, unit]) + u'\n\nIt will be used for the rest of the water quality imports\nfor the current parameter and unit.',
+                                                       existing_list=instrumentids,
+                                                       combobox_label=u'Instrument id:s in database.\nThe last used instrument for the for the current staff, parameter and unit is prefilled:',
+                                                       default_value=current_last_used_instrument)
+                        answer = question.answer
+                        if answer == u'cancel':
+                            return u'cancel'
+                        instrument = utils.returnunicode(question.value)
+                        if instrument not in instrumentids:
+                            instrumentids.append(instrument)
                     asked_instruments[(parameter, unit)] = instrument
 
                     reading_num = value.replace(u',', u'.')
                     reading_txt = reading_num
 
-                    printrow = [obsid, staff, datestring, instrument, parameter, reading_num, reading_txt, unit, comment]
+                    printrow = [obsid, staff, datestring, instrument, parameter, reading_num, reading_txt, unit, depth, comment]
                     file_data_list.append(printrow)
 
         return file_data_list

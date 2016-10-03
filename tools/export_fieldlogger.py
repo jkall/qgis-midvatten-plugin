@@ -73,7 +73,10 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         for parameter_type, parameters_units_tuple in types_tuples:
             types[parameter_type] = OrderedDict()
             types[parameter_type].update(self.create_parameters_from_tuple(parameter_type, parameters_units_tuple))
-            types[parameter_type][u'comment'] = Parameter(u'comment', u'make comment...', parameter_type, u'', u'text', True)
+            types[parameter_type][u'comment'] = Parameter(u'comment', u'make comment...', parameter_type, unit=u'', valuetype=u'text', hidden=True)
+
+            if parameter_type in [u'quality', u'sample']:
+                types[parameter_type][u'depth'] = Parameter(u'depth', u'depth of measurement', parameter_type, unit=u'm', hidden=True)
 
         return types
 

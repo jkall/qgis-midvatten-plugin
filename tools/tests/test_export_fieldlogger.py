@@ -29,7 +29,7 @@ import midvatten_utils as utils
 from nose.tools import raises
 from mock import MagicMock
 import mock
-from utils_for_tests import dict_to_sorted_list
+from utils_for_tests import dict_to_sorted_list, create_test_string
 
 class TestExportFieldlogger():
     qual_params = MockUsingReturnValue(((u'redoxpotential', (u'mV',)), (u'syre', (u'mg/L', u'%')), (u'pH', (u'',))))
@@ -57,7 +57,7 @@ class TestExportFieldlogger():
     @mock.patch('export_fieldlogger.standard_parameters_for_wsample', sample_params.get_v)
     def test_create_parameters(self):
         parameters = [(types, parametername, parameter.hint) for types, parameterdict in sorted(self.export_fieldlogger_obj.create_parameters().iteritems()) for parametername, parameter in sorted(parameterdict.iteritems())]
-        assert parameters == [(u'flow', u'Accvol', u'm3'), (u'flow', u'Momflow', u'l/s'), (u'flow', u'comment', u'make comment...'), (u'level', u'comment', u'make comment...'), (u'level', u'meas', u'm'), (u'quality', u'comment', u'make comment...'), (u'quality', u'pH', u'pH'), (u'quality', u'redoxpotential', u'mV'), (u'quality', u'syre.%', u'%'), (u'quality', u'syre.mg/L', u'mg/L'), (u'sample', u'comment', u'make comment...'), (u'sample', u'turbiditet', u'FNU')]
+        assert parameters == [(u'flow', u'Accvol', u'm3'), (u'flow', u'Momflow', u'l/s'), (u'flow', u'comment', u'make comment...'), (u'level', u'comment', u'make comment...'), (u'level', u'meas', u'm'), (u'quality', u'comment', u'make comment...'), (u'quality', u'depth', u'depth of measurement'), (u'quality', u'pH', u'pH'), (u'quality', u'redoxpotential', u'mV'), (u'quality', u'syre.%', u'%'), (u'quality', u'syre.mg/L', u'mg/L'), (u'sample', u'comment', u'make comment...'), (u'sample', u'depth', u'depth of measurement'), (u'sample', u'turbiditet', u'FNU')]
 
     @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', the_latlons.get_v)
     def test_select_all_momflow(self):
@@ -70,7 +70,9 @@ class TestExportFieldlogger():
     def test_select_from_map_click(self):
         self.export_fieldlogger_obj.select_from_map(u'quality.syre.%')
         printlist = self.export_fieldlogger_obj.create_export_printlist()
-        assert printlist == [u'FileVersion 1;2', u'NAME;INPUTTYPE;HINT', u'q.syre.%;numberDecimal|numberSigned;%', u'q.comment;text;make comment...', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1302;Rb1302.quality;50.0;4.0;q.comment|q.syre.%']
+        test = create_test_string(printlist)
+        reference = create_test_string([u'FileVersion 1;3', u'NAME;INPUTTYPE;HINT', u'q.syre.%;numberDecimal|numberSigned;%', u'q.comment;text;make comment...', u'q.depth.m;numberDecimal|numberSigned;depth of measurement', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1302;Rb1302.quality;50.0;4.0;q.comment|q.syre.%|q.depth.m'])
+        assert test == reference
 
     @mock.patch('export_fieldlogger.utils.get_selected_features_as_tuple', selected_obsids_from_map.get_v)
     @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', the_latlons.get_v)
@@ -79,7 +81,9 @@ class TestExportFieldlogger():
         self.export_fieldlogger_obj.select_from_map(u'quality.syre.mg/L')
         self.export_fieldlogger_obj.select_from_map(u'sample.turbiditet')
         printlist = self.export_fieldlogger_obj.create_export_printlist()
-        assert printlist == [u'FileVersion 1;5', u'NAME;INPUTTYPE;HINT', u'q.syre.mg/L;numberDecimal|numberSigned;mg/L', u'q.syre.%;numberDecimal|numberSigned;%', u'q.comment;text;make comment...', u's.turbiditet.FNU;numberDecimal|numberSigned;FNU', u's.comment;text;make comment...', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1302;Rb1302.quality;50.0;4.0;q.comment|q.syre.mg/L|q.syre.%', u'Rb1302;Rb1302.sample;50.0;4.0;s.comment|s.turbiditet.FNU']
+        test = create_test_string(printlist)
+        reference = create_test_string([u'FileVersion 1;7', u'NAME;INPUTTYPE;HINT', u'q.syre.mg/L;numberDecimal|numberSigned;mg/L', u'q.syre.%;numberDecimal|numberSigned;%', u'q.comment;text;make comment...', u'q.depth.m;numberDecimal|numberSigned;depth of measurement', u's.turbiditet.FNU;numberDecimal|numberSigned;FNU', u's.comment;text;make comment...', u's.depth.m;numberDecimal|numberSigned;depth of measurement', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1302;Rb1302.quality;50.0;4.0;q.comment|q.syre.mg/L|q.syre.%|q.depth.m', u'Rb1302;Rb1302.sample;50.0;4.0;s.depth.m|s.comment|s.turbiditet.FNU'])
+        assert test == reference
 
     @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', autospec=True)
     @mock.patch('export_fieldlogger.midv_data_importer', autospec=True)
@@ -88,8 +92,26 @@ class TestExportFieldlogger():
         mock_midv_data_importer.return_value.parse_wells_file.return_value = {u'Rb1301': {u'level': [(u'comment', u''), (u'meas', u'm')], u'quality': [(u'comment', u''), (u'syre', u'mg/L'), (u'konduktivitet', u'µS/cm'), (u'redoxpotential', u'mV'), (u'pH', u'')], u'sample': [(u'temperatur', u'grC'), (u'comment', u''), (u'turbiditet', u'FNU')]}, u'Rb1302': {u'quality': [(u'comment', u''), (u'syre', u'mg/L'), (u'konduktivitet', u'µS/cm'), (u'redoxpotential', u'mV'), (u'pH', u'')], u'sample': [(u'temperatur', u'grC'), (u'comment', u''), (u'turbiditet', u'FNU')]}}
         mock_latlons.return_value = {u'Rb1301': (60.0, 10.0), u'Rb1302': (50.0, 4.0)}
         self.export_fieldlogger_obj.select_from_wells()
-        printlist = self.export_fieldlogger_obj.create_export_printlist()
-        assert printlist == [u'FileVersion 1;8', u'NAME;INPUTTYPE;HINT', u'l.meas.m;numberDecimal|numberSigned;m', u'l.comment;text;make comment...', u'q.redoxpotential.mV;numberDecimal|numberSigned;mV', u'q.syre.mg/L;numberDecimal|numberSigned;mg/L', u'q.pH;numberDecimal|numberSigned;pH', u'q.comment;text;make comment...', u's.turbiditet.FNU;numberDecimal|numberSigned;FNU', u's.comment;text;make comment...', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1301;Rb1301.level;60.0;10.0;l.comment|l.meas.m', u'Rb1301;Rb1301.quality;60.0;10.0;q.pH|q.syre.mg/L|q.redoxpotential.mV|q.comment', u'Rb1301;Rb1301.sample;60.0;10.0;s.comment|s.turbiditet.FNU', u'Rb1302;Rb1302.quality;50.0;4.0;q.pH|q.syre.mg/L|q.redoxpotential.mV|q.comment', u'Rb1302;Rb1302.sample;50.0;4.0;s.comment|s.turbiditet.FNU']
+        teststring = create_test_string(self.export_fieldlogger_obj.create_export_printlist())
+        reference = create_test_string([u'FileVersion 1;10', u'NAME;INPUTTYPE;HINT',
+                                        u'l.meas.m;numberDecimal|numberSigned;m',
+                                        u'l.comment;text;make comment...',
+                                        u'q.redoxpotential.mV;numberDecimal|numberSigned;mV',
+                                        u'q.syre.mg/L;numberDecimal|numberSigned;mg/L',
+                                        u'q.pH;numberDecimal|numberSigned;pH',
+                                        u'q.comment;text;make comment...',
+                                        u'q.depth.m;numberDecimal|numberSigned;depth of measurement',
+                                        u's.turbiditet.FNU;numberDecimal|numberSigned;FNU',
+                                        u's.comment;text;make comment...',
+                                        u's.depth.m;numberDecimal|numberSigned;depth of measurement',
+                                        u'NAME;SUBNAME;LAT;LON;INPUTFIELD',
+                                        u'Rb1301;Rb1301.level;60.0;10.0;l.comment|l.meas.m',
+                                        u'Rb1301;Rb1301.quality;60.0;10.0;q.pH|q.syre.mg/L|q.redoxpotential.mV|q.depth.m|q.comment',
+                                        u'Rb1301;Rb1301.sample;60.0;10.0;s.depth.m|s.comment|s.turbiditet.FNU',
+                                        u'Rb1302;Rb1302.quality;50.0;4.0;q.pH|q.syre.mg/L|q.redoxpotential.mV|q.depth.m|q.comment',
+                                        u'Rb1302;Rb1302.sample;50.0;4.0;s.depth.m|s.comment|s.turbiditet.FNU'])
+
+        assert teststring == reference
 
     @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', autospec=True)
     @mock.patch('export_fieldlogger.midv_data_importer', autospec=True)
@@ -100,7 +122,6 @@ class TestExportFieldlogger():
         self.export_fieldlogger_obj.select_from_wells()
         printlist = self.export_fieldlogger_obj.create_export_printlist()
         assert printlist == [u'FileVersion 1;0', u'NAME;INPUTTYPE;HINT', u'NAME;SUBNAME;LAT;LON;INPUTFIELD']
-
 
     def tearDown(self):
         self.iface = None
