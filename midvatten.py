@@ -448,7 +448,7 @@ class midvatten:
                 EPSG_code = str(CRS.authid()[5:])
 
                 #Let the user chose an EPSG-code for the exported database
-                #user_chosen_EPSG_code = utils.ask_for_export_crs(EPSG_code) #Transformation to new epsg doesn't work since east/north is not updated.
+                #user_chosen_EPSG_code = utils.ask_for_export_crs(EPSG_code) #Transformation to new epsg doesn't work yet.
                 user_chosen_EPSG_code = EPSG_code
 
                 filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )

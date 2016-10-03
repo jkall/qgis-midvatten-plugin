@@ -165,7 +165,7 @@ class ExportData():
         :param obsids:
         :return:
         """
-        column_names = self.get_existing_column_names(tname, tname_with_prefix)
+        column_names = self.get_and_check_existing_column_names(tname, tname_with_prefix)
         if column_names is None:
             return None
 
@@ -182,15 +182,18 @@ class ExportData():
                 sql = r"""insert or ignore into %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
             self.curs.execute(sql)
 
-        #Make a transformation for column names that are geometries
-        #transformed_column_names = self.transform_geometries(tname, column_names, self.get_table_column_srid(prefix='a'), self.get_table_column_srid()) #Transformation doesn't work since east, north is not updated.
+        #Make a transformation for column names that are geometries #Transformation doesn't work yet.
+        #old_table_column_srid_dict = self.get_table_column_srid(prefix='a')
+        #new_table_column_srid_dict = self.get_table_column_srid()
+        #if tname in old_table_column_srid_dict and tname in new_table_column_srid_dict:
+        #    transformed_column_names = self.transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict) #Transformation doesn't work since east, north is not updated.
         transformed_column_names = column_names
 
-        sql = r"insert into %s select %s from %s where obsid in %s" %(tname, ', '.join(transformed_column_names), tname_with_prefix, self.format_obsids(obsids))
+        sql = r"""insert into %s (%s) select %s from %s where obsid in %s"""%(tname, ', '.join(column_names), ', '.join(transformed_column_names), tname_with_prefix, self.format_obsids(obsids))
         try:
             self.curs.execute(sql)
         except Exception, e:
-            utils.MessagebarAndLog.critical("Export warning: sql failed. See message log.", sql + "\nmsg: " + str(e))
+            utils.MessagebarAndLog.critical(bar_msg=u"Export warning: sql failed. See message log.", log_msg=sql + u"\nmsg: " + str(e))
 
     @staticmethod
     def transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict):
@@ -210,7 +213,10 @@ class ExportData():
         [u'notgeom', u'geom']
         >>> ExportData.transform_geometries(u'testt', [u'notgeom', u'geom'], {u'testt': {u'geom': 3006}}, {u'testt': {u'geom': 3010}})
         [u'notgeom', u'Transform(geom, 3010)']
+        >>> ExportData.transform_geometries(u'obs_points', [u'obsid', u'east', u'north', u'geom'], {u'obs_points': {u'geom': 3006}}, {u'obs_points': {u'geom': 3010}})
+        [u'obsid', u'X(Transform(geom, 3010))', u'Y(Transform(geom, 3010))', u'Transform(geom, 3010)']
         """
+        transformed = False
         #Make a transformation for column names that are geometries
         if tname in new_table_column_srid_dict and tname in old_table_column_srid_dict:
             transformed_column_names = []
@@ -220,10 +226,33 @@ class ExportData():
                 if old_srid is not None and new_srid is not None and old_srid != new_srid:
                     transformed_column_names.append(u'Transform(' + column + u', ' + utils.returnunicode(new_srid) + u')')
                     utils.MessagebarAndLog.info(log_msg=u'Transformation for table "' + tname + u'" column "' + column + u'" from ' + str(old_srid) + u" to " + str(new_srid))
+                    transformed = True
                 else:
                     transformed_column_names.append(column)
         else:
             transformed_column_names = column_names
+
+        #Special case for obs_points because of the very special columns east/north
+        if tname == u'obs_points' and transformed:
+            old_geocol_srids = [(k, v) for k, v in old_table_column_srid_dict.get(tname, {}).iteritems()]
+            new_geocol_srids = [(k, v) for k, v in new_table_column_srid_dict.get(tname, {}).iteritems()]
+            if len(old_geocol_srids) != 1 and len(new_geocol_srids) != 1:
+                utils.MessagebarAndLog.critical(bar_msg=u'Export warning!, see Log Message Panel', log_msg=u'Transformation of east/north for table obs_points failed! The number of geometry columns was not == 1!')
+            else:
+                new_srid = new_geocol_srids[0][1]
+                old_geometry_column = old_geocol_srids[0][0]
+
+                res = []
+                for column in transformed_column_names:
+                    if column == u'east':
+                        res.append(u'X(Transform(%s, %s))'%(old_geometry_column, new_srid))
+                    elif column == u'north':
+                        res.append(u'Y(Transform(%s, %s))'%(old_geometry_column, new_srid))
+                    else:
+                        res.append(column)
+                transformed_column_names = res
+
+        utils.MessagebarAndLog.info(log_msg=u'transformed_column_names:\n' + utils.returnunicode(transformed_column_names))
         return transformed_column_names
 
     def zz_to_csv(self, tname, tname_with_prefix):
@@ -233,7 +262,7 @@ class ExportData():
         filter(None, (output.writerow(row) for row in self.curs))
 
     def zz_to_sql(self, tname, tname_with_prefix):
-        column_names = self.get_existing_column_names(tname, tname_with_prefix)
+        column_names = self.get_and_check_existing_column_names(tname, tname_with_prefix)
         if column_names is None:
             return None
 
@@ -243,13 +272,11 @@ class ExportData():
         ifnull_primary_keys = [''.join(["ifnull(", pk, ",'')"]) for pk in primary_keys]
         concatenated_primary_keys = ' || '.join(ifnull_primary_keys)
 
-        sql = r"insert or ignore into %s select %s from %s where %s not in (select %s from %s)"%(tname, ', '.join(column_names), tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
+        sql = r"""insert or ignore into %s (%s) select %s from %s where %s not in (select %s from %s)"""%(tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
         try:
             self.curs.execute(sql)
         except Exception, e:
-            utils.MessagebarAndLog.critical(
-                "Export warning: sql failed. See message log.",
-                sql + "\nmsg: " + str(e))
+            utils.MessagebarAndLog.critical(bar_msg=u"Export warning: sql failed. See message log.", log_msg=sql + u"\nmsg: " + str(e))
 
     def get_foreign_keys(self, tname):
         result_list = self.curs.execute("""PRAGMA foreign_key_list(%s)"""%(tname)).fetchall()
@@ -271,7 +298,7 @@ class ExportData():
             return False
 
 
-    def get_existing_column_names(self, tname, tname_with_prefix):
+    def get_and_check_existing_column_names(self, tname, tname_with_prefix):
 
         new_column_names = self.get_column_names(tname)
         if new_column_names is None:
@@ -329,9 +356,7 @@ class ExportData():
         try:
             result_list = self.curs.execute(sql).fetchall()
         except Exception, e:
-            utils.MessagebarAndLog.critical(
-                "Export warning: sql failed. See message log.",
-                sql + "\nmsg: " + str(e))
+            utils.MessagebarAndLog.critical(bar_msg=u"Export warning: sql failed. See message log.", log_msg=sql + u"\nmsg: " + str(e))
             return None
 
         columns = [col[1] for col in result_list] #Load column names from sqlite table
