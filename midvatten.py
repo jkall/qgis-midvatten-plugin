@@ -446,7 +446,11 @@ class midvatten:
                     QApplication.restoreOverrideCursor()  # now this long process is done and the cursor is back as normal
                     return None
                 EPSG_code = str(CRS.authid()[5:])
-                user_chosen_EPSG_code = utils.ask_for_export_crs(EPSG_code)
+
+                #Let the user chose an EPSG-code for the exported database
+                #user_chosen_EPSG_code = utils.ask_for_export_crs(EPSG_code) #Transformation to new epsg doesn't work since east/north is not updated.
+                user_chosen_EPSG_code = EPSG_code
+
                 filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
                 iniText = QSettings(filenamepath , QSettings.IniFormat)
                 verno = str(iniText.value('version')) 
@@ -683,7 +687,7 @@ class midvatten:
         allcritical_layers = ('obs_points', 'w_qual_field')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo","""You are about to import water quality data from field measurements, from a text file which must have one header row and the following 9 columns:\n\n1. obsid\n2. staff\n3. date_time - on format yyyy-mm-dd hh:mm(:ss)\n4. instrument\n5. parameter - water quality parameter name\n6. reading_num - param. value (real number, decimal separator=point(.))\n7. reading_txt - parameter value as text, including <, > etc\n8. unit\n9. comment - text string\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid, date_time or parameter, such rows will be excluded from the import.\nEach combination of obsid, date_time and parameter must be unique.\n\nContinue?""",'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import water quality data from field measurements, from a text file which must have one header row and the following 9 columns:\n\n1. obsid\n2. staff\n3. date_time - on format yyyy-mm-dd hh:mm(:ss)\n4. instrument\n5. parameter - water quality parameter name\n6. reading_num - param. value (real number, decimal separator=point(.))\n7. reading_txt - parameter value as text, including <, > etc\n8. unit\n9. depth\n10. comment - text string\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid, date_time or parameter, such rows will be excluded from the import.\nEach combination of obsid, date_time and parameter must be unique.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer

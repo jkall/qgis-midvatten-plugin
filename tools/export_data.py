@@ -63,16 +63,6 @@ class ExportData():
         self.write_data(self.zz_to_sql, u'no_obsids', defs.get_subset_of_tables_fr_db(category='data_domains'), self.verify_table_in_attached_db, 'a.')
         conn.commit()
 
-        #Transform geometries:
-
-        for table, column, srid in old_table_column_srid:
-            utils.MessagebarAndLog.info(u'table, column, srid: ' + u', '.join([table, column, utils.returnunicode(srid)]))
-            utils.MessagebarAndLog.info(u'EPSG: ' + utils.returnunicode(EPSG_code))
-            if utils.returnunicode(srid) != utils.returnunicode(EPSG_code):
-                sql = """update "%s" set "%s"= Transform("%s", "%s") """%(table, column, column, srid)
-                self.curs.execute(sql)
-                utils.MessagebarAndLog.info(log_msg=u'Table ' + table + u' column ' + column + u' was transformed to srid ' + utils.returnunicode(srid))
-
         self.curs.execute(r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSG_code)
         conn.commit()
 
@@ -193,25 +183,48 @@ class ExportData():
             self.curs.execute(sql)
 
         #Make a transformation for column names that are geometries
-        old_table_column_srid_dict = self.get_table_column_srid(prefix='a')
-        new_table_column_srid_dict= self.get_table_column_srid()
-        if tname in new_table_column_srid_dict and tname in old_table_column_srid_dict:
-            transformed_column_names = []
-            for column in column_names:
-                old_srid = new_table_column_srid_dict.get(tname, {}).get(column, None)
-                new_srid = old_table_column_srid_dict.get(tname, {}).get(column, None)
-                if old_srid is not None and new_srid is not None and old_srid != new_srid:
-                    transformed_column_names.append(u'Transform(' + column + u', ' + new_srid)
-                else:
-                    transformed_column_names.append(column)
-        else:
-            transformed_column_names = column_names
+        #transformed_column_names = self.transform_geometries(tname, column_names, self.get_table_column_srid(prefix='a'), self.get_table_column_srid()) #Transformation doesn't work since east, north is not updated.
+        transformed_column_names = column_names
 
         sql = r"insert into %s select %s from %s where obsid in %s" %(tname, ', '.join(transformed_column_names), tname_with_prefix, self.format_obsids(obsids))
         try:
             self.curs.execute(sql)
         except Exception, e:
             utils.MessagebarAndLog.critical("Export warning: sql failed. See message log.", sql + "\nmsg: " + str(e))
+
+    @staticmethod
+    def transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict):
+        ur"""
+        Transform geometry columns to new chosen SRID
+
+        The transformation is only done if the chosen srid is not the same as the old srid,
+        and if the geometry column in question exists in both the old and the new database
+
+        :param tname: The table name
+        :param column_names: a list of columns that will be copied from the old table/database to the new table/database
+        :param old_table_column_srid_dict: a dict like  {u'testt': {u'geom': 3006}}. A dict with tables that have geometries. The inner dict is the column and the srid.
+        :param new_table_column_srid_dict: a dict like  {u'testt': {u'geom': 3006}}. A dict with tables that have geometries. The inner dict is the column and the srid.
+        :return: A list of columns where the geometry columns are Transformed.
+
+        >>> ExportData.transform_geometries(u'testt', [u'notgeom', u'geom'], {u'testt': {u'geom': 3006}}, {u'testt': {u'geom': 3006}})
+        [u'notgeom', u'geom']
+        >>> ExportData.transform_geometries(u'testt', [u'notgeom', u'geom'], {u'testt': {u'geom': 3006}}, {u'testt': {u'geom': 3010}})
+        [u'notgeom', u'Transform(geom, 3010)']
+        """
+        #Make a transformation for column names that are geometries
+        if tname in new_table_column_srid_dict and tname in old_table_column_srid_dict:
+            transformed_column_names = []
+            for column in column_names:
+                new_srid = new_table_column_srid_dict.get(tname, {}).get(column, None)
+                old_srid = old_table_column_srid_dict.get(tname, {}).get(column, None)
+                if old_srid is not None and new_srid is not None and old_srid != new_srid:
+                    transformed_column_names.append(u'Transform(' + column + u', ' + utils.returnunicode(new_srid) + u')')
+                    utils.MessagebarAndLog.info(log_msg=u'Transformation for table "' + tname + u'" column "' + column + u'" from ' + str(old_srid) + u" to " + str(new_srid))
+                else:
+                    transformed_column_names.append(column)
+        else:
+            transformed_column_names = column_names
+        return transformed_column_names
 
     def zz_to_csv(self, tname, tname_with_prefix):
         output = UnicodeWriter(file(os.path.join(self.exportfolder, tname + ".csv"), 'w'))
@@ -297,7 +310,7 @@ class ExportData():
         primary_keys = self.get_primary_keys(tname)
         missing_primary_keys = [col for col in primary_keys if col in new_columns_missing_in_old]
         if missing_primary_keys:
-            missing_pk_msg = u'Table ' + tname + u':\nPrimary keys ' + u', '.join(missing_primary_keys) + u' are missing in old database. The table will not be exported!!!'
+            missing_pk_msg = u'Table ' + tname + u':\nPrimary keys "' + u'", "'.join(missing_primary_keys) + u'" are missing in old database. The table will not be exported!!!'
             utils.MessagebarAndLog.critical(bar_msg=u'Export warning!, see Log Message Panel', log_msg=missing_pk_msg)
             return None
 
