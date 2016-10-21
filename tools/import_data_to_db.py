@@ -1950,4 +1950,89 @@ class wlvlloggimportclass():
             return 1
         else:
             return 0
- 
+
+class FieldloggerImport(object):
+    def __init__(self):
+
+        filename = ...
+        encoding = ...
+        self.fieldlogger_obj = self.parse_fieldlogger_file(filename, encoding)
+
+        #Connect all fields and buttons.
+
+        #General import settings
+        self.add_row(self.staff_entry())
+        self.add_row(self.date_time_adjustment_entry())
+
+        #Filters
+        self.add_row(self.date_time_filter())
+        for subgroup_type in self.fieldlogger_obj.subgroup_types:
+            self.add_row(self.subgroup_filter(subgroup_type))
+
+        self.add_line()
+        self.add_row(self.parameters_layout())
+
+        #Maybe it's not good to hide the created layouts inside functions like this.
+
+        #Parameters
+        for parameter in self.fieldlogger_obj.parameters:
+            self.add_row(parameter)
+
+    def add_row(self, qt_layout):
+        """
+        :param: qt_layout: A layout containg buttons lists or whatever
+        This one should append qt_layout to self.main_vertical_layout
+        """
+        pass
+
+    def add_line(self):
+        """ just adds a line"""
+        pass
+
+    def staff(self):
+        """
+        This one should create and return a qt_layout containg a label "staff" and a drop down list
+        containing all staffs in the database
+        :return:
+        """
+        pass
+
+    def date_time_adjustment_entry(self):
+        """
+        This one should create and return a qt_layout containg a label and a text editor for adjusting date_time using
+        "-1 hours", "2 hours" etc.
+        :return:
+        """
+        pass
+
+    def filter_data(self):
+        """
+        This one should make a self.filtered_observations from self.observations using all specified filters.
+        :return:
+        """
+        pass
+
+    def update_parameter_layout(self):
+
+
+class ParsedFieldlogger(object):
+    """
+     This class should parse a fieldlogger file and contain:
+     * the rows
+     * the full name of the parameters including dots. This is the "name" of the parameters.
+     * The subgroups. A tuple of tuples like ( (first_entry_list, second_entry_list), (first_entry_list, second_entry_list, third_entry_list), ...)
+     Each inner tuple is a tuple of lists/tuples with all entries from that specific position from the sublocations (the file might contain sublocations
+     names obsid.project, obsid.subgroup.project and so forth. Each different lenght should have one separate inner tuple containing lists with all entries.
+
+     The data needs to be ordered in some way, maybe as a dict of date_time: {parameter: {obsid: value}}} or what order is the easiest to cut and filter from.
+     Or maybe make each entry as a dict containing all that information directly. Filetering whould then be like
+     filtered = [observation for observation in observations where  period_to < observation.date_time < period_from]
+
+
+     Maybe this class should not exist at all. Observations could maybe be stored in a list of dicts like:
+     observations = [{'sublocation': , 'date_time': , 'parameter': , 'value': }, ... ]
+     The different filters whould the filter this list into:
+     filtered_observations = [{}] (a new list of dicts, but only the filtered)
+    """
+
+    pass
