@@ -1952,31 +1952,53 @@ class wlvlloggimportclass():
             return 0
 
 class FieldloggerImport(object):
-    def __init__(self):
+    if __name__ == '__main__':
+        def __init__(self):
 
-        filename = ...
-        encoding = ...
-        self.fieldlogger_obj = self.parse_fieldlogger_file(filename, encoding)
+            self.observations = self.parse_fieldlogger_file(filename, encoding)  # A list of dicts like [{'sublocation': , 'date_time': , 'parameter': , 'value': }, ... ] =
+            self.filtered_observations = list(self.observations)
+            #TODO: self.subgroups =
 
-        #Connect all fields and buttons.
+            #Connect all fields and buttons.
 
-        #General import settings
-        self.add_row(self.staff_entry())
-        self.add_row(self.date_time_adjustment_entry())
+            #General import settings
+            self.add_row(self.staff_setting())
+            self.add_row(self.date_time_adjustment_setting())
+            self.add_row(self.import_only_latest_setting())
+            self.add_row(self.try_capitalize_obsid_setting())
 
-        #Filters
-        self.add_row(self.date_time_filter())
-        for subgroup_type in self.fieldlogger_obj.subgroup_types:
-            self.add_row(self.subgroup_filter(subgroup_type))
+            self.add_line()
 
-        self.add_line()
-        self.add_row(self.parameters_layout())
+            #Filters
+            self.add_row(self.date_time_filter())
+            for subgroup_type in self.fieldlogger_obj.subgroup_types:
+                self.add_row(self.subgroup_filter(subgroup_type))
 
-        #Maybe it's not good to hide the created layouts inside functions like this.
+            self.add_line()
+            self.parameters_layout = Qtverticallayout()
+            self.add_row(self.parameters_layout())
 
-        #Parameters
-        for parameter in self.fieldlogger_obj.parameters:
-            self.add_row(parameter)
+            #Maybe it's not good to hide the created layouts inside functions like this.
+
+
+            #Parameters
+            #The parameters should be stored so that they are easy to access when the import is started.
+            #Should the settings be stored in qt-variables, i.e. the fields themselves, or should it be local variables in dicts for example.
+
+            #Maybe it's best to create an object for each one and store the values in the fields inside the objects. The import method field would then be
+            #connected to a method inside the object itself that would alter the layout of itself by adding the neccessary fields.
+            parameter_names = sorted(set([observation[u'parameter'] for observation in self.observations]))
+
+            #Here a stored parameter setup connected to each parameter_name is prefilled.
+
+            for parameter_name in parameter_names:
+                self.parameters_layout.append(self.parameter_setting(parameter_name))
+
+
+
+            #Connect button to start import.
+            #User should press start import which will filter the data, check obsids, split the import into all import types (w_levels, w_flow, comment, w_qual_field)
+            # Instrument id should be checked for in the needed imports.
 
     def add_row(self, qt_layout):
         """
@@ -1989,7 +2011,7 @@ class FieldloggerImport(object):
         """ just adds a line"""
         pass
 
-    def staff(self):
+    def staff_setting(self):
         """
         This one should create and return a qt_layout containg a label "staff" and a drop down list
         containing all staffs in the database
@@ -1997,7 +2019,7 @@ class FieldloggerImport(object):
         """
         pass
 
-    def date_time_adjustment_entry(self):
+    def date_time_adjustment_setting(self):
         """
         This one should create and return a qt_layout containg a label and a text editor for adjusting date_time using
         "-1 hours", "2 hours" etc.
@@ -2013,6 +2035,21 @@ class FieldloggerImport(object):
         pass
 
     def update_parameter_layout(self):
+        pass
+
+    def start_import(self, date_time_to_from=None, sublocation_filter_types=None):
+        """"""
+
+    def verify_obsids(self):
+        all_obsids = utils.get_all_obsids()
+
+    def parameter_setting(self, parameter_name):
+        """
+        Will create a layout with the parameter_name as label and a list of import methods.
+        The dropdownlist should be connected so that when a method is chosen, the layout is updated with specific choices for the chosen method.
+        :return:
+        """
+
 
 
 class ParsedFieldlogger(object):
@@ -2034,5 +2071,216 @@ class ParsedFieldlogger(object):
      The different filters whould the filter this list into:
      filtered_observations = [{}] (a new list of dicts, but only the filtered)
     """
+    def __init__(self):
+
+    def parse_fieldlogger_file(self):
+        pass
+
+    def filter_observations(self, sublocation_filters=None, date_time_to_from=None):
+        """
+        Filter self.observations and update self.filtered_observations.
+
+        :param sublocation_filters:
+        :param date_time_to_from:
+        :return:
+        """
+
+
+
 
     pass
+
+
+class GeneralParameterLayout(object):
+    def __init__(self, midv, parameter_name):
+
+
+
+        self.settings = {}
+        self.settings[u'parameter_name'] = parameter_name
+
+        self.horisontal_layout = QHBoxLayout()
+
+        self.parameter_name_label = QtLabel()
+        self.parameter_name_label.set(parameter_name)
+
+        self.horisontal_layout.addWidget(self.parameter_name_label)
+
+        self.import_method_box = QComboBox()
+
+        self.import_methods = {u'comments': CommentsImportFields,
+                               u'w_levels': WLevelsImportFields,
+                               u'w_qual_field': WQualFieldImportFields,
+                               u'w_flow': WFlowImportFields}
+
+        #How to structure the parameterlayout. It should be easy to populate the layout and easy to extract the values from all fields.
+        #It should also be easy to update if the tables are changed.
+
+        self.import_method_box.addItems(sorted(self.import_methods.items()))
+
+        midv.connect(self.import_method_box, 'CHANGED', lambda : self.method_chosen(self.horisontal_layout, self.import_method_box, self.import_methods))
+
+    def method_chosen(self, horisontal_layout,  method_box, methods_dict):
+        chosen_method = method_box.currentText()
+        parameter_fields = methods_dict[chosen_method]()
+        horisontal_layout.append(parameter_fields.layout)
+
+class CommentsImportFields(object):
+    """
+    This class should create a layout and populate it with question boxes relevant to comment import, which is probably an empty layout.
+    What I want it to do:
+    I want it to be able to recieve comments-data, format it and send it to the regular comments-importer.
+    The method to format and send to formatter should also get a dict with obsids and their final names.
+
+    This is the class that knows how the comments-table looks like.
+    """
+    def __init__(self):
+        """
+        A HBoxlayout should be created as self.layout.
+        It shuold also create an empty list for future data as self.data
+        Connecting the dropdown lists as events is done here (or in submethods).
+        """
+        pass
+
+    def send_data_to_formatter(self):
+        """
+        This method should call format_data and then send it to the formatter.
+        :return:
+        """
+        pass
+
+    def format_data(self):
+        """
+        This method should format self.data into the columns contained in the table.
+        :return:
+        """
+        pass
+
+
+class WLevelImportFields(object):
+    """
+    This class should create a layout and populate it with question boxes relevant to w_levels import, which is probably an empty layout.
+    What I want it to do:
+    I want it to be able to recieve w_levels-data, format it and send it to the regular comments-importer.
+    The method to format and send to formatter should also get a dict with obsids and their final names.
+
+    This is the class that knows how the comments-table looks like.
+    """
+
+    def __init__(self):
+        """
+        A HBoxlayout should be created as self.layout.
+        It shuold also create an empty list for future data as self.data
+        Connecting the dropdown lists as events is done here (or in submethods).
+        """
+        pass
+
+    def send_data_to_formatter(self):
+        """
+        This method should call format_data and then send it to the formatter.
+        :return:
+        """
+        pass
+
+    def format_data(self):
+        """
+        This method should format self.data into the columns contained in the table.
+        :return:
+        """
+        pass
+
+class WFlowImportFields(object):
+    """
+    This class should create a layout and populate it with question boxes relevant to w_flow import which is probably "parameter" and "unit" dropdown lists.
+    What I want it to do:
+    I want it to be able to recieve w_flow-data, format it and send it to the regular comments-importer.
+    The method to format and send to formatter should also get a dict with obsids and their final names.
+
+    This is the class that knows how the comments-table looks like.
+    """
+
+    def __init__(self):
+        """
+        A HBoxlayout should be created as self.layout.
+        It shuold also create an empty list for future data as self.data
+        Connecting the dropdown lists as events is done here (or in submethods).
+        """
+        pass
+
+    def send_data_to_formatter(self):
+        """
+        This method should call format_data and then send it to the formatter.
+        :return:
+        """
+        pass
+
+    def format_data(self):
+        """
+        This method should format self.data into the columns contained in the table.
+        :return:
+        """
+        pass
+
+
+
+
+
+
+
+
+        #Populate using stored settings:
+        #The stored settings should probably be stored like this:
+        stored = parameter_name:parametername|import_method:stored_method| ... the rest should depend on the import_method, like:
+        #parameter_name:Aveflow.m3|import_method:w_flow|parameter:Aveflow|unit:m3
+        # Presetting should then be done like:
+        presets = stored.split(u'|')
+        parameter_layout = ParameterLayout(presets[0]) # This will
+        for preset in presets[1]:
+            #The import method will be activated first and create
+            method, value = preset.split(u':')
+            try:
+                getattr(parameter_layout, method)(value)
+            except:
+                pass
+
+
+        def parameter(self, value):
+
+            #The .set method should then run the method and provide the value as an argument.
+            #Each method then may do different things.
+            #Import method populates the layout.
+            #The other methods writes the entry in it's specific lineedit.
+            #Should all possible fields be in the same class? Depth should only appear when import_method is w_qual_field, but it will always exist anyway. Is this
+            # a good thing?
+
+            #If there is a parameter that has not yet been set, it will be created and appended to the parameter_layout.
+
+
+
+        # unit
+        # parameter_layout.set(u'import_method', u'w_flow')
+        # parameter_layout.set
+
+
+        midv.connect(self.import_method_box.ischanged(), lambda x: self.method_chosen(self.import_methods))
+
+
+
+
+
+    def add_w_levels_field(self):
+        pass
+
+    def (self):
+        pass
+
+    def add_comments_fields(self):
+        pass
+
+    def add_w_qual_field_fields(self):
+        pass
+
+
+    def
+
+
