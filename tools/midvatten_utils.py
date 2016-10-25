@@ -1034,6 +1034,11 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
             continue
 
         similar_values = find_similar(current_value, existing_values, hits=5)
+        if len(similar_values) == 0:
+            if len(existing_values) != 0:
+                similar_values = existing_values
+            else:
+                similar_values = [u'']
 
         not_tried_capitalize = True
 
