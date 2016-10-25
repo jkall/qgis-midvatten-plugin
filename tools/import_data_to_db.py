@@ -1955,8 +1955,11 @@ class FieldloggerImport(object):
     if __name__ == '__main__':
         def __init__(self):
 
-            self.observations = self.parse_fieldlogger_file(filename, encoding)  # A list of dicts like [{'sublocation': , 'date_time': , 'parameter': , 'value': }, ... ] =
-            self.filtered_observations = list(self.observations)
+            self.observations = self.select_file_and_parse_rows()
+            if self.observations == u'cancel':
+                self.status = True
+                return u'cancel'
+
             #TODO: self.subgroups =
 
             #Connect all fields and buttons.
@@ -1970,9 +1973,11 @@ class FieldloggerImport(object):
             self.add_line()
 
             #Filters
+
             self.add_row(self.date_time_filter())
-            for subgroup_type in self.fieldlogger_obj.subgroup_types:
-                self.add_row(self.subgroup_filter(subgroup_type))
+            sublocation_groups = self.sublocation_to_groups(self.observations.keys())
+            for sublocation_group in sublocation_groups:
+                self.add_row(self.subgroup_filter(sublocation_group))
 
             self.add_line()
             self.parameters_layout = Qtverticallayout()
@@ -2000,6 +2005,46 @@ class FieldloggerImport(object):
             #User should press start import which will filter the data, check obsids, split the import into all import types (w_levels, w_flow, comment, w_qual_field)
             # Instrument id should be checked for in the needed imports.
 
+    def select_file_and_parse_rows(self):
+        filename = self.select_files(only_one_file=True, should_ask_for_charset=True)
+        if not filename:
+            self.status = True
+            return u'cancel'
+
+        filename = utils.returnunicode(filename[0])
+
+        observations = {}
+        with io.open(filename, 'r', encoding=str(self.charsetchoosen[0])) as f:
+            #Skip header
+            f.readline()
+            observations = self.parse_rows(f)
+        return observations
+
+    @staticmethod
+    def parse_rows(f):
+        """
+        Parses rows from fieldlogger format into a dict
+        :param f: File_data, often an open file or a list of rows
+        :return: a dict like {obsid: {date_time: {parameter: value, }}}
+
+        f must not have a header.
+        """
+        observations = {}
+        for rownr, rawrow in enumerate(f):
+            row = utils.returnunicode(rawrow).rstrip(u'\r').rstrip(u'\n')
+            if not row:
+                continue
+            cols = row.split(u';')
+            obsid = cols[0]
+            date = cols[1]
+            time = cols[2]
+            date_time = datestring_to_date(u' '.join([date, time]))
+            value = cols[3]
+            parameter = cols[4]
+
+            observations.setdefault(obsid, {}).setdefault(date_time, {})[parameter] = value
+        return observations
+
     def add_row(self, qt_layout):
         """
         :param: qt_layout: A layout containg buttons lists or whatever
@@ -2026,6 +2071,23 @@ class FieldloggerImport(object):
         :return:
         """
         pass
+
+    @staticmethod
+    def sublocation_to_groups(sublocations, delimiter=u'.'):
+        """
+        This method splits sublocation using a splitter, default to u'.'. Each list position is grouped to lists
+         containing all distinct values. It's finally stored in a dict with the lenght of the splitted group as key.
+        :param: sublocations: A list of sublocations, ex: [u'c', u'a.1', u'a.2', u'b.1.1']
+        :return: a dict like {1: [set(distinct values)], 2: [set(distinct values)}, set(), set()], ...)
+        """
+        sublocation_groups = {}
+        for sublocation in sublocations:
+            splitted = sublocation.split(delimiter)
+            length = len(splitted)
+            for index in xrange(length):
+                #a dict like {1: [set()], 2: [set(), set()], ...}
+                sublocation_groups.setdefault(length, set() * length)[index].add(splitted[index])
+        return sublocation_groups
 
     def filter_data(self):
         """
