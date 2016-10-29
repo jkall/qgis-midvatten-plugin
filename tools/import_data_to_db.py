@@ -1961,10 +1961,12 @@ class FieldloggerImport(object):
                 return u'cancel'
 
             #Filters and general settings
+            self.settings_with_own_loop = []
+            self.settings = []
             self.settings.append(StaffQuestion())
             self.settings.append(DateShiftQuestion())
             self.add_line()
-            self.settings.append(ObsidFilter())
+            self.settings_with_own_loop.append(ObsidFilter())
             self.settings.append(DateTimeFilter()) #This includes a checkbox for "include only latest
 
             sublocation_groups = self.sublocation_to_groups([observation[u'sublocation']
@@ -2025,10 +2027,10 @@ class FieldloggerImport(object):
         """
         Parses rows from fieldlogger format into a dict
         :param f: File_data, often an open file or a list of rows
-        :return: a dict like {parameter_name: {obsid: {date_time: {parameter: value, }}}}
+        :return: a list of dicts like [{date_time: x, sublocation: y, parametername: z, value: o}, ...]
 
         #If the observations instead were stored like a list of dicts:
-        [{date_time: x, obsid: y, parameter: z, value: o}, ]
+        [{date_time: x, sublocation: y, parametername: z, value: o}, ]
         it would be very easy to change names, access data, resort data and so fourth.
         Filtering data would also be VERY easy. Obsid filter would be as simple as obs = [obs for obs in observations where x['date_time' < x]
 
@@ -2059,7 +2061,7 @@ class FieldloggerImport(object):
             time = cols[2]
             observation[u'date_time'] = datestring_to_date(u' '.join([date, time]))
             observation[u'value'] = cols[3]
-            observation[u'parameter'] = cols[4]
+            observation[u'parametername'] = cols[4]
         return observations
 
     def add_row(self, qt_layout):
@@ -2101,8 +2103,18 @@ class FieldloggerImport(object):
         """
 
         #Filter and alter data
-        for general_setting in self.settings:
-            observations = general_setting.alter_data(observations)
+        filtered_observations = []
+        for observation in observations:
+            for setting in self.settings:
+                altered_observation =  setting.alter_data(observation)
+                if altered_observation == u'cancel':
+                    return u'cancel'
+                elif altered_observation is not None:
+                    filtered_observations.append(filtered_observations)
+        observations = filtered_observations
+
+        for setting in self.settings_with_own_loop:
+            observations = setting.alter_data(observations)
             if observations == u'cancel':
                 return u'cancel'
 
@@ -2122,6 +2134,24 @@ class FieldloggerImport(object):
         The dropdownlist should be connected so that when a method is chosen, the layout is updated with specific choices for the chosen method.
         :return:
         """
+
+    def get_stored_definition(self):
+        #Populate using stored settings:
+        #The stored settings should probably be stored like this:
+        stored = parameter_name:parametername|import_method:stored_method| ... the rest should depend on the import_method, like:
+        #parameter_name:Aveflow.m3|import_method:w_flow|parameter:Aveflow|unit:m3
+        # Presetting should then be done like:
+        presets = stored.split(u'|')
+        parameter_layout = ParameterLayout(presets[0]) # This will
+        for preset in presets[1]:
+            #The import method will be activated first and create
+            method, value = preset.split(u':')
+            try:
+                getattr(parameter_layout, method)(value)
+            except:
+                pass
+
+
 
 
 class GeneralParameterLayout(object):
@@ -2224,13 +2254,9 @@ class WLevelImportFields(object):
 
 class WFlowImportFields(object):
     """
-    This class should create a layout and populate it with question boxes relevant to w_flow import which is probably "parameter" and "unit" dropdown lists.
-    What I want it to do:
-    I want it to be able to recieve w_flow-data, format it and send it to the regular comments-importer.
-    The method to format and send to formatter should also get a dict with obsids and their final names.
-
-    This is the class that knows how the comments-table looks like.
+    This class should create a layout and populate it with question boxes relevant to w_flow import which is probably "flowtype" and "unit" dropdown lists.
     """
+
 
     def __init__(self):
         """
@@ -2238,83 +2264,104 @@ class WFlowImportFields(object):
         It shuold also create an empty list for future data as self.data
         Connecting the dropdown lists as events is done here (or in submethods).
         """
-        pass
+        self.__flowtype = PyQt4.QtGui.QComboBox(self.widget)
+        self.__flowtype.setEditable(True)
+        self.__flowtype.addItem = u''
+        self._flowtypes_units = defs.w_flow_flowtypes_units()
+        self.__flowtype.addItems(self._flowtypes_units.keys())
+        self.__unit = PyQt4.QtGui.QComboBox(self.widget)
+        self.__unit.setEditable(True)
+        self.connect(self.__flowtype, PyQt4.QtCore.SIGNAL("currentIndexChanged()"),
+                     lambda : self.fill_unit_list(self.__unit, self.flowtype, self._flowtypes_units))
 
-    def send_data_to_formatter(self):
+    def alter_data(self, observation):
+        observation = copy.deepcopy(observation)
+        observation[u'unit'] = self.unit
+        observation[u'flowtype'] = self.flowtype
+        return observation
+
+    @property
+    def flowtype(self):
+        return self.__flowtype.currentText()
+
+    @flowtype.setter
+    def flowtype(self, value):
+        self.__flowtype.setEditText(value)
+
+    @property
+    def unit(self):
+        return self.__unit.currentText()
+
+    @unit.setter
+    def unit(self, value):
+        if isinstance(value, (list, tuple)):
+            self.__unit.addItems
+        self.__unit.setEditText(value)
+
+    def fill_unit_list(self, unit_var, flowtype_var, flowtypes_units):
+        units = flowtypes_units.get(flowtype_var, None)
+        if units is None:
+            units = list(sorted(set([unit for units_list in flowtypes_units.values() for unit in units_list])))
+        unit_var.addItem(u'')
+        unit_var.addItems(utils.returnunicode(units))
+
+
+class WQualFieldImportFields(object):
+    """
+    This class should create a layout and populate it with question boxes relevant to w_qual_fields import which is probably "parameter", "unit" dropdown lists.
+    And a depth dropdown list which is populated by the parameternames. The purpose is that the user should select which parametername to use as the depth variable
+
+    """
+
+
+    def __init__(self):
         """
-        This method should call format_data and then send it to the formatter.
-        :return:
+        A HBoxlayout should be created as self.layout.
+        It shuold also create an empty list for future data as self.data
+        Connecting the dropdown lists as events is done here (or in submethods).
         """
-        pass
+        self.__parameter = PyQt4.QtGui.QComboBox(self.widget)
+        self.__parameter.setEditable(True)
+        self.__parameter.addItem = u''
+        #TODO 20161029 THIS IS WHERE I AM. Fix the next line so that it works correctly.
+        self._parameters_units = defs.w_qual_field_parameter_units()
+        self.__parameter.addItems(self._flowtypes_units.keys())
+        self.__unit = PyQt4.QtGui.QComboBox(self.widget)
+        self.__unit.setEditable(True)
+        self.connect(self.__parameter, PyQt4.QtCore.SIGNAL("currentIndexChanged()"),
+                     lambda : self.fill_unit_list(self.__unit, self.flowtype, self._flowtypes_units))
 
-    def format_data(self):
-        """
-        This method should format self.data into the columns contained in the table.
-        :return:
-        """
-        pass
+    def alter_data(self, observation):
+        observation = copy.deepcopy(observation)
+        observation[u'unit'] = self.unit
+        observation[u'flowtype'] = self.flowtype
+        return observation
 
+    @property
+    def flowtype(self):
+        return self.__parameter.currentText()
 
+    @flowtype.setter
+    def flowtype(self, value):
+        self.__parameter.setEditText(value)
 
+    @property
+    def unit(self):
+        return self.__unit.currentText()
 
+    @unit.setter
+    def unit(self, value):
+        if isinstance(value, (list, tuple)):
+            self.__unit.addItems
+        self.__unit.setEditText(value)
 
+    def fill_unit_list(self, unit_var, flowtype_var, flowtypes_units):
+        units = flowtypes_units.get(flowtype_var, None)
+        if units is None:
+            units = list(sorted(set([unit for units_list in flowtypes_units.values() for unit in units_list])))
+        unit_var.addItem(u'')
+        unit_var.addItems(utils.returnunicode(units))
 
-
-
-        #Populate using stored settings:
-        #The stored settings should probably be stored like this:
-        stored = parameter_name:parametername|import_method:stored_method| ... the rest should depend on the import_method, like:
-        #parameter_name:Aveflow.m3|import_method:w_flow|parameter:Aveflow|unit:m3
-        # Presetting should then be done like:
-        presets = stored.split(u'|')
-        parameter_layout = ParameterLayout(presets[0]) # This will
-        for preset in presets[1]:
-            #The import method will be activated first and create
-            method, value = preset.split(u':')
-            try:
-                getattr(parameter_layout, method)(value)
-            except:
-                pass
-
-
-        def parameter(self, value):
-
-            #The .set method should then run the method and provide the value as an argument.
-            #Each method then may do different things.
-            #Import method populates the layout.
-            #The other methods writes the entry in it's specific lineedit.
-            #Should all possible fields be in the same class? Depth should only appear when import_method is w_qual_field, but it will always exist anyway. Is this
-            # a good thing?
-
-            #If there is a parameter that has not yet been set, it will be created and appended to the parameter_layout.
-
-
-
-        # unit
-        # parameter_layout.set(u'import_method', u'w_flow')
-        # parameter_layout.set
-
-
-        midv.connect(self.import_method_box.ischanged(), lambda x: self.method_chosen(self.import_methods))
-
-
-
-
-
-    def add_w_levels_field(self):
-        pass
-
-    def (self):
-        pass
-
-    def add_comments_fields(self):
-        pass
-
-    def add_w_qual_field_fields(self):
-        pass
-
-
-    def
 
 
 class RowEntry(object):
@@ -2369,10 +2416,10 @@ class StaffQuestion(RowEntry):
         existing_staff = sorted(defs.staff_list()[1])
         self.existing_staff_combobox.addItems(existing_staff)
 
-    def alter_data(self, observations):
-        observations = [observation.update({u'staff': self.existing_staff_combobox.currentText()})
-                        for observation in observations]
-        return observations
+    def alter_data(self, observation):
+        observation = copy.deepcopy(observation)
+        observation[u'staff'] = self.existing_staff_combobox.currentText()
+        return observation
 
 
 class DateShiftQuestion(RowEntry):
@@ -2383,7 +2430,8 @@ class DateShiftQuestion(RowEntry):
         self.dateshift_lineedit = PyQt4.QtGui.QLineEdit(self.widget)
         self.dateshift_lineedit.setText(u'0 hours')
 
-    def alter_data(self, observations):
+    def alter_data(self, observation):
+        observation = copy.deepcopy(observation)
         shift_specification = self.dateshift_lineedit.text()
 
         step_steplength = shift_specification.split[u' ']
@@ -2410,10 +2458,8 @@ class DateShiftQuestion(RowEntry):
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
             return u'cancel'
 
-        observations = [observation.update({u'date_time': dateshift(observation[u'date_time'], step, steplength)})
-                        for observation in observations]
-
-        return observations
+        observation[u'date_time'] = dateshift(observation[u'date_time'], step, steplength)
+        return observation
 
 
 class DateTimeFilter(RowEntry):
@@ -2428,21 +2474,31 @@ class DateTimeFilter(RowEntry):
         self.label.setText(u'To:')
         self.to_datetimeedit = PyQt4.QtGui.QDateTimeEdit()
 
-    def alter_data(self, observations):
-        _from = self.from_datetimeedit.dateTime().toPyDateTime()
-        _to = self.to_datetimeedit.dateTime().toPyDateTime()
+    def alter_datas(self, observations):
 
-        if _from and _to:
-            observations = [observation for observation in observations if _from < observation[u'date_time'] < _to]
-        elif _from:
-            observations = [observation for observation in observations if _from < observation[u'date_time']]
-        elif _to:
-            observations = [observation for observation in observations if observation[u'date_time'] < _to]
+        observations = [observation for observation in observations if self.alter_data(observation) is not None
 
         if not observations:
             utils.MessagebarAndLog.warning(bar_msg=u'Datetime filter resulted in no remaining observations. No import done')
             return u'cancel'
         return observations
+
+    def alter_data(self, observation):
+        observation = copy.deepcopy(observation)
+        _from = self.from_datetimeedit.dateTime().toPyDateTime()
+        _to = self.to_datetimeedit.dateTime().toPyDateTime()
+        if not _from and if not _to:
+            return observation
+        if _from and _to:
+            if _from < observation[u'date_time'] < _to:
+                return observation
+        elif _from:
+            if _from < observation[u'date_time']:
+                return observation
+        elif _to:
+            if observation[u'date_time'] < _to:
+                return observation
+        return None
 
 
 class SublocationFilter(RowEntry):
@@ -2462,21 +2518,25 @@ class SublocationFilter(RowEntry):
                 dotlabel = PyQt4.QtGui.Qlabel(self.widget)
                 dotlabel.setText(u'.')
 
-    def alter_data(self, observations):
+    def alter_datas(self, observations):
         remaining_observations = []
         for observation in observations:
-            sublocation = observation[u'sublocation'].split(u'.')
-            keep_observation = True
-            if len(sublocation) == len(self.filters):
-                for idx, filter in self.filters:
-                    selected_items = filter.selectedItems()
-                    if selected_items:
-                        if sublocation[idx] not in selected_items:
-                            keep_observation = False
-                            break
-            if keep_observation:
-                remaining_observations.append(observation)
+            checked_observation = self.alter_data(observation)
+            if checked_observation is not None:
+                remaining_observations.append(checked_observation)
         return remaining_observations
+
+    def alter_data(self, observation):
+        observation = copy.deepcopy(observation)
+        sublocation = observation[u'sublocation'].split(u'.')
+        if len(sublocation) == len(self.filters):
+            for idx, filter in self.filters:
+                selected_items = filter.selectedItems()
+                if selected_items:
+                    if sublocation[idx] not in selected_items:
+                        return None
+        return observation
+
 
 
 

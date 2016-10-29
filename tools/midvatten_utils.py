@@ -482,10 +482,12 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
                 text = tuple([returnunicode(x, keep_containers) for x in anything])
             elif isinstance(anything, dict):
                 text = dict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
+            elif isinstance(anything, OrderedDict):
+                text = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
             else:
                 text = anything
 
-            if isinstance(text, (list, tuple, dict)):
+            if isinstance(text, (list, tuple, dict, OrderedDict)):
                 if not keep_containers:
                     text = unicode(text)
             elif isinstance(text, str):
