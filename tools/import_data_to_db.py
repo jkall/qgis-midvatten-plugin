@@ -1960,30 +1960,30 @@ class FieldloggerImport(object):
                 self.status = True
                 return u'cancel'
 
-            #TODO: self.subgroups =
-
-            #Connect all fields and buttons.
-
-            #General import settings
-            self.add_row(self.staff_setting())
-            self.add_row(self.date_time_adjustment_setting())
-            self.add_row(self.import_only_latest_setting())
-            self.add_row(self.try_capitalize_obsid_setting())
-
+            #Filters and general settings
+            self.settings.append(StaffQuestion())
+            self.settings.append(DateShiftQuestion())
             self.add_line()
+            self.settings.append(ObsidFilter())
+            self.settings.append(DateTimeFilter()) #This includes a checkbox for "include only latest
 
-            #Filters
-
-            self.add_row(self.date_time_filter())
-            sublocation_groups = self.sublocation_to_groups(self.observations.keys())
+            sublocation_groups = self.sublocation_to_groups([observation[u'sublocation']
+                                                             for observation in observations], delimiter=u'.')
             for sublocation_group in sublocation_groups:
-                self.add_row(self.subgroup_filter(sublocation_group))
+                self.settings.append(SublocationFilter(sublocation_group))
+            for setting in self.settings:
+                self.add_row(self.settings.layout)
 
             self.add_line()
-            self.parameters_layout = Qtverticallayout()
+
+            for parameter in
+
             self.add_row(self.parameters_layout())
 
-            #Maybe it's not good to hide the created layouts inside functions like this.
+
+
+
+            #The parameter
 
 
             #Parameters
@@ -2025,24 +2025,41 @@ class FieldloggerImport(object):
         """
         Parses rows from fieldlogger format into a dict
         :param f: File_data, often an open file or a list of rows
-        :return: a dict like {obsid: {date_time: {parameter: value, }}}
+        :return: a dict like {parameter_name: {obsid: {date_time: {parameter: value, }}}}
+
+        #If the observations instead were stored like a list of dicts:
+        [{date_time: x, obsid: y, parameter: z, value: o}, ]
+        it would be very easy to change names, access data, resort data and so fourth.
+        Filtering data would also be VERY easy. Obsid filter would be as simple as obs = [obs for obs in observations where x['date_time' < x]
+
+        Extracting the data would be VERY easy for the importer functions as well. depth = observations.get(depth, None)
+        or:
+        instrumentid = observations.get(instrumentid, None)
+        if instrumentid is None:
+            instrumentid = observations.get(instrument, None)
+        if instrumentid is None:
+            ask_for_instrument_id()
+
+        Negative: It will be a lot of looping through the structure.
+        solution: This could be solved by making lookup dicts directly to the observations. But it's probably never needed.
+
+
 
         f must not have a header.
         """
-        observations = {}
+        observations = []
         for rownr, rawrow in enumerate(f):
+            observation = {}
             row = utils.returnunicode(rawrow).rstrip(u'\r').rstrip(u'\n')
             if not row:
                 continue
             cols = row.split(u';')
-            obsid = cols[0]
+            observation[u'sublocation'] = cols[0]
             date = cols[1]
             time = cols[2]
-            date_time = datestring_to_date(u' '.join([date, time]))
-            value = cols[3]
-            parameter = cols[4]
-
-            observations.setdefault(obsid, {}).setdefault(date_time, {})[parameter] = value
+            observation[u'date_time'] = datestring_to_date(u' '.join([date, time]))
+            observation[u'value'] = cols[3]
+            observation[u'parameter'] = cols[4]
         return observations
 
     def add_row(self, qt_layout):
@@ -2054,22 +2071,6 @@ class FieldloggerImport(object):
 
     def add_line(self):
         """ just adds a line"""
-        pass
-
-    def staff_setting(self):
-        """
-        This one should create and return a qt_layout containg a label "staff" and a drop down list
-        containing all staffs in the database
-        :return:
-        """
-        pass
-
-    def date_time_adjustment_setting(self):
-        """
-        This one should create and return a qt_layout containg a label and a text editor for adjusting date_time using
-        "-1 hours", "2 hours" etc.
-        :return:
-        """
         pass
 
     @staticmethod
@@ -2086,24 +2087,34 @@ class FieldloggerImport(object):
             length = len(splitted)
             for index in xrange(length):
                 #a dict like {1: [set()], 2: [set(), set()], ...}
-                sublocation_groups.setdefault(length, set() * length)[index].add(splitted[index])
+                sublocation_groups.setdefault(length, [set()for i in xrange(length)])[index].add(splitted[index])
         return sublocation_groups
 
-    def filter_data(self):
+    def start_import(self, observations):
         """
-        This one should make a self.filtered_observations from self.observations using all specified filters.
+        The nice thing about storing the data as a sql table like Josef done is that the filters are easy to apply.
+        The bad thing is that it's more work to replace obsids and parameter names.
+
+        :param date_time_to_from:
+        :param sublocation_filter_types:
         :return:
         """
-        pass
 
-    def update_parameter_layout(self):
-        pass
+        #Filter and alter data
+        for general_setting in self.settings:
+            observations = general_setting.alter_data(observations)
+            if observations == u'cancel':
+                return u'cancel'
 
-    def start_import(self, date_time_to_from=None, sublocation_filter_types=None):
-        """"""
+        #All parameter could be stored as self.parameter_settings and be used just like the filters
+        for parameter_setting in self.parameter_settings:
+            observations = parameter_setting.alter_data(observations)
 
-    def verify_obsids(self):
-        all_obsids = utils.get_all_obsids()
+        ordered_under_import_methods = {}
+        for observation in observations:
+            ordered_under_import_methods.setdefault(observation[u'import_method', []).append(observation)
+
+        # Next step is to send parts of the observations to it's specific importer.
 
     def parameter_setting(self, parameter_name):
         """
@@ -2113,50 +2124,8 @@ class FieldloggerImport(object):
         """
 
 
-
-class ParsedFieldlogger(object):
-    """
-     This class should parse a fieldlogger file and contain:
-     * the rows
-     * the full name of the parameters including dots. This is the "name" of the parameters.
-     * The subgroups. A tuple of tuples like ( (first_entry_list, second_entry_list), (first_entry_list, second_entry_list, third_entry_list), ...)
-     Each inner tuple is a tuple of lists/tuples with all entries from that specific position from the sublocations (the file might contain sublocations
-     names obsid.project, obsid.subgroup.project and so forth. Each different lenght should have one separate inner tuple containing lists with all entries.
-
-     The data needs to be ordered in some way, maybe as a dict of date_time: {parameter: {obsid: value}}} or what order is the easiest to cut and filter from.
-     Or maybe make each entry as a dict containing all that information directly. Filetering whould then be like
-     filtered = [observation for observation in observations where  period_to < observation.date_time < period_from]
-
-
-     Maybe this class should not exist at all. Observations could maybe be stored in a list of dicts like:
-     observations = [{'sublocation': , 'date_time': , 'parameter': , 'value': }, ... ]
-     The different filters whould the filter this list into:
-     filtered_observations = [{}] (a new list of dicts, but only the filtered)
-    """
-    def __init__(self):
-
-    def parse_fieldlogger_file(self):
-        pass
-
-    def filter_observations(self, sublocation_filters=None, date_time_to_from=None):
-        """
-        Filter self.observations and update self.filtered_observations.
-
-        :param sublocation_filters:
-        :param date_time_to_from:
-        :return:
-        """
-
-
-
-
-    pass
-
-
 class GeneralParameterLayout(object):
     def __init__(self, midv, parameter_name):
-
-
 
         self.settings = {}
         self.settings[u'parameter_name'] = parameter_name
@@ -2187,11 +2156,12 @@ class GeneralParameterLayout(object):
         parameter_fields = methods_dict[chosen_method]()
         horisontal_layout.append(parameter_fields.layout)
 
+
 class CommentsImportFields(object):
     """
     This class should create a layout and populate it with question boxes relevant to comment import, which is probably an empty layout.
     What I want it to do:
-    I want it to be able to recieve comments-data, format it and send it to the regular comments-importer.
+    I want it to be able to receive comments-data, format it and send it to the regular comments-importer.
     The method to format and send to formatter should also get a dict with obsids and their final names.
 
     This is the class that knows how the comments-table looks like.
@@ -2250,6 +2220,7 @@ class WLevelImportFields(object):
         :return:
         """
         pass
+
 
 class WFlowImportFields(object):
     """
@@ -2344,5 +2315,174 @@ class WFlowImportFields(object):
 
 
     def
+
+
+class RowEntry(object):
+    def __init__(self):
+        self.widget = QWidget()
+        self.layout = QHBoxLayout()
+        self.widget.setLayout(self.layout)
+
+
+class ObsidFilter(RowEntry):
+    def __init__(self):
+        super.__init__()
+        self.try_capitalize_checkbox = PyQt4.QtGui.QCheckBox(u"Obsid filter: Try capitalize obsids", self.widget)
+
+    def alter_data(self, observations):
+        existing_obsids = utils.get_all_obsids()
+
+        for observation in observations:
+            observation[u'obsid'] = observation[u'sublocation'].split(u'.')[0]
+
+        obsids = list(sorted(set([(observation[u'obsid'], observation[u'obsid']) for observation in observations])))
+
+        answer = utils.filter_nonexisting_values_and_ask([[u'old_obsid', u'new_obsid'], obsids], u'new_obsid', existing_obsids, self.try_capitalize_checkbox.isChecked())
+        if answer == u'cancel':
+            return answer
+
+        if answer is not None:
+            if isinstance(answer, (list, tuple)):
+                if len(answer) > 1:
+                    obsid_rename_dict = dict([(old_obsid_new_obsid[0], old_obsid_new_obsid[1]) for old_obsid_new_obsid in answer[1:]])
+
+                    #Filter and rename obsids
+                    observations = [observation.update({u'obsid': obsid_rename_dict.get(observation[u'obsid'], None)}
+                                    for observation in observations if obsid_rename_dict.get(observation[u'obsid'], None) is not None]
+
+        if len(observations) == 0:
+            utils.MessagebarAndLog.warning(bar_msg=u'No observations imported, see log message panel',
+                                           log_msg=u'No observations returned from obsid verification.' +
+                                                   u'Were all skipped?')
+            return u'cancel'
+        return observations
+
+
+class StaffQuestion(RowEntry):
+    def __init__(self):
+        super.__init__()
+        self.label = PyQt4.QtGui.Qlabel(self.widget)
+        self.label.setText(u'Staff who did the measurement')
+        self.existing_staff_combobox = PyQt4.QtGui.QComboBox(self.widget)
+        self.existing_staff_combobox.setEditable(True)
+        self.existing_staff_combobox.addItem(u'')
+        existing_staff = sorted(defs.staff_list()[1])
+        self.existing_staff_combobox.addItems(existing_staff)
+
+    def alter_data(self, observations):
+        observations = [observation.update({u'staff': self.existing_staff_combobox.currentText()})
+                        for observation in observations]
+        return observations
+
+
+class DateShiftQuestion(RowEntry):
+    def __init__(self):
+        super.__init__()
+        self.label = PyQt4.QtGui.Qlabel(self.widget)
+        self.label.setText(u'Shift dates, supported format ex. "-1 hours":')
+        self.dateshift_lineedit = PyQt4.QtGui.QLineEdit(self.widget)
+        self.dateshift_lineedit.setText(u'0 hours')
+
+    def alter_data(self, observations):
+        shift_specification = self.dateshift_lineedit.text()
+
+        step_steplength = shift_specification.split[u' ']
+        failed = False
+
+        bar_msg = u'Dateshift specification wrong format, se log message panel'
+        log_msg = (u'Dateshift specification must be made using format ' +
+                    '"step step_length", ex: "0 hours", "-1 hours", "-1 days" etc.\n' +
+                    'Supported step lengths: microseconds, milliseconds, seconds, ' +
+                    'minutes, hours, days, weeks.')
+
+        if len(step_steplength) != 2:
+            utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
+            return u'cancel'
+        try:
+            step = float(step_steplength[0])
+            steplength = step_steplength[1]
+        except:
+            utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
+            return u'cancel'
+
+        test_shift = dateshift('2015-02-01', step, steplength)
+        if test_shift == None:
+            utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
+            return u'cancel'
+
+        observations = [observation.update({u'date_time': dateshift(observation[u'date_time'], step, steplength)})
+                        for observation in observations]
+
+        return observations
+
+
+class DateTimeFilter(RowEntry):
+    def __init__(self):
+        super.__init__()
+        self.label = PyQt4.QtGui.Qlabel(self.widget)
+        self.label.setText(u'Datetime filter: ')
+        self.label = PyQt4.QtGui.Qlabel(self.widget)
+        self.label.setText(u'From:')
+        self.from_datetimeedit = PyQt4.QtGui.QDateTimeEdit()
+        self.label = PyQt4.QtGui.Qlabel(self.widget)
+        self.label.setText(u'To:')
+        self.to_datetimeedit = PyQt4.QtGui.QDateTimeEdit()
+
+    def alter_data(self, observations):
+        _from = self.from_datetimeedit.dateTime().toPyDateTime()
+        _to = self.to_datetimeedit.dateTime().toPyDateTime()
+
+        if _from and _to:
+            observations = [observation for observation in observations if _from < observation[u'date_time'] < _to]
+        elif _from:
+            observations = [observation for observation in observations if _from < observation[u'date_time']]
+        elif _to:
+            observations = [observation for observation in observations if observation[u'date_time'] < _to]
+
+        if not observations:
+            utils.MessagebarAndLog.warning(bar_msg=u'Datetime filter resulted in no remaining observations. No import done')
+            return u'cancel'
+        return observations
+
+
+class SublocationFilter(RowEntry):
+    def __init__(self, sublocation_list):
+        """
+        [set(), set()]
+        :param sublocation_group:
+        """
+        super.__init__()
+        self.label = PyQt4.QtGui.Qlabel(self.widget)
+        self.label.setText(u'Sublocation filter: ')
+        self.filters = []
+        for idx, inner_set in enumerate(sublocation_list):
+            self.filters.append(PyQt4.QtGui.QListWidget())
+            self.filters[-1].addItems(sorted(inner_set))
+            if idx != len(sublocation_list) - 1:
+                dotlabel = PyQt4.QtGui.Qlabel(self.widget)
+                dotlabel.setText(u'.')
+
+    def alter_data(self, observations):
+        remaining_observations = []
+        for observation in observations:
+            sublocation = observation[u'sublocation'].split(u'.')
+            keep_observation = True
+            if len(sublocation) == len(self.filters):
+                for idx, filter in self.filters:
+                    selected_items = filter.selectedItems()
+                    if selected_items:
+                        if sublocation[idx] not in selected_items:
+                            keep_observation = False
+                            break
+            if keep_observation:
+                remaining_observations.append(observation)
+        return remaining_observations
+
+
+
+
+
+
+
 
 
