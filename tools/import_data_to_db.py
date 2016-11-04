@@ -20,6 +20,7 @@
  ***************************************************************************/
 """
 import io
+import os
 import locale
 import qgis.utils
 import copy
@@ -30,11 +31,15 @@ from qgis.core import *
 
 import PyQt4.QtCore
 import PyQt4.QtGui
+import PyQt4
 
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 
 from date_utils import find_date_format, datestring_to_date, dateshift
+
+
+import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
 
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
@@ -1951,36 +1956,44 @@ class wlvlloggimportclass():
         else:
             return 0
 
-class FieldloggerImport(object):
-    if __name__ == '__main__':
-        def __init__(self):
 
-            self.observations = self.select_file_and_parse_rows()
-            if self.observations == u'cancel':
-                self.status = True
-                return u'cancel'
+class FieldloggerImport(object, PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
+    if __name__ == '__main__':
+        def __init__(self, parent, settingsdict={}, ):
+            self.status = False
+            self.iface = parent
+            self.settingsdict = settingsdict
+            PyQt4.QtGui.QDialog.__init__(self, parent)
+            self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+            self.setupUi(self)  # Required by Qt4 to initialize the UI
+            self.stored_presets = OrderedDict()
+
+            #self.observations = self.select_file_and_parse_rows()
+            #if self.observations == u'cancel':
+            #    self.status = True
+            #    return u'cancel'
 
             #Filters and general settings
-            self.settings_with_own_loop = []
-            self.settings = []
-            self.settings.append(StaffQuestion())
-            self.settings.append(DateShiftQuestion())
-            self.add_line()
-            self.settings_with_own_loop.append(ObsidFilter())
-            self.settings.append(DateTimeFilter()) #This includes a checkbox for "include only latest
+            #self.settings_with_own_loop = []
+            #self.settings = []
+            #self.settings.append(StaffQuestion())
+            #self.settings.append(DateShiftQuestion())
+            #self.add_line()
+            #self.settings_with_own_loop.append(ObsidFilter())
+            #self.settings.append(DateTimeFilter()) #This includes a checkbox for "include only latest
 
-            sublocation_groups = self.sublocation_to_groups([observation[u'sublocation']
-                                                             for observation in observations], delimiter=u'.')
-            for sublocation_group in sublocation_groups:
-                self.settings.append(SublocationFilter(sublocation_group))
-            for setting in self.settings:
-                self.add_row(self.settings.layout)
+            #sublocation_groups = self.sublocation_to_groups([observation[u'sublocation']
+            #                                                 for observation in observations], delimiter=u'.')
+            #for sublocation_group in sublocation_groups:
+            #    self.settings.append(SublocationFilter(sublocation_group))
+            #for setting in self.settings:
+            #    self.add_row(self.settings.layout)
 
-            self.add_line()
+            #self.add_line()
 
-            for parameter in
+            #self.parameter_names = [observation[u'parameter_name'] for observation in self.observations]
 
-            self.add_row(self.parameters_layout())
+            #self.add_row(self.parameters_layout())
 
 
 
@@ -1994,14 +2007,15 @@ class FieldloggerImport(object):
 
             #Maybe it's best to create an object for each one and store the values in the fields inside the objects. The import method field would then be
             #connected to a method inside the object itself that would alter the layout of itself by adding the neccessary fields.
-            parameter_names = sorted(set([observation[u'parameter'] for observation in self.observations]))
+            #parameter_names = sorted(set([observation[u'parameter'] for observation in self.observations]))
 
             #Here a stored parameter setup connected to each parameter_name is prefilled.
 
-            for parameter_name in parameter_names:
-                self.parameters_layout.append(self.parameter_setting(parameter_name))
+            #for parameter_name in parameter_names:
+            #    self.parameters_layout.append(self.parameter_setting(parameter_name))
 
-
+            #This should be an
+            #self.parameter_imports = OrderedDict()
 
             #Connect button to start import.
             #User should press start import which will filter the data, check obsids, split the import into all import types (w_levels, w_flow, comment, w_qual_field)
@@ -2064,16 +2078,15 @@ class FieldloggerImport(object):
             observation[u'parametername'] = cols[4]
         return observations
 
-    def add_row(self, qt_layout):
+    def add_row(self, a_widget):
         """
-        :param: qt_layout: A layout containg buttons lists or whatever
-        This one should append qt_layout to self.main_vertical_layout
+        :param: a_widget:
         """
-        pass
+        self.main_vertical_layout.addWidget(a_widget)
 
     def add_line(self):
         """ just adds a line"""
-        pass
+        self.add_row(PyQt4.QtCore.QLine())
 
     @staticmethod
     def sublocation_to_groups(sublocations, delimiter=u'.'):
@@ -2094,8 +2107,6 @@ class FieldloggerImport(object):
 
     def start_import(self, observations):
         """
-        The nice thing about storing the data as a sql table like Josef done is that the filters are easy to apply.
-        The bad thing is that it's more work to replace obsids and parameter names.
 
         :param date_time_to_from:
         :param sublocation_filter_types:
@@ -2124,243 +2135,82 @@ class FieldloggerImport(object):
 
         ordered_under_import_methods = {}
         for observation in observations:
-            ordered_under_import_methods.setdefault(observation[u'import_method', []).append(observation)
+            import_method = observation.get(u'import_method', None)
+            if import_method is not None:
+                ordered_under_import_methods.setdefault(import_method, []).append(observation)
 
         # Next step is to send parts of the observations to it's specific importer.
 
-    def parameter_setting(self, parameter_name):
-        """
-        Will create a layout with the parameter_name as label and a list of import methods.
-        The dropdownlist should be connected so that when a method is chosen, the layout is updated with specific choices for the chosen method.
-        :return:
-        """
-
-    def get_stored_definition(self):
+    def get_stored_presets(self, settingsdict, stored_presets):
         #Populate using stored settings:
         #The stored settings should probably be stored like this:
-        stored = parameter_name:parametername|import_method:stored_method| ... the rest should depend on the import_method, like:
-        #parameter_name:Aveflow.m3|import_method:w_flow|parameter:Aveflow|unit:m3
+        #stored = parameter_name:parametername|import_method:stored_method| ... the rest should depend on the import_method, like:
+        #Aveflow.m3|import_method:w_flow|parameter:Aveflow|unit:m3/
+        #
         # Presetting should then be done like:
-        presets = stored.split(u'|')
-        parameter_layout = ParameterLayout(presets[0]) # This will
-        for preset in presets[1]:
-            #The import method will be activated first and create
-            method, value = preset.split(u':')
-            try:
-                getattr(parameter_layout, method)(value)
-            except:
-                pass
+        parameter_presets_string = utils.returnunicode(settingsdict[u'fieldlogger_import_parameter_presets'])
+        parameter_presets = parameter_presets_string.split(u'/')
+
+        for parameter_preset in parameter_presets:
+            presets = parameter_preset.split(u'|')
+            parametername = presets[0]
+            stored_presets[parametername] = OrderedDict()
+
+            for attrs in presets[1:]:
+                attr, value = attrs.split(u':')
+                stored_presets[parametername][attr] = value
+
+    def set_parameters_using_stored_presets(self, stored_presets, parameter_imports):
+        stored_presets = copy.deepcopy(stored_presets)
+        for parameter_import in parameter_imports:
+            preset = stored_presets.get(parameter_import.parameter_name, None)
+            if preset is None:
+                continue
+
+            parameter_import.import_method = preset[u'import_method']
+            del preset[u'import_method']
+            parameter_widget = parameter_import.parameter_widget
+            if parameter_widget is None:
+                continue
+
+            for attr, val in preset.iteritems():
+                try:
+                    setattr(parameter_widget, attr, val)
+                except:
+                    pass
+
+    def update_stored_presets(self, stored_settings, parameter_imports):
+        for parameter_import in parameter_imports:
+            if parameter_import.import_method is None:
+                continue
+
+            attrdict = stored_settings.get(parameter_import.parameter_name, OrderedDict())
+            attrdict[u'import_method'] = parameter_import.import_method
+
+            parameter_widget = parameter_import.parameter_widget
+            if parameter_widget is None:
+                continue
+
+            for attr, value in parameter_widget.get_settings().iteritems():
+                attrdict[attr] = value
+
+    def save_stored_presets(self, settingsdict, stored_settings):
+        stored_settings = utils.returnunicode(stored_settings, keep_containers=True)
+        presets_list = []
+        for parameter_name, attrs in stored_settings.iteritems():
+            paramlist = [parameter_name]
+            paramlist.extend([u':'.join([attr, value]) for attr, value in attrs.iteritems()])
+            presets_list.append(u'|'.join(paramlist))
+
+        preset_string = u'/'.join(presets_list)
+        settingsdict[u'fieldlogger_import_parameter_presets'] = preset_string
 
 
 
 
-class GeneralParameterLayout(object):
-    def __init__(self, midv, parameter_name):
-
-        self.settings = {}
-        self.settings[u'parameter_name'] = parameter_name
-
-        self.horisontal_layout = QHBoxLayout()
-
-        self.parameter_name_label = QtLabel()
-        self.parameter_name_label.set(parameter_name)
-
-        self.horisontal_layout.addWidget(self.parameter_name_label)
-
-        self.import_method_box = QComboBox()
-
-        self.import_methods = {u'comments': CommentsImportFields,
-                               u'w_levels': WLevelsImportFields,
-                               u'w_qual_field': WQualFieldImportFields,
-                               u'w_flow': WFlowImportFields}
-
-        #How to structure the parameterlayout. It should be easy to populate the layout and easy to extract the values from all fields.
-        #It should also be easy to update if the tables are changed.
-
-        self.import_method_box.addItems(sorted(self.import_methods.items()))
-
-        midv.connect(self.import_method_box, 'CHANGED', lambda : self.method_chosen(self.horisontal_layout, self.import_method_box, self.import_methods))
-
-    def method_chosen(self, horisontal_layout,  method_box, methods_dict):
-        chosen_method = method_box.currentText()
-        parameter_fields = methods_dict[chosen_method]()
-        horisontal_layout.append(parameter_fields.layout)
 
 
-class CommentsImportFields(object):
-    """
-    This class should create a layout and populate it with question boxes relevant to comment import, which is probably an empty layout.
-    What I want it to do:
-    I want it to be able to receive comments-data, format it and send it to the regular comments-importer.
-    The method to format and send to formatter should also get a dict with obsids and their final names.
 
-    This is the class that knows how the comments-table looks like.
-    """
-    def __init__(self):
-        """
-        A HBoxlayout should be created as self.layout.
-        It shuold also create an empty list for future data as self.data
-        Connecting the dropdown lists as events is done here (or in submethods).
-        """
-        pass
-
-    def send_data_to_formatter(self):
-        """
-        This method should call format_data and then send it to the formatter.
-        :return:
-        """
-        pass
-
-    def format_data(self):
-        """
-        This method should format self.data into the columns contained in the table.
-        :return:
-        """
-        pass
-
-
-class WLevelImportFields(object):
-    """
-    This class should create a layout and populate it with question boxes relevant to w_levels import, which is probably an empty layout.
-    What I want it to do:
-    I want it to be able to recieve w_levels-data, format it and send it to the regular comments-importer.
-    The method to format and send to formatter should also get a dict with obsids and their final names.
-
-    This is the class that knows how the comments-table looks like.
-    """
-
-    def __init__(self):
-        """
-        A HBoxlayout should be created as self.layout.
-        It shuold also create an empty list for future data as self.data
-        Connecting the dropdown lists as events is done here (or in submethods).
-        """
-        pass
-
-    def send_data_to_formatter(self):
-        """
-        This method should call format_data and then send it to the formatter.
-        :return:
-        """
-        pass
-
-    def format_data(self):
-        """
-        This method should format self.data into the columns contained in the table.
-        :return:
-        """
-        pass
-
-
-class WFlowImportFields(object):
-    """
-    This class should create a layout and populate it with question boxes relevant to w_flow import which is probably "flowtype" and "unit" dropdown lists.
-    """
-
-
-    def __init__(self):
-        """
-        A HBoxlayout should be created as self.layout.
-        It shuold also create an empty list for future data as self.data
-        Connecting the dropdown lists as events is done here (or in submethods).
-        """
-        self.__flowtype = PyQt4.QtGui.QComboBox(self.widget)
-        self.__flowtype.setEditable(True)
-        self.__flowtype.addItem = u''
-        self._flowtypes_units = defs.w_flow_flowtypes_units()
-        self.__flowtype.addItems(self._flowtypes_units.keys())
-        self.__unit = PyQt4.QtGui.QComboBox(self.widget)
-        self.__unit.setEditable(True)
-        self.connect(self.__flowtype, PyQt4.QtCore.SIGNAL("currentIndexChanged()"),
-                     lambda : self.fill_unit_list(self.__unit, self.flowtype, self._flowtypes_units))
-
-    def alter_data(self, observation):
-        observation = copy.deepcopy(observation)
-        observation[u'unit'] = self.unit
-        observation[u'flowtype'] = self.flowtype
-        return observation
-
-    @property
-    def flowtype(self):
-        return self.__flowtype.currentText()
-
-    @flowtype.setter
-    def flowtype(self, value):
-        self.__flowtype.setEditText(value)
-
-    @property
-    def unit(self):
-        return self.__unit.currentText()
-
-    @unit.setter
-    def unit(self, value):
-        if isinstance(value, (list, tuple)):
-            self.__unit.addItems
-        self.__unit.setEditText(value)
-
-    def fill_unit_list(self, unit_var, flowtype_var, flowtypes_units):
-        units = flowtypes_units.get(flowtype_var, None)
-        if units is None:
-            units = list(sorted(set([unit for units_list in flowtypes_units.values() for unit in units_list])))
-        unit_var.addItem(u'')
-        unit_var.addItems(utils.returnunicode(units))
-
-
-class WQualFieldImportFields(object):
-    """
-    This class should create a layout and populate it with question boxes relevant to w_qual_fields import which is probably "parameter", "unit" dropdown lists.
-    And a depth dropdown list which is populated by the parameternames. The purpose is that the user should select which parametername to use as the depth variable
-
-    """
-
-
-    def __init__(self):
-        """
-        A HBoxlayout should be created as self.layout.
-        It shuold also create an empty list for future data as self.data
-        Connecting the dropdown lists as events is done here (or in submethods).
-        """
-        self.__parameter = PyQt4.QtGui.QComboBox(self.widget)
-        self.__parameter.setEditable(True)
-        self.__parameter.addItem = u''
-        #TODO 20161029 THIS IS WHERE I AM. Fix the next line so that it works correctly.
-        self._parameters_units = defs.w_qual_field_parameter_units()
-        self.__parameter.addItems(self._flowtypes_units.keys())
-        self.__unit = PyQt4.QtGui.QComboBox(self.widget)
-        self.__unit.setEditable(True)
-        self.connect(self.__parameter, PyQt4.QtCore.SIGNAL("currentIndexChanged()"),
-                     lambda : self.fill_unit_list(self.__unit, self.flowtype, self._flowtypes_units))
-
-    def alter_data(self, observation):
-        observation = copy.deepcopy(observation)
-        observation[u'unit'] = self.unit
-        observation[u'flowtype'] = self.flowtype
-        return observation
-
-    @property
-    def flowtype(self):
-        return self.__parameter.currentText()
-
-    @flowtype.setter
-    def flowtype(self, value):
-        self.__parameter.setEditText(value)
-
-    @property
-    def unit(self):
-        return self.__unit.currentText()
-
-    @unit.setter
-    def unit(self, value):
-        if isinstance(value, (list, tuple)):
-            self.__unit.addItems
-        self.__unit.setEditText(value)
-
-    def fill_unit_list(self, unit_var, flowtype_var, flowtypes_units):
-        units = flowtypes_units.get(flowtype_var, None)
-        if units is None:
-            units = list(sorted(set([unit for units_list in flowtypes_units.values() for unit in units_list])))
-        unit_var.addItem(u'')
-        unit_var.addItems(utils.returnunicode(units))
 
 
 
@@ -2394,7 +2244,7 @@ class ObsidFilter(RowEntry):
                     obsid_rename_dict = dict([(old_obsid_new_obsid[0], old_obsid_new_obsid[1]) for old_obsid_new_obsid in answer[1:]])
 
                     #Filter and rename obsids
-                    observations = [observation.update({u'obsid': obsid_rename_dict.get(observation[u'obsid'], None)}
+                    observations = [observation.update({u'obsid': obsid_rename_dict.get(observation[u'obsid'], None)})
                                     for observation in observations if obsid_rename_dict.get(observation[u'obsid'], None) is not None]
 
         if len(observations) == 0:
@@ -2476,7 +2326,7 @@ class DateTimeFilter(RowEntry):
 
     def alter_datas(self, observations):
 
-        observations = [observation for observation in observations if self.alter_data(observation) is not None
+        observations = [observation for observation in observations if self.alter_data(observation) is not None]
 
         if not observations:
             utils.MessagebarAndLog.warning(bar_msg=u'Datetime filter resulted in no remaining observations. No import done')
@@ -2487,7 +2337,7 @@ class DateTimeFilter(RowEntry):
         observation = copy.deepcopy(observation)
         _from = self.from_datetimeedit.dateTime().toPyDateTime()
         _to = self.to_datetimeedit.dateTime().toPyDateTime()
-        if not _from and if not _to:
+        if not _from and not _to:
             return observation
         if _from and _to:
             if _from < observation[u'date_time'] < _to:
@@ -2536,6 +2386,253 @@ class SublocationFilter(RowEntry):
                     if sublocation[idx] not in selected_items:
                         return None
         return observation
+
+
+class ImportMethodChoser(RowEntry):
+    def __init__(self, parameter_name, parameter_names):
+        super.__init__()
+        self.parameter_widget = None
+        self.parameter_name = parameter_name
+        self.parameter_names = parameter_names
+        self.label = PyQt4.QtGui.Qlabel(self.widget)
+        self.label.setText(self.parameter_name)
+        self.__import_method = PyQt4.QtGui.QComboBox(self.widget)
+
+        self.__import_method_classes = OrderedDict(((u'', None),
+                                                  (u'comments', CommentsImportFields),
+                                                  (u'w_level', WLevelImportFields),
+                                                  (u'w_flow', WFlowImportFields),
+                                                  (u'w_qual_field', WQualFieldImportFields)))
+
+        self.__import_method.addItems(self.__import_method_classes.keys())
+        self.connect(self.__import_method, PyQt4.QtCore.SIGNAL("currentIndexChanged()"),
+                     lambda: self.choose_method(self.__import_method_classes))
+
+    @property
+    def import_method(self):
+        return self.__import_method.currentText()
+
+    @import_method.setter
+    def import_method(self, value):
+        self.__import_method.setEditText(utils.returnunicode(value))
+
+    def choose_method(self, import_methods_classes):
+        import_method_name = self.import_method
+        if import_method_name in import_methods_classes:
+            parameter_import_fields_class = import_methods_classes[import_method_name]
+            parameter_import_fields = parameter_import_fields_class(self)
+
+            try:
+                self.layout.removeWidget(self.parameter_widget)
+            except:
+                pass
+
+            self.parameter_widget = parameter_import_fields.widget
+            self.layout.addWidget(self.parameter_widget)
+
+
+class CommentsImportFields(object):
+    """
+    This class should create a layout and populate it with question boxes relevant to comment import, which is probably an empty layout.
+    What I want it to do:
+    I want it to be able to receive comments-data, format it and send it to the regular comments-importer.
+    The method to format and send to formatter should also get a dict with obsids and their final names.
+
+    This is the class that knows how the comments-table looks like.
+    """
+    def __init__(self):
+        """
+        A HBoxlayout should be created as self.layout.
+        It shuold also create an empty list for future data as self.data
+        Connecting the dropdown lists as events is done here (or in submethods).
+        """
+        pass
+
+    def send_data_to_formatter(self):
+        """
+        This method should call format_data and then send it to the formatter.
+        :return:
+        """
+        pass
+
+    def format_data(self):
+        """
+        This method should format self.data into the columns contained in the table.
+        :return:
+        """
+        pass
+
+    def get_settings(self):
+        pass
+
+
+class WLevelImportFields(object):
+    """
+    This class should create a layout and populate it with question boxes relevant to w_levels import, which is probably an empty layout.
+    What I want it to do:
+    I want it to be able to recieve w_levels-data, format it and send it to the regular comments-importer.
+    The method to format and send to formatter should also get a dict with obsids and their final names.
+
+    This is the class that knows how the comments-table looks like.
+    """
+
+    def __init__(self):
+        """
+        A HBoxlayout should be created as self.layout.
+        It shuold also create an empty list for future data as self.data
+        Connecting the dropdown lists as events is done here (or in submethods).
+        """
+        pass
+
+    def send_data_to_formatter(self):
+        """
+        This method should call format_data and then send it to the formatter.
+        :return:
+        """
+        pass
+
+    def format_data(self):
+        """
+        This method should format self.data into the columns contained in the table.
+        :return:
+        """
+        pass
+
+    def get_settings(self):
+        pass
+
+
+class WFlowImportFields(RowEntry):
+    """
+    This class should create a layout and populate it with question boxes relevant to w_flow import which is probably "flowtype" and "unit" dropdown lists.
+    """
+
+
+    def __init__(self, import_method_chooser):
+        """
+        A HBoxlayout should be created as self.layout.
+        It shuold also create an empty list for future data as self.data
+        Connecting the dropdown lists as events is done here (or in submethods).
+        """
+        super.__init__()
+        self._import_method_chooser = import_method_chooser
+        self.__flowtype = PyQt4.QtGui.QComboBox(self.widget)
+        self.__flowtype.setEditable(True)
+        self.__flowtype.addItem = u''
+        self._flowtypes_units = defs.w_flow_flowtypes_units()
+        self.__flowtype.addItems(self._flowtypes_units.keys())
+        self.__unit = PyQt4.QtGui.QComboBox(self.widget)
+        self.__unit.setEditable(True)
+        self.connect(self.__flowtype, PyQt4.QtCore.SIGNAL("currentIndexChanged()"),
+                     lambda : self.fill_unit_list(self.__unit, self.flowtype, self._flowtypes_units))
+
+    def alter_data(self, observation):
+        observation = copy.deepcopy(observation)
+        observation[u'unit'] = self.unit
+        observation[u'flowtype'] = self.flowtype
+        return observation
+
+    @property
+    def flowtype(self):
+        return self.__flowtype.currentText()
+
+    @flowtype.setter
+    def flowtype(self, value):
+        self.__flowtype.setEditText(value)
+
+    @property
+    def unit(self):
+        return self.__unit.currentText()
+
+    @unit.setter
+    def unit(self, value):
+        self.__unit.setEditText(utils.returnunicode(value))
+
+    def fill_unit_list(self, unit_var, flowtype_var, flowtypes_units):
+        units = flowtypes_units.get(flowtype_var, None)
+        if units is None:
+            units = list(sorted(set([unit for units_list in flowtypes_units.values() for unit in units_list])))
+        unit_var.addItem(u'')
+        unit_var.addItems(utils.returnunicode(units))
+
+    def get_settings(self):
+        return OrderedDict((u'flowtype', self.flowtype),
+                           (u'unit', self.unit))
+
+
+class WQualFieldImportFields(RowEntry):
+    """
+    This class should create a layout and populate it with question boxes relevant to w_qual_fields import which is probably "parameter", "unit" dropdown lists.
+    And a depth dropdown list which is populated by the parameternames. The purpose is that the user should select which parametername to use as the depth variable
+
+    """
+
+    def __init__(self, import_method_chooser):
+        """
+        A HBoxlayout should be created as self.layout.
+        It shuold also create an empty list for future data as self.data
+        Connecting the dropdown lists as events is done here (or in submethods).
+        """
+        super.__init__()
+        self._import_method_chooser = import_method_chooser
+        self.__parameter = PyQt4.QtGui.QComboBox(self.widget)
+        self.__parameter.setEditable(True)
+        self.__parameter.addItem = u''
+        #TODO 20161029 THIS IS WHERE I AM. Fix the next line so that it works correctly.
+        self._parameters_units = defs.w_qual_field_parameter_units()
+        self.__parameter.addItems(self._parameters_units.keys())
+        self.__unit = PyQt4.QtGui.QComboBox(self.widget)
+        self.__unit.setEditable(True)
+        self.__depth = PyQt4.QtGui.QComboBox(self.widget)
+        self.__depth.setEditable(True)
+
+        for widget in [self.__parameter, self.__unit, self.__depth]:
+            self.layout.addWidget(widget)
+
+        self.connect(self.__parameter, PyQt4.QtCore.SIGNAL("currentIndexChanged()"),
+                     lambda : self.fill_unit_list(self.__unit, self.parameter, self._parameters_units))
+
+    def alter_data(self, observation):
+        observation = copy.deepcopy(observation)
+        observation[u'unit'] = self.unit
+        observation[u'parameter'] = self.parameter
+        return observation
+
+    @property
+    def flowtype(self):
+        return self.__parameter.currentText()
+
+    @flowtype.setter
+    def flowtype(self, value):
+        self.__parameter.setEditText(value)
+
+    @property
+    def unit(self):
+        return self.__unit.currentText()
+
+    @unit.setter
+    def unit(self, value):
+        self.__unit.setEditText(utils.returnunicode(value))
+
+    @property
+    def depth(self):
+        return self.__depth.currentText()
+
+    @depth.setter
+    def depth(self, value):
+        self.__depth.setEditText(utils.returnunicode(value))
+
+    def fill_unit_list(self, unit_var, parameter_var, parameters_units):
+        units = parameters_units.get(parameter_var, None)
+        if units is None:
+            units = list(sorted(set([unit for units_list in parameters_units.values() for unit in units_list])))
+        unit_var.addItem(u'')
+        unit_var.addItems(utils.returnunicode(units))
+
+    def get_settings(self):
+        return OrderedDict((u'parameter', self.parameter),
+                           (u'unit', self.unit),
+                           (u'depth', self.depth))
 
 
 

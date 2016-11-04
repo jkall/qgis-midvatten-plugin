@@ -627,3 +627,14 @@ def w_flow_flowtypes_units():
         return {}
 
     return utils.returnunicode(result_dict, True)
+
+def w_qual_field_parameter_units():
+    sql = 'select distinct parameter, unit from w_qual_field'
+    connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
+
+    if not connection_ok:
+        textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
+        utils.MessagebarAndLog.critical(bar_msg=u"Error, sql failed, see log message panel", log_msg=textstring)
+        return {}
+
+    return utils.returnunicode(result_dict, True)
