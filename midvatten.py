@@ -800,7 +800,7 @@ class midvatten:
                 sanity = utils.askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
                 if sanity.result == 1:
                     from import_data_to_db import FieldloggerImport
-                    importinstance = FieldloggerImport()
+                    importinstance = FieldloggerImport(self.iface.mainWindow(), self.ms)
                     if not importinstance.status == 'True' and not importinstance.status:
                         self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
                     else:

@@ -1957,69 +1957,85 @@ class wlvlloggimportclass():
             return 0
 
 
-class FieldloggerImport(object, PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
-    if __name__ == '__main__':
-        def __init__(self, parent, settingsdict={}, ):
-            self.status = False
-            self.iface = parent
-            self.settingsdict = settingsdict
-            PyQt4.QtGui.QDialog.__init__(self, parent)
-            self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
-            self.setupUi(self)  # Required by Qt4 to initialize the UI
-            self.stored_presets = OrderedDict()
-
-            #self.observations = self.select_file_and_parse_rows()
-            #if self.observations == u'cancel':
-            #    self.status = True
-            #    return u'cancel'
-
-            #Filters and general settings
-            #self.settings_with_own_loop = []
-            #self.settings = []
-            #self.settings.append(StaffQuestion())
-            #self.settings.append(DateShiftQuestion())
-            #self.add_line()
-            #self.settings_with_own_loop.append(ObsidFilter())
-            #self.settings.append(DateTimeFilter()) #This includes a checkbox for "include only latest
-
-            #sublocation_groups = self.sublocation_to_groups([observation[u'sublocation']
-            #                                                 for observation in observations], delimiter=u'.')
-            #for sublocation_group in sublocation_groups:
-            #    self.settings.append(SublocationFilter(sublocation_group))
-            #for setting in self.settings:
-            #    self.add_row(self.settings.layout)
-
-            #self.add_line()
-
-            #self.parameter_names = [observation[u'parameter_name'] for observation in self.observations]
-
-            #self.add_row(self.parameters_layout())
+class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
+    def __init__(self, parent, settingsdict={}):
+        self.status = False
+        self.iface = parent
+        self.settingsdict = settingsdict
+        PyQt4.QtGui.QDialog.__init__(self, parent)
+        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+        self.setupUi(self)  # Required by Qt4 to initialize the UI
 
 
+        self.status = True
+        utils.MessagebarAndLog.info(bar_msg=u"Gui initialised")
+        self.stored_presets = OrderedDict()
+
+        #self.observations = self.select_file_and_parse_rows()
+        #if self.observations == u'cancel':
+        #    self.status = True
+        #    return u'cancel'
+
+        self.observations = [{u'sublocation': u'a.1', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123},
+                             {u'sublocation': u'b.c.2', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123},
+                             {u'sublocation': u'b.c.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123},
+                             {u'sublocation': u'b.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123}]
 
 
-            #The parameter
+        #Filters and general settings
+        self.settings_with_own_loop = []
+        self.settings = []
+        self.settings.append(StaffQuestion())
+        self.settings.append(DateShiftQuestion())
+        self.settings.append(DateTimeFilter()) #This includes a checkbox for "include only latest
+        self.settings_with_own_loop.append(ObsidFilter())
+
+        sublocation_groups = self.sublocation_to_groups([observation[u'sublocation'] for observation in self.observations], delimiter=u'.')
+        for _length, sublocation_group in sorted(sublocation_groups.iteritems()):
+            self.settings.append(SublocationFilter(sublocation_group))
+
+        for setting in self.settings:
+            self.add_row(setting.widget)
+
+        self.add_line()
+
+        for setting in self.settings_with_own_loop:
+            self.add_row(setting.widget)
+
+        self.add_line()
+
+        #self.add_line()
+
+        #self.parameter_names = [observation[u'parameter_name'] for observation in self.observations]
+
+        #self.add_row(self.parameters_layout())
 
 
-            #Parameters
-            #The parameters should be stored so that they are easy to access when the import is started.
-            #Should the settings be stored in qt-variables, i.e. the fields themselves, or should it be local variables in dicts for example.
 
-            #Maybe it's best to create an object for each one and store the values in the fields inside the objects. The import method field would then be
-            #connected to a method inside the object itself that would alter the layout of itself by adding the neccessary fields.
-            #parameter_names = sorted(set([observation[u'parameter'] for observation in self.observations]))
 
-            #Here a stored parameter setup connected to each parameter_name is prefilled.
+        #The parameter
 
-            #for parameter_name in parameter_names:
-            #    self.parameters_layout.append(self.parameter_setting(parameter_name))
 
-            #This should be an
-            #self.parameter_imports = OrderedDict()
+        #Parameters
+        #The parameters should be stored so that they are easy to access when the import is started.
+        #Should the settings be stored in qt-variables, i.e. the fields themselves, or should it be local variables in dicts for example.
 
-            #Connect button to start import.
-            #User should press start import which will filter the data, check obsids, split the import into all import types (w_levels, w_flow, comment, w_qual_field)
-            # Instrument id should be checked for in the needed imports.
+        #Maybe it's best to create an object for each one and store the values in the fields inside the objects. The import method field would then be
+        #connected to a method inside the object itself that would alter the layout of itself by adding the neccessary fields.
+        #parameter_names = sorted(set([observation[u'parameter'] for observation in self.observations]))
+
+        #Here a stored parameter setup connected to each parameter_name is prefilled.
+
+        #for parameter_name in parameter_names:
+        #    self.parameters_layout.append(self.parameter_setting(parameter_name))
+
+        #This should be an
+        #self.parameter_imports = OrderedDict()
+
+        #Connect button to start import.
+        #User should press start import which will filter the data, check obsids, split the import into all import types (w_levels, w_flow, comment, w_qual_field)
+        # Instrument id should be checked for in the needed imports.
+        self.show()
 
     def select_file_and_parse_rows(self):
         filename = self.select_files(only_one_file=True, should_ask_for_charset=True)
@@ -2086,7 +2102,16 @@ class FieldloggerImport(object, PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_d
 
     def add_line(self):
         """ just adds a line"""
-        self.add_row(PyQt4.QtCore.QLine())
+        #horizontalLineWidget = PyQt4.QtGui.QWidget()
+        #horizontalLineWidget.setFixedHeight(2)
+        #horizontalLineWidget.setSizePolicy(PyQt4.QtGui.QSizePolicy.Expanding, PyQt4.QtGui.QSizePolicy.Fixed)
+        #horizontalLineWidget.setStyleSheet(PyQt4.QtCore.QString("background-color: #c0c0c0;"));
+        line = PyQt4.QtGui.QFrame()
+        #line.setObjectName(QString::fromUtf8("line"));
+        line.setGeometry(PyQt4.QtCore.QRect(320, 150, 118, 3))
+        line.setFrameShape(PyQt4.QtGui.QFrame.HLine);
+        line.setFrameShadow(PyQt4.QtGui.QFrame.Sunken);
+        self.add_row(line)
 
     @staticmethod
     def sublocation_to_groups(sublocations, delimiter=u'.'):
@@ -2216,15 +2241,17 @@ class FieldloggerImport(object, PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_d
 
 class RowEntry(object):
     def __init__(self):
-        self.widget = QWidget()
-        self.layout = QHBoxLayout()
+        self.widget = PyQt4.QtGui.QWidget()
+        self.layout = PyQt4.QtGui.QHBoxLayout()
         self.widget.setLayout(self.layout)
 
 
 class ObsidFilter(RowEntry):
     def __init__(self):
-        super.__init__()
-        self.try_capitalize_checkbox = PyQt4.QtGui.QCheckBox(u"Obsid filter: Try capitalize obsids", self.widget)
+        super(ObsidFilter, self).__init__()
+        self.try_capitalize_checkbox = PyQt4.QtGui.QCheckBox(u"Obsid filter: Try capitalize obsids")
+        self.layout.addWidget(self.try_capitalize_checkbox)
+        self.layout.addStretch()
 
     def alter_data(self, observations):
         existing_obsids = utils.get_all_obsids()
@@ -2257,14 +2284,17 @@ class ObsidFilter(RowEntry):
 
 class StaffQuestion(RowEntry):
     def __init__(self):
-        super.__init__()
-        self.label = PyQt4.QtGui.Qlabel(self.widget)
-        self.label.setText(u'Staff who did the measurement')
+        super(StaffQuestion, self).__init__()
+        self.label = PyQt4.QtGui.QLabel(u'Staff who did the measurement')
         self.existing_staff_combobox = PyQt4.QtGui.QComboBox(self.widget)
         self.existing_staff_combobox.setEditable(True)
         self.existing_staff_combobox.addItem(u'')
         existing_staff = sorted(defs.staff_list()[1])
         self.existing_staff_combobox.addItems(existing_staff)
+
+        for widget in [self.label, self.existing_staff_combobox]:
+            self.layout.addWidget(widget)
+        self.layout.addStretch()
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
@@ -2274,11 +2304,14 @@ class StaffQuestion(RowEntry):
 
 class DateShiftQuestion(RowEntry):
     def __init__(self):
-        super.__init__()
-        self.label = PyQt4.QtGui.Qlabel(self.widget)
-        self.label.setText(u'Shift dates, supported format ex. "-1 hours":')
-        self.dateshift_lineedit = PyQt4.QtGui.QLineEdit(self.widget)
+        super(DateShiftQuestion, self).__init__()
+        self.label = PyQt4.QtGui.QLabel(u'Shift dates, supported format ex. "-1 hours":')
+        self.dateshift_lineedit = PyQt4.QtGui.QLineEdit()
         self.dateshift_lineedit.setText(u'0 hours')
+
+        for widget in [self.label, self.dateshift_lineedit]:
+            self.layout.addWidget(widget)
+        self.layout.addStretch()
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
@@ -2314,15 +2347,15 @@ class DateShiftQuestion(RowEntry):
 
 class DateTimeFilter(RowEntry):
     def __init__(self):
-        super.__init__()
-        self.label = PyQt4.QtGui.Qlabel(self.widget)
-        self.label.setText(u'Datetime filter: ')
-        self.label = PyQt4.QtGui.Qlabel(self.widget)
-        self.label.setText(u'From:')
+        super(DateTimeFilter, self).__init__()
+        self.label = PyQt4.QtGui.QLabel(u'Import data from: ')
         self.from_datetimeedit = PyQt4.QtGui.QDateTimeEdit()
-        self.label = PyQt4.QtGui.Qlabel(self.widget)
-        self.label.setText(u'To:')
+        self.label_to = PyQt4.QtGui.QLabel(u'to: ')
         self.to_datetimeedit = PyQt4.QtGui.QDateTimeEdit()
+
+        for widget in [self.label, self.from_datetimeedit, self.label_to, self.to_datetimeedit]:
+            self.layout.addWidget(widget)
+        self.layout.addStretch()
 
     def alter_datas(self, observations):
 
@@ -2354,19 +2387,23 @@ class DateTimeFilter(RowEntry):
 class SublocationFilter(RowEntry):
     def __init__(self, sublocation_list):
         """
-        [set(), set()]
+        a list like [set(distinct values), set(distinct values), set(), ...]
         :param sublocation_group:
         """
-        super.__init__()
-        self.label = PyQt4.QtGui.Qlabel(self.widget)
+        super(SublocationFilter, self).__init__()
+        self.label = PyQt4.QtGui.QLabel()
         self.label.setText(u'Sublocation filter: ')
+        self.layout.addWidget(self.label)
         self.filters = []
         for idx, inner_set in enumerate(sublocation_list):
             self.filters.append(PyQt4.QtGui.QListWidget())
+            self.filters[-1].setSelectionMode(PyQt4.QtGui.QAbstractItemView.MultiSelection)
             self.filters[-1].addItems(sorted(inner_set))
+            self.layout.addWidget(self.filters[-1])
             if idx != len(sublocation_list) - 1:
-                dotlabel = PyQt4.QtGui.Qlabel(self.widget)
-                dotlabel.setText(u'.')
+                dotlabel = PyQt4.QtGui.QLabel(u'.')
+                self.layout.addWidget(dotlabel)
+        self.layout.addStretch()
 
     def alter_datas(self, observations):
         remaining_observations = []
@@ -2390,13 +2427,13 @@ class SublocationFilter(RowEntry):
 
 class ImportMethodChoser(RowEntry):
     def __init__(self, parameter_name, parameter_names):
-        super.__init__()
+        super(ImportMethodChoser, self).__init__()
         self.parameter_widget = None
         self.parameter_name = parameter_name
         self.parameter_names = parameter_names
-        self.label = PyQt4.QtGui.Qlabel(self.widget)
+        self.label = PyQt4.QtGui.QLabel()
         self.label.setText(self.parameter_name)
-        self.__import_method = PyQt4.QtGui.QComboBox(self.widget)
+        self.__import_method = PyQt4.QtGui.QComboBox()
 
         self.__import_method_classes = OrderedDict(((u'', None),
                                                   (u'comments', CommentsImportFields),
@@ -2407,6 +2444,9 @@ class ImportMethodChoser(RowEntry):
         self.__import_method.addItems(self.__import_method_classes.keys())
         self.connect(self.__import_method, PyQt4.QtCore.SIGNAL("currentIndexChanged()"),
                      lambda: self.choose_method(self.__import_method_classes))
+
+        for widget in [self.label, self.__import_method]:
+            self.layout.addWidget(widget)
 
     @property
     def import_method(self):
@@ -2514,17 +2554,22 @@ class WFlowImportFields(RowEntry):
         It shuold also create an empty list for future data as self.data
         Connecting the dropdown lists as events is done here (or in submethods).
         """
-        super.__init__()
+        super(WFlowImportFields, self).__init__()
         self._import_method_chooser = import_method_chooser
+        self.label_flowtype = PyQt4.QtGui.QLabel(u'Flowtype: ')
         self.__flowtype = PyQt4.QtGui.QComboBox(self.widget)
         self.__flowtype.setEditable(True)
         self.__flowtype.addItem = u''
         self._flowtypes_units = defs.w_flow_flowtypes_units()
         self.__flowtype.addItems(self._flowtypes_units.keys())
-        self.__unit = PyQt4.QtGui.QComboBox(self.widget)
+        self.label_unit = PyQt4.QtGui.QLabel(u'Unit: ')
+        self.__unit = PyQt4.QtGui.QComboBox()
         self.__unit.setEditable(True)
         self.connect(self.__flowtype, PyQt4.QtCore.SIGNAL("currentIndexChanged()"),
                      lambda : self.fill_unit_list(self.__unit, self.flowtype, self._flowtypes_units))
+
+        for widget in [self.label_flowtype, self.__flowtype, self.label_unit, self.__unit]:
+            self.layout.addWidget(widget)
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
@@ -2573,20 +2618,22 @@ class WQualFieldImportFields(RowEntry):
         It shuold also create an empty list for future data as self.data
         Connecting the dropdown lists as events is done here (or in submethods).
         """
-        super.__init__()
+        super(WQualFieldImportFields, self).__init__()
         self._import_method_chooser = import_method_chooser
-        self.__parameter = PyQt4.QtGui.QComboBox(self.widget)
+        self.label_parameter = PyQt4.QtGui.QLabel(u'Flowtype: ')
+        self.__parameter = PyQt4.QtGui.QComboBox()
         self.__parameter.setEditable(True)
         self.__parameter.addItem = u''
-        #TODO 20161029 THIS IS WHERE I AM. Fix the next line so that it works correctly.
         self._parameters_units = defs.w_qual_field_parameter_units()
         self.__parameter.addItems(self._parameters_units.keys())
-        self.__unit = PyQt4.QtGui.QComboBox(self.widget)
+        self.label_unit = PyQt4.QtGui.QLabel(u'Unit: ')
+        self.__unit = PyQt4.QtGui.QComboBox()
         self.__unit.setEditable(True)
-        self.__depth = PyQt4.QtGui.QComboBox(self.widget)
+        self.label_unit = PyQt4.QtGui.QLabel(u'Depth: ')
+        self.__depth = PyQt4.QtGui.QComboBox()
         self.__depth.setEditable(True)
 
-        for widget in [self.__parameter, self.__unit, self.__depth]:
+        for widget in [self.label_parameter, self.__parameter, self.label_unit, self.__unit, self.label_depth, self.__depth]:
             self.layout.addWidget(widget)
 
         self.connect(self.__parameter, PyQt4.QtCore.SIGNAL("currentIndexChanged()"),
