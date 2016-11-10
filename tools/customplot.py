@@ -311,7 +311,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             FlagTimeXY = 'time'
             myTimestring = list(table2.date_time)
             numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
-        except:
+        except Exception, e:
+            utils.MessagebarAndLog.info(log_msg=u"Customplot, transforming to recarray with date_time as x-axis failed, msg: " + utils.returnunicode(str(e)))
             table = np.array(recs, dtype=[('numx', float), ('values', float)])  #NDARRAY #define a format for xy-plot (to use if not datetime on x-axis)
 
             table2=table.view(np.recarray)   # RECARRAY transform the 2 cols into callable objects
