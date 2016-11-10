@@ -504,6 +504,13 @@
                 </item>
                </layout>
               </item>
+              <item row="9" column="0">
+               <widget class="QCheckBox" name="checkBox_remove_mean1">
+                <property name="text">
+                 <string>Remove mean</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </widget>
             <widget class="QWidget" name="tab_2">
@@ -963,6 +970,13 @@
                 </item>
                </layout>
               </item>
+              <item row="5" column="0">
+               <widget class="QCheckBox" name="checkBox_remove_mean2">
+                <property name="text">
+                 <string>Remove mean</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </widget>
             <widget class="QWidget" name="tab_3">
@@ -1421,6 +1435,13 @@
                  </widget>
                 </item>
                </layout>
+              </item>
+              <item row="5" column="0">
+               <widget class="QCheckBox" name="checkBox_remove_mean3">
+                <property name="text">
+                 <string>Remove mean</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </widget>

@@ -1168,6 +1168,19 @@ def scale_nparray(x, a=1, b=0):
     """
     return a * copy.deepcopy(x) + b
 
+def remove_mean_from_nparray(x):
+    """
+
+    """
+    x = copy.deepcopy(x)
+    mean = x.mean(axis=0)
+    MessagebarAndLog.info(log_msg=str(mean))
+    x = x - mean
+
+    # for colnr, col in enumerate(x):
+    #     x[colnr] = x[colnr] - np.mean(x[colnr])
+    return x
+
 def getcurrentlocale():
     current_locale = QgsProject.instance().readEntry("Midvatten", "locale")[0]
     return current_locale
