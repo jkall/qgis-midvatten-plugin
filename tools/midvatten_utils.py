@@ -1173,7 +1173,8 @@ def remove_mean_from_nparray(x):
 
     """
     x = copy.deepcopy(x)
-    mean = x.mean(axis=0)
+    mean = x[np.logical_not(np.isnan(x))]
+    mean = mean.mean(axis=0)
     MessagebarAndLog.info(log_msg=str(mean))
     x = x - mean
 
