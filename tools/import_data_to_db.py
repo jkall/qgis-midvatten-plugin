@@ -2497,6 +2497,7 @@ class CommentsImportFields(object):
         It shuold also create an empty list for future data as self.data
         Connecting the dropdown lists as events is done here (or in submethods).
         """
+        super(CommentsImportFields, self).__init__()
         pass
 
     def send_data_to_formatter(self):
@@ -2533,6 +2534,7 @@ class WLevelImportFields(object):
         It shuold also create an empty list for future data as self.data
         Connecting the dropdown lists as events is done here (or in submethods).
         """
+        super(WLevelImportFields, self).__init__()
         pass
 
     def send_data_to_formatter(self):
@@ -2573,6 +2575,7 @@ class WFlowImportFields(RowEntry):
         self.__flowtype.setEditable(True)
         self.__flowtype.addItem = u''
         self._flowtypes_units = defs.w_flow_flowtypes_units()
+        utils.pop_up_info(str(self._flowtypes_units))
         self.__flowtype.addItems(self._flowtypes_units.keys())
         self.label_unit = PyQt4.QtGui.QLabel(u'Unit: ')
         self.__unit = PyQt4.QtGui.QComboBox()
@@ -2646,13 +2649,23 @@ class WQualFieldImportFields(RowEntry):
         self.label_unit = PyQt4.QtGui.QLabel(u'Depth: ')
         self.__depth = PyQt4.QtGui.QComboBox()
         self.__depth.setEditable(True)
-        # TODO: Add instrument-question
+        self.__instrument = PyQt4.QtGui.QComboBox()
+        self.__instrument.setEditable(True)
+        self.label_instrument = PyQt4.QtGui.QLabel(u'Instrument: ')
+        self.parameter_instruments = {}
+        for parameter, unit_instrument_staff_date_time_list_of_lists in utils.get_last_used_quality_instruments().iteritems():
+            for unit, instrument, staff, date_time, in unit_instrument_staff_date_time_list_of_lists:
+                self.parameter_instruments.setdefault(parameter, set()).add(instrument)
 
-        for widget in [self.label_parameter, self.__parameter, self.label_unit, self.__unit, self.label_depth, self.__depth]:
+        for widget in [self.label_parameter, self.__parameter, self.label_unit, self.__unit, self.label_depth, self.__depth, self.label_instrumen, self.__instrument]:
             self.layout.addWidget(widget)
 
         self.connect(self.__parameter, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),
-                     lambda : self.fill_unit_list(self.__unit, self.parameter, self._parameters_units))
+                     lambda : self.fill_list(self.__unit, self.parameter, self._parameters_units))
+
+        self.connect(self.__parameter, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),
+                     lambda: self.fill_list(self.__instrument, self.parameter, self.parameter_instruments))
+
         self.layout.addStretch()
 
     def alter_data(self, observation):
@@ -2685,12 +2698,20 @@ class WQualFieldImportFields(RowEntry):
     def depth(self, value):
         self.__depth.setEditText(utils.returnunicode(value))
 
-    def fill_unit_list(self, unit_var, parameter_var, parameters_units):
-        units = parameters_units.get(parameter_var, None)
-        if units is None:
-            units = list(sorted(set([unit for units_list in parameters_units.values() for unit in units_list])))
-        unit_var.addItem(u'')
-        unit_var.addItems(utils.returnunicode(units))
+    @property
+    def instrument(self):
+        return self.__instrument.currentText()
+
+    @instrument.setter
+    def instrument(self, value):
+        self.__instrument.setEditText(utils.returnunicode(value))
+
+    def fill_list(self, combobox_var, parameter_var, parameter_list_dict):
+        vals = parameter_list_dict.get(parameter_var, None)
+        if vals is None:
+            vals = list(sorted(set([val for vals_list in parameter_list_dict.values() for val in vals_list])))
+        combobox_var.addItem(u'')
+        combobox_var.addItems(utils.returnunicode(vals))
 
     def get_settings(self):
         return OrderedDict((u'parameter', self.parameter),
