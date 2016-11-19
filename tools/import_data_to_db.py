@@ -1979,7 +1979,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.observations = [{u'sublocation': u'a.1', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123},
                              {u'sublocation': u'b.c.2', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123},
                              {u'sublocation': u'b.c.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123},
-                             {u'sublocation': u'b.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123}]
+                             {u'sublocation': u'b.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123},
+                             {u'sublocation': u'b.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Temp.grC', u'value': 123}]
 
 
         #Filters and general settings
@@ -1997,15 +1998,13 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         for setting in self.settings:
             self.add_row(setting.widget)
 
-        self.add_line()
-
         for setting in self.settings_with_own_loop:
             self.add_row(setting.widget)
 
         self.add_line()
 
         #self.main_vertical_layout.addStretch()
-        self.main_vertical_layout.insertStretch(-1)
+        #self.main_vertical_layout.insertStretch(-1)
         #self.add_line()
 
         self.parameter_names = list(set([observation[u'parametername'] for observation in self.observations]))
@@ -2015,6 +2014,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             self.parameter_imports[parametername] = param_import_obj
             self.add_row(param_import_obj.widget)
 
+        self.main_vertical_layout.addStretch(1)
         #self.add_row(self.parameters_layout())
 
 
@@ -2161,6 +2161,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             if observations == u'cancel':
                 return u'cancel'
 
+
         #All parameter could be stored as self.parameter_settings and be used just like the filters
         for parameter_setting in self.parameter_settings:
             observations = parameter_setting.alter_data(observations)
@@ -2251,6 +2252,13 @@ class RowEntry(object):
         self.widget = PyQt4.QtGui.QWidget()
         self.layout = PyQt4.QtGui.QHBoxLayout()
         self.widget.setLayout(self.layout)
+
+class RowEntryGrid(object):
+    def __init__(self):
+        self.widget = PyQt4.QtGui.QWidget()
+        self.layout = PyQt4.QtGui.QGridLayout()
+        self.widget.setLayout(self.layout)
+
 
 
 class ObsidFilter(RowEntry):
@@ -2498,6 +2506,7 @@ class CommentsImportFields(object):
         Connecting the dropdown lists as events is done here (or in submethods).
         """
         super(CommentsImportFields, self).__init__()
+        self.import_method_chooser = import_method_chooser
         pass
 
     def send_data_to_formatter(self):
@@ -2516,6 +2525,24 @@ class CommentsImportFields(object):
 
     def get_settings(self):
         pass
+
+    def update_comments(self, observations):
+        observations = copy.deepcopy(observations)
+        parameter_name = self.import_method_chooser.parameter_name
+        obsdict = {}
+        dateformat = '%Y%M%D %H:%m:%s'
+        for observation in observations:
+            if observation[u'parametername'] == parameter_name:
+                datestring = datetime.strftime(observation[u'date_time'], dateformat)
+                obsdict.setdefault(observation[u'sublocation'], {})[datestring] = observation
+
+        for observation in observations:
+            if observation[u'parametername'] != parameter_name:
+                comment_obs = obsdict.get(observation[u'sublocation'], {}).get(observation[u'date_time'], None)
+                if comment_obs != None:
+                    observation[u'comment'] = comment_obs[u'value']
+                    comment_obs[u'skip_import'] = True
+        return observations
 
 
 class WLevelImportFields(object):
@@ -2555,7 +2582,10 @@ class WLevelImportFields(object):
         pass
 
 
-class WFlowImportFields(RowEntry):
+    def alter_data(self, observation, observations=None):
+        return copy.deepcopy(observation)
+
+class WFlowImportFields(RowEntryGrid):
     """
     This class should create a layout and populate it with question boxes relevant to w_flow import which is probably "flowtype" and "unit" dropdown lists.
     """
@@ -2573,21 +2603,24 @@ class WFlowImportFields(RowEntry):
         self.label_flowtype = PyQt4.QtGui.QLabel(u'Flowtype: ')
         self.__flowtype = PyQt4.QtGui.QComboBox(self.widget)
         self.__flowtype.setEditable(True)
-        self.__flowtype.addItem = u''
+        self.__flowtype.addItem(u'')
         self._flowtypes_units = defs.w_flow_flowtypes_units()
-        utils.pop_up_info(str(self._flowtypes_units))
-        self.__flowtype.addItems(self._flowtypes_units.keys())
+        self.__flowtype.addItems(sorted(self._flowtypes_units.keys()))
         self.label_unit = PyQt4.QtGui.QLabel(u'Unit: ')
         self.__unit = PyQt4.QtGui.QComboBox()
         self.__unit.setEditable(True)
         self.connect(self.__flowtype, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),
-                     lambda : self.fill_unit_list(self.__unit, self.flowtype, self._flowtypes_units))
-        for widget in [self.label_flowtype, self.__flowtype, self.label_unit, self.__unit]:
-            self.layout.addWidget(widget)
+                     lambda : self.fill_list(self.__unit, self.flowtype, self._flowtypes_units))
 
-        self.layout.addStretch()
+        self.layout.addWidget(self.label_flowtype, 0, 0)
+        self.layout.addWidget(self.__flowtype, 1, 0)
+        self.layout.addWidget(self.label_unit, 0, 1)
+        self.layout.addWidget(self.__unit, 1, 1)
+        self.layout.setColumnStretch(2, 1)
 
-    def alter_data(self, observation):
+        #self.layout.addStretch()
+
+    def alter_data(self, observation, observations=None):
         observation = copy.deepcopy(observation)
         observation[u'unit'] = self.unit
         observation[u'flowtype'] = self.flowtype
@@ -2609,19 +2642,29 @@ class WFlowImportFields(RowEntry):
     def unit(self, value):
         self.__unit.setEditText(utils.returnunicode(value))
 
-    def fill_unit_list(self, unit_var, flowtype_var, flowtypes_units):
-        units = flowtypes_units.get(flowtype_var, None)
-        if units is None:
-            units = list(sorted(set([unit for units_list in flowtypes_units.values() for unit in units_list])))
-        unit_var.addItem(u'')
-        unit_var.addItems(utils.returnunicode(units))
+    def fill_list(self, combobox_var, parameter_var, parameter_list_dict):
+        """
+
+        :param combobox_var: a QComboBox object
+        :param parameter_var: a string parameter name
+        :param parameter_list_dict: A dict like  {u'Accvol': [(u'm3',)], u'Momflow': [(u'l/s',)]}
+        :return:
+        """
+        vals = parameter_list_dict.get(parameter_var, None)
+        if vals is None:
+            vals = list(sorted(set([val for vals_list in parameter_list_dict.values() for val in vals_list[0]])))
+        else:
+            vals = list(vals[0])
+        combobox_var.clear()
+        combobox_var.addItem(u'')
+        combobox_var.addItems(utils.returnunicode(vals, keep_containers=True))
 
     def get_settings(self):
         return OrderedDict((u'flowtype', self.flowtype),
                            (u'unit', self.unit))
 
 
-class WQualFieldImportFields(RowEntry):
+class WQualFieldImportFields(RowEntryGrid):
     """
     This class should create a layout and populate it with question boxes relevant to w_qual_fields import which is probably "parameter", "unit" dropdown lists.
     And a depth dropdown list which is populated by the parameternames. The purpose is that the user should select which parametername to use as the depth variable
@@ -2637,18 +2680,20 @@ class WQualFieldImportFields(RowEntry):
         super(WQualFieldImportFields, self).__init__()
         self.connect = connect
         self._import_method_chooser = import_method_chooser
-        self.label_parameter = PyQt4.QtGui.QLabel(u'Flowtype: ')
+        self.label_parameter = PyQt4.QtGui.QLabel(u'Parameter: ')
         self.__parameter = PyQt4.QtGui.QComboBox()
         self.__parameter.setEditable(True)
-        self.__parameter.addItem = u''
+        self.__parameter.addItem(u'')
         self._parameters_units = defs.w_qual_field_parameter_units()
         self.__parameter.addItems(self._parameters_units.keys())
         self.label_unit = PyQt4.QtGui.QLabel(u'Unit: ')
         self.__unit = PyQt4.QtGui.QComboBox()
         self.__unit.setEditable(True)
-        self.label_unit = PyQt4.QtGui.QLabel(u'Depth: ')
+        self.label_depth = PyQt4.QtGui.QLabel(u'Depth parameter: ')
         self.__depth = PyQt4.QtGui.QComboBox()
         self.__depth.setEditable(True)
+        self.__depth.addItem(u'')
+        self.__depth.addItems(self._import_method_chooser.parameter_names)
         self.__instrument = PyQt4.QtGui.QComboBox()
         self.__instrument.setEditable(True)
         self.label_instrument = PyQt4.QtGui.QLabel(u'Instrument: ')
@@ -2657,8 +2702,18 @@ class WQualFieldImportFields(RowEntry):
             for unit, instrument, staff, date_time, in unit_instrument_staff_date_time_list_of_lists:
                 self.parameter_instruments.setdefault(parameter, set()).add(instrument)
 
-        for widget in [self.label_parameter, self.__parameter, self.label_unit, self.__unit, self.label_depth, self.__depth, self.label_instrumen, self.__instrument]:
-            self.layout.addWidget(widget)
+        for parameter, instrument_set in self.parameter_instruments.iteritems():
+            self.parameter_instruments[parameter] = [list(instrument_set)]
+
+        self.layout.addWidget(self.label_parameter, 0, 0)
+        self.layout.addWidget(self.__parameter, 1, 0)
+        self.layout.addWidget(self.label_unit, 0, 1)
+        self.layout.addWidget(self.__unit, 1, 1)
+        self.layout.addWidget(self.label_depth, 0, 2)
+        self.layout.addWidget(self.__depth, 1, 2)
+        self.layout.addWidget(self.label_instrument, 0, 3)
+        self.layout.addWidget(self.__instrument, 1, 3)
+        self.layout.setColumnStretch(4, 1)
 
         self.connect(self.__parameter, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),
                      lambda : self.fill_list(self.__unit, self.parameter, self._parameters_units))
@@ -2666,20 +2721,25 @@ class WQualFieldImportFields(RowEntry):
         self.connect(self.__parameter, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),
                      lambda: self.fill_list(self.__instrument, self.parameter, self.parameter_instruments))
 
-        self.layout.addStretch()
-
-    def alter_data(self, observation):
+    def alter_data(self, observation, observations):
         observation = copy.deepcopy(observation)
         observation[u'unit'] = self.unit
         observation[u'parameter'] = self.parameter
+        observation[u'instrument'] = self.instrument
+        observation[u'depth'] = None
+        if self.depth is not None:
+            depth = [_observation[u'value'] for _observation in observations for _observation in observations
+                     if all(_observation[u'date_time'] == observation[u'date_time'], _observation[u'sublocation'] == observation[u'sublocation' ])]
+            if depth:
+                observation[u'depth'] = depth
         return observation
 
     @property
-    def flowtype(self):
+    def parameter(self):
         return self.__parameter.currentText()
 
-    @flowtype.setter
-    def flowtype(self, value):
+    @parameter.setter
+    def parameter(self, value):
         self.__parameter.setEditText(value)
 
     @property
@@ -2707,16 +2767,27 @@ class WQualFieldImportFields(RowEntry):
         self.__instrument.setEditText(utils.returnunicode(value))
 
     def fill_list(self, combobox_var, parameter_var, parameter_list_dict):
+        """
+
+        :param combobox_var: a QComboBox object
+        :param parameter_var: a string parameter name
+        :param parameter_list_dict: A dict like  {u'Accvol': [(u'm3',)], u'Momflow': [(u'l/s',)]}
+        :return:
+        """
         vals = parameter_list_dict.get(parameter_var, None)
         if vals is None:
-            vals = list(sorted(set([val for vals_list in parameter_list_dict.values() for val in vals_list])))
+            vals = list(sorted(set([val for vals_list in parameter_list_dict.values() for val in vals_list[0]])))
+        else:
+            vals = list(vals[0])
+        combobox_var.clear()
         combobox_var.addItem(u'')
-        combobox_var.addItems(utils.returnunicode(vals))
+        combobox_var.addItems(utils.returnunicode(vals, keep_containers=True))
 
     def get_settings(self):
         return OrderedDict((u'parameter', self.parameter),
                            (u'unit', self.unit),
-                           (u'depth', self.depth))
+                           (u'depth', self.depth),
+                           (u'instrument', self.instrument))
 
 
 
