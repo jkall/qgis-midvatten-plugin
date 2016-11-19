@@ -2004,9 +2004,16 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         self.add_line()
 
+        #self.main_vertical_layout.addStretch()
+        self.main_vertical_layout.insertStretch(-1)
         #self.add_line()
 
-        #self.parameter_names = [observation[u'parameter_name'] for observation in self.observations]
+        self.parameter_names = list(set([observation[u'parametername'] for observation in self.observations]))
+        self.parameter_imports = OrderedDict()
+        for parametername in self.parameter_names:
+            param_import_obj = ImportMethodChoser(parametername, self.parameter_names, self.connect)
+            self.parameter_imports[parametername] = param_import_obj
+            self.add_row(param_import_obj.widget)
 
         #self.add_row(self.parameters_layout())
 
@@ -2426,8 +2433,9 @@ class SublocationFilter(RowEntry):
 
 
 class ImportMethodChoser(RowEntry):
-    def __init__(self, parameter_name, parameter_names):
+    def __init__(self, parameter_name, parameter_names, connect):
         super(ImportMethodChoser, self).__init__()
+        self.connect = connect
         self.parameter_widget = None
         self.parameter_name = parameter_name
         self.parameter_names = parameter_names
@@ -2442,7 +2450,7 @@ class ImportMethodChoser(RowEntry):
                                                   (u'w_qual_field', WQualFieldImportFields)))
 
         self.__import_method.addItems(self.__import_method_classes.keys())
-        self.connect(self.__import_method, PyQt4.QtCore.SIGNAL("currentIndexChanged()"),
+        self.connect(self.__import_method, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),
                      lambda: self.choose_method(self.__import_method_classes))
 
         for widget in [self.label, self.__import_method]:
@@ -2458,15 +2466,18 @@ class ImportMethodChoser(RowEntry):
 
     def choose_method(self, import_methods_classes):
         import_method_name = self.import_method
-        if import_method_name in import_methods_classes:
-            parameter_import_fields_class = import_methods_classes[import_method_name]
-            parameter_import_fields = parameter_import_fields_class(self)
+        utils.MessagebarAndLog.info(bar_msg=u'Method chosen: ' + import_method_name)
+        try:
+            self.layout.removeWidget(self.parameter_widget)
+            self.parameter_widget.close()
+        except:
+            pass
+        parameter_import_fields_class = import_methods_classes.get(import_method_name, None)
 
-            try:
-                self.layout.removeWidget(self.parameter_widget)
-            except:
-                pass
-
+        if parameter_import_fields_class is None:
+            self.parameter_widget = None
+        else:
+            parameter_import_fields = parameter_import_fields_class(self, self.connect)
             self.parameter_widget = parameter_import_fields.widget
             self.layout.addWidget(self.parameter_widget)
 
@@ -2480,7 +2491,7 @@ class CommentsImportFields(object):
 
     This is the class that knows how the comments-table looks like.
     """
-    def __init__(self):
+    def __init__(self, import_method_chooser, connect):
         """
         A HBoxlayout should be created as self.layout.
         It shuold also create an empty list for future data as self.data
@@ -2516,7 +2527,7 @@ class WLevelImportFields(object):
     This is the class that knows how the comments-table looks like.
     """
 
-    def __init__(self):
+    def __init__(self, mport_method_chooser, connect):
         """
         A HBoxlayout should be created as self.layout.
         It shuold also create an empty list for future data as self.data
@@ -2548,13 +2559,14 @@ class WFlowImportFields(RowEntry):
     """
 
 
-    def __init__(self, import_method_chooser):
+    def __init__(self, import_method_chooser, connect):
         """
         A HBoxlayout should be created as self.layout.
         It shuold also create an empty list for future data as self.data
         Connecting the dropdown lists as events is done here (or in submethods).
         """
         super(WFlowImportFields, self).__init__()
+        self.connect = connect
         self._import_method_chooser = import_method_chooser
         self.label_flowtype = PyQt4.QtGui.QLabel(u'Flowtype: ')
         self.__flowtype = PyQt4.QtGui.QComboBox(self.widget)
@@ -2565,11 +2577,12 @@ class WFlowImportFields(RowEntry):
         self.label_unit = PyQt4.QtGui.QLabel(u'Unit: ')
         self.__unit = PyQt4.QtGui.QComboBox()
         self.__unit.setEditable(True)
-        self.connect(self.__flowtype, PyQt4.QtCore.SIGNAL("currentIndexChanged()"),
+        self.connect(self.__flowtype, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),
                      lambda : self.fill_unit_list(self.__unit, self.flowtype, self._flowtypes_units))
-
         for widget in [self.label_flowtype, self.__flowtype, self.label_unit, self.__unit]:
             self.layout.addWidget(widget)
+
+        self.layout.addStretch()
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
@@ -2612,13 +2625,14 @@ class WQualFieldImportFields(RowEntry):
 
     """
 
-    def __init__(self, import_method_chooser):
+    def __init__(self, import_method_chooser, connect):
         """
         A HBoxlayout should be created as self.layout.
         It shuold also create an empty list for future data as self.data
         Connecting the dropdown lists as events is done here (or in submethods).
         """
         super(WQualFieldImportFields, self).__init__()
+        self.connect = connect
         self._import_method_chooser = import_method_chooser
         self.label_parameter = PyQt4.QtGui.QLabel(u'Flowtype: ')
         self.__parameter = PyQt4.QtGui.QComboBox()
@@ -2632,12 +2646,14 @@ class WQualFieldImportFields(RowEntry):
         self.label_unit = PyQt4.QtGui.QLabel(u'Depth: ')
         self.__depth = PyQt4.QtGui.QComboBox()
         self.__depth.setEditable(True)
+        # TODO: Add instrument-question
 
         for widget in [self.label_parameter, self.__parameter, self.label_unit, self.__unit, self.label_depth, self.__depth]:
             self.layout.addWidget(widget)
 
-        self.connect(self.__parameter, PyQt4.QtCore.SIGNAL("currentIndexChanged()"),
+        self.connect(self.__parameter, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),
                      lambda : self.fill_unit_list(self.__unit, self.parameter, self._parameters_units))
+        self.layout.addStretch()
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
