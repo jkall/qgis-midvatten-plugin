@@ -1966,9 +1966,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 
-
         self.status = True
-        utils.MessagebarAndLog.info(bar_msg=u"Gui initialised")
         self.stored_presets = OrderedDict()
 
         #self.observations = self.select_file_and_parse_rows()
@@ -2042,6 +2040,11 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         #Connect button to start import.
         #User should press start import which will filter the data, check obsids, split the import into all import types (w_levels, w_flow, comment, w_qual_field)
         # Instrument id should be checked for in the needed imports.
+
+        self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
+        self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
+        self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
+
         self.show()
 
     def select_file_and_parse_rows(self):
@@ -2161,7 +2164,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             if observations == u'cancel':
                 return u'cancel'
 
-
+        print(observations)
+        return None
         #All parameter could be stored as self.parameter_settings and be used just like the filters
         for parameter_setting in self.parameter_settings:
             observations = parameter_setting.alter_data(observations)
@@ -2332,7 +2336,7 @@ class DateShiftQuestion(RowEntry):
         observation = copy.deepcopy(observation)
         shift_specification = self.dateshift_lineedit.text()
 
-        step_steplength = shift_specification.split[u' ']
+        step_steplength = shift_specification.split(u' ')
         failed = False
 
         bar_msg = u'Dateshift specification wrong format, se log message panel'
@@ -2364,9 +2368,9 @@ class DateTimeFilter(RowEntry):
     def __init__(self):
         super(DateTimeFilter, self).__init__()
         self.label = PyQt4.QtGui.QLabel(u'Import data from: ')
-        self.from_datetimeedit = PyQt4.QtGui.QDateTimeEdit()
+        self.from_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'1900-01-01 00:00:00'))
         self.label_to = PyQt4.QtGui.QLabel(u'to: ')
-        self.to_datetimeedit = PyQt4.QtGui.QDateTimeEdit()
+        self.to_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'2099-12-31 23:59:59'))
 
         for widget in [self.label, self.from_datetimeedit, self.label_to, self.to_datetimeedit]:
             self.layout.addWidget(widget)
