@@ -2126,6 +2126,10 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         #All parameter could be stored as self.parameter_settings and be used just like the filters
         for parameter_name, parameter_setting in self.parameter_imports.iteritems():
+            if self.parameter_setting.import_method == u'comments':
+                observations = self.parameter_setting.update_comments(observations)
+
+        for parameter_name, parameter_setting in self.parameter_imports.iteritems():
             observations = parameter_setting.import_data(observations)
 
         ordered_under_import_methods = {}
