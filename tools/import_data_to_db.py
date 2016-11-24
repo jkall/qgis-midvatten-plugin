@@ -1654,11 +1654,11 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         #    self.status = True
         #    return u'cancel'
 
-        self.observations = [{u'sublocation': u'a.1', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123},
-                             {u'sublocation': u'b.c.2', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123},
-                             {u'sublocation': u'b.c.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123},
-                             {u'sublocation': u'b.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123},
-                             {u'sublocation': u'b.d.2.3', u'date_time': datestring_to_date(u'2016-01-02'), u'parametername': u'Temp.grC', u'value': 123}]
+        self.observations = [{u'sublocation': u'a.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': u'123,1'},
+                             {u'sublocation': u'b.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': u'123'},
+                             {u'sublocation': u'c.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': u'123'},
+                             {u'sublocation': u'd.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': u'123'},
+                             {u'sublocation': u'e.d.2.3', u'date_time': datestring_to_date(u'2016-01-02'), u'parametername': u'Temp.grC', u'value': u'123'}]
 
         #Filters and general settings
         self.settings_with_own_loop = []
@@ -1805,21 +1805,14 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             if observations == u'cancel':
                 return u'cancel'
 
-        #All parameter could be stored as self.parameter_settings and be used just like the filters
-        for parameter_name, parameter_setting in self.parameter_imports.iteritems():
-            if parameter_setting.import_method == u'comments':
-                observations = parameter_setting.update_comments(observations)
+        #Fix the comments data
+        for parameter_name, import_method_chooser in self.parameter_imports.iteritems():
+            if import_method_chooser.import_method == u'comments':
+                observations = import_method_chooser.parameter_import_fields.update_comments(observations)
 
-        for parameter_name, parameter_setting in self.parameter_imports.iteritems():
-            observations = parameter_setting.import_data(observations)
-
-        ordered_under_import_methods = {}
-        for observation in observations:
-            import_method = observation.get(u'import_method', None)
-            if import_method is not None:
-                ordered_under_import_methods.setdefault(import_method, []).append(observation)
-
-        # Next step is to send parts of the observations to it's specific importer.
+        #Finally import the data to database
+        for parameter_name, import_method_chooser in self.parameter_imports.iteritems():
+            observations = import_method_chooser.parameter_import_fields.import_data(observations)
 
     @staticmethod
     def get_stored_presets(ms):
@@ -1975,7 +1968,12 @@ class StaffQuestion(RowEntry):
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
-        observation[u'staff'] = self.existing_staff_combobox.currentText()
+        staff = self.existing_staff_combobox.currentText()
+        if staff is None or not staff:
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error, staff not given')
+            return u'cancel'
+
+        observation[u'staff'] = staff
         return observation
 
 
@@ -2135,7 +2133,6 @@ class ImportMethodChoser(RowEntry):
 
     def choose_method(self, import_methods_classes):
         import_method_name = self.import_method
-        utils.MessagebarAndLog.info(bar_msg=u'Method chosen: ' + import_method_name)
         try:
             self.layout.removeWidget(self.parameter_widget)
             self.parameter_widget.close()
@@ -2174,10 +2171,10 @@ class CommentsImportFields(RowEntry):
 
     def import_data(self, observations):
         observations = [observation for observation in observations
-                        if all(observation[u'parametername'] == self.import_method_chooser.parameter_name, not observation[u'skip_import'])]
+                        if all(observation[u'parametername'] == self._import_method_chooser.parameter_name, not observation[u'skip_import'])]
         file_data = self.prepare_data(observations)
         importer = midv_data_importer()
-        importer.send_file_data_to_importer(file_data, midv_data_importer.comments_import_from_csv)
+        importer.send_file_data_to_importer(file_data, importer.comments_import_from_csv)
 
         #self.fieldlogger_prepare_comments_data(observations)
 
@@ -2232,10 +2229,10 @@ class WLevelImportFields(RowEntry):
         pass
 
     def import_data(self, observations):
-        observations = [observation for observation in observations if observation[u'parametername'] == self.import_method_chooser.parameter_name]
+        observations = [observation for observation in observations if observation[u'parametername'] == self._import_method_chooser.parameter_name]
         file_data = self.prepare_data(observations)
         importer = midv_data_importer()
-        importer.send_file_data_to_importer(file_data, midv_data_importer.wlvl_import_from_csvlayer)
+        importer.send_file_data_to_importer(file_data, importer.wlvl_import_from_csvlayer)
 
     @staticmethod
     def prepare_data(observations):
@@ -2330,10 +2327,10 @@ class WFlowImportFields(RowEntryGrid):
 
     def import_data(self, observations):
         observations = [observation for observation in observations if
-                        observation[u'parametername'] == self.import_method_chooser.parameter_name]
+                        observation[u'parametername'] == self._import_method_chooser.parameter_name]
         file_data = self.prepare_data(observations)
         importer = midv_data_importer()
-        importer.send_file_data_to_importer(file_data, midv_data_importer.wflow_import_from_csvlayer)
+        importer.send_file_data_to_importer(file_data, importer.wflow_import_from_csvlayer)
 
     def prepare_data(self, observations):
         """
@@ -2347,6 +2344,8 @@ class WFlowImportFields(RowEntryGrid):
 
         for observation in observations:
             obsid = observation[u'obsid']
+            flowtype = self.flowtype
+            date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
 
             instrumentids_for_obsid = instrumentids.get(obsid, None)
             if instrumentids_for_obsid is None:
@@ -2357,16 +2356,15 @@ class WFlowImportFields(RowEntryGrid):
                      (_flowtype == flowtype)])[-1][1]
             question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
                                               msg=u''.join([u'Submit the instrument id for the measurement:\n ',
-                                                            u','.join([obsid, datestring, flowtype])]),
+                                                            u','.join([obsid, date_time, flowtype])]),
                                               existing_list=[last_used_instrumentid],
                                               default_value=last_used_instrumentid,
-                                              combobox_label=u'Instrument id:s in database.\nThe last used instrument for the for the current obsid is prefilled:')
+                                              combobox_label=u'Instrument id:s in database.\nThe last used instrument id for the current obsid is prefilled:')
             answer = question.answer
             if answer == u'cancel':
                 return u'cancel'
             instrumentid = utils.returnunicode(question.value)
-            flowtype = self.flowtype
-            date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
+
             reading = observation[u'value'].replace(u',', u'.')
             unit = self.unit
             comment = observation.get(u'comment', u'')
@@ -2503,13 +2501,13 @@ class WQualFieldImportFields(RowEntryGrid):
 
     def import_data(self, observations):
         depth_dict = dict([(obs[u'date_time'], obs[u'value']) for obs in observations if obs[u'parametername'] == self.depth])
-        observations = [observation for observation in observations if observation[u'parametername'] == self.import_method_chooser.parameter_name]
+        observations = [observation for observation in observations if observation[u'parametername'] == self._import_method_chooser.parameter_name]
         for observation in observations:
             observation[u'depth'] = depth_dict.get(observation[u'date_time'], None)
 
         file_data = self.prepare_data(observations)
         importer = midv_data_importer()
-        importer.send_file_data_to_importer(file_data, midv_data_importer.wqualfield_import_from_csvlayer)
+        importer.send_file_data_to_importer(file_data, importer.wqualfield_import_from_csvlayer)
 
     def prepare_data(self, observations):
         """
