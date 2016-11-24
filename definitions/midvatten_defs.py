@@ -93,7 +93,8 @@ def settingsdict():    #These are the default settings, they shall not be change
             'piper_ca':'Kalcium, Ca',
             'piper_mg':'Magnesium, Mg',
             'piper_markers':'type',
-            'locale': ''
+            'locale': '',
+            'fieldlogger_import_parameter_presets': '',
             }
     return dictionary
 
