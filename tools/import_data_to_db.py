@@ -1967,7 +1967,6 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 
         self.status = True
-        self.stored_presets = OrderedDict()
 
         #self.observations = self.select_file_and_parse_rows()
         #if self.observations == u'cancel':
@@ -2044,6 +2043,9 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
+
+        self.stored_presets = self.get_stored_presets(self.settingsdict)
+        self.set_parameters_using_stored_presets(self.stored_presets, self.parameter_imports)
 
         self.show()
 
@@ -2148,6 +2150,9 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         :return:
         """
 
+        self.update_stored_presets(self.stored_presets, self.parameter_imports)
+        self.save_stored_presets(self.settingsdict, self.stored_presets)
+
         #Filter and alter data
         filtered_observations = []
         for observation in observations:
@@ -2167,7 +2172,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         print(observations)
         return None
         #All parameter could be stored as self.parameter_settings and be used just like the filters
-        for parameter_setting in self.parameter_settings:
+        for parameter_name, parameter_setting in self.parameter_settings.iteritems():
             observations = parameter_setting.alter_data(observations)
 
         ordered_under_import_methods = {}
@@ -2178,15 +2183,19 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         # Next step is to send parts of the observations to it's specific importer.
 
-    def get_stored_presets(self, settingsdict, stored_presets):
+    def get_stored_presets(self, settingsdict):
         #Populate using stored settings:
         #The stored settings should probably be stored like this:
         #stored = parameter_name:parametername|import_method:stored_method| ... the rest should depend on the import_method, like:
         #Aveflow.m3|import_method:w_flow|parameter:Aveflow|unit:m3/
         #
         # Presetting should then be done like:
-        parameter_presets_string = utils.returnunicode(settingsdict[u'fieldlogger_import_parameter_presets'])
+        presets = settingsdict.get(u'fieldlogger_import_parameter_presets', None)
+        if presets is None:
+            return None
+        parameter_presets_string = utils.returnunicode(presets)
         parameter_presets = parameter_presets_string.split(u'/')
+        stored_presets = OrderedDict()
 
         for parameter_preset in parameter_presets:
             presets = parameter_preset.split(u'|')
@@ -2196,8 +2205,11 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             for attrs in presets[1:]:
                 attr, value = attrs.split(u':')
                 stored_presets[parametername][attr] = value
+        return stored_presets
 
     def set_parameters_using_stored_presets(self, stored_presets, parameter_imports):
+        if stored_presets is None:
+            return None
         stored_presets = copy.deepcopy(stored_presets)
         for parameter_import in parameter_imports:
             preset = stored_presets.get(parameter_import.parameter_name, None)
@@ -2217,7 +2229,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                     pass
 
     def update_stored_presets(self, stored_settings, parameter_imports):
-        for parameter_import in parameter_imports:
+        for parameter_name, parameter_import in parameter_imports.iteritems():
+            utils.pop_up_info(str(parameter_import))
             if parameter_import.import_method is None:
                 continue
 
@@ -2231,10 +2244,10 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             for attr, value in parameter_widget.get_settings().iteritems():
                 attrdict[attr] = value
 
-    def save_stored_presets(self, settingsdict, stored_settings):
-        stored_settings = utils.returnunicode(stored_settings, keep_containers=True)
+    def save_stored_presets(self, settingsdict, stored_presets):
+        stored_presets = utils.returnunicode(stored_presets, keep_containers=True)
         presets_list = []
-        for parameter_name, attrs in stored_settings.iteritems():
+        for parameter_name, attrs in stored_presets.iteritems():
             paramlist = [parameter_name]
             paramlist.extend([u':'.join([attr, value]) for attr, value in attrs.iteritems()])
             presets_list.append(u'|'.join(paramlist))
@@ -2371,7 +2384,7 @@ class DateTimeFilter(RowEntry):
         self.from_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'1900-01-01 00:00:00'))
         self.label_to = PyQt4.QtGui.QLabel(u'to: ')
         self.to_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'2099-12-31 23:59:59'))
-
+        #self.import_after_last_date = PyQt4.QtGui.QCheckBox(u"Import after latest date in database for each obsid")
         for widget in [self.label, self.from_datetimeedit, self.label_to, self.to_datetimeedit]:
             self.layout.addWidget(widget)
         self.layout.addStretch()
@@ -2424,19 +2437,11 @@ class SublocationFilter(RowEntry):
                 self.layout.addWidget(dotlabel)
         self.layout.addStretch()
 
-    def alter_datas(self, observations):
-        remaining_observations = []
-        for observation in observations:
-            checked_observation = self.alter_data(observation)
-            if checked_observation is not None:
-                remaining_observations.append(checked_observation)
-        return remaining_observations
-
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
         sublocation = observation[u'sublocation'].split(u'.')
         if len(sublocation) == len(self.filters):
-            for idx, filter in self.filters:
+            for idx, filter in enumerate(self.filters):
                 selected_items = filter.selectedItems()
                 if selected_items:
                     if sublocation[idx] not in selected_items:
@@ -2494,7 +2499,7 @@ class ImportMethodChoser(RowEntry):
             self.layout.addWidget(self.parameter_widget)
 
 
-class CommentsImportFields(object):
+class CommentsImportFields(RowEntry):
     """
     This class should create a layout and populate it with question boxes relevant to comment import, which is probably an empty layout.
     What I want it to do:
@@ -2549,7 +2554,7 @@ class CommentsImportFields(object):
         return observations
 
 
-class WLevelImportFields(object):
+class WLevelImportFields(RowEntry):
     """
     This class should create a layout and populate it with question boxes relevant to w_levels import, which is probably an empty layout.
     What I want it to do:
