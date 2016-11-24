@@ -106,7 +106,7 @@ class newdb():
                         #utils.pop_up_info('Failed to create DB!')
 
                 #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
-                #self.cur.execute(r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID)
+                self.cur.execute(r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID)
 
                 self.insert_datadomains(set_locale)
 
