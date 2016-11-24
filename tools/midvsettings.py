@@ -64,7 +64,7 @@ class midvsettings():
     def save_settings(self,key = ''):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
         if not self.readingSettings:
             if key =='': #if no argument, then save all settings according to dictionary
-                for (key, value) in self.settingsdict.items():        
+                for (key, value) in self.settingsdict.items():
                     try: # write plugin settings to QgsProject
                         QgsProject.instance().writeEntry("Midvatten",key, value )
                     except TypeError: 

@@ -105,7 +105,8 @@ class newdb():
                         qgis.utils.iface.messageBar().pushMessage("Failed to create database", 2,duration=3)
                         #utils.pop_up_info('Failed to create DB!')
 
-                self.cur.execute(r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID)
+                #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
+                #self.cur.execute(r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID)
 
                 self.insert_datadomains(set_locale)
 
