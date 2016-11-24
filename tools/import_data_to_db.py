@@ -1979,14 +1979,13 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                              {u'sublocation': u'b.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': 123},
                              {u'sublocation': u'b.d.2.3', u'date_time': datestring_to_date(u'2016-01-02'), u'parametername': u'Temp.grC', u'value': 123}]
 
-
         #Filters and general settings
         self.settings_with_own_loop = []
         self.settings = []
         self.settings.append(StaffQuestion())
         self.settings.append(DateShiftQuestion())
         self.settings.append(DateTimeFilter()) #This includes a checkbox for "include only latest
-        #self.settings_with_own_loop.append(ObsidFilter())
+        self.settings_with_own_loop.append(ObsidFilter())
 
         sublocation_groups = self.sublocation_to_groups([observation[u'sublocation'] for observation in self.observations], delimiter=u'.')
         for _length, sublocation_group in sorted(sublocation_groups.iteritems()):
@@ -2000,50 +1999,21 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         self.add_line()
 
-        #self.main_vertical_layout.addStretch()
-        #self.main_vertical_layout.insertStretch(-1)
-        #self.add_line()
-
+        #Parameters
         self.parameter_names = list(set([observation[u'parametername'] for observation in self.observations]))
         self.parameter_imports = OrderedDict()
         for parametername in self.parameter_names:
             param_import_obj = ImportMethodChoser(parametername, self.parameter_names, self.connect)
             self.parameter_imports[parametername] = param_import_obj
             self.add_row(param_import_obj.widget)
-
         self.main_vertical_layout.addStretch(1)
-        #self.add_row(self.parameters_layout())
 
-
-
-
-        #The parameter
-
-
-        #Parameters
-        #The parameters should be stored so that they are easy to access when the import is started.
-        #Should the settings be stored in qt-variables, i.e. the fields themselves, or should it be local variables in dicts for example.
-
-        #Maybe it's best to create an object for each one and store the values in the fields inside the objects. The import method field would then be
-        #connected to a method inside the object itself that would alter the layout of itself by adding the neccessary fields.
-        #parameter_names = sorted(set([observation[u'parameter'] for observation in self.observations]))
-
-        #Here a stored parameter setup connected to each parameter_name is prefilled.
-
-        #for parameter_name in parameter_names:
-        #    self.parameters_layout.append(self.parameter_setting(parameter_name))
-
-        #This should be an
-        #self.parameter_imports = OrderedDict()
-
-        #Connect button to start import.
-        #User should press start import which will filter the data, check obsids, split the import into all import types (w_levels, w_flow, comment, w_qual_field)
-        # Instrument id should be checked for in the needed imports.
-
+        #General buttons
         self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
 
+        #Load stored parameter presets
         self.stored_presets = self.get_stored_presets(self.ms)
         utils.MessagebarAndLog.info(log_msg=u'Stored presets: ' + str(self.stored_presets))
         self.set_parameters_using_stored_presets(self.stored_presets, self.parameter_imports)
@@ -2051,46 +2021,27 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.show()
 
     def select_file_and_parse_rows(self):
-        filename = self.select_files(only_one_file=True, should_ask_for_charset=True)
-        if not filename:
-            self.status = True
+        filenames = self.select_files(only_one_file=False, should_ask_for_charset=True)
+        if not filenames:
+            self.status = False
             return u'cancel'
 
-        filename = utils.returnunicode(filename[0])
-
-        observations = {}
-        with io.open(filename, 'r', encoding=str(self.charsetchoosen[0])) as f:
-            #Skip header
-            f.readline()
-            observations = self.parse_rows(f)
+        observations = []
+        for filename in filenames:
+            filename = utils.returnunicode(filename[0])
+            with io.open(filename, 'r', encoding=str(self.charsetchoosen[0])) as f:
+                #Skip header
+                f.readline()
+                observations.extend(self.parse_rows(f))
         return observations
 
     @staticmethod
-    def parse_rows(f):
+    def parse_file_rows(f):
         """
         Parses rows from fieldlogger format into a dict
-        :param f: File_data, often an open file or a list of rows
+        :param f: File_data, often an open file or a list of rows without header
         :return: a list of dicts like [{date_time: x, sublocation: y, parametername: z, value: o}, ...]
 
-        #If the observations instead were stored like a list of dicts:
-        [{date_time: x, sublocation: y, parametername: z, value: o}, ]
-        it would be very easy to change names, access data, resort data and so fourth.
-        Filtering data would also be VERY easy. Obsid filter would be as simple as obs = [obs for obs in observations where x['date_time' < x]
-
-        Extracting the data would be VERY easy for the importer functions as well. depth = observations.get(depth, None)
-        or:
-        instrumentid = observations.get(instrumentid, None)
-        if instrumentid is None:
-            instrumentid = observations.get(instrument, None)
-        if instrumentid is None:
-            ask_for_instrument_id()
-
-        Negative: It will be a lot of looping through the structure.
-        solution: This could be solved by making lookup dicts directly to the observations. But it's probably never needed.
-
-
-
-        f must not have a header.
         """
         observations = []
         for rownr, rawrow in enumerate(f):
@@ -2150,6 +2101,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         :param sublocation_filter_types:
         :return:
         """
+
+        #Start by saving the parameter presets
         self.update_stored_presets(self.stored_presets, self.parameter_imports)
         self.save_stored_presets(self.ms, self.stored_presets)
 
@@ -2171,11 +2124,9 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             if observations == u'cancel':
                 return u'cancel'
 
-        utils.pop_up_info(observations)
-        return None
         #All parameter could be stored as self.parameter_settings and be used just like the filters
-        for parameter_name, parameter_setting in self.parameter_settings.iteritems():
-            observations = parameter_setting.alter_data(observations)
+        for parameter_name, parameter_setting in self.parameter_imports.iteritems():
+            observations = parameter_setting.import_data(observations)
 
         ordered_under_import_methods = {}
         for observation in observations:
@@ -2185,7 +2136,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         # Next step is to send parts of the observations to it's specific importer.
 
-    def get_stored_presets(self, ms):
+    @staticmethod
+    def get_stored_presets(ms):
         #Populate using stored settings:
         #The stored settings should probably be stored like this:
         #stored = parameter_name:parametername|import_method:stored_method| ... the rest should depend on the import_method, like:
@@ -2209,7 +2161,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 stored_presets[parametername][attr] = value
         return stored_presets
 
-    def set_parameters_using_stored_presets(self, stored_presets, parameter_imports):
+    @staticmethod
+    def set_parameters_using_stored_presets(stored_presets, parameter_imports):
         for parameter_import in parameter_imports.values():
             preset = stored_presets.get(parameter_import.parameter_name, None)
             if preset is None:
@@ -2228,7 +2181,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 except:
                     pass
 
-    def update_stored_presets(self, stored_presets, parameter_imports):
+    @staticmethod
+    def update_stored_presets(stored_presets, parameter_imports):
         for parameter_name, import_method_chooser in parameter_imports.iteritems():
             if import_method_chooser.import_method is None:
                 continue
@@ -2241,13 +2195,17 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             if parameter_import_fields is None:
                 continue
 
-            settings = parameter_import_fields.get_settings()
+            try:
+                settings = parameter_import_fields.get_settings()
+            except AttributeError:
+                settings = OrderedDict()
             for attr, value in settings.iteritems():
                 attrdict[attr] = value
 
             stored_presets[import_method_chooser.parameter_name] = attrdict
 
-    def save_stored_presets(self, ms, stored_presets):
+    @staticmethod
+    def save_stored_presets(ms, stored_presets):
         if stored_presets is None:
             return
         stored_presets = utils.returnunicode(stored_presets, keep_containers=True)
@@ -2276,12 +2234,12 @@ class RowEntry(object):
         self.layout = PyQt4.QtGui.QHBoxLayout()
         self.widget.setLayout(self.layout)
 
+
 class RowEntryGrid(object):
     def __init__(self):
         self.widget = PyQt4.QtGui.QWidget()
         self.layout = PyQt4.QtGui.QGridLayout()
         self.widget.setLayout(self.layout)
-
 
 
 class ObsidFilter(RowEntry):
@@ -2299,9 +2257,12 @@ class ObsidFilter(RowEntry):
         for observation in observations:
             observation[u'obsid'] = observation[u'sublocation'].split(u'.')[0]
 
-        obsids = list(sorted(set([(observation[u'obsid'], observation[u'obsid']) for observation in observations])))
+        obsids = [list(x) for x in sorted(set([(observation[u'obsid'], observation[u'obsid']) for observation in observations]))]
+        obsids.reverse()
+        obsids.append([u'old_obsid', u'new_obsid'])
+        obsids.reverse()
 
-        answer = utils.filter_nonexisting_values_and_ask([[u'old_obsid', u'new_obsid'], obsids], u'new_obsid', existing_obsids, self.try_capitalize_checkbox.isChecked())
+        answer = utils.filter_nonexisting_values_and_ask(obsids, u'new_obsid', existing_obsids, self.try_capitalize_checkbox.isChecked())
         if answer == u'cancel':
             return answer
 
@@ -2309,10 +2270,10 @@ class ObsidFilter(RowEntry):
             if isinstance(answer, (list, tuple)):
                 if len(answer) > 1:
                     obsid_rename_dict = dict([(old_obsid_new_obsid[0], old_obsid_new_obsid[1]) for old_obsid_new_obsid in answer[1:]])
-
                     #Filter and rename obsids
-                    observations = [observation.update({u'obsid': obsid_rename_dict.get(observation[u'obsid'], None)})
-                                    for observation in observations if obsid_rename_dict.get(observation[u'obsid'], None) is not None]
+                    [observation.update({u'obsid': obsid_rename_dict.get(observation[u'obsid'], None)})
+                        for observation in observations]
+                    observations = [observation for observation in observations if all([observation[u'obsid'] is not None, observation[u'obsid']])]
 
         if len(observations) == 0:
             utils.MessagebarAndLog.warning(bar_msg=u'No observations imported, see log message panel',
@@ -2535,6 +2496,11 @@ class CommentsImportFields(RowEntry):
         self.import_method_chooser = import_method_chooser
         pass
 
+    def import_data(self, observations):
+        observations = [observation for observation in observations
+                        if all(observation[u'parametername'] == self.import_method_chooser.parameter_name, not observation[u'skip_import'])]
+        #self.fieldlogger_prepare_comments_data(observations)
+
     def send_data_to_formatter(self):
         """
         This method should call format_data and then send it to the formatter.
@@ -2581,35 +2547,20 @@ class WLevelImportFields(RowEntry):
     This is the class that knows how the comments-table looks like.
     """
 
-    def __init__(self, mport_method_chooser, connect):
+    def __init__(self, import_method_chooser, connect):
         """
         A HBoxlayout should be created as self.layout.
         It shuold also create an empty list for future data as self.data
         Connecting the dropdown lists as events is done here (or in submethods).
         """
         super(WLevelImportFields, self).__init__()
+        self.import_method_chooser = import_method_chooser
         pass
 
-    def send_data_to_formatter(self):
-        """
-        This method should call format_data and then send it to the formatter.
-        :return:
-        """
-        pass
+    def import_data(self, observations):
+        observations = [observation for observation in observations if observation[u'parametername'] == self.import_method_chooser.parameter_name]
+        #self.fieldlogger_prepare_level_data(observations)
 
-    def format_data(self):
-        """
-        This method should format self.data into the columns contained in the table.
-        :return:
-        """
-        pass
-
-    def get_settings(self):
-        pass
-
-
-    def alter_data(self, observation, observations=None):
-        return copy.deepcopy(observation)
 
 
 class WFlowImportFields(RowEntryGrid):

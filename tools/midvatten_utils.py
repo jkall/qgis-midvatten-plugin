@@ -983,7 +983,7 @@ def find_similar(word, wordlist, hits=5):
     matches = list(set(difflib.get_close_matches(word, matches, nr_of_hits)))
     return matches
 
-def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[], try_capitalize=False):
+def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=None, try_capitalize=False):
     """
 
     The class NotFoundQuestion is used with 4 buttons; u'Ignore', u'Cancel', u'Ok', u'Skip'.
@@ -1000,6 +1000,8 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
 
 
     """
+    if existing_values is None:
+        existing_values = []
     header_value = returnunicode(header_value)
     filtered_data = []
     data_to_ask_for = []
@@ -1036,6 +1038,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
             continue
 
         similar_values = find_similar(current_value, existing_values, hits=5)
+        similar_values.extend(sorted(existing_values))
 
         not_tried_capitalize = True
 
