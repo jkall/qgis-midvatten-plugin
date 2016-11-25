@@ -1649,16 +1649,16 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.status = True
 
-        #self.observations = self.select_file_and_parse_rows()
-        #if self.observations == u'cancel':
-        #    self.status = True
-        #    return u'cancel'
+        self.observations = self.select_file_and_parse_rows()
+        if self.observations == u'cancel':
+            self.status = True
+            return u'cancel'
 
-        self.observations = [{u'sublocation': u'a.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': u'123,1'},
-                             {u'sublocation': u'b.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': u'123'},
-                             {u'sublocation': u'c.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': u'123'},
-                             {u'sublocation': u'd.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': u'123'},
-                             {u'sublocation': u'e.d.2.3', u'date_time': datestring_to_date(u'2016-01-02'), u'parametername': u'Temp.grC', u'value': u'123'}]
+        #self.observations = [{u'sublocation': u'a.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': u'123,1'},
+        #                     {u'sublocation': u'b.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': u'123'},
+        #                     {u'sublocation': u'c.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': u'123'},
+        #                     {u'sublocation': u'd.d.2.3', u'date_time': datestring_to_date(u'2016-01-01'), u'parametername': u'Aveflow.m3s', u'value': u'123'},
+        #                     {u'sublocation': u'e.d.2.3', u'date_time': datestring_to_date(u'2016-01-02'), u'parametername': u'Temp.grC', u'value': u'123'}]
 
         #Filters and general settings
         self.settings_with_own_loop = []
@@ -1714,6 +1714,10 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 #Skip header
                 f.readline()
                 observations.extend(self.parse_rows(f))
+
+        #Remove duplicates
+        observations = list(set(observations))
+
         return observations
 
     @staticmethod
@@ -2075,9 +2079,17 @@ class StaffQuestion(RowEntry):
             self.layout.addWidget(widget)
         self.layout.addStretch()
 
+    @property
+    def staff(self):
+        return self.existing_staff_combobox.currentText()
+
+    @staff.setter
+    def staff(self, value):
+        self.existing_staff_combobox.setEditText(value)
+
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
-        staff = self.existing_staff_combobox.currentText()
+        staff = self.staff
         if staff is None or not staff:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error, staff not given')
             return u'cancel'
