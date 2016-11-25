@@ -1911,9 +1911,9 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         importer = midv_data_importer()
 
-        data_preparers_importers = {u'wlevel': (self.prepare_w_level_data, importer.wlvl_import_from_csvlayer),
-                          u'wflow': (self.prepare_w_flow_data, importer.wflow_import_from_csvlayer),
-                          u'quality': (self.prepare_w_qual_field_data, importer.wqualfield_import_from_csvlayer),
+        data_preparers_importers = {u'w_level': (self.prepare_w_level_data, importer.wlvl_import_from_csvlayer),
+                          u'w_flow': (self.prepare_w_flow_data, importer.wflow_import_from_csvlayer),
+                          u'w_qual_field': (self.prepare_w_qual_field_data, importer.wqualfield_import_from_csvlayer),
                           u'comments': (self.prepare_comments_data, importer.comments_import_from_csv)}
 
         for import_method, observations in observations_importmethods.iteritems():
