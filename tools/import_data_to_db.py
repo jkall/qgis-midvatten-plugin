@@ -1775,6 +1775,101 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 sublocation_groups.setdefault(length, [set()for i in xrange(length)])[index].add(splitted[index])
         return sublocation_groups
 
+    @staticmethod
+    def prepare_w_level_data(observations):
+        """
+        Produces a filestring with columns "obsid, date_time, meas, comment" and imports it
+        :param obsdict: a dict like {obsid: {date_time: {parameter: value}}}
+        :return: None
+        """
+        file_data_list = [[u'obsid', u'date_time', u'meas', u'comment']]
+        for observation in observations.iteritems():
+            obsid = observation[u'obsid']
+            date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
+            meas = observation[u'value'].replace(u',', u'.')
+            comment = observation.get(u'comment', u'')
+            file_data_list.append([obsid, date_time, meas, comment])
+
+        return file_data_list
+
+    @staticmethod
+    def prepare_comments_data(self, observations):
+        file_data_list = [[u'obsid', u'date_time', u'comment', u'staff']]
+        for observation in observations:
+            obsid = observation[u'obsid']
+            date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
+            comment = observation[u'value']
+            staff = observation[u'staff']
+            file_data_list.append([obsid, date_time, comment, staff])
+        return file_data_list
+
+    @staticmethod
+    def prepare_w_flow_data(self, observations):
+        """
+        Produces a filestring with columns "obsid, instrumentid, flowtype, date_time, reading, unit, comment" and imports it
+        :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
+        :return:
+        """
+
+        file_data_list = [[u'obsid', u'instrumentid', u'flowtype', u'date_time', u'reading', u'unit', u'comment']]
+        instrumentids = utils.get_last_used_flow_instruments()[1]
+
+        for observation in observations:
+            obsid = observation[u'obsid']
+            flowtype = observation[u'flowtype']
+            date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
+            unit = observation[u'unit']
+
+            instrumentids_for_obsid = instrumentids.get(obsid, None)
+            if instrumentids_for_obsid is None:
+                last_used_instrumentid = u''
+            else:
+                last_used_instrumentid = sorted(
+                    [(_date_time, _instrumentid) for _flowtype, _instrumentid, _date_time in instrumentids[obsid] if
+                     (_flowtype == flowtype)])[-1][1]
+            question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
+                                              msg=u''.join([u'Submit the instrument id for the measurement:\n ',
+                                                            u', '.join([obsid, date_time, flowtype, unit])]),
+                                              existing_list=[last_used_instrumentid],
+                                              default_value=last_used_instrumentid,
+                                              combobox_label=u'Instrument id:s in database.\nThe last used instrument id for the current obsid is prefilled:')
+            answer = question.answer
+            if answer == u'cancel':
+                return u'cancel'
+            instrumentid = utils.returnunicode(question.value)
+
+            reading = observation[u'value'].replace(u',', u'.')
+
+            comment = observation.get(u'comment', u'')
+            file_data_list.append([obsid, instrumentid, flowtype, date_time, reading, unit, comment])
+
+        return file_data_list
+
+    @staticmethod
+    def prepare_w_qual_field_data(self, observations):
+        """
+        Produces a filestring with columns "obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment" and imports it
+        :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
+        :param quality_or_water_sample: Word written at user question: u'quality' or u'water sample'.
+        :return:
+        """
+        file_data_list = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'depth', u'comment']]
+
+        for observation in observations:
+            obsid = observation[u'obsid']
+            staff = observation[u'staff']
+            date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
+            instrument = observation[u'instrument']
+            parameter = observation[u'parameter']
+            reading_num = observation[u'value'].replace(u',', u'.')
+            reading_txt = observation[u'value']
+            unit = observation[u'unit']
+            depth = observation.get(u'depth', u'')
+            comment = observation.get(u'comment', u'')
+            file_data_list.append([obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment])
+
+        return file_data_list
+
     def start_import(self, observations):
         """
 
@@ -1805,14 +1900,25 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             if observations == u'cancel':
                 return u'cancel'
 
-        #Fix the comments data
+        #Update observations from parameter fields
         for parameter_name, import_method_chooser in self.parameter_imports.iteritems():
-            if import_method_chooser.import_method == u'comments':
-                observations = import_method_chooser.parameter_import_fields.update_comments(observations)
+            observations = import_method_chooser.parameter_import_fields.alter_data(observations)
 
         #Finally import the data to database
-        for parameter_name, import_method_chooser in self.parameter_imports.iteritems():
-            observations = import_method_chooser.parameter_import_fields.import_data(observations)
+        observations_importmethods = {}
+        for observation in observations:
+            observations_importmethods.setdefault(self.parameter_imports[observation[u'parametername']].import_method, []).append(observation)
+
+        importer = midv_data_importer()
+
+        data_preparers_importers = {u'wlevel': (self.prepare_w_level_data, importer.wlvl_import_from_csvlayer),
+                          u'wflow': (self.prepare_w_flow_data, importer.wflow_import_from_csvlayer),
+                          u'quality': (self.prepare_w_qual_field_data, importer.wqualfield_import_from_csvlayer),
+                          u'comments': (self.prepare_comments_data, importer.comments_import_from_csv)}
+
+        for import_method, observations in observations_importmethods.iteritems():
+            file_data = data_preparers_importers[import_method][0](observations)
+            importer.send_file_data_to_importer(file_data, data_preparers_importers[import_method][1])
 
     @staticmethod
     def get_stored_presets(ms):
@@ -1896,6 +2002,9 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         preset_string = u'/'.join(presets_list)
         ms.settingsdict[u'fieldlogger_import_parameter_presets'] = utils.returnunicode(preset_string)
         ms.save_settings()
+
+
+
 
 
 class RowEntry(object):
@@ -2169,27 +2278,7 @@ class CommentsImportFields(RowEntry):
         self.import_method_chooser = import_method_chooser
         pass
 
-    def import_data(self, observations):
-        observations = [observation for observation in observations
-                        if all(observation[u'parametername'] == self._import_method_chooser.parameter_name, not observation[u'skip_import'])]
-        file_data = self.prepare_data(observations)
-        importer = midv_data_importer()
-        importer.send_file_data_to_importer(file_data, importer.comments_import_from_csv)
-
-        #self.fieldlogger_prepare_comments_data(observations)
-
-    @staticmethod
-    def prepare_data(self, observations):
-        file_data_list = [[u'obsid', u'date_time', u'comment', u'staff']]
-        for observation in observations:
-            obsid = observation[u'obsid']
-            date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
-            comment = observation[u'value']
-            staff = observation[u'staff']
-            file_data_list.append([obsid, date_time, comment, staff])
-        return file_data_list
-
-    def update_comments(self, observations):
+    def alter_data(self, observations):
         observations = copy.deepcopy(observations)
         parameter_name = self.import_method_chooser.parameter_name
         obsdict = {}
@@ -2204,7 +2293,7 @@ class CommentsImportFields(RowEntry):
                 comment_obs = obsdict.get(observation[u'sublocation'], {}).get(observation[u'date_time'], None)
                 if comment_obs != None:
                     observation[u'comment'] = comment_obs[u'value']
-                    comment_obs[u'skip_import'] = True
+                    comment_obs[u'skip_comment_import'] = True
         return observations
 
 
@@ -2234,24 +2323,8 @@ class WLevelImportFields(RowEntry):
         importer = midv_data_importer()
         importer.send_file_data_to_importer(file_data, importer.wlvl_import_from_csvlayer)
 
-    @staticmethod
-    def prepare_data(observations):
-        """
-        Produces a filestring with columns "obsid, date_time, meas, comment" and imports it
-        :param obsdict: a dict like {obsid: {date_time: {parameter: value}}}
-        :return: None
-        """
-        file_data_list = [[u'obsid', u'date_time', u'meas', u'comment']]
-        for observation in observations.iteritems():
-            obsid = observation[u'obsid']
-            date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
-            meas = observation[u'value'].replace(u',', u'.')
-            comment = observation.get(u'comment', u'')
-
-            if not any([obsid is None, date_time is None, meas is None, comment is None]):
-                file_data_list.append([obsid, date_time, meas, comment])
-
-        return file_data_list
+    def alter_data(self, observations):
+        return observations
 
 
 class WFlowImportFields(RowEntryGrid):
@@ -2325,53 +2398,21 @@ class WFlowImportFields(RowEntryGrid):
     def get_settings(self):
         return OrderedDict([(u'flowtype', self.flowtype), (u'unit', self.unit)])
 
-    def import_data(self, observations):
-        observations = [observation for observation in observations if
-                        observation[u'parametername'] == self._import_method_chooser.parameter_name]
-        file_data = self.prepare_data(observations)
-        importer = midv_data_importer()
-        importer.send_file_data_to_importer(file_data, importer.wflow_import_from_csvlayer)
+    def alter_data(self, observations):
+        if not self.flowtype:
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error, flowtype not given')
+            return u'cancel'
+        if not self.unit:
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error, unit not given')
+            return u'cancel'
 
-    def prepare_data(self, observations):
-        """
-        Produces a filestring with columns "obsid, instrumentid, flowtype, date_time, reading, unit, comment" and imports it
-        :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
-        :return:
-        """
-
-        file_data_list = [[u'obsid', u'instrumentid', u'flowtype', u'date_time', u'reading', u'unit', u'comment']]
-        instrumentids = utils.get_last_used_flow_instruments()[1]
-
+        observations = copy.deepcopy(observations)
         for observation in observations:
-            obsid = observation[u'obsid']
-            flowtype = self.flowtype
-            date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
+            if observation[u'parametername'] == self._import_method_chooser.parameter_name:
+                observation[u'flowtype'] = self.flowtype
+                observation[u'unit'] = self.unit
 
-            instrumentids_for_obsid = instrumentids.get(obsid, None)
-            if instrumentids_for_obsid is None:
-                last_used_instrumentid = u''
-            else:
-                last_used_instrumentid = sorted(
-                    [(_date_time, _instrumentid) for _flowtype, _instrumentid, _date_time in instrumentids[obsid] if
-                     (_flowtype == flowtype)])[-1][1]
-            question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
-                                              msg=u''.join([u'Submit the instrument id for the measurement:\n ',
-                                                            u','.join([obsid, date_time, flowtype])]),
-                                              existing_list=[last_used_instrumentid],
-                                              default_value=last_used_instrumentid,
-                                              combobox_label=u'Instrument id:s in database.\nThe last used instrument id for the current obsid is prefilled:')
-            answer = question.answer
-            if answer == u'cancel':
-                return u'cancel'
-            instrumentid = utils.returnunicode(question.value)
-
-            reading = observation[u'value'].replace(u',', u'.')
-            unit = self.unit
-            comment = observation.get(u'comment', u'')
-            # TODO: Print error here if required fields are left empty
-            file_data_list.append([obsid, instrumentid, flowtype, date_time, reading, unit, comment])
-
-        return file_data_list
+        return observations
 
 
 class WQualFieldImportFields(RowEntryGrid):
@@ -2499,40 +2540,28 @@ class WQualFieldImportFields(RowEntryGrid):
                            (u'depth', self.depth),
                            (u'instrument', self.instrument)])
 
-    def import_data(self, observations):
+    def alter_data(self, observations):
+        if not self.parameter:
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error, parameter not given')
+            return u'cancel'
+        if not self.unit:
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error, unit not given')
+            return u'cancel'
+        if not self.instrument:
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error, instrument not given')
+            return u'cancel'
+
+        observations = copy.deepcopy(observations)
         depth_dict = dict([(obs[u'date_time'], obs[u'value']) for obs in observations if obs[u'parametername'] == self.depth])
-        observations = [observation for observation in observations if observation[u'parametername'] == self._import_method_chooser.parameter_name]
         for observation in observations:
-            observation[u'depth'] = depth_dict.get(observation[u'date_time'], None)
+            if observation[u'parametername'] == self._import_method_chooser.parameter_name:
+                observation[u'depth'] = depth_dict.get(observation[u'date_time'], u'')
+                observation[u'parameter'] = self.parameter
+                observation[u'instrument'] = self.instrument
+                observation[u'unit'] = self.unit
+        return observations
 
-        file_data = self.prepare_data(observations)
-        importer = midv_data_importer()
-        importer.send_file_data_to_importer(file_data, importer.wqualfield_import_from_csvlayer)
 
-    def prepare_data(self, observations):
-        """
-        Produces a filestring with columns "obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment" and imports it
-        :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
-        :param quality_or_water_sample: Word written at user question: u'quality' or u'water sample'.
-        :return:
-        """
-        file_data_list = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'depth', u'comment']]
-
-        for observation in observations:
-            obsid = observation[u'obsid']
-            staff = observation[u'staff']
-            date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
-            instrument = self.instrument
-            parameter = self.parameter
-            reading_num = observation[u'value'].replace(u',', u'.')
-            reading_txt = observation[u'value']
-            unit = self.unit
-            depth = observation.get(u'depth', u'')
-            comment = observation.get(u'comment', u'')
-            #TODO: Error here if required attributes are None
-            file_data_list.append([obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment])
-
-        return file_data_list
 
 
 
