@@ -897,21 +897,16 @@ def rstrip(word, from_string):
         new_word = from_string[0:-len(word)]
     return new_word
 
-def select_files(only_one_file=True, extension="csv (*.csv)", should_ask_for_charset=True, default_charset=None):
-    """Asks users to select file(s) and charset for the file(s)"""
-    if should_ask_for_charset:
-        charsetchoosen = ask_for_charset(default_charset)
+def select_files(only_one_file=True, extension="csv (*.csv)"):
+    """Asks users to select file(s)"""
+    if only_one_file:
+        csvpath = QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)
     else:
-        charsetchoosen = 'nocharsetchosen'
-    if charsetchoosen and not (charsetchoosen[0]==0 or charsetchoosen[0]==''):
-        if only_one_file:
-            csvpath = QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)
-        else:
-            csvpath = QtGui.QFileDialog.getOpenFileNames(None, "Select Files","", extension)
-        if not isinstance(csvpath, (list, tuple)):
-            csvpath = [csvpath]
-        csvpath = [p for p in csvpath if p]
-        return csvpath, charsetchoosen
+        csvpath = QtGui.QFileDialog.getOpenFileNames(None, "Select Files","", extension)
+    if not isinstance(csvpath, (list, tuple)):
+        csvpath = [csvpath]
+    csvpath = [p for p in csvpath if p]
+    return csvpath
 
 def ask_for_charset(default_charset=None):
     try:#MacOSX fix2
@@ -922,9 +917,9 @@ def ask_for_charset(default_charset=None):
             charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.", QtGui.QLineEdit.Normal, default_charset)
     except:
         if default_charset is None:
-            default_charset = u'utf-8'
+            default_charset = 'utf-8'
         charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.", QtGui.QLineEdit.Normal, default_charset)
-    return str(charsetchoosen[0])
+    return str(charsetchoosen)
 
 def ask_for_export_crs(default_crs=u''):
     return str(QtGui.QInputDialog.getText(None, "Set export crs", "Give the crs for the exported database.\n",QtGui.QLineEdit.Normal,default_crs)[0])

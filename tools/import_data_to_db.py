@@ -183,7 +183,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :return: A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
         """
         if filenames is None:
-            filenames = utils.select_files(only_one_file=False, should_ask_for_charset=False, extension="lab (*.lab)")[0]
+            filenames = utils.select_files(only_one_file=False, extension="lab (*.lab)")
         if not filenames:
             return u'cancel'
 
@@ -1704,31 +1704,27 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.show()
 
     def select_file_and_parse_rows(self):
-        filenames_charsetchoosen = utils.select_files(only_one_file=False, extension="csv (*.csv)", should_ask_for_charset=True, default_charset=u'utf-8')
-        if filenames_charsetchoosen is None:
+        charset = utils.ask_for_charset('utf-8')
+        filenames = utils.select_files(only_one_file=False, extension="csv (*.csv)")
+        if filenames is None or charset is None:
             self.status = False
             return u'cancel'
-        else:
-            filenames, charsetchoosen = filenames_charsetchoosen
-            if not filenames:
-                self.status = False
-                return u'cancel'
 
         observations = []
         for filename in filenames:
             filename = utils.returnunicode(filename)
-            with io.open(filename, 'r', encoding=charsetchoosen) as f:
+            with io.open(filename, 'r', encoding=charset) as f:
                 #Skip header
                 f.readline()
                 observations.extend(self.parse_rows(f))
 
         #Remove duplicates
-        observations = list(set(observations))
+        observations = [dict(no_duplicate) for no_duplicate in set([tuple(possible_duplicate.items()) for possible_duplicate in observations])]
 
         return observations
 
     @staticmethod
-    def parse_file_rows(f):
+    def parse_rows(f):
         """
         Parses rows from fieldlogger format into a dict
         :param f: File_data, often an open file or a list of rows without header
@@ -1748,6 +1744,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             observation[u'date_time'] = datestring_to_date(u' '.join([date, time]))
             observation[u'value'] = cols[3]
             observation[u'parametername'] = cols[4]
+            observations.append(observation)
         return observations
 
     def add_row(self, a_widget):
@@ -1804,7 +1801,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         return file_data_list
 
     @staticmethod
-    def prepare_comments_data(self, observations):
+    def prepare_comments_data(observations):
         file_data_list = [[u'obsid', u'date_time', u'comment', u'staff']]
         for observation in observations:
             obsid = observation[u'obsid']
@@ -1815,7 +1812,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         return file_data_list
 
     @staticmethod
-    def prepare_w_flow_data(self, observations):
+    def prepare_w_flow_data(observations):
         """
         Produces a filestring with columns "obsid, instrumentid, flowtype, date_time, reading, unit, comment" and imports it
         :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
@@ -1857,7 +1854,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         return file_data_list
 
     @staticmethod
-    def prepare_w_qual_field_data(self, observations):
+    def prepare_w_qual_field_data(observations):
         """
         Produces a filestring with columns "obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment" and imports it
         :param obsdict:  a dict like {obsid: {date_time: {parameter: value}}}
@@ -1905,18 +1902,23 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         #Update observations from parameter fields
         for parameter_name, import_method_chooser in parameter_imports.iteritems():
-            observations = import_method_chooser.parameter_import_fields.alter_data(observations)
+            parameter_import_fields = import_method_chooser.parameter_import_fields
+            if parameter_import_fields is not None:
+                observations = parameter_import_fields.alter_data(observations)
 
         return observations
 
     @staticmethod
     def get_stored_presets(ms):
-        #Populate using stored settings:
-        #The stored settings should probably be stored like this:
-        #stored = parameter_name:parametername|import_method:stored_method| ... the rest should depend on the import_method, like:
-        #Aveflow.m3|import_method:w_flow|parameter:Aveflow|unit:m3/
-        #
-        # Presetting should then be done like:
+        """
+        Creates a parameter preset dict from midvattensettings
+
+        Reads a string entry from midvattensettings that looks like this:
+        importmethod:
+        :param ms: midvattensettings
+        :return:
+        """
+
         presets = ms.settingsdict.get(u'fieldlogger_import_parameter_presets', None)
         if presets is None:
             return OrderedDict()
@@ -1936,6 +1938,14 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
     @staticmethod
     def set_parameters_using_stored_presets(stored_presets, parameter_imports):
+        """
+        Sets the parameter settings based on a stored setitngs dict.
+
+        parametername|import_method:w_flow|flowtype:Aveflow|unit:m3/s/parametername2|import_method:comment ...
+        :param stored_presets: a dict like {parametername: {attribute1: value1, attribute2: value2 ...}}
+        :param parameter_imports: a dict like {parametername: ImportMethodChoser, ...}
+        :return:
+        """
         for parameter_import in parameter_imports.values():
             preset = stored_presets.get(parameter_import.parameter_name, None)
             if preset is None:
@@ -1979,6 +1989,16 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
     @staticmethod
     def save_stored_presets(ms, stored_presets):
+        """
+        Saves the current parameter settings into midvatten settings
+
+        Stores the settings as a string:
+        parametername|import_method:w_flow|flowtype:Aveflow|unit:m3/s/parametername2|import_method:comment ...
+
+        :param ms: midvattensettings
+        :param stored_presets: a dict like {parametername: {attribute1: value1, attribute2: value2 ...}}
+        :return:
+        """
         if stored_presets is None:
             return
         stored_presets = utils.returnunicode(stored_presets, keep_containers=True)
@@ -1995,8 +2015,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
     def start_import(self, observations):
         """
 
-        :param date_time_to_from:
-        :param sublocation_filter_types:
+        :param observations:
         :return:
         """
 
@@ -2019,11 +2038,9 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                           u'comments': (self.prepare_comments_data, importer.comments_import_from_csv)}
 
         for import_method, observations in observations_importmethods.iteritems():
-            file_data = data_preparers_importers[import_method][0](observations)
-            importer.send_file_data_to_importer(file_data, data_preparers_importers[import_method][1])
-
-
-
+            if import_method:
+                file_data = data_preparers_importers[import_method][0](observations)
+                importer.send_file_data_to_importer(file_data, data_preparers_importers[import_method][1])
 
 
 class RowEntry(object):
@@ -2126,7 +2143,7 @@ class DateShiftQuestion(RowEntry):
     def alter_data(self, observation):
         utils.MessagebarAndLog.info(log_msg="In DateShiftQuestion.alter_data")
         observation = copy.deepcopy(observation)
-        shift_specification = self.dateshift_lineedit.text()
+        shift_specification = str(self.dateshift_lineedit.text())
 
         step_steplength = shift_specification.split(u' ')
         failed = False
@@ -2258,7 +2275,7 @@ class ImportMethodChoser(RowEntry):
 
     @property
     def import_method(self):
-        return self.__import_method.currentText()
+        return str(self.__import_method.currentText())
 
     @import_method.setter
     def import_method(self, value):
@@ -2390,7 +2407,7 @@ class WFlowImportFields(RowEntryGrid):
 
     @property
     def flowtype(self):
-        return self.__flowtype.currentText()
+        return utils.returnunicode(self.__flowtype.currentText())
 
     @flowtype.setter
     def flowtype(self, value):
@@ -2398,7 +2415,7 @@ class WFlowImportFields(RowEntryGrid):
 
     @property
     def unit(self):
-        return self.__unit.currentText()
+        return utils.returnunicode(self.__unit.currentText())
 
     @unit.setter
     def unit(self, value):
@@ -2513,7 +2530,7 @@ class WQualFieldImportFields(RowEntryGrid):
 
     @property
     def parameter(self):
-        return self.__parameter.currentText()
+        return utils.returnunicode(self.__parameter.currentText())
 
     @parameter.setter
     def parameter(self, value):
@@ -2521,7 +2538,7 @@ class WQualFieldImportFields(RowEntryGrid):
 
     @property
     def unit(self):
-        return self.__unit.currentText()
+        return utils.returnunicode(self.__unit.currentText())
 
     @unit.setter
     def unit(self, value):
@@ -2529,7 +2546,7 @@ class WQualFieldImportFields(RowEntryGrid):
 
     @property
     def depth(self):
-        return self.__depth.currentText()
+        return utils.returnunicode(self.__depth.currentText())
 
     @depth.setter
     def depth(self, value):
@@ -2537,7 +2554,7 @@ class WQualFieldImportFields(RowEntryGrid):
 
     @property
     def instrument(self):
-        return self.__instrument.currentText()
+        return utils.returnunicode(self.__instrument.currentText())
 
     @instrument.setter
     def instrument(self, value):
