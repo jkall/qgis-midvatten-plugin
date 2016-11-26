@@ -40,7 +40,7 @@ TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
 
 
-class TestSectionPlot(object):
+class __TestSectionPlot(object):
     """ The test doesn't go through the whole section plot unfortunately
     """
     answer_yes = mock_answer('yes')

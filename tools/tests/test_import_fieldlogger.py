@@ -56,6 +56,7 @@ class TestFieldLoggerImporterDb(object):
         ms = MagicMock()
         ms.settingsdict = OrderedDict()
         importer = FieldloggerImport(self.iface.mainWindow(), ms)
+        answer = importer.parse_observations_and_populate_gui()
         importer.start_import(importer.observations)
         mock_MessagebarAndLog.critical.assert_called_with(bar_msg=u'Import error, staff not given')
 
@@ -68,6 +69,7 @@ class TestFieldLoggerImporterDb(object):
         ms = MagicMock()
         ms.settingsdict = OrderedDict()
         importer = FieldloggerImport(self.iface.mainWindow(), ms)
+        importer.parse_observations_and_populate_gui()
 
         #Set settings:
         for setting in importer.settings:

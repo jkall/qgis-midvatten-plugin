@@ -44,7 +44,7 @@ MOCK_EXPORT_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([EXPORT_DB_PATH
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 TEMP_DIR = u'/tmp/'
 
-class TestExport(unittest.TestCase):
+class __TestExport(unittest.TestCase):
     """
     """
     answer_yes_obj = MockUsingReturnValue()

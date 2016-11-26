@@ -21,11 +21,12 @@ class midvsettings():
         # settings...
         self.readingSettings = False # To enable resetsettings
         self.settingsdict = self.createsettingsdict()# calling for the method that defines an empty dictionary of settings NOTE!! byte strings in dict
-        try:
-            self.loadSettings()    # stored settings are loaded (if there are any)
+        #try:
+        self.loadSettings()    # stored settings are loaded (if there are any)
             #The settings are loaded each time a new qgis project is loaded (and several methods below do check that settings really are loaded)
-        except:
-            pass
+        #except:
+        #    utils.pop_up_info("Loading settings failed")
+        #    pass
 
     def createsettingsdict(self):# Here is where an empty settings dictionary is defined, NOTE! byte strings in dictionary
         dictionary = midvatten_defs.settingsdict()

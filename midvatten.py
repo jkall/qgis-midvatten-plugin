@@ -771,6 +771,7 @@ class midvatten:
                 if sanity.result == 1:
                     from import_data_to_db import FieldloggerImport
                     importinstance = FieldloggerImport(self.iface.mainWindow(), self.ms)
+                    importinstance.parse_observations_and_populate_gui()
                     if not importinstance.status == 'True' and not importinstance.status:
                         self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
                     else:

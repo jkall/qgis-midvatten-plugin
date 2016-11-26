@@ -37,7 +37,7 @@ import io
 import midvatten
 import os
 import PyQt4
-from import_data_to_db import midv_data_importer
+from import_data_to_db import midv_data_importer, FieldloggerImport
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
@@ -46,7 +46,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestFieldLoggerImporterNoDb():
+class __TestFieldLoggerImporterNoDb():
     #flow_instrument_id = MockReturnUsingDict({u'Instrument not found': [u'testid', u'']}, 1)
     instrument_staff_questions = MockReturnUsingDict({u'Submit instrument id': MockNotFoundQuestion(u'ok', u'testid'), u'Submit field staff': MockNotFoundQuestion(u'ok', u'teststaff')}, u'dialogtitle')
     prev_used_flow_instr_ids = MockUsingReturnValue((True, {u'Rb1615': [(u'Accvol', u'Flm01', u'2015-01-01 00:00:00'), (u'Momflow', u'Flm02', u'2016-01-01 00:00:00')]}))
@@ -256,7 +256,110 @@ class TestFieldLoggerImporterNoDb():
         assert sorted_file_string == sorted_reference_string
 
 
-class TestFieldLoggerImporterDb(object):
+class __TestFieldLoggerImporterDb(object):
+    answer_yes = mock_answer('yes')
+    answer_no = mock_answer('no')
+    CRS_question = MockUsingReturnValue([3006])
+    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
+    skip_popup = MockUsingReturnValue('')
+
+    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+        mock_crsquestion.return_value = [3006]
+        mock_savefilename.return_value = TEMP_DB_PATH
+        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
+
+        self.iface = DummyInterface()
+        self.midvatten = midvatten.midvatten(self.iface)
+
+        try:
+            os.remove(TEMP_DB_PATH)
+        except OSError:
+            pass
+        self.midvatten.new_db()
+        self.midvatten.import_fieldlogger()
+
+
+    def tearDown(self):
+        #Delete database
+        os.remove(TEMP_DB_PATH)
+
+    def test_fieldlogger_import_to_db(self):
+        """ Full integration test of fieldlogger all the way to db
+        :return:
+        """
+
+        f = [
+            "Location;date_time;value;comment\n",
+            "Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
+            "Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
+            "Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
+            "Rb1615.flow;30-03-2016;15:30:09;gick bra;f.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;ergv;l.comment\n",
+            "Rb1608.level;30-03-2016;15:34:13;555;l.meas.m\n",
+            "Rb1512.sample;30-03-2016;15:31:30;899;s.turbiditet.FNU\n",
+            "Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
+            "Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
+            "Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
+            "Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            "Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
+            "Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n"
+            ]
+
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        with utils.tempinput(''.join(f)) as filename:
+            selected_file = MockUsingReturnValue([filename])
+            return_int = MockUsingReturnValue(int)
+            mocked_iface = MockQgisUtilsIface()
+
+            answer_yes = mock_answer('yes')
+            answer_no = mock_answer('no')
+            mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'User input needed': answer_shift_date_obj, u'Do you want to confirm instrument': answer_no.get_v()}, 1)
+
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.pop_up_info', TestFieldLoggerImporterDb.skip_popup.get_v)
+            @mock.patch('import_data_to_db.midv_data_importer.select_files', selected_file.get_v)
+            @mock.patch('qgis.utils.iface', mocked_iface)
+            @mock.patch('import_data_to_db.defs.w_qual_field_parameters', autospec=True)
+            @mock.patch('import_data_to_db.utils.get_last_used_quality_instruments', autospec=True)
+            def _test_fieldlogger_import(self, mocked_iface, mock_last_used_instruments, mock_parameters):
+                mock_last_used_instruments.return_value = {u'konduktivitet': [(u'µS/cm', u'teststaff', u'testid', u'')], u'syre': [(u'mg/L', u'teststaff', u'testid' , u''), (u'%', u'teststaff', u'testid' , u'')], u'temperatur': [(u'grC', u'teststaff', None, u'')], u'turbiditet': [(u'FNU', u'teststaff', u'testid', u'')]}
+                mock_parameters.return_value = [(u'konduktivitet', u'konduktivitet', u'µS/cm'), (u'syre', u'syre', u'mg/L'), (u'syre', u'syre', u'%'), (u'temperatur', u'temperatur', u'grC'), (u'turbiditet', u'turbiditet', u'FNU')]
+
+                utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
+                utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
+                utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
+                utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
+                utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
+                utils.sql_alter_db(u'''INSERT OR IGNORE INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("syre", "syre","mg/L")''')
+                utils.sql_alter_db(u'''INSERT OR IGNORE INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("syre", "syre","%")''')
+                utils.sql_alter_db(u'''INSERT OR IGNORE INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("konduktivitet", "konduktivitet","µS/cm")''')
+                utils.sql_alter_db(u'''INSERT OR IGNORE INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("turbiditet", "turbiditet", "FNU")''')
+                utils.sql_alter_db(u'''INSERT OR IGNORE INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("temperatur", "temperatur", "grC")''')
+
+                self.importinstance.fieldlogger_import()
+                test_data = utils_for_tests.create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
+                reference_data = u'{comments: (True, [(Rb1608, 2016-03-30 15:34:40, testc, teststaff), (Rb1202, 2016-03-30 15:31:30, hej2, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, ), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, )]), zz_staff: (True, [(teststaff, )])}'
+
+                #print("Messagebar: \n" + str(mock_askuser.args_called_with) + " \n")
+                msgbar = mocked_iface.messagebar.messages
+                if msgbar:
+                    print str(msgbar)
+
+                # NOTE: The instrument id is always set to quality_instruments due to the mock!
+
+                assert test_data == reference_data
+
+            _test_fieldlogger_import(self, mocked_iface)
+
+
+class __TestFieldLoggerImporterDb(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -411,7 +514,7 @@ class TestFieldLoggerImporterDb(object):
         assert test_staff == reference_staff
 
 
-class TestImportWellsFile(object):
+class __TestImportWellsFile(object):
 
     def setUp(self):
         self.importinstance = midv_data_importer()
@@ -460,7 +563,7 @@ class TestImportWellsFile(object):
             _test_parse_wells_file(self)
 
 
-class TestParseDiverofficeFile(object):
+class __TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
                                                            'Failure, parsing failed for file': 'cancel'},
@@ -619,7 +722,7 @@ class TestParseDiverofficeFile(object):
         assert test_string == reference_string
 
 
-class TestWlvllogImportFromDiverofficeFiles(object):
+class __TestWlvllogImportFromDiverofficeFiles(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -850,7 +953,7 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     assert test_string == reference_string
 
 
-class TestDefaultImport(object):
+class __TestDefaultImport(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -1035,7 +1138,7 @@ class TestDefaultImport(object):
                     assert test_string == reference_string
 
 
-class TestInterlab4Importer():
+class __TestInterlab4Importer():
     def setUp(self):
         self.importinstance = midv_data_importer()
 
@@ -1377,7 +1480,7 @@ class TestInterlab4Importer():
         pass
 
 
-class TestInterlab4ImporterDB(object):
+class __TestInterlab4ImporterDB(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1451,7 +1554,7 @@ class TestInterlab4ImporterDB(object):
         assert test_string == reference_string
 
 
-class TestDbCalls(object):
+class __TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -1500,7 +1603,7 @@ class TestDbCalls(object):
         assert imported_staff == u'(True, [(staff1, ), (staff2, )])'
 
 
-class TestImportObsPoints(object):
+class __TestImportObsPoints(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -1608,7 +1711,7 @@ class TestImportObsPoints(object):
         assert test_string == reference_string
 
 
-class TestWquallabImport(object):
+class __TestWquallabImport(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
@@ -1705,7 +1808,7 @@ class TestWquallabImport(object):
         assert test_string == reference_string
 
 
-class TestWflowImport(object):
+class __TestWflowImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1766,7 +1869,7 @@ class TestWflowImport(object):
         assert test_string == reference_string
 
 
-class TestWqualfieldImport(object):
+class __TestWqualfieldImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1856,7 +1959,7 @@ class TestWqualfieldImport(object):
         assert test_string == reference_string
 
 
-class TestWlvlImport(object):
+class __TestWlvlImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1948,7 +2051,7 @@ class TestWlvlImport(object):
 
 
 
-class TestFilterDatesFromFiledata(object):
+class __TestFilterDatesFromFiledata(object):
 
     def setUp(self):
         self.importinstance = midv_data_importer()

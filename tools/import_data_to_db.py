@@ -1649,6 +1649,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.status = True
 
+    def parse_observations_and_populate_gui(self):
+
         self.observations = self.select_file_and_parse_rows()
         if self.observations == u'cancel':
             self.status = True
@@ -1702,15 +1704,20 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.show()
 
     def select_file_and_parse_rows(self):
-        filenames = self.select_files(only_one_file=False, should_ask_for_charset=True)
-        if not filenames:
+        filenames_charsetchoosen = utils.select_files(only_one_file=False, extension="csv (*.csv)", should_ask_for_charset=True, default_charset=u'utf-8')
+        if filenames_charsetchoosen is None:
             self.status = False
             return u'cancel'
+        else:
+            filenames, charsetchoosen = filenames_charsetchoosen
+            if not filenames:
+                self.status = False
+                return u'cancel'
 
         observations = []
         for filename in filenames:
-            filename = utils.returnunicode(filename[0])
-            with io.open(filename, 'r', encoding=str(self.charsetchoosen[0])) as f:
+            filename = utils.returnunicode(filename)
+            with io.open(filename, 'r', encoding=charsetchoosen) as f:
                 #Skip header
                 f.readline()
                 observations.extend(self.parse_rows(f))
@@ -1874,22 +1881,14 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         return file_data_list
 
-    def start_import(self, observations):
-        """
-
-        :param date_time_to_from:
-        :param sublocation_filter_types:
-        :return:
-        """
-
-        #Start by saving the parameter presets
-        self.update_stored_presets(self.stored_presets, self.parameter_imports)
-        self.save_stored_presets(self.ms, self.stored_presets)
+    @staticmethod
+    def filter_and_alter_data(observations, settings, settings_with_own_loop, parameter_imports):
+        observations = copy.deepcopy(observations)
 
         #Filter and alter data
         filtered_observations = []
         for observation in observations:
-            for setting in self.settings:
+            for setting in settings:
                 observation =  setting.alter_data(observation)
                 if observation == u'cancel':
                     return u'cancel'
@@ -1899,30 +1898,16 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 filtered_observations.append(observation)
         observations = filtered_observations
 
-        for setting in self.settings_with_own_loop:
+        for setting in settings_with_own_loop:
             observations = setting.alter_data(observations)
             if observations == u'cancel':
                 return u'cancel'
 
         #Update observations from parameter fields
-        for parameter_name, import_method_chooser in self.parameter_imports.iteritems():
+        for parameter_name, import_method_chooser in parameter_imports.iteritems():
             observations = import_method_chooser.parameter_import_fields.alter_data(observations)
 
-        #Finally import the data to database
-        observations_importmethods = {}
-        for observation in observations:
-            observations_importmethods.setdefault(self.parameter_imports[observation[u'parametername']].import_method, []).append(observation)
-
-        importer = midv_data_importer()
-
-        data_preparers_importers = {u'w_level': (self.prepare_w_level_data, importer.wlvl_import_from_csvlayer),
-                          u'w_flow': (self.prepare_w_flow_data, importer.wflow_import_from_csvlayer),
-                          u'w_qual_field': (self.prepare_w_qual_field_data, importer.wqualfield_import_from_csvlayer),
-                          u'comments': (self.prepare_comments_data, importer.comments_import_from_csv)}
-
-        for import_method, observations in observations_importmethods.iteritems():
-            file_data = data_preparers_importers[import_method][0](observations)
-            importer.send_file_data_to_importer(file_data, data_preparers_importers[import_method][1])
+        return observations
 
     @staticmethod
     def get_stored_presets(ms):
@@ -2007,6 +1992,36 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         ms.settingsdict[u'fieldlogger_import_parameter_presets'] = utils.returnunicode(preset_string)
         ms.save_settings()
 
+    def start_import(self, observations):
+        """
+
+        :param date_time_to_from:
+        :param sublocation_filter_types:
+        :return:
+        """
+
+        #Start by saving the parameter presets
+        self.update_stored_presets(self.stored_presets, self.parameter_imports)
+        self.save_stored_presets(self.ms, self.stored_presets)
+
+        observations = self.filter_and_alter_data(observations, self.settings, self.settings_with_own_loop, self.parameter_imports)
+
+        #Finally import the data to database
+        observations_importmethods = {}
+        for observation in observations:
+            observations_importmethods.setdefault(self.parameter_imports[observation[u'parametername']].import_method, []).append(observation)
+
+        importer = midv_data_importer()
+
+        data_preparers_importers = {u'w_level': (self.prepare_w_level_data, importer.wlvl_import_from_csvlayer),
+                          u'w_flow': (self.prepare_w_flow_data, importer.wflow_import_from_csvlayer),
+                          u'w_qual_field': (self.prepare_w_qual_field_data, importer.wqualfield_import_from_csvlayer),
+                          u'comments': (self.prepare_comments_data, importer.comments_import_from_csv)}
+
+        for import_method, observations in observations_importmethods.iteritems():
+            file_data = data_preparers_importers[import_method][0](observations)
+            importer.send_file_data_to_importer(file_data, data_preparers_importers[import_method][1])
+
 
 
 
@@ -2089,12 +2104,11 @@ class StaffQuestion(RowEntry):
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
-        staff = self.staff
-        if staff is None or not staff:
+        if self.staff is None or not self.staff:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error, staff not given')
             return u'cancel'
 
-        observation[u'staff'] = staff
+        observation[u'staff'] = self.staff
         return observation
 
 

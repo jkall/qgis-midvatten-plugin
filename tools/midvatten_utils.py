@@ -897,10 +897,10 @@ def rstrip(word, from_string):
         new_word = from_string[0:-len(word)]
     return new_word
 
-def select_files(only_one_file=True, extension="csv (*.csv)", should_ask_for_charset=True):
+def select_files(only_one_file=True, extension="csv (*.csv)", should_ask_for_charset=True, default_charset=None):
     """Asks users to select file(s) and charset for the file(s)"""
     if should_ask_for_charset:
-        charsetchoosen = ask_for_charset()
+        charsetchoosen = ask_for_charset(default_charset)
     else:
         charsetchoosen = 'nocharsetchosen'
     if charsetchoosen and not (charsetchoosen[0]==0 or charsetchoosen[0]==''):
@@ -913,17 +913,17 @@ def select_files(only_one_file=True, extension="csv (*.csv)", should_ask_for_cha
         csvpath = [p for p in csvpath if p]
         return csvpath, charsetchoosen
 
-def ask_for_charset(default_enchoding=None):
+def ask_for_charset(default_charset=None):
     try:#MacOSX fix2
         localencoding = locale.getdefaultlocale()[1]
-        if default_enchoding is None:
+        if default_charset is None:
             charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
         else:
-            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,default_enchoding)
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.", QtGui.QLineEdit.Normal, default_charset)
     except:
-        if default_enchoding is None:
-            default_enchoding = 'utf-8'
-        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,default_enchoding)
+        if default_charset is None:
+            default_charset = u'utf-8'
+        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.", QtGui.QLineEdit.Normal, default_charset)
     return str(charsetchoosen[0])
 
 def ask_for_export_crs(default_crs=u''):
