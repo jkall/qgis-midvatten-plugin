@@ -35,6 +35,7 @@ import PyQt4
 
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
+from tests.utils_for_tests import create_test_string
 
 from date_utils import find_date_format, datestring_to_date, dateshift
 
@@ -838,7 +839,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
     def wqualfield_import_from_csvlayer(self):
         """
-        self.csvlayer must contain columns "obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, flow_lpm, comment"
+        self.csvlayer must contain columns "obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment"
         :return:
         """
         self.prepare_import('temporary_wqualfield')
@@ -859,7 +860,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName, obsid, obsid, date_time, date_time, parameter, parameter)#Delete empty records from the import table!!!
             sqlNoOfdistinct = """SELECT Count(*) FROM (SELECT DISTINCT "%s", "%s", "%s", "%s" FROM %s)"""%(obsid, date_time, parameter, unit, self.temptableName) #Number of distinct data posts in the import table
-            cleaningok = self.multiple_field_duplicates(9, 'w_qual_field', sqlremove, 'obs_points', sqlNoOfdistinct)
+            cleaningok = self.multiple_field_duplicates(10, 'w_qual_field', sqlremove, 'obs_points', sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
 
                 if utils.verify_table_exists('zz_staff'):
@@ -1791,7 +1792,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         :return: None
         """
         file_data_list = [[u'obsid', u'date_time', u'meas', u'comment']]
-        for observation in observations.iteritems():
+        for observation in observations:
             obsid = observation[u'obsid']
             date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
             meas = observation[u'value'].replace(u',', u'.')
@@ -1804,6 +1805,9 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
     def prepare_comments_data(observations):
         file_data_list = [[u'obsid', u'date_time', u'comment', u'staff']]
         for observation in observations:
+
+            if observation.get(u'skip_comment_import', False):
+                continue
             obsid = observation[u'obsid']
             date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
             comment = observation[u'value']
@@ -2113,7 +2117,7 @@ class StaffQuestion(RowEntry):
 
     @property
     def staff(self):
-        return self.existing_staff_combobox.currentText()
+        return utils.returnunicode(self.existing_staff_combobox.currentText())
 
     @staff.setter
     def staff(self, value):
@@ -2143,7 +2147,7 @@ class DateShiftQuestion(RowEntry):
     def alter_data(self, observation):
         utils.MessagebarAndLog.info(log_msg="In DateShiftQuestion.alter_data")
         observation = copy.deepcopy(observation)
-        shift_specification = str(self.dateshift_lineedit.text())
+        shift_specification = utils.returnunicode(self.dateshift_lineedit.text())
 
         step_steplength = shift_specification.split(u' ')
         failed = False
@@ -2324,19 +2328,23 @@ class CommentsImportFields(RowEntry):
     def alter_data(self, observations):
         observations = copy.deepcopy(observations)
         parameter_name = self.import_method_chooser.parameter_name
-        obsdict = {}
+        comment_obsdict = {}
         dateformat = '%Y%M%D %H:%m:%s'
         for observation in observations:
             if observation[u'parametername'] == parameter_name:
                 datestring = datetime.strftime(observation[u'date_time'], dateformat)
-                obsdict.setdefault(observation[u'sublocation'], {})[datestring] = observation
+                comment_obsdict.setdefault(observation[u'sublocation'], {})[datestring] = observation
 
         for observation in observations:
             if observation[u'parametername'] != parameter_name:
-                comment_obs = obsdict.get(observation[u'sublocation'], {}).get(observation[u'date_time'], None)
+                datestring = datetime.strftime(observation[u'date_time'], dateformat)
+                comment_obs = comment_obsdict.get(observation[u'sublocation'], {}).get(datestring, None)
                 if comment_obs != None:
                     observation[u'comment'] = comment_obs[u'value']
                     comment_obs[u'skip_comment_import'] = True
+
+        print(create_test_string(observations))
+        #TODO: Comments are sent to comments import even though they should only be at the other imports
         return observations
 
 
