@@ -912,13 +912,13 @@ def ask_for_charset(default_charset=None):
     try:#MacOSX fix2
         localencoding = locale.getdefaultlocale()[1]
         if default_charset is None:
-            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])[0]
         else:
-            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.", QtGui.QLineEdit.Normal, default_charset)
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.", QtGui.QLineEdit.Normal, default_charset)[0]
     except:
         if default_charset is None:
             default_charset = 'utf-8'
-        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.", QtGui.QLineEdit.Normal, default_charset)
+        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.", QtGui.QLineEdit.Normal, default_charset)[0]
     return str(charsetchoosen)
 
 def ask_for_export_crs(default_crs=u''):

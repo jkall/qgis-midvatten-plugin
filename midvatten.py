@@ -769,7 +769,7 @@ class midvatten:
                 longmessage = "You are about to import water head data, water flow or water quality from FieldLogger format."
                 sanity = utils.askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
                 if sanity.result == 1:
-                    from import_data_to_db import FieldloggerImport
+                    from import_fieldlogger import FieldloggerImport
                     importinstance = FieldloggerImport(self.iface.mainWindow(), self.ms)
                     importinstance.parse_observations_and_populate_gui()
                     if not importinstance.status == 'True' and not importinstance.status:

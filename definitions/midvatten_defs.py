@@ -94,7 +94,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'piper_mg':'Magnesium, Mg',
             'piper_markers':'type',
             'locale': '',
-            'fieldlogger_import_parameter_presets': '',
+            'fieldlogger_import_parameter_settings': '',
             }
     return dictionary
 
