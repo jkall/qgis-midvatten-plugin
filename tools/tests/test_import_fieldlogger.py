@@ -139,7 +139,7 @@ class TestFieldLoggerImporterDb(object):
                 mock_MessagebarAndLog.critical.assert_called_with(bar_msg=u'Import error, staff not given')
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    def test(self):
+    def full_integration_test_to_db(self):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
@@ -178,7 +178,7 @@ class TestFieldLoggerImporterDb(object):
             @mock.patch('import_data_to_db.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.MessagebarAndLog')
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            def _t(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument):
+            def _full_integration_test_to_db(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument):
                 mock_charset.return_value = 'utf-8'
                 mock_savefilename.return_value = [filename]
                 mock_ask_instrument.return_value.value = u'testid'
@@ -207,15 +207,63 @@ class TestFieldLoggerImporterDb(object):
                 importer.set_parameters_using_stored_presets(stored_settings, importer.parameter_imports)
                 importer.start_import(importer.observations)
 
-            _t(self, filename)
-
+            _full_integration_test_to_db(self, filename)
 
             test_string = utils_for_tests.create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
-            print("Test: ")
-            print(test_string)
-            print("Ref: ")
-            reference_string = u'{comments: (True, [(Rb1608, 2016-03-30 15:34:40, testc, teststaff), (Rb1202, 2016-03-30 15:31:30, hej2, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, ), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, )]), zz_staff: (True, [(teststaff, )])}'
-            print(reference_string)
-            #reference = u'[{date_time: 2016-03-30 15:29:26, parametername: q.comment, sublocation: Rb1505.quality, value: hej}, {date_time: 2016-03-30 15:30:39, parametername: q.syre.mg/L, sublocation: Rb1512.quality, value: 67}, {date_time: 2016-03-30 15:31:30, parametername: s.turbiditet.FNU, sublocation: Rb1512.sample, value: 899}, {date_time: 2016-03-30 15:29:26, parametername: q.konduktivitet.µS/cm, sublocation: Rb1505.quality, value: 863}, {date_time: 2016-03-30 15:30:09, parametername: f.comment, sublocation: Rb1615.flow, value: gick bra}, {date_time: 2016-03-30 15:30:40, parametername: q.syre.%, sublocation: Rb1512.quality, value: 58}, {date_time: 2016-03-30 15:34:13, parametername: l.meas.m, sublocation: Rb1608.level, value: 555}, {date_time: 2016-03-30 15:30:39, parametername: q.comment, sublocation: Rb1512.quality, value: test}, {date_time: 2016-03-30 15:31:30, parametername: s.comment, sublocation: Rb1202.sample, value: hej2}, {date_time: 2016-03-30 15:34:40, parametername: l.comment, sublocation: Rb1608.level, value: testc}, {date_time: 2016-03-30 15:30:09, parametername: f.Accvol.m3, sublocation: Rb1615.flow, value: 357}, {date_time: 2016-03-30 15:34:13, parametername: l.comment, sublocation: Rb1608.level, value: ergv}, {date_time: 2016-03-30 15:30:39, parametername: q.temperatur.grC, sublocation: Rb1512.quality, value: 8}]'
+            reference_string = u'{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, ), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, ), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
             assert test_string == reference_string
+
+
+class TestCommentsImportFields(object):
+    def setUp(self):
+        mock_import_method_chooser = MagicMock()
+        mock_import_method_chooser.parameter_name = u'comment'
+        self.comments_import = import_data_to_db.CommentsImportFields(mock_import_method_chooser, None)
+
+    def test_alter_data(self):
+        observations = [{u'parametername': u'comment',
+                         u'date_time': datestring_to_date(u'2016-01-01'),
+                         u'sublocation': u'1',
+                         u'value': u'shared_comment'},
+                        {u'parametername': u'par_get_shared_comment',
+                         u'date_time': datestring_to_date(u'2016-01-01'),
+                         u'sublocation': u'1',
+                         u'value': u'1'},
+                        {u'parametername': u'par_not_get_shared_comment',
+                         u'date_time': datestring_to_date(u'2016-01-02'),
+                         u'sublocation': u'2',
+                         u'value': u'1'},
+                        {u'parametername': u'par_not_get_shared_comment',
+                         u'date_time': datestring_to_date(u'2016-01-04'),
+                         u'sublocation': u'1',
+                         u'value': u'1'},
+                        {u'parametername': u'comment',
+                         u'date_time': datestring_to_date(u'2016-01-03'),
+                         u'sublocation': u'1',
+                         u'value': u'not_shared_comment'}
+                        ]
+        observations = self.comments_import.alter_data(observations)
+
+        test_string = utils_for_tests.create_test_string(observations)
+        reference_string = u'[{date_time: 2016-01-01 00:00:00, parametername: comment, skip_comment_import: True, sublocation: 1, value: shared_comment}, {comment: shared_comment, date_time: 2016-01-01 00:00:00, parametername: par_get_shared_comment, sublocation: 1, value: 1}, {date_time: 2016-01-02 00:00:00, parametername: par_not_get_shared_comment, sublocation: 2, value: 1}, {date_time: 2016-01-04 00:00:00, parametername: par_not_get_shared_comment, sublocation: 1, value: 1}, {date_time: 2016-01-03 00:00:00, parametername: comment, sublocation: 1, value: not_shared_comment}]'
+        assert test_string == reference_string
+
+
+class TestStaffQuestion(object):
+
+    @mock.patch('import_data_to_db.defs.staff_list')
+    def setUp(self, mock_stafflist):
+        mock_stafflist.return_value = (True, [u'staff1', u'staff2'])
+        self.staff_question = import_data_to_db.StaffQuestion()
+
+    def test_alter_data(self):
+        observation = {u'sublocation': u'1'}
+
+        self.staff_question.staff = u'teststaff'
+        test_string = utils_for_tests.create_test_string(self.staff_question.alter_data(observation))
+        reference_string = u'{staff: teststaff, sublocation: 1}'
+        assert test_string == reference_string
+
+
+
 

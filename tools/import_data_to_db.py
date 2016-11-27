@@ -2192,15 +2192,6 @@ class DateTimeFilter(RowEntry):
             self.layout.addWidget(widget)
         self.layout.addStretch()
 
-    def alter_datas(self, observations):
-
-        observations = [observation for observation in observations if self.alter_data(observation) is not None]
-
-        if not observations:
-            utils.MessagebarAndLog.warning(bar_msg=u'Datetime filter resulted in no remaining observations. No import done')
-            return u'cancel'
-        return observations
-
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
         _from = self.from_datetimeedit.dateTime().toPyDateTime()
@@ -2343,8 +2334,6 @@ class CommentsImportFields(RowEntry):
                     observation[u'comment'] = comment_obs[u'value']
                     comment_obs[u'skip_comment_import'] = True
 
-        print(create_test_string(observations))
-        #TODO: Comments are sent to comments import even though they should only be at the other imports
         return observations
 
 

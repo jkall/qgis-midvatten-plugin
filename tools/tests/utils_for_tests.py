@@ -23,7 +23,7 @@ import io
 
 from PyQt4 import QtCore
 from qgis.core import QgsApplication
-
+from collections import OrderedDict
 import midvatten_utils as utils
 from tools.tests.mocks_for_tests import DummyInterface
 
@@ -85,7 +85,7 @@ def create_test_string(anything):
      >>> create_test_string({3: 'a', 2: 'b', 1: ('c', 'd')})
      u'{1: (c, d), 2: b, 3: a}'
     """
-    if isinstance(anything, dict):
+    if isinstance(anything, (dict, OrderedDict)):
         aunicode = u''.join([u'{', u', '.join([u': '.join([create_test_string(k), create_test_string(v)]) for k, v in sorted(anything.iteritems())]), u'}'])
     elif isinstance(anything, list):
         aunicode = u''.join([u'[', u', '.join([create_test_string(x) for x in anything]), u']'])
