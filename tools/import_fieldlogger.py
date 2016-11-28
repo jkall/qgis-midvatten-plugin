@@ -634,6 +634,7 @@ class SublocationFilter(RowEntry):
         self.label = PyQt4.QtGui.QLabel()
         self.label.setText(u'Sublocation filter: ')
         self.layout.addWidget(self.label)
+        self.skip_all_checkbox = PyQt4.QtGui.QCheckBox(u' Skip all with this pattern.')
         self.filters = []
         for idx, inner_set in enumerate(sublocation_list):
             self.filters.append(PyQt4.QtGui.QListWidget())
@@ -643,12 +644,15 @@ class SublocationFilter(RowEntry):
             if idx != len(sublocation_list) - 1:
                 dotlabel = PyQt4.QtGui.QLabel(u'.')
                 self.layout.addWidget(dotlabel)
+        self.layout.addWidget(self.skip_all_checkbox)
         self.layout.addStretch()
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
         sublocation = observation[u'sublocation'].split(u'.')
         if len(sublocation) == len(self.filters):
+            if self.skip_all_checkbox.isChecked():
+                return None
             for idx, filter in enumerate(self.filters):
                 selected_items = [item.text() for item in filter.selectedItems()]
                 if selected_items:
