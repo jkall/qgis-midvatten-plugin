@@ -52,38 +52,54 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
     def parse_observations_and_populate_gui(self):
 
+        splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
+        self.add_row(splitter)
+
         self.observations = self.select_file_and_parse_rows()
         if self.observations == u'cancel':
             self.status = True
             return u'cancel'
 
         #Filters and general settings
-        self.settings_with_own_loop = []
+        settings_widget = PyQt4.QtGui.QWidget()
+        settings_layout = PyQt4.QtGui.QVBoxLayout()
+        settings_widget.setLayout(settings_layout)
+        splitter.addWidget(settings_widget)
         self.settings = []
         self.settings.append(StaffQuestion())
         self.settings.append(DateShiftQuestion())
         self.settings.append(DateTimeFilter()) #This includes a checkbox for "include only latest
-        self.settings_with_own_loop.append(ObsidFilter())
-
-        sublocation_groups = self.sublocation_to_groups([observation[u'sublocation'] for observation in self.observations], delimiter=u'.')
-        for _length, sublocation_group in sorted(sublocation_groups.iteritems()):
-            self.settings.append(SublocationFilter(sublocation_group))
-
         for setting in self.settings:
-            self.add_row(setting.widget)
+            if hasattr(setting, u'widget'):
+                settings_layout.addWidget(setting.widget)
+        self.add_line(settings_layout)
 
-        for setting in self.settings_with_own_loop:
-            self.add_row(setting.widget)
+        #Settings with own loop gets self.observations to work on.
+        self.settings_with_own_loop = [ObsidFilter()]
 
-        self.add_line()
+        #Sublocations
+        sublocations = [observation[u'sublocation'] for observation in self.observations]
+        sublocations_widget = PyQt4.QtGui.QWidget()
+        sublocations_layout = PyQt4.QtGui.QVBoxLayout()
+        sublocations_widget.setLayout(sublocations_layout)
+        splitter.addWidget(sublocations_widget)
+        self.settings.append(SublocationFilter(sublocations))
+        sublocations_layout.addWidget(self.settings[-1].widget)
+        self.add_line(sublocations_layout)
 
         #Parameters
+        parameter_widget = PyQt4.QtGui.QWidget()
+        parameter_layout = PyQt4.QtGui.QVBoxLayout()
+        parameter_widget.setLayout(parameter_layout)
+        splitter.addWidget(parameter_widget)
+
         self.parameter_names = list(set([observation[u'parametername'] for observation in self.observations]))
         self.parameter_imports = OrderedDict()
         for parametername in self.parameter_names:
             param_import_obj = ImportMethodChoser(parametername, self.parameter_names, self.connect)
             self.parameter_imports[parametername] = param_import_obj
-            self.add_row(param_import_obj.widget)
+            parameter_layout.addWidget(param_import_obj.widget)
+
         self.main_vertical_layout.addStretch(1)
 
         #General buttons
@@ -96,6 +112,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                          lambda : map(lambda x: x(),
                                       [lambda : self.update_stored_settings(self.stored_settings, self.parameter_imports),
                                        lambda : self.save_stored_settings(self.ms, self.stored_settings)]))
+
+
 
         #Load stored parameter settings
         self.stored_settings = self.get_stored_settings(self.ms)
@@ -153,7 +171,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         """
         self.main_vertical_layout.addWidget(a_widget)
 
-    def add_line(self):
+    def add_line(self, layout=None):
         """ just adds a line"""
         #horizontalLineWidget = PyQt4.QtGui.QWidget()
         #horizontalLineWidget.setFixedHeight(2)
@@ -164,7 +182,10 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         line.setGeometry(PyQt4.QtCore.QRect(320, 150, 118, 3))
         line.setFrameShape(PyQt4.QtGui.QFrame.HLine);
         line.setFrameShadow(PyQt4.QtGui.QFrame.Sunken);
-        self.add_row(line)
+        if layout is None:
+            self.add_row(line)
+        else:
+            layout.addWidget(line)
 
     @staticmethod
     def sublocation_to_groups(sublocations, delimiter=u'.'):
@@ -368,10 +389,11 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                     pass
 
     @staticmethod
-    def update_stored_settings(stored_settings, parameter_imports):
+    def update_stored_settings(stored_settings, parameter_imports, force_update=False):
         for parameter_name, import_method_chooser in parameter_imports.iteritems():
-            if import_method_chooser.import_method is None:
-                continue
+            if not force_update:
+                if import_method_chooser.import_method is None or not import_method_chooser.import_method:
+                    continue
 
             attrdict = stored_settings.get(import_method_chooser.parameter_name, OrderedDict())
 
@@ -469,22 +491,9 @@ class RowEntryGrid(object):
         self.layout = PyQt4.QtGui.QGridLayout()
         self.widget.setLayout(self.layout)
 
-
-class ObsidFilter(RowEntry):
+class ObsidFilter(object):
     def __init__(self):
-        super(ObsidFilter, self).__init__()
-        self.label = PyQt4.QtGui.QLabel(u'Obsid filter: ')
-        self.try_capitalize_checkbox = PyQt4.QtGui.QCheckBox(u' Try capitalize obsids. (Found obsids will be imported automatically, and if not found, "Try capitalize obsids" tries the obsids again but capitalized.)')
-
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.try_capitalize_checkbox)
-        self.layout.addStretch()
-
-    def check(self):
-        self.try_capitalize_checkbox.setChecked(True)
-
-    def uncheck(self):
-        self.try_capitalize_checkbox.setChecked(False)
+        pass
 
     def alter_data(self, observations):
         observations = copy.deepcopy(observations)
@@ -498,7 +507,7 @@ class ObsidFilter(RowEntry):
         obsids.append([u'old_obsid', u'new_obsid'])
         obsids.reverse()
 
-        answer = utils.filter_nonexisting_values_and_ask(obsids, u'new_obsid', existing_obsids, self.try_capitalize_checkbox.isChecked())
+        answer = utils.filter_nonexisting_values_and_ask(obsids, u'new_obsid', existing_values=existing_obsids, try_capitalize=False)
         if answer == u'cancel':
             return answer
 
@@ -625,40 +634,48 @@ class DateTimeFilter(RowEntry):
 
 
 class SublocationFilter(RowEntry):
-    def __init__(self, sublocation_list):
+    def __init__(self, sublocations):
         """
-        a list like [set(distinct values), set(distinct values), set(), ...]
-        :param sublocation_group:
+
+        :param sublocations: a list like [u'a.b', u'1.2.3', ...]
         """
         super(SublocationFilter, self).__init__()
-        self.label = PyQt4.QtGui.QLabel()
-        self.label.setText(u'Sublocation filter: ')
+
+        self.label = PyQt4.QtGui.QLabel(u'Select sublocations to import:')
         self.layout.addWidget(self.label)
-        self.skip_all_checkbox = PyQt4.QtGui.QCheckBox(u' Skip all with this pattern.')
-        self.filters = []
-        for idx, inner_set in enumerate(sublocation_list):
-            self.filters.append(PyQt4.QtGui.QListWidget())
-            self.filters[-1].setSelectionMode(PyQt4.QtGui.QAbstractItemView.MultiSelection)
-            self.filters[-1].addItems(sorted(inner_set))
-            self.layout.addWidget(self.filters[-1])
-            if idx != len(sublocation_list) - 1:
-                dotlabel = PyQt4.QtGui.QLabel(u'.')
-                self.layout.addWidget(dotlabel)
-        self.layout.addWidget(self.skip_all_checkbox)
+
+        sublocations = sorted(list(set(sublocations)))
+        num_rows = len(sublocations)
+        num_columns = reduce(lambda x, y: max(x , len(y.split(u'.'))), sublocations, 0)
+
+        self.table = PyQt4.QtGui.QTableWidget(num_rows, num_columns)
+        self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)
+        self.table.setSelectionMode(PyQt4.QtGui.QAbstractItemView.ExtendedSelection)
+        self.table.horizontalHeader().setStretchLastSection(True)
+
+        self.table_items = {}
+        for rownr, sublocation in enumerate(sublocations):
+            for colnr, value in enumerate(sublocation.split(u'.')):
+                tablewidgetitem = PyQt4.QtGui.QTableWidgetItem(value)
+                if sublocation not in self.table_items:
+                    self.table_items[sublocation] = tablewidgetitem
+                self.table.setItem(rownr, colnr, tablewidgetitem)
+
+        self.table.setSortingEnabled(True)
+        self.table.resizeColumnsToContents()
+
+        self.table.setRangeSelected(PyQt4.QtGui.QTableWidgetSelectionRange(0, 0, num_rows, num_columns), True)
+        self.layout.addWidget(self.table)
         self.layout.addStretch()
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
-        sublocation = observation[u'sublocation'].split(u'.')
-        if len(sublocation) == len(self.filters):
-            if self.skip_all_checkbox.isChecked():
-                return None
-            for idx, filter in enumerate(self.filters):
-                selected_items = [item.text() for item in filter.selectedItems()]
-                if selected_items:
-                    if sublocation[idx] not in selected_items:
-                        return None
-        return observation
+        sublocation = observation[u'sublocation']
+
+        if self.table_items[sublocation].isSelected():
+            return observation
+        else:
+            return None
 
 
 class ImportMethodChoser(RowEntry):
@@ -896,7 +913,7 @@ class WQualFieldImportFields(RowEntryGrid):
                 self.parameter_instruments.setdefault(parameter, set()).add(instrument)
 
         for parameter, instrument_set in self.parameter_instruments.iteritems():
-            self.parameter_instruments[parameter] = [list(instrument_set)]
+            self.parameter_instruments[parameter] = list(instrument_set)
 
         self.layout.addWidget(self.label_parameter, 0, 0)
         self.layout.addWidget(self.__parameter, 1, 0)
@@ -969,9 +986,10 @@ class WQualFieldImportFields(RowEntryGrid):
         """
         vals = parameter_list_dict.get(parameter_var, None)
         if vals is None:
-            vals = list(sorted(set([val for vals_list in parameter_list_dict.values() for val in vals_list[0]])))
+            vals = list(sorted(set([val[0] if isinstance(val, (list, tuple)) else val for vals_list in parameter_list_dict.values() for val in vals_list])))
         else:
-            vals = list(vals[0])
+            vals = sorted([val[0] if isinstance(val, (list, tuple)) else val for val in vals])
+
         combobox_var.clear()
         combobox_var.addItem(u'')
         combobox_var.addItems(utils.returnunicode(vals, keep_containers=True))
@@ -996,11 +1014,17 @@ class WQualFieldImportFields(RowEntryGrid):
         observations = copy.deepcopy(observations)
         depth_dict = dict([(obs[u'date_time'], obs[u'value']) for obs in observations if obs[u'parametername'] == self.depth])
         for observation in observations:
-            if observation[u'parametername'] == self._import_method_chooser.parameter_name:
-                observation[u'depth'] = depth_dict.get(observation[u'date_time'], u'')
-                observation[u'parameter'] = self.parameter
-                observation[u'instrument'] = self.instrument
-                observation[u'unit'] = self.unit
+            try:
+                if observation[u'parametername'] == self._import_method_chooser.parameter_name:
+                    observation[u'depth'] = depth_dict.get(observation[u'date_time'], u'')
+                    observation[u'parameter'] = self.parameter
+                    observation[u'instrument'] = self.instrument
+                    observation[u'unit'] = self.unit
+            except TypeError:
+                utils.MessagebarAndLog.critical(bar_msg="Import error. See message log panel",
+                                                log_msg="error on observation : " + str(observation) +
+                                                        "\nand parameter: " + self.parameter)
+                raise TypeError
         return observations
 
 

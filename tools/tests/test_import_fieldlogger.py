@@ -264,13 +264,12 @@ class TestObsidFilter(object):
 
     @mock.patch('import_fieldlogger.utils.get_all_obsids')
     def test_alter_data(self, mock_get_all_obsids):
-        mock_get_all_obsids.return_value = [u'Rb1', u'rb2']
-        self.obsid_filter.check()
+        mock_get_all_obsids.return_value = [u'rb1', u'rb2']
 
         observations = [{u'sublocation': u'rb1'}, {u'sublocation': u'rb2'}]
 
         test_string = utils_for_tests.create_test_string(self.obsid_filter.alter_data(observations))
-        reference_string = u'[{obsid: Rb1, sublocation: rb1}, {obsid: rb2, sublocation: rb2}]'
+        reference_string = u'[{obsid: rb1, sublocation: rb1}, {obsid: rb2, sublocation: rb2}]'
         assert test_string == reference_string
 
 
