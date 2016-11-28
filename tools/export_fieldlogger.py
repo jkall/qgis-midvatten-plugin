@@ -342,7 +342,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             utils.pop_up_info("Error writing " + str(printlist))
 
 
-class Parameter(object):
+class Parameter2(object):
     def __init__(self, name, hint, parameter_type, unit='', valuetype='numberDecimal|numberSigned', hidden=False):
         """ A class representing a parameter
 
@@ -379,3 +379,64 @@ class Parameter(object):
         return self.header_word
 
 
+
+
+class ExportObject(object):
+    def __init__(self):
+        """
+        This one should contain:
+
+        Two widgets and two layouts (separate classes.
+
+        Widget 1 contains the comboboxes and fields for producing the parameter names.
+
+            part 1: parameter names
+                option 1:
+                less flexible. Choosing a table and a pre-created list of parameters/units will appear using select distinct parameter, unit from ...
+                option 2:
+                choosing table, then column, then distinct parameter, then table, column and distinct unit.
+                This could create bad combinations of parameters and units. and takes up more space.
+                Maybe these could be set using a separate pop-up dialog.
+
+                qlineedit: final_parameter_name. This is the one that really matters. The other fields are only for help
+                qcombobox: inputtype?
+                qcombobox: color?
+
+            part 2: obsids.
+                obsidnames (obsid.suffix)
+                sublocation-names (obsid.suffix.groupname)
+                This, two qlineedits, obsid-suffix, and sublocation-suffix. (Which can be unequal or equal.
+
+        Widget 2 contains all the obsids which will be under the first widget.
+
+        Maybe a vertical splitter can be used to hide parts.
+
+        QCombobox
+
+        """
+        self.splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
+
+        #There will at least two like this. Don't duplicate code
+        self.parametername_helper_widget = PyQt4.QtGui.QWidget()
+        self.parametername_helper_layout = PyQt4.QtGui.QVBoxLayout()
+        self.parametername_helper_widget.setLayout(self.parametername_helper_layout)
+
+        #May I should ask for all tables and columns only once, and then ask for all columns and put as a dict with table as key and columns as values.
+        #This way it will be way less questions to the database.
+        #Use the question from customplot:
+        #rs = curs.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + midvatten_defs.SQLiteInternalTables() + r""")  and not name like 'zz_%' and not (name in""" + midvatten_defs.sqlite_nonplot_tables() + r""") ORDER BY tbl_name""")  # SQL statement to get the relevant tables in the spatialite database
+        #and for columns:
+        # """PRAGMA table_info (%s)"""%tablename
+
+        #This is duplicate code. Not good.
+        parameter_table_combobox = PyQt4.QtGui.QComboBox()
+        parameter_column_combobox = PyQt4.QtGui.QComboBox()
+        parameter_distinct_from_column_combobox = PyQt4.QtGui.QComboBox()
+
+        unit_table_combobox = PyQt4.QtGui.QComboBox()
+        unit_column_combobox = PyQt4.QtGui.QComboBox()
+        unit_distinct_from_column_combobox = PyQt4.QtGui.QComboBox()
+
+
+
+        pass
