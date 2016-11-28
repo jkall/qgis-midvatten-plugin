@@ -93,7 +93,8 @@ def settingsdict():    #These are the default settings, they shall not be change
             'piper_ca':'Kalcium, Ca',
             'piper_mg':'Magnesium, Mg',
             'piper_markers':'type',
-            'locale': ''
+            'locale': '',
+            'fieldlogger_import_parameter_settings': ''
             }
     return dictionary
 
@@ -611,7 +612,30 @@ def w_qual_field_parameters():
     connection_ok, result_list = sql_result
 
     if not connection_ok:
-        textstring = """Cannot get data from sql """ + sql
-        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+        textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
+        utils.MessagebarAndLog.critical(bar_msg=u"Error, sql failed, see log message panel", log_msg=textstring)
 
-    return utils.returnunicode(result_list, True)
+    return utils.returnunicode(result_list, keep_containers=True)
+
+
+def w_flow_flowtypes_units():
+    sql = 'select distinct flowtype, unit from w_flow'
+    connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
+
+    if not connection_ok:
+        textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
+        utils.MessagebarAndLog.critical(bar_msg=u"Error, sql failed, see log message panel", log_msg=textstring)
+        return {}
+
+    return utils.returnunicode(result_dict, keep_containers=True)
+
+def w_qual_field_parameter_units():
+    sql = 'select distinct parameter, unit from w_qual_field'
+    connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
+
+    if not connection_ok:
+        textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
+        utils.MessagebarAndLog.critical(bar_msg=u"Error, sql failed, see log message panel", log_msg=textstring)
+        return {}
+
+    return utils.returnunicode(result_dict, keep_containers=True)
