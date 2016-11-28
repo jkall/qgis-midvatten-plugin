@@ -1032,6 +1032,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
                 filtered_data.append(row)
             continue
 
+        #Put the found similar values on top, but include all values in the database as well
         similar_values = find_similar(current_value, existing_values, hits=5)
         similar_values.extend(sorted(existing_values))
 
@@ -1163,6 +1164,20 @@ def scale_nparray(x, a=1, b=0):
     """
     return a * copy.deepcopy(x) + b
 
+def remove_mean_from_nparray(x):
+    """
+
+    """
+    x = copy.deepcopy(x)
+    mean = x[np.logical_not(np.isnan(x))]
+    mean = mean.mean(axis=0)
+    MessagebarAndLog.info(log_msg=str(mean))
+    x = x - mean
+
+    # for colnr, col in enumerate(x):
+    #     x[colnr] = x[colnr] - np.mean(x[colnr])
+    return x
+
 def getcurrentlocale():
     current_locale = QgsProject.instance().readEntry("Midvatten", "locale")[0]
     return current_locale
@@ -1209,3 +1224,4 @@ def calculate_db_table_rows():
         MessagebarAndLog.info(
             bar_msg='Calculation done, see log for results.',
             log_msg=printable_msg, duration=15, button=True)
+
