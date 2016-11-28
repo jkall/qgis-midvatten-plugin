@@ -149,7 +149,7 @@ class midvatten:
 
         self.actionimport_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import data with FieldLogger format", self.iface.mainWindow())
         QObject.connect(self.actionimport_fieldlogger, SIGNAL("triggered()"), self.import_fieldlogger)
-        
+
         self.actionPlotTS = QAction(QIcon(":/plugins/midvatten/icons/PlotTS.png"), "Time series plot", self.iface.mainWindow())
         self.actionPlotTS.setWhatsThis("Plot time series for selected objects")
         self.iface.registerMainWindowAction(self.actionPlotTS, "F8")   # The function should also be triggered by the F8 key
@@ -769,9 +769,9 @@ class midvatten:
                 longmessage = "You are about to import water head data, water flow or water quality from FieldLogger format."
                 sanity = utils.askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
                 if sanity.result == 1:
-                    from import_data_to_db import midv_data_importer
-                    importinstance = midv_data_importer()
-                    importinstance.fieldlogger_import()
+                    from import_fieldlogger import FieldloggerImport
+                    importinstance = FieldloggerImport(self.iface.mainWindow(), self.ms)
+                    importinstance.parse_observations_and_populate_gui()
                     if not importinstance.status == 'True' and not importinstance.status:
                         self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
                     else:

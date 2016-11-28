@@ -482,10 +482,12 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
                 text = tuple([returnunicode(x, keep_containers) for x in anything])
             elif isinstance(anything, dict):
                 text = dict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
+            elif isinstance(anything, OrderedDict):
+                text = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
             else:
                 text = anything
 
-            if isinstance(text, (list, tuple, dict)):
+            if isinstance(text, (list, tuple, dict, OrderedDict)):
                 if not keep_containers:
                     text = unicode(text)
             elif isinstance(text, str):
@@ -895,34 +897,29 @@ def rstrip(word, from_string):
         new_word = from_string[0:-len(word)]
     return new_word
 
-def select_files(only_one_file=True, extension="csv (*.csv)", should_ask_for_charset=True):
-    """Asks users to select file(s) and charset for the file(s)"""
-    if should_ask_for_charset:
-        charsetchoosen = ask_for_charset()
+def select_files(only_one_file=True, extension="csv (*.csv)"):
+    """Asks users to select file(s)"""
+    if only_one_file:
+        csvpath = QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)
     else:
-        charsetchoosen = 'nocharsetchosen'
-    if charsetchoosen and not (charsetchoosen[0]==0 or charsetchoosen[0]==''):
-        if only_one_file:
-            csvpath = QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)
-        else:
-            csvpath = QtGui.QFileDialog.getOpenFileNames(None, "Select Files","", extension)
-        if not isinstance(csvpath, (list, tuple)):
-            csvpath = [csvpath]
-        csvpath = [p for p in csvpath if p]
-        return csvpath, charsetchoosen
+        csvpath = QtGui.QFileDialog.getOpenFileNames(None, "Select Files","", extension)
+    if not isinstance(csvpath, (list, tuple)):
+        csvpath = [csvpath]
+    csvpath = [p for p in csvpath if p]
+    return csvpath
 
-def ask_for_charset(default_enchoding=None):
+def ask_for_charset(default_charset=None):
     try:#MacOSX fix2
         localencoding = locale.getdefaultlocale()[1]
-        if default_enchoding is None:
-            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
+        if default_charset is None:
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])[0]
         else:
-            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,default_enchoding)
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.", QtGui.QLineEdit.Normal, default_charset)[0]
     except:
-        if default_enchoding is None:
-            default_enchoding = 'utf-8'
-        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,default_enchoding)
-    return str(charsetchoosen[0])
+        if default_charset is None:
+            default_charset = 'utf-8'
+        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.", QtGui.QLineEdit.Normal, default_charset)[0]
+    return str(charsetchoosen)
 
 def ask_for_export_crs(default_crs=u''):
     return str(QtGui.QInputDialog.getText(None, "Set export crs", "Give the crs for the exported database.\n",QtGui.QLineEdit.Normal,default_crs)[0])
@@ -981,7 +978,7 @@ def find_similar(word, wordlist, hits=5):
     matches = list(set(difflib.get_close_matches(word, matches, nr_of_hits)))
     return matches
 
-def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[], try_capitalize=False):
+def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=None, try_capitalize=False):
     """
 
     The class NotFoundQuestion is used with 4 buttons; u'Ignore', u'Cancel', u'Ok', u'Skip'.
@@ -998,6 +995,8 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
 
 
     """
+    if existing_values is None:
+        existing_values = []
     header_value = returnunicode(header_value)
     filtered_data = []
     data_to_ask_for = []
@@ -1034,11 +1033,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
             continue
 
         similar_values = find_similar(current_value, existing_values, hits=5)
-        if len(similar_values) == 0:
-            if len(existing_values) != 0:
-                similar_values = sorted(existing_values)
-            else:
-                similar_values = [u'']
+        similar_values.extend(sorted(existing_values))
 
         not_tried_capitalize = True
 
@@ -1167,20 +1162,6 @@ def scale_nparray(x, a=1, b=0):
     array([ -9, -11,  -7,  -5])
     """
     return a * copy.deepcopy(x) + b
-
-def remove_mean_from_nparray(x):
-    """
-
-    """
-    x = copy.deepcopy(x)
-    mean = x[np.logical_not(np.isnan(x))]
-    mean = mean.mean(axis=0)
-    MessagebarAndLog.info(log_msg=str(mean))
-    x = x - mean
-
-    # for colnr, col in enumerate(x):
-    #     x[colnr] = x[colnr] - np.mean(x[colnr])
-    return x
 
 def getcurrentlocale():
     current_locale = QgsProject.instance().readEntry("Midvatten", "locale")[0]
