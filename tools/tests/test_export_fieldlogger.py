@@ -31,7 +31,7 @@ from mock import MagicMock
 import mock
 from utils_for_tests import dict_to_sorted_list, create_test_string
 
-class TestExportFieldlogger():
+class _TestExportFieldlogger():
     qual_params = MockUsingReturnValue(((u'redoxpotential', (u'mV',)), (u'syre', (u'mg/L', u'%')), (u'pH', (u'',))))
     flow_params = MockUsingReturnValue(((u'Momflow', (u'l/s',)), (u'Accvol', (u'm3',))))
     sample_params = MockUsingReturnValue(((u'turbiditet', (u'FNU',)),))

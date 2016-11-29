@@ -639,3 +639,34 @@ def w_qual_field_parameter_units():
         return {}
 
     return utils.returnunicode(result_dict, keep_containers=True)
+
+def tables_columns():
+    tables_sql = (r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + SQLiteInternalTables() + r""") ORDER BY tbl_name""")
+    connection_ok, tables = utils.sql_load_fr_db(tables_sql)
+
+    if not connection_ok:
+        textstring = u"""Cannot get data from sql """ + utils.returnunicode(tables_sql)
+        utils.MessagebarAndLog.critical(
+            bar_msg=u"Error, sql failed, see log message panel",
+            log_msg=textstring)
+        return []
+
+    tables_dict = {}
+
+    tablenames = [col[0] for col in tables]
+    for tablename in tablenames:
+        columns_sql = """PRAGMA table_info (%s)""" % tablename
+        connection_ok, columns = utils.sql_load_fr_db(columns_sql)
+
+        if not connection_ok:
+            textstring = u"""Cannot get data from sql """ + utils.returnunicode(columns_sql)
+            utils.MessagebarAndLog.critical(
+                bar_msg=u"Error, sql failed, see log message panel",
+                log_msg=textstring)
+            continue
+        tables_dict[tablename] = tuple(sorted([column[1] for column in columns]))
+
+    return tables_dict
+
+
+

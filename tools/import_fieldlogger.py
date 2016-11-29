@@ -102,6 +102,9 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         self.main_vertical_layout.addStretch(1)
 
+
+        self.stored_settingskey = u'fieldlogger_import_parameter_settings'
+
         #General buttons
         self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
@@ -111,12 +114,12 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : map(lambda x: x(),
                                       [lambda : self.update_stored_settings(self.stored_settings, self.parameter_imports),
-                                       lambda : self.save_stored_settings(self.ms, self.stored_settings)]))
+                                       lambda : self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]))
 
 
 
         #Load stored parameter settings
-        self.stored_settings = self.get_stored_settings(self.ms)
+        self.stored_settings = self.get_stored_settings(self.ms, self.stored_settingskey)
         self.set_parameters_using_stored_settings(self.stored_settings, self.parameter_imports)
 
         self.show()
@@ -333,7 +336,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         return observations
 
     @staticmethod
-    def get_stored_settings(ms):
+    def get_stored_settings(ms, settingskey):
         """
         Creates a parameter setting dict from midvattensettings
 
@@ -343,7 +346,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         :return:
         """
 
-        settings = ms.settingsdict.get(u'fieldlogger_import_parameter_settings', None)
+        settings = ms.settingsdict.get(settingskey, None)
         if settings is None:
             return OrderedDict()
         parameter_settings_string = utils.returnunicode(settings)
@@ -413,7 +416,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             stored_settings[import_method_chooser.parameter_name] = attrdict
 
     @staticmethod
-    def save_stored_settings(ms, stored_settings):
+    def save_stored_settings(ms, stored_settings, settingskey):
         """
         Saves the current parameter settings into midvatten settings
 
@@ -434,7 +437,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             settings_list.append(u'|'.join(paramlist))
 
         setting_string = u'/'.join(settings_list)
-        ms.settingsdict[u'fieldlogger_import_parameter_settings'] = utils.returnunicode(setting_string)
+        ms.settingsdict[settingskey] = utils.returnunicode(setting_string)
         ms.save_settings()
 
     def start_import(self, observations):
@@ -446,7 +449,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         #Start by saving the parameter settings
         self.update_stored_settings(self.stored_settings, self.parameter_imports)
-        self.save_stored_settings(self.ms, self.stored_settings)
+        self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)
 
         chosen_methods = [import_method_chooser.import_method for import_method_chooser in self.parameter_imports.values()
                           if import_method_chooser.import_method]
@@ -647,6 +650,7 @@ class SublocationFilter(RowEntry):
         sublocations = sorted(list(set(sublocations)))
         num_rows = len(sublocations)
         num_columns = reduce(lambda x, y: max(x , len(y.split(u'.'))), sublocations, 0)
+        #num_columns = max([len(sublocation.split(u'.')) for sublocation in sublocations])
 
         self.table = PyQt4.QtGui.QTableWidget(num_rows, num_columns)
         self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)

@@ -27,10 +27,10 @@ import midvatten_utils as utils
 from definitions.midvatten_defs import standard_parameters_for_wquality, standard_parameters_for_wflow, standard_parameters_for_wsample
 from import_data_to_db import midv_data_importer
 
-export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'export_fieldlogger_ui_dialog.ui'))[0]
+export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
 
-class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog):
+class _ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog):
     """ Class handling export of data for fieldlogger """
     
     def __init__(self, parent, settingsdict1={}, obsids=None):
@@ -379,6 +379,110 @@ class Parameter2(object):
         return self.header_word
 
 
+class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog):
+    def __init__(self, parent, settingsdict1={}, obsids=None):
+        self.iface = parent
+        self.obsids = obsids
+
+        self.settingsdict = settingsdict1
+        PyQt4.QtGui.QDialog.__init__(self, parent)
+        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+        self.setupUi(self)  # Required by Qt4 to initialize the UI
+        self.setWindowTitle("Export to FieldLogger") # Set the title for the dialog
+
+        splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
+        self.main_vertical_layout.addWidget(splitter)
+
+        self.stored_settingskey = u'fieldlogger_export'
+
+        self.stored_settings = self.get_stored_settings(self.ms, self.stored_settingskey)
+        self.create_export_objects_using_stored_settings(self.stored_settings, splitter)
+
+
+    @staticmethod
+    def get_stored_settings(ms, settingskey):
+        """
+        Creates a parameter setting dict from midvattensettings
+
+        Reads a string entry from midvattensettings that looks like this:
+        importmethod:
+        :param ms: midvattensettings
+        :return:
+        """
+
+        settings = ms.settingsdict.get(settingskey, None)
+        if settings is None:
+            return OrderedDict()
+        parameter_settings_string = utils.returnunicode(settings)
+        parameter_settings = parameter_settings_string.split(u'/')
+        stored_settings = OrderedDict()
+
+        for parameter_setting in parameter_settings:
+            settings = parameter_setting.split(u'|')
+            parametername = settings[0]
+            stored_settings[parametername] = OrderedDict()
+
+            for attrs in settings[1:]:
+                attr, value = attrs.split(u':')
+                stored_settings[parametername][attr] = value
+        return stored_settings
+
+    @staticmethod
+    def create_export_objects_using_stored_settings(stored_settings, splitter):
+        """
+        """
+        pass
+
+    @staticmethod
+    def update_stored_settings(stored_settings, parameter_imports, force_update=False):
+        for parameter_name, import_method_chooser in parameter_imports.iteritems():
+            if not force_update:
+                if import_method_chooser.import_method is None or not import_method_chooser.import_method:
+                    continue
+
+            attrdict = stored_settings.get(import_method_chooser.parameter_name, OrderedDict())
+
+            attrdict[u'import_method'] = import_method_chooser.import_method
+
+            parameter_import_fields = import_method_chooser.parameter_import_fields
+            if parameter_import_fields is None:
+                continue
+
+            try:
+                settings = parameter_import_fields.get_settings()
+            except AttributeError:
+                settings = OrderedDict()
+            for attr, value in settings.iteritems():
+                attrdict[attr] = value
+
+            stored_settings[import_method_chooser.parameter_name] = attrdict
+
+    @staticmethod
+    def save_stored_settings(ms, stored_settings, settingskey):
+        """
+        Saves the current parameter settings into midvatten settings
+
+        Stores the settings as a string:
+        parametername|import_method:w_flow|flowtype:Aveflow|unit:m3/s/parametername2|import_method:comment ...
+
+        :param ms: midvattensettings
+        :param stored_settings: a dict like {parametername: {attribute1: value1, attribute2: value2 ...}}
+        :return:
+        """
+        if stored_settings is None:
+            return
+        stored_settings = utils.returnunicode(stored_settings, keep_containers=True)
+        settings_list = []
+        for parameter_name, attrs in stored_settings.iteritems():
+            paramlist = [parameter_name]
+            paramlist.extend([u':'.join([attr, value]) for attr, value in attrs.iteritems()])
+            settings_list.append(u'|'.join(paramlist))
+
+        setting_string = u'/'.join(settings_list)
+        ms.settingsdict[settingskey] = utils.returnunicode(setting_string)
+        ms.save_settings()
+
+
 
 
 class ExportObject(object):
@@ -440,3 +544,4 @@ class ExportObject(object):
 
 
         pass
+
