@@ -391,12 +391,23 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.setWindowTitle("Export to FieldLogger") # Set the title for the dialog
 
         splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
+
         self.main_vertical_layout.addWidget(splitter)
 
         self.stored_settingskey = u'fieldlogger_export'
 
         self.stored_settings = self.get_stored_settings(self.ms, self.stored_settingskey)
-        self.create_export_objects_using_stored_settings(self.stored_settings, splitter)
+        self.export_objects = self.create_export_objects_using_stored_settings(self.stored_settings, splitter)
+
+        if self.export_objects is None:
+            #Create one empty export object
+            #self.export_objects = [ExportObject()]
+            pass
+
+        for export_object in self.export_objects:
+            pass
+            #Create a remove button for each object
+            #Get the specific widgets to put in the specific layout.
 
 
     @staticmethod
@@ -483,8 +494,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         ms.save_settings()
 
 
-
-
 class ExportObject(object):
     def __init__(self):
         """
@@ -518,7 +527,7 @@ class ExportObject(object):
         QCombobox
 
         """
-        self.splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
+
 
         #There will at least two like this. Don't duplicate code
         self.parametername_helper_widget = PyQt4.QtGui.QWidget()
@@ -541,7 +550,11 @@ class ExportObject(object):
         unit_column_combobox = PyQt4.QtGui.QComboBox()
         unit_distinct_from_column_combobox = PyQt4.QtGui.QComboBox()
 
-
+    def populate_layout(self, parameter_helpers_layout,
+                        fieldlogger_specifics_layout,
+                        final_names_layout,
+                        obsidtable_layout):
 
         pass
+
 

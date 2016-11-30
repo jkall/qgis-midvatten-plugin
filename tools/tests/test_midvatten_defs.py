@@ -112,7 +112,6 @@ class TestDefsFunctions():
     @mock.patch('qgis.utils.iface', autospec=True)
     def test_tables_columns(self, mock_iface):
         res = midvatten_defs.tables_columns()
-        print(res)
         assert res
         assert isinstance(res, dict)
         for k, v in res.iteritems():

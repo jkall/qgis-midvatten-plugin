@@ -96,12 +96,11 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.parameter_names = list(set([observation[u'parametername'] for observation in self.observations]))
         self.parameter_imports = OrderedDict()
         for parametername in self.parameter_names:
-            param_import_obj = ImportMethodChoser(parametername, self.parameter_names, self.connect)
+            param_import_obj = ImportMethodChooser(parametername, self.parameter_names, self.connect)
             self.parameter_imports[parametername] = param_import_obj
             parameter_layout.addWidget(param_import_obj.widget)
 
         self.main_vertical_layout.addStretch(1)
-
 
         self.stored_settingskey = u'fieldlogger_import_parameter_settings'
 
@@ -364,32 +363,35 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         return stored_settings
 
     @staticmethod
-    def set_parameters_using_stored_settings(stored_settings, parameter_imports):
+    def set_parameters_using_stored_settings(stored_settings, import_method_choosers):
         """
         Sets the parameter settings based on a stored setitngs dict.
 
         parametername|import_method:w_flow|flowtype:Aveflow|unit:m3/s/parametername2|import_method:comment ...
         :param stored_settings: a dict like {parametername: {attribute1: value1, attribute2: value2 ...}}
-        :param parameter_imports: a dict like {parametername: ImportMethodChoser, ...}
+        :param import_method_choosers: a dict like {parametername: ImportMethodChooser, ...}
         :return:
         """
-        for parameter_import in parameter_imports.values():
-            setting = stored_settings.get(parameter_import.parameter_name, None)
+        for import_method_chooser in import_method_choosers.values():
+
+            setting = stored_settings.get(import_method_chooser.parameter_name, None)
             if setting is None:
                 continue
 
-            parameter_import.import_method = setting[u'import_method']
-            parameter_import_fields = parameter_import.parameter_import_fields
-            if parameter_import_fields is None:
-                continue
+            import_method_chooser.import_method = setting[u'import_method']
+
+            if import_method_chooser.parameter_import_fields is None:
+                import_method_chooser.choose_method(import_method_chooser.import_method_classes)
+
 
             for attr, val in setting.iteritems():
                 if attr == u'import_method':
                     continue
                 try:
-                    setattr(parameter_import_fields, attr, val)
-                except:
-                    pass
+                    setattr(import_method_chooser.parameter_import_fields, attr, val)
+                except Exception, e:
+                    print(str(e))
+
 
     @staticmethod
     def update_stored_settings(stored_settings, parameter_imports, force_update=False):
@@ -458,10 +460,10 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             utils.MessagebarAndLog.critical(bar_msg="No parameter import method chosen")
             return u'cancel'
 
-
         #Update the observations using the general settings, filters and parameter settings
         observations = self.filter_and_alter_data(observations, self.settings, self.settings_with_own_loop, self.parameter_imports)
         if observations == u'cancel':
+            utils.MessagebarAndLog.warning(bar_msg=u"No observations left to import after filtering")
             return None
 
         observations_importmethods = {}
@@ -493,6 +495,7 @@ class RowEntryGrid(object):
         self.widget = PyQt4.QtGui.QWidget()
         self.layout = PyQt4.QtGui.QGridLayout()
         self.widget.setLayout(self.layout)
+
 
 class ObsidFilter(object):
     def __init__(self):
@@ -649,8 +652,8 @@ class SublocationFilter(RowEntry):
 
         sublocations = sorted(list(set(sublocations)))
         num_rows = len(sublocations)
-        num_columns = reduce(lambda x, y: max(x , len(y.split(u'.'))), sublocations, 0)
-        #num_columns = max([len(sublocation.split(u'.')) for sublocation in sublocations])
+        #num_columns = reduce(lambda x, y: max(x , len(y.split(u'.'))), sublocations, 0)
+        num_columns = max([len(sublocation.split(u'.')) for sublocation in sublocations])
 
         self.table = PyQt4.QtGui.QTableWidget(num_rows, num_columns)
         self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)
@@ -668,9 +671,20 @@ class SublocationFilter(RowEntry):
         self.table.setSortingEnabled(True)
         self.table.resizeColumnsToContents()
 
-        self.table.setRangeSelected(PyQt4.QtGui.QTableWidgetSelectionRange(0, 0, num_rows, num_columns), True)
+        self.table.selectAll()
+
         self.layout.addWidget(self.table)
         self.layout.addStretch()
+
+    def set_selection(self, sublocations, true_or_false):
+        """
+
+        :param sublocations: an iterable, ex: list, tuple etc. of sublocation strings
+        :param true_or_false: True/False. Sets selection to this
+        :return:
+        """
+        for sublocation in sublocations:
+            self.table.setItemSelected(self.table_items[sublocation], true_or_false)
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
@@ -682,9 +696,9 @@ class SublocationFilter(RowEntry):
             return None
 
 
-class ImportMethodChoser(RowEntry):
+class ImportMethodChooser(RowEntry):
     def __init__(self, parameter_name, parameter_names, connect):
-        super(ImportMethodChoser, self).__init__()
+        super(ImportMethodChooser, self).__init__()
         self.connect = connect
         self.parameter_widget = None
         self.parameter_name = parameter_name
@@ -695,23 +709,21 @@ class ImportMethodChoser(RowEntry):
         self.label.setTextInteractionFlags(PyQt4.QtCore.Qt.TextSelectableByMouse)
         self.__import_method = PyQt4.QtGui.QComboBox()
 
-        self.__import_method_classes = OrderedDict(((u'', None),
+        self.import_method_classes = OrderedDict(((u'', None),
                                                   (u'comments', CommentsImportFields),
                                                   (u'w_level', WLevelImportFields),
                                                   (u'w_flow', WFlowImportFields),
                                                   (u'w_qual_field', WQualFieldImportFields)))
 
-        self.__import_method.addItems(self.__import_method_classes.keys())
+        self.__import_method.addItems(self.import_method_classes.keys())
 
         self.connect(self.__import_method, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),
-                     lambda: self.choose_method(self.__import_method_classes))
+                     lambda: self.choose_method(self.import_method_classes))
 
         for widget in [self.label, self.__import_method]:
             self.layout.addWidget(widget)
 
         self.layout.insertStretch(-1, 0)
-
-
 
     @property
     def import_method(self):
@@ -729,10 +741,17 @@ class ImportMethodChoser(RowEntry):
         self.layout.takeAt(-1)
         try:
             self.layout.removeWidget(self.parameter_widget)
-            self.parameter_widget.close()
-            self.parameter_import_fields = None
-        except:
+        except Exception, e:
             pass
+        try:
+            self.parameter_widget.close()
+        except Exception, e:
+            pass
+        try:
+            self.parameter_import_fields = None
+        except Exception, e:
+            pass
+
         parameter_import_fields_class = import_methods_classes.get(import_method_name, None)
 
         if parameter_import_fields_class is None:
