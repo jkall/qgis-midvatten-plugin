@@ -1051,9 +1051,9 @@ class WQualFieldImportFields(RowEntryGrid):
         return observations
 
 
-def default_combobox():
+def default_combobox(editable=True):
     combo_box = PyQt4.QtGui.QComboBox()
-    combo_box.setEditable(True)
+    combo_box.setEditable(editable)
     combo_box.setSizeAdjustPolicy(PyQt4.QtGui.QComboBox.AdjustToContents)
     combo_box.addItem(u'')
     return combo_box

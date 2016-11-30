@@ -25,7 +25,9 @@ from collections import OrderedDict
 
 import midvatten_utils as utils
 from definitions.midvatten_defs import standard_parameters_for_wquality, standard_parameters_for_wflow, standard_parameters_for_wsample
+import definitions.midvatten_defs as defs
 from import_data_to_db import midv_data_importer
+import import_fieldlogger
 
 export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -390,25 +392,86 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle("Export to FieldLogger") # Set the title for the dialog
 
-        splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
+        self.splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
+        self.export_objects = None
 
-        self.main_vertical_layout.addWidget(splitter)
+        self.main_vertical_layout.addWidget(self.splitter)
 
         self.stored_settingskey = u'fieldlogger_export'
 
-        self.stored_settings = self.get_stored_settings(self.ms, self.stored_settingskey)
-        self.export_objects = self.create_export_objects_using_stored_settings(self.stored_settings, splitter)
+        #self.stored_settings = self.get_stored_settings(self.ms, self.stored_settingskey)
+        #self.export_objects = self.create_export_objects_using_stored_settings(self.stored_settings, self.splitter)
+        if self.export_objects is None or not self.export_objects:
+            self.export_objects = [ExportObject(defs.tables_columns(), self.connect)]
 
-        if self.export_objects is None:
-            #Create one empty export object
-            #self.export_objects = [ExportObject()]
-            pass
+        utils.pop_up_info(str(self.export_objects))
+        self.add_export_objects_to_gui(self.splitter, self.export_objects)
 
-        for export_object in self.export_objects:
-            pass
-            #Create a remove button for each object
-            #Get the specific widgets to put in the specific layout.
+        self.show()
 
+    def add_export_objects_to_gui(self, splitter, export_objects):
+        """
+        This needs to create a QHBoxlayout for every "split".
+        In every split, one QVBoxlayout is created for every export object
+         
+        Maybe the export objects could be stored using column as key. 
+         
+        :param splitter: 
+        :param export_objects: 
+        :return: 
+        """
+
+        # Create main layouts for the splitter
+        self.widgets_layouts = []
+        for nr in xrange(4):
+            widget = PyQt4.QtGui.QWidget()
+            layout = PyQt4.QtGui.QHBoxLayout()
+            widget.setLayout(layout)
+            self.splitter.addWidget(widget)
+            self.widgets_layouts.append((widget, layout))
+
+        self.columns = {}
+
+        for index, export_object in enumerate(self.export_objects):
+
+            widget0 = self.create_widget_and_connect_widgets(self.widgets_layouts[0][1],
+                                                            [export_object.parameter_table_label,
+                                                             export_object._parameter_table,
+                                                             export_object.parameter_column_label,
+                                                             export_object._parameter_columns,
+                                                             export_object.parameter_name_label,
+                                                             export_object._distinct_parameter,
+                                                             export_object.unit_table_label,
+                                                             export_object._unit_table,
+                                                             export_object.unit_column_label,
+                                                             export_object._unit_columns,
+                                                             export_object.unit_name_label,
+                                                             export_object._distinct_unit])
+
+            widget1 = self.create_widget_and_connect_widgets(self.widgets_layouts[1][1], [export_object.input_type])
+
+            widget2 = self.create_widget_and_connect_widgets(self.widgets_layouts[2][1],
+                                                             [export_object.location_suffix_label,
+                                                              export_object._location_suffix,
+                                                              export_object.subname_label,
+                                                              export_object._subname_suffix,
+                                                              export_object.final_parameter_name_label,
+                                                              export_object._final_parameter_name])
+
+            widget3 = self.create_widget_and_connect_widgets(self.widgets_layouts[3][1],
+                                                             [export_object.paste_from_selection_button,
+                                                              export_object.obsid_list])
+
+
+            self.columns[index] = (export_object, widget0, widget1, widget2, widget3)
+
+    def create_widget_and_connect_widgets(self, parent_layout, widgets):
+        new_widget = PyQt4.QtGui.QWidget()
+        layout = PyQt4.QtGui.QVBoxLayout()
+        new_widget.setLayout(layout)
+        parent_layout.addWidget(new_widget)
+        for widget in widgets:
+            layout.addWidget(widget)
 
     @staticmethod
     def get_stored_settings(ms, settingskey):
@@ -495,7 +558,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
 
 class ExportObject(object):
-    def __init__(self):
+    def __init__(self, tables_columns, connect):
         """
         This one should contain:
 
@@ -528,33 +591,149 @@ class ExportObject(object):
 
         """
 
+        #Widget list:
+        self.parameter_table_label = PyQt4.QtGui.QLabel(u'Parameter Table')
+        self._parameter_table = import_fieldlogger.default_combobox(editable=False)
+        self.parameter_column_label = PyQt4.QtGui.QLabel(u'Column')
+        self._parameter_columns = import_fieldlogger.default_combobox(editable=False)
+        self.parameter_name_label = PyQt4.QtGui.QLabel(u'Parameter name')
+        self._distinct_parameter = import_fieldlogger.default_combobox(editable=True)
+        self.unit_table_label = PyQt4.QtGui.QLabel(u'Unit Table')
+        self._unit_table = import_fieldlogger.default_combobox(editable=False)
+        self.unit_column_label = PyQt4.QtGui.QLabel(u'Column')
+        self._unit_columns = import_fieldlogger.default_combobox(editable=False)
+        self.unit_name_label = PyQt4.QtGui.QLabel(u'Unit name')
+        self._distinct_unit = import_fieldlogger.default_combobox(editable=True)
+        self.input_type = import_fieldlogger.default_combobox(editable=True)
+        self.location_suffix_label = PyQt4.QtGui.QLabel(u'Location suffix')
+        self._location_suffix = PyQt4.QtGui.QLineEdit()
+        self.subname_label = PyQt4.QtGui.QLabel(u'Subname suffix')
+        self._subname_suffix = PyQt4.QtGui.QLineEdit()
+        self.final_parameter_name_label = PyQt4.QtGui.QLabel(u'Final parameter name')
+        self._final_parameter_name = PyQt4.QtGui.QLineEdit()
+        self.obsid_list = CopyPasteDeleteableQListWidget()
+        self.paste_from_selection_button = PyQt4.QtGui.QPushButton(u'Paste obs_points selection')
+        
+        #------------------------------------------------------------------------
+        self._parameter_table.addItems(sorted(tables_columns.keys()))
+        connect(self._parameter_table, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self._parameter_columns.addItems(tables_columns.get(self.parameter_table, [])))     
+        connect(self._parameter_columns, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self._distinct_parameter.addItems(self.get_distinct_values(self.parameter_table, self.parameter_columns)))
 
-        #There will at least two like this. Don't duplicate code
-        self.parametername_helper_widget = PyQt4.QtGui.QWidget()
-        self.parametername_helper_layout = PyQt4.QtGui.QVBoxLayout()
-        self.parametername_helper_widget.setLayout(self.parametername_helper_layout)
+        self._unit_table.addItems(sorted(tables_columns.keys()))
+        connect(self._unit_table, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self._unit_columns.addItems(tables_columns.get(self.unit_table, [])))
+        connect(self._unit_columns, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self._distinct_unit.addItems(self.get_distinct_values(self.unit_table, self.unit_columns)))
 
-        #May I should ask for all tables and columns only once, and then ask for all columns and put as a dict with table as key and columns as values.
-        #This way it will be way less questions to the database.
-        #Use the question from customplot:
-        #rs = curs.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + midvatten_defs.SQLiteInternalTables() + r""")  and not name like 'zz_%' and not (name in""" + midvatten_defs.sqlite_nonplot_tables() + r""") ORDER BY tbl_name""")  # SQL statement to get the relevant tables in the spatialite database
-        #and for columns:
-        # """PRAGMA table_info (%s)"""%tablename
+        connect(self._distinct_parameter, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
+                     lambda: self._final_parameter_name.setEditText(u'.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
+        connect(self._distinct_unit, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
+                     lambda: self._final_parameter_name.setEditText(u'.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
+        #------------------------------------------------------------------------------------
 
-        #This is duplicate code. Not good.
-        parameter_table_combobox = PyQt4.QtGui.QComboBox()
-        parameter_column_combobox = PyQt4.QtGui.QComboBox()
-        parameter_distinct_from_column_combobox = PyQt4.QtGui.QComboBox()
+        self.input_type.addItems([u'numberDecimal|numberSigned', u'numberDecimal',u'numberSigned', u'text'])
 
-        unit_table_combobox = PyQt4.QtGui.QComboBox()
-        unit_column_combobox = PyQt4.QtGui.QComboBox()
-        unit_distinct_from_column_combobox = PyQt4.QtGui.QComboBox()
+        #-------------------------------------------------------------------------------------
 
-    def populate_layout(self, parameter_helpers_layout,
-                        fieldlogger_specifics_layout,
-                        final_names_layout,
-                        obsidtable_layout):
+        self._location_suffix.setToolTip(u'Name shown in fieldlogger map. location.SUFFIX. Ex: location.projectnumber')
+        self._subname_suffix.setToolTip(u'Name shown if more than one subname exists for each location. Ex: location.projectnumber.parameter_group')
+        
+        #-------------------------------------------------------------------------------------
 
-        pass
+        self.obsid_list.setSelectionMode(PyQt4.QtGui.QAbstractItemView.MultiSelection)
+        connect(self.paste_from_selection_button, PyQt4.QtCore.SIGNAL("clicked()"),
+                         lambda : self.obsid_list.paste_items(utils.get_selected_features_as_tuple('obs_points')))
 
+
+    @staticmethod
+    def get_distinct_values(tablename, columnname):
+        if not tablename or not columnname:
+            return []
+        sql = '''SELECT distinct "%s" from "%s"'''%(tablename, columnname)
+        connection_ok, result = utils.sql_load_fr_db(sql)
+        
+        if not connection_ok:
+            textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
+            utils.MessagebarAndLog.critical(
+                bar_msg=u"Error, sql failed, see log message panel",
+                log_msg=textstring)
+            return []
+        
+        values = [col[0] for col in result]
+        return values
+
+    @property
+    def parameter_table(self):
+        return utils.returnunicode(self._parameter_table.currentText())
+
+    @property
+    def parameter_columns(self):
+        return utils.returnunicode(self._parameter_columns.currentText())
+
+    @property
+    def unit_table(self):
+        return utils.returnunicode(self._unit_table.currentText())
+
+    @property
+    def unit_columns(self):
+        return utils.returnunicode(self._unit_columns.currentText())
+
+    @property
+    def final_parameter_name(self):
+        return utils.returnunicode(self._final_parameter_name.currentText())
+
+    @property
+    def distinct_parameter(self):
+        return utils.returnunicode(self._distinct_parameter.currentText())
+
+    @property
+    def distinct_parameter(self):
+        return utils.returnunicode(self._distinct_parameter.currentText())
+
+    @property
+    def location_suffix(self):
+        return utils.returnunicode(self._location_suffix.text())
+
+    @location_suffix.setter
+    def location_suffix(self, value):
+        self._location_suffix.setText(value)
+
+    @property
+    def subname_suffix(self):
+        return utils.returnunicode(self._subname_suffix.text())
+
+    @subname_suffix.setter
+    def subname_suffix(self, value):
+        self._subname_suffix.setText(value)
+    
+
+class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
+    def __init__(self, *args, **kwargs):
+        super(CopyPasteDeleteableQListWidget, self).__init__(*args, **kwargs)
+
+    def keyPressEvent(self, event):
+        if isinstance(event, PyQt4.QtGui.QKeySequence.Copy):
+            self.selectedItems()
+            stringlist = PyQt4.QtCore.QStringList(self.selectedItems())
+            PyQt4.QtGui.QApplication.clipboard().setText(u'\n'.join(stringlist))
+        elif isinstance(event, PyQt4.QtGui.QKeySequence.Paste):
+            new_text = PyQt4.QtGui.QApplication.clipboard().text().split(u'\n')
+            self.paste_items(new_text)
+
+        elif isinstance(event, PyQt4.QtGui.QKeySequence.Delete):
+            all_items = [self.item(i).text() for i in self.count()]
+            items_to_delete = PyQt4.QtCore.QStringList(self.selectedItems())
+            keep_items = [item for item in all_items if item not in items_to_delete]
+            self.clear()
+            self.addItems(sorted(keep_items))
+
+    def paste_items(self, paste_list):
+        old_text = [self.item(i).text() for i in xrange(self.count())]
+        new_items = set()
+        new_items.update(paste_list)
+        new_items.update(old_text)
+        self.clear()
+        self.addItems(list(sorted(new_items)))
 
