@@ -541,30 +541,6 @@ def staff_list():
         return False, tuple()
 
     return True, utils.returnunicode(tuple([x[0] for x in result_list]), True)
-    
-def standard_parameters_for_wquality():
-    """ Returns a dict with water quality parameters
-    :return: A dict with parameter as key and unit as value
-    """
-    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "groupname" = 'quality' ''')
-    shortname_parameter_unit = w_qual_field_parameters()
-    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
-    return shortname_unit
-
-def standard_parameters_for_wsample():
-    """ Returns a dict with water sample parameters
-    :return: A dict with parameter as key and unit as value
-    """
-    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "groupname" = 'sample' ''')
-    shortname_parameter_unit = w_qual_field_parameters()
-    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
-    return shortname_unit
-
-def standard_parameters_for_wflow():
-    """ Returns a dict with water flow parameters
-    :return: A dict with parameter as key and unit as value
-    """
-    return utils.sql_to_parameters_units_tuple(u'''select type, unit from zz_flowtype''')
 
 def SQLiteInternalTables():
     return r"""('geom_cols_ref_sys',
@@ -617,7 +593,6 @@ def w_qual_field_parameters():
         utils.MessagebarAndLog.critical(bar_msg=u"Error, sql failed, see log message panel", log_msg=textstring)
 
     return utils.returnunicode(result_list, keep_containers=True)
-
 
 def w_flow_flowtypes_units():
     sql = 'select distinct flowtype, unit from w_flow'

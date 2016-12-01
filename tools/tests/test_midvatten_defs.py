@@ -41,7 +41,7 @@ DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
 
 
-class _TestDefsFunctions():
+class TestDefsFunctions():
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
@@ -71,42 +71,6 @@ class _TestDefsFunctions():
     def tearDown(self):
         #Delete database
         os.remove(TEMP_DB_PATH)
-
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('qgis.utils.iface', autospec=True)
-    def test_standard_parameters_for_wquality(self, mock_iface):
-        res = midvatten_defs.standard_parameters_for_wquality()
-        assert res
-        assert isinstance(res, tuple)
-        for k, v in res:
-            assert isinstance(k, unicode)
-            assert isinstance(v, tuple)
-            for x in v:
-                assert isinstance(x, unicode)
-
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('qgis.utils.iface', autospec=True)
-    def test_standard_parameters_for_wflow(self, mock_iface):
-        res = midvatten_defs.standard_parameters_for_wflow()
-        assert res
-        assert isinstance(res, tuple)
-        for k, v in res:
-            assert isinstance(k, unicode)
-            assert isinstance(v, tuple)
-            for x in v:
-                assert isinstance(x, unicode)
-
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('qgis.utils.iface', autospec=True)
-    def test_standard_parameters_for_wsample(self, mock_iface):
-        res = midvatten_defs.standard_parameters_for_wsample()
-        assert res
-        assert isinstance(res, tuple)
-        for k, v in res:
-            assert isinstance(k, unicode)
-            assert isinstance(v, tuple)
-            for x in v:
-                assert isinstance(x, unicode)
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     @mock.patch('qgis.utils.iface', autospec=True)

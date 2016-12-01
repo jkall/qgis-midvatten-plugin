@@ -44,7 +44,7 @@ MOCK_EXPORT_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([EXPORT_DB_PATH
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 TEMP_DIR = u'/tmp/'
 
-class _TestExport(unittest.TestCase):
+class TestExport(unittest.TestCase):
     """
     """
     answer_yes_obj = MockUsingReturnValue()
@@ -56,7 +56,7 @@ class _TestExport(unittest.TestCase):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
     skip_popup = MockUsingReturnValue('')
     mock_selection = MockReturnUsingDictIn({u'obs_points': (u'P1', ), u'obs_lines': (u'L1', )}, 0)
-    exported_csv_files = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv', 'zz_flowtype.csv', 'zz_meteoparam.csv', 'zz_staff.csv', 'zz_strat.csv', 'zz_capacity.csv', 'zz_w_qual_field_parameters.csv']]
+    exported_csv_files = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv', 'zz_flowtype.csv', 'zz_meteoparam.csv', 'zz_staff.csv', 'zz_strat.csv', 'zz_capacity.csv']]
     exported_csv_files_no_zz = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv']]
 
 
@@ -109,7 +109,6 @@ class _TestExport(unittest.TestCase):
         utils.sql_alter_db(u'''insert into zz_staff (staff) values ('s1')''')
         utils.sql_alter_db(u'''insert into comments (obsid, date_time, staff, comment) values ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
         utils.sql_alter_db(u'''insert into w_qual_lab (obsid, parameter, report, staff) values ('P1', 'labpar1', 'report1', 's1')''')
-        utils.sql_alter_db(u'''insert into zz_w_qual_field_parameters (parameter, unit, shortname) values ('par1', 'unit1', 'parshortname1')''')
         utils.sql_alter_db(u'''insert into w_qual_field (obsid, parameter, staff, date_time) values ('P1', 'labpar1', 's1', '2015-01-01 01:00:00')''')
         utils.sql_alter_db(u'''insert into w_flow (obsid, instrumentid, flowtype, date_time, unit) values ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
         utils.sql_alter_db(u'''insert into w_levels (obsid, date_time, meas) values ('P1', '2015-01-02 00:00:01', '2')''')
@@ -184,7 +183,6 @@ class _TestExport(unittest.TestCase):
         utils.sql_alter_db(u'''insert into zz_staff (staff) values ('s1')''')
         utils.sql_alter_db(u'''insert into comments (obsid, date_time, staff, comment) values ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
         utils.sql_alter_db(u'''insert into w_qual_lab (obsid, parameter, report, staff) values ('P1', 'labpar1', 'report1', 's1')''')
-        utils.sql_alter_db(u'''insert into zz_w_qual_field_parameters (parameter, unit, shortname) values ('par1', 'unit1', 'parshortname1')''')
         utils.sql_alter_db(u'''insert into w_qual_field (obsid, parameter, staff, date_time, unit) values ('P1', 'par1', 's1', '2015-01-01 01:00:00', 'unit1')''')
         utils.sql_alter_db(u'''insert into w_flow (obsid, instrumentid, flowtype, date_time, unit) values ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
         utils.sql_alter_db(u'''insert into w_levels (obsid, date_time, meas) values ('P1', '2015-01-02 00:00:01', '2')''')
@@ -199,7 +197,6 @@ class _TestExport(unittest.TestCase):
                     u'''select staff from zz_staff''',
                     u'''select obsid, date_time, staff, comment from comments''',
                     u'''select obsid, parameter, report, staff from w_qual_lab''',
-                    u'''select parameter, unit, shortname from zz_w_qual_field_parameters''',
                     u'''select obsid, parameter, staff, date_time, comment from w_qual_field''',
                     u'''select obsid, instrumentid, flowtype, date_time, unit from w_flow''',
                     u'''select obsid, date_time, meas from w_levels''',
@@ -230,7 +227,6 @@ class _TestExport(unittest.TestCase):
                             u''', [(P1, 2015-01-01 00:00:00, s1, comment1)], ''',
                             u'''select obsid, parameter, report, staff from w_qual_lab''',
                             u''', [(P1, labpar1, report1, s1)], ''',
-                            u'''select parameter, unit, shortname from zz_w_qual_field_parameters''',
                             u''', [(DO, %, DO), (DO, mg/L, DO), (conductivity, µS/cm, cond), (pH, None, pH), (reduction potential, mV, redox), (temperature, grC, temp), (turbidity, FNU, turb), (par1, unit1, None)], ''',
                             u'''select obsid, parameter, staff, date_time, comment from w_qual_field''',
                             u''', [(P1, par1, s1, 2015-01-01 01:00:00, None)], ''',

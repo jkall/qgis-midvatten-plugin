@@ -18,7 +18,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class _TestFieldLoggerImporterDb(object):
+class TestFieldLoggerImporterDb(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -47,7 +47,6 @@ class _TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1")''')
         utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("HS")''')
         utils.sql_alter_db(u'''INSERT INTO zz_flowtype ("type", "unit") VALUES ("Aveflow", "m3/s")''')
-        utils.sql_alter_db(u'''INSERT INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("Temperature", "Temp", "m3/s")''')
 
         f = [
             u"Location;date_time;value;comment\n",
@@ -141,11 +140,6 @@ class _TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
 
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type", "unit") VALUES ("Accvol", "m3")''')
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("turbiditet", "turb", "FNU")''')
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("konduktivitet", "kond", "µS/cm")''')
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("syre", "syre", "mg/L")''')
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("syre", "syre", "%")''')
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("temperatur", "temp", "grC")''')
 
         f = [
             u"Location;date_time;value;comment\n",
@@ -207,7 +201,7 @@ class _TestFieldLoggerImporterDb(object):
             assert test_string == reference_string
 
 
-class _TestCommentsImportFields(object):
+class TestCommentsImportFields(object):
     def setUp(self):
         mock_import_method_chooser = MagicMock()
         mock_import_method_chooser.parameter_name = u'comment'
@@ -242,7 +236,7 @@ class _TestCommentsImportFields(object):
         assert test_string == reference_string
 
 
-class _TestStaffQuestion(object):
+class TestStaffQuestion(object):
 
     @mock.patch('import_fieldlogger.defs.staff_list')
     def setUp(self, mock_stafflist):
@@ -258,7 +252,7 @@ class _TestStaffQuestion(object):
         assert test_string == reference_string
 
 
-class _TestObsidFilter(object):
+class TestObsidFilter(object):
     def setUp(self):
         self.obsid_filter = import_fieldlogger.ObsidFilter()
 

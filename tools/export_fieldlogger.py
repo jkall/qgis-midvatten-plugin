@@ -25,361 +25,12 @@ import copy
 from collections import OrderedDict
 
 import midvatten_utils as utils
-from definitions.midvatten_defs import standard_parameters_for_wquality, standard_parameters_for_wflow, standard_parameters_for_wsample
 import definitions.midvatten_defs as defs
 from import_data_to_db import midv_data_importer
 import import_fieldlogger
+from midvatten_utils import returnunicode
 
 export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
-
-
-class _ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog):
-    """ Class handling export of data for fieldlogger """
-    
-    def __init__(self, parent, settingsdict1={}, obsids=None):
-        self.iface = parent
-        self.obsids = obsids
-
-        self.settingsdict = settingsdict1
-        PyQt4.QtGui.QDialog.__init__(self, parent)
-        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
-        self.setupUi(self)  # Required by Qt4 to initialize the UI
-        self.setWindowTitle("Export to FieldLogger") # Set the title for the dialog
-
-        self.parameters = self.create_parameters()
-        self.unhidden_types_parameters = self.get_unhidden_types_parameters_names(self.parameters)
-        self.set_headers(self.gridLayout_selections, self.unhidden_types_parameters, self.gridWidget_selections)
-        self.set_and_connect_select_from_map(self.gridLayout_selections, self.unhidden_types_parameters, self.gridWidget_selections)
-        self.set_and_connect_selectall(self.gridLayout_selections, self.unhidden_types_parameters, self.gridWidget_selections)
-        self.add_line(self.gridLayout_selections, len(self.unhidden_types_parameters), self.gridWidget_selections)
-        self.obsids = utils.get_all_obsids()
-
-        self.selection_dict = self.build_selection_dict(self.obsids, self.unhidden_types_parameters, self.gridWidget_selections)
-        self.set_obsids_and_parameters_checkboxes(self.gridLayout_selections, self.selection_dict, self.unhidden_types_parameters)
-
-        self.connect(self.pushButtonExport, PyQt4.QtCore.SIGNAL("clicked()"), self.export_selected)
-        self.connect(self.pushButtonImportWellsfile, PyQt4.QtCore.SIGNAL("clicked()"), self.select_from_wells)
-
-        self.show()
-
-    def create_parameters(self):
-        """ Creaters self.parameters dict with parameters
-        :return: a dict like "{'typename': {'parameter': Parameter()}}"
-        """
-        types = {}
-
-        types_tuples = [(u'level', ((u'meas', (u'm',)),)),
-                        (u'flow', standard_parameters_for_wflow()),
-                        (u'quality', standard_parameters_for_wquality()),
-                        (u'sample', standard_parameters_for_wsample())]
-
-        for parameter_type, parameters_units_tuple in types_tuples:
-            types[parameter_type] = OrderedDict()
-            types[parameter_type].update(self.create_parameters_from_tuple(parameter_type, parameters_units_tuple))
-            types[parameter_type][u'comment'] = Parameter(u'comment', u'make comment...', parameter_type, unit=u'', valuetype=u'text', hidden=True)
-
-            if parameter_type in [u'quality', u'sample']:
-                types[parameter_type][u'depth'] = Parameter(u'depth', u'depth of measurement', parameter_type, unit=u'm', hidden=True)
-
-        return types
-
-    def create_parameters_from_tuple(self, parameter_type, parameters_units_tuple):
-        parameters = OrderedDict()
-        for param, units in parameters_units_tuple:
-            for unit in units:
-                if len(units) > 1:
-                    paramname = u'.'.join((param, unit))
-                else:
-                    paramname = param
-                hint = unit
-                parameters[paramname] = Parameter(paramname, hint, parameter_type, unit)
-        return parameters
-
-    def get_unhidden_types_parameters_names(self, parameters):
-        unhidden_parameternames = tuple([(typename, parametername) for typename, parameter_dict in sorted(parameters.iteritems())
-                                   for parametername, parameter in sorted(parameter_dict.iteritems()) if not parameter.hidden])
-        return unhidden_parameternames
-
-    def set_headers(self, grid, unhidden_types_parameters, widget_parent):
-        """
-        Creates Qlabel headers for all parameters
-        :param grid: A QGridLayout.
-        :param unhidden_types_parameters: A dict with type as key an innerdict with parameters as value
-        :return: None
-        """
-        rownr = grid.rowCount()
-
-        for colnr, type_parameter in enumerate(unhidden_types_parameters):
-            label = PyQt4.QtGui.QLabel('.'.join(type_parameter))
-            grid.addWidget(label, rownr, colnr + 1)
-
-    def set_and_connect_select_from_map(self, grid, unhidden_types_parameters, widget_parent):
-        """
-        Creates buttons that selects all parameters for selected obsids in obs_points
-        :param grid: A QGridLayout.
-        :param unhidden_types_parameters: A dict with type as key an innerdict with parameters as value
-        :param widget_parent:
-        :return:
-        """
-        rownr = grid.rowCount()
-        grid.addWidget(PyQt4.QtGui.QLabel('Select from map selection'), rownr, 0)
-        for colnr, type_parameter in enumerate(unhidden_types_parameters):
-            pushbutton = PyQt4.QtGui.QPushButton('Select from map', widget_parent)
-            pushbutton.setToolTip('Select ' + '.'.join(type_parameter) + ' for all obsids selected in map')
-            pushbutton.setObjectName('.'.join(type_parameter))
-            grid.addWidget(pushbutton, rownr, colnr + 1)
-            self.connect(pushbutton, PyQt4.QtCore.SIGNAL("clicked()"), self.select_from_map_click)
-
-    def select_from_map_click(self):
-        """
-        Method representing a select_from_map click.
-
-        self.sender() is used to find the currently clicked checkbox.
-        :return: None
-        """
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
-        pushbutton = self.sender()
-        type_parameter_name = pushbutton.objectName()
-        self.select_from_map(type_parameter_name)
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
-    def select_from_map(self, type_parameter_name):
-        """
-        Selects parameter for all obsids selected in map
-        :param type_parameter_name: A parametername like type.parameter
-        :return: None
-        """
-        selected_obsids = utils.get_selected_features_as_tuple('obs_points')
-        for obsid in selected_obsids:
-            types_dict = self.selection_dict[obsid]
-            splitted = type_parameter_name.split('.')
-            typename = splitted[0]
-            parametername = '.'.join(splitted[1:])
-            checkbox = types_dict[typename][parametername]
-            checkbox.setChecked(True)
-
-    def set_and_connect_selectall(self, grid, unhidden_types_parameters, widget_parent):
-        """
-        Creates checkboxes for select all for all parameters
-        :param grid: A QGridLayout.
-        :param unhidden_types_parameters: A dict with type as key an innerdict with parameters as value
-        :return: None
-        """
-        rownr = grid.rowCount()
-        grid.addWidget(PyQt4.QtGui.QLabel('Select all'), rownr, 0)
-
-        for colnr, type_parameter in enumerate(unhidden_types_parameters):
-            checkbox = PyQt4.QtGui.QCheckBox(widget_parent)
-            checkbox.setToolTip('.'.join(type_parameter))
-            checkbox.setObjectName('.'.join(type_parameter))
-            grid.addWidget(checkbox, rownr, colnr + 1)
-            self.connect(checkbox, PyQt4.QtCore.SIGNAL("clicked()"), self.select_all_click)
-
-    def add_line(self, grid, num_cols, widget_parent):
-        rownr = grid.rowCount()
-        frame = PyQt4.QtGui.QFrame(widget_parent)
-        frame.setFrameShape(PyQt4.QtGui.QFrame.HLine)
-        grid.addWidget(frame, rownr, 0, 1, num_cols + 1)
-
-    def build_selection_dict(self, obsids, unhidden_types_parameters, parent_widget):
-        """ Creates a dict of obsids and their parameter checkbox objects
-        :param obsids: A list of obsids
-        :param unhidden_types_parameters: A dict with type as key an innerdict with parameters as value
-        :param parent_widget: The parent widget. It might be needed for this to work, but not sure.
-        :return: a dict like {'obsid': {'parametername': QCheckBox, ...}, ...}
-        """
-        selection_dict = {}
-        for obsid in obsids:
-            type_dict = {}
-            for typename, parametername in unhidden_types_parameters:
-                checkbox = PyQt4.QtGui.QCheckBox(parent_widget)
-                type_dict.setdefault(typename, {})[parametername] = checkbox
-            selection_dict[obsid] = type_dict
-        return selection_dict
-
-    def set_obsids_and_parameters_checkboxes(self, grid, selection_dict, unhidden_types_parameters):
-        """
-        Creates a matrix of checkboxes for choosing parameters
-        :param grid: A QGridLayout.
-        :param selection_dict: a dict like {'obsid': {'parametername': QCheckBox, ...}, ...}
-        :return: None
-        """
-        start_rownr = grid.rowCount()
-        for rownr, obs_types_dict_tuple in enumerate(sorted(selection_dict.iteritems())):
-            obsid, types_dict = obs_types_dict_tuple
-            grid.addWidget(PyQt4.QtGui.QLabel(obsid), rownr + start_rownr, 0)
-
-            for colnr, type_parameter in enumerate(unhidden_types_parameters):
-                typename, parametername = type_parameter
-                checkbox = types_dict[typename][parametername]
-                checkbox.setMinimumSize(20, 20)
-                checkbox.setToolTip('.'.join((obsid, typename, parametername)))
-                grid.addWidget(checkbox, rownr + start_rownr, colnr + 1)
-
-    def select_all_click(self):
-        """
-        Method representing a select_all click.
-
-        self.sender() is used to find the currently clicked checkbox.
-        :return: None
-        """
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
-        checkbox = self.sender()
-        type_parameter_name = checkbox.objectName()
-        check_state = checkbox.isChecked()
-        self.select_all(type_parameter_name, check_state)
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
-    def select_all(self, type_parameter_name, check_state):
-        """
-        Selects or deselects a parameter for all obsids
-        :param type_parameter_name: A parametername like type.parameter
-        :param check_state: The state of the currently selected select_all checkbox.
-        :return:
-        """
-        for obsid, types_dict in self.selection_dict.iteritems():
-            splitted = type_parameter_name.split(u'.')
-            typename = splitted[0]
-            parametername = '.'.join(splitted[1:])
-            checkbox = types_dict[typename][parametername]
-            checkbox.setChecked(check_state)
-
-    def select_from_wells(self):
-        """ Select all from imported wells-file
-        :return:
-        """
-        selection_dict = self.selection_dict
-
-        importinstance = midv_data_importer()
-        obsid_dict = importinstance.parse_wells_file()
-        if obsid_dict == u'cancel':
-            qgis.utils.iface.messageBar().pushMessage("Select from wells file: No file was chosen or no rows could be parsed.")
-            return u'cancel'
-
-        failed_imports = []
-        for obsid, types_dict in obsid_dict.iteritems():
-            for typename, parameters in types_dict.iteritems():
-                for parameter, unit in parameters:
-                    try:
-                        types_dict = selection_dict[obsid]
-                    except KeyError:
-                        failed_imports.append([obsid, typename, parameter, unit])
-                        continue
-                    try:
-                        parameters =  types_dict[typename]
-                    except KeyError:
-                        failed_imports.append([obsid, typename, parameter, unit])
-                        continue
-                    try:
-                        checkbox = parameters[u'.'.join([parameter, unit])]
-                    except KeyError:
-                        try:
-                            checkbox = parameters[parameter]
-                        except KeyError:
-                            failed_imports.append([obsid, typename, parameter, unit])
-                            continue
-                    checkbox.setChecked(True)
-        if obsid_dict:
-            utils.pop_up_info('Failed to import parameters:\n' + '\n'.join([', '.join(x) for x in failed_imports if x[2] != u'comment']))
-
-    def export_selected(self):
-        """ Export the selected obsids and parameters to a file
-        """
-        self.write_printlist_to_file(self.create_export_printlist())
-
-    def create_export_printlist(self):
-        """
-        Creates a result list with FieldLogger format from selected obsids and parameters
-        :return: a list with result lines to export to file
-        """
-        selection_dict = self.selection_dict
-        types_parameters_dict = self.parameters
-
-        latlons = utils.get_latlon_for_all_obsids()
-
-        chosen_parameter_headers = set()
-
-        obsid_rows = []
-        for obsid, types_dict in selection_dict.iteritems():
-            for typename, parameter_dict in types_dict.iteritems():
-                subname = None
-                chosen_parameters = set()
-                for parameter, checkbox in parameter_dict.iteritems():
-                    if checkbox.isChecked():
-                        subname = '.'.join((obsid, typename))
-
-                        chosen_parameters.add(types_parameters_dict[typename][parameter].full_name)
-                        chosen_parameters.update([v.full_name for k, v in types_parameters_dict[typename].iteritems() if v.hidden])
-
-                        chosen_parameter_headers.add((typename, parameter))
-                        chosen_parameter_headers.update([(typename, k) for k, v in types_parameters_dict[typename].iteritems() if v.hidden])
-
-                if subname is not None:
-                    lat, lon = latlons.get(obsid)
-                    obsid_rows.append(';'.join((obsid, subname, str(lat), str(lon), '|'.join(chosen_parameters))))
-
-
-        #Sort the parameters to the same order as they were entered into the ordered types dict.
-        sorted_chosen_parameter_headers = [parameter.get_header_word() for typename, parameters in sorted(types_parameters_dict.iteritems()) for parametername, parameter in parameters.iteritems() if (typename, parametername) in chosen_parameter_headers]
-
-        printlist = []
-        printlist.append(u"FileVersion 1;" + str(len(sorted_chosen_parameter_headers)))
-        printlist.append(u"NAME;INPUTTYPE;HINT")
-        printlist.extend(sorted_chosen_parameter_headers)
-        printlist.append(u'NAME;SUBNAME;LAT;LON;INPUTFIELD')
-
-        printlist.extend(sorted(obsid_rows))
-        return printlist
-
-    def write_printlist_to_file(self, printlist):
-        filename = PyQt4.QtGui.QFileDialog.getSaveFileName(None, 'Choose a file name', '', 'csv (*.csv)')
-
-        if not filename:
-            return
-        try:
-            with open(filename, 'w') as f:
-                f.write(u'\n'.join(printlist).encode('utf-8'))
-        except IOError, e:
-            utils.pop_up_info("Writing of file failed!: " + str(e))
-        except UnicodeDecodeError, e:
-            utils.pop_up_info("Error writing " + str(printlist))
-
-
-class Parameter2(object):
-    def __init__(self, name, hint, parameter_type, unit='', valuetype='numberDecimal|numberSigned', hidden=False):
-        """ A class representing a parameter
-
-        :param name: The name of the parameter
-        :param hint: A hint to the user
-        :param parameter_type: ex: flow, level, quality
-        :param valuetype: a valuetype, ex: 'text', 'numberDecimal', 'numberSigned'
-        :param hidden: True/False. If True, the parameter will not be printed as a checkbox.
-        :return: None
-        """
-        self.name = name
-        self.unit = unit
-        self.parameter_type = parameter_type
-        self.valuetype = valuetype
-        self.hidden = hidden
-        self.header_word = None
-
-        if not hint:
-            self.hint = self.name
-        else:
-            self.hint = utils.returnunicode(hint)
-
-        if self.name.endswith(self.unit):
-            self.full_name = '.'.join((self.parameter_type[0], self.name))
-        else:
-            self.full_name = '.'.join((self.parameter_type[0], self.name, self.unit))
-
-    def __repr__(self):
-        return self.name
-
-    def get_header_word(self):
-        if self.header_word is None:
-            self.header_word = ';'.join((self.full_name, self.valuetype, self.hint))
-        return self.header_word
 
 
 class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog):
@@ -391,7 +42,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle("Export to FieldLogger") # Set the title for the dialog
-
 
         self.export_objects = None
         self.stored_settingskey = u'fieldlogger_export'
@@ -415,6 +65,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                          lambda : map(lambda x: x(),
                                       [lambda : setattr(self, 'stored_settings', self.update_stored_settings(self.export_objects)),
                                        lambda : self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]))
+
         self.add_one_parameter_button = PyQt4.QtGui.QPushButton(u'Add parameter')
         self.gridLayout_buttons.addWidget(self.add_one_parameter_button, 2, 0)
         self.connect(self.add_one_parameter_button, PyQt4.QtCore.SIGNAL("clicked()"),
@@ -422,6 +73,13 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                  [lambda: self.export_objects.append(ExportObject(defs.tables_columns(), self.connect)),
                                   lambda: self.add_export_object_to_gui(self.widgets_layouts, self.export_objects[-1])]))
 
+        self.export_button = PyQt4.QtGui.QPushButton(u'Export')
+        self.gridLayout_buttons.addWidget(self.export_button, 3, 0)
+        self.connect(self.export_button, PyQt4.QtCore.SIGNAL("clicked()"),
+                     lambda: map(lambda x: x(),
+                                 [lambda: setattr(self, 'stored_settings', self.update_stored_settings(self.export_objects)),
+                                  lambda: self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey),
+                                  lambda: self.write_printlist_to_file(self.create_export_printlist(self.export_objects))]))
 
         self.show()
 
@@ -452,7 +110,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                                     export_object.unit_name_label,
                                                     export_object._distinct_unit,
                                                     export_object.input_type_label,
-                                                    export_object._input_type])
+                                                    export_object._input_type,
+                                                    export_object.hint_label,
+                                                    export_object._hint])
 
             self.create_widget_and_connect_widgets(widgets_layouts[1][1],
                                                  [export_object.location_suffix_label,
@@ -563,51 +223,73 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         ms.settingsdict[settingskey] = utils.returnunicode(setting_string)
         ms.save_settings()
 
-    def create_export_printlist(self):
+    @staticmethod
+    def create_export_printlist(export_objects):
         """
         Creates a result list with FieldLogger format from selected obsids and parameters
         :return: a list with result lines to export to file
         """
-        selection_dict = self.selection_dict
-        types_parameters_dict = self.parameters
-
         latlons = utils.get_latlon_for_all_obsids()
 
-        chosen_parameter_headers = set()
+        parameters_inputtypes_hints = OrderedDict()
 
-        obsid_rows = []
-        for obsid, types_dict in selection_dict.iteritems():
-            for typename, parameter_dict in types_dict.iteritems():
-                subname = None
-                chosen_parameters = set()
-                for parameter, checkbox in parameter_dict.iteritems():
-                    if checkbox.isChecked():
-                        subname = '.'.join((obsid, typename))
+        subnames_locations = OrderedDict()
+        subnames_lat_lon = OrderedDict()
+        subnames_parameters = OrderedDict()
 
-                        chosen_parameters.add(types_parameters_dict[typename][parameter].full_name)
-                        chosen_parameters.update([v.full_name for k, v in types_parameters_dict[typename].iteritems() if v.hidden])
+        for export_object in export_objects:
+            parameter = export_object.final_parameter_name
+            if not parameter:
+                utils.MessagebarAndLog.critical(
+                    bar_msg=u"Critical: Parameter " + parameter + u' error. See log message panel',
+                    log_msg=u'Parameter name not given.')
+                continue
 
-                        chosen_parameter_headers.add((typename, parameter))
-                        chosen_parameter_headers.update([(typename, k) for k, v in types_parameters_dict[typename].iteritems() if v.hidden])
+            if parameter in parameters_inputtypes_hints:
+                utils.MessagebarAndLog.warning(bar_msg=u"Warning: Parameter " + parameter + u' error. See log message panel', log_msg=u'The parameter ' + parameter + u' already exists. Only the first occurence one will be written to file.')
+                continue
 
-                if subname is not None:
-                    lat, lon = latlons.get(obsid)
-                    obsid_rows.append(';'.join((obsid, subname, str(lat), str(lon), '|'.join(chosen_parameters))))
+            parameters_inputtypes_hints[parameter] = (export_object.input_type, export_object.hint)
 
+            for location, subname, obsid in export_object.locations_subnames_obsids:
+                location_exists = subnames_locations.get(subname, None)
+                if location != location_exists and location_exists is not None:
+                    utils.MessagebarAndLog.warning(bar_msg=u'Warning: Subname ' + subname + u' error, see log message panel', log_msg=u'Subname ' + subname + u' already existed for location ' + location_exists + u' and is duplicated by location ' + location + u'. It will be skipped.')
+                    continue
 
-        #Sort the parameters to the same order as they were entered into the ordered types dict.
-        sorted_chosen_parameter_headers = [parameter.get_header_word() for typename, parameters in sorted(types_parameters_dict.iteritems()) for parametername, parameter in parameters.iteritems() if (typename, parametername) in chosen_parameter_headers]
+                if subname not in subnames_lat_lon:
+                    lat, lon = latlons.get(obsid, [None, None])
+                    if any([lat is None, not lat, lon is None, not lon]):
+                        utils.MessagebarAndLog.critical(bar_msg=u'Critical: Obsid ' + u' did not have lat-lon coordinates. Check obs_points table')
+                        continue
+                    subnames_lat_lon[subname] = (returnunicode(lat), returnunicode(lon))
+                subnames_locations[subname] = location
+                subnames_parameters.setdefault(subname, []).append(parameter)
+
+        comments = [par for par in parameters_inputtypes_hints.keys() if u'comment' in par]
+        if not comments:
+            utils.MessagebarAndLog.warning(bar_msg=u'Warning: No comment parameter found. Is it forgotten?')
 
         printlist = []
-        printlist.append(u"FileVersion 1;" + str(len(sorted_chosen_parameter_headers)))
+        printlist.append(u"FileVersion 1;" + str(len(parameters_inputtypes_hints)))
         printlist.append(u"NAME;INPUTTYPE;HINT")
-        printlist.extend(sorted_chosen_parameter_headers)
+        printlist.extend([u';'.join([returnunicode(par),
+                                     returnunicode(i_h[0]) if i_h[0] else u'',
+                                     returnunicode(i_h[1]) if i_h[1] else u''])
+                          for par, i_h in parameters_inputtypes_hints.iteritems()])
         printlist.append(u'NAME;SUBNAME;LAT;LON;INPUTFIELD')
 
-        printlist.extend(sorted(obsid_rows))
+        printlist.extend([u';'.join([returnunicode(location),
+                                     returnunicode(subname),
+                                     returnunicode(subnames_lat_lon[subname][0]),
+                                     returnunicode(subnames_lat_lon[subname][1]),
+                                     u'|'.join(returnunicode(subnames_parameters[subname], keep_containers=True))])
+                          for subname, location in sorted(subnames_locations.iteritems())])
+
         return printlist
 
-    def write_printlist_to_file(self, printlist):
+    @staticmethod
+    def write_printlist_to_file(printlist):
         filename = PyQt4.QtGui.QFileDialog.getSaveFileName(None, 'Choose a file name', '', 'csv (*.csv)')
 
         if not filename:
@@ -670,6 +352,8 @@ class ExportObject(object):
         self._distinct_unit = import_fieldlogger.default_combobox(editable=True)
         self.input_type_label = PyQt4.QtGui.QLabel(u'Fieldlogger input type')
         self._input_type = import_fieldlogger.default_combobox(editable=True)
+        self.hint_label = PyQt4.QtGui.QLabel(u'Parameter hint')
+        self._hint = PyQt4.QtGui.QLineEdit()
         self.location_suffix_label = PyQt4.QtGui.QLabel(u'Location suffix')
         self._location_suffix = PyQt4.QtGui.QLineEdit()
         self.subname_label = PyQt4.QtGui.QLabel(u'Subname suffix')
@@ -707,7 +391,8 @@ class ExportObject(object):
 
         self._location_suffix.setToolTip(u'Name shown in fieldlogger map. location.SUFFIX. Ex: location.projectnumber')
         self._subname_suffix.setToolTip(u'Name shown if more than one subname exists for each location. Ex: location.projectnumber.parameter_group')
-        
+
+        self._final_parameter_name.setToolTip(u'This is the parameter name that will be written to Fieldlogger file. Ex: parameter.unit')
         #-------------------------------------------------------------------------------------
 
         self.obsid_list.setSelectionMode(PyQt4.QtGui.QAbstractItemView.MultiSelection)
@@ -745,8 +430,12 @@ class ExportObject(object):
 
     @staticmethod
     def set_combobox(combobox, value):
-        index = combobox.findText(utils.returnunicode(value))
+        index = combobox.findText(returnunicode(value))
         if index != -1:
+            combobox.setCurrentIndex(index)
+        else:
+            combobox.addItem(returnunicode(value))
+            index = combobox.findText(returnunicode(value))
             combobox.setCurrentIndex(index)
 
     @property
@@ -812,6 +501,14 @@ class ExportObject(object):
     @input_type.setter
     def input_type(self, value):
         self.set_combobox(self._input_type, value)
+        
+    @property
+    def hint(self):
+        return utils.returnunicode(self._hint.text())
+
+    @hint.setter
+    def hint(self, value):
+        self._hint.setText(utils.returnunicode(value))
 
     @property
     def location_suffix(self):
@@ -828,6 +525,13 @@ class ExportObject(object):
     @subname_suffix.setter
     def subname_suffix(self, value):
         self._subname_suffix.setText(utils.returnunicode(value))
+
+    @property
+    def locations_subnames_obsids(self):
+        locations_subnames_obsids = [(u'.'.join([returnunicode(obsid), returnunicode(self.location_suffix)]),
+                                      u'.'.join([returnunicode(obsid), returnunicode(self.subname_suffix)]), returnunicode(obsid))
+                                     for obsid in self.obsid_list.get_all_data()]
+        return locations_subnames_obsids
         
     def get_settings(self):
         settings = ((u'parameter_table', self.parameter_table),
@@ -838,6 +542,7 @@ class ExportObject(object):
                    (u'distinct_unit', self.distinct_unit),
                    (u'final_parameter_name', self.final_parameter_name),
                    (u'input_type', self.input_type),
+                   (u'hint', self.hint),
                    (u'location_suffix', self.location_suffix),
                    (u'subname_suffix', self.subname_suffix))
 
@@ -891,4 +596,7 @@ class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
         keep_items = [item for item in all_items if item not in items_to_delete]
         self.clear()
         self.addItems(sorted(keep_items))
+
+    def get_all_data(self):
+        return [self.item(i).text() for i in xrange(self.count())]
 
