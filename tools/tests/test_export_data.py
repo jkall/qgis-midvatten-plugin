@@ -227,7 +227,6 @@ class TestExport(unittest.TestCase):
                             u''', [(P1, 2015-01-01 00:00:00, s1, comment1)], ''',
                             u'''select obsid, parameter, report, staff from w_qual_lab''',
                             u''', [(P1, labpar1, report1, s1)], ''',
-                            u''', [(DO, %, DO), (DO, mg/L, DO), (conductivity, µS/cm, cond), (pH, None, pH), (reduction potential, mV, redox), (temperature, grC, temp), (turbidity, FNU, turb), (par1, unit1, None)], ''',
                             u'''select obsid, parameter, staff, date_time, comment from w_qual_field''',
                             u''', [(P1, par1, s1, 2015-01-01 01:00:00, None)], ''',
                             u'''select obsid, instrumentid, flowtype, date_time, unit from w_flow''',
