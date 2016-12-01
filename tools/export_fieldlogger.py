@@ -60,13 +60,15 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         #Buttons
         self.save_settings_button = PyQt4.QtGui.QPushButton(u'Save settings')
+        self.save_settings_button.setToolTip(u'Saves the current parameter setup to midvatten settings.')
         self.gridLayout_buttons.addWidget(self.save_settings_button, 1, 0)
         self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : map(lambda x: x(),
                                       [lambda : setattr(self, 'stored_settings', self.update_stored_settings(self.export_objects)),
                                        lambda : self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]))
 
-        self.add_one_parameter_button = PyQt4.QtGui.QPushButton(u'Add parameter')
+        self.add_one_parameter_button = PyQt4.QtGui.QPushButton(u'New parameter')
+        self.add_one_parameter_button.setToolTip(u'Creates an additional empty parameter setting.')
         self.gridLayout_buttons.addWidget(self.add_one_parameter_button, 2, 0)
         self.connect(self.add_one_parameter_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(),
@@ -74,6 +76,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                   lambda: self.add_export_object_to_gui(self.widgets_layouts, self.export_objects[-1])]))
 
         self.export_button = PyQt4.QtGui.QPushButton(u'Export')
+        self.export_button.setToolTip(u'Exports to a Fieldlogger wells file.')
         self.gridLayout_buttons.addWidget(self.export_button, 3, 0)
         self.connect(self.export_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(),
