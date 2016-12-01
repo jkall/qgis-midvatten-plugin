@@ -270,6 +270,11 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         if not comments:
             utils.MessagebarAndLog.warning(bar_msg=u'Warning: No comment parameter found. Is it forgotten?')
 
+        #Make a flat set of used parameters
+        #used_parameters = [item for v in subnames_parameters.values() for item in v]
+        #Remove unused parameters
+        #parameters_inputtypes_hints = OrderedDict([(k, v) for k, v in parameters_inputtypes_hints.iteritems() if k in used_parameters])
+
         printlist = []
         printlist.append(u"FileVersion 1;" + str(len(parameters_inputtypes_hints)))
         printlist.append(u"NAME;INPUTTYPE;HINT")
