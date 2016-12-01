@@ -18,7 +18,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class TestFieldLoggerImporterDb(object):
+class _TestFieldLoggerImporterDb(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -207,7 +207,7 @@ class TestFieldLoggerImporterDb(object):
             assert test_string == reference_string
 
 
-class TestCommentsImportFields(object):
+class _TestCommentsImportFields(object):
     def setUp(self):
         mock_import_method_chooser = MagicMock()
         mock_import_method_chooser.parameter_name = u'comment'
@@ -242,7 +242,7 @@ class TestCommentsImportFields(object):
         assert test_string == reference_string
 
 
-class TestStaffQuestion(object):
+class _TestStaffQuestion(object):
 
     @mock.patch('import_fieldlogger.defs.staff_list')
     def setUp(self, mock_stafflist):
@@ -258,7 +258,7 @@ class TestStaffQuestion(object):
         assert test_string == reference_string
 
 
-class TestObsidFilter(object):
+class _TestObsidFilter(object):
     def setUp(self):
         self.obsid_filter = import_fieldlogger.ObsidFilter()
 

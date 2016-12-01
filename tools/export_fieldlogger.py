@@ -413,7 +413,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.gridLayout_buttons.addWidget(self.save_settings_button, 1, 0)
         self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : map(lambda x: x(),
-                                      [lambda : self.update_stored_settings(self.export_objects),
+                                      [lambda : setattr(self, 'stored_settings', self.update_stored_settings(self.export_objects)),
                                        lambda : self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]))
         self.add_one_parameter_button = PyQt4.QtGui.QPushButton(u'Add parameter')
         self.gridLayout_buttons.addWidget(self.add_one_parameter_button, 2, 0)
@@ -505,14 +505,14 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             object_name = settings[0]
 
             try:
-                attributes = [setting.split(u':') for setting in settings[1:]]
+                attributes = tuple([tuple(setting.split(u':')) for setting in settings[1:]])
             except ValueError, e:
                 utils.MessagebarAndLog.warning(log_msg=u"ExportFieldlogger: Getting stored settings didn't work: " + str(e))
                 continue
 
             stored_settings.append((object_name, attributes))
 
-        return stored_settings
+        return tuple(stored_settings)
 
     @staticmethod
     def create_export_objects_using_stored_settings(stored_settings, tables_columns, connect):
@@ -521,18 +521,20 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         export_objects = []
         for index, attrs in stored_settings:
             export_object = ExportObject(tables_columns, connect)
+            attrs_set = False
             for attr in attrs:
-                try:
-                    setattr(export_object, k, v)
-                except:
-                    pass
-            export_objects.append(export_object)
+                if hasattr(export_object, attr[0]):
+                    setattr(export_object, attr[0], attr[1])
+                    attrs_set = True
+
+            if attrs_set:
+                export_objects.append(export_object)
 
         return export_objects
 
-    def update_stored_settings(self, export_objects):
-        self.stored_settings = [(index, copy.deepcopy(export_object.get_settings()))
-                                for index, export_object in enumerate(export_objects)]
+    @staticmethod
+    def update_stored_settings(export_objects):
+        return [(index, copy.deepcopy(export_object.get_settings())) for index, export_object in enumerate(export_objects)]
 
     @staticmethod
     def save_stored_settings(ms, stored_settings, settingskey):
@@ -828,7 +830,7 @@ class ExportObject(object):
         self._subname_suffix.setText(utils.returnunicode(value))
         
     def get_settings(self):
-        settings = [(u'parameter_table', self.parameter_table),
+        settings = ((u'parameter_table', self.parameter_table),
                    (u'parameter_columns', self.parameter_columns),
                    (u'distinct_parameter', self.distinct_parameter),
                    (u'unit_table', self.unit_table),
@@ -837,7 +839,9 @@ class ExportObject(object):
                    (u'final_parameter_name', self.final_parameter_name),
                    (u'input_type', self.input_type),
                    (u'location_suffix', self.location_suffix),
-                   (u'subname_suffix', self.subname_suffix)]
+                   (u'subname_suffix', self.subname_suffix))
+
+        settings = tuple((k, v) for k, v in settings if v)
         return utils.returnunicode(settings, keep_containers=True)
     
 

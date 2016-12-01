@@ -46,7 +46,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestImportWellsFile(object):
+class _TestImportWellsFile(object):
 
     def setUp(self):
         self.importinstance = midv_data_importer()
@@ -95,7 +95,7 @@ class TestImportWellsFile(object):
             _test_parse_wells_file(self)
 
 
-class TestParseDiverofficeFile(object):
+class _TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
                                                            'Failure, parsing failed for file': 'cancel'},
@@ -254,7 +254,7 @@ class TestParseDiverofficeFile(object):
         assert test_string == reference_string
 
 
-class TestWlvllogImportFromDiverofficeFiles(object):
+class _TestWlvllogImportFromDiverofficeFiles(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -485,7 +485,7 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     assert test_string == reference_string
 
 
-class TestDefaultImport(object):
+class _TestDefaultImport(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -670,7 +670,7 @@ class TestDefaultImport(object):
                     assert test_string == reference_string
 
 
-class TestInterlab4Importer():
+class _TestInterlab4Importer():
     def setUp(self):
         self.importinstance = midv_data_importer()
 
@@ -1012,7 +1012,7 @@ class TestInterlab4Importer():
         pass
 
 
-class TestInterlab4ImporterDB(object):
+class _TestInterlab4ImporterDB(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1086,7 +1086,7 @@ class TestInterlab4ImporterDB(object):
         assert test_string == reference_string
 
 
-class TestDbCalls(object):
+class _TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -1135,7 +1135,7 @@ class TestDbCalls(object):
         assert imported_staff == u'(True, [(staff1, ), (staff2, )])'
 
 
-class TestImportObsPoints(object):
+class _TestImportObsPoints(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -1243,7 +1243,7 @@ class TestImportObsPoints(object):
         assert test_string == reference_string
 
 
-class TestWquallabImport(object):
+class _TestWquallabImport(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
@@ -1340,7 +1340,7 @@ class TestWquallabImport(object):
         assert test_string == reference_string
 
 
-class TestWflowImport(object):
+class _TestWflowImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1401,7 +1401,7 @@ class TestWflowImport(object):
         assert test_string == reference_string
 
 
-class TestWqualfieldImport(object):
+class _TestWqualfieldImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1491,7 +1491,7 @@ class TestWqualfieldImport(object):
         assert test_string == reference_string
 
 
-class TestWlvlImport(object):
+class _TestWlvlImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1583,7 +1583,7 @@ class TestWlvlImport(object):
 
 
 
-class TestFilterDatesFromFiledata(object):
+class _TestFilterDatesFromFiledata(object):
 
     def setUp(self):
         self.importinstance = midv_data_importer()

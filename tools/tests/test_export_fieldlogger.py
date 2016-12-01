@@ -21,14 +21,17 @@
 """
 from qgis.core import QgsApplication, QgsProviderRegistry
 from utils_for_tests import init_test
+from collections import OrderedDict
 from tools.tests.mocks_for_tests import DummyInterface
 from PyQt4 import QtCore, QtGui, QtTest
 from export_fieldlogger import ExportToFieldLogger
 from mocks_for_tests import MockUsingReturnValue
+import export_fieldlogger
 import midvatten_utils as utils
 from nose.tools import raises
 from mock import MagicMock
 import mock
+import utils_for_tests
 from utils_for_tests import dict_to_sorted_list, create_test_string
 
 class _TestExportFieldlogger():
@@ -127,3 +130,73 @@ class _TestExportFieldlogger():
         self.iface = None
         self.export_fieldlogger_obj = None
         pass
+
+class TestExportFieldloggerNoDb():
+    def setUp(self):
+        self.ExportToFieldLogger = ExportToFieldLogger
+
+    @staticmethod
+    def test_get_stored_settings():
+        mock_ms = MagicMock()
+        mock_ms.settingsdict = {u'test_settings_key': u'0;final_parameter_name:testname;test:gotten_test/1;key1:value1;key2:value2;key3:value3'}
+        settingskey = u'test_settings_key'
+        stored_settings = create_test_string(ExportToFieldLogger.get_stored_settings(mock_ms, settingskey))
+        reference_string = u'((0, ((final_parameter_name, testname), (test, gotten_test))), (1, ((key1, value1), (key2, value2), (key3, value3))))'
+        assert stored_settings == reference_string
+
+    @staticmethod
+    def test_update_stored_settings():
+
+        export_objects = [MagicMock(), MagicMock()]
+        export_objects[0].get_settings.return_value = ((u'key0_1', u'value0_1'), (u'key0_2', u'value0_2'))
+        export_objects[1].get_settings.return_value = ((u'key1_1', u'value1_1'), (u'key1_2', u'value1_2'))
+
+        stored_settings = ExportToFieldLogger.update_stored_settings(export_objects)
+        test_string = create_test_string(stored_settings)
+        reference_string = u'[(0, ((key0_1, value0_1), (key0_2, value0_2))), (1, ((key1_1, value1_1), (key1_2, value1_2)))]'
+        assert test_string == reference_string
+
+    @staticmethod
+    def test_update_stored_settings_using_real_export_objects():
+
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+
+        mock_connect = MagicMock()
+        export_objects = [export_fieldlogger.ExportObject(tables_columns, mock_connect),
+                          export_fieldlogger.ExportObject(tables_columns, mock_connect)]
+
+        setattr(export_objects[0], 'final_parameter_name', 'testname1')
+        setattr(export_objects[1], 'final_parameter_name', 'testname2')
+        setattr(export_objects[1], 'location_suffix', 'locationsuffix2')
+
+        stored_settings = ExportToFieldLogger.update_stored_settings(export_objects)
+        test_string = create_test_string(stored_settings)
+        reference_string = u'[(0, ((final_parameter_name, testname1))), (1, ((final_parameter_name, testname2), (location_suffix, locationsuffix2)))]'
+        assert test_string == reference_string
+
+    @staticmethod
+    def test_create_export_objects_using_stored_settings_no_settings():
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+        stored_settings = [(0, ((u'key0_1', u'value0_1'), (u'key0_2', u'value0_2'))), (1, ((u'key1_1', u'value1_1'), (u'key1_2', u'value1_2')))]
+        mock_connect = MagicMock()
+
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings, tables_columns, mock_connect)
+        stored_settings = ExportToFieldLogger.update_stored_settings(export_objects)
+        assert stored_settings == []
+
+    @staticmethod
+    def test_create_export_objects_using_stored_settings():
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+        stored_settings = [(0, ((u'final_parameter_name', u'value0_1'), (u'key0_2', u'value0_2'))),
+                           (1, ((u'location_suffix', u'value1_1'), (u'key1_2', u'value1_2')))]
+        mock_connect = MagicMock()
+
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
+                                                                                         tables_columns,
+                                                                                         mock_connect)
+        stored_settings = create_test_string(ExportToFieldLogger.update_stored_settings(export_objects))
+        reference = u'[(0, ((final_parameter_name, value0_1))), (1, ((location_suffix, value1_1)))]'
+        assert stored_settings == reference
+
+
+

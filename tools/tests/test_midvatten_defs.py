@@ -41,7 +41,7 @@ DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
 
 
-class TestDefsFunctions():
+class _TestDefsFunctions():
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
