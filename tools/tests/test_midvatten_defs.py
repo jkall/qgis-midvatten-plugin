@@ -24,7 +24,7 @@ from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from PyQt4 import QtCore, QtGui, QtTest
 from export_fieldlogger import ExportToFieldLogger
-from mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance, DummyInterface2
+from mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance, DummyInterface2, mock_answer, MockQgisUtilsIface, MockReturnUsingDictIn
 import midvatten_utils as utils
 from nose.tools import raises
 from mock import MagicMock
@@ -38,9 +38,10 @@ import midvatten
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
+MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
 
 
-class TestStandadParameters():
+class TestDefsFunctions():
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
@@ -73,37 +74,14 @@ class TestStandadParameters():
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     @mock.patch('qgis.utils.iface', autospec=True)
-    def test_standard_parameters_for_wquality(self, mock_iface):
-        res = midvatten_defs.standard_parameters_for_wquality()
+    def test_tables_columns(self, mock_iface):
+        res = midvatten_defs.tables_columns()
         assert res
-        assert isinstance(res, tuple)
-        for k, v in res:
+        assert isinstance(res, dict)
+        for k, v in res.iteritems():
             assert isinstance(k, unicode)
-            assert isinstance(v, tuple)
+            assert isinstance(v, (tuple, list))
             for x in v:
                 assert isinstance(x, unicode)
 
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('qgis.utils.iface', autospec=True)
-    def test_standard_parameters_for_wflow(self, mock_iface):
-        res = midvatten_defs.standard_parameters_for_wflow()
-        assert res
-        assert isinstance(res, tuple)
-        for k, v in res:
-            assert isinstance(k, unicode)
-            assert isinstance(v, tuple)
-            for x in v:
-                assert isinstance(x, unicode)
-
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('qgis.utils.iface', autospec=True)
-    def test_standard_parameters_for_wsample(self, mock_iface):
-        res = midvatten_defs.standard_parameters_for_wsample()
-        assert res
-        assert isinstance(res, tuple)
-        for k, v in res:
-            assert isinstance(k, unicode)
-            assert isinstance(v, tuple)
-            for x in v:
-                assert isinstance(x, unicode)
 

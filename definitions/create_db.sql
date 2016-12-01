@@ -108,10 +108,10 @@ insert into about_db values('w_qual_field', 'obsid', 'text', '1', '', '1', 'obs_
 insert into about_db values('w_qual_field', 'staff', 'text', '', '', '', '', 'Field staff', '', '');
 insert into about_db values('w_qual_field', 'date_time', 'text', '1', '', '1', '', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '');
 insert into about_db values('w_qual_field', 'instrument', 'text', '', '', '', '', 'Instrument ID', '', '');
-insert into about_db values('w_qual_field', 'parameter', 'text', '1', '', '1', 'zz_w_qual_field_parameters(parameter)', 'Measured parameter', '', '');
+insert into about_db values('w_qual_field', 'parameter', 'text', '1', '', '1', '', 'Measured parameter', '', '');
 insert into about_db values('w_qual_field', 'reading_num', 'double', '', '', '', '', 'Value as real number', '', '');
 insert into about_db values('w_qual_field', 'reading_txt', 'text', '', '', '', '', 'Value as text, incl more than and less than symbols', '', '');
-insert into about_db values('w_qual_field', 'unit', 'text', '', '', '1', 'zz_w_qual_field_parameters(unit)', 'Unit', '', 'zz_w_qual_field_parameters(unit)');
+insert into about_db values('w_qual_field', 'unit', 'text', '', '', '1', '', 'Unit', '', '');
 insert into about_db values('w_qual_field', 'depth', 'double', '', '', '', '', 'The depth at which the measurement was done', '', '');
 insert into about_db values('w_qual_field', 'comment', 'text', '', '', '', '', 'Comment', '', '');
 insert into about_db values('w_qual_lab', '*', '', '', '', '', '', 'Water quality from laboratory analysis', '', '');
@@ -148,15 +148,6 @@ insert into about_db values('zz_capacity', '*', '', '', '', '', '', 'data domain
 insert into about_db values('zz_capacity', 'capacity', 'text', '1', 'Default: 1, 2, 3, 4, 5, 6', '1', '', 'water capacity classes, typically used for stratigraphy layers', '', '');
 insert into about_db values('zz_capacity', 'explanation', 'text', '1', '', '', '', 'description of water capacity classes', '', '');
 insert into about_db values('zz_capacity', 'color_qt', 'text', '1', '', '', '', 'hatchcolor codes for Qt plots', '', '');
-insert into about_db values('zz_w_qual_field_parameters', '*', '', '', '', '', '', 'data domain for parameters connected to water quality field measurements', '', '');
-insert into about_db values('zz_w_qual_field_parameters', 'parameter', 'text', '1', '', '1', '', 'parameter name', '', '');
-insert into about_db values('zz_w_qual_field_parameters', 'shortname', 'text', '', '', '', '', 'parameter short name used by the fieldlogger export and import', '', '');
-insert into about_db values('zz_w_qual_field_parameters', 'unit', 'text', '', '', '1', '', 'unit', '', '');
-insert into about_db values('zz_w_qual_field_parameters', 'explanation', 'text', '', '', '', '', 'explanation of the parameter', '', '');
-insert into about_db values('zz_w_qual_field_parameter_groups', '*', '', '', '', '', '', 'data domain connecting water quality field parameters to groups used by FieldLogger', '', '');
-insert into about_db values('zz_w_qual_field_parameter_groups', 'parameter', 'text', '1', '', '1', 'zz_w_qual_field_parameters(parameter)', 'data domain connecting water quality field parameters to groups used by FieldLogger', '', '');
-insert into about_db values('zz_w_qual_field_parameter_groups', 'unit', 'text', '', '', '1', 'zz_w_qual_field_parameters(unit)', 'data domain connecting water quality field parameters to groups used by FieldLogger', '', '');
-insert into about_db values('zz_w_qual_field_parameter_groups', 'groupname', 'text', '1', '', '1', '', 'data domain connecting water quality field parameters to groups used by FieldLogger. Should have values quality or sample', '', '');
 create table "obs_points" ( "obsid" text not null, "name" text, "place" text, "type" text, "length" double, "drillstop" text, "diam" double, "material" text, "screen" text, "capacity" text, "drilldate" text, "wmeas_yn" integer, "wlogg_yn" integer, "east" double, "north" double, "ne_accur" double, "ne_source" text,  "h_toc" double, "h_tocags" double, "h_gs" double, "h_accur" double, "h_syst" text, "h_source" text, "source" text, "com_onerow" text, "com_html" text, primary key (obsid));
 SELECT AddGeometryColumn("obs_points", "geometry", CHANGETORELEVANTEPSGID, "POINT", "XY", 0);
 create table "obs_lines" ("obsid" text  not null, name text, place text, type text, source text, primary key (obsid));
@@ -164,7 +155,7 @@ SELECT AddGeometryColumn("obs_lines", "geometry", CHANGETORELEVANTEPSGID, "LINES
 create table "w_levels" ("obsid" text not null, "date_time" text not null, "meas" double, "h_toc" double, "level_masl" double, "comment" text, primary key (obsid, date_time),  foreign key(obsid) references obs_points(obsid));
 create table "w_levels_logger" ("obsid" text not null, "date_time" text not null, "head_cm" double, "temp_degc" double, "cond_mscm" double, "level_masl" double, "comment" text, primary key (obsid, date_time),  foreign key(obsid) references obs_points(obsid));
 create table "stratigraphy" (obsid text not null, stratid integer not null, depthtop double, depthbot double, geology text, geoshort text, capacity text, development text,  comment text, primary key (obsid, stratid), foreign key(obsid) references obs_points(obsid));
-create table "w_qual_field" (obsid text not null, staff text, date_time text not null, instrument text, parameter text not null, reading_num double, reading_txt text, unit text, depth double, comment text, primary key(obsid, date_time, parameter, unit), foreign key(obsid) references obs_points(obsid), foreign key(parameter, unit) references zz_w_qual_field_parameters(parameter, unit), foreign key(staff) references zz_staff(staff));
+create table "w_qual_field" (obsid text not null, staff text, date_time text not null, instrument text, parameter text not null, reading_num double, reading_txt text, unit text, depth double, comment text, primary key(obsid, date_time, parameter, unit), foreign key(obsid) references obs_points(obsid), foreign key(staff) references zz_staff(staff));
 create table "w_qual_lab" ("obsid" text not null, "depth" double, "report" text not null, "project" text, "staff" text, "date_time" text, "anameth" text, "parameter" text not null, "reading_num" double, "reading_txt" text, "unit" text, "comment" text, primary key(report, parameter), foreign key(obsid) references obs_points(obsid), foreign key(staff) references zz_staff(staff));
 create table "w_flow" (obsid text not null, instrumentid text not null, flowtype text not null, date_time text not null, reading double, unit text, comment text, primary key (obsid, instrumentid, flowtype, date_time), foreign key(obsid) references obs_points(obsid), foreign key (flowtype, unit) references zz_flowtype(type, unit));
 CREATE TABLE "meteo" (obsid text not null, instrumentid text not null, parameter text not null, date_time text not null, reading_num double, reading_txt text, unit text, comment text, primary key (obsid, instrumentid, parameter, date_time), foreign key(obsid) references obs_points(obsid), foreign key (parameter) references zz_meteoparam(parameter));
@@ -172,8 +163,6 @@ create table "seismic_data" (obsid text not null, length double not null, ground
 create table "vlf_data" (obsid text not null, length double not null, real_comp double, imag_comp double, comment text, primary key (obsid, Length), foreign key (obsid) references obs_lines(obsid));
 CREATE TABLE "comments" ("obsid" text not null, "date_time" text not null, "comment" text not null, "staff" text not null, primary key("obsid", "date_time"), foreign key(obsid) references obs_points(obsid), foreign key(staff) references zz_staff(staff));
 CREATE TABLE "zz_staff" ("staff" text not null, "name" text, primary key("staff"));
-CREATE TABLE "zz_w_qual_field_parameters" ("parameter" text not null, "shortname", "unit" text, "explanation" text, primary key ("parameter", "unit"));
-CREATE TABLE "zz_w_qual_field_parameter_groups" ("parameter" text not null, "unit" text, "groupname" text not null, primary key ("parameter", "unit", "groupname"), foreign key(parameter, unit) references zz_w_qual_field_parameters("parameter", "unit"));
 create table "zz_flowtype" (type text not null, unit text not null, explanation text, primary key(type, unit));
 CREATE TABLE "zz_meteoparam" (parameter text not null,explanation text, primary key(parameter));
 CREATE TABLE "zz_strat" (geoshort text not null, strata text not null, primary key(geoshort));

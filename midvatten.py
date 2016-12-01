@@ -471,14 +471,12 @@ class midvatten:
         allcritical_layers = ('obs_points') #none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
-        if err_flag == 0:     
-            OBSID_P = utils.get_selected_features_as_tuple('obs_points')         
-                        
+        if err_flag == 0:
             from export_fieldlogger import ExportToFieldLogger
             try:
                 self.export_to_field_logger.activateWindow()
             except:
-                self.export_to_field_logger = ExportToFieldLogger(self.iface.mainWindow(), self.ms.settingsdict, OBSID_P)
+                self.export_to_field_logger = ExportToFieldLogger(self.iface.mainWindow(), self.ms)
         else:
             utils.pop_up_info("Err_flag was not 0")       
 

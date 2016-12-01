@@ -94,7 +94,8 @@ def settingsdict():    #These are the default settings, they shall not be change
             'piper_mg':'Magnesium, Mg',
             'piper_markers':'type',
             'locale': '',
-            'fieldlogger_import_parameter_settings': ''
+            'fieldlogger_import_parameter_settings': '',
+            'fieldlogger_export': ''
             }
     return dictionary
 
@@ -540,30 +541,6 @@ def staff_list():
         return False, tuple()
 
     return True, utils.returnunicode(tuple([x[0] for x in result_list]), True)
-    
-def standard_parameters_for_wquality():
-    """ Returns a dict with water quality parameters
-    :return: A dict with parameter as key and unit as value
-    """
-    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "groupname" = 'quality' ''')
-    shortname_parameter_unit = w_qual_field_parameters()
-    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
-    return shortname_unit
-
-def standard_parameters_for_wsample():
-    """ Returns a dict with water sample parameters
-    :return: A dict with parameter as key and unit as value
-    """
-    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "groupname" = 'sample' ''')
-    shortname_parameter_unit = w_qual_field_parameters()
-    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
-    return shortname_unit
-
-def standard_parameters_for_wflow():
-    """ Returns a dict with water flow parameters
-    :return: A dict with parameter as key and unit as value
-    """
-    return utils.sql_to_parameters_units_tuple(u'''select type, unit from zz_flowtype''')
 
 def SQLiteInternalTables():
     return r"""('geom_cols_ref_sys',
@@ -617,7 +594,6 @@ def w_qual_field_parameters():
 
     return utils.returnunicode(result_list, keep_containers=True)
 
-
 def w_flow_flowtypes_units():
     sql = 'select distinct flowtype, unit from w_flow'
     connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
@@ -639,3 +615,34 @@ def w_qual_field_parameter_units():
         return {}
 
     return utils.returnunicode(result_dict, keep_containers=True)
+
+def tables_columns():
+    tables_sql = (r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + SQLiteInternalTables() + r""") ORDER BY tbl_name""")
+    connection_ok, tables = utils.sql_load_fr_db(tables_sql)
+
+    if not connection_ok:
+        textstring = u"""Cannot get data from sql """ + utils.returnunicode(tables_sql)
+        utils.MessagebarAndLog.critical(
+            bar_msg=u"Error, sql failed, see log message panel",
+            log_msg=textstring)
+        return []
+
+    tables_dict = {}
+
+    tablenames = [col[0] for col in tables]
+    for tablename in tablenames:
+        columns_sql = """PRAGMA table_info (%s)""" % tablename
+        connection_ok, columns = utils.sql_load_fr_db(columns_sql)
+
+        if not connection_ok:
+            textstring = u"""Cannot get data from sql """ + utils.returnunicode(columns_sql)
+            utils.MessagebarAndLog.critical(
+                bar_msg=u"Error, sql failed, see log message panel",
+                log_msg=textstring)
+            continue
+        tables_dict[tablename] = tuple(sorted([column[1] for column in columns]))
+
+    return tables_dict
+
+
+

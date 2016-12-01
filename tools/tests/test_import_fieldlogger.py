@@ -43,11 +43,10 @@ class TestFieldLoggerImporterDb(object):
         os.remove(TEMP_DB_PATH)
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    def test_load_file(self):
+    def _test_load_file(self):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1")''')
         utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("HS")''')
         utils.sql_alter_db(u'''INSERT INTO zz_flowtype ("type", "unit") VALUES ("Aveflow", "m3/s")''')
-        utils.sql_alter_db(u'''INSERT INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("Temperature", "Temp", "m3/s")''')
 
         f = [
             u"Location;date_time;value;comment\n",
@@ -93,7 +92,7 @@ class TestFieldLoggerImporterDb(object):
             assert test_string == reference
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    def test_staff_not_given(self):
+    def _test_staff_not_given(self):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1")''')
 
         f = [
@@ -141,11 +140,6 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
 
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type", "unit") VALUES ("Accvol", "m3")''')
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("turbiditet", "turb", "FNU")''')
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("konduktivitet", "kond", "µS/cm")''')
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("syre", "syre", "mg/L")''')
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("syre", "syre", "%")''')
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_w_qual_field_parameters ("parameter", "shortname", "unit") VALUES ("temperatur", "temp", "grC")''')
 
         f = [
             u"Location;date_time;value;comment\n",
@@ -186,7 +180,7 @@ class TestFieldLoggerImporterDb(object):
                     if isinstance(setting, import_fieldlogger.StaffQuestion):
                         setting.staff = u'teststaff'
 
-                stored_settings = {u's.comment': {u'import_method': u'comments'},
+                stored_settings = OrderedDict({u's.comment': {u'import_method': u'comments'},
                                    u'l.comment': {u'import_method': u'comments'},
                                    u'f.comment': {u'import_method': u'comments'},
                                    u'q.comment': {u'import_method': u'comments'},
@@ -196,7 +190,7 @@ class TestFieldLoggerImporterDb(object):
                                    u'q.konduktivitet.µS/cm': {u'import_method': u'w_qual_field', u'parameter': u'konduktivitet', u'unit': u'µS/cm', u'depth': u'', u'instrument': u'testid'},
                                    u'q.syre.mg/L': {u'import_method': u'w_qual_field', u'parameter': u'syre', u'unit': u'mg/L', u'depth': u'', u'instrument': u'testid'},
                                    u'q.syre.%': {u'import_method': u'w_qual_field', u'parameter': u'syre', u'unit': u'%', u'depth': u'', u'instrument': u'testid'},
-                                   u'q.temperatur.grC': {u'import_method': u'w_qual_field', u'parameter': u'temperatur', u'unit': u'grC', u'depth': u'', u'instrument': u'testid'}}
+                                   u'q.temperatur.grC': {u'import_method': u'w_qual_field', u'parameter': u'temperatur', u'unit': u'grC', u'depth': u'', u'instrument': u'testid'}})
                 importer.set_parameters_using_stored_settings(stored_settings, importer.parameter_imports)
                 importer.start_import(importer.observations)
 
@@ -272,7 +266,47 @@ class TestObsidFilter(object):
         reference_string = u'[{obsid: rb1, sublocation: rb1}, {obsid: rb2, sublocation: rb2}]'
         assert test_string == reference_string
 
+@mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+@mock.patch('import_fieldlogger.defs.w_qual_field_parameter_units')
+def test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units, mock_mock_message_bar):
+    mock_w_qual_field_parameter_units.retun_value = {}
 
+    stored_settings = OrderedDict(
+                  {u's.comment': {u'import_method': u'comments'},
+                   u'l.meas.m': {u'import_method': u'w_level'},
+                   u'f.Accvol.m3': {u'import_method': u'w_flow', u'flowtype': u'Accvol', u'unit': u'm3'},
+                   u's.turbiditet.FNU': {u'import_method': u'w_qual_field', u'parameter': u'turbiditet', u'unit': u'FNU', u'depth': u'1', u'instrument': u'testid'}})
+
+    mock_connect = MagicMock()
+    parameter_imports = OrderedDict([(k, import_fieldlogger.ImportMethodChooser(k, stored_settings.keys(), mock_connect)) for k in stored_settings.keys()])
+
+    import_fieldlogger.FieldloggerImport.set_parameters_using_stored_settings(stored_settings, parameter_imports)
+
+    settings = []
+    for k, v in parameter_imports.iteritems():
+        try:
+            setting = v.parameter_import_fields.get_settings()
+        except Exception, e:
+            pass
+        else:
+            settings.append((k, setting))
+    test_string = utils_for_tests.create_test_string(settings)
+    reference_string = u'[(s.turbiditet.FNU, {depth: 1, instrument: testid, parameter: turbiditet, unit: FNU}), (f.Accvol.m3, {flowtype: Accvol, unit: m3})]'
+    assert test_string == reference_string
+
+
+def test_SublocationFilter():
+    sublocation_filter = import_fieldlogger.SublocationFilter([u'a.1', u'a.2'])
+
+    assert u'{sublocation: a.1}' == utils_for_tests.create_test_string(sublocation_filter.alter_data({u'sublocation': u'a.1'}))
+
+    sublocation_filter.set_selection([u'a.1'], False)
+    assert sublocation_filter.alter_data({u'sublocation': u'a.1'}) is None
+    assert u'{sublocation: a.2}' == utils_for_tests.create_test_string(sublocation_filter.alter_data({u'sublocation': u'a.2'}))
+
+    sublocation_filter.set_selection([u'a.1'], True)
+    assert u'{sublocation: a.1}' == utils_for_tests.create_test_string(sublocation_filter.alter_data({u'sublocation': u'a.1'}))
+    assert u'{sublocation: a.2}' == utils_for_tests.create_test_string(sublocation_filter.alter_data({u'sublocation': u'a.2'}))
 
 
 
