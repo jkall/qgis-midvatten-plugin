@@ -43,14 +43,16 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle("Export to FieldLogger") # Set the title for the dialog
 
+        tables_columns = defs.tables_columns()
+
         self.export_objects = None
         self.stored_settingskey = u'fieldlogger_export'
-        self.stored_settings = self.get_stored_settings(self.ms, self.stored_settingskey)
-        self.export_objects = self.create_export_objects_using_stored_settings(self.stored_settings, defs.tables_columns(), self.connect)
 
+        self.export_objects = self.create_export_objects_using_stored_settings(self.get_stored_settings(self.ms, self.stored_settingskey),
+                                                                               tables_columns,
+                                                                               self.connect)
         if self.export_objects is None or not self.export_objects:
-            self.export_objects = [ExportObject(defs.tables_columns(), self.connect),
-                                   ExportObject(defs.tables_columns(), self.connect)]
+            self.export_objects = [ExportObject(tables_columns, self.connect)]
 
         self.splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(self.splitter)
@@ -63,9 +65,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.save_settings_button.setToolTip(u'Saves the current parameter setup to midvatten settings.')
         self.gridLayout_buttons.addWidget(self.save_settings_button, 1, 0)
         self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
-                         lambda : map(lambda x: x(),
-                                      [lambda : setattr(self, 'stored_settings', self.update_stored_settings(self.export_objects)),
-                                       lambda : self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]))
+                         lambda : self.save_stored_settings(self.ms,
+                                                            self.update_stored_settings(self.export_objects),
+                                                            self.stored_settingskey))
 
         self.add_one_parameter_button = PyQt4.QtGui.QPushButton(u'New parameter')
         self.add_one_parameter_button.setToolTip(u'Creates an additional empty parameter setting.')
@@ -79,9 +81,10 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.export_button.setToolTip(u'Exports to a Fieldlogger wells file.')
         self.gridLayout_buttons.addWidget(self.export_button, 3, 0)
         self.connect(self.export_button, PyQt4.QtCore.SIGNAL("clicked()"),
-                     lambda: map(lambda x: x(),
-                                 [lambda: setattr(self, 'stored_settings', self.update_stored_settings(self.export_objects)),
-                                  lambda: self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey),
+                                  lambda: map(lambda x: x(),
+                                 [lambda: self.save_stored_settings(self.ms,
+                                                                    self.update_stored_settings(self.export_objects),
+                                                                    self.stored_settingskey),
                                   lambda: self.write_printlist_to_file(self.create_export_printlist(self.export_objects))]))
 
         self.show()
@@ -130,6 +133,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                                              export_object.cut_button,
                                                              export_object.paste_button],
                                                     layout_class=PyQt4.QtGui.QHBoxLayout)
+
             self.create_widget_and_connect_widgets(widgets_layouts[2][1],
                                                      [export_object.paste_from_selection_button,
                                                       button_widgets,
@@ -413,6 +417,22 @@ class ExportObject(object):
         connect(self.paste_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : self.obsid_list.paste_data())
 
+    def get_settings(self):
+        settings = ((u'parameter_table', self.parameter_table),
+                   (u'parameter_columns', self.parameter_columns),
+                   (u'distinct_parameter', self.distinct_parameter),
+                   (u'unit_table', self.unit_table),
+                   (u'unit_columns', self.unit_columns),
+                   (u'distinct_unit', self.distinct_unit),
+                   (u'final_parameter_name', self.final_parameter_name),
+                   (u'input_type', self.input_type),
+                   (u'hint', self.hint),
+                   (u'location_suffix', self.location_suffix),
+                   (u'subname_suffix', self.subname_suffix))
+
+        settings = tuple((k, v) for k, v in settings if v)
+        return utils.returnunicode(settings, keep_containers=True)
+
     @staticmethod
     def replace_items(combobox, items):
         combobox.clear()
@@ -540,22 +560,6 @@ class ExportObject(object):
                                       u'.'.join([returnunicode(obsid), returnunicode(self.subname_suffix)]), returnunicode(obsid))
                                      for obsid in self.obsid_list.get_all_data()]
         return locations_subnames_obsids
-        
-    def get_settings(self):
-        settings = ((u'parameter_table', self.parameter_table),
-                   (u'parameter_columns', self.parameter_columns),
-                   (u'distinct_parameter', self.distinct_parameter),
-                   (u'unit_table', self.unit_table),
-                   (u'unit_columns', self.unit_columns),
-                   (u'distinct_unit', self.distinct_unit),
-                   (u'final_parameter_name', self.final_parameter_name),
-                   (u'input_type', self.input_type),
-                   (u'hint', self.hint),
-                   (u'location_suffix', self.location_suffix),
-                   (u'subname_suffix', self.subname_suffix))
-
-        settings = tuple((k, v) for k, v in settings if v)
-        return utils.returnunicode(settings, keep_containers=True)
     
 
 class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):

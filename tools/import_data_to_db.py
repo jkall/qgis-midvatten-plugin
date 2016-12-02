@@ -1042,62 +1042,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:
                 return 0
 
-    def parse_wells_file(self):
-        """ Opens a wells file and returns a parsed dict
-        :return: A dict like {obsid: {typename: [parameter, unit]}}
-        """
-        try:
-            path = self.select_files(only_one_file=True)[0]
-        except IndexError:
-            return u'cancel'
-        charset = self.charsetchoosen
-
-        if not path:
-            return None
-        with io.open(path, u'r', encoding=str(charset[0])) as f:
-            obsid_dict = self.wells_parse_rows(f)
-        return obsid_dict
-
-    @staticmethod
-    def wells_parse_rows(f):
-        """
-        Parses rows from a wells file
-        :return: A dict like {obsid: {typename: [parameter, unit]}}
-        """
-        obsid_dict = {}
-        start_import = False
-        for rawrow in f:
-            row = utils.returnunicode(rawrow).rstrip(u'\r').rstrip(u'\n')
-
-            if row == u'NAME;SUBNAME;LAT;LON;INPUTFIELD':
-                start_import = True
-                continue
-
-            if not start_import:
-                continue
-
-            cols = row.split(u';')
-            obsid_type = cols[1]
-            obsid_type_splitted = obsid_type.split(u'.')
-
-            if len(obsid_type_splitted) < 2:
-                utils.pop_up_info("The typename and obsid on row: " + row + " could not be read. It will be skipped.")
-                continue
-            typename = obsid_type.split(u'.')[-1]
-            obsid = utils.rstrip(u'.' + typename, obsid_type)
-            parameters = cols[4].split(u'|')
-
-            for parameter in parameters:
-                type_parameter_unit =  parameter.split(u'.')
-                parameter = type_parameter_unit[1]
-                try:
-                    unit = type_parameter_unit[2]
-                except IndexError:
-                    unit = u''
-
-                obsid_dict.setdefault(obsid, {}).setdefault(typename, []).append((parameter, unit))
-        return obsid_dict
-
     def SingleFieldDuplicates(self,NoCols,GoalTable,sqlremove,idcol): #For major tables obs_points and obs_lines: Sanity checks and removes duplicates
         """perform some sanity checks of the imported data and removes duplicates and empty records"""
         if not len(self.columns)==NoCols:

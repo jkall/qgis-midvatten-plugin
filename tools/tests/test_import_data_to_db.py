@@ -46,55 +46,6 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestImportWellsFile(object):
-
-    def setUp(self):
-        self.importinstance = midv_data_importer()
-
-    def test_wells_parse_rows(self):
-        f = (
-            u'FileVersion 1;X',
-            u'NAME;INPUTTYPE;HINT',
-            u'parameters...',
-            u'NAME;SUBNAME;LAT;LON;INPUTFIELD',
-            u'Rb1301;Rb1301.quality;60.5549041639;14.1875295081;q.comment|q.syre.mg/L|q.syre.%|q.konduktivitet.µS/cm|q.redoxpotential.mV|q.pH',
-            u'Rb1301;Rb1301.sample;60.5549041639;14.1875295081;s.temperatur.grC|s.comment|s.turbiditet.FNU',
-            u'Rb1301;Rb1301.level;60.5640220837;14.1901808137;l.comment|l.meas.m',
-            u'Rb1302;Rb1302.quality;60.5640220837;14.1901808137;q.comment|q.syre.mg/L|q.konduktivitet.µS/cm|q.redoxpotential.mV|q.pH',
-            u'Rb1302;Rb1302.sample;60.5640220837;14.1901808137;s.temperatur.grC|s.comment|s.turbiditet.FNU'
-            )
-        test_string = utils_for_tests.create_test_string(self.importinstance.wells_parse_rows(f))
-
-        reference_string = u'{Rb1301: {level: [(comment, ), (meas, m)], quality: [(comment, ), (syre, mg/L), (syre, %), (konduktivitet, µS/cm), (redoxpotential, mV), (pH, )], sample: [(temperatur, grC), (comment, ), (turbiditet, FNU)]}, Rb1302: {quality: [(comment, ), (syre, mg/L), (konduktivitet, µS/cm), (redoxpotential, mV), (pH, )], sample: [(temperatur, grC), (comment, ), (turbiditet, FNU)]}}'
-        assert test_string == reference_string
-
-    def test_parse_wells_file(self):
-        f = (
-            u'FileVersion 1;X',
-            u'NAME;INPUTTYPE;HINT',
-            u'parameters...',
-            u'NAME;SUBNAME;LAT;LON;INPUTFIELD',
-            u'Rb1301;Rb1301.quality;60.5549041639;14.1875295081;q.comment|q.syre.mg/L|q.syre.%|q.konduktivitet.µS/cm|q.redoxpotential.mV|q.pH',
-            u'Rb1301;Rb1301.sample;60.5549041639;14.1875295081;s.temperatur.grC|s.comment|s.turbiditet.FNU',
-            u'Rb1301;Rb1301.level;60.5640220837;14.1901808137;l.comment|l.meas.m',
-            u'Rb1302;Rb1302.quality;60.5640220837;14.1901808137;q.comment|q.syre.mg/L|q.konduktivitet.µS/cm|q.redoxpotential.mV|q.pH',
-            u'Rb1302;Rb1302.sample;60.5640220837;14.1901808137;s.temperatur.grC|s.comment|s.turbiditet.FNU'
-            )
-
-        self.importinstance.charsetchoosen = (u'utf-8', True)
-        with utils.tempinput(u'\n'.join(f), self.importinstance.charsetchoosen[0]) as filename:
-            selected_file = MockUsingReturnValue([filename])
-
-            @mock.patch('import_data_to_db.midv_data_importer.select_files', selected_file.get_v)
-            def _test_parse_wells_file(self):
-
-                test_string = utils_for_tests.create_test_string(self.importinstance.parse_wells_file())
-                reference_string = u'{Rb1301: {level: [(comment, ), (meas, m)], quality: [(comment, ), (syre, mg/L), (syre, %), (konduktivitet, µS/cm), (redoxpotential, mV), (pH, )], sample: [(temperatur, grC), (comment, ), (turbiditet, FNU)]}, Rb1302: {quality: [(comment, ), (syre, mg/L), (konduktivitet, µS/cm), (redoxpotential, mV), (pH, )], sample: [(temperatur, grC), (comment, ), (turbiditet, FNU)]}}'
-                assert test_string == reference_string
-
-            _test_parse_wells_file(self)
-
-
 class TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
