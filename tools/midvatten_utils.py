@@ -116,8 +116,11 @@ class MessagebarAndLog():
                 widget.layout().addWidget(log_button)
             qgis.utils.iface.messageBar().pushWidget(widget, level=messagebar_level, duration=duration)
             #This part can be used to push message to an additional messagebar, but dialogs closes after the timer
-            if qgis.utils.iface.optional_bar:
-                qgis.utils.iface.optional_bar.pushWidget(widget, level=messagebar_level, duration=duration)
+            if hasattr(qgis.utils.iface, 'optional_bar'):
+                try:
+                    qgis.utils.iface.optional_bar.pushWidget(widget, level=messagebar_level, duration=duration)
+                except:
+                    pass
         QgsMessageLog.logMessage(returnunicode(bar_msg), u'Midvatten', level=log_level)
         if log_msg is not None:
             QgsMessageLog.logMessage(returnunicode(log_msg), u'Midvatten', level=log_level)
