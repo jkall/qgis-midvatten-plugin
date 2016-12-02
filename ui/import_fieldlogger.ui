@@ -13,10 +13,6 @@
   <property name="windowTitle">
    <string>Import data from FieldLogger</string>
   </property>
-  <widget class="QWidget" name="barwidget">
-   <layout class="QVBoxLayout" name="barlayout">
-   </layout>
-  </widget>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_main">
     <item row="0" column="0" rowspan="3">

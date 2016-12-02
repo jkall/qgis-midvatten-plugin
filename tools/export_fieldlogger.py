@@ -45,10 +45,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle("Export to FieldLogger") # Set the title for the dialog
 
-        #self.msgbar = qgis.gui.QgsMessageBar()
-        #self.barlayout.addWidget(self.msgbar)
-        #utils.MessagebarAndLog.info(bar_msg="Test", optional_bar=self.msgbar)
-
         tables_columns = defs.tables_columns()
 
         self.export_objects = None
@@ -62,6 +58,13 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         self.splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(self.splitter)
+
+        #This is about adding a messagebar to the fieldlogger window. But for some reason qgis crashes or closes
+        #when the timer ends for the regular messagebar
+        #self.lbl = MessageBar(self.splitter)
+        #qgis.utils.iface.optional_bar = self.lbl
+
+
         self.widgets_layouts = self.init_splitters_layouts(self.splitter)
 
         if self.export_objects:
@@ -623,3 +626,25 @@ class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
 
     def get_all_data(self):
         return [self.item(i).text() for i in xrange(self.count())]
+
+
+class MessageBar(qgis.gui.QgsMessageBar):
+    """
+    From http://gis.stackexchange.com/a/152733
+    """
+    def __init__(self, parent=None):
+        super(MessageBar, self).__init__(parent)
+        self.parent().installEventFilter(self)
+
+    def showEvent(self, event):
+        self.resize(PyQt4.QtCore.QSize(self.parent().geometry().size().width(), self.height()))
+        self.move(0, self.parent().geometry().size().height() - self.height())
+        self.raise_()
+
+    def eventFilter(self, object, event):
+        if event.type() == PyQt4.QtCore.QEvent.Resize:
+            self.showEvent(None)
+        return super(MessageBar, self).eventFilter(object, event)
+
+    def popWidget(self, QgsMessageBarItem=None):
+        self.hide()
