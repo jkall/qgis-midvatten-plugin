@@ -46,7 +46,7 @@ class TestFieldLoggerImporterDb(object):
     def _test_load_file(self):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1")''')
         utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("HS")''')
-        utils.sql_alter_db(u'''INSERT INTO zz_flowtype ("type", "unit") VALUES ("Aveflow", "m3/s")''')
+        utils.sql_alter_db(u'''INSERT INTO zz_flowtype ("type") VALUES ("Aveflow")''')
 
         f = [
             u"Location;date_time;value;comment\n",
@@ -139,7 +139,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
         utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
 
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type", "unit") VALUES ("Accvol", "m3")''')
+        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
             u"Location;date_time;value;comment\n",

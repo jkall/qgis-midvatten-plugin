@@ -628,6 +628,7 @@ class midvatten:
                             pass
             else: 
                 self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
+        QApplication.restoreOverrideCursor()
 
     def import_wlvllogg(self):#  - should be rewritten
         allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
@@ -656,6 +657,7 @@ class midvatten:
                     self.iface.messageBar().pushMessage("Critical","You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!", 2)
             else:
                 self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
+        QApplication.restoreOverrideCursor()
 
     def import_wlvllogg_general_format(self):
         allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
@@ -680,6 +682,7 @@ class midvatten:
                             pass
             else: 
                 self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
+        QApplication.restoreOverrideCursor()
 
     def import_wqual_field(self):
         allcritical_layers = ('obs_points', 'w_qual_field')#none of these layers must be in editing mode
@@ -780,6 +783,7 @@ class midvatten:
                             pass
             else:
                 self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
+        QApplication.restoreOverrideCursor()
 
     def load_data_domains(self):
         #utils.pop_up_info(msg='This feature is not yet implemented',title='Hold on...')

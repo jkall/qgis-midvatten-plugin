@@ -532,13 +532,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             cleaningok = self.multiple_field_duplicates(7, 'w_flow', sqlremove, 'obs_points', sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then fix zz_flowtype and then copy data from the temporary table to the original table in the db
                 #check for flowtypes and add those that are not present in db table zz_flowtype the obsid actually exists in obs_points
-                FlTypesInDb = utils.sql_load_fr_db('select distinct type, unit from zz_flowtype')[1]
-                FlTypes2BImported = utils.sql_load_fr_db("""select distinct "%s", "%s" from %s"""%(self.columns[2][1], self.columns[5][1],self.temptableName))[1]
+                FlTypesInDb = utils.sql_load_fr_db('select distinct type from zz_flowtype')[1]
+                FlTypes2BImported = utils.sql_load_fr_db("""select distinct "%s" from %s"""%(self.columns[2][1], self.temptableName))[1]
 
                 try:
                     for tp in FlTypes2BImported:
                         if tp not in FlTypesInDb:
-                            sql = """insert into "zz_flowtype" (type, unit, explanation) VALUES ("%s", "%s", '');"""%(str(tp[0]), tp[1])
+                            sql = """insert into "zz_flowtype" (type, explanation) VALUES ("%s", '');"""%(str(tp[0]))
                             utils.sql_alter_db(sql)
                 except TypeError:
                     qgis.utils.iface.messageBar().pushMessage("Import warning","""Flow type could not be updated. Table zz_flowtype needs to be upgraded to latest version.""")

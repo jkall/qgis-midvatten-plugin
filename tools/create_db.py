@@ -163,6 +163,8 @@ class newdb():
                     self.cur.execute(line)  # use tags to find and replace SRID and versioning info
                 except Exception, e:
                     #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
+                    #This print out is for debug, and it only prints during a fail so it can stay:
+                    print("Sql line failed:\n" + str(line))
                     utils.MessagebarAndLog.critical("Error: sql failed, see qgis Log Message Panel", 'sql failed:\n%s\nerror msg:\n%s\n'%(line ,str(e)), duration=5)
 
 

@@ -84,7 +84,7 @@ insert into about_db values('w_flow', '*', '', '', '', '', '', 'Water flow', '',
 insert into about_db values('w_flow', 'obsid', 'text', '1', '', '1', 'obs_points(obsid)', 'obsid linked to obs_points.obsid', '', '');
 insert into about_db values('w_flow', 'instrumentid', 'text', '1', '', '1', '', 'Instrument Id, may use several flowmeters at same borehole', '', '');
 insert into about_db values('w_flow', 'flowtype', 'text', '1', '', '1', '', 'Flowtype must correspond to type in flowtypes - Accumulated volume, momentary flow etc', '', '');
-insert into about_db values('w_flow', 'date_time', 'text', '1', '', '1', 'zz_flowtype(type, unit)', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '');
+insert into about_db values('w_flow', 'date_time', 'text', '1', '', '1', 'zz_flowtype(type)', 'Date and Time for the observation, on format yyyy-mm-dd hh:mm:ss', '', '');
 insert into about_db values('w_flow', 'reading', 'double', '', '', '', '', 'Value (real number) reading for the flow rate, accumulated volume etc', '', '');
 insert into about_db values('w_flow', 'unit', 'text', '', '', '', '', 'Unit corresponding to the value reading', '', '');
 insert into about_db values('w_flow', 'comment', 'text', '', '', '', '', 'Comment', '', '');
@@ -129,7 +129,6 @@ insert into about_db values('w_qual_lab', 'unit', 'text', '', '', '', '', 'Unit'
 insert into about_db values('w_qual_lab', 'comment', 'text', '', '', '', '', 'Comments', '', '');
 insert into about_db values('zz_flowtype', '*', '', '', '', '', '', 'data domain for flowtypes in table w_flow', '', '');
 insert into about_db values('zz_flowtype', 'type', 'text', '1', 'Accvol, Aveflow or Momflow', '1', '', 'Existing types of measurements related to water flow', '', '');
-insert into about_db values('zz_flowtype', 'unit', 'text', '1', 'Accvol, Aveflow or Momflow', '1', '', 'Existing types of measurements related to water flow', '', '');
 insert into about_db values('zz_flowtype', 'explanation', 'text', '', '', '', '', 'Explanation of the flowtypes', '', '');
 insert into about_db values('zz_meteoparam', '*', '', '', '', '', '', 'data domain for meteorological parameters in meteo', '', '');
 insert into about_db values('zz_meteoparam', 'parameter', 'text', '1', 'precip, temp', '1', '', 'Existing types of parameter related to meteorological observations', '', '');
@@ -157,13 +156,13 @@ create table "w_levels_logger" ("obsid" text not null, "date_time" text not null
 create table "stratigraphy" (obsid text not null, stratid integer not null, depthtop double, depthbot double, geology text, geoshort text, capacity text, development text,  comment text, primary key (obsid, stratid), foreign key(obsid) references obs_points(obsid));
 create table "w_qual_field" (obsid text not null, staff text, date_time text not null, instrument text, parameter text not null, reading_num double, reading_txt text, unit text, depth double, comment text, primary key(obsid, date_time, parameter, unit), foreign key(obsid) references obs_points(obsid), foreign key(staff) references zz_staff(staff));
 create table "w_qual_lab" ("obsid" text not null, "depth" double, "report" text not null, "project" text, "staff" text, "date_time" text, "anameth" text, "parameter" text not null, "reading_num" double, "reading_txt" text, "unit" text, "comment" text, primary key(report, parameter), foreign key(obsid) references obs_points(obsid), foreign key(staff) references zz_staff(staff));
-create table "w_flow" (obsid text not null, instrumentid text not null, flowtype text not null, date_time text not null, reading double, unit text, comment text, primary key (obsid, instrumentid, flowtype, date_time), foreign key(obsid) references obs_points(obsid), foreign key (flowtype, unit) references zz_flowtype(type, unit));
+create table "w_flow" (obsid text not null, instrumentid text not null, flowtype text not null, date_time text not null, reading double, unit text, comment text, primary key (obsid, instrumentid, flowtype, date_time), foreign key(obsid) references obs_points(obsid), foreign key (flowtype) references zz_flowtype(type));
 CREATE TABLE "meteo" (obsid text not null, instrumentid text not null, parameter text not null, date_time text not null, reading_num double, reading_txt text, unit text, comment text, primary key (obsid, instrumentid, parameter, date_time), foreign key(obsid) references obs_points(obsid), foreign key (parameter) references zz_meteoparam(parameter));
 create table "seismic_data" (obsid text not null, length double not null, ground double, bedrock double, gw_table double, comment text, primary key (obsid, Length), foreign key (obsid) references obs_lines(obsid));
 create table "vlf_data" (obsid text not null, length double not null, real_comp double, imag_comp double, comment text, primary key (obsid, Length), foreign key (obsid) references obs_lines(obsid));
 CREATE TABLE "comments" ("obsid" text not null, "date_time" text not null, "comment" text not null, "staff" text not null, primary key("obsid", "date_time"), foreign key(obsid) references obs_points(obsid), foreign key(staff) references zz_staff(staff));
 CREATE TABLE "zz_staff" ("staff" text not null, "name" text, primary key("staff"));
-create table "zz_flowtype" (type text not null, unit text not null, explanation text, primary key(type, unit));
+create table "zz_flowtype" (type text not null, explanation text, primary key(type));
 CREATE TABLE "zz_meteoparam" (parameter text not null,explanation text, primary key(parameter));
 CREATE TABLE "zz_strat" (geoshort text not null, strata text not null, primary key(geoshort));
 CREATE TABLE "zz_stratigraphy_plots" (strata text not null, color_mplot text not null, hatch_mplot text not null, color_qt text not null, brush_qt text not null, primary key(strata));

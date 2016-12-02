@@ -3,6 +3,8 @@
 
 Mocking QgsProjectInstance:
 #----------------------------
+#This howto is not complete as there usually are more requiremets. It's usually easier to start with a test that already works
+# and copy that one.
 #Add a tuple with the requested values from definitions.midvatten_defs.settingsdict as key and the return value as value
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
 
@@ -11,4 +13,4 @@ class ATestClass():
     def atest(self, mock_qgsproject_instance):
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
 
-#----------------------------
+#-----------------------------
