@@ -611,4 +611,3 @@ class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
 
     def get_all_data(self):
         return [self.item(i).text() for i in xrange(self.count())]
-

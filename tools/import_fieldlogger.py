@@ -392,7 +392,6 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 except Exception, e:
                     print(str(e))
 
-
     @staticmethod
     def update_stored_settings(stored_settings, parameter_imports, force_update=False):
         for parameter_name, import_method_chooser in parameter_imports.iteritems():
@@ -806,13 +805,6 @@ class WLevelImportFields(RowEntry):
         super(WLevelImportFields, self).__init__()
         self.import_method_chooser = import_method_chooser
         self.layout.insertStretch(-1, 0)
-        pass
-
-    def import_data(self, observations):
-        observations = [observation for observation in observations if observation[u'parametername'] == self._import_method_chooser.parameter_name]
-        file_data = self.prepare_data(observations)
-        importer = midv_data_importer()
-        importer.send_file_data_to_importer(file_data, importer.wlvl_import_from_csvlayer)
 
     def alter_data(self, observations):
         return observations
