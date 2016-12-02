@@ -108,7 +108,7 @@ class MessagebarAndLog():
         pass
 
     @staticmethod
-    def log(bar_msg=None, log_msg=None, duration=10, messagebar_level=QgsMessageBar.INFO, log_level=QgsMessageLog.INFO, button=True):
+    def log(bar_msg=None, log_msg=None, duration=10, messagebar_level=QgsMessageBar.INFO, log_level=QgsMessageLog.INFO, button=True, optional_bar=False):
         if bar_msg is not None:
             widget = qgis.utils.iface.messageBar().createMessage(returnunicode(bar_msg))
             log_button = QtGui.QPushButton(u"View message log", pressed=show_message_log)
@@ -120,16 +120,16 @@ class MessagebarAndLog():
             QgsMessageLog.logMessage(returnunicode(log_msg), u'Midvatten', level=log_level)
 
     @staticmethod
-    def info(bar_msg=None, log_msg=None, duration=10, button=True):
-        MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.INFO, QgsMessageLog.INFO, button)
+    def info(bar_msg=None, log_msg=None, duration=10, button=True, optional_bar=False):
+        MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.INFO, QgsMessageLog.INFO, button, optional_bar)
 
     @staticmethod
-    def warning(bar_msg=None, log_msg=None, duration=10, button=True):
-        MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.WARNING, QgsMessageLog.WARNING, button)
+    def warning(bar_msg=None, log_msg=None, duration=10, button=True, optional_bar=False):
+        MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.WARNING, QgsMessageLog.WARNING, button, optional_bar)
 
     @staticmethod
-    def critical(bar_msg=None, log_msg=None, duration=10, button=True):
-        MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.CRITICAL, QgsMessageLog.CRITICAL, button)
+    def critical(bar_msg=None, log_msg=None, duration=10, button=True, optional_bar=False):
+        MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.CRITICAL, QgsMessageLog.CRITICAL, button, optional_bar)
 
 
 def write_qgs_log_to_file(message, tag, level):

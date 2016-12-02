@@ -23,6 +23,7 @@ import os.path
 import qgis.utils
 import copy
 from collections import OrderedDict
+import warnings
 
 import midvatten_utils as utils
 import definitions.midvatten_defs as defs
@@ -42,6 +43,11 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle("Export to FieldLogger") # Set the title for the dialog
+
+        bar = PyQt4.QtGui.QStatusBar()
+
+        pUI->StatusBarLayout->addWidget(bar);
+        pUI->textEdit->setStatusTip("XXX");
 
         tables_columns = defs.tables_columns()
 
@@ -107,41 +113,36 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
     def add_export_object_to_gui(self, widgets_layouts, export_object):
 
             self.create_widget_and_connect_widgets(widgets_layouts[0][1],
-                                                   [export_object.parameter_table_label,
+                                                   [PyQt4.QtGui.QLabel(u'Parameter and unit helpers:'),
+                                                    PyQt4.QtGui.QLabel(u'Parameter table'),
                                                     export_object._parameter_table,
-                                                    export_object.parameter_column_label,
+                                                    PyQt4.QtGui.QLabel(u'Column'),
                                                     export_object._parameter_columns,
-                                                    export_object.parameter_name_label,
+                                                    PyQt4.QtGui.QLabel(u'Name'),
                                                     export_object._distinct_parameter,
-                                                    export_object.unit_table_label,
+                                                    PyQt4.QtGui.QLabel(u'Unit table'),
                                                     export_object._unit_table,
-                                                    export_object.unit_column_label,
+                                                    PyQt4.QtGui.QLabel(u'Column'),
                                                     export_object._unit_columns,
-                                                    export_object.unit_name_label,
-                                                    export_object._distinct_unit,
-                                                    export_object.input_type_label,
-                                                    export_object._input_type,
-                                                    export_object.hint_label,
-                                                    export_object._hint])
+                                                    PyQt4.QtGui.QLabel(u'Name'),
+                                                    export_object._distinct_unit])
 
             self.create_widget_and_connect_widgets(widgets_layouts[1][1],
-                                                 [export_object.location_suffix_label,
-                                                  export_object._location_suffix,
-                                                  export_object.subname_label,
-                                                  export_object._subname_suffix,
-                                                  export_object.final_parameter_name_label,
-                                                  export_object._final_parameter_name])
-
-            button_widgets = self.create_widget_and_connect_widgets(parent_layout=None,
-                                                    widgets=[export_object.copy_button,
-                                                             export_object.cut_button,
-                                                             export_object.paste_button],
-                                                    layout_class=PyQt4.QtGui.QHBoxLayout)
+                                                   [PyQt4.QtGui.QLabel(u'File output:'),
+                                                    PyQt4.QtGui.QLabel(u'Input type'),
+                                                    export_object._input_type,
+                                                    PyQt4.QtGui.QLabel(u'Hint'),
+                                                    export_object._hint,
+                                                    PyQt4.QtGui.QLabel(u'Location suffix'),
+                                                    export_object._location_suffix,
+                                                    PyQt4.QtGui.QLabel(u'Subname suffix'),
+                                                    export_object._subname_suffix,
+                                                    PyQt4.QtGui.QLabel(u'Parameter name'),
+                                                    export_object._final_parameter_name])
 
             self.create_widget_and_connect_widgets(widgets_layouts[2][1],
-                                                     [export_object.paste_from_selection_button,
-                                                      button_widgets,
-                                                      export_object.obsid_list])
+                                                   [export_object.paste_from_selection_button,
+                                                    export_object.obsid_list])
 
     @staticmethod
     def create_widget_and_connect_widgets(parent_layout=None, widgets=None, layout_class=PyQt4.QtGui.QVBoxLayout):
@@ -256,11 +257,18 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                     log_msg=u'Parameter name not given.')
                 continue
 
+            input_type = export_object.input_type
+            if not input_type:
+                utils.MessagebarAndLog.critical(
+                    bar_msg=u"Critical: Parameter " + parameter + u' error. See log message panel',
+                    log_msg=u'Input type not given.')
+                continue
+
             if parameter in parameters_inputtypes_hints:
                 utils.MessagebarAndLog.warning(bar_msg=u"Warning: Parameter " + parameter + u' error. See log message panel', log_msg=u'The parameter ' + parameter + u' already exists. Only the first occurence one will be written to file.')
                 continue
 
-            parameters_inputtypes_hints[parameter] = (export_object.input_type, export_object.hint)
+            parameters_inputtypes_hints[parameter] = (input_type, export_object.hint)
 
             for location, subname, obsid in export_object.locations_subnames_obsids:
                 location_exists = subnames_locations.get(subname, None)
@@ -354,34 +362,20 @@ class ExportObject(object):
         """
 
         #Widget list:
-        self.parameter_table_label = PyQt4.QtGui.QLabel(u'Parameter Table')
         self._parameter_table = import_fieldlogger.default_combobox(editable=False)
-        self.parameter_column_label = PyQt4.QtGui.QLabel(u'Column')
         self._parameter_columns = import_fieldlogger.default_combobox(editable=False)
-        self.parameter_name_label = PyQt4.QtGui.QLabel(u'Parameter name')
         self._distinct_parameter = import_fieldlogger.default_combobox(editable=True)
-        self.unit_table_label = PyQt4.QtGui.QLabel(u'Unit Table')
         self._unit_table = import_fieldlogger.default_combobox(editable=False)
-        self.unit_column_label = PyQt4.QtGui.QLabel(u'Column')
         self._unit_columns = import_fieldlogger.default_combobox(editable=False)
-        self.unit_name_label = PyQt4.QtGui.QLabel(u'Unit name')
         self._distinct_unit = import_fieldlogger.default_combobox(editable=True)
-        self.input_type_label = PyQt4.QtGui.QLabel(u'Fieldlogger input type')
         self._input_type = import_fieldlogger.default_combobox(editable=True)
-        self.hint_label = PyQt4.QtGui.QLabel(u'Parameter hint')
         self._hint = PyQt4.QtGui.QLineEdit()
-        self.location_suffix_label = PyQt4.QtGui.QLabel(u'Location suffix')
         self._location_suffix = PyQt4.QtGui.QLineEdit()
-        self.subname_label = PyQt4.QtGui.QLabel(u'Subname suffix')
         self._subname_suffix = PyQt4.QtGui.QLineEdit()
-        self.final_parameter_name_label = PyQt4.QtGui.QLabel(u'Final parameter name')
         self._final_parameter_name = PyQt4.QtGui.QLineEdit()
         self.obsid_list = CopyPasteDeleteableQListWidget()
         self.paste_from_selection_button = PyQt4.QtGui.QPushButton(u'Paste obs_points selection')
-        self.copy_button = PyQt4.QtGui.QPushButton(u'Copy')
-        self.cut_button = PyQt4.QtGui.QPushButton(u'Cut')
-        self.paste_button = PyQt4.QtGui.QPushButton(u'Paste')
-        
+
         #------------------------------------------------------------------------
         self._parameter_table.addItems(sorted(tables_columns.keys()))
         connect(self._parameter_table, PyQt4.QtCore.SIGNAL("activated(int)"),
@@ -402,23 +396,17 @@ class ExportObject(object):
         #------------------------------------------------------------------------------------
 
         self._input_type.addItems([u'numberDecimal|numberSigned', u'numberDecimal', u'numberSigned', u'text'])
-
+        self._input_type.setToolTip(u'(mandatory)\nDecides the keyboard layout in the Fieldlogger app.')
+        self._hint.setToolTip(u'(optional)\nHint given to the Fieldlogger user for the parameter. Ex: "depth to water"')
         #-------------------------------------------------------------------------------------
 
-        self._location_suffix.setToolTip(u'Name shown in fieldlogger map. location.SUFFIX. Ex: location.projectnumber')
-        self._subname_suffix.setToolTip(u'Name shown if more than one subname exists for each location. Ex: location.projectnumber.parameter_group')
-
-        self._final_parameter_name.setToolTip(u'This is the parameter name that will be written to Fieldlogger file. Ex: parameter.unit')
+        self._location_suffix.setToolTip(u'(optional)\nFieldlogger NAME = obsid.SUFFIX\nUseful for separating projects\nex: suffix = 1234 --> obsid.1234')
+        self._subname_suffix.setToolTip(u'(optional)\nFieldlogger sub-location = obsid.SUFFIX\nUseful for separating parameters into groups for the user.\nParameters sharing the same sub-location will be shown together\n This is the name that Fieldlogger app writes to the result file.\nex: suffix 1234.quality --> obsid.1234.quality')
+        self._final_parameter_name.setToolTip(u'(mandatory)\nParameter name that will be written to Fieldlogger wells file. Ex: parameter.unit')
         #-------------------------------------------------------------------------------------
         self.obsid_list.setSelectionMode(PyQt4.QtGui.QAbstractItemView.ExtendedSelection)
         connect(self.paste_from_selection_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : self.obsid_list.paste_data(utils.get_selected_features_as_tuple('obs_points')))
-        connect(self.copy_button, PyQt4.QtCore.SIGNAL("clicked()"),
-                         lambda : self.obsid_list.copy_data())
-        connect(self.cut_button, PyQt4.QtCore.SIGNAL("clicked()"),
-                         lambda : self.obsid_list.cut_data())
-        connect(self.paste_button, PyQt4.QtCore.SIGNAL("clicked()"),
-                         lambda : self.obsid_list.paste_data())
 
     def get_settings(self):
         settings = ((u'parameter_table', self.parameter_table),
@@ -566,21 +554,42 @@ class ExportObject(object):
     
 
 class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
+    """
+
+    """
     def __init__(self, *args, **kwargs):
         super(CopyPasteDeleteableQListWidget, self).__init__(*args, **kwargs)
 
-    def keyPressEvent(self, event):
-        if not isinstance(event, PyQt4.QtGui.QKeySequence):
-            return None
-        utils.pop_up_info("Event: " + str(event) + " type: " + str(type(event)))
-        if event.matches(event, PyQt4.QtGui.QKeySequence.Copy):
-            self.copy_data()
-        elif event.matches(PyQt4.QtGui.QKeySequence.Paste):
-            self.paste_data()
-        elif event.matches(PyQt4.QtGui.QKeySequence.Delete):
-            self.delete_data()
-        elif event.matches(PyQt4.QtGui.QKeySequence.Cut):
-            self.cut_data()
+    def keyPressEvent(self, e):
+        """
+        Method using many parts from http://stackoverflow.com/a/23919177
+        :param e:
+        :return:
+        """
+
+        if e.type() == PyQt4.QtCore.QEvent.KeyPress:
+            key = e.key()
+            modifiers = e.modifiers()
+
+            if modifiers & PyQt4.QtCore.Qt.ShiftModifier:
+                key += PyQt4.QtCore.Qt.SHIFT
+            if modifiers & PyQt4.QtCore.Qt.ControlModifier:
+                key += PyQt4.QtCore.Qt.CTRL
+            if modifiers & PyQt4.QtCore.Qt.AltModifier:
+                key += PyQt4.QtCore.Qt.ALT
+            if modifiers & PyQt4.QtCore.Qt.MetaModifier:
+                key += PyQt4.QtCore.Qt.META
+
+            new_sequence = PyQt4.QtGui.QKeySequence(key)
+
+            if new_sequence.matches(PyQt4.QtGui.QKeySequence.Copy):
+                self.copy_data()
+            elif new_sequence.matches(PyQt4.QtGui.QKeySequence.Paste):
+                self.paste_data()
+            elif new_sequence.matches(PyQt4.QtGui.QKeySequence.Delete):
+                self.delete_data()
+            elif new_sequence.matches(PyQt4.QtGui.QKeySequence.Cut):
+                self.cut_data()
 
     def copy_data(self):
         self.selectedItems()
