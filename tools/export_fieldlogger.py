@@ -24,6 +24,7 @@ import qgis.utils
 import copy
 from collections import OrderedDict
 import warnings
+import qgis.gui
 
 import midvatten_utils as utils
 import definitions.midvatten_defs as defs
@@ -44,10 +45,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle("Export to FieldLogger") # Set the title for the dialog
 
-        bar = PyQt4.QtGui.QStatusBar()
-
-        pUI->StatusBarLayout->addWidget(bar);
-        pUI->textEdit->setStatusTip("XXX");
+        #self.msgbar = qgis.gui.QgsMessageBar()
+        #self.barlayout.addWidget(self.msgbar)
+        #utils.MessagebarAndLog.info(bar_msg="Test", optional_bar=self.msgbar)
 
         tables_columns = defs.tables_columns()
 

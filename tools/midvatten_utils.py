@@ -115,6 +115,8 @@ class MessagebarAndLog():
             if log_msg is not None and button:
                 widget.layout().addWidget(log_button)
             qgis.utils.iface.messageBar().pushWidget(widget, level=messagebar_level, duration=duration)
+            if optional_bar:
+                optional_bar.pushWidget(widget, level=messagebar_level, duration=duration)
         QgsMessageLog.logMessage(returnunicode(bar_msg), u'Midvatten', level=log_level)
         if log_msg is not None:
             QgsMessageLog.logMessage(returnunicode(log_msg), u'Midvatten', level=log_level)
