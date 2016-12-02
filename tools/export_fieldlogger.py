@@ -410,8 +410,7 @@ class ExportObject(object):
 
         self._final_parameter_name.setToolTip(u'This is the parameter name that will be written to Fieldlogger file. Ex: parameter.unit')
         #-------------------------------------------------------------------------------------
-
-        self.obsid_list.setSelectionMode(PyQt4.QtGui.QAbstractItemView.MultiSelection)
+        self.obsid_list.setSelectionMode(PyQt4.QtGui.QAbstractItemView.ExtendedSelection)
         connect(self.paste_from_selection_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : self.obsid_list.paste_data(utils.get_selected_features_as_tuple('obs_points')))
         connect(self.copy_button, PyQt4.QtCore.SIGNAL("clicked()"),
@@ -571,9 +570,9 @@ class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
         super(CopyPasteDeleteableQListWidget, self).__init__(*args, **kwargs)
 
     def keyPressEvent(self, event):
-        utils.pop_up_info("Event: " + str(event) + " type: " + str(type(event)))
         if not isinstance(event, PyQt4.QtGui.QKeySequence):
             return None
+        utils.pop_up_info("Event: " + str(event) + " type: " + str(type(event)))
         if event.matches(event, PyQt4.QtGui.QKeySequence.Copy):
             self.copy_data()
         elif event.matches(PyQt4.QtGui.QKeySequence.Paste):
