@@ -157,13 +157,16 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
     @staticmethod
     def get_stored_settings(ms, settingskey):
         """
-        Creates a parameter setting dict from midvattensettings
+        Reads the settings from settingskey and returns a tuple
 
-        Reads a string entry from midvattensettings that looks like this:
-        importmethod:
-        :param ms: midvattensettings
-        :return:
+        The settings string is assumed to look like this:
+        objname;attr1:value1;attr2:value2/objname2;attr3:value3...
+
+        :param ms: midvatten settings
+        :param settingskey: the key to get from midvatten settings.
+        :return: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
         """
+
         settings_string_raw = ms.settingsdict.get(settingskey, None)
         if settings_string_raw is None:
             return []
@@ -212,12 +215,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         """
         Saves the current parameter settings into midvatten settings
 
-        Stores the settings as a string:
-        parametername|import_method:w_flow|flowtype:Aveflow|unit:m3/s/parametername2|import_method:comment ...
-
         :param ms: midvattensettings
-        :param stored_settings: a dict like {parametername: {attribute1: value1, attribute2: value2 ...}}
-        :return:
+        :param stored_settings: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
+        :return: stores a string like objname;attr1:value1;attr2:value2/objname2;attr3:value3... in midvatten settings
         """
         if stored_settings is None:
             return
