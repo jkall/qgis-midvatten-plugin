@@ -57,8 +57,10 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(self.splitter)
         self.widgets_layouts = self.init_splitters_layouts(self.splitter)
+
         if self.export_objects:
-            map(lambda x: self.add_export_object_to_gui(self.widgets_layouts, x), self.export_objects)
+            for export_object in self.export_objects:
+                self.add_export_object_to_gui(self.widgets_layouts, export_object)
 
         #Buttons
         self.save_settings_button = PyQt4.QtGui.QPushButton(u'Save settings')
@@ -72,6 +74,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.add_one_parameter_button = PyQt4.QtGui.QPushButton(u'New parameter')
         self.add_one_parameter_button.setToolTip(u'Creates an additional empty parameter setting.')
         self.gridLayout_buttons.addWidget(self.add_one_parameter_button, 2, 0)
+        #Lambda and map is used to run several functions for every button click
         self.connect(self.add_one_parameter_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(),
                                  [lambda: self.export_objects.append(ExportObject(defs.tables_columns(), self.connect)),
@@ -80,6 +83,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.export_button = PyQt4.QtGui.QPushButton(u'Export')
         self.export_button.setToolTip(u'Exports to a Fieldlogger wells file.')
         self.gridLayout_buttons.addWidget(self.export_button, 3, 0)
+        # Lambda and map is used to run several functions for every button click
         self.connect(self.export_button, PyQt4.QtCore.SIGNAL("clicked()"),
                                   lambda: map(lambda x: x(),
                                  [lambda: self.save_stored_settings(self.ms,
