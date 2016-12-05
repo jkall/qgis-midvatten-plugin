@@ -24,6 +24,9 @@ import qgis.utils
 
 import midvatten_utils as utils
 
+from tools.midvatten_utils import get_sql_result_as_dict, returnunicode
+
+
 def settingsdict():    #These are the default settings, they shall not be changed!!!
     dictionary = { 'database' : '',
             'tstable' : 'w_levels',
@@ -634,4 +637,11 @@ def tables_columns():
     return tables_dict
 
 
-
+def get_last_used_quality_instruments():
+    """
+    Returns quality instrumentids
+    :return: A tuple with instrument ids from w_qual_field
+    """
+    sql = 'select parameter, unit, instrument, staff, max(date_time) from w_qual_field group by parameter, unit, instrument, staff'
+    connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
+    return returnunicode(result_dict, True)

@@ -25,6 +25,9 @@ import os
 import locale
 import qgis.utils
 import copy
+from functools import partial
+
+import definitions.midvatten_defs
 import import_data_to_db
 import copy
 from collections import OrderedDict
@@ -471,15 +474,18 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         importer = import_data_to_db.midv_data_importer()
 
-        data_preparers_importers = {u'w_level': (self.prepare_w_level_data, importer.wlvl_import_from_csvlayer),
-                          u'w_flow': (self.prepare_w_flow_data, importer.wflow_import_from_csvlayer),
-                          u'w_qual_field': (self.prepare_w_qual_field_data, importer.wqualfield_import_from_csvlayer),
-                          u'comments': (self.prepare_comments_data, importer.comments_import_from_csv)}
+        data_preparers = {u'w_levels': self.prepare_w_level_data,
+                          u'w_flow': self.prepare_w_flow_data,
+                          u'w_qual_field': self.prepare_w_qual_field_data,
+                          u'comments': self.prepare_comments_data}
 
         for import_method, observations in observations_importmethods.iteritems():
             if import_method:
-                file_data = data_preparers_importers[import_method][0](observations)
-                importer.send_file_data_to_importer(file_data, data_preparers_importers[import_method][1])
+                file_data = data_preparers[import_method](observations)
+
+                importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import, goal_table=import_method))
+
+        importer.SanityCheckVacuumDB()
 
 
 class RowEntry(object):
@@ -710,7 +716,7 @@ class ImportMethodChooser(RowEntry):
 
         self.import_method_classes = OrderedDict(((u'', None),
                                                   (u'comments', CommentsImportFields),
-                                                  (u'w_level', WLevelImportFields),
+                                                  (u'w_levels', WLevelsImportFields),
                                                   (u'w_flow', WFlowImportFields),
                                                   (u'w_qual_field', WQualFieldImportFields)))
 
@@ -795,14 +801,14 @@ class CommentsImportFields(RowEntry):
         return observations
 
 
-class WLevelImportFields(RowEntry):
+class WLevelsImportFields(RowEntry):
     """
     """
 
     def __init__(self, import_method_chooser, connect):
         """
         """
-        super(WLevelImportFields, self).__init__()
+        super(WLevelsImportFields, self).__init__()
         self.import_method_chooser = import_method_chooser
         self.layout.insertStretch(-1, 0)
 
@@ -923,7 +929,7 @@ class WQualFieldImportFields(RowEntryGrid):
         self.__instrument = default_combobox()
         self.label_instrument = PyQt4.QtGui.QLabel(u'Instrument: ')
         self.parameter_instruments = {}
-        for parameter, unit_instrument_staff_date_time_list_of_lists in utils.get_last_used_quality_instruments().iteritems():
+        for parameter, unit_instrument_staff_date_time_list_of_lists in definitions.midvatten_defs.get_last_used_quality_instruments().iteritems():
             for unit, instrument, staff, date_time, in unit_instrument_staff_date_time_list_of_lists:
                 self.parameter_instruments.setdefault(parameter, set()).add(instrument)
 

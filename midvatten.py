@@ -117,9 +117,6 @@ class midvatten:
         self.action_import_wlvllogg = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), "Import w level from logger", self.iface.mainWindow())
         QObject.connect(self.action_import_wlvllogg , SIGNAL("triggered()"), self.import_wlvllogg)
 
-        self.action_import_wlvllogg_general_format = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), "Import w level from logger, general format", self.iface.mainWindow())
-        QObject.connect(self.action_import_wlvllogg_general_format , SIGNAL("triggered()"), self.import_wlvllogg_general_format)
-        
         self.action_import_diverofficedata = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), "Import w level from diveroffice files", self.iface.mainWindow())
         QObject.connect(self.action_import_diverofficedata, SIGNAL("triggered()"), self.import_diverofficedata)
         
@@ -261,7 +258,6 @@ class midvatten:
         self.menu.import_data_menu.addAction(self.actionimport_obs_points)   
         self.menu.import_data_menu.addAction(self.action_import_wlvl)   
         self.menu.import_data_menu.addAction(self.action_import_wlvllogg)
-        self.menu.import_data_menu.addAction(self.action_import_wlvllogg_general_format)
         self.menu.import_data_menu.addAction(self.action_import_diverofficedata)         
         self.menu.import_data_menu.addAction(self.actionimport_wqual_lab)
         self.menu.import_data_menu.addAction(self.actionimport_wqual_lab_from_interlab4)
@@ -575,7 +571,7 @@ class midvatten:
         allcritical_layers = ('obs_points', 'w_flow')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # om ingen av de kritiska lagren är i editeringsmode
-            sanity = utils.askuser("YesNo","""You are about to import water flow reading, from a text file which must have one header row and 7 columns:\n\n1. obsid\n2. instrumentid\n3. flowtype\n4. date_time\n5. reading\n6. unit\n7. comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of flowtypes since all new flowtypes will silently be added to the database table zz_flowtype during import.\nEmpty or null values are not allowed for obsid, instrumentid, flowtype or date_time.\nEach combination of obsid, instrumentid, flowtype and date_time must be unique.\n\nContinue?""",'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import water flow reading, from a text file which must have one header row with \nmandatory columns: obsid, instrumentid, flowtype, date_time\n and at least one optional column: reading, unit, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of flowtypes since all new flowtypes will silently be added to the database table zz_flowtype during import.\nEmpty or null values are not allowed for obsid, instrumentid, flowtype or date_time.\nEach combination of obsid, instrumentid, flowtype and date_time must be unique.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
@@ -584,6 +580,7 @@ class midvatten:
                 if importinstance.status=='True':      # 
                     self.iface.messageBar().pushMessage("Info","%s water flow readings were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
                     try:
+                        importinstance.SanityCheckVacuumDB()
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
                     except:
@@ -593,14 +590,15 @@ class midvatten:
         allcritical_layers = ('obs_points', 'w_levels')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
-            sanity = utils.askuser("YesNo","""You are about to import water level measurements, from a text file which must have one header row and 4 columns:\n\nobsid;date_time;meas;comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid or date_time, such rows will be excluded from the import.\nEmpty or null values are not accepted at the same time in both the columns meas and comment.\nEach combination of obsid and date_time must be unique.\n\nContinue?""",'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import water level measurements, from a text file which must have one header row with \nmandatory columns: obsid, datetime\n and at least one optional column: head_cm, level_masl, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid or date_time, such rows will be excluded from the import.\nEmpty or null values are not accepted at the same time in both the columns meas and comment.\nEach combination of obsid and date_time must be unique.\n\nContinue?""",'Are you sure?')
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer
                 importinstance = midv_data_importer()
-                importinstance.default_import(importinstance.wlvl_import_from_csvlayer)
+                importinstance.general_csv_import(goal_table=u'w_levels', column_header_translation_dict=None)
                 if importinstance.status=='True': 
                     self.iface.messageBar().pushMessage("Info","%s water level measurements were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
                     try:
+                        importinstance.SanityCheckVacuumDB()
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
                     except:
@@ -630,36 +628,7 @@ class midvatten:
                 self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
         QApplication.restoreOverrideCursor()
 
-    def import_wlvllogg(self):#  - should be rewritten
-        allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
-        if err_flag == 0:
-            if not (self.ms.settingsdict['database'] == ''):
-                if qgis.utils.iface.activeLayer():
-                    if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':
-                        obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())
-                        longmessage = """You are about to import water head data, recorded with a\nLevel Logger (e.g. Diver), for """
-                        longmessage += obsid[0]
-                        longmessage +=u""".\nData is supposed to be imported from a semicolon or comma\nseparated text file. The text file must have one header row and columns:\n\nDate/time,Water head[cm],Temperature[°C]\nor\nDate/time,Water head[cm],Temperature[°C],1:Conductivity[mS/cm]\n\nColumn names are unimportant although column order is.\nAlso, date-time must have format yyyy-mm-dd hh:mm(:ss) and\nthe other columns must be real numbers with point(.) as decimal separator and no separator for thousands.\nRemember to not use comma in the comment field!\n\nAlso, records where any fields are empty will be excluded from the report!\n\nContinue?"""
-                        sanity = utils.askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
-                        if sanity.result == 1:
-                            from import_data_to_db import wlvlloggimportclass
-                            importinstance = wlvlloggimportclass()
-                            if not importinstance.status=='True':
-                                self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
-                            else:
-                                try:
-                                    self.midvsettingsdialog.ClearEverything()
-                                    self.midvsettingsdialog.LoadAndSelectLastSettings()
-                                except:
-                                    pass
-                else:
-                    self.iface.messageBar().pushMessage("Critical","You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!", 2)
-            else:
-                self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
-        QApplication.restoreOverrideCursor()
-
-    def import_wlvllogg_general_format(self):
+    def import_wlvllogg(self):
         allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:   
@@ -671,11 +640,12 @@ class midvatten:
                 if sanity.result == 1:
                     from import_data_to_db import midv_data_importer
                     importinstance = midv_data_importer()
-                    importinstance.default_import(importinstance.wlvllogg_import_from_csvlayer)
+                    importinstance.importinstance.general_csv_import(goal_table=u'w_levels_logger', column_header_translation_dict=None)
                     if not importinstance.status=='True':
                         self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
                     else:
                         try:
+                            importinstance.SanityCheckVacuumDB()
                             self.midvsettingsdialog.ClearEverything()
                             self.midvsettingsdialog.LoadAndSelectLastSettings()
                         except:
@@ -688,7 +658,7 @@ class midvatten:
         allcritical_layers = ('obs_points', 'w_qual_field')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo","""You are about to import water quality data from field measurements, from a text file which must have one header row and the following 10 columns:\n\n1. obsid\n2. staff\n3. date_time - on format yyyy-mm-dd hh:mm(:ss)\n4. instrument\n5. parameter - water quality parameter name\n6. reading_num - param. value (real number, decimal separator=point(.))\n7. reading_txt - parameter value as text, including <, > etc\n8. unit\n9. depth\n10. comment - text string\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid, date_time or parameter, such rows will be excluded from the import.\nEach combination of obsid, date_time and parameter must be unique.\n\nContinue?""",'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import water quality data from field measurements, from a text file which must have one header must have one header with\nmandatory columns: obsid, date_time, parameter, unit"                    \n\n1. obsid\n2. staff\n3. date_time - on format yyyy-mm-dd hh:mm(:ss)\n4. instrument\n5. parameter - water quality parameter name\n6. reading_num - param. value (real number, decimal separator=point(.))\n7. reading_txt - parameter value as text, including <, > etc\n8. unit\n9. depth\n10. comment - text string\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid, date_time or parameter, such rows will be excluded from the import.\nEach combination of obsid, date_time and parameter must be unique.\n\nContinue?""",'Are you sure?')
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db import midv_data_importer

@@ -18,30 +18,29 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4 import QtCore, QtGui, QtWebKit, uic
 import PyQt4
-from qgis.core import *
-from qgis.gui import *
-import csv
-import codecs
 import cStringIO
-import difflib
-import datetime
+import codecs
 import copy
-import qgis.utils
-import sys
+import csv
+import datetime
+import difflib
 import locale
-import os
 import math
 import numpy as np
+import os
+import qgis.utils
 import tempfile
+import time
+from PyQt4 import QtCore, QtGui, QtWebKit, uic
+from collections import OrderedDict
 from contextlib import contextmanager
 from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialite-specific sql clauses may be sent by sql_alter_db and sql_load_fr_db
 from pyspatialite.dbapi2 import IntegrityError
-from matplotlib.dates import datestr2num, num2date
-import time
-from collections import OrderedDict
-import re
+from qgis.core import *
+from qgis.gui import *
+
+from matplotlib.dates import num2date
 
 not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
 
@@ -839,15 +838,6 @@ def get_quality_instruments():
         return False, tuple()
 
     return True, returnunicode([x[0] for x in result_list], True)
-
-def get_last_used_quality_instruments():
-    """
-    Returns quality instrumentids
-    :return: A tuple with instrument ids from w_qual_field
-    """
-    sql = 'select parameter, unit, instrument, staff, max(date_time) from w_qual_field group by parameter, unit, instrument, staff'
-    connection_ok, result_dict = get_sql_result_as_dict(sql)
-    return returnunicode(result_dict, True)
 
 def get_sql_result_as_dict(sql):
     """
