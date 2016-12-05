@@ -2005,55 +2005,6 @@ class TestVlfImport(object):
         assert test_string == reference_string
 
 
-class TestGetGeometryColumns(object):
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
-    skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance')
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
-    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
-        mock_crsquestion.return_value = [3006]
-        mock_savefilename.return_value = TEMP_DB_PATH
-        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
-
-        self.dummy_iface = DummyInterface2()
-        self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
-
-        try:
-            os.remove(TEMP_DB_PATH)
-        except OSError:
-            pass
-        self.midvatten.new_db()
-        self.importinstance = midv_data_importer()
-
-    def tearDown(self):
-        #Delete database
-        os.remove(TEMP_DB_PATH)
-
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
-    @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-    @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-    def test_get_geometry_columns(self, mock_filename, mock_skippopup, mock_encoding, mock_iface):
-        mock_encoding.return_value = [True, u'utf-8']
-        self.mock_iface = mock_iface
-        self.importinstance.charsetchoosen = [u'utf-8']
-
-        test = self.importinstance.get_geometry_columns()
-        assert len(test) > 0
-
-
 class TestGetForeignKeys(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
