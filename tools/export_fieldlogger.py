@@ -64,7 +64,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         #self.lbl = MessageBar(self.splitter)
         #qgis.utils.iface.optional_bar = self.lbl
 
-
         self.widgets_layouts = self.init_splitters_layouts(self.splitter)
 
         if self.export_objects:
@@ -647,4 +646,5 @@ class MessageBar(qgis.gui.QgsMessageBar):
         return super(MessageBar, self).eventFilter(object, event)
 
     def popWidget(self, QgsMessageBarItem=None):
+        self.setParent(0)
         self.hide()
