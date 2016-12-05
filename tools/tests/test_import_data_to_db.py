@@ -282,7 +282,7 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface):
                         mock_filenames.return_value = filenames
                         mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.wlvllogg_import_from_diveroffice_files()
+                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
@@ -330,7 +330,7 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface):
                         mock_filenames.return_value = filenames
                         mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.wlvllogg_import_from_diveroffice_files()
+                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
@@ -380,7 +380,7 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface):
                         mock_filenames.return_value = filenames
                         mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.wlvllogg_import_from_diveroffice_files()
+                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
@@ -428,7 +428,7 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface):
                         mock_filenames.return_value = filenames
                         mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.wlvllogg_import_from_diveroffice_files()
+                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 

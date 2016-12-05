@@ -549,13 +549,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         """
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
 
-        if column_header_translation_dict is None:
-            column_header_translation_dict = {}
-
         self.prepare_import(goal_table + u'_temp')
 
         if self.csvlayer:
-            self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
+            self.qgiscsv2sqlitetable(column_header_translation_dict) #loads qgis csvlayer into sqlite table
 
             #Create a dict with column names as keys and their types as units.
             table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''%goal_table)[1]
@@ -566,30 +563,33 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]
             existing_columns = [x[1] for x in self.columns]
-            column_headers = dict([(column_header, column_header_translation_dict.get(column_header, column_header)) for column_header in column_headers_types.keys() if column_header_translation_dict.get(column_header, column_header) in existing_columns])
 
             #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
             nr_before = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1]
-            if u'date_time' and u'obsid' in column_headers:
-                utils.sql_alter_db(u'''delete from "%s" where "%s" || "%s" || ':00' in ( select "%s" || "%s" from "%s")'''%(self.temptableName,
-                                                                                                                            column_header_translation_dict.get(u'obsid', u'obsid'),
-                                                                                                                            column_header_translation_dict.get(u'date_time', u'date_time'),
-                                                                                                                            column_header_translation_dict.get(u'obsid', u'obsid'),
-                                                                                                                            column_header_translation_dict.get(u'date_time', u'date_time'),
-                                                                                                                            goal_table))
-                utils.sql_alter_db(u'''delete from "%s" where SUBSTR("%s" || "%s", 1, length("%s" || "%s") - 3) in ( select "%s" || "%s" from "%s")'''%(self.temptableName,
-                                                                                                                                                        column_header_translation_dict.get(u'obsid', u'obsid'),
-                                                                                                                                                        column_header_translation_dict.get(u'date_time', u'date_time'),
-                                                                                                                                                        column_header_translation_dict.get(u'obsid', u'obsid'),
-                                                                                                                                                        column_header_translation_dict.get(u'date_time', u'date_time'),
-                                                                                                                                                        column_header_translation_dict.get(u'obsid', u'obsid'),
-                                                                                                                                                        column_header_translation_dict.get(u'date_time', u'date_time'),
-                                                                                                                                                        goal_table))
-            nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1]
-            if nr_after > nr_before:
-                qgis.utils.iface.messageBar().pushMessage("""In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported."""%(str(nr_after - nr_before)))
+            if u'date_time' in primary_keys:
+                pks = [pk for pk in primary_keys if pk != u'date_time']
+                pks.append(u'date_time')
+                #Delete records that have the same date_time but with :00 at the end. (2016-01-01 00:00 will not be imported if 2016-01-01 00:00:00 exists
+                utils.sql_alter_db(u'''delete from "%s" where "%s" in (select "%s" from "%s")'''%(self.temptableName,
+                                                                                                  u' || '.join([pk for pk in pks]) + u':00',
+                                                                                                  u' || '.join([pk for pk in pks]),
+                                                                                                  goal_table))
+                # Delete records that have the same date_time but with :00 at the end. (2016-01-01 00:00:00 will not be imported if 2016-01-01 00:00 exists
+                utils.sql_alter_db(u'''delete from "%s" where "%s" in (select "%s" from "%s")'''%(self.temptableName,
+                                                                                                  u' || '.join([pk for pk in pks])[:-3],
+                                                                                                  u' || '.join([pk for pk in pks]),
+                                                                                                  goal_table))
 
-            #Delete empty records from the import table.
+            nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1]
+            if nr_after == 0:
+                utils.MessagebarAndLog.critical(bar_msg=u'Import error, nothing imported.')
+                self.status = False
+                return
+            elif nr_after > nr_before:
+                utils.MessagebarAndLog.warning(bar_msg=u"Import warning, see log message panel", log_msg='In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_after - nr_before)))
+
+            #Delete empty records from the import table. All not-null must exist and at least one non-pk field.
+            nr_before = utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1]
             sqlremove_list = []
             sqlremove_list.append(ur"""DELETE FROM "%s" where """%(self.temptableName))
             sqlremove_list.append(u' or '.join([ur""""%s" in ('', ' ') or "%s" is null """%(column, column) for column in columns_not_null]))
@@ -597,9 +597,40 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             sqlremove_list.append(u' and '.join([ur"""("%s" in ('', ' ') or "%s" is null) """%(column, column) for column in columns_not_primary_key]))
             sqlremove_list.append(u')')
             sqlremove = u''.join(sqlremove_list).encode(u'utf-8')
-            sqlNoOfdistinct = u"""SELECT Count(*) FROM (SELECT DISTINCT %s FROM %s)"""%(u', '.join([u'"{}"'.format(column_headers[pk_col]) for pk_col in primary_keys]), self.temptableName) #Number of distinct data posts in the import table
+            utils.sql_alter_db(sqlremove)
+            nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1]
 
+            nr_before = utils.sql_load_fr_db(u'SELECT Count(*) FROM "%s"'%self.temptableName)[1][0]
+            if nr_before == 0:
+                utils.MessagebarAndLog.critical(bar_msg=u'Import error, nothing imported.')
+                self.status = False
+                return
+            if nr_before > nr_before:
+                utils.MessagebarAndLog.info(bar_msg=u"Import info, see log message panel", log_msg=u'In total "%s" rows remain after empty rows have been deleted'%(str(nr_after - nr_before)))
+
+            sqlNoOfdistinct = u"""SELECT Count(*) FROM (SELECT DISTINCT %s FROM %s)"""%(u', '.join([u'"{}"'.format(pk_col) for pk_col in primary_keys]), self.temptableName) #Number of distinct data posts in the import table
+
+            #Check for foreign keys:
             foreign_keys = self.get_foreign_keys(goal_table)
+            # Import foreign keys in some special cases
+            force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
+            for fk_table, from_to_fields in foreign_keys.iteritems:
+                if fk_table in force_import_of_foreign_keys_tables:
+                    from_list = [x[0] for x in from_to_fields]
+                    to_list = [x[1] for x in from_to_fields]
+
+                    sql = ur"""insert or ignore into %s (%s) select distinct %s from %s""" % (fk_table,
+                                                                                             u', '.join(to_list),
+                                                                                             u', '.join(from_list),
+                                                                                             self.temptableName)
+                    utils.sql_alter_db(sql)
+                else:
+
+
+            verifyok = self.VerifyIDInMajorTable(MajorTable)
+
+
+
             geometry_columns = self.get_geometry_columns()
             geocol = [_geocol for _geocol in geometry_columns if _geocol in foreign_keys]
             if len(geocol) > 1:
@@ -990,8 +1021,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         csvlayer.setProviderEncoding(str(self.charsetchoosen[0]))                 #Set the Layer Encoding                                        
         return csvlayer                
                 
-    def qgiscsv2sqlitetable(self): # general importer
+    def qgiscsv2sqlitetable(self, column_header_translation_dict=None): # general importer
         """Upload qgis csv-csvlayer (QgsMapLayer) as temporary table (temptableName) in current DB. status='True' if succesfull, else 'false'."""
+
+        if column_header_translation_dict is None:
+            column_names_translation_dict = column_header_translation_dict
+
         self.status = 'False'
         #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
         ExistingNames=utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""")[1]
@@ -1008,7 +1043,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         fieldsNames=[]
         provider=self.csvlayer.dataProvider()
         for name in provider.fields(): #fix field names and types in temporary table
-            fldName=unicode(name.name()).replace("'"," ").replace('"'," ")  #Fixing field names
+            fldName = unicode(name.name()).replace("'"," ").replace('"'," ")  #Fixing field names
+            fldName = column_header_translation_dict.get(fldName, fldName)
             #Avoid two cols with same name:
             while fldName.upper() in fieldsNames:
                 fldName='%s_2'%fldName
