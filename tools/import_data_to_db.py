@@ -58,7 +58,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.SanityCheckVacuumDB()
 
     def general_csv_import(self, goal_table=None, column_header_translation_dict=None):
+        """
 
+        :param goal_table:
+        :param column_header_translation_dict:a dict like {u'column_name_in_csv: column_name_in_db}
+        :return:
+        """
         if goal_table is None:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error: No goal table given!')
             self.status = 'False'
@@ -67,109 +72,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if not self.csvlayer:
             self.csvlayer = self.selectcsv()  # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         self.general_sqlite_table_import(column_header_translation_dict=column_header_translation_dict, goal_table=goal_table)
-        
-    def obslines_import(self):
-        self.prepare_import('temporary_obs_lines')
-        self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
-        if self.csvlayer:
-            self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
-            ConnectionOK, self.columns = utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )#Load column names from sqlite table
-            sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null or "%s" in ('', ' ') or "%s" is null"""%(self.temptableName,self.columns[0][1],self.columns[0][1],self.columns[1][1],self.columns[1][1]) #first two cols are expected to be WKT geometry and obsid
-            cleaningok = self.SingleFieldDuplicates(6,'obs_lines',sqlremove,1) # This is where duplicates are removed  LAST ARGUMENT IS COLUMN FOR ID
-            if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
-                sql = r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_lines'"""
-                SRID = str((utils.sql_load_fr_db(sql)[1])[0][0])# THIS IS DUE TO WKT-import of geometries below
-                sqlpart1 = """INSERT OR IGNORE INTO "obs_lines" (obsid, name, place, type, source, geometry) """
-                sqlpart2 = """SELECT CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), CAST("%s" as text), ST_GeomFromText("%s",%s) from %s"""%(self.columns[1][1], self.columns[2][1], self.columns[3][1], self.columns[4][1], self.columns[5][1], self.columns[0][1],SRID,self.temptableName)#PLEASE NOTE THE SRID!
-                sql = sqlpart1 + sqlpart2
-                utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
-                self.status = 'True'        # Cleaning was OK and import perfomed!!
-                self.recsafter = (utils.sql_load_fr_db("""SELECT Count(*) FROM obs_lines""")[1])[0][0] #for the statistics
-                self.stats_after()
-            else:   
-                self.status = 'False'       #Cleaning was not ok and status is false - no import performed
-            utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            self.SanityCheckVacuumDB()
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
-    def obsp_import(self): 
-        self.prepare_import('temporary_obs_points')
-        self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
-        if self.csvlayer:
-            self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
-            self.columns = (utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName)[1])#Load column names from sqlite table
-
-            obsid = self.columns[0][1]
-            name = self.columns[1][1]
-            place = self.columns[2][1]
-            atype = self.columns[3][1]
-            length = self.columns[4][1]
-            drillstop = self.columns[5][1]
-            diam = self.columns[6][1]
-            material = self.columns[7][1]
-            screen = self.columns[8][1]
-            capacity = self.columns[9][1]
-            drilldate = self.columns[10][1]
-            wmeas_yn = self.columns[11][1]
-            wlogg_yn = self.columns[12][1]
-            east = self.columns[13][1]
-            north = self.columns[14][1]
-            ne_accur = self.columns[15][1]
-            ne_source = self.columns[16][1]
-            h_toc = self.columns[17][1]
-            h_tocags = self.columns[18][1]
-            h_gs = self.columns[19][1]
-            h_accur = self.columns[20][1]
-            h_syst = self.columns[21][1]
-            h_source = self.columns[22][1]
-            source = self.columns[23][1]
-            com_onerow = self.columns[24][1]
-            com_html = self.columns[25][1]
-
-            sqlremove = """DELETE FROM "%s" where "%s" in ('', ' ') or "%s" is null"""%(self.temptableName, obsid, obsid) #CHANGE HERE!!!
-            cleaningok = self.SingleFieldDuplicates(26,'obs_points',sqlremove,0) # This is where duplicates are removed  LAST ARGUMENT IS COLUMN FOR ID 
-            if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
-                sql_list = []
-                sql_list.append(r"""INSERT OR IGNORE INTO "obs_points" (obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html) """)
-                sql_list.append(r"""SELECT CAST("%s" as text)"""%obsid)
-                sql_list.append(r""", CAST("%s" as text)"""%name)
-                sql_list.append(r""", CAST("%s" as text)"""%place)
-                sql_list.append(r""", CAST("%s" as text)"""%atype)
-                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(length, length))
-                sql_list.append(r""", CAST("%s" as text)"""%drillstop)
-                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(diam, diam))
-                sql_list.append(r""", CAST("%s" as text)"""%material)
-                sql_list.append(r""", CAST("%s" as text)"""%screen)
-                sql_list.append(r""", CAST("%s" as text)"""%capacity)
-                sql_list.append(r""", CAST("%s" as text)"""%drilldate)
-                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as integer) else null end)"""%(wmeas_yn, wmeas_yn))
-                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as integer) else null end)"""%(wlogg_yn, wlogg_yn))
-                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(east, east))
-                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(north, north))
-                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(ne_accur, ne_accur))
-                sql_list.append(r""", CAST("%s" as text)"""%ne_source)
-                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(h_toc, h_toc))
-                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(h_tocags, h_tocags))
-                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(h_gs, h_gs))
-                sql_list.append(r""", (case when "%s"!='' then CAST("%s" as double) else null end)"""%(h_accur, h_accur))
-                sql_list.append(r""", CAST("%s" as text)"""%h_syst)
-                sql_list.append(r""", CAST("%s" as text)"""%h_source)
-                sql_list.append(r""", CAST("%s" as text)"""%source)
-                sql_list.append(r""", CAST("%s" as text)"""%com_onerow)
-                sql_list.append(r""", CAST("%s" as text)"""%com_html)
-                sql_list.append(r"""FROM %s"""%self.temptableName)
-                sql = ''.join(sql_list)
-                utils.sql_alter_db(sql) # 'OR IGNORE' SIMPLY SKIPS ALL THOSE THAT WOULD CAUSE DUPLICATES - INSTEAD OF THROWING BACK A SQLITE ERROR MESSAGE
-                self.status = 'True'        # Cleaning was OK and import perfomed!!
-                self.recsafter = (utils.sql_load_fr_db("""SELECT Count(*) FROM obs_points""")[1])[0][0] #for the statistics
-                self.stats_after()
-            else:   
-                self.status = 'False'       #Cleaning was not ok and status is false - no import performed
-            utils.sql_alter_db("DROP table %s"%self.temptableName) # finally drop the temporary table
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            self.SanityCheckVacuumDB()
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def import_interlab4(self, filenames=None):
         all_lab_results = self.parse_interlab4(filenames)
@@ -473,7 +375,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                         "for each observation point, will be imported.\n\n" +
                                         "'Yes' = any data not matching an exact datetime in the database\n" +
                                         " for the corresponding obs_point will be imported.")
-
         files = self.select_files()
         parsed_files = []
         for selected_file in files:
@@ -512,18 +413,22 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
                 return
             else:
-                self.wlvllogg_import_from_csvlayer()
+                self.general_csv_import(goal_table=u'w_levels_logger')
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def general_sqlite_table_import(self, column_header_translation_dict=None, goal_table=None):
-        """ General method for importing an sqlite table into a goal_table
+        """General method for importing an sqlite table into a goal_table
 
             self.temptableName must be the name of the table containing the new data to import.
 
+        :param column_header_translation_dict: a dict like {u'column_name_in_csv: column_name_in_db}
+        :param goal_table:
+        :return:
         """
+
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
 
         self.prepare_import(goal_table + u'_temp')
@@ -531,7 +436,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if self.csvlayer:
             self.qgiscsv2sqlitetable(column_header_translation_dict) #loads qgis csvlayer into sqlite table
 
-            recsinfile = utils.sql_load_fr_db(u'select count(*) from "%s"'%self.temptableName)
+            recsinfile = utils.sql_load_fr_db(u'select count(*) from "%s"'%self.temptableName)[1][0][0]
 
             table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''%goal_table)[1]
             column_headers_types = dict([(row[1], row[2]) for row in table_info])
@@ -542,27 +447,37 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             existing_columns = [x[1] for x in utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]]
 
             #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
-            nr_before = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1]
+            nr_before = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1][0][0]
             if u'date_time' in primary_keys:
                 self.delete_existing_date_times_from_temptable(primary_keys, goal_table)
-            nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1]
+            nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1][0][0]
             self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_after - nr_before)))
             if not self.status:
                 return
 
             #Delete empty records.
-            nr_before = utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1]
+            nr_before = nr_after
             self.delete_empty_records(columns_not_null, columns_not_primary_key)
-            nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1]
+            nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1][0][0]
             self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows remain after empty rows have been deleted'%(str(nr_after - nr_before)))
             if not self.status:
                 return
 
-            #Check for foreign keys
-            foreign_keys = self.get_foreign_keys(goal_table)
+
+
+
             # Import foreign keys in some special cases
+            nr_before = nr_after
+            foreign_keys = self.get_foreign_keys(goal_table)
             force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
-            for fk_table, from_to_fields in foreign_keys.iteritems:
+
+            stop_question = utils.askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?"""%(u', '.join(force_import_of_foreign_keys_tables)), u"Warning!")
+            if stop_question.result == 0:      # if the user wants to abort
+                self.status = 'False'
+                PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                return 0   # return simply to stop this function
+
+            for fk_table, from_to_fields in foreign_keys.iteritems():
                 from_list = [x[0] for x in from_to_fields]
                 to_list = [x[1] for x in from_to_fields]
                 if fk_table in force_import_of_foreign_keys_tables:
@@ -579,42 +494,47 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                        self.temptableName))[1]
                     missing_keys = [keys for keys in new_keys if keys not in existing_keys]
 
-                    if missing_keys > 0:
+                    if missing_keys:
                         utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel',
                                                        log_msg=u'There was ' + str(len(missing_keys)) +
                                                        u'entries where foreign keys were missing from ' + fk_table +
                                                        u' which will not be imported:\n' + u'\n'.join([u', '.join(f) for f in missing_keys]))
 
-                    utils.sql_alter_db(u'delete from "%s" where %s in (%s)'%(self.temptableName,
-                                                                             u' || '.join(from_list),
-                                                                             u', '.join([u''.join([u'NULL' if k is None else k for k in mk]) for mk in missing_keys])))
+                        utils.sql_alter_db(u'delete from "%s" where %s in (%s)'%(self.temptableName,
+                                                                                 u' || '.join(from_list),
+                                                                                 u', '.join([u"'{}'".format(u''.join([u'NULL' if k is None else k for k in mk])) for mk in missing_keys])))
 
-            nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1]
+            nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1][0][0]
             self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows remain after entries not in foreign keys were been deleted'%(str(nr_after - nr_before)))
             if not self.status:
                 return
 
-            #Special case just for w_levels_logger
+            #Special cases for some tables
             if goal_table == u'w_levels_logger':
-                column_headers = self.add_level_masl(self.temptableName, existing_columns)
+                existing_columns = self.add_level_masl(self.temptableName, existing_columns)
             if goal_table == u'stratigraphy':
-                #TODO:
-                #https://github.com/jkall/qgis-midvatten-plugin/issues/50
-                pass
+                self.check_and_delete_stratigraphy(goal_table, existing_columns)
+            if goal_table == u'obs_lines':
+                self.calculate_geometry(existing_columns)
 
             #Finally import data:
+            stop_question = utils.askuser(u"YesNo", u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?"""%(recsinfile - nr_after),"Warning!")
+            if stop_question.result == 0:      # if the user wants to abort
+                self.status = 'False'
+                PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                return 0   # return simply to stop this function
+
             sql_list = [u"""INSERT OR IGNORE INTO "%s" ("""%goal_table]
-            sql_list.append(u', '.join([u'"{}"'.format(k) for k in sorted(column_headers.keys())]))
+            sql_list.append(u', '.join([u'"{}"'.format(k) for k in sorted(existing_columns)]))
             sql_list.append(u""") SELECT """)
-            sql_list.append(u', '.join([u"""(case when "%s"!='' then CAST("%s" as "%s") else null end)"""%(orig_colname, orig_colname, column_headers_types[k]) for k, orig_colname in sorted(column_headers.iteritems())]))
+            sql_list.append(u', '.join([u"""(case when "%s"!='' then CAST("%s" as "%s") else null end)"""%(colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns)]))
             sql_list.append(u"""FROM %s"""%(self.temptableName))
             sql = u''.join(sql_list)
 
             recsbefore = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
             utils.sql_alter_db(sql.encode(u'utf-8'))
             recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
-
-            self.stats_after(recsinfile, recsbefore, recsafter)
+            self.stats_after(recsinfile=recsinfile, recsbefore=recsbefore, recsafter=recsafter)
 
             self.status = 'True'
 
@@ -650,17 +570,18 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.status = 'False' #True if upload to sqlite and cleaning of data succeeds 
         self.temptableName = temptableName
 
-    def stats_after(self, recstoimport=None, recsafter=None, recsbefore=None):
-        if recstoimport is None:
-            recstoimport = self.recstoimport
+    def stats_after(self, recsinfile=None, recsbefore=None, recsafter=None):
+        if recsinfile is None:
+            recsinfile = self.recstoimport
         if recsafter is None:
             recsafter = self.recsafter
         if recsbefore is None:
             recsbefore = self.recsbefore
 
-        NoExcluded = recstoimport - (recsafter - recsbefore)
+        NoExcluded = recsinfile - (recsafter - recsbefore)
+
         if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-            utils.MessagebarAndLog.warning(bar_msg=u'Warning, In total %s posts were not imported since they would have caused duplicates in the database.'%str(NoExcluded))
+            utils.MessagebarAndLog.warning(bar_msg=u'Warning, In total %s posts were not imported.'%str(NoExcluded))
 
     def selectcsv(self, only_one_file=True): # general importer
         """Select the csv file, user must also tell what charset to use"""
@@ -868,10 +789,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         return csvlayer                
                 
     def qgiscsv2sqlitetable(self, column_header_translation_dict=None): # general importer
-        """Upload qgis csv-csvlayer (QgsMapLayer) as temporary table (temptableName) in current DB. status='True' if succesfull, else 'false'."""
+        """Upload qgis csv-csvlayer (QgsMapLayer) as temporary table (temptableName) in current DB. status='True' if succesfull, else 'false'.
+
+        :param column_header_translation_dict: a dict like {u'column_name_in_csv: column_name_in_db}
+
+        """
 
         if column_header_translation_dict is None:
-            column_names_translation_dict = column_header_translation_dict
+            column_header_translation_dict = {}
 
         self.status = 'False'
         #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
@@ -949,27 +874,33 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def add_level_masl(self, tablename, existing_headers):
-        if u'level_masl' not in existing_headers:
+        if u'level_masl' not in existing_headers and u'head_cm' in existing_headers:
             existing_headers = copy.deepcopy(existing_headers)
             utils.sql_alter_db(u"""ALTER table "%s" ADD COLUMN level_masl double""" % tablename)
-            utils.sql_alter_db(u"""UPDATE "%s" SET level_masl = -999-"%s" """ %(tablename,
-                                                                                column_header_translation_dict.get(u'head_cm', u'head_cm')))
+            utils.sql_alter_db(u"""UPDATE "%s" SET level_masl = -999-"head_cm" """ % tablename)
             existing_headers.append(u'level_masl')
         return existing_headers
 
     def delete_existing_date_times_from_temptable(self, primary_keys, goal_table):
         pks = [pk for pk in primary_keys if pk != u'date_time']
         pks.append(u'date_time')
+
         #Delete records that have the same date_time but with :00 at the end. (2016-01-01 00:00 will not be imported if 2016-01-01 00:00:00 exists
-        utils.sql_alter_db(u'''delete from "%s" where "%s" in (select "%s" from "%s")'''%(self.temptableName,
-                                                                                          u' || '.join([pk for pk in pks]) + u':00',
-                                                                                          u' || '.join([pk for pk in pks]),
-                                                                                          goal_table))
+        pks_and_00 = [u'"{}"'.format(pk) for pk in pks]
+        pks_and_00.append(u"':00'")
+        sql = u'''delete from "%s" where %s in (select %s from "%s")'''%(self.temptableName,
+                                                                                          u' || '.join(pks_and_00),
+                                                                                          u' || '.join([u'"{}"'.format(pk) for pk in pks]),
+                                                                                          goal_table)
+        utils.sql_alter_db(sql)
+
         # Delete records that have the same date_time but with :00 at the end. (2016-01-01 00:00:00 will not be imported if 2016-01-01 00:00 exists
-        utils.sql_alter_db(u'''delete from "%s" where "%s" in (select "%s" from "%s")'''%(self.temptableName,
-                                                                                          u' || '.join([pk for pk in pks])[:-3],
-                                                                                          u' || '.join([pk for pk in pks]),
-                                                                                          goal_table))
+        sql = u'''delete from "%s" where SUBSTR(%s, 1, length(%s) - 3) in (select %s from "%s")'''%(self.temptableName,
+                                                                                          u' || '.join([u'"{}"'.format(pk) for pk in pks]),
+                                                                                          u' || '.join([u'"{}"'.format(pk) for pk in pks]),
+                                                                                          u' || '.join([u'"{}"'.format(pk) for pk in pks]),
+                                                                                          goal_table)
+        utils.sql_alter_db(sql)
 
     def delete_empty_records(self, columns_not_null, columns_not_primary_key):
             #Delete empty records from the import table. All not-null must exist and at least one non-pk field.
@@ -996,7 +927,46 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         elif nr_after > nr_before:
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
 
+    def calculate_geometry(self, existing_columns):
+        # Calculate the geometry
+        sql = r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_lines'"""
+        SRID = str((utils.sql_load_fr_db(sql)[1])[0][0])  # THIS IS DUE TO WKT-import of geometries below
+        if u'WKT' in existing_columns:
+            geocol = u'WKT'
+        elif u'geometry' in existing_columns:
+            geocol = u'geometry'
+        else:
+            utils.MessagebarAndLog.warning(bar_msg=u'Obslines without geometry imported')
+            return None
 
+        utils.sql_alter_db(u'''update "%s" set geometry=ST_GeomFromText("%s",'%s')'''%(self.temptableName,
+                                                                                       geocol,
+                                                                                       SRID))
+
+    def check_and_delete_stratigraphy(self, goal_table, existing_columns):
+        if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):
+            skip_obsids = []
+            obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from "%s"'%goal_table)
+            for obsid, stratid_depthbot_depthtop  in obsid_strat.iteritems():
+                sorted_strats = sorted(stratid_depthbot_depthtop, key=0)
+                stratid_idx = 0
+                depthbot_idx = 1
+                depthtop_idx = 2
+                for index in xrange(sorted_strats):
+                    if index == 0:
+                        continue
+                    #Check that there is no gap in the stratid:
+                    if sorted_strats[index][stratid_idx] - sorted_strats[index - 1][stratid_idx] != 1:
+                        utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'The obsid ' + obsid + u' will not be imported due to gaps in stratid')
+                        skip_obsids.append(obsid)
+                        break
+                    #Check that the current depthbot is equal to the previous depthtop
+                    elif sorted_strats[index][depthbot_idx] != sorted_strats[index - 1][depthtop_idx]:
+                        utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'The obsid ' + obsid + u' will not be imported due to gaps in depthtop/depthbot')
+                        skip_obsids.append(obsid)
+                        break
+            if skip_obsids:
+                utils.sql_alter_db(u'delete from "%s" where obsid in (%s)'%(self.temptableName, u', '.join([u'"{}"'.format(obsid) for obsid in skip_obsids]) ))
 
 
 
