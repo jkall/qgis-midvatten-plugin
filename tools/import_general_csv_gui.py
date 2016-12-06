@@ -53,27 +53,63 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         PyQt4.QtGui.QDialog.__init__(self, parent)
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
+        self.table_chooser = None
         self.status = True
 
-    def parse_observations_and_populate_gui(self):
+    def load_gui(self):
         tables_columns = defs.tables_columns()
 
-        observation_columns = self.get_observation_columns()
-
-        table_chooser = ImportTableChooser(tables_columns, observation_columns, self.connect)
-        self.main_vertical_layout.addWidget(table_chooser.widget)
+        self.table_chooser = ImportTableChooser(tables_columns, self.connect, file_header=None)
+        self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.add_line(self.main_vertical_layout)
         #General buttons
+        self.select_file_button = PyQt4.QtGui.QPushButton(u'Select file')
+        self.gridLayout_buttons.addWidget(self.select_file_button, 0, 0)
+        self.connect(self.select_file_button, PyQt4.QtCore.SIGNAL("clicked()"), self.load_files)
+
         self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
-        self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
-        self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.get_translation_dict(table_chooser))
+        self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
+        self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), self.start_import)
+
+        self.gridLayout_buttons.setRowStretch(2, 1)
 
         self.show()
 
-    def get_observation_columns(self):
-        return [u'obsid', u'date_time', u'acol']
+    def load_files(self):
+        self.charset = utils.ask_for_charset()
+        if not self.charset:
+            return None
+        filename = utils.select_files(only_one_file=True, extension="Comma or semicolon separated csv file (*.csv);;Comma or semicolon separated csv text file (*.txt);;Comma or semicolon separated file (*.*)")
+        if not filename:
+            return None
+        if isinstance(filename, (list, tuple)):
+            filename = filename[0]
+        else:
+            filename = filename
+        self.filename = returnunicode(filename)
+        self.table_chooser.file_header = self.get_header(self.filename, self.charset)
 
-    def get_translation_dict(self, table_chooser):
+    @staticmethod
+    def get_header(filename, charset):
+        with io.open(filename, 'r', encoding=charset) as f:
+            header = f.readline().rstrip(u'\r').rstrip(u'\n').rstrip(u'\r').rstrip(u'\n')
+        delimiters = [u',', u';']
+        tested_header = [len(header.split(delimiter)) for delimiter in delimiters]
+        delimiter = delimiters[tested_header.index(max(tested_header))]
+        header = header.split(delimiter)
+        return header
+
+    def start_import(self):
+        translation_dict = self.get_translation_dict(self.table_chooser)
+        importer = import_data_to_db.midv_data_importer()
+        importer.csv_layer = importer.csv2qgsvectorlayer(self.filename)
+        importer.general_csv_import(goal_table=self.table_chooser.import_method,
+                                    column_header_translation_dict=translation_dict)
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+
+
+    @staticmethod
+    def get_translation_dict(table_chooser):
         translation_dict = table_chooser.get_translation_dict()
 
         if not isinstance(translation_dict, Cancel):
@@ -120,12 +156,13 @@ class RowEntryGrid(object):
 
 
 class ImportTableChooser(VRowEntry):
-    def __init__(self, tables_columns, observation_columns, connect):
+    def __init__(self, tables_columns, connect, file_header=None):
         super(ImportTableChooser, self).__init__()
         self.connect = connect
         self.tables_columns = tables_columns
-        self.observation_columns = observation_columns
+        self.file_header = file_header
         self.columns_widgets = []
+        self.columns = []
 
         chooser = RowEntry()
 
@@ -135,8 +172,7 @@ class ImportTableChooser(VRowEntry):
         self.__import_method.addItem(u'')
         self.__import_method.addItems(tables_columns.keys())
 
-        self.connect(self.__import_method, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),
-                     lambda: self.choose_method(tables_columns, observation_columns))
+        self.connect(self.__import_method, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_method)
 
         for widget in [self.label, self.__import_method]:
             chooser.layout.addWidget(widget)
@@ -147,11 +183,12 @@ class ImportTableChooser(VRowEntry):
 
     def get_translation_dict(self):
         translation_dict = {}
-        for widget in self.columns_widgets:
-            file_header = widget.file_header
-            if isinstance(file_header, Cancel):
-                return file_header
-            translation_dict[file_header] = widget.db_column
+        for column_entry in self.columns:
+            file_column_name = column_entry.file_column_name
+            if isinstance(file_column_name, Cancel):
+                return file_column_name
+            if file_column_name:
+                translation_dict[file_column_name] = column_entry.db_column
         return translation_dict
 
     @property
@@ -164,8 +201,13 @@ class ImportTableChooser(VRowEntry):
         if index != -1:
             self.__import_method.setCurrentIndex(index)
 
-    def choose_method(self, tables_columns, observation_columns):
+    def choose_method(self):
+        tables_columns = self.tables_columns
+        file_header = self.file_header
         import_method_name = self.import_method
+
+        if file_header is None:
+            return None
 
         #Remove stretch
         self.layout.takeAt(-1)
@@ -183,15 +225,17 @@ class ImportTableChooser(VRowEntry):
             except:
                 pass
         self.columns_widgets = []
+        self.columns = []
 
         if not import_method_name:
             self.layout.addStretch()
             return None
 
         for index, tables_columns_info in enumerate(sorted(tables_columns[import_method_name], key=itemgetter(0))):
-            column = ColumnEntry(tables_columns_info, observation_columns)
+            column = ColumnEntry(tables_columns_info, file_header)
             self.layout.addWidget(column.widget)
             self.columns_widgets.append(column.widget)
+            self.columns.append(column)
 
         self.layout.addStretch()
 
@@ -219,7 +263,7 @@ class ColumnEntry(RowEntry):
         self.widgets = [label, self.combobox]
 
     @property
-    def file_header(self):
+    def file_column_name(self):
         selected = returnunicode(self.combobox.currentText())
         if self.notnull and not selected:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error, the column ' + self.db_column + u' must have a value')
