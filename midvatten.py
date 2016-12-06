@@ -147,6 +147,9 @@ class midvatten:
         self.actionimport_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import data with FieldLogger format", self.iface.mainWindow())
         QObject.connect(self.actionimport_fieldlogger, SIGNAL("triggered()"), self.import_fieldlogger)
 
+        self.actiongeneral_csv_import = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import data from general csv format", self.iface.mainWindow())
+        QObject.connect(self.actiongeneral_csv_import, SIGNAL("triggered()"), self.import_csv)
+
         self.actionPlotTS = QAction(QIcon(":/plugins/midvatten/icons/PlotTS.png"), "Time series plot", self.iface.mainWindow())
         self.actionPlotTS.setWhatsThis("Plot time series for selected objects")
         self.iface.registerMainWindowAction(self.actionPlotTS, "F8")   # The function should also be triggered by the F8 key
@@ -255,6 +258,7 @@ class midvatten:
         self.menu.import_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Import data to database"))
         #self.iface.addPluginToMenu("&Midvatten", self.menu.add_data_menu.menuAction())
         self.menu.addMenu(self.menu.import_data_menu)
+        self.menu.import_data_menu.addAction(self.actiongeneral_csv_import)
         self.menu.import_data_menu.addAction(self.actionimport_obs_points)   
         self.menu.import_data_menu.addAction(self.action_import_wlvl)   
         self.menu.import_data_menu.addAction(self.action_import_wlvllogg)
@@ -754,6 +758,36 @@ class midvatten:
             else:
                 self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
         QApplication.restoreOverrideCursor()
+
+    def import_csv(self):
+        """
+        Imports data from a csv file
+        :return: Writes to db.
+        """
+        #TODO: Add all layers here
+        allcritical_layers = ('obs_points', 'w_qual_field', 'w_levels', 'w_flow')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:
+            if not (self.ms.settingsdict['database'] == ''):
+                longmessage = "You are about to import water head data, water flow or water quality from FieldLogger format."
+                sanity = utils.askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
+                if sanity.result == 1:
+                    from import_general_csv_gui import GeneralCsvImportGui
+                    importinstance = GeneralCsvImportGui(self.iface.mainWindow(), self.ms)
+                    importinstance.parse_observations_and_populate_gui()
+                    if not importinstance.status == 'True' and not importinstance.status:
+                        self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    else:
+                        try:
+                            self.midvsettingsdialog.ClearEverything()
+                            self.midvsettingsdialog.LoadAndSelectLastSettings()
+                        except:
+                            pass
+            else:
+                self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
+        QApplication.restoreOverrideCursor()
+
+
 
     def load_data_domains(self):
         #utils.pop_up_info(msg='This feature is not yet implemented',title='Hold on...')

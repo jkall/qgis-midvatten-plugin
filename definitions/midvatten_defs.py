@@ -20,6 +20,7 @@
 
 import locale
 from collections import OrderedDict
+from operator import itemgetter
 import qgis.utils
 
 import midvatten_utils as utils
@@ -632,7 +633,7 @@ def tables_columns():
                 bar_msg=u"Error, sql failed, see log message panel",
                 log_msg=textstring)
             continue
-        tables_dict[tablename] = tuple(sorted([column[1] for column in columns]))
+        tables_dict[tablename] = tuple(sorted(tuple(columns), key=itemgetter(1)))
 
     return tables_dict
 

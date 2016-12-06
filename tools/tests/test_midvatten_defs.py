@@ -41,7 +41,7 @@ DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
 
 
-class _TestDefsFunctions():
+class TestDefsFunctions():
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
@@ -82,6 +82,8 @@ class _TestDefsFunctions():
             assert isinstance(k, unicode)
             assert isinstance(v, (tuple, list))
             for x in v:
-                assert isinstance(x, unicode)
+                assert isinstance(x, (tuple, list))
+                for z in x:
+                    assert isinstance(z, unicode)
 
 

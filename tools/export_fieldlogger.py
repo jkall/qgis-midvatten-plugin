@@ -363,6 +363,8 @@ class ExportObject(object):
 
         """
 
+        tables_columns = dict([(k, v[1]) for k, v in tables_columns.iteritems()])
+
         #Widget list:
         self._parameter_table = import_fieldlogger.default_combobox(editable=False)
         self._parameter_columns = import_fieldlogger.default_combobox(editable=False)

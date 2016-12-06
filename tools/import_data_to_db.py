@@ -25,6 +25,7 @@ import locale
 import qgis.utils
 import copy
 from collections import OrderedDict
+from operator import itemgetter
 from functools import partial
 from datetime import datetime
 from pyspatialite import dbapi2 as sqlite #could perhaps have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
@@ -441,8 +442,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''%goal_table)[1]
             column_headers_types = dict([(row[1], row[2]) for row in table_info])
             primary_keys = [row[1] for row in table_info if row[5] not in (u'0', 0)]
-            columns_not_null = [row[1] for row in table_info if row[3] not in (u'0', 0)]
-            columns_not_primary_key = [column for column in column_headers_types.keys() if column not in primary_keys]
 
             existing_columns = [x[1] for x in utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]]
 
@@ -454,17 +453,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_after - nr_before)))
             if not self.status:
                 return
-
-            #Delete empty records.
-            nr_before = nr_after
-            self.delete_empty_records(columns_not_null, columns_not_primary_key)
-            nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1][0][0]
-            self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows remain after empty rows have been deleted'%(str(nr_after - nr_before)))
-            if not self.status:
-                return
-
-
-
 
             # Import foreign keys in some special cases
             nr_before = nr_after
@@ -510,10 +498,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 return
 
             #Special cases for some tables
-            if goal_table == u'w_levels_logger':
-                existing_columns = self.add_level_masl(self.temptableName, existing_columns)
             if goal_table == u'stratigraphy':
-                self.check_and_delete_stratigraphy(goal_table, existing_columns)
+                self.check_and_delete_stratigraphy(existing_columns)
             if goal_table == u'obs_lines':
                 self.calculate_geometry(existing_columns)
 
@@ -873,14 +859,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def add_level_masl(self, tablename, existing_headers):
-        if u'level_masl' not in existing_headers and u'head_cm' in existing_headers:
-            existing_headers = copy.deepcopy(existing_headers)
-            utils.sql_alter_db(u"""ALTER table "%s" ADD COLUMN level_masl double""" % tablename)
-            utils.sql_alter_db(u"""UPDATE "%s" SET level_masl = -999-"head_cm" """ % tablename)
-            existing_headers.append(u'level_masl')
-        return existing_headers
-
     def delete_existing_date_times_from_temptable(self, primary_keys, goal_table):
         pks = [pk for pk in primary_keys if pk != u'date_time']
         pks.append(u'date_time')
@@ -943,20 +921,20 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                        geocol,
                                                                                        SRID))
 
-    def check_and_delete_stratigraphy(self, goal_table, existing_columns):
+    def check_and_delete_stratigraphy(self, existing_columns):
         if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):
             skip_obsids = []
-            obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from "%s"'%goal_table)
+            obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from "%s"'%self.temptableName)[1]
             for obsid, stratid_depthbot_depthtop  in obsid_strat.iteritems():
-                sorted_strats = sorted(stratid_depthbot_depthtop, key=0)
+                sorted_strats = sorted(stratid_depthbot_depthtop, key=itemgetter(0))
                 stratid_idx = 0
                 depthbot_idx = 1
                 depthtop_idx = 2
-                for index in xrange(sorted_strats):
+                for index in xrange(len(sorted_strats)):
                     if index == 0:
                         continue
                     #Check that there is no gap in the stratid:
-                    if sorted_strats[index][stratid_idx] - sorted_strats[index - 1][stratid_idx] != 1:
+                    if float(sorted_strats[index][stratid_idx]) - float(sorted_strats[index - 1][stratid_idx]) != 1:
                         utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'The obsid ' + obsid + u' will not be imported due to gaps in stratid')
                         skip_obsids.append(obsid)
                         break

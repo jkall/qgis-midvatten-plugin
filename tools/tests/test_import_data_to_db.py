@@ -47,7 +47,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class _TestParseDiverofficeFile(object):
+class TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
                                                            'Failure, parsing failed for file': 'cancel'},
@@ -206,7 +206,7 @@ class _TestParseDiverofficeFile(object):
         assert test_string == reference_string
 
 
-class _TestWlvllogImportFromDiverofficeFiles(object):
+class TestWlvllogImportFromDiverofficeFiles(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -287,7 +287,7 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, -1000.0, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, -1010.0, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, -1001.0, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, -1020.0, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, -1002.0, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, -1030.0, None)])'''
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
@@ -353,7 +353,7 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, -1010.0, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, -1001.0, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, -1020.0, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, -1002.0, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, -1030.0, None)])'''
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
@@ -420,7 +420,7 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, -1010.0, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, -1001.0, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, -1020.0, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, -1002.0, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, -1030.0, None)])'''
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
@@ -487,11 +487,11 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, -1000.0, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, -1010.0, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, -1001.0, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, -1020.0, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, -1002.0, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, -1030.0, None)])'''
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
 
-class _TestGenereralCsvImport(object):
+class TestGenereralCsvImport(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -553,7 +553,7 @@ class _TestGenereralCsvImport(object):
                     _test_general_csv_import_wlvllogg(self, filename)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, -1000.0, None)])'''
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
@@ -583,7 +583,7 @@ class _TestGenereralCsvImport(object):
                     _test_general_csv_import_wlvllogg(self, filename)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, -1000.0, None)])'''
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
@@ -613,7 +613,7 @@ class _TestGenereralCsvImport(object):
                     _test_general_csv_import_wlvllogg(self, filename)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, -1000.0, testcomment)])'''
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, testcomment)])'''
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
@@ -643,7 +643,7 @@ class _TestGenereralCsvImport(object):
                     _test_general_csv_import_wlvllogg(self, filename)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, None, -1000.0, None)])'''
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
@@ -673,7 +673,7 @@ class _TestGenereralCsvImport(object):
                     _test_general_csv_import_wlvllogg(self, filename)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, -1000.0, None)])'''
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
@@ -703,7 +703,7 @@ class _TestGenereralCsvImport(object):
                     _test_general_csv_import_wlvllogg(self, filename)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, -1000.0, None)])'''
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
@@ -797,7 +797,7 @@ class _TestGenereralCsvImport(object):
                     assert test_string == reference_string
 
 
-class _TestInterlab4Importer():
+class TestInterlab4Importer():
     def setUp(self):
         self.importinstance = midv_data_importer()
 
@@ -1139,7 +1139,7 @@ class _TestInterlab4Importer():
         pass
 
 
-class _TestInterlab4ImporterDB(object):
+class TestInterlab4ImporterDB(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1213,7 +1213,7 @@ class _TestInterlab4ImporterDB(object):
         assert test_string == reference_string
 
 
-class _TestDbCalls(object):
+class TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -1250,7 +1250,7 @@ class _TestDbCalls(object):
         assert exists
 
 
-class _TestImportObsPoints(object):
+class TestImportObsPoints(object):
     temp_db_path = TEMP_DB_PATH
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -1428,7 +1428,7 @@ class _TestImportObsPoints(object):
         assert test_string == reference_string
 
 
-class _TestWquallabImport(object):
+class TestWquallabImport(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
@@ -1525,7 +1525,7 @@ class _TestWquallabImport(object):
         assert test_string == reference_string
 
 
-class _TestWflowImport(object):
+class TestWflowImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1613,7 +1613,7 @@ class _TestWflowImport(object):
         assert test_string == reference_string
 
 
-class _TestWqualfieldImport(object):
+class TestWqualfieldImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1778,7 +1778,7 @@ class _TestWqualfieldImport(object):
         assert test_string == reference_string
 
 
-class _TestWlevelsImport(object):
+class TestWlevelsImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1868,7 +1868,7 @@ class _TestWlevelsImport(object):
         assert test_string == reference_string
 
 
-class _TestSeismicImport(object):
+class TestSeismicImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1929,7 +1929,7 @@ class _TestSeismicImport(object):
         assert test_string == reference_string
 
 
-class _TestCommentsImport(object):
+class TestCommentsImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1990,7 +1990,7 @@ class _TestCommentsImport(object):
         assert test_string == reference_string
 
 
-class _TestStratImport(object):
+class TestStratImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2040,19 +2040,79 @@ class _TestStratImport(object):
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test_import_strat_from_csvlayer(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
                 self.importinstance.general_csv_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
-            _test_import_strat_from_csvlayer(self, filename)
+            _test(self, filename)
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from stratigraphy'''))
+        reference_string = u'''(True, [(obsid1, 1, 0.0, 1.0, grusig sand, sand, 5, (j), acomment), (obsid1, 2, 1.0, 4.0, siltigt sandigt grus, grus, 4+, (j), acomment2)])'''
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_strat_import_one_obs_fail_stratid_gaps(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        f = [[u'obsid', u'stratid', u'depthtop', u'depthbot', u'geology', u'geoshort', u'capacity', u'development', u'comment'],
+             [u'obsid1', u'1', u'0', u'1', u'grusig sand', u'sand', u'5', u'(j)', u'acomment'],
+             [u'obsid1', u'2', u'1', u'4', u'siltigt sandigt grus', u'grus', u'4+', u'(j)', u'acomment2'],
+             [u'obsid2', u'1', u'0', u'1', u'grusig sand', u'sand', u'5', u'(j)', u'acomment'],
+             [u'obsid2', u'3', u'1', u'4', u'siltigt sandigt grus', u'grus', u'4+', u'(j)', u'acomment2']]
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
+            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+                mock_filename.return_value = filename
+                mock_encoding.return_value = [True, u'utf-8']
+                self.mock_iface = mock_iface
+                self.importinstance.general_csv_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
+            _test(self, filename)
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from stratigraphy'''))
+        reference_string = u'''(True, [(obsid1, 1, 0.0, 1.0, grusig sand, sand, 5, (j), acomment), (obsid1, 2, 1.0, 4.0, siltigt sandigt grus, grus, 4+, (j), acomment2)])'''
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_strat_import_one_obs_fail_depthbot_gaps(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        f = [[u'obsid', u'stratid', u'depthtop', u'depthbot', u'geology', u'geoshort', u'capacity', u'development', u'comment'],
+             [u'obsid1', u'1', u'0', u'1', u'grusig sand', u'sand', u'5', u'(j)', u'acomment'],
+             [u'obsid1', u'2', u'1', u'4', u'siltigt sandigt grus', u'grus', u'4+', u'(j)', u'acomment2'],
+             [u'obsid2', u'1', u'0', u'1', u'grusig sand', u'sand', u'5', u'(j)', u'acomment'],
+             [u'obsid2', u'2', u'3', u'4', u'siltigt sandigt grus', u'grus', u'4+', u'(j)', u'acomment2']]
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
+            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+                mock_filename.return_value = filename
+                mock_encoding.return_value = [True, u'utf-8']
+                self.mock_iface = mock_iface
+                self.importinstance.general_csv_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
+            _test(self, filename)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from stratigraphy'''))
         reference_string = u'''(True, [(obsid1, 1, 0.0, 1.0, grusig sand, sand, 5, (j), acomment), (obsid1, 2, 1.0, 4.0, siltigt sandigt grus, grus, 4+, (j), acomment2)])'''
         assert test_string == reference_string
 
 
-class _TestMeteoImport(object):
+class TestMeteoImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2256,7 +2316,7 @@ class TestObsLinesImport(object):
         assert test_string == reference_string
 
 
-class _TestGetForeignKeys(object):
+class TestGetForeignKeys(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2308,7 +2368,7 @@ class _TestGetForeignKeys(object):
             assert isinstance(v, (list, tuple))
 
 
-class _TestFilterDatesFromFiledata(object):
+class TestFilterDatesFromFiledata(object):
 
     def setUp(self):
         self.importinstance = midv_data_importer()
