@@ -280,14 +280,13 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [u'', u'utf-8']
+                        mock_encoding.return_value = [u'utf-8']
                         self.importinstance.wlvllogg_import_from_diveroffice_files()
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
-                    print(str(test_string))
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
@@ -326,7 +325,7 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [u'', u'utf-8']
+                        mock_encoding.return_value = [u'utf-8']
 
                         def side_effect(*args, **kwargs):
                             mock_result = mock.MagicMock()
@@ -392,7 +391,7 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [u'', u'utf-8']
+                        mock_encoding.return_value = [u'utf-8']
 
                         def side_effect(*args, **kwargs):
                             mock_result = mock.MagicMock()
@@ -459,7 +458,7 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [u'', u'utf-8']
+                        mock_encoding.return_value = [u'utf-8']
 
                         def side_effect(*args, **kwargs):
                             mock_result = mock.MagicMock()
