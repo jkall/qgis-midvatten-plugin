@@ -445,7 +445,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if u'date_time' in primary_keys:
             self.delete_existing_date_times_from_temptable(primary_keys, goal_table)
         nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1][0][0]
-        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_after - nr_before)))
+
+        nr_same_date = nr_after - nr_before
+        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_same_date)))
         if not self.status:
             return
 
@@ -454,7 +456,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         foreign_keys = self.get_foreign_keys(goal_table)
         force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
 
-        stop_question = utils.askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?"""%(u', '.join(force_import_of_foreign_keys_tables)), u"Warning!")
+        stop_question = utils.askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?"""%(u', '.join(force_import_of_foreign_keys_tables)), u"Info!")
         if stop_question.result == 0:      # if the user wants to abort
             self.status = 'False'
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -488,7 +490,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                              u', '.join([u"'{}'".format(u''.join([u'NULL' if k is None else k for k in mk])) for mk in missing_keys])))
 
         nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1][0][0]
-        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows remain after entries not in foreign keys were been deleted'%(str(nr_after - nr_before)))
+        nr_after_foreign_keys = nr_before - nr_after
+        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
         if not self.status:
             return
 
@@ -499,11 +502,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.calculate_geometry(existing_columns)
 
         #Finally import data:
-        stop_question = utils.askuser(u"YesNo", u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?"""%(recsinfile - nr_after),"Warning!")
-        if stop_question.result == 0:      # if the user wants to abort
-            self.status = 'False'
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            return 0   # return simply to stop this function
+        nr_failed_import = recsinfile - nr_after
+        if nr_failed_import > 0:
+            stop_question = utils.askuser(u"YesNo", u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?"""%(str(nr_failed_import)),"Warning!")
+            if stop_question.result == 0:      # if the user wants to abort
+                self.status = 'False'
+                PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                return 0   # return simply to stop this function
 
         sql_list = [u"""INSERT OR IGNORE INTO "%s" ("""%goal_table]
         sql_list.append(u', '.join([u'"{}"'.format(k) for k in sorted(existing_columns)]))
@@ -900,7 +905,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if nr_after == 0:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error, nothing imported.')
             self.status = False
-        elif nr_after > nr_before:
+        elif nr_before > nr_after:
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
 
     def calculate_geometry(self, existing_columns):

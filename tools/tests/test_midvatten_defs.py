@@ -83,7 +83,7 @@ class TestDefsFunctions():
             assert isinstance(v, (tuple, list))
             for x in v:
                 assert isinstance(x, (tuple, list))
-                for z in x:
-                    assert isinstance(z, unicode)
+                assert x
+
 
 

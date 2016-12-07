@@ -486,6 +486,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import, goal_table=import_method))
 
         importer.SanityCheckVacuumDB()
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
 
 class RowEntry(object):

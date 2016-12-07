@@ -36,7 +36,7 @@ import midvatten
 import utils_for_tests
 
 
-class TestCalclvl(object):
+class _TestCalclvl(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
