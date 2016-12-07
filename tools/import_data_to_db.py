@@ -50,13 +50,138 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.recstoimport = 0
         self.recsinfile = 0
         self.temptablename = ''
-        self.charsetchoosen = ('','')
+        self.charsetchoosen = ''
         self.csvlayer = None
 
-    def default_import(self, importer):
-        self.csvlayer = self.selectcsv() # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
-        importer()
-        self.SanityCheckVacuumDB()
+    def general_csv_import(self, goal_table=None, column_header_translation_dict=None):
+        """General method for importing an sqlite table into a goal_table
+
+            self.temptableName must be the name of the table containing the new data to import.
+
+        :param column_header_translation_dict: a dict like {u'column_name_in_csv: column_name_in_db}
+        :param goal_table:
+        :return:
+        """
+
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds
+        self.temptableName = goal_table + u'_temp'
+
+        if goal_table is None:
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error: No goal table given!')
+            self.status = 'False'
+            return
+
+        if not self.csvlayer:
+            self.csvlayer = self.get_csvlayer()  # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
+        if self.csvlayer == u'cancel' or not self.csvlayer:
+            self.status = 'True'
+            return
+
+        self.qgiscsv2sqlitetable(column_header_translation_dict) #loads qgis csvlayer into sqlite table
+
+        recsinfile = utils.sql_load_fr_db(u'select count(*) from "%s"'%self.temptableName)[1][0][0]
+
+        table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''%goal_table)[1]
+        column_headers_types = dict([(row[1], row[2]) for row in table_info])
+        primary_keys = [row[1] for row in table_info if int(row[5])]
+        not_null_columns = [row[1] for row in table_info if int(row[3])]
+        existing_columns = [x[1] for x in utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]]
+        missing_columns = [column for column in not_null_columns if column not in existing_columns]
+
+        if missing_columns:
+            utils.MessagebarAndLog.critical(bar_msg=u'Error: Import failed, see log message panel', log_msg=u'Required columns ' + u', '.join(missing_columns) + u' are missing for table ' + goal_table)
+            self.status = False
+            return
+
+        #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
+        nr_before = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1][0][0]
+        if u'date_time' in primary_keys:
+            self.delete_existing_date_times_from_temptable(primary_keys, goal_table)
+        nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1][0][0]
+
+        nr_same_date = nr_after - nr_before
+        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_same_date)))
+        if not self.status:
+            return
+
+        # Import foreign keys in some special cases
+        nr_before = nr_after
+        foreign_keys = self.get_foreign_keys(goal_table)
+        force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
+
+        stop_question = utils.askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?"""%(u', '.join(force_import_of_foreign_keys_tables)), u"Info!")
+        if stop_question.result == 0:      # if the user wants to abort
+            self.status = 'False'
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            return 0   # return simply to stop this function
+
+        for fk_table, from_to_fields in foreign_keys.iteritems():
+            from_list = [x[0] for x in from_to_fields]
+            to_list = [x[1] for x in from_to_fields]
+            if fk_table in force_import_of_foreign_keys_tables:
+                sql = ur"""insert or ignore into %s (%s) select distinct %s from %s""" % (fk_table,
+                                                                                         u', '.join([u'"{}"'.format(k) for k in to_list]),
+                                                                                         u', '.join([u'"{}"'.format(k) for k in from_list]),
+                                                                                         self.temptableName)
+                utils.sql_alter_db(sql)
+            else:
+                #Else check if there are foreign keys blocking the import and skip those rows
+                existing_keys = utils.sql_load_fr_db(u'select distinct "%s" from "%s"'%(u', '.join(to_list),
+                                                                                        fk_table))[1]
+                new_keys = utils.sql_load_fr_db(u'select distinct "%s" from "%s"'%(u', '.join(from_list),
+                                                                                   self.temptableName))[1]
+                missing_keys = [keys for keys in new_keys if keys not in existing_keys]
+
+                if missing_keys:
+                    utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel',
+                                                   log_msg=u'There was ' + str(len(missing_keys)) +
+                                                   u'entries where foreign keys were missing from ' + fk_table +
+                                                   u' which will not be imported:\n' + u'\n'.join([u', '.join(f) for f in missing_keys]))
+
+                    utils.sql_alter_db(u'delete from "%s" where %s in (%s)'%(self.temptableName,
+                                                                             u' || '.join(from_list),
+                                                                             u', '.join([u"'{}'".format(u''.join([u'NULL' if k is None else k for k in mk])) for mk in missing_keys])))
+
+        nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1][0][0]
+        nr_after_foreign_keys = nr_before - nr_after
+        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
+        if not self.status:
+            return
+
+        #Special cases for some tables
+        if goal_table == u'stratigraphy':
+            self.check_and_delete_stratigraphy(existing_columns)
+        if goal_table == u'obs_lines':
+            self.calculate_geometry(existing_columns)
+
+        #Finally import data:
+        nr_failed_import = recsinfile - nr_after
+        if nr_failed_import > 0:
+            stop_question = utils.askuser(u"YesNo", u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?"""%(str(nr_failed_import)),"Warning!")
+            if stop_question.result == 0:      # if the user wants to abort
+                self.status = 'False'
+                PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                return 0   # return simply to stop this function
+
+        sql_list = [u"""INSERT OR IGNORE INTO "%s" ("""%goal_table]
+        sql_list.append(u', '.join([u'"{}"'.format(k) for k in sorted(existing_columns)]))
+        sql_list.append(u""") SELECT """)
+        sql_list.append(u', '.join([u"""(case when "%s"!='' then CAST("%s" as "%s") else null end)"""%(colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns)]))
+        sql_list.append(u"""FROM %s"""%(self.temptableName))
+        sql = u''.join(sql_list)
+
+        recsbefore = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
+        utils.sql_alter_db(sql.encode(u'utf-8'))
+        recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
+        self.stats_after(recsinfile=recsinfile, recsbefore=recsbefore, recsafter=recsafter)
+
+        self.status = 'True'
+
+        utils.MessagebarAndLog.info(bar_msg=u'In total %s measurements were imported to "%s".'''%(recsafter - recsbefore, goal_table))
+
+        utils.sql_alter_db(u"DROP table %s"%self.temptableName) # finally drop the temporary table
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def import_interlab4(self, filenames=None):
         all_lab_results = self.parse_interlab4(filenames)
@@ -360,10 +485,19 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                         "for each observation point, will be imported.\n\n" +
                                         "'Yes' = any data not matching an exact datetime in the database\n" +
                                         " for the corresponding obs_point will be imported.")
-        files = self.select_files()
+        self.charsetchoosen = utils.ask_for_charset(default_charset='cp1252')
+        if not self.charsetchoosen:
+            self.status = 'True'
+            return u'cancel'
+
+        files = utils.select_files(only_one_file=False, extension="csv (*.csv)")
+        if not files:
+            self.status = 'True'
+            return u'cancel'
+
         parsed_files = []
         for selected_file in files:
-            file_data = self.parse_diveroffice_file(selected_file, self.charsetchoosen[0], existing_obsids, confirm_names.result)
+            file_data = self.parse_diveroffice_file(selected_file, self.charsetchoosen, existing_obsids, confirm_names.result)
             if file_data == u'cancel':
                 self.status = True
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -390,7 +524,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         file_string = utils.lists_to_string(file_to_import_to_db)
 
-        with utils.tempinput(file_string, self.charsetchoosen[0]) as csvpath:
+        with utils.tempinput(file_string, self.charsetchoosen) as csvpath:
             self.csvlayer = self.csv2qgsvectorlayer(csvpath)
             #Continue to next file if the file failed to import
             if not self.csvlayer:
@@ -402,131 +536,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.SanityCheckVacuumDB()
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
-    def general_csv_import(self, goal_table=None, column_header_translation_dict=None):
-        """General method for importing an sqlite table into a goal_table
-
-            self.temptableName must be the name of the table containing the new data to import.
-
-        :param column_header_translation_dict: a dict like {u'column_name_in_csv: column_name_in_db}
-        :param goal_table:
-        :return:
-        """
-
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds
-        self.temptableName = goal_table + u'_temp'
-
-        if goal_table is None:
-            utils.MessagebarAndLog.critical(bar_msg=u'Import error: No goal table given!')
-            self.status = 'False'
-            return
-
-        if not self.csvlayer:
-            self.csvlayer = self.selectcsv()  # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
-        if not self.csvlayer:
-            utils.MessagebarAndLog.critical(bar_msg=u'Import error, no file given. Aborting')
-            self.status = 'False'
-            return
-
-        self.qgiscsv2sqlitetable(column_header_translation_dict) #loads qgis csvlayer into sqlite table
-
-        recsinfile = utils.sql_load_fr_db(u'select count(*) from "%s"'%self.temptableName)[1][0][0]
-
-        table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''%goal_table)[1]
-        column_headers_types = dict([(row[1], row[2]) for row in table_info])
-        primary_keys = [row[1] for row in table_info if row[5] not in (u'0', 0)]
-
-        existing_columns = [x[1] for x in utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName )[1]]
-
-        #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
-        nr_before = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1][0][0]
-        if u'date_time' in primary_keys:
-            self.delete_existing_date_times_from_temptable(primary_keys, goal_table)
-        nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1][0][0]
-
-        nr_same_date = nr_after - nr_before
-        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_same_date)))
-        if not self.status:
-            return
-
-        # Import foreign keys in some special cases
-        nr_before = nr_after
-        foreign_keys = self.get_foreign_keys(goal_table)
-        force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
-
-        stop_question = utils.askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?"""%(u', '.join(force_import_of_foreign_keys_tables)), u"Info!")
-        if stop_question.result == 0:      # if the user wants to abort
-            self.status = 'False'
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            return 0   # return simply to stop this function
-
-        for fk_table, from_to_fields in foreign_keys.iteritems():
-            from_list = [x[0] for x in from_to_fields]
-            to_list = [x[1] for x in from_to_fields]
-            if fk_table in force_import_of_foreign_keys_tables:
-                sql = ur"""insert or ignore into %s (%s) select distinct %s from %s""" % (fk_table,
-                                                                                         u', '.join([u'"{}"'.format(k) for k in to_list]),
-                                                                                         u', '.join([u'"{}"'.format(k) for k in from_list]),
-                                                                                         self.temptableName)
-                utils.sql_alter_db(sql)
-            else:
-                #Else check if there are foreign keys blocking the import and skip those rows
-                existing_keys = utils.sql_load_fr_db(u'select distinct "%s" from "%s"'%(u', '.join(to_list),
-                                                                                        fk_table))[1]
-                new_keys = utils.sql_load_fr_db(u'select distinct "%s" from "%s"'%(u', '.join(from_list),
-                                                                                   self.temptableName))[1]
-                missing_keys = [keys for keys in new_keys if keys not in existing_keys]
-
-                if missing_keys:
-                    utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel',
-                                                   log_msg=u'There was ' + str(len(missing_keys)) +
-                                                   u'entries where foreign keys were missing from ' + fk_table +
-                                                   u' which will not be imported:\n' + u'\n'.join([u', '.join(f) for f in missing_keys]))
-
-                    utils.sql_alter_db(u'delete from "%s" where %s in (%s)'%(self.temptableName,
-                                                                             u' || '.join(from_list),
-                                                                             u', '.join([u"'{}'".format(u''.join([u'NULL' if k is None else k for k in mk])) for mk in missing_keys])))
-
-        nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1][0][0]
-        nr_after_foreign_keys = nr_before - nr_after
-        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
-        if not self.status:
-            return
-
-        #Special cases for some tables
-        if goal_table == u'stratigraphy':
-            self.check_and_delete_stratigraphy(existing_columns)
-        if goal_table == u'obs_lines':
-            self.calculate_geometry(existing_columns)
-
-        #Finally import data:
-        nr_failed_import = recsinfile - nr_after
-        if nr_failed_import > 0:
-            stop_question = utils.askuser(u"YesNo", u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?"""%(str(nr_failed_import)),"Warning!")
-            if stop_question.result == 0:      # if the user wants to abort
-                self.status = 'False'
-                PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                return 0   # return simply to stop this function
-
-        sql_list = [u"""INSERT OR IGNORE INTO "%s" ("""%goal_table]
-        sql_list.append(u', '.join([u'"{}"'.format(k) for k in sorted(existing_columns)]))
-        sql_list.append(u""") SELECT """)
-        sql_list.append(u', '.join([u"""(case when "%s"!='' then CAST("%s" as "%s") else null end)"""%(colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns)]))
-        sql_list.append(u"""FROM %s"""%(self.temptableName))
-        sql = u''.join(sql_list)
-
-        recsbefore = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
-        utils.sql_alter_db(sql.encode(u'utf-8'))
-        recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
-        self.stats_after(recsinfile=recsinfile, recsbefore=recsbefore, recsafter=recsafter)
-
-        self.status = 'True'
-
-        utils.MessagebarAndLog.info(bar_msg=u'In total %s measurements were imported to "%s".'''%(recsafter - recsbefore, goal_table))
-
-        utils.sql_alter_db(u"DROP table %s"%self.temptableName) # finally drop the temporary table
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def check_obsids(self, file_data):
@@ -563,48 +572,17 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
             utils.MessagebarAndLog.warning(bar_msg=u'Warning, In total %s posts were not imported.'%str(NoExcluded))
 
-    def selectcsv(self, only_one_file=True): # general importer
+    def get_csvlayer(self): # general importer
         """Select the csv file, user must also tell what charset to use"""
-        try:#MacOSX fix2
-            localencoding = locale.getdefaultlocale()[1]
-            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
-        except:
-            self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal,'utf-8')
-        if self.charsetchoosen and not (self.charsetchoosen[0]==0 or self.charsetchoosen[0]==''):
-            if only_one_file:
-                csvpath = PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")
-                csvlayer = self.csv2qgsvectorlayer(csvpath)
-            else:
-                csvpath = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
-                csvlayer = [self.csv2qgsvectorlayer(path) for path in csvpath if path]
-            return csvlayer
+        self.charsetchoosen = utils.ask_for_charset()
+        if not self.charsetchoosen:
+            return u'cancel'
 
-    def select_files(self, only_one_file=False, should_ask_for_charset=True):
+        csvpath = utils.select_files(only_one_file=True, extension="csv (*.csv)")
+        if not csvpath:
+            return u'cancel'
 
-        def get_path(only_one_file):
-            if only_one_file:
-                path = PyQt4.QtGui.QFileDialog.getOpenFileName(None, "Select File","","csv (*.csv)")
-            else:
-                path = PyQt4.QtGui.QFileDialog.getOpenFileNames(None, "Select Files","","csv (*.csv)")
-            if not isinstance(path, (list, tuple)):
-                path = [path]
-            return path
-
-        path = []
-
-        if not should_ask_for_charset:
-            path = get_path(only_one_file)
-        else:
-            try:#MacOSX fix2
-                localencoding = locale.getdefaultlocale()[1]
-                self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",PyQt4.QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
-            except:
-                self.charsetchoosen = PyQt4.QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",PyQt4.QtGui.QLineEdit.Normal, 'utf-8')
-            if self.charsetchoosen and not (self.charsetchoosen[0]==0 or self.charsetchoosen[0]==''):
-                path = get_path(only_one_file)
-        #Filter all empty strings
-        path = [p for p in path if p]
-        return path
+        return self.csv2qgsvectorlayer(csvpath[0])
 
     @staticmethod
     def parse_diveroffice_file(path, charset, existing_obsids=None, ask_for_names=True, begindate=None, enddate=None):
@@ -766,7 +744,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             qgis.utils.iface.messageBar().pushMessage("Failure","Impossible to Load File in QGis:\n" + str(path), 2)
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return False
-        csvlayer.setProviderEncoding(str(self.charsetchoosen[0]))                 #Set the Layer Encoding                                        
+        csvlayer.setProviderEncoding(str(self.charsetchoosen))
         return csvlayer                
                 
     def qgiscsv2sqlitetable(self, column_header_translation_dict=None): # general importer
@@ -781,37 +759,31 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         self.status = 'False'
         #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
-        ExistingNames=utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""")[1]
-        for existingname in ExistingNames:  #this should only be needed if an earlier import failed
-            if str(existingname[0]) == str(self.temptableName): #if so, propose to rename the temporary import-table
-                reponse=PyQt4.QtGui.QMessageBox.question(None, "Warning - Table name confusion!",'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''%(self.temptableName,self.temptableName,self.temptableName), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
-                if reponse==PyQt4.QtGui.QMessageBox.Yes:
-                    self.temptableName='%s_2'%self.temptableName
-                else:
-                    return None
+        existing_names= [str(existing_name[0]) for existing_name in utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""")[1]]
+        if str(self.temptableName) in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
+            reponse = PyQt4.QtGui.QMessageBox.question(None, "Warning - Table name confusion!",'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''%(self.temptableName,self.temptableName,self.temptableName), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
+            if reponse == PyQt4.QtGui.QMessageBox.Yes:
+                self.temptableName = '%s_2'%self.temptableName
+            else:
+                return None
                   
         #Get all fields with corresponding types for the csv-csvlayer in qgis
         fields=[]
         fieldsNames=[]
         provider=self.csvlayer.dataProvider()
-        skip_field = []
-        for index, name in enumerate(provider.fields()): #fix field names and types in temporary table
+        for name in provider.fields(): #fix field names and types in temporary table
             fldName = unicode(name.name()).replace("'"," ").replace('"'," ")  #Fixing field names
             if column_header_translation_dict:
-                fldName = column_header_translation_dict.get(fldName, None)
-                #Skip headers not in column_header_translation_dict
-                if fldName is None:
-                    skip_field.append(index)
-                    continue
+                fldName = column_header_translation_dict.get(fldName, fldName)
             #Avoid two cols with same name:
             while fldName.upper() in fieldsNames:
-                fldName='%s_2'%fldName
+                fldName = '%s_2'%fldName
             fldType=name.type()
             fldTypeName=unicode(name.typeName()).upper()
             if fldType in (PyQt4.QtCore.QVariant.Char,PyQt4.QtCore.QVariant.String): # field type is text  - this will be the case for all columns if not a .csvt file is defined beside the imported file.
                 fldLength=name.length()
                 fldType='text(%s)'%fldLength  #Add field Length Information
-            elif fldType in (PyQt4.QtCore.QVariant.Bool, PyQt4.QtCore.QVariant.Int,QtCore.QVariant.LongLong, PyQt4.QtCore.QVariant.UInt, PyQt4.QtCore.QVariant.ULongLong):  # field type is integer
+            elif fldType in (PyQt4.QtCore.QVariant.Bool, PyQt4.QtCore.QVariant.Int, PyQt4.QtCore.QVariant.LongLong, PyQt4.QtCore.QVariant.UInt, PyQt4.QtCore.QVariant.ULongLong):  # field type is integer
                 fldType='integer'
             elif fldType==PyQt4.QtCore.QVariant.Double: # field type is double
                 fldType='real'
@@ -832,9 +804,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         # Retreive every feature from temporary .csv qgis csvlayer and write it to the temporary table in sqlite (still only text fields unless user specified a .csvt file)
         for feature in self.csvlayer.getFeatures(): 
             values_perso=[]
-            for index, attr in enumerate(feature.attributes()):
-                if index in skip_field:
-                    continue
+            for attr in feature.attributes():
                 #If automatic convertion from PyQt4.QtCore.QVariant did not work, it must be done manually
                 if isinstance(attr, PyQt4.QtCore.QVariant):
                     attr = attr.toPyObject()
@@ -854,13 +824,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
         curs.close()
         conn.close()
-        
-    def SanityCheckVacuumDB(self):
-        sanity = utils.askuser("YesNo","""It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""",'Vacuum the database?')
-        if sanity.result == 1:
-            PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def delete_existing_date_times_from_temptable(self, primary_keys, goal_table):
         pks = [pk for pk in primary_keys if pk != u'date_time']
@@ -882,17 +845,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                           u' || '.join([u'"{}"'.format(pk) for pk in pks]),
                                                                                           goal_table)
         utils.sql_alter_db(sql)
-
-    def delete_empty_records(self, columns_not_null, columns_not_primary_key):
-            #Delete empty records from the import table. All not-null must exist and at least one non-pk field.
-            sqlremove_list = []
-            sqlremove_list.append(ur"""DELETE FROM "%s" where """%(self.temptableName))
-            sqlremove_list.append(u' or '.join([ur""""%s" in ('', ' ') or "%s" is null """%(column, column) for column in columns_not_null]))
-            sqlremove_list.append(u' or (')
-            sqlremove_list.append(u' and '.join([ur"""("%s" in ('', ' ') or "%s" is null) """%(column, column) for column in columns_not_primary_key]))
-            sqlremove_list.append(u')')
-            sqlremove = u''.join(sqlremove_list).encode(u'utf-8')
-            utils.sql_alter_db(sqlremove)
 
     def get_foreign_keys(self, tname):
         result_list = utils.sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)"""%(tname))[1]
@@ -948,6 +900,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         break
             if skip_obsids:
                 utils.sql_alter_db(u'delete from "%s" where obsid in (%s)'%(self.temptableName, u', '.join([u'"{}"'.format(obsid) for obsid in skip_obsids]) ))
+
+    def SanityCheckVacuumDB(self):
+        sanity = utils.askuser("YesNo","""It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""",'Vacuum the database?')
+        if sanity.result == 1:
+            PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
 
 

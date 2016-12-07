@@ -206,7 +206,7 @@ class _TestParseDiverofficeFile(object):
         assert test_string == reference_string
 
 
-class _TestWlvllogImportFromDiverofficeFiles(object):
+class TestWlvllogImportFromDiverofficeFiles(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -217,7 +217,6 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
     mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
@@ -263,10 +262,10 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
 
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen[0]) as f1:
-            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen[0]) as f2:
-                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen[0]) as f3:
+        self.importinstance.charsetchoosen = u'utf-8'
+        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen) as f1:
+            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen) as f2:
+                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -278,16 +277,17 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch('import_data_to_db.midv_data_importer.select_files')
+                    @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [True, u'utf-8']
+                        mock_encoding.return_value = [u'', u'utf-8']
                         self.importinstance.wlvllogg_import_from_diveroffice_files()
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
+                    print(str(test_string))
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
@@ -311,10 +311,10 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
         utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:30', '5.0')''')
 
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen[0]) as f1:
-            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen[0]) as f2:
-                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen[0]) as f3:
+        self.importinstance.charsetchoosen = u'utf-8'
+        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen) as f1:
+            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen) as f2:
+                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -323,10 +323,10 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch('import_data_to_db.midv_data_importer.select_files')
+                    @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [True, u'utf-8']
+                        mock_encoding.return_value = [u'', u'utf-8']
 
                         def side_effect(*args, **kwargs):
                             mock_result = mock.MagicMock()
@@ -377,10 +377,10 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
         utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen[0]) as f1:
-            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen[0]) as f2:
-                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen[0]) as f3:
+        self.importinstance.charsetchoosen = u'utf-8'
+        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen) as f1:
+            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen) as f2:
+                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -389,10 +389,10 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch('import_data_to_db.midv_data_importer.select_files')
+                    @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [True, u'utf-8']
+                        mock_encoding.return_value = [u'', u'utf-8']
 
                         def side_effect(*args, **kwargs):
                             mock_result = mock.MagicMock()
@@ -444,10 +444,10 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
         utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen[0]) as f1:
-            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen[0]) as f2:
-                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen[0]) as f3:
+        self.importinstance.charsetchoosen = u'utf-8'
+        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen) as f1:
+            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen) as f2:
+                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -456,10 +456,10 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch('import_data_to_db.midv_data_importer.select_files')
+                    @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [True, u'utf-8']
+                        mock_encoding.return_value = [u'', u'utf-8']
 
                         def side_effect(*args, **kwargs):
                             mock_result = mock.MagicMock()
@@ -491,7 +491,7 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     assert test_string == reference_string
 
 
-class _TestGenereralCsvImport(object):
+class _TestGeneralCsvImport(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -578,12 +578,42 @@ class _TestGenereralCsvImport(object):
                     def _test_general_csv_import_wlvllogg(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
                         mock_filename.return_value = filename
                         mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', column_header_translation_dict={u'test': u'head_cm'})
+                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', column_header_translation_dict={u'test': u'head_cm', u'obsid': u'obsid', u'date_time': u'date_time'})
 
                     _test_general_csv_import_wlvllogg(self, filename)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, None)])'''
+                    assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_general_csv_import_wlvllogg_translation_missing_not_null_column(self):
+        file = [u'obsids,date_time,test',
+                 u'rb1,2016-03-15 10:30:00,1']
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+
+        self.importinstance.charsetchoosen = [u'utf-8']
+        with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
+                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+                    utils_askuser_answer_no_obj.result = 0
+                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+                    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    def _test_general_csv_import_wlvllogg(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+                        mock_filename.return_value = filename
+                        mock_encoding.return_value = [True, u'utf-8']
+                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', column_header_translation_dict={u'test': u'head_cm'})
+                        assert mock_iface.messageBar.return_value.createMessage.called_with(u'Error: Import failed, see log message panel')
+                    _test_general_csv_import_wlvllogg(self, filename)
+
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    reference_string = ur'''(True, [])'''
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
