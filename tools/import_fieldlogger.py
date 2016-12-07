@@ -103,7 +103,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             self.parameter_imports[parametername] = param_import_obj
             parameter_layout.addWidget(param_import_obj.widget)
 
-        self.main_vertical_layout.addStretch(1)
+        #self.main_vertical_layout.addStretch(1)
 
         self.stored_settingskey = u'fieldlogger_import_parameter_settings'
 
@@ -663,6 +663,8 @@ class SublocationFilter(RowEntry):
 
         self.table = PyQt4.QtGui.QTableWidget(num_rows, num_columns)
         self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)
+        self.table.sizePolicy().setVerticalPolicy(PyQt4.QtGui.QSizePolicy.MinimumExpanding)
+        self.table.sizePolicy().setVerticalStretch(2)
         self.table.setSelectionMode(PyQt4.QtGui.QAbstractItemView.ExtendedSelection)
         self.table.horizontalHeader().setStretchLastSection(True)
 

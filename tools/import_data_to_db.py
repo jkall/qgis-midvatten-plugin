@@ -524,7 +524,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         self.status = 'True'
 
-        utils.MessagebarAndLog.info(bar_msg=u'In total %s measurements were imported.'''%(recsafter - recsbefore))
+        utils.MessagebarAndLog.info(bar_msg=u'In total %s measurements were imported to "%s".'''%(recsafter - recsbefore, goal_table))
 
         utils.sql_alter_db(u"DROP table %s"%self.temptableName) # finally drop the temporary table
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
