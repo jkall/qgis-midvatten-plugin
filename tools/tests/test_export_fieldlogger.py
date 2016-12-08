@@ -83,7 +83,7 @@ class TestExportFieldloggerNoDb():
         stored_settings = [(0, ((u'key0_1', u'value0_1'), (u'key0_2', u'value0_2'))), (1, ((u'key1_1', u'value1_1'), (u'key1_2', u'value1_2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings, tables_columns, mock_connect)
+        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, tables_columns, mock_connect)
         stored_settings = ExportToFieldLogger.update_stored_settings(export_objects)
         assert stored_settings == []
 
@@ -94,9 +94,9 @@ class TestExportFieldloggerNoDb():
                            (1, ((u'location_suffix', u'value1_1'), (u'key1_2', u'value1_2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
-                                                                                         tables_columns,
-                                                                                         mock_connect)
+        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings,
+                                                                                           tables_columns,
+                                                                                           mock_connect)
         stored_settings = create_test_string(ExportToFieldLogger.update_stored_settings(export_objects))
         reference = u'[(0, ((final_parameter_name, value0_1))), (1, ((location_suffix, value1_1)))]'
         assert stored_settings == reference
@@ -112,9 +112,9 @@ class TestExportFieldloggerNoDb():
                            (1, ((u'final_parameter_name', u'par2'), (u'subname_suffix', u'proj2.group'), (u'location_suffix', u'proj2'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
-                                                                                         tables_columns,
-                                                                                         mock_connect)
+        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings,
+                                                                                           tables_columns,
+                                                                                           mock_connect)
         export_objects[0].obsid_list.addItems([u'1', u'4'])
         export_objects[1].obsid_list.addItems([u'2', u'3', u'4'])
 
@@ -133,9 +133,9 @@ class TestExportFieldloggerNoDb():
                            (1, ((u'final_parameter_name', u'par2'), (u'subname_suffix', u'proj2.group'), (u'location_suffix', u'proj2'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
-                                                                                         tables_columns,
-                                                                                         mock_connect)
+        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings,
+                                                                                           tables_columns,
+                                                                                           mock_connect)
         export_objects[0].obsid_list.addItems([u'1', u'4'])
         export_objects[1].obsid_list.addItems([u'2', u'3', u'4'])
 
@@ -154,9 +154,9 @@ class TestExportFieldloggerNoDb():
                            (1, ((u'final_parameter_name', u'par2'), (u'subname_suffix', u'proj2.group'), (u'location_suffix', u'proj2'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
-                                                                                         tables_columns,
-                                                                                         mock_connect)
+        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings,
+                                                                                           tables_columns,
+                                                                                           mock_connect)
         export_objects[0].obsid_list.addItems([u'1', u'4'])
         export_objects[1].obsid_list.addItems([u'2', u'3', u'4'])
 
@@ -176,9 +176,9 @@ class TestExportFieldloggerNoDb():
                            (1, ((u'final_parameter_name', u'par2'), (u'subname_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
-                                                                                         tables_columns,
-                                                                                         mock_connect)
+        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings,
+                                                                                           tables_columns,
+                                                                                           mock_connect)
         export_objects[0].obsid_list.addItems([u'1'])
         export_objects[1].obsid_list.addItems([u'1'])
 
@@ -200,9 +200,9 @@ class TestExportFieldloggerNoDb():
                            (2, ((u'final_parameter_name', u'comment'), (u'subname_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
-                                                                                         tables_columns,
-                                                                                         mock_connect)
+        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings,
+                                                                                           tables_columns,
+                                                                                           mock_connect)
         export_objects[0].obsid_list.addItems([u'1'])
         export_objects[1].obsid_list.addItems([u'1'])
 

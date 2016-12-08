@@ -476,7 +476,7 @@ class midvatten:
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
         if err_flag == 0:
-            from export_fieldlogger import ExportToFieldLogger
+            from export_fieldlogger2 import ExportToFieldLogger
             try:
                 self.export_to_field_logger.activateWindow()
             except:
