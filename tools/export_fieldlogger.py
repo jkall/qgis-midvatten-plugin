@@ -54,7 +54,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                                                                tables_columns,
                                                                                self.connect)
         if self.export_objects is None or not self.export_objects:
-            self.export_objects = [ExportObject(tables_columns, self.connect)]
+            self.export_objects = [ExportObject(self.connect)]
 
         self.splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(self.splitter)
@@ -69,6 +69,11 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         if self.export_objects:
             for export_object in self.export_objects:
                 self.add_export_object_to_gui(self.widgets_layouts, export_object)
+
+        #ParameterUnitBrowser
+        browser = ParameterUnitBrowser(tables_columns, self.connect)
+        self.gridLayout_buttons.addWidget(browser.widget, 0, 0)
+        
 
         #Buttons
         self.save_settings_button = PyQt4.QtGui.QPushButton(u'Save settings')
@@ -85,10 +90,11 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         #Lambda and map is used to run several functions for every button click
         self.connect(self.add_one_parameter_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(),
-                                 [lambda: self.export_objects.append(ExportObject(defs.tables_columns(), self.connect)),
+                                 [lambda: self.export_objects.append(ExportObject(self.connect)),
                                   lambda: self.add_export_object_to_gui(self.widgets_layouts, self.export_objects[-1])]))
 
         self.export_button = PyQt4.QtGui.QPushButton(u'Export')
+
         self.export_button.setToolTip(u'Exports to a Fieldlogger wells file.')
         self.gridLayout_buttons.addWidget(self.export_button, 3, 0)
         # Lambda and map is used to run several functions for every button click
@@ -99,12 +105,14 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                                                     self.stored_settingskey),
                                   lambda: self.write_printlist_to_file(self.create_export_printlist(self.export_objects))]))
 
+        self.gridLayout_buttons.setRowStretch(4, 1)
+
         self.show()
 
     @staticmethod
     def init_splitters_layouts(splitter):
         widgets_layouts = []
-        for nr in xrange(3):
+        for nr in xrange(2):
             widget = PyQt4.QtGui.QWidget()
             layout = PyQt4.QtGui.QHBoxLayout()
             widget.setLayout(layout)
@@ -115,36 +123,24 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
     def add_export_object_to_gui(self, widgets_layouts, export_object):
 
             self.create_widget_and_connect_widgets(widgets_layouts[0][1],
-                                                   [PyQt4.QtGui.QLabel(u'Parameter and unit helpers:'),
-                                                    PyQt4.QtGui.QLabel(u'Parameter table'),
-                                                    export_object._parameter_table,
-                                                    PyQt4.QtGui.QLabel(u'Column'),
-                                                    export_object._parameter_columns,
-                                                    PyQt4.QtGui.QLabel(u'Name'),
-                                                    export_object._distinct_parameter,
-                                                    PyQt4.QtGui.QLabel(u'Unit table'),
-                                                    export_object._unit_table,
-                                                    PyQt4.QtGui.QLabel(u'Column'),
-                                                    export_object._unit_columns,
-                                                    PyQt4.QtGui.QLabel(u'Name'),
-                                                    export_object._distinct_unit])
-
-            self.create_widget_and_connect_widgets(widgets_layouts[1][1],
-                                                   [PyQt4.QtGui.QLabel(u'File output:'),
+                                                   [PyQt4.QtGui.QLabel(u'Fieldlogger parameters and locations:'),
+                                                    PyQt4.QtGui.QLabel(u'Parameter name'),
+                                                    export_object._final_parameter_name,
                                                     PyQt4.QtGui.QLabel(u'Input type'),
                                                     export_object._input_type,
                                                     PyQt4.QtGui.QLabel(u'Hint'),
                                                     export_object._hint,
+                                                    get_line(),
                                                     PyQt4.QtGui.QLabel(u'Location suffix'),
                                                     export_object._location_suffix,
-                                                    PyQt4.QtGui.QLabel(u'Subname suffix'),
-                                                    export_object._subname_suffix,
-                                                    PyQt4.QtGui.QLabel(u'Parameter name'),
-                                                    export_object._final_parameter_name])
+                                                    get_line()])
 
-            self.create_widget_and_connect_widgets(widgets_layouts[2][1],
+
+            self.create_widget_and_connect_widgets(widgets_layouts[1][1],
                                                    [export_object.paste_from_selection_button,
-                                                    export_object.obsid_list])
+                                                    export_object.obsid_list,
+                                                   PyQt4.QtGui.QLabel(u'Sub-location suffix'),
+                                                   export_object._sublocation_suffix])
 
     @staticmethod
     def create_widget_and_connect_widgets(parent_layout=None, widgets=None, layout_class=PyQt4.QtGui.QVBoxLayout):
@@ -197,7 +193,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         """
         export_objects = []
         for index, attrs in stored_settings:
-            export_object = ExportObject(tables_columns, connect)
+            export_object = ExportObject(connect)
             attrs_set = False
             for attr in attrs:
                 if hasattr(export_object, attr[0]):
@@ -272,7 +268,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
             parameters_inputtypes_hints[parameter] = (input_type, export_object.hint)
 
-            for location, subname, obsid in export_object.locations_subnames_obsids:
+            for location, subname, obsid in export_object.locations_sublocations_obsids:
                 location_exists = subnames_locations.get(subname, None)
                 if location != location_exists and location_exists is not None:
                     utils.MessagebarAndLog.warning(bar_msg=u'Warning: Subname ' + subname + u' error, see log message panel', log_msg=u'Subname ' + subname + u' already existed for location ' + location_exists + u' and is duplicated by location ' + location + u'. It will be skipped.')
@@ -330,7 +326,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
 
 class ExportObject(object):
-    def __init__(self, tables_columns, connect):
+    def __init__(self, connect):
         """
         This one should contain:
 
@@ -362,64 +358,35 @@ class ExportObject(object):
         QCombobox
 
         """
-
-        tables_columns = dict([(k, v[1]) for k, v in tables_columns.iteritems()])
-
         #Widget list:
-        self._parameter_table = import_fieldlogger.default_combobox(editable=False)
-        self._parameter_columns = import_fieldlogger.default_combobox(editable=False)
-        self._distinct_parameter = import_fieldlogger.default_combobox(editable=True)
-        self._unit_table = import_fieldlogger.default_combobox(editable=False)
-        self._unit_columns = import_fieldlogger.default_combobox(editable=False)
-        self._distinct_unit = import_fieldlogger.default_combobox(editable=True)
+
         self._input_type = import_fieldlogger.default_combobox(editable=True)
         self._hint = PyQt4.QtGui.QLineEdit()
         self._location_suffix = PyQt4.QtGui.QLineEdit()
-        self._subname_suffix = PyQt4.QtGui.QLineEdit()
+        self._sublocation_suffix = PyQt4.QtGui.QLineEdit()
         self._final_parameter_name = PyQt4.QtGui.QLineEdit()
         self.obsid_list = CopyPasteDeleteableQListWidget()
         self.paste_from_selection_button = PyQt4.QtGui.QPushButton(u'Paste obs_points selection')
-
         #------------------------------------------------------------------------
-        self._parameter_table.addItems(sorted(tables_columns.keys()))
-        connect(self._parameter_table, PyQt4.QtCore.SIGNAL("activated(int)"),
-                     lambda: self.replace_items(self._parameter_columns, tables_columns.get(self.parameter_table, [])))
-        connect(self._parameter_columns, PyQt4.QtCore.SIGNAL("activated(int)"),
-                     lambda: self.replace_items(self._distinct_parameter, self.get_distinct_values(self.parameter_table, self.parameter_columns)))
-
-        self._unit_table.addItems(sorted(tables_columns.keys()))
-        connect(self._unit_table, PyQt4.QtCore.SIGNAL("activated(int)"),
-                     lambda: self.replace_items(self._unit_columns, tables_columns.get(self.unit_table, [])))
-        connect(self._unit_columns, PyQt4.QtCore.SIGNAL("activated(int)"),
-                     lambda: self.replace_items(self._distinct_unit, self.get_distinct_values(self.unit_table, self.unit_columns)))
-
-        connect(self._distinct_parameter, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
-                     lambda: self._final_parameter_name.setText(u'.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
-        connect(self._distinct_unit, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
-                     lambda: self._final_parameter_name.setText(u'.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
-        #------------------------------------------------------------------------------------
-
         self._input_type.addItems([u'numberDecimal|numberSigned', u'numberDecimal', u'numberSigned', u'text'])
         self._input_type.setToolTip(u'(mandatory)\nDecides the keyboard layout in the Fieldlogger app.')
         self._hint.setToolTip(u'(optional)\nHint given to the Fieldlogger user for the parameter. Ex: "depth to water"')
         #-------------------------------------------------------------------------------------
 
-        self._location_suffix.setToolTip(u'(optional)\nFieldlogger NAME = obsid.SUFFIX\nUseful for separating projects\nex: suffix = 1234 --> obsid.1234')
-        self._subname_suffix.setToolTip(u'(optional)\nFieldlogger sub-location = obsid.SUFFIX\nUseful for separating parameters into groups for the user.\nParameters sharing the same sub-location will be shown together\n This is the name that Fieldlogger app writes to the result file.\nex: suffix 1234.quality --> obsid.1234.quality')
-        self._final_parameter_name.setToolTip(u'(mandatory)\nParameter name that will be written to Fieldlogger wells file. Ex: parameter.unit')
+        self._location_suffix.setToolTip(u'(optional)\nFieldlogger NAME = obsid.SUFFIX\nUseful for separating projects or databases\nex: suffix = 1234 --> obsid.1234')
+        self._sublocation_suffix.setToolTip(u'(optional)\nFieldlogger sub-location = obsid.SUFFIX\nUseful for separating parameters into groups for the user.\nParameters sharing the same sub-location will be shown together\n ex: suffix 1234.quality --> obsid.1234.quality')
+        self._final_parameter_name.setToolTip(u'(mandatory)\nFieldlogger parameter name. Ex: parameter.unit')
         #-------------------------------------------------------------------------------------
         self.obsid_list.setSelectionMode(PyQt4.QtGui.QAbstractItemView.ExtendedSelection)
         connect(self.paste_from_selection_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : self.obsid_list.paste_data(utils.get_selected_features_as_tuple('obs_points')))
+        connect(self._location_suffix, PyQt4.QtCore.SIGNAL("textChanged(const QString&)"),
+                         lambda : self.set_sublocation_suffix(self.location_suffix))
+
+
 
     def get_settings(self):
-        settings = ((u'parameter_table', self.parameter_table),
-                   (u'parameter_columns', self.parameter_columns),
-                   (u'distinct_parameter', self.distinct_parameter),
-                   (u'unit_table', self.unit_table),
-                   (u'unit_columns', self.unit_columns),
-                   (u'distinct_unit', self.distinct_unit),
-                   (u'final_parameter_name', self.final_parameter_name),
+        settings = ((u'final_parameter_name', self.final_parameter_name),
                    (u'input_type', self.input_type),
                    (u'hint', self.hint),
                    (u'location_suffix', self.location_suffix),
@@ -428,86 +395,16 @@ class ExportObject(object):
         settings = tuple((k, v) for k, v in settings if v)
         return utils.returnunicode(settings, keep_containers=True)
 
-    @staticmethod
-    def replace_items(combobox, items):
-        combobox.clear()
-        combobox.addItem(u'')
-        combobox.addItems(items)
-
-    @staticmethod
-    def get_distinct_values(tablename, columnname):
-        if not tablename or not columnname:
-            return []
-        sql = '''SELECT distinct "%s" from "%s"'''%(columnname, tablename)
-        connection_ok, result = utils.sql_load_fr_db(sql)
-        
-        if not connection_ok:
-            textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
-            utils.MessagebarAndLog.critical(
-                bar_msg=u"Error, sql failed, see log message panel",
-                log_msg=textstring)
-            return []
-        
-        values = [col[0] for col in result]
-        return values
-
-    @staticmethod
-    def set_combobox(combobox, value):
-        index = combobox.findText(returnunicode(value))
-        if index != -1:
-            combobox.setCurrentIndex(index)
+    def set_sublocation_suffix(self, location_suffix):
+        current_suffix = self.sublocation_suffix
+        try:
+            current_suffix = self.sublocation_suffix.split(u'.')[1]
+        except IndexError:
+            pass
+        if not current_suffix:
+            self.sublocation_suffix = location_suffix
         else:
-            combobox.addItem(returnunicode(value))
-            index = combobox.findText(returnunicode(value))
-            combobox.setCurrentIndex(index)
-
-    @property
-    def parameter_table(self):
-        return utils.returnunicode(self._parameter_table.currentText())
-    
-    @parameter_table.setter
-    def parameter_table(self, value):
-        self.set_combobox(self._parameter_table, value)
-        
-    @property
-    def parameter_columns(self):
-        return utils.returnunicode(self._parameter_columns.currentText())
-
-    @parameter_columns.setter
-    def parameter_columns(self, value):
-        self.set_combobox(self._parameter_columns, value)
-        
-    @property
-    def distinct_parameter(self):
-        return utils.returnunicode(self._distinct_parameter.currentText())
-    
-    @distinct_parameter.setter
-    def distinct_parameter(self, value):
-        self.set_combobox(self._distinct_parameter, value)
-
-    @property
-    def unit_table(self):
-        return utils.returnunicode(self._unit_table.currentText())
-
-    @unit_table.setter
-    def unit_table(self, value):
-        self.set_combobox(self._unit_table, value)
-
-    @property
-    def unit_columns(self):
-        return utils.returnunicode(self._unit_columns.currentText())
-    
-    @unit_columns.setter
-    def unit_columns(self, value):
-        self.set_combobox(self._unit_columns, value)
-
-    @property
-    def distinct_unit(self):
-        return utils.returnunicode(self._distinct_unit.currentText())
-
-    @distinct_unit.setter
-    def distinct_unit(self, value):
-        self.set_combobox(self._distinct_unit, value)
+            self.sublocation_suffix = u'.'.join([location_suffix, current_suffix])
 
     @property
     def final_parameter_name(self):
@@ -523,7 +420,7 @@ class ExportObject(object):
 
     @input_type.setter
     def input_type(self, value):
-        self.set_combobox(self._input_type, value)
+        set_combobox(self._input_type, value)
         
     @property
     def hint(self):
@@ -542,19 +439,19 @@ class ExportObject(object):
         self._location_suffix.setText(utils.returnunicode(value))
 
     @property
-    def subname_suffix(self):
-        return utils.returnunicode(self._subname_suffix.text())
+    def sublocation_suffix(self):
+        return utils.returnunicode(self._sublocation_suffix.text())
 
-    @subname_suffix.setter
-    def subname_suffix(self, value):
-        self._subname_suffix.setText(utils.returnunicode(value))
+    @sublocation_suffix.setter
+    def sublocation_suffix(self, value):
+        self._sublocation_suffix.setText(utils.returnunicode(value))
 
     @property
-    def locations_subnames_obsids(self):
-        locations_subnames_obsids = [(u'.'.join([returnunicode(obsid), returnunicode(self.location_suffix)]),
-                                      u'.'.join([returnunicode(obsid), returnunicode(self.subname_suffix)]), returnunicode(obsid))
+    def locations_sublocations_obsids(self):
+        locations_sublocations_obsids = [(u'.'.join([returnunicode(obsid), returnunicode(self.location_suffix)]),
+                                      u'.'.join([returnunicode(obsid), returnunicode(self.sublocation_suffix)]), returnunicode(obsid))
                                      for obsid in self.obsid_list.get_all_data()]
-        return locations_subnames_obsids
+        return locations_sublocations_obsids
     
 
 class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
@@ -611,9 +508,9 @@ class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
     def paste_data(self, paste_list=None):
         if paste_list is None:
             paste_list = PyQt4.QtGui.QApplication.clipboard().text().split(u'\n')
-        old_text = [self.item(i).text() for i in xrange(self.count())]
+        old_text = [returnunicode(self.item(i).text()) for i in xrange(self.count())]
         new_items = set()
-        new_items.update(paste_list)
+        new_items.update([returnunicode(x) for x in paste_list])
         new_items.update(old_text)
         self.clear()
         self.addItems(list(sorted(new_items)))
@@ -650,3 +547,166 @@ class MessageBar(qgis.gui.QgsMessageBar):
     def popWidget(self, QgsMessageBarItem=None):
         self.setParent(0)
         self.hide()
+        
+        
+class ParameterUnitBrowser(object):
+    def __init__(self, tables_columns_org, connect):
+
+        tables_columns = {}
+        for table, columns_tuple in tables_columns_org.iteritems():
+            for column in columns_tuple:
+                tables_columns.setdefault(table, []).append(column[1])
+
+        self.layout = PyQt4.QtGui.QVBoxLayout()
+        self.widget = PyQt4.QtGui.QWidget()
+        self.widget.setLayout(self.layout)
+
+        #Widget list
+        self._parameter_table = import_fieldlogger.default_combobox(editable=False)
+        self._parameter_columns = import_fieldlogger.default_combobox(editable=False)
+        self._distinct_parameter = import_fieldlogger.default_combobox(editable=True)
+        self._unit_table = import_fieldlogger.default_combobox(editable=False)
+        self._unit_columns = import_fieldlogger.default_combobox(editable=False)
+        self._distinct_unit = import_fieldlogger.default_combobox(editable=True)
+        self._combined_name = PyQt4.QtGui.QLineEdit()
+
+        # ------------------------------------------------------------------------------------
+        self._parameter_table.addItems(sorted(tables_columns.keys()))
+        connect(self._parameter_table, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self.replace_items(self._parameter_columns, tables_columns.get(self.parameter_table, [])))
+        connect(self._parameter_columns, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self.replace_items(self._distinct_parameter, self.get_distinct_values(self.parameter_table, self.parameter_columns)))
+
+        self._unit_table.addItems(sorted(tables_columns.keys()))
+        connect(self._unit_table, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self.replace_items(self._unit_columns, tables_columns.get(self.unit_table, [])))
+        connect(self._unit_columns, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self.replace_items(self._distinct_unit, self.get_distinct_values(self.unit_table, self.unit_columns)))
+
+        connect(self._distinct_parameter, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
+                     lambda: self._combined_name.setText(u'.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
+        connect(self._distinct_unit, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
+                     lambda: self._combined_name.setText(u'.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
+        #------------------------------------------------------------------------------------
+        self._combined_name.setToolTip(u'Copy value using ctrl+v, ctrl+c to parameter name.')
+        #------------------------------------------------------------------------------------
+        #Add widgets to layout
+        for widget in [PyQt4.QtGui.QLabel(u'Parameter and\nunit browser:'),
+                       PyQt4.QtGui.QLabel(u'Parameter table'),
+                       self._parameter_table,
+                       PyQt4.QtGui.QLabel(u'Column'),
+                       self._parameter_columns,
+                       PyQt4.QtGui.QLabel(u'Name'),
+                       self._distinct_parameter,
+                       PyQt4.QtGui.QLabel(u'Unit table'),
+                       self._unit_table,
+                       PyQt4.QtGui.QLabel(u'Column'),
+                       self._unit_columns,
+                       PyQt4.QtGui.QLabel(u'Name'),
+                       self._distinct_unit,
+                       PyQt4.QtGui.QLabel(u'Combined name'),
+                       self._combined_name]:
+            self.layout.addWidget(widget)
+
+        add_line(self.layout)
+
+    @staticmethod
+    def get_distinct_values(tablename, columnname):
+        if not tablename or not columnname:
+            return []
+        sql = '''SELECT distinct "%s" from "%s"'''%(columnname, tablename)
+        connection_ok, result = utils.sql_load_fr_db(sql)
+
+        if not connection_ok:
+            textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
+            utils.MessagebarAndLog.critical(
+                bar_msg=u"Error, sql failed, see log message panel",
+                log_msg=textstring)
+            return []
+
+        values = [col[0] for col in result]
+        return values
+
+    @staticmethod
+    def replace_items(combobox, items):
+        combobox.clear()
+        combobox.addItem(u'')
+        combobox.addItems(items)
+
+    @property
+    def parameter_table(self):
+        return utils.returnunicode(self._parameter_table.currentText())
+
+    @parameter_table.setter
+    def parameter_table(self, value):
+        set_combobox(self._parameter_table, value)
+
+    @property
+    def parameter_columns(self):
+        return utils.returnunicode(self._parameter_columns.currentText())
+
+    @parameter_columns.setter
+    def parameter_columns(self, value):
+        set_combobox(self._parameter_columns, value)
+
+    @property
+    def distinct_parameter(self):
+        return utils.returnunicode(self._distinct_parameter.currentText())
+
+    @distinct_parameter.setter
+    def distinct_parameter(self, value):
+        set_combobox(self._distinct_parameter, value)
+
+    @property
+    def unit_table(self):
+        return utils.returnunicode(self._unit_table.currentText())
+
+    @unit_table.setter
+    def unit_table(self, value):
+        set_combobox(self._unit_table, value)
+
+    @property
+    def unit_columns(self):
+        return utils.returnunicode(self._unit_columns.currentText())
+
+    @unit_columns.setter
+    def unit_columns(self, value):
+        set_combobox(self._unit_columns, value)
+
+    @property
+    def distinct_unit(self):
+        return utils.returnunicode(self._distinct_unit.currentText())
+
+    @distinct_unit.setter
+    def distinct_unit(self, value):
+        set_combobox(self._distinct_unit, value)
+        
+    @property
+    def combined_name(self):
+        return utils.returnunicode(self._combined_name.text())
+    
+    @combined_name.setter
+    def combined_name(self, value):
+        self._combined_name.setText(utils.returnunicode(value))
+
+
+def set_combobox(combobox, value):
+    index = combobox.findText(returnunicode(value))
+    if index != -1:
+        combobox.setCurrentIndex(index)
+    else:
+        combobox.addItem(returnunicode(value))
+        index = combobox.findText(returnunicode(value))
+        combobox.setCurrentIndex(index)
+
+
+def add_line(layout):
+    """ just adds a line"""
+    layout.addWidget(get_line())
+
+def get_line():
+    line = PyQt4.QtGui.QFrame()
+    line.setGeometry(PyQt4.QtCore.QRect(320, 150, 118, 3))
+    line.setFrameShape(PyQt4.QtGui.QFrame.HLine)
+    line.setFrameShadow(PyQt4.QtGui.QFrame.Sunken)
+    return line

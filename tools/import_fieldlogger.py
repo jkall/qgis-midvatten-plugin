@@ -128,8 +128,11 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
     def select_file_and_parse_rows(self):
         charset = utils.ask_for_charset('utf-8')
+        if charset is None or not charset:
+            self.status = False
+            return u'cancel'
         filenames = utils.select_files(only_one_file=False, extension="csv (*.csv)")
-        if filenames is None or charset is None:
+        if filenames is None or not filenames:
             self.status = False
             return u'cancel'
 
