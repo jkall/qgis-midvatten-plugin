@@ -217,10 +217,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                 if hasattr(parameter_browser, attr[0]):
                     setattr(parameter_browser, attr[0], attr[1])
 
-
     @staticmethod
-    def update_stored_settings(export_objects):
-        return [(index, copy.deepcopy(export_object.get_settings())) for index, export_object in enumerate(export_objects)]
+    def update_stored_settings(an_object_with_get_settings):
+        return [(index, copy.deepcopy(export_object.get_settings())) for index, export_object in enumerate(an_object_with_get_settings)]
 
     @staticmethod
     def save_stored_settings(ms, stored_settings, settingskey):
@@ -248,7 +247,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         ms.save_settings()
 
     @staticmethod
-    def create_export_printlist(export_objects):
+    def create_export_printlist(parameter_groups):
         """
         Creates a result list with FieldLogger format from selected obsids and parameters
         :return: a list with result lines to export to file
@@ -261,15 +260,15 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         subnames_lat_lon = OrderedDict()
         subnames_parameters = OrderedDict()
 
-        for export_object in export_objects:
-            parameter = export_object.final_parameter_name
+        for parameter_group in parameter_groups:
+            parameter = parameter_group.final_parameter_name
             if not parameter:
                 utils.MessagebarAndLog.critical(
                     bar_msg=u"Critical: Parameter " + parameter + u' error. See log message panel',
                     log_msg=u'Parameter name not given.')
                 continue
 
-            input_type = export_object.input_type
+            input_type = parameter_group.input_type
             if not input_type:
                 utils.MessagebarAndLog.critical(
                     bar_msg=u"Critical: Parameter " + parameter + u' error. See log message panel',
@@ -280,9 +279,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                 utils.MessagebarAndLog.warning(bar_msg=u"Warning: Parameter " + parameter + u' error. See log message panel', log_msg=u'The parameter ' + parameter + u' already exists. Only the first occurence one will be written to file.')
                 continue
 
-            parameters_inputtypes_hints[parameter] = (input_type, export_object.hint)
+            parameters_inputtypes_hints[parameter] = (input_type, parameter_group.hint)
 
-            for location, subname, obsid in export_object.locations_sublocations_obsids:
+            for location, subname, obsid in parameter_group.locations_sublocations_obsids:
                 location_exists = subnames_locations.get(subname, None)
                 if location != location_exists and location_exists is not None:
                     utils.MessagebarAndLog.warning(bar_msg=u'Warning: Subname ' + subname + u' error, see log message panel', log_msg=u'Subname ' + subname + u' already existed for location ' + location_exists + u' and is duplicated by location ' + location + u'. It will be skipped.')
@@ -435,7 +434,7 @@ class ParameterGroup(object):
 
     @property
     def parameter_list(self):
-        return utils.returnunicode(self._parameter_list.get_all_data())
+        return utils.returnunicode(self._parameter_list.get_all_data(), keep_containers=True)
 
     @parameter_list.setter
     def parameter_list(self, value):
@@ -444,7 +443,179 @@ class ParameterGroup(object):
             self._parameter_list.paste_data(paste_list=value)
         else:
             self._parameter_list.paste_data(paste_list=value.split(u'\n'))
-    
+
+
+class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
+    def __init__(self, tables_columns_org, connect, parent=None):
+        PyQt4.QtGui.QDialog.__init__(self, parent)
+        self.setupUi(self)  # Required by Qt4 to initialize the UI
+
+        #Widgets:
+        # ------------------------------------------------------------------------------------
+        #Other widgets in the ui-file
+        self._parameter_list = CopyPasteDeleteableQListWidget()
+        # ------------------------------------------------------------------------------------
+
+        tables_columns = {}
+        for table, columns_tuple in tables_columns_org.iteritems():
+            for column in columns_tuple:
+                tables_columns.setdefault(table, []).append(column[1])
+
+        # ------------------------------------------------------------------------------------
+        self._parameter_table.addItem(u'')
+        self._parameter_table.addItems(sorted(tables_columns.keys()))
+        connect(self._parameter_table, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self.replace_items(self._parameter_columns, tables_columns.get(self.parameter_table, [])))
+        connect(self._parameter_columns, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self.replace_items(self._distinct_parameter, self.get_distinct_values(self.parameter_table, self.parameter_columns)))
+        self._unit_table.addItem(u'')
+        self._unit_table.addItems(sorted(tables_columns.keys()))
+        connect(self._unit_table, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self.replace_items(self._unit_columns, tables_columns.get(self.unit_table, [])))
+        connect(self._unit_columns, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self.replace_items(self._distinct_unit, self.get_distinct_values(self.unit_table, self.unit_columns)))
+
+        connect(self._distinct_parameter, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
+                     lambda: self._combined_name.setText(u'.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
+        connect(self._distinct_unit, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
+                     lambda: self._combined_name.setText(u'.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
+
+        connect(self.add_parameter_button, PyQt4.QtCore.SIGNAL("clicked()"),
+                lambda : self.combine_name(self.combined_name, self.input_type, self.hint))
+
+        # ------------------------------------------------------------------------------------
+        self._input_type.addItem(u'')
+        self._input_type.addItems([u'numberDecimal|numberSigned', u'numberDecimal', u'numberSigned', u'text'])
+        self._input_type.setToolTip(u'(mandatory)\nDecides the keyboard layout in the Fieldlogger app.')
+        self._hint.setToolTip(u'(optional)\nHint given to the Fieldlogger user for the parameter. Ex: "depth to water"')
+        #------------------------------------------------------------------------------------
+        self._combined_name.setToolTip(u'Copy value using ctrl+v, ctrl+c to parameter name.')
+        self._parameter_list.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
+        self._parameter_list.setMinimumWidth(200)
+        #------------------------------------------------------------------------------------
+        self.horizontalLayout.addWidget(self._parameter_list)
+
+    @staticmethod
+    def get_distinct_values(tablename, columnname):
+        if not tablename or not columnname:
+            return []
+        sql = '''SELECT distinct "%s" from "%s"'''%(columnname, tablename)
+        connection_ok, result = utils.sql_load_fr_db(sql)
+
+        if not connection_ok:
+            textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
+            utils.MessagebarAndLog.critical(
+                bar_msg=u"Error, sql failed, see log message panel",
+                log_msg=textstring)
+            return []
+
+        values = [col[0] for col in result]
+        return values
+
+    @staticmethod
+    def replace_items(combobox, items):
+        combobox.clear()
+        combobox.addItem(u'')
+        combobox.addItems(items)
+
+    def get_settings(self):
+        settings = ((u'parameter_list', u'\n'.join(self.parameter_list)), )
+        return utils.returnunicode(settings, keep_containers=True)
+
+    def combine_name(self, combined_name, input_type, hint):
+        if not combined_name:
+            utils.MessagebarAndLog.critical(bar_msg=u'Error, Fieldlogger parameter name not set')
+            return
+        elif not input_type:
+            utils.MessagebarAndLog.critical(bar_msg=u'Error, Fieldlogger input type not set')
+            return
+        else:
+            self._parameter_list.paste_data([u'|'.join([self.combined_name, self.input_type, self.hint])])
+
+    @property
+    def parameter_table(self):
+        return utils.returnunicode(self._parameter_table.currentText())
+
+    @parameter_table.setter
+    def parameter_table(self, value):
+        set_combobox(self._parameter_table, value)
+
+    @property
+    def parameter_columns(self):
+        return utils.returnunicode(self._parameter_columns.currentText())
+
+    @parameter_columns.setter
+    def parameter_columns(self, value):
+        set_combobox(self._parameter_columns, value)
+
+    @property
+    def distinct_parameter(self):
+        return utils.returnunicode(self._distinct_parameter.currentText())
+
+    @distinct_parameter.setter
+    def distinct_parameter(self, value):
+        set_combobox(self._distinct_parameter, value)
+
+    @property
+    def unit_table(self):
+        return utils.returnunicode(self._unit_table.currentText())
+
+    @unit_table.setter
+    def unit_table(self, value):
+        set_combobox(self._unit_table, value)
+
+    @property
+    def unit_columns(self):
+        return utils.returnunicode(self._unit_columns.currentText())
+
+    @unit_columns.setter
+    def unit_columns(self, value):
+        set_combobox(self._unit_columns, value)
+
+    @property
+    def distinct_unit(self):
+        return utils.returnunicode(self._distinct_unit.currentText())
+
+    @distinct_unit.setter
+    def distinct_unit(self, value):
+        set_combobox(self._distinct_unit, value)
+
+    @property
+    def combined_name(self):
+        return utils.returnunicode(self._combined_name.text())
+
+    @combined_name.setter
+    def combined_name(self, value):
+        self._combined_name.setText(utils.returnunicode(value))
+
+    @property
+    def input_type(self):
+        return utils.returnunicode(self._input_type.currentText())
+
+    @input_type.setter
+    def input_type(self, value):
+        set_combobox(self._input_type, value)
+
+    @property
+    def hint(self):
+        return utils.returnunicode(self._hint.text())
+
+    @hint.setter
+    def hint(self, value):
+        self._hint.setText(utils.returnunicode(value))
+
+    @property
+    def parameter_list(self):
+        return utils.returnunicode(self._parameter_list.get_all_data(), keep_containers=True)
+
+    @parameter_list.setter
+    def parameter_list(self, value):
+        value = returnunicode(value, keep_containers=True)
+        if isinstance(value, (list, tuple)):
+            self._parameter_list.paste_data(paste_list=value)
+        else:
+            self._parameter_list.paste_data(paste_list=value.split(u'\n'))
+
 
 class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
     """
@@ -541,6 +712,7 @@ class MessageBar(qgis.gui.QgsMessageBar):
         self.setParent(0)
         self.hide()
 
+
 def set_combobox(combobox, value):
     index = combobox.findText(returnunicode(value))
     if index != -1:
@@ -549,7 +721,6 @@ def set_combobox(combobox, value):
         combobox.addItem(returnunicode(value))
         index = combobox.findText(returnunicode(value))
         combobox.setCurrentIndex(index)
-
 
 def add_line(layout):
     """ just adds a line"""
@@ -562,174 +733,5 @@ def get_line():
     line.setFrameShadow(PyQt4.QtGui.QFrame.Sunken)
     return line
 
-class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
-    def __init__(self, tables_columns_org, connect, parent=None):
-        PyQt4.QtGui.QDialog.__init__(self, parent)
-        self.setupUi(self)  # Required by Qt4 to initialize the UI
 
-        #Widgets:
-        # ------------------------------------------------------------------------------------
-        #Other widgets in the ui-file
-        self._parameter_list = CopyPasteDeleteableQListWidget()
-        # ------------------------------------------------------------------------------------
-
-        tables_columns = {}
-        for table, columns_tuple in tables_columns_org.iteritems():
-            for column in columns_tuple:
-                tables_columns.setdefault(table, []).append(column[1])
-
-        # ------------------------------------------------------------------------------------
-        self._parameter_table.addItem(u'')
-        self._parameter_table.addItems(sorted(tables_columns.keys()))
-        connect(self._parameter_table, PyQt4.QtCore.SIGNAL("activated(int)"),
-                     lambda: self.replace_items(self._parameter_columns, tables_columns.get(self.parameter_table, [])))
-        connect(self._parameter_columns, PyQt4.QtCore.SIGNAL("activated(int)"),
-                     lambda: self.replace_items(self._distinct_parameter, self.get_distinct_values(self.parameter_table, self.parameter_columns)))
-        self._unit_table.addItem(u'')
-        self._unit_table.addItems(sorted(tables_columns.keys()))
-        connect(self._unit_table, PyQt4.QtCore.SIGNAL("activated(int)"),
-                     lambda: self.replace_items(self._unit_columns, tables_columns.get(self.unit_table, [])))
-        connect(self._unit_columns, PyQt4.QtCore.SIGNAL("activated(int)"),
-                     lambda: self.replace_items(self._distinct_unit, self.get_distinct_values(self.unit_table, self.unit_columns)))
-
-        connect(self._distinct_parameter, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
-                     lambda: self._combined_name.setText(u'.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
-        connect(self._distinct_unit, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
-                     lambda: self._combined_name.setText(u'.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
-
-        connect(self.add_parameter_button, PyQt4.QtCore.SIGNAL("clicked()"),
-                lambda : self.combine_name(self.combined_name, self.input_type, self.hint))
-
-        # ------------------------------------------------------------------------------------
-        self._input_type.addItem(u'')
-        self._input_type.addItems([u'numberDecimal|numberSigned', u'numberDecimal', u'numberSigned', u'text'])
-        self._input_type.setToolTip(u'(mandatory)\nDecides the keyboard layout in the Fieldlogger app.')
-        self._hint.setToolTip(u'(optional)\nHint given to the Fieldlogger user for the parameter. Ex: "depth to water"')
-        #------------------------------------------------------------------------------------
-        self._combined_name.setToolTip(u'Copy value using ctrl+v, ctrl+c to parameter name.')
-        self._parameter_list.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
-        self._parameter_list.setMinimumWidth(200)
-        #------------------------------------------------------------------------------------
-        self.horizontalLayout.addWidget(self._parameter_list)
-
-    @staticmethod
-    def get_distinct_values(tablename, columnname):
-        if not tablename or not columnname:
-            return []
-        sql = '''SELECT distinct "%s" from "%s"'''%(columnname, tablename)
-        connection_ok, result = utils.sql_load_fr_db(sql)
-
-        if not connection_ok:
-            textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
-            utils.MessagebarAndLog.critical(
-                bar_msg=u"Error, sql failed, see log message panel",
-                log_msg=textstring)
-            return []
-
-        values = [col[0] for col in result]
-        return values
-
-    @staticmethod
-    def replace_items(combobox, items):
-        combobox.clear()
-        combobox.addItem(u'')
-        combobox.addItems(items)
-
-    def get_settings(self):
-        settings = ((u'parameter_list', u'\n'.join(self.parameter_list)))
-        return utils.returnunicode(settings, keep_containers=True)
-
-    def combine_name(self, combined_name, input_type, hint):
-        if not combined_name:
-            utils.MessagebarAndLog.critical(bar_msg=u'Error, Fieldlogger parameter name not set')
-            return
-        elif not input_type:
-            utils.MessagebarAndLog.critical(bar_msg=u'Error, Fieldlogger input type not set')
-            return
-        else:
-            self._parameter_list.paste_data([u'|'.join([self.combined_name, self.input_type, self.hint])])
-
-    @property
-    def parameter_table(self):
-        return utils.returnunicode(self._parameter_table.currentText())
-
-    @parameter_table.setter
-    def parameter_table(self, value):
-        set_combobox(self._parameter_table, value)
-
-    @property
-    def parameter_columns(self):
-        return utils.returnunicode(self._parameter_columns.currentText())
-
-    @parameter_columns.setter
-    def parameter_columns(self, value):
-        set_combobox(self._parameter_columns, value)
-
-    @property
-    def distinct_parameter(self):
-        return utils.returnunicode(self._distinct_parameter.currentText())
-
-    @distinct_parameter.setter
-    def distinct_parameter(self, value):
-        set_combobox(self._distinct_parameter, value)
-
-    @property
-    def unit_table(self):
-        return utils.returnunicode(self._unit_table.currentText())
-
-    @unit_table.setter
-    def unit_table(self, value):
-        set_combobox(self._unit_table, value)
-
-    @property
-    def unit_columns(self):
-        return utils.returnunicode(self._unit_columns.currentText())
-
-    @unit_columns.setter
-    def unit_columns(self, value):
-        set_combobox(self._unit_columns, value)
-
-    @property
-    def distinct_unit(self):
-        return utils.returnunicode(self._distinct_unit.currentText())
-
-    @distinct_unit.setter
-    def distinct_unit(self, value):
-        set_combobox(self._distinct_unit, value)
-
-    @property
-    def combined_name(self):
-        return utils.returnunicode(self._combined_name.text())
-
-    @combined_name.setter
-    def combined_name(self, value):
-        self._combined_name.setText(utils.returnunicode(value))
-
-    @property
-    def input_type(self):
-        return utils.returnunicode(self._input_type.currentText())
-
-    @input_type.setter
-    def input_type(self, value):
-        set_combobox(self._input_type, value)
-
-    @property
-    def hint(self):
-        return utils.returnunicode(self._hint.text())
-
-    @hint.setter
-    def hint(self, value):
-        self._hint.setText(utils.returnunicode(value))
-
-    @property
-    def parameter_list(self):
-        return utils.returnunicode(self._parameter_list.get_all_data())
-
-    @parameter_list.setter
-    def parameter_list(self, value):
-        value = returnunicode(value, keep_containers=True)
-        if isinstance(value, (list, tuple)):
-            self._parameter_list.paste_data(paste_list=value)
-        else:
-            self._parameter_list.paste_data(paste_list=value.split(u'\n'))
 
