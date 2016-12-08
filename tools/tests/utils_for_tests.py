@@ -22,6 +22,8 @@
 import io
 
 from PyQt4 import QtCore
+import PyQt4
+from PyQt4.QtCore import QVariant
 from qgis.core import QgsApplication
 
 import midvatten_utils as utils
@@ -93,6 +95,9 @@ def create_test_string(anything):
         aunicode = u''.join([u'(', u', '.join([create_test_string(x) for x in anything]), u')'])
     elif isinstance(anything, (basestring, float, int)):
         aunicode = utils.returnunicode(anything)
+    elif isinstance(anything, PyQt4.QtCore.QVariant):
+        print("Was varaint")
+        aunicode = utils.returnunicode(anything.toString().data())
     else:
         aunicode = utils.returnunicode(str(anything))
     return aunicode

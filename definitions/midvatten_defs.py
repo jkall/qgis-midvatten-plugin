@@ -40,7 +40,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'xy_y2column' : 'bedrock',
             'xy_y3column' : '',
             'xydotmarkers' : 0,
-            'stratigraphytable' : 'stratigraphy',
+            'stratigraphytable' : 'stratigraphy', #TODO: Remove this and fix the references
             'wqualtable' : 'w_qual_lab',
             'wqual_paramcolumn' : 'parameter',
             'wqual_valuecolumn' : 'reading_txt',
