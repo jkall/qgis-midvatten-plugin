@@ -243,9 +243,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         parameters_inputtypes_hints = OrderedDict()
 
-        subnames_locations = OrderedDict()
-        subnames_lat_lon = OrderedDict()
-        subnames_parameters = OrderedDict()
+        sublocations_locations = OrderedDict()
+        sublocations_lat_lon = OrderedDict()
+        sublocations_parameters = OrderedDict()
 
         for export_object in export_objects:
             parameter = export_object.final_parameter_name
@@ -268,27 +268,27 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
             parameters_inputtypes_hints[parameter] = (input_type, export_object.hint)
 
-            for location, subname, obsid in export_object.locations_sublocations_obsids:
-                location_exists = subnames_locations.get(subname, None)
+            for location, sublocation, obsid in export_object.locations_sublocations_obsids:
+                location_exists = sublocations_locations.get(sublocation, None)
                 if location != location_exists and location_exists is not None:
-                    utils.MessagebarAndLog.warning(bar_msg=u'Warning: Subname ' + subname + u' error, see log message panel', log_msg=u'Subname ' + subname + u' already existed for location ' + location_exists + u' and is duplicated by location ' + location + u'. It will be skipped.')
+                    utils.MessagebarAndLog.warning(bar_msg=u'Warning: sublocation ' + sublocation + u' error, see log message panel', log_msg=u'sublocation ' + sublocation + u' already existed for location ' + location_exists + u' and is duplicated by location ' + location + u'. It will be skipped.')
                     continue
 
-                if subname not in subnames_lat_lon:
+                if sublocation not in sublocations_lat_lon:
                     lat, lon = latlons.get(obsid, [None, None])
                     if any([lat is None, not lat, lon is None, not lon]):
                         utils.MessagebarAndLog.critical(bar_msg=u'Critical: Obsid ' + u' did not have lat-lon coordinates. Check obs_points table')
                         continue
-                    subnames_lat_lon[subname] = (returnunicode(lat), returnunicode(lon))
-                subnames_locations[subname] = location
-                subnames_parameters.setdefault(subname, []).append(parameter)
+                    sublocations_lat_lon[sublocation] = (returnunicode(lat), returnunicode(lon))
+                sublocations_locations[sublocation] = location
+                sublocations_parameters.setdefault(sublocation, []).append(parameter)
 
         comments = [par for par in parameters_inputtypes_hints.keys() if u'comment' in par]
         if not comments:
             utils.MessagebarAndLog.warning(bar_msg=u'Warning: No comment parameter found. Is it forgotten?')
 
         #Make a flat set of used parameters
-        #used_parameters = [item for v in subnames_parameters.values() for item in v]
+        #used_parameters = [item for v in sublocations_parameters.values() for item in v]
         #Remove unused parameters
         #parameters_inputtypes_hints = OrderedDict([(k, v) for k, v in parameters_inputtypes_hints.iteritems() if k in used_parameters])
 
@@ -299,14 +299,14 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                      returnunicode(i_h[0]) if i_h[0] else u'',
                                      returnunicode(i_h[1]) if i_h[1] else u''])
                           for par, i_h in parameters_inputtypes_hints.iteritems()])
-        printlist.append(u'NAME;SUBNAME;LAT;LON;INPUTFIELD')
+        printlist.append(u'NAME;sublocation;LAT;LON;INPUTFIELD')
 
         printlist.extend([u';'.join([returnunicode(location),
-                                     returnunicode(subname),
-                                     returnunicode(subnames_lat_lon[subname][0]),
-                                     returnunicode(subnames_lat_lon[subname][1]),
-                                     u'|'.join(returnunicode(subnames_parameters[subname], keep_containers=True))])
-                          for subname, location in sorted(subnames_locations.iteritems())])
+                                     returnunicode(sublocation),
+                                     returnunicode(sublocations_lat_lon[sublocation][0]),
+                                     returnunicode(sublocations_lat_lon[sublocation][1]),
+                                     u'|'.join(returnunicode(sublocations_parameters[sublocation], keep_containers=True))])
+                          for sublocation, location in sorted(sublocations_locations.iteritems())])
 
         return printlist
 
@@ -390,7 +390,7 @@ class ExportObject(object):
                    (u'input_type', self.input_type),
                    (u'hint', self.hint),
                    (u'location_suffix', self.location_suffix),
-                   (u'subname_suffix', self.subname_suffix))
+                   (u'sublocation_suffix', self.sublocation_suffix))
 
         settings = tuple((k, v) for k, v in settings if v)
         return utils.returnunicode(settings, keep_containers=True)

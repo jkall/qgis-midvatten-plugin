@@ -62,11 +62,9 @@ class TestExportFieldloggerNoDb():
     @staticmethod
     def test_update_stored_settings_using_real_export_objects():
 
-        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
-
         mock_connect = MagicMock()
-        export_objects = [export_fieldlogger.ExportObject(tables_columns, mock_connect),
-                          export_fieldlogger.ExportObject(tables_columns, mock_connect)]
+        export_objects = [export_fieldlogger.ExportObject(mock_connect),
+                          export_fieldlogger.ExportObject(mock_connect)]
 
         setattr(export_objects[0], 'final_parameter_name', 'testname1')
         setattr(export_objects[1], 'final_parameter_name', 'testname2')
@@ -83,7 +81,7 @@ class TestExportFieldloggerNoDb():
         stored_settings = [(0, ((u'key0_1', u'value0_1'), (u'key0_2', u'value0_2'))), (1, ((u'key1_1', u'value1_1'), (u'key1_2', u'value1_2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, tables_columns, mock_connect)
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings, tables_columns, mock_connect)
         stored_settings = ExportToFieldLogger.update_stored_settings(export_objects)
         assert stored_settings == []
 
@@ -94,7 +92,7 @@ class TestExportFieldloggerNoDb():
                            (1, ((u'location_suffix', u'value1_1'), (u'key1_2', u'value1_2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings,
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
                                                                                            tables_columns,
                                                                                            mock_connect)
         stored_settings = create_test_string(ExportToFieldLogger.update_stored_settings(export_objects))
@@ -108,11 +106,11 @@ class TestExportFieldloggerNoDb():
         mock_latlons.return_value = {u'1': (u'lat1', u'lon1'), u'2': (u'lat2', u'lon2'), u'4': (u'lat4', u'lon4')}
         tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
 
-        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'subname_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
-                           (1, ((u'final_parameter_name', u'par2'), (u'subname_suffix', u'proj2.group'), (u'location_suffix', u'proj2'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
+        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
+                           (1, ((u'final_parameter_name', u'par2'), (u'sublocation_suffix', u'proj2.group'), (u'location_suffix', u'proj2'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings,
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
                                                                                            tables_columns,
                                                                                            mock_connect)
         export_objects[0].obsid_list.addItems([u'1', u'4'])
@@ -129,11 +127,11 @@ class TestExportFieldloggerNoDb():
         mock_latlons.return_value = {u'1': (u'lat1', u'lon1'), u'2': (u'lat2', u'lon2'), u'4': (u'lat4', u'lon4')}
         tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
 
-        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'subname_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
-                           (1, ((u'final_parameter_name', u'par2'), (u'subname_suffix', u'proj2.group'), (u'location_suffix', u'proj2'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
+        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
+                           (1, ((u'final_parameter_name', u'par2'), (u'sublocation_suffix', u'proj2.group'), (u'location_suffix', u'proj2'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings,
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
                                                                                            tables_columns,
                                                                                            mock_connect)
         export_objects[0].obsid_list.addItems([u'1', u'4'])
@@ -150,11 +148,11 @@ class TestExportFieldloggerNoDb():
         mock_latlons.return_value = {u'1': (u'lat1', u'lon1'), u'2': (u'lat2', u'lon2'), u'4': (u'lat4', u'lon4')}
         tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
 
-        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'subname_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
-                           (1, ((u'final_parameter_name', u'par2'), (u'subname_suffix', u'proj2.group'), (u'location_suffix', u'proj2'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
+        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
+                           (1, ((u'final_parameter_name', u'par2'), (u'sublocation_suffix', u'proj2.group'), (u'location_suffix', u'proj2'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings,
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
                                                                                            tables_columns,
                                                                                            mock_connect)
         export_objects[0].obsid_list.addItems([u'1', u'4'])
@@ -162,7 +160,7 @@ class TestExportFieldloggerNoDb():
 
         printlist = ExportToFieldLogger.create_export_printlist(export_objects)
         test_string = create_test_string(printlist)
-        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1, par2;type2;hint2, NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 2.proj2;2.proj2.group;lat2;lon2;par2, 4.proj;4.proj.group;lat4;lon4;par1, 4.proj2;4.proj2.group;lat4;lon4;par2]'
+        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1, par2;type2;hint2, NAME;sublocation;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 2.proj2;2.proj2.group;lat2;lon2;par2, 4.proj;4.proj.group;lat4;lon4;par1, 4.proj2;4.proj2.group;lat4;lon4;par2]'
         assert reference_string == test_string
 
     @staticmethod
@@ -172,11 +170,11 @@ class TestExportFieldloggerNoDb():
         mock_latlons.return_value = {u'1': (u'lat1', u'lon1')}
         tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
 
-        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'subname_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
-                           (1, ((u'final_parameter_name', u'par2'), (u'subname_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
+        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
+                           (1, ((u'final_parameter_name', u'par2'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings,
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
                                                                                            tables_columns,
                                                                                            mock_connect)
         export_objects[0].obsid_list.addItems([u'1'])
@@ -185,7 +183,7 @@ class TestExportFieldloggerNoDb():
         printlist = ExportToFieldLogger.create_export_printlist(export_objects)
         test_string = create_test_string(printlist)
 
-        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1, par2;type2;hint2, NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1|par2]'
+        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1, par2;type2;hint2, NAME;sublocation;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1|par2]'
         assert reference_string == test_string
 
     @staticmethod
@@ -195,12 +193,12 @@ class TestExportFieldloggerNoDb():
         mock_latlons.return_value = {u'1': (u'lat1', u'lon1')}
         tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
 
-        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'subname_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
-                           (1, ((u'final_parameter_name', u'par1'), (u'subname_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type2'), (u'hint', u'hint2'))),
-                           (2, ((u'final_parameter_name', u'comment'), (u'subname_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
+        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
+                           (1, ((u'final_parameter_name', u'par1'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type2'), (u'hint', u'hint2'))),
+                           (2, ((u'final_parameter_name', u'comment'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
         mock_connect = MagicMock()
 
-        export_objects = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings,
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
                                                                                            tables_columns,
                                                                                            mock_connect)
         export_objects[0].obsid_list.addItems([u'1'])
@@ -209,7 +207,7 @@ class TestExportFieldloggerNoDb():
         test_string = create_test_string(ExportToFieldLogger.create_export_printlist(export_objects))
         parameter = u'par1'
         mock_MessagebarAndLog.warning.assert_called_with(bar_msg=u"Warning: Parameter " + parameter + u' error. See log message panel', log_msg=u'The parameter ' + parameter + u' already exists. Only the first occurence one will be written to file.')
-        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1, comment;type2;hint2, NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1]'
+        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1, comment;type2;hint2, NAME;sublocation;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1]'
         assert test_string == reference_string
 
 
