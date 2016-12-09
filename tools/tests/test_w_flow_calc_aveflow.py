@@ -25,7 +25,7 @@ import mock
 import w_flow_calc_aveflow
 #
 
-class _TestWFlowCalcAveflow(object):
+class TestWFlowCalcAveflow(object):
     return_int = MockUsingReturnValue(int)
     db_all_distinct_obsids = MockUsingReturnValue([True, [u'1', u'2']])
     selected_obs = MockUsingReturnValue([u'3', u'4'])
