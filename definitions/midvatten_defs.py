@@ -99,7 +99,8 @@ def settingsdict():    #These are the default settings, they shall not be change
             'piper_markers':'type',
             'locale': '',
             'fieldlogger_import_parameter_settings': '',
-            'fieldlogger_export': ''
+            'fieldlogger_export_pgroups': '',
+            'fieldlogger_export_pbrowser': ''
             }
     return dictionary
 

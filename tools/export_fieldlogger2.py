@@ -51,8 +51,13 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         tables_columns = defs.tables_columns()
 
         self.parameter_groups = None
-        self.stored_settingskey = u'fieldlogger_export'
-        self.stored_settingskey_parameterbrowser = u'fieldlogger_export_parameter_browser'
+
+        self.stored_settingskey = 'fieldlogger_export_pgroups'
+        self.stored_settingskey_parameterbrowser = 'fieldlogger_export_pbrowser'
+
+        for settingskey in [self.stored_settingskey, self.stored_settingskey_parameterbrowser]:
+            if settingskey not in self.ms.settingsdict:
+                utils.MessagebarAndLog.warning(bar_msg=settingskey + " did not exist in settingsdict")
 
         self.parameter_groups = self.create_parameter_groups_using_stored_settings(self.get_stored_settings(self.ms, self.stored_settingskey),
                                                                                    self.connect)
@@ -73,18 +78,32 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             for export_object in self.parameter_groups:
                 self.add_parameter_group_to_gui(self.widgets_layouts, export_object)
 
+        #Buttons
+
         #ParameterUnitBrowser
         self.parameter_browser = ParameterBrowser(tables_columns, self.connect, self.widget)
         self.parameter_browser_button = PyQt4.QtGui.QPushButton(u'Parameter browser')
         self.gridLayout_buttons.addWidget(self.parameter_browser_button, 0, 0)
         self.connect(self.parameter_browser_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda : self.parameter_browser.show())
+
         self.update_parameter_browser_using_stored_settings(self.get_stored_settings(self.ms, self.stored_settingskey_parameterbrowser), self.parameter_browser)
+
+        self.add_parameter_group = PyQt4.QtGui.QPushButton(u'New parameter group')
+        self.add_parameter_group.setToolTip(u'Creates an additional empty parameter group.')
+        self.gridLayout_buttons.addWidget(self.add_parameter_group, 1, 0)
+        #Lambda and map is used to run several functions for every button click
+        self.connect(self.add_parameter_group, PyQt4.QtCore.SIGNAL("clicked()"),
+                     lambda: map(lambda x: x(),
+                                 [lambda: self.parameter_groups.append(ParameterGroup(self.connect)),
+                                  lambda: self.add_parameter_group_to_gui(self.widgets_layouts, self.parameter_groups[-1])]))
+
+        self.gridLayout_buttons.addWidget(get_line(), 2, 0)
 
         #Buttons
         self.save_settings_button = PyQt4.QtGui.QPushButton(u'Save settings')
-        self.save_settings_button.setToolTip(u'Saves the current parameter setup to midvatten settings.')
-        self.gridLayout_buttons.addWidget(self.save_settings_button, 1, 0)
+        self.save_settings_button.setToolTip(u'Saves the current parameter and parameter group setup to midvatten settings.')
+        self.gridLayout_buttons.addWidget(self.save_settings_button, 3, 0)
         self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                         lambda: map(lambda x: x(),
                                  [lambda: self.save_stored_settings(self.ms,
@@ -94,19 +113,20 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                                                     self.update_stored_settings([self.parameter_browser]),
                                                                     self.stored_settingskey_parameterbrowser)]))
 
-        self.add_parameter_group = PyQt4.QtGui.QPushButton(u'New parameter group')
-        self.add_parameter_group.setToolTip(u'Creates an additional empty parameter group.')
-        self.gridLayout_buttons.addWidget(self.add_parameter_group, 2, 0)
-        #Lambda and map is used to run several functions for every button click
-        self.connect(self.add_parameter_group, PyQt4.QtCore.SIGNAL("clicked()"),
+        self.clear_settings_button = PyQt4.QtGui.QPushButton(u'Clear settings')
+        self.clear_settings_button.setToolTip(u'Clear parameter and parameter group settings.\nReopen Fieldlogger export gui to reset have it reset,\nor press "Save settings" to undo.')
+        self.gridLayout_buttons.addWidget(self.clear_settings_button, 4, 0)
+        self.connect(self.clear_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(),
-                                 [lambda: self.parameter_groups.append(ParameterGroup(self.connect)),
-                                  lambda: self.add_parameter_group_to_gui(self.widgets_layouts, self.parameter_groups[-1])]))
+                                 [lambda: self.save_stored_settings(self.ms, None, self.stored_settingskey),
+                                  lambda: self.save_stored_settings(self.ms, None, self.stored_settingskey_parameterbrowser),
+                                  lambda: utils.pop_up_info(u'Settings cleard. Restart Export Fieldlogger dialog')]))
+
+        self.gridLayout_buttons.addWidget(get_line(), 5, 0)
 
         self.export_button = PyQt4.QtGui.QPushButton(u'Export')
-
-        self.export_button.setToolTip(u'Exports to a Fieldlogger wells file.')
-        self.gridLayout_buttons.addWidget(self.export_button, 3, 0)
+        self.export_button.setToolTip(u'Exports the current combination of locations, sublocations and parameters to a Fieldlogger wells file.')
+        self.gridLayout_buttons.addWidget(self.export_button, 7, 0)
         # Lambda and map is used to run several functions for every button click
         self.connect(self.export_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(),
@@ -115,15 +135,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                                                     self.stored_settingskey),
                                   lambda: self.write_printlist_to_file(self.create_export_printlist(self.parameter_groups))]))
 
-        self.clear_settings_button = PyQt4.QtGui.QPushButton(u'Clear settings')
-        self.gridLayout_buttons.addWidget(self.clear_settings_button, 4, 0)
-        self.connect(self.clear_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
-                     lambda: map(lambda x: x(),
-                                 [lambda: self.save_stored_settings(self.ms, None, self.stored_settingskey),
-                                  lambda: self.save_stored_settings(self.ms, None, self.stored_settingskey_parameterbrowser),
-                                  lambda: utils.pop_up_info(u'Settings cleard. Restart Export Fieldlogger dialog')]))
-
-        self.gridLayout_buttons.setRowStretch(5, 1)
+        self.gridLayout_buttons.setRowStretch(8, 1)
 
         self.show()
 
@@ -142,15 +154,13 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
             self.create_widget_and_connect_widgets(widgets_layouts[0][1],
                                                    [PyQt4.QtGui.QLabel(u'Fieldlogger parameters and locations:'),
+                                                    PyQt4.QtGui.QLabel(u'Location suffix\n(map name)'),
+                                                    parameter_group._location_suffix,
+                                                    PyQt4.QtGui.QLabel(u'Sub-location suffix\n(parmeter group name)'),
+                                                    parameter_group._sublocation_suffix,
                                                     PyQt4.QtGui.QLabel(u'Parameters'),
                                                     parameter_group._parameter_list,
-                                                    get_line(),
-                                                    PyQt4.QtGui.QLabel(u'Location suffix'),
-                                                    parameter_group._location_suffix,
-                                                    PyQt4.QtGui.QLabel(u'Sub-location suffix'),
-                                                    parameter_group._sublocation_suffix,
                                                     get_line()])
-
 
             self.create_widget_and_connect_widgets(widgets_layouts[1][1],
                                                    [parameter_group.paste_from_selection_button,
@@ -179,35 +189,34 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         :param settingskey: the key to get from midvatten settings.
         :return: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
         """
-
         settings_string_raw = ms.settingsdict.get(settingskey, None)
         if settings_string_raw is None:
+            utils.MessagebarAndLog.warning(bar_msg=u'Settings key ' + settingskey + u' did not exist in midvatten settings.')
             return []
-
         try:
             stored_settings = ast.literal_eval(settings_string_raw)
         except SyntaxError:
             stored_settings = []
-
-        return returnunicode(stored_settings, keep_containers=True)
+            utils.MessagebarAndLog.warning(bar_msg=u'Getting stored settings failed for key ' + settingskey)
+        return stored_settings
 
     @staticmethod
     def create_parameter_groups_using_stored_settings(stored_settings, connect):
         """
         """
-        export_objects = []
+        parameter_groups = []
         for index, attrs in stored_settings:
-            export_object = ParameterGroup(connect)
+            parameter_group = ParameterGroup(connect)
             attrs_set = False
             for attr in attrs:
-                if hasattr(export_object, attr[0]):
-                    setattr(export_object, attr[0], attr[1])
+                if hasattr(parameter_group, attr[0]):
+                    setattr(parameter_group, attr[0], attr[1])
                     attrs_set = True
 
             if attrs_set:
-                export_objects.append(export_object)
+                parameter_groups.append(parameter_group)
 
-        return export_objects
+        return parameter_groups
 
     @staticmethod
     def update_parameter_browser_using_stored_settings(stored_settings, parameter_browser):
@@ -218,7 +227,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
     @staticmethod
     def update_stored_settings(an_object_with_get_settings):
-        return [(index, copy.deepcopy(export_object.get_settings())) for index, export_object in enumerate(an_object_with_get_settings)]
+        return [[index, copy.deepcopy(export_object.get_settings())] for index, export_object in enumerate(an_object_with_get_settings)]
 
     @staticmethod
     def save_stored_settings(ms, stored_settings, settingskey):
@@ -229,8 +238,10 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         :param stored_settings: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
         :return: stores a string like objname;attr1:value1;attr2:value2/objname2;attr3:value3... in midvatten settings
         """
-        ms.settingsdict[settingskey] = utils.anything_to_string_representation(stored_settings)
+        settings_string = utils.anything_to_string_representation(stored_settings)
+        ms.settingsdict[settingskey] = settings_string
         ms.save_settings()
+        utils.MessagebarAndLog.info(log_msg=u'Settings ' + settings_string + u' stored for key ' + settingskey)
 
     @staticmethod
     def create_export_printlist(parameter_groups):

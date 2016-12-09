@@ -38,7 +38,8 @@ from utils_for_tests import dict_to_sorted_list, create_test_string
 
 class TestExportFieldloggerNoDb():
     def setUp(self):
-        self.ExportToFieldLogger = ExportToFieldLogger
+        #self.ExportToFieldLogger = ExportToFieldLogger
+        pass
 
     @staticmethod
     def test_get_stored_settings():
@@ -80,7 +81,7 @@ class TestExportFieldloggerNoDb():
 
         stored_settings = ExportToFieldLogger.update_stored_settings(parameter_groups)
         test_string = create_test_string(stored_settings)
-        reference_string = u'[(0, ((key0_1, value0_1), (key0_2, value0_2))), (1, ((key1_1, value1_1), (key1_2, value1_2)))]'
+        reference_string = u'[[0, ((key0_1, value0_1), (key0_2, value0_2))], [1, ((key1_1, value1_1), (key1_2, value1_2))]]'
         assert test_string == reference_string
 
     @staticmethod
@@ -96,7 +97,7 @@ class TestExportFieldloggerNoDb():
 
         stored_settings = ExportToFieldLogger.update_stored_settings(parameter_groups)
         test_string = create_test_string(stored_settings)
-        reference_string = u'[(0, ((parameter_list, [p1.u1;it1:h1, p2.u2;it2:h2]))), (1, ((location_suffix, loc1), (sublocation_suffix, subloc1)))]'
+        reference_string = u'[[0, ((parameter_list, [p1.u1;it1:h1, p2.u2;it2:h2]))], [1, ((location_suffix, loc1), (sublocation_suffix, subloc1))]]'
         assert test_string == reference_string
 
     @staticmethod
@@ -116,7 +117,7 @@ class TestExportFieldloggerNoDb():
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
         stored_settings = create_test_string(ExportToFieldLogger.update_stored_settings(parameter_groups))
-        reference = u'[(0, ((parameter_list, [p1.u1;it1:h1, p2.u2;it2:h2]))), (1, ((location_suffix, value1_1)))]'
+        reference = u'[[0, ((parameter_list, [p1.u1;it1:h1, p2.u2;it2:h2]))], [1, ((location_suffix, value1_1))]]'
         assert stored_settings == reference
 
     @staticmethod
@@ -130,8 +131,39 @@ class TestExportFieldloggerNoDb():
         ExportToFieldLogger.update_parameter_browser_using_stored_settings(stored_settings, parameter_browser)
 
         stored_settings = create_test_string(ExportToFieldLogger.update_stored_settings([parameter_browser]))
-        reference = u'[(0, ((parameter_list, [p1.u1;it1:h1, p2.u2;it2:h2])))]'
+        reference = u'[[0, ((parameter_list, [p1.u1;it1:h1, p2.u2;it2:h2]))]]'
         assert stored_settings == reference
+
+    @staticmethod
+    def test_get_stored_settings_real_parameter_name():
+        mock_ms = MagicMock()
+        mock_ms.settingsdict = {u"fieldlogger_pgroups": u'((0, (u"parameter_list", [u"Aveflow.m3/s;numberDecimal|numberSigned;measure flow", u"Accflow.m3;numberDecimal|numberSigned;measure flow"])))'}
+        settingskey = u'fieldlogger_pgroups'
+        test_string = create_test_string(ExportToFieldLogger.get_stored_settings(mock_ms, settingskey))
+        reference_string = u'(0, (parameter_list, [Aveflow.m3/s;numberDecimal|numberSigned;measure flow, Accflow.m3;numberDecimal|numberSigned;measure flow]))'
+        assert test_string == reference_string
+
+    @staticmethod
+    def test_save_stored_settings_real_parameter_name():
+        mock_ms = MagicMock()
+        mock_ms.settingsdict = {}
+        stored_settings = [(0, ((u'parameter_list', [u'Aveflow.m3/s;numberDecimal|numberSigned;measure flow', u'Accflow.m3;numberDecimal|numberSigned;measure flow']), (u'key0_2', u'value0_2'))),
+                           (1, ((u'location_suffix', u'value1_1'), (u'key1_2', u'value1_2')))]
+        testkey = u'fieldlogger_pgroups'
+        ExportToFieldLogger.save_stored_settings(mock_ms, stored_settings, testkey)
+
+        teststring = create_test_string(mock_ms.settingsdict[testkey])
+        reference_string = u'[(0, ((u"parameter_list", [u"Aveflow.m3/s;numberDecimal|numberSigned;measure flow", u"Accflow.m3;numberDecimal|numberSigned;measure flow"], ), (u"key0_2", u"value0_2", ), ), ), (1, ((u"location_suffix", u"value1_1", ), (u"key1_2", u"value1_2", ), ), )]'
+        assert teststring == reference_string
+
+    @staticmethod
+    def test_get_stored_settings_parameter_browser_real_parameter_name():
+        mock_ms = MagicMock()
+        mock_ms.settingsdict = {u"fieldlogger_pbrowser": u'[(0, (u"parameter_list", [u"Aveflow.m3/s;numberDecimal|numberSigned;measure flow", u"Accflow.m3;numberDecimal|numberSigned;measure flow"]))]'}
+        settingskey = u'fieldlogger_pbrowser'
+        test_string = create_test_string(ExportToFieldLogger.get_stored_settings(mock_ms, settingskey))
+        reference_string = u'[(0, (parameter_list, [Aveflow.m3/s;numberDecimal|numberSigned;measure flow, Accflow.m3;numberDecimal|numberSigned;measure flow]))]'
+        assert test_string == reference_string
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
@@ -171,28 +203,6 @@ class TestExportFieldloggerNoDb():
         test_string = create_test_string(printlist)
         mock_MessagebarAndLog.warning.assert_called_with(bar_msg=u'Import warning, see log message panel', log_msg=u'Location 1.proj may be missing a general comment parameter. Make sure you add one')
         reference_string = u'[FileVersion 1;1, NAME;INPUTTYPE;HINT, p1.u1;it1:h1, NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;p1.u1]'
-        assert test_string == reference_string
-
-    @staticmethod
-    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
-    def _test_create_export_printlist_assert_error_messages_and_warnings(mock_latlons, mock_MessagebarAndLog):
-        mock_latlons.return_value = {u'1': (u'lat1', u'lon1'), u'2': (u'lat2', u'lon2'), u'4': (u'lat4', u'lon4')}
-
-        stored_settings = [(0, ((u'parameter_list', [u'p1.u1;it1:h1']), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'))),
-                           (1, ((u'parameter_list', [u'p2.u2;it2:h2']), (u'sublocation_suffix', u'proj2.group'), (u'location_suffix', u'proj2')))]
-        mock_connect = MagicMock()
-
-        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
-        parameter_groups[0]._obsid_list.addItems([u'1', u'4'])
-        parameter_groups[1]._obsid_list.addItems([u'2', u'3', u'4'])
-
-        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
-        test_string = create_test_string(printlist)
-        mock_MessagebarAndLog.critical.assert_called_with(bar_msg=u'Critical: Obsid 3 did not have lat-lon coordinates. Check obs_points table')
-        mock_MessagebarAndLog.warning.assert_called_with(bar_msg=u'Import warning, see log message panel', log_msg=u'Sublocation 1.proj.group may be missing a parameter group comment-parameter. Make sure you add one')
-        mock_MessagebarAndLog.warning.assert_called_with(bar_msg=u'Import warning, see log message panel', log_msg=u'Location 1.proj may be missing a general comment parameter. Make sure you add one')
-        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, p1.u1;it1:h1, p2.u2;it2:h2, NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;p1.u1, 2.proj2;2.proj2.group;lat2;lon2;p2.u2, 4.proj;4.proj.group;lat4;lon4;p1.u1, 4.proj2;4.proj2.group;lat4;lon4;p2.u2]'
         assert test_string == reference_string
 
     @staticmethod

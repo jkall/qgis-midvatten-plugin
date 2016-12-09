@@ -102,6 +102,10 @@ class MessagebarAndLog():
     * If the user supplies only log_msg, the message is only written to message log.
     * If the user supplies both, a messageBar with bar_msg appears with a button to open message log.
       In the message log, the bar_msg and log_msg is written.
+
+      Activate writing of log messages to file by settings :
+      qgis Settings > Options > System > Environment > mark Use custom variables > Click Add >
+      enter "QGIS_LOG_FILE" in the field Variable and a filename as Value.
     """
     def __init__(self):
         pass
