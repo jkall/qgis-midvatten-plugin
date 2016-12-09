@@ -50,6 +50,19 @@ class TestExportFieldloggerNoDb():
         assert stored_settings == reference_string
 
     @staticmethod
+    def test_save_stored_settings():
+        mock_ms = MagicMock()
+        mock_ms.settingsdict = {}
+        stored_settings = [(0, ((u'parameter_list', [u'p1.u1;it1:h1', u'p2.u2;it2:h2']), (u'key0_2', u'value0_2'))),
+                           (1, ((u'location_suffix', u'value1_1'), (u'key1_2', u'value1_2')))]
+        testkey = u'thekey'
+        ExportToFieldLogger.save_stored_settings(mock_ms, stored_settings, testkey)
+
+        teststring = mock_ms.settingsdict[testkey]
+        reference_string = u'[(0, ((u"parameter_list", [u"p1.u1;it1:h1", u"p2.u2;it2:h2"], ), (u"key0_2", u"value0_2", ), ), ), (1, ((u"location_suffix", u"value1_1", ), (u"key1_2", u"value1_2", ), ), )]'
+        assert teststring == reference_string
+
+    @staticmethod
     def test_get_stored_settings_parameter_browser():
         mock_ms = MagicMock()
         mock_ms.settingsdict = {u'fieldlogger_export_parameter_browser': u'((0, (u"parameter_list", (u"p1.u1;input;hint", u"np2.u2;input2;hint2"), ), ), )'}
@@ -109,7 +122,7 @@ class TestExportFieldloggerNoDb():
     @staticmethod
     def test_create_parameter_browser_using_stored_settings():
         tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
-        stored_settings = [(0, ((u'parameter_list', [u'p1.u1;it1:h1, p2.u2;it2:h2']), (u'key0_2', u'value0_2'))),
+        stored_settings = [(0, ((u'parameter_list', [u'p1.u1;it1:h1', u'p2.u2;it2:h2']), (u'key0_2', u'value0_2'))),
                            (1, ((u'location_suffix', u'value1_1'), (u'key1_2', u'value1_2')))]
         mock_connect = MagicMock()
 

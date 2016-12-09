@@ -1222,3 +1222,31 @@ def calculate_db_table_rows():
             bar_msg='Calculation done, see log for results.',
             log_msg=printable_msg, duration=15, button=True)
 
+def anything_to_string_representation(anything):
+    ur""" Turns anything into a string used for testing
+    :param anything: just about anything
+    :return: A unicode string
+     >>> anything_to_string_representation({(u'123'): 4.5, "a": u'7'})
+     u'{u"123": 4.5, "a": u"7"}'
+     >>> anything_to_string_representation({(u'123', ): 4.5, "a": u'7'})
+     u'{"a": u"7", (u"123", ): 4.5}'
+     >>> anything_to_string_representation([u'1', '2', 3])
+     u'[u"1", "2", 3]'
+    """
+    if isinstance(anything, dict):
+        aunicode = u''.join([u'{', u', '.join([u': '.join([anything_to_string_representation(k), anything_to_string_representation(v)]) for k, v in sorted(anything.iteritems())]), u'}'])
+    elif isinstance(anything, list):
+        aunicode = u''.join([u'[', u', '.join([anything_to_string_representation(x) for x in anything]), u']'])
+    elif isinstance(anything, tuple):
+        aunicode = u''.join([u'(', u', '.join([anything_to_string_representation(x) for x in anything]), u', )'])
+    elif isinstance(anything, (float, int)):
+        aunicode = u'{}'.format(returnunicode(anything))
+    elif isinstance(anything, unicode):
+        aunicode = u'u"{}"'.format(anything)
+    elif isinstance(anything, str):
+        aunicode = u'"{}"'.format(anything)
+    elif isinstance(anything, PyQt4.QtCore.QVariant):
+        aunicode = returnunicode(anything.toString().data())
+    else:
+        aunicode = returnunicode(str(anything))
+    return aunicode

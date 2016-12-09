@@ -17,6 +17,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+import ast
 import PyQt4
 import os
 import os.path
@@ -45,6 +46,8 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle("Export to FieldLogger file") # Set the title for the dialog
 
+        self.widget.setMinimumWidth(180)
+
         tables_columns = defs.tables_columns()
 
         self.parameter_groups = None
@@ -52,7 +55,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.stored_settingskey_parameterbrowser = u'fieldlogger_export_parameter_browser'
 
         self.parameter_groups = self.create_parameter_groups_using_stored_settings(self.get_stored_settings(self.ms, self.stored_settingskey),
-                                                                                   tables_columns,
                                                                                    self.connect)
         if self.parameter_groups is None or not self.parameter_groups:
             self.parameter_groups = [ParameterGroup(self.connect)]
@@ -72,7 +74,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                 self.add_parameter_group_to_gui(self.widgets_layouts, export_object)
 
         #ParameterUnitBrowser
-        self.parameter_browser = ParameterBrowser(tables_columns, self.connect)
+        self.parameter_browser = ParameterBrowser(tables_columns, self.connect, self.widget)
         self.parameter_browser_button = PyQt4.QtGui.QPushButton(u'Parameter browser')
         self.gridLayout_buttons.addWidget(self.parameter_browser_button, 0, 0)
         self.connect(self.parameter_browser_button, PyQt4.QtCore.SIGNAL("clicked()"),
@@ -113,7 +115,15 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                                                     self.stored_settingskey),
                                   lambda: self.write_printlist_to_file(self.create_export_printlist(self.parameter_groups))]))
 
-        self.gridLayout_buttons.setRowStretch(4, 1)
+        self.clear_settings_button = PyQt4.QtGui.QPushButton(u'Clear settings')
+        self.gridLayout_buttons.addWidget(self.clear_settings_button, 4, 0)
+        self.connect(self.clear_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
+                     lambda: map(lambda x: x(),
+                                 [lambda: self.save_stored_settings(self.ms, None, self.stored_settingskey),
+                                  lambda: self.save_stored_settings(self.ms, None, self.stored_settingskey_parameterbrowser),
+                                  lambda: utils.pop_up_info(u'Settings cleard. Restart Export Fieldlogger dialog')]))
+
+        self.gridLayout_buttons.setRowStretch(5, 1)
 
         self.show()
 
@@ -173,26 +183,16 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         settings_string_raw = ms.settingsdict.get(settingskey, None)
         if settings_string_raw is None:
             return []
-        settings_string = utils.returnunicode(settings_string_raw)
-        objects_settings = settings_string.split(u'/')
-        stored_settings = []
 
-        for object_settings in objects_settings:
-            settings = object_settings.split(u';')
-            object_name = settings[0]
+        try:
+            stored_settings = ast.literal_eval(settings_string_raw)
+        except SyntaxError:
+            stored_settings = []
 
-            try:
-                attributes = tuple([tuple(setting.split(u':')) for setting in settings[1:]])
-            except ValueError, e:
-                utils.MessagebarAndLog.warning(log_msg=u"ExportFieldlogger: Getting stored settings didn't work: " + str(e))
-                continue
-
-            stored_settings.append((object_name, attributes))
-
-        return tuple(stored_settings)
+        return returnunicode(stored_settings, keep_containers=True)
 
     @staticmethod
-    def create_parameter_groups_using_stored_settings(stored_settings, tables_columns, connect):
+    def create_parameter_groups_using_stored_settings(stored_settings, connect):
         """
         """
         export_objects = []
@@ -211,7 +211,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
     @staticmethod
     def update_parameter_browser_using_stored_settings(stored_settings, parameter_browser):
-        utils.pop_up_info(str(stored_settings))
         for index, attrs in stored_settings:
             for attr in attrs:
                 if hasattr(parameter_browser, attr[0]):
@@ -230,20 +229,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         :param stored_settings: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
         :return: stores a string like objname;attr1:value1;attr2:value2/objname2;attr3:value3... in midvatten settings
         """
-        utils.pop_up_info(str(stored_settings))
-        if stored_settings is None:
-            return
-        stored_settings = utils.returnunicode(stored_settings, keep_containers=True)
-        settings_list = []
-
-        for object_index, attrs in stored_settings:
-            object_settings = [object_index]
-            object_settings.extend([u':'.join((k, v)) for k, v in attrs if k and v])
-            if len(object_settings) > 1:
-                settings_list.append(u';'.join(object_settings))
-
-        setting_string = u'/'.join(settings_list)
-        ms.settingsdict[settingskey] = utils.returnunicode(setting_string)
+        ms.settingsdict[settingskey] = utils.anything_to_string_representation(stored_settings)
         ms.save_settings()
 
     @staticmethod
@@ -254,72 +240,86 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         """
         latlons = utils.get_latlon_for_all_obsids()
 
+        sublocations_locations = {}
+        locations_sublocations = OrderedDict()
+        locations_lat_lon = OrderedDict()
+        sublocations_parameters = OrderedDict()
+
         parameters_inputtypes_hints = OrderedDict()
 
-        subnames_locations = OrderedDict()
-        subnames_lat_lon = OrderedDict()
-        subnames_parameters = OrderedDict()
-
-        for parameter_group in parameter_groups:
-            parameter = parameter_group.final_parameter_name
-            if not parameter:
-                utils.MessagebarAndLog.critical(
-                    bar_msg=u"Critical: Parameter " + parameter + u' error. See log message panel',
-                    log_msg=u'Parameter name not given.')
+        for index, parameter_group in enumerate(parameter_groups):
+            _parameters_inputtypes_hints = parameter_group.parameter_list
+            if not _parameters_inputtypes_hints:
+                utils.MessagebarAndLog.warning(
+                    bar_msg=u"Warning: Empty parameter list for group nr " + str(index + 1))
                 continue
 
-            input_type = parameter_group.input_type
-            if not input_type:
-                utils.MessagebarAndLog.critical(
-                    bar_msg=u"Critical: Parameter " + parameter + u' error. See log message panel',
-                    log_msg=u'Input type not given.')
-                continue
+            for location, sublocation, obsid in parameter_group.locations_sublocations_obsids:
 
-            if parameter in parameters_inputtypes_hints:
-                utils.MessagebarAndLog.warning(bar_msg=u"Warning: Parameter " + parameter + u' error. See log message panel', log_msg=u'The parameter ' + parameter + u' already exists. Only the first occurence one will be written to file.')
-                continue
+                if sublocation in sublocations_locations:
+                    if sublocations_locations[sublocation] != location:
+                        utils.MessagebarAndLog.warning(bar_msg=u'Warning: Sublocation ' + sublocation + u' error, see log message panel', log_msg=u'Sublocation ' + sublocation + u' already existed for location ' + location_exists + u' and is duplicated by location ' + location + u'. It will be skipped.')
+                        continue
 
-            parameters_inputtypes_hints[parameter] = (input_type, parameter_group.hint)
-
-            for location, subname, obsid in parameter_group.locations_sublocations_obsids:
-                location_exists = subnames_locations.get(subname, None)
-                if location != location_exists and location_exists is not None:
-                    utils.MessagebarAndLog.warning(bar_msg=u'Warning: Subname ' + subname + u' error, see log message panel', log_msg=u'Subname ' + subname + u' already existed for location ' + location_exists + u' and is duplicated by location ' + location + u'. It will be skipped.')
-                    continue
-
-                if subname not in subnames_lat_lon:
+                if location not in locations_lat_lon:
                     lat, lon = latlons.get(obsid, [None, None])
                     if any([lat is None, not lat, lon is None, not lon]):
-                        utils.MessagebarAndLog.critical(bar_msg=u'Critical: Obsid ' + u' did not have lat-lon coordinates. Check obs_points table')
+                        utils.MessagebarAndLog.critical(bar_msg=u'Critical: Obsid ' + obsid + u' did not have lat-lon coordinates. Check obs_points table')
                         continue
-                    subnames_lat_lon[subname] = (returnunicode(lat), returnunicode(lon))
-                subnames_locations[subname] = location
-                subnames_parameters.setdefault(subname, []).append(parameter)
 
-        comments = [par for par in parameters_inputtypes_hints.keys() if u'comment' in par]
-        if not comments:
-            utils.MessagebarAndLog.warning(bar_msg=u'Warning: No comment parameter found. Is it forgotten?')
+                #sublocations_parameters.setdefault(sublocation, []).extend([par.split(u';')[0] for par in _parameters_inputtypes_hints])
 
-        #Make a flat set of used parameters
-        #used_parameters = [item for v in subnames_parameters.values() for item in v]
-        #Remove unused parameters
-        #parameters_inputtypes_hints = OrderedDict([(k, v) for k, v in parameters_inputtypes_hints.iteritems() if k in used_parameters])
+                for _parameter_inputtype_hint in _parameters_inputtypes_hints:
+                    _parameter = _parameter_inputtype_hint.split(u';')[0]
+                    existed_param = parameters_inputtypes_hints.get(_parameter, None)
+                    if existed_param is not None:
+                        utils.MessagebarAndLog.critical(bar_msg=u'Critical: Parameter error, see log message panel', log_msg=u'The parameter ' + _parameter_inputtype_hint + u'already existed as ' + existed_param + u'. Skipping it!')
+                    else:
+                        parameters_inputtypes_hints[_parameter] = _parameter_inputtype_hint
+
+                    existed = sublocations_parameters.get(sublocation, [])
+                    if _parameter not in existed:
+                        sublocations_parameters.setdefault(sublocation, []).append(_parameter)
+
+                if sublocations_parameters.get(sublocation, []):
+                    locations_lat_lon[location] = (returnunicode(lat), returnunicode(lon))
+                    locations_sublocations.setdefault(location, []).append(sublocation)
+                    if sublocation not in sublocations_locations:
+                        sublocations_locations[sublocation] = location
+
 
         printlist = []
         printlist.append(u"FileVersion 1;" + str(len(parameters_inputtypes_hints)))
         printlist.append(u"NAME;INPUTTYPE;HINT")
-        printlist.extend([u';'.join([returnunicode(par),
-                                     returnunicode(i_h[0]) if i_h[0] else u'',
-                                     returnunicode(i_h[1]) if i_h[1] else u''])
-                          for par, i_h in parameters_inputtypes_hints.iteritems()])
+        printlist.extend(parameters_inputtypes_hints.values())
+
         printlist.append(u'NAME;SUBNAME;LAT;LON;INPUTFIELD')
 
-        printlist.extend([u';'.join([returnunicode(location),
-                                     returnunicode(subname),
-                                     returnunicode(subnames_lat_lon[subname][0]),
-                                     returnunicode(subnames_lat_lon[subname][1]),
-                                     u'|'.join(returnunicode(subnames_parameters[subname], keep_containers=True))])
-                          for subname, location in sorted(subnames_locations.iteritems())])
+        for location, sublocations in sorted(locations_sublocations.iteritems()):
+            lat, lon = locations_lat_lon[location]
+
+            sublocation_with_only_one_comment = False
+
+            for sublocation in sorted(sublocations):
+                parameters = sublocations_parameters[sublocation]
+
+                comments = [par for par in parameters if u'comment' in par or u'kommentar' in par]
+                if len(parameters) == 1 and comments:
+                    sublocation_with_only_one_comment = True
+
+                if not comments:
+                    utils.MessagebarAndLog.warning(bar_msg=u'Import warning, see log message panel',
+                                                   log_msg=u'Sublocation ' + sublocation + u' may be missing a parameter group comment-parameter. Make sure you add one')
+
+                parameters = u'|'.join(sublocations_parameters[sublocation])
+                printrow = u';'.join([location, sublocation, lat, lon, parameters])
+                #This test is really bad and is due to some logical error above.
+                if printrow not in printlist:
+                    printlist.append(printrow)
+
+            if not sublocation_with_only_one_comment:
+                utils.MessagebarAndLog.warning(bar_msg=u'Import warning, see log message panel',
+                                               log_msg=u'Location ' + location + u' may be missing a general comment parameter. Make sure you add one')
 
         return printlist
 
@@ -384,14 +384,12 @@ class ParameterGroup(object):
         self._sublocation_suffix.setToolTip(u'(optional)\nFieldlogger sub-location = obsid.SUFFIX\nUseful for separating parameters into groups for the user.\nParameters sharing the same sub-location will be shown together\n ex: suffix 1234.quality --> obsid.1234.quality')
         #-------------------------------------------------------------------------------------
         connect(self.paste_from_selection_button, PyQt4.QtCore.SIGNAL("clicked()"),
-                         lambda : self.obsid_list.paste_data(utils.get_selected_features_as_tuple('obs_points')))
+                         lambda : self._obsid_list.paste_data(utils.get_selected_features_as_tuple('obs_points')))
         connect(self._location_suffix, PyQt4.QtCore.SIGNAL("textChanged(const QString&)"),
                          lambda : self.set_sublocation_suffix(self.location_suffix))
 
-
-
     def get_settings(self):
-        settings = ((u'parameter_list', u'\n'.join(self.parameter_list)),
+        settings = ((u'parameter_list', self.parameter_list),
                    (u'location_suffix', self.location_suffix),
                    (u'sublocation_suffix', self.sublocation_suffix))
 
@@ -427,9 +425,9 @@ class ParameterGroup(object):
 
     @property
     def locations_sublocations_obsids(self):
-        locations_sublocations_obsids = [(u'.'.join([returnunicode(obsid), returnunicode(self.location_suffix)]),
-                                      u'.'.join([returnunicode(obsid), returnunicode(self.sublocation_suffix)]), returnunicode(obsid))
-                                     for obsid in self.obsid_list.get_all_data()]
+        locations_sublocations_obsids = [(u'.'.join([x for x in [returnunicode(obsid), returnunicode(self.location_suffix)] if x]),
+                                      u'.'.join([x for x in [returnunicode(obsid), returnunicode(self.sublocation_suffix)] if x]), returnunicode(obsid))
+                                     for obsid in self._obsid_list.get_all_data()]
         return locations_sublocations_obsids
 
     @property
@@ -519,7 +517,7 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         combobox.addItems(items)
 
     def get_settings(self):
-        settings = ((u'parameter_list', u'\n'.join(self.parameter_list)), )
+        settings = ((u'parameter_list', self.parameter_list),)
         return utils.returnunicode(settings, keep_containers=True)
 
     def combine_name(self, combined_name, input_type, hint):
@@ -530,7 +528,7 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
             utils.MessagebarAndLog.critical(bar_msg=u'Error, Fieldlogger input type not set')
             return
         else:
-            self._parameter_list.paste_data([u'|'.join([self.combined_name, self.input_type, self.hint])])
+            self._parameter_list.paste_data([u';'.join([self.combined_name, self.input_type, self.hint])])
 
     @property
     def parameter_table(self):
