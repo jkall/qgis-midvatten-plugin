@@ -36,7 +36,7 @@ import mock
 import utils_for_tests
 from utils_for_tests import dict_to_sorted_list, create_test_string
 
-class _TestExportFieldloggerNoDb():
+class TestExportFieldloggerNoDb():
     def setUp(self):
         #self.ExportToFieldLogger = ExportToFieldLogger
         pass
@@ -279,5 +279,25 @@ class _TestExportFieldloggerNoDb():
         reference_string = u'[FileVersion 1;1, NAME;INPUTTYPE;HINT, par1;type1;hint1, NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1]'
         assert reference_string == test_string
 
+    @staticmethod
+    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
+    def test_create_export_printlist_assert_no_critical_msg(mock_latlons, mock_MessagebarAndLog):
+        mock_latlons.return_value = {u'1': (123, 465), u'2': (123, 465), u'3': (123, 465)}
+
+        stored_settings = [(0, ((u'parameter_list', [u'p1.u1;it1:h1', u'l.comment;test;make a comment']), (u'location_suffix', u'ls'), (u'sublocation_suffix', u'with_p1_u1_and_l_comment'))),
+                           (1, ((u'parameter_list', [u'comment;test;make a general comment']), (u'location_suffix', u'ls'), (u'sublocation_suffix', u'with_comment')))]
+
+        mock_connect = MagicMock()
+
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
+        parameter_groups[0]._obsid_list.addItems([u'1', u'2', u'3'])
+        parameter_groups[1]._obsid_list.addItems([u'1', u'2', u'3'])
+
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        test_string = create_test_string(printlist)
+        mock_MessagebarAndLog.critical.assert_not_called()
+        reference_string = u'[FileVersion 1;3, NAME;INPUTTYPE;HINT, p1.u1;it1:h1, l.comment;test;make a comment, comment;test;make a general comment, NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.ls;1.with_comment;123;465;comment, 1.ls;1.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment, 2.ls;2.with_comment;123;465;comment, 2.ls;2.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment, 3.ls;3.with_comment;123;465;comment, 3.ls;3.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment]'
+        assert test_string == reference_string
 
 

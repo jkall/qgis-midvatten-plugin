@@ -25,7 +25,7 @@ import qgis.utils
 
 import midvatten_utils as utils
 
-from tools.midvatten_utils import get_sql_result_as_dict, returnunicode
+from midvatten_utils import get_sql_result_as_dict, returnunicode
 
 
 def settingsdict():    #These are the default settings, they shall not be changed!!!

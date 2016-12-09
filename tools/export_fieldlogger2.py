@@ -283,7 +283,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                 for _parameter_inputtype_hint in _parameters_inputtypes_hints:
                     _parameter = _parameter_inputtype_hint.split(u';')[0]
                     existed_param = parameters_inputtypes_hints.get(_parameter, None)
-                    if existed_param is not None:
+                    if existed_param is not None and existed_param != _parameter_inputtype_hint:
                         utils.MessagebarAndLog.critical(bar_msg=u'Critical: Parameter error, see log message panel', log_msg=u'The parameter ' + _parameter_inputtype_hint + u'already existed as ' + existed_param + u'. Skipping it!')
                     else:
                         parameters_inputtypes_hints[_parameter] = _parameter_inputtype_hint
