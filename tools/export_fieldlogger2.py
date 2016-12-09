@@ -154,8 +154,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
             self.create_widget_and_connect_widgets(widgets_layouts[0][1],
                                                    [PyQt4.QtGui.QLabel(u'Fieldlogger parameters and locations:'),
-                                                    PyQt4.QtGui.QLabel(u'Location suffix\n(map name)'),
-                                                    parameter_group._location_suffix,
                                                     PyQt4.QtGui.QLabel(u'Sub-location suffix\n(parmeter group name)'),
                                                     parameter_group._sublocation_suffix,
                                                     PyQt4.QtGui.QLabel(u'Parameters'),
@@ -164,7 +162,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
             self.create_widget_and_connect_widgets(widgets_layouts[1][1],
                                                    [parameter_group.paste_from_selection_button,
-                                                    parameter_group._obsid_list])
+                                                    parameter_group._obsid_list,
+                                                   PyQt4.QtGui.QLabel(u'Location suffix\n(location name in map)'),
+                                                   parameter_group._location_suffix])
 
     @staticmethod
     def create_widget_and_connect_widgets(parent_layout=None, widgets=None, layout_class=PyQt4.QtGui.QVBoxLayout):
@@ -197,7 +197,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             stored_settings = ast.literal_eval(settings_string_raw)
         except SyntaxError:
             stored_settings = []
-            utils.MessagebarAndLog.warning(bar_msg=u'Getting stored settings failed for key ' + settingskey)
+            utils.MessagebarAndLog.warning(bar_msg=u'Getting stored settings failed for key ' + settingskey + u' see log message panel.', log_msg=u'Parsing the settingsstring ' + str(settings_string_raw) + u'failed.')
         return stored_settings
 
     @staticmethod
@@ -226,8 +226,8 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                     setattr(parameter_browser, attr[0], attr[1])
 
     @staticmethod
-    def update_stored_settings(an_object_with_get_settings):
-        return [[index, copy.deepcopy(export_object.get_settings())] for index, export_object in enumerate(an_object_with_get_settings)]
+    def update_stored_settings(objects_with_get_settings):
+        return [[index, copy.deepcopy(an_object.get_settings())] for index, an_object in enumerate(objects_with_get_settings) if an_object.get_settings()]
 
     @staticmethod
     def save_stored_settings(ms, stored_settings, settingskey):
@@ -384,11 +384,10 @@ class ParameterGroup(object):
         """
         #Widget list:
 
-
         self._location_suffix = PyQt4.QtGui.QLineEdit()
         self._sublocation_suffix = PyQt4.QtGui.QLineEdit()
-        self._parameter_list = CopyPasteDeleteableQListWidget()
-        self._obsid_list = CopyPasteDeleteableQListWidget()
+        self._parameter_list = CopyPasteDeleteableQListWidget(keep_sorted=False)
+        self._obsid_list = CopyPasteDeleteableQListWidget(keep_sorted=True)
         self.paste_from_selection_button = PyQt4.QtGui.QPushButton(u'Paste obs_points selection')
         #------------------------------------------------------------------------
         self._location_suffix.setToolTip(u'(optional)\nFieldlogger NAME = obsid.SUFFIX\nUseful for separating projects or databases\nex: suffix = 1234 --> obsid.1234')
@@ -462,7 +461,7 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         #Widgets:
         # ------------------------------------------------------------------------------------
         #Other widgets in the ui-file
-        self._parameter_list = CopyPasteDeleteableQListWidget()
+        self._parameter_list = CopyPasteDeleteableQListWidget(keep_sorted=True)
         # ------------------------------------------------------------------------------------
 
         tables_columns = {}
@@ -630,9 +629,10 @@ class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
     """
 
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, keep_sorted=False, *args, **kwargs):
         super(CopyPasteDeleteableQListWidget, self).__init__(*args, **kwargs)
         self.setSelectionMode(PyQt4.QtGui.QAbstractItemView.ExtendedSelection)
+        self.keep_sorted = keep_sorted
 
     def keyPressEvent(self, e):
         """
@@ -681,12 +681,20 @@ class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
     def paste_data(self, paste_list=None):
         if paste_list is None:
             paste_list = PyQt4.QtGui.QApplication.clipboard().text().split(u'\n')
-        old_text = [returnunicode(self.item(i).text()) for i in xrange(self.count())]
-        new_items = set()
-        new_items.update([returnunicode(x) for x in paste_list])
-        new_items.update(old_text)
+
+        #Use lists to keep the data ordering (the reason set() is not used
+        old_text = self.get_all_data()
+        new_items = []
+        for alist in [old_text, paste_list]:
+            for x in alist:
+                if x not in new_items:
+                    new_items.append(returnunicode(x))
+
         self.clear()
-        self.addItems(list(sorted(new_items)))
+        if self.keep_sorted:
+            self.addItems(list(sorted(new_items)))
+        else:
+            self.addItems(list(new_items))
 
     def delete_data(self):
         all_items = [self.item(i).text() for i in xrange(self.count())]
@@ -696,7 +704,7 @@ class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
         self.addItems(sorted(keep_items))
 
     def get_all_data(self):
-        return [self.item(i).text() for i in xrange(self.count())]
+        return returnunicode([self.item(i).text() for i in xrange(self.count())], keep_containers=True)
 
 
 class MessageBar(qgis.gui.QgsMessageBar):
