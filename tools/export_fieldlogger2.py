@@ -64,6 +64,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         if self.parameter_groups is None or not self.parameter_groups:
             self.parameter_groups = [ParameterGroup(self.connect)]
 
+
+        self.main_vertical_layout.addWidget(PyQt4.QtGui.QLabel(u'Fieldlogger parameters and locations:'))
+        self.main_vertical_layout.addWidget(get_line())
         self.splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(self.splitter)
 
@@ -153,10 +156,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
     def add_parameter_group_to_gui(self, widgets_layouts, parameter_group):
 
             self.create_widget_and_connect_widgets(widgets_layouts[0][1],
-                                                   [PyQt4.QtGui.QLabel(u'Fieldlogger parameters and locations:'),
-                                                    PyQt4.QtGui.QLabel(u'Sub-location suffix\n(parmeter group name)'),
+                                                   [PyQt4.QtGui.QLabel(u'Sub-location suffix'),
                                                     parameter_group._sublocation_suffix,
-                                                    PyQt4.QtGui.QLabel(u'Parameters'),
+                                                    PyQt4.QtGui.QLabel(u'Input fields'),
                                                     parameter_group._parameter_list,
                                                     get_line()])
 
@@ -461,7 +463,7 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         #Widgets:
         # ------------------------------------------------------------------------------------
         #Other widgets in the ui-file
-        self._parameter_list = CopyPasteDeleteableQListWidget(keep_sorted=True)
+        self._input_field_list = CopyPasteDeleteableQListWidget(keep_sorted=True)
         # ------------------------------------------------------------------------------------
 
         tables_columns = {}
@@ -488,7 +490,7 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         connect(self._distinct_unit, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
                      lambda: self._combined_name.setText(u'.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
 
-        connect(self.add_parameter_button, PyQt4.QtCore.SIGNAL("clicked()"),
+        connect(self._add_button, PyQt4.QtCore.SIGNAL("clicked()"),
                 lambda : self.combine_name(self.combined_name, self.input_type, self.hint))
 
         # ------------------------------------------------------------------------------------
@@ -498,10 +500,10 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         self._hint.setToolTip(u'(optional)\nHint given to the Fieldlogger user for the parameter. Ex: "depth to water"')
         #------------------------------------------------------------------------------------
         self._combined_name.setToolTip(u'Copy value using ctrl+v, ctrl+c to parameter name.')
-        self._parameter_list.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
-        self._parameter_list.setMinimumWidth(200)
+        self._input_field_list.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
+        self._input_field_list.setMinimumWidth(200)
         #------------------------------------------------------------------------------------
-        self.horizontalLayout.addWidget(self._parameter_list)
+        self.horizontalLayout.addWidget(self._input_field_list)
 
     @staticmethod
     def get_distinct_values(tablename, columnname):
@@ -527,18 +529,24 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         combobox.addItems(items)
 
     def get_settings(self):
-        settings = ((u'parameter_list', self.parameter_list),)
+        settings = ((u'input_field_list', self.input_field_list),)
         return utils.returnunicode(settings, keep_containers=True)
 
     def combine_name(self, combined_name, input_type, hint):
+
+        unique_names = [input_field.split(u';')[0] for input_field in self.input_field_list]
+
         if not combined_name:
-            utils.MessagebarAndLog.critical(bar_msg=u'Error, Fieldlogger parameter name not set')
+            utils.MessagebarAndLog.critical(bar_msg=u'Error, input name not set')
             return
         elif not input_type:
-            utils.MessagebarAndLog.critical(bar_msg=u'Error, Fieldlogger input type not set')
+            utils.MessagebarAndLog.critical(bar_msg=u'Error, input type not set')
+            return
+        elif combined_name in unique_names:
+            utils.MessagebarAndLog.critical(bar_msg=u'Error, input name already existing. No duplicates allowed')
             return
         else:
-            self._parameter_list.paste_data([u';'.join([self.combined_name, self.input_type, self.hint])])
+            self._input_field_list.paste_data([u';'.join([self.combined_name, self.input_type, self.hint])])
 
     @property
     def parameter_table(self):
@@ -613,16 +621,16 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         self._hint.setText(utils.returnunicode(value))
 
     @property
-    def parameter_list(self):
-        return utils.returnunicode(self._parameter_list.get_all_data(), keep_containers=True)
+    def input_field_list(self):
+        return utils.returnunicode(self._input_field_list.get_all_data(), keep_containers=True)
 
-    @parameter_list.setter
-    def parameter_list(self, value):
+    @input_field_list.setter
+    def input_field_list(self, value):
         value = returnunicode(value, keep_containers=True)
         if isinstance(value, (list, tuple)):
-            self._parameter_list.paste_data(paste_list=value)
+            self._input_field_list.paste_data(paste_list=value)
         else:
-            self._parameter_list.paste_data(paste_list=value.split(u'\n'))
+            self._input_field_list.paste_data(paste_list=value.split(u'\n'))
 
 
 class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):

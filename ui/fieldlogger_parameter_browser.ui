@@ -13,7 +13,7 @@
     <x>0</x>
     <y>0</y>
     <width>747</width>
-    <height>500</height>
+    <height>540</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -25,13 +25,13 @@
   <property name="minimumSize">
    <size>
     <width>747</width>
-    <height>500</height>
+    <height>540</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>747</width>
-    <height>500</height>
+    <height>540</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -73,9 +73,9 @@
        <widget class="QComboBox" name="_unit_columns"/>
       </item>
       <item row="16" column="0" colspan="4">
-       <widget class="QPushButton" name="add_parameter_button">
+       <widget class="QPushButton" name="_add_button">
         <property name="text">
-         <string>Add parameter</string>
+         <string>Add input field</string>
         </property>
        </widget>
       </item>
