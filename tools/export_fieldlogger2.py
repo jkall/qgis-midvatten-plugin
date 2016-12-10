@@ -505,6 +505,9 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         #------------------------------------------------------------------------------------
         self.horizontalLayout.addWidget(self._input_field_list)
 
+        #self.horizontalLayoutWidget.setTabOrder(self._add_button, self._input_field_list)
+        #self.horizontalLayoutWidget.setTabOrder(self._input_field_list, self._parameter_table)
+
     @staticmethod
     def get_distinct_values(tablename, columnname):
         if not tablename or not columnname:

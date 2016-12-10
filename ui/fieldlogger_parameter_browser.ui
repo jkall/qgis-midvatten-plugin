@@ -70,17 +70,28 @@
        </widget>
       </item>
       <item row="7" column="3">
-       <widget class="QComboBox" name="_unit_columns"/>
+       <widget class="QComboBox" name="_unit_columns">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+       </widget>
       </item>
       <item row="16" column="0" colspan="4">
        <widget class="QPushButton" name="_add_button">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
         <property name="text">
          <string>Add input field</string>
         </property>
        </widget>
       </item>
       <item row="6" column="3">
-       <widget class="QComboBox" name="_unit_table"/>
+       <widget class="QComboBox" name="_unit_table">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+       </widget>
       </item>
       <item row="14" column="0">
        <widget class="QLabel" name="label_7">
@@ -104,10 +115,17 @@
        </widget>
       </item>
       <item row="15" column="3">
-       <widget class="QLineEdit" name="_hint"/>
+       <widget class="QLineEdit" name="_hint">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+       </widget>
       </item>
       <item row="13" column="3">
        <widget class="QLineEdit" name="_combined_name">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
         <property name="text">
          <string/>
         </property>
@@ -115,6 +133,9 @@
       </item>
       <item row="3" column="3">
        <widget class="QComboBox" name="_distinct_parameter">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
         <property name="editable">
          <bool>true</bool>
         </property>
@@ -122,6 +143,9 @@
       </item>
       <item row="8" column="3">
        <widget class="QComboBox" name="_distinct_unit">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
         <property name="editable">
          <bool>true</bool>
         </property>
@@ -135,7 +159,11 @@
        </widget>
       </item>
       <item row="14" column="3">
-       <widget class="QComboBox" name="_input_type"/>
+       <widget class="QComboBox" name="_input_type">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+       </widget>
       </item>
       <item row="8" column="0" colspan="2">
        <widget class="QLabel" name="label_6">
@@ -145,7 +173,11 @@
        </widget>
       </item>
       <item row="1" column="3">
-       <widget class="QComboBox" name="_parameter_table"/>
+       <widget class="QComboBox" name="_parameter_table">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+       </widget>
       </item>
       <item row="6" column="0" colspan="2">
        <widget class="QLabel" name="label_5">
@@ -155,7 +187,11 @@
        </widget>
       </item>
       <item row="2" column="3">
-       <widget class="QComboBox" name="_parameter_columns"/>
+       <widget class="QComboBox" name="_parameter_columns">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+       </widget>
       </item>
       <item row="13" column="0">
        <widget class="QLabel" name="label_11">
@@ -231,6 +267,18 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>_parameter_table</tabstop>
+  <tabstop>_parameter_columns</tabstop>
+  <tabstop>_distinct_parameter</tabstop>
+  <tabstop>_unit_table</tabstop>
+  <tabstop>_unit_columns</tabstop>
+  <tabstop>_distinct_unit</tabstop>
+  <tabstop>_combined_name</tabstop>
+  <tabstop>_input_type</tabstop>
+  <tabstop>_hint</tabstop>
+  <tabstop>_add_button</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
