@@ -82,14 +82,14 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         #ParameterUnitBrowser
         self.parameter_browser = ParameterBrowser(tables_columns, self.connect, self.widget)
-        self.parameter_browser_button = PyQt4.QtGui.QPushButton(u'Parameter browser')
+        self.parameter_browser_button = PyQt4.QtGui.QPushButton(u'Create Input Fields')
         self.gridLayout_buttons.addWidget(self.parameter_browser_button, 0, 0)
         self.connect(self.parameter_browser_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda : self.parameter_browser.show())
 
         self.update_parameter_browser_using_stored_settings(self.get_stored_settings(self.ms, self.stored_settingskey_parameterbrowser), self.parameter_browser)
 
-        self.add_parameter_group = PyQt4.QtGui.QPushButton(u'New parameter group')
+        self.add_parameter_group = PyQt4.QtGui.QPushButton(u'More Fields and Locations')
         self.add_parameter_group.setToolTip(u'Creates an additional empty parameter group.')
         self.gridLayout_buttons.addWidget(self.add_parameter_group, 1, 0)
         #Lambda and map is used to run several functions for every button click
