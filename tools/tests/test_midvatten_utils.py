@@ -34,9 +34,10 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class _TestFilterNonexistingObsidsAndAsk(object):
+class TestFilterNonexistingObsidsAndAsk(object):
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_ok(self, mock_notfound):
+    def test_filter_nonexisting_obsids_and_ask_ok(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'ok'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
@@ -45,8 +46,9 @@ class _TestFilterNonexistingObsidsAndAsk(object):
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'10', u'b'], [u'10', u'h']]
             assert filtered_file_data == reference_list
 
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_ignore(self, mock_notfound):
+    def test_filter_nonexisting_obsids_and_ask_ignore(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'ignore'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
@@ -55,8 +57,9 @@ class _TestFilterNonexistingObsidsAndAsk(object):
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'10', u'b'], [u'10', u'h']]
             assert filtered_file_data == reference_list
 
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_cancel(self, mock_notfound):
+    def test_filter_nonexisting_obsids_and_ask_cancel(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'cancel'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
@@ -65,8 +68,9 @@ class _TestFilterNonexistingObsidsAndAsk(object):
             reference_list = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             assert filtered_file_data == u'cancel'
 
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_skip(self, mock_notfound):
+    def test_filter_nonexisting_obsids_and_ask_skip(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'skip'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
@@ -75,8 +79,9 @@ class _TestFilterNonexistingObsidsAndAsk(object):
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g']]
             assert filtered_file_data == reference_list
 
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_none_value_skip(self, mock_notfound):
+    def test_filter_nonexisting_obsids_and_ask_none_value_skip(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'skip'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [None, u'h']]
@@ -85,22 +90,25 @@ class _TestFilterNonexistingObsidsAndAsk(object):
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g']]
             assert filtered_file_data == reference_list
 
-    def test_filter_nonexisting_obsids_and_ask_header_not_found(self):
+    @mock.patch('qgis.utils.iface', autospec=True)
+    def test_filter_nonexisting_obsids_and_ask_header_not_found(self, mock_iface):
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'header_that_should_not_exist', existing_obsids)
             reference_list = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             assert filtered_file_data == reference_list
 
-    def test_filter_nonexisting_obsids_and_ask_header_capitalize(self):
+    @mock.patch('qgis.utils.iface', autospec=True)
+    def test_filter_nonexisting_obsids_and_ask_header_capitalize(self, mock_iface):
             file_data = [[u'obsid', u'ae'], [u'a', u'b'], [u'2', u'c']]
             existing_obsids = [u'A', u'2']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids, True)
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'A', u'b']]
             assert filtered_file_data == reference_list
 
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_only_ask_once(self, mock_notfound):
+    def test_filter_nonexisting_obsids_only_ask_once(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'ok'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h'], [u'1', u'i']]
@@ -111,8 +119,9 @@ class _TestFilterNonexistingObsidsAndAsk(object):
             #The mock should only be called twice. First for 1, then for 21, and then 1 again should use the already given answer.
             assert len(mock_notfound.mock_calls) == 2
 
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_skip_only_ask_once(self, mock_notfound):
+    def test_filter_nonexisting_obsids_and_ask_skip_only_ask_once(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'skip'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h'], [u'1', u'i']]
@@ -124,7 +133,7 @@ class _TestFilterNonexistingObsidsAndAsk(object):
             assert len(mock_notfound.mock_calls) == 2
 
 
-class _TestTempinput(object):
+class TestTempinput(object):
     def test_tempinput(self):
         rows = u'543\n21'
         with utils.tempinput(rows) as filename:
@@ -134,7 +143,7 @@ class _TestTempinput(object):
         assert res == reference_list
 
 
-class _TestAskUser(object):
+class TestAskUser(object):
     PyQt4_QtGui_QInputDialog_getText = MockUsingReturnValue([u'-1 hours'])
     cancel = MockUsingReturnValue([u''])
 
@@ -149,7 +158,7 @@ class _TestAskUser(object):
         assert question.result == u'cancel'
 
 
-class _TestGetFunctions(object):
+class TestGetFunctions(object):
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
@@ -200,7 +209,7 @@ class _TestGetFunctions(object):
         assert test_string == reference_string
 
 
-class _TestSqlToParametersUnitsTuple(object):
+class TestSqlToParametersUnitsTuple(object):
     @mock.patch('midvatten_utils.sql_load_fr_db', autospec=True)
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
         mock_sqlload.return_value = (True, [(u'par1', u'un1'), (u'par2', u'un2')])
@@ -209,7 +218,8 @@ class _TestSqlToParametersUnitsTuple(object):
         reference_string = u'''((par1, (un1)), (par2, (un2)))'''
         assert test_string == reference_string
 
-class _TestCalculateDbTableRows(object):
+
+class TestCalculateDbTableRows(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
