@@ -87,20 +87,46 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         else:
             filename = filename
         self.filename = returnunicode(filename)
-        self.table_chooser.file_header = self.get_header(self.filename, self.charset)
+        delimiter = self.get_delimiter(self.filename, self.charset)
+        self.file_rows = self.file_to_list(self.filename, self.charset, delimiter)
+
+        self.table_chooser.file_header = self.file_rows[0]
+
+
+    def file_to_list(self, filename, charset, delimiter):
+        file_rows = []
+        with io.open(filename, 'r', encoding=charset) as f:
+            for rawrow in f:
+                row = f.readline().rstrip(u'\r').rstrip(u'\n').rstrip(u'\r').rstrip(u'\n')
+                cols = row.split(delimiter)
+                file_rows.append(cols)
 
     @staticmethod
-    def get_header(filename, charset):
+    def get_delimiter(filename, charset):
         with io.open(filename, 'r', encoding=charset) as f:
             header = f.readline().rstrip(u'\r').rstrip(u'\n').rstrip(u'\r').rstrip(u'\n')
         delimiters = [u',', u';']
         tested_header = [len(header.split(delimiter)) for delimiter in delimiters]
         delimiter = delimiters[tested_header.index(max(tested_header))]
-        header = header.split(delimiter)
-        return header
+        return delimiter
 
     def start_import(self):
         translation_dict = self.get_translation_dict(self.table_chooser)
+
+        for k, v in translation_dict.iteritems():
+            if isinstance(v, Obsids_from_selection):
+                selected = utils.get_selected_features_as_tuple(u'obs_points')
+                if not selected:
+                    utils.MessagebarAndLog.critical(bar_msg=u'Import error, no obsid selected')
+                try:
+                    obsidindex = self.file_rows[0].index(u'obsid')
+                except ValueError:
+                    self.file_rows[0].append(u'obsid')
+                    obsidindex = len(self.file_rows[0]) - 1
+
+                self.file_rows = [row.insert(obsidindex, selected[0]) for row in self.file_rows]
+                translation_dict[k] = u'obsid'
+
         importer = import_data_to_db.midv_data_importer()
         importer.csv_layer = importer.csv2qgsvectorlayer(self.filename)
         importer.general_csv_import(goal_table=self.table_chooser.import_method,
@@ -232,7 +258,7 @@ class ImportTableChooser(VRowEntry):
             return None
 
         for index, tables_columns_info in enumerate(sorted(tables_columns[import_method_name], key=itemgetter(0))):
-            column = ColumnEntry(tables_columns_info, file_header)
+            column = ColumnEntry(tables_columns_info, file_header, self.connect)
             self.layout.addWidget(column.widget)
             self.columns_widgets.append(column.widget)
             self.columns.append(column)
@@ -241,9 +267,10 @@ class ImportTableChooser(VRowEntry):
 
 
 class ColumnEntry(RowEntry):
-    def __init__(self, tables_columns_info, observation_columns):
+    def __init__(self, tables_columns_info, observation_columns, connect):
         super(ColumnEntry, self).__init__()
         self.tables_columns_info = tables_columns_info
+        self.connect = connect
 
         self.db_column = tables_columns_info[1]
         column_type = tables_columns_info[2]
@@ -260,10 +287,21 @@ class ColumnEntry(RowEntry):
         self.layout.addWidget(label)
         self.layout.addWidget(self.combobox)
 
-        self.widgets = [label, self.combobox]
+
+        if self.db_column == u'obsid':
+            self.obsids_from_selection = PyQt4.QtGui.QCheckBox(u'Obsid from qgis selection')
+            self.connect(self.obsids_from_selection, PyQt4.QtCore.SIGNAL("clicked()"),
+                         lambda : self.combobox.setEnabled(True if not self.checkbox.isChecked() else False))
+            self.widgets = [label, self.obsids_from_selection, self.combobox]
+        else:
+            self.widgets = [label, self.combobox]
+
 
     @property
     def file_column_name(self):
+        if not self.combobox.isEnabled():
+            return Obsids_from_selection()
+
         selected = returnunicode(self.combobox.currentText())
         if self.notnull and not selected:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error, the column ' + self.db_column + u' must have a value')
@@ -278,6 +316,10 @@ class ColumnEntry(RowEntry):
 
 
 class Cancel(object):
+    def __init__(self):
+        pass
+
+class Obsids_from_selection(object):
     def __init__(self):
         pass
 
