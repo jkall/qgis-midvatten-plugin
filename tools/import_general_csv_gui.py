@@ -69,7 +69,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
         self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
-        self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), self.start_import)
+        self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"),
+                     self.start_import)
 
         self.gridLayout_buttons.setRowStretch(2, 1)
 
@@ -106,6 +107,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         delimiter = delimiters[tested_header.index(max(tested_header))]
         return delimiter
 
+    @utils.waiting_cursor
     def start_import(self):
         translation_dict = self.table_chooser.get_translation_dict()
         if isinstance(translation_dict, Cancel):
@@ -115,23 +117,20 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         foreign_keys = utils.get_foreign_keys(goal_table)
 
-        foreign_key_obsid_tables = [tname for tname, colnames in foreign_keys.iteritems() if colnames[0] == u'obsid']
+        foreign_key_obsid_tables = [tname for tname, colnames in foreign_keys.iteritems() for colname in colnames if colname[0] == u'obsid']
         if len(foreign_key_obsid_tables) == 1:
             foreign_key_obsid_table = foreign_key_obsid_tables[0]
         else:
-            foreign_key_obsid_table = False
+            foreign_key_obsid_table = goal_table
 
         file_data = copy.deepcopy(self.file_data)
 
         for k, v in translation_dict.iteritems():
             if isinstance(v, Obsids_from_selection):
-                if foreign_key_obsid_table:
-                    selected = utils.get_selected_features_as_tuple(foreign_key_obsid_table)
-                else:
-                    #TODO: Must create a useful error here.
-                    pass
+                selected = utils.get_selected_features_as_tuple(foreign_key_obsid_table)
                 if not selected:
                     utils.MessagebarAndLog.critical(bar_msg=u'Import error, no obsid selected')
+                    return u'cancel'
                 try:
                     obsidindex = file_data[0].index(k)
                 except ValueError:
@@ -141,9 +140,12 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
                 file_data = [row.insert(obsidindex, selected[0]) for row in self.file_data]
                 translation_dict[k] = k
 
+        # Filter out columns that was not set by the user
+        file_data = [[col for idx, col in enumerate(row) if file_data[0][idx] in translation_dict.keys()] for row in file_data]
+
         importer = import_data_to_db.midv_data_importer()
 
-        if foreign_key_obsid_table:
+        if foreign_key_obsid_table and foreign_key_obsid_table != goal_table:
             file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
 
         importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import,
@@ -297,7 +299,6 @@ class ColumnEntry(RowEntry):
         self.layout.addWidget(label)
 
         if self.db_column == u'obsid':
-            utils.pop_up_info(self.db_column)
             self.obsids_from_selection = PyQt4.QtGui.QCheckBox(u'Obsid from qgis selection')
             self.connect(self.obsids_from_selection, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : self.combobox.setEnabled(True if not self.obsids_from_selection.isChecked() else False))

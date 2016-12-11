@@ -35,7 +35,6 @@ import PyQt4.QtGui
 
 import midvatten_utils as utils
 from date_utils import find_date_format, datestring_to_date
-from tools.midvatten_utils import get_foreign_keys
 
 
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
@@ -105,7 +104,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         # Import foreign keys in some special cases
         nr_before = nr_after
-        foreign_keys = get_foreign_keys(goal_table)
+        foreign_keys = utils.get_foreign_keys(goal_table)
         force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
 
         stop_question = utils.askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?"""%(u', '.join(force_import_of_foreign_keys_tables)), u"Info!")
@@ -548,6 +547,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if cleaning_function is not None:
             file_data = cleaning_function(file_data)
 
+        #QgsVectorLayer(path, "temporary_csv_layer", "ogr") doesn't work if the file only has one column, so an empty column has to be added
+        if len(file_data[0]) == 1:
+            [row.append(u'') for row in file_data]
+
         file_string = utils.lists_to_string(file_data)
 
         with utils.tempinput(file_string) as csvpath:
@@ -737,8 +740,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         """ Creates QgsVectorLayer from a csv file """
         if not path:
             qgis.utils.iface.messageBar().pushMessage("Failure, no csv file was selected.")
-            return False        
+            return False
+
         csvlayer = QgsVectorLayer(path, "temporary_csv_layer", "ogr")
+
         if not csvlayer.isValid():
             qgis.utils.iface.messageBar().pushMessage("Failure","Impossible to Load File in QGis:\n" + str(path), 2)
             PyQt4.QtGui.QApplication.restoreOverrideCursor()

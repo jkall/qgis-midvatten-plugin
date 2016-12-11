@@ -131,12 +131,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.export_button.setToolTip(u'Exports the current combination of locations, sublocations and parameters to a Fieldlogger wells file.')
         self.gridLayout_buttons.addWidget(self.export_button, 7, 0)
         # Lambda and map is used to run several functions for every button click
-        self.connect(self.export_button, PyQt4.QtCore.SIGNAL("clicked()"),
-                     lambda: map(lambda x: x(),
-                                 [lambda: self.save_stored_settings(self.ms,
-                                                                    self.update_stored_settings(self.parameter_groups),
-                                                                    self.stored_settingskey),
-                                  lambda: self.write_printlist_to_file(self.create_export_printlist(self.parameter_groups))]))
+        self.connect(self.export_button, PyQt4.QtCore.SIGNAL("clicked()"), self.export)
 
         self.gridLayout_buttons.setRowStretch(8, 1)
 
@@ -244,6 +239,11 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         ms.settingsdict[settingskey] = settings_string
         ms.save_settings()
         utils.MessagebarAndLog.info(log_msg=u'Settings ' + settings_string + u' stored for key ' + settingskey)
+
+    @utils.waiting_cursor
+    def export(self):
+        self.save_stored_settings(self.ms, self.update_stored_settings(self.parameter_groups), self.stored_settingskey)
+        self.write_printlist_to_file(self.create_export_printlist(self.parameter_groups))
 
     @staticmethod
     def create_export_printlist(parameter_groups):
