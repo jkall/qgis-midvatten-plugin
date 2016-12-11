@@ -191,7 +191,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = False
             return wquallab_data_table
 
-        self.send_file_data_to_importer(wquallab_data_table, partial(self.general_csv_import, goal_table=u'w_qual_lab'), self.check_obsids)
+        utils.filter_nonexisting_values_and_ask(wquallab_data_table, u'obsid', utils.get_all_obsids(table=u'obs_points'), try_capitalize=False)
+        self.send_file_data_to_importer(wquallab_data_table, partial(self.general_csv_import, goal_table=u'w_qual_lab'))
         self.SanityCheckVacuumDB()
 
     def parse_interlab4(self, filenames=None):
@@ -534,9 +535,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
-    def check_obsids(self, file_data, table=u'obs_points'):
-        return utils.filter_nonexisting_values_and_ask(file_data, u'obsid', partial(utils.get_all_obsids, u'obs_points'), try_capitalize=False)
 
     def send_file_data_to_importer(self, file_data, importer, cleaning_function=None):
         self.csvlayer = None

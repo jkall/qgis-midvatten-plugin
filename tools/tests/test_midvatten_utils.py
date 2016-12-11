@@ -124,7 +124,6 @@ class _TestFilterNonexistingObsidsAndAsk(object):
             assert len(mock_notfound.mock_calls) == 2
 
 
-
 class _TestTempinput(object):
     def test_tempinput(self):
         rows = u'543\n21'
@@ -162,7 +161,7 @@ class _TestGetFunctions(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -173,7 +172,7 @@ class _TestGetFunctions(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
@@ -218,7 +217,7 @@ class _TestCalculateDbTableRows(object):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -229,7 +228,7 @@ class _TestCalculateDbTableRows(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)

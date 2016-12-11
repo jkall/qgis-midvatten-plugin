@@ -219,7 +219,7 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -230,7 +230,7 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
@@ -501,7 +501,7 @@ class _TestGeneralCsvImport(object):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -512,7 +512,7 @@ class _TestGeneralCsvImport(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
@@ -1178,7 +1178,7 @@ class _TestInterlab4ImporterDB(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1189,7 +1189,7 @@ class _TestInterlab4ImporterDB(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
@@ -1256,12 +1256,12 @@ class _TestDbCalls(object):
     skip_popup = MockUsingReturnValue('')
     #mocked_qgsproject = MockQgsProject(mocked_qgsinstance)
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
     def setUp(self):
         self.iface = DummyInterface()
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
         try:
             os.remove(TestDbCalls.temp_db_path)
         except OSError:
@@ -1294,12 +1294,12 @@ class _TestImportObsPoints(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
     #mocked_qgsproject = MockQgsProject(mocked_qgsinstance)
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
     def setUp(self):
         self.iface = DummyInterface()
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
         try:
             os.remove(TestImportObsPoints.temp_db_path)
         except OSError:
@@ -1470,7 +1470,7 @@ class _TestWquallabImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1481,7 +1481,7 @@ class _TestWquallabImport(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TestWquallabImport.temp_db_path)
@@ -1564,7 +1564,7 @@ class _TestWflowImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1575,7 +1575,7 @@ class _TestWflowImport(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
@@ -1652,7 +1652,7 @@ class _TestWqualfieldImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1663,7 +1663,7 @@ class _TestWqualfieldImport(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
@@ -1817,7 +1817,7 @@ class _TestWlevelsImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1828,7 +1828,7 @@ class _TestWlevelsImport(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
@@ -1907,7 +1907,7 @@ class _TestSeismicImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1918,7 +1918,7 @@ class _TestSeismicImport(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
@@ -1968,7 +1968,7 @@ class _TestCommentsImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1979,7 +1979,7 @@ class _TestCommentsImport(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
@@ -2029,7 +2029,7 @@ class _TestStratImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -2040,7 +2040,7 @@ class _TestStratImport(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
@@ -2151,7 +2151,7 @@ class _TestMeteoImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -2162,7 +2162,7 @@ class _TestMeteoImport(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
@@ -2211,7 +2211,7 @@ class _TestVlfImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -2222,7 +2222,7 @@ class _TestVlfImport(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
@@ -2296,7 +2296,7 @@ class _TestObsLinesImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -2307,7 +2307,7 @@ class _TestObsLinesImport(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
@@ -2355,7 +2355,7 @@ class _TestGetForeignKeys(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -2366,7 +2366,7 @@ class _TestGetForeignKeys(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)

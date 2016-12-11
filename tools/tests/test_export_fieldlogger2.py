@@ -36,7 +36,7 @@ import mock
 import utils_for_tests
 from utils_for_tests import dict_to_sorted_list, create_test_string
 
-class _TestExportFieldloggerNoDb():
+class TestExportFieldloggerNoDb():
     def setUp(self):
         #self.ExportToFieldLogger = ExportToFieldLogger
         pass
@@ -123,16 +123,16 @@ class _TestExportFieldloggerNoDb():
     @staticmethod
     def test_create_parameter_browser_using_stored_settings():
         tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
-        stored_settings = [(0, ((u'parameter_list', [u'p1.u1;it1:h1', u'p2.u2;it2:h2']), (u'key0_2', u'value0_2'))),
+        stored_settings = [(0, ((u'input_field_list', [u'p1.u1;it1:h1', u'p2.u2;it2:h2']), (u'key0_2', u'value0_2'))),
                            (1, ((u'location_suffix', u'value1_1'), (u'key1_2', u'value1_2')))]
         mock_connect = MagicMock()
 
         parameter_browser = export_fieldlogger.ParameterBrowser(tables_columns, mock_connect)
         ExportToFieldLogger.update_parameter_browser_using_stored_settings(stored_settings, parameter_browser)
 
-        stored_settings = create_test_string(ExportToFieldLogger.update_stored_settings([parameter_browser]))
-        reference = u'[[0, ((parameter_list, [p1.u1;it1:h1, p2.u2;it2:h2]))]]'
-        assert stored_settings == reference
+        test_string = create_test_string(ExportToFieldLogger.update_stored_settings([parameter_browser]))
+        reference = u'[[0, ((input_field_list, [p1.u1;it1:h1, p2.u2;it2:h2]))]]'
+        assert test_string == reference
 
     @staticmethod
     def test_get_stored_settings_real_parameter_name():

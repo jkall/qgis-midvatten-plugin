@@ -40,7 +40,7 @@ TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
 
 
-class _TestSectionPlot(object):
+class TestSectionPlot(object):
     """ The test doesn't go through the whole section plot unfortunately
     """
     answer_yes = mock_answer('yes')
@@ -50,7 +50,7 @@ class _TestSectionPlot(object):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -61,7 +61,7 @@ class _TestSectionPlot(object):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
         try:
             os.remove(TEMP_DB_PATH)
         except OSError:
@@ -97,8 +97,8 @@ class _TestSectionPlot(object):
 
         self.vlayer.setSelectedFeatures([featureid])
 
-        @mock.patch('midvatten.utils.getselectedobjectnames', autospec=True)
-        @mock.patch('midvatten.qgis.utils.iface', autospec=True)
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
         def _test_plot_section(self, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
             mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
@@ -133,8 +133,8 @@ class _TestSectionPlot(object):
 
         self.vlayer.setSelectedFeatures([featureid])
 
-        @mock.patch('midvatten.utils.getselectedobjectnames', autospec=True)
-        @mock.patch('midvatten.qgis.utils.iface', autospec=True)
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
         def _test_plot_section_with_depth(self, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
             mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
@@ -164,8 +164,8 @@ class _TestSectionPlot(object):
 
         self.vlayer.setSelectedFeatures([featureid])
 
-        @mock.patch('midvatten.utils.getselectedobjectnames', autospec=True)
-        @mock.patch('midvatten.qgis.utils.iface', autospec=True)
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
         def _test_plot_section_with_depth(self, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
             mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')

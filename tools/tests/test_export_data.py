@@ -60,7 +60,7 @@ class _TestExport(unittest.TestCase):
     exported_csv_files_no_zz = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv']]
 
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -71,7 +71,7 @@ class _TestExport(unittest.TestCase):
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
         for dbs in [TEMP_DB_PATH, EXPORT_DB_PATH]:
             try:
                 os.remove(dbs)
@@ -100,9 +100,9 @@ class _TestExport(unittest.TestCase):
                 pass
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('midvatten.utils.get_selected_features_as_tuple', mock_selection.get_v)
-    @mock.patch('midvatten.QFileDialog.getExistingDirectory')
-    @mock.patch('midvatten.qgis.utils.iface', autospec=True)
+    @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
+    @mock.patch('PyQt4.QtGui.QFileDialog.getExistingDirectory')
+    @mock.patch('qgis.utils.iface', autospec=True)
     def test_export_csv(self, mock_iface, mock_savepath):
         mock_savepath.return_value = u'/tmp/'
         utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(633466, 711659)', 3006))''')
@@ -165,12 +165,12 @@ class _TestExport(unittest.TestCase):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
-    @mock.patch('midvatten.utils.get_selected_features_as_tuple', mock_selection.get_v)
-    @mock.patch('midvatten.utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
+    @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    @mock.patch('midvatten.utils.find_layer', autospec=True)
-    @mock.patch('midvatten.qgis.utils.iface', autospec=True)
+    @mock.patch('midvatten_utils.find_layer', autospec=True)
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('export_data.utils.pop_up_info', autospec=True)
     def test_export_spatialite(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify):
 

@@ -49,7 +49,7 @@ class _TestDefsFunctions():
     answer_yes = MockUsingReturnValue(answer_yes_obj)
 
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -60,7 +60,7 @@ class _TestDefsFunctions():
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)

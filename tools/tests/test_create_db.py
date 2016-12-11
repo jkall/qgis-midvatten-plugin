@@ -20,21 +20,19 @@
  ***************************************************************************/
 """
 
-from import_data_to_db import midv_data_importer
-import utils_for_tests
-import midvatten_utils as utils
-from utils_for_tests import init_test
-from tools.tests.mocks_for_tests import DummyInterface
-from nose.tools import raises
-from mock import mock_open, patch
-from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance
-import mock
-import io
-from midvatten.midvatten import midvatten
 import os
 
+import midvatten_utils as utils
+import mock
+from import_data_to_db import midv_data_importer
+from midvatten.midvatten import midvatten
 
-class TestCreateMemoryDb():
+import utils_for_tests
+from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgisUtilsIface, MockQgsProjectInstance
+from tools.tests.mocks_for_tests import DummyInterface
+
+
+class _TestCreateMemoryDb():
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_yes = MockUsingReturnValue(answer_yes_obj)
@@ -56,7 +54,7 @@ class TestCreateMemoryDb():
         self.midvatten = None
 
 
-class TestCreateDb(object):
+class _TestCreateDb(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -124,7 +122,7 @@ class TestCreateDb(object):
         assert test_string == reference_string
 
 
-class TestObsPointsTriggers(object):
+class _TestObsPointsTriggers(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
