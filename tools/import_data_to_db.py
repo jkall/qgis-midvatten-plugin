@@ -762,7 +762,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.status = 'False'
         #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
         existing_names= [str(existing_name[0]) for existing_name in utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""")[1]]
-        if str(self.temptableName) in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
+        while self.temptableName in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
             reponse = PyQt4.QtGui.QMessageBox.question(None, "Warning - Table name confusion!",'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''%(self.temptableName,self.temptableName,self.temptableName), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
             if reponse == PyQt4.QtGui.QMessageBox.Yes:
                 self.temptableName = '%s_2'%self.temptableName

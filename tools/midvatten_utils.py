@@ -1006,7 +1006,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
             try:
                 index = row.index(header_value)
             except ValueError:
-                #The header_value did not exist, returning file_data as it is.
+                MessagebarAndLog.warning(bar_msg=u'Warning, see log message panel', log_msg=u"filter_nonexisting_values_and_ask error: The header_value " + header_value + u" did not exist, returning file_data as it is.")
                 return file_data
             else:
                 filtered_data.append(row)

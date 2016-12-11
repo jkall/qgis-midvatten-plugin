@@ -147,8 +147,8 @@ class midvatten:
         self.actionimport_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import data with FieldLogger format", self.iface.mainWindow())
         QObject.connect(self.actionimport_fieldlogger, SIGNAL("triggered()"), self.import_fieldlogger)
 
-        self.actiongeneral_csv_import = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import data from general csv format", self.iface.mainWindow())
-        QObject.connect(self.actiongeneral_csv_import, SIGNAL("triggered()"), self.import_csv)
+        self.actiongeneral_import_csv = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import data from general csv format", self.iface.mainWindow())
+        QObject.connect(self.actiongeneral_import_csv, SIGNAL("triggered()"), self.import_csv)
 
         self.actionPlotTS = QAction(QIcon(":/plugins/midvatten/icons/PlotTS.png"), "Time series plot", self.iface.mainWindow())
         self.actionPlotTS.setWhatsThis("Plot time series for selected objects")
@@ -273,7 +273,7 @@ class midvatten:
         self.menu.import_data_menu_old.addAction(self.action_import_seismics)
         self.menu.import_data_menu_old.addAction(self.action_import_vlf)
 
-        self.menu.import_data_menu.addAction(self.actiongeneral_csv_import)
+        self.menu.import_data_menu.addAction(self.actiongeneral_import_csv)
         self.menu.import_data_menu.addAction(self.action_import_diverofficedata)     
         self.menu.import_data_menu.addAction(self.actionimport_wqual_lab_from_interlab4)
         self.menu.import_data_menu.addAction(self.actionimport_fieldlogger)
@@ -730,24 +730,21 @@ class midvatten:
         :return: Writes to db.
         """
         #TODO: Add all layers here
-        allcritical_layers = ('obs_points', 'w_qual_field', 'w_levels', 'w_flow')#none of these layers must be in editing mode
+        allcritical_layers = ('obs_points', 'w_qual_field', 'w_levels', 'w_flow', '')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):
-                longmessage = "You are about to import water head data, water flow or water quality from FieldLogger format."
-                sanity = utils.askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
-                if sanity.result == 1:
-                    from import_general_csv_gui import GeneralCsvImportGui
-                    importinstance = GeneralCsvImportGui(self.iface.mainWindow(), self.ms)
-                    importinstance.load_gui()
-                    if not importinstance.status == 'True' and not importinstance.status:
-                        self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
-                    else:
-                        try:
-                            self.midvsettingsdialog.ClearEverything()
-                            self.midvsettingsdialog.LoadAndSelectLastSettings()
-                        except:
-                            pass
+                from import_general_csv_gui import GeneralCsvImportGui
+                importinstance = GeneralCsvImportGui(self.iface.mainWindow(), self.ms)
+                importinstance.load_gui()
+                if not importinstance.status == 'True' and not importinstance.status:
+                    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                else:
+                    try:
+                        self.midvsettingsdialog.ClearEverything()
+                        self.midvsettingsdialog.LoadAndSelectLastSettings()
+                    except:
+                        pass
             else:
                 self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
         QApplication.restoreOverrideCursor()

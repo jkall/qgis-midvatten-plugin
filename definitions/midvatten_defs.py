@@ -648,3 +648,5 @@ def get_last_used_quality_instruments():
     sql = 'select parameter, unit, instrument, staff, max(date_time) from w_qual_field group by parameter, unit, instrument, staff'
     connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
     return returnunicode(result_dict, True)
+
+specific_table_info = {u'obs_lines': u'The geometry column supports WKT ("well known text")'}

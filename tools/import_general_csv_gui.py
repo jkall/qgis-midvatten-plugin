@@ -37,12 +37,14 @@ from midvatten_utils import returnunicode
 from definitions import midvatten_defs as defs
 from date_utils import find_date_format, datestring_to_date, dateshift
 from datetime import datetime
+from export_fieldlogger import get_line
 
 import PyQt4.QtCore
 import PyQt4.QtGui
 import PyQt4
 
 import_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
+
 
 class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
     def __init__(self, parent, msettings=None):
@@ -91,7 +93,15 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         delimiter = self.get_delimiter(self.filename, self.charset)
         self.file_data = self.file_to_list(self.filename, self.charset, delimiter)
 
-        self.table_chooser.file_header = self.file_data[0]
+        header_question = utils.askuser(question=u"YesNo", msg=u"""Does the file contain a header?""")
+        if header_question.result:
+            self.table_chooser.file_header = self.file_data[0]
+        else:
+            header = [u'Column ' + str(colnr) for colnr in xrange(len(self.file_data[0]))]
+            self.table_chooser.file_header = header
+            self.file_data.reverse()
+            self.file_data.append(header)
+            self.file_data.reverse()
 
     def file_to_list(self, filename, charset, delimiter):
         with io.open(filename, 'r', encoding=charset) as f:
@@ -113,6 +123,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         if isinstance(translation_dict, Cancel):
             return u'cancel'
 
+        file_data = copy.deepcopy(self.file_data)
+
         goal_table = self.table_chooser.import_method
 
         foreign_keys = utils.get_foreign_keys(goal_table)
@@ -123,30 +135,37 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         else:
             foreign_key_obsid_table = goal_table
 
-        file_data = copy.deepcopy(self.file_data)
-
-        for k, v in translation_dict.iteritems():
-            if isinstance(v, Obsids_from_selection):
+        #Check if obsid should be set from selection and add an obsid-column if so.
+        for file_column, db_column in translation_dict.iteritems():
+            if isinstance(file_column, Obsids_from_selection):
                 selected = utils.get_selected_features_as_tuple(foreign_key_obsid_table)
                 if not selected:
                     utils.MessagebarAndLog.critical(bar_msg=u'Import error, no obsid selected')
                     return u'cancel'
                 try:
-                    obsidindex = file_data[0].index(k)
+                    obsidindex = file_data[0].index(u'obsid')
                 except ValueError:
-                    file_data[0].append(k)
-                    obsidindex = len(file_data[0]) - 1
+                    obsidindex = len(file_data[0])
+                    file_data[0].append(u'obsid')
 
-                file_data = [row.insert(obsidindex, selected[0]) for row in self.file_data]
-                translation_dict[k] = k
+                for row in file_data[1:]:
+                    if obsidindex + 1 < len(file_data[0]):
+                        row[obsidindex] = selected[0]
+                    else:
+                        row.append(selected[0])
+
+                #[row.insert(obsidindex, selected[0]) if obsidindex + 1 < len(file_data[0]) else row.append(selected[0]) for row in file_data[1:]]
+                del translation_dict[file_column]
+                translation_dict[u'obsid'] = u'obsid'
 
         # Filter out columns that was not set by the user
         file_data = [[col for idx, col in enumerate(row) if file_data[0][idx] in translation_dict.keys()] for row in file_data]
-
         importer = import_data_to_db.midv_data_importer()
 
+        reversed_translation_dict = {v: k for (k, v) in translation_dict.iteritems()}
+
         if foreign_key_obsid_table and foreign_key_obsid_table != goal_table:
-            file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
+            file_data = utils.filter_nonexisting_values_and_ask(file_data, reversed_translation_dict[u'obsid'], utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
         if file_data == u'cancel':
             return file_data
 
@@ -173,13 +192,12 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             layout.addWidget(line)
 
 
-
-
 class RowEntry(object):
     def __init__(self):
         self.widget = PyQt4.QtGui.QWidget()
         self.layout = PyQt4.QtGui.QHBoxLayout()
         self.widget.setLayout(self.layout)
+
 
 class VRowEntry(object):
     def __init__(self):
@@ -210,7 +228,7 @@ class ImportTableChooser(VRowEntry):
 
         self.__import_method = PyQt4.QtGui.QComboBox()
         self.__import_method.addItem(u'')
-        self.__import_method.addItems(tables_columns.keys())
+        self.__import_method.addItems(sorted(tables_columns.keys()))
 
         self.connect(self.__import_method, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_method)
 
@@ -218,6 +236,14 @@ class ImportTableChooser(VRowEntry):
             chooser.layout.addWidget(widget)
 
         self.layout.addWidget(chooser.widget)
+
+        self.specific_info_widget = VRowEntry()
+        self.specific_info_widget.layout.addWidget(get_line())
+        self.specific_table_info = PyQt4.QtGui.QLabel()
+        self.specific_info_widget.layout.addWidget(self.specific_table_info)
+        self.specific_info_widget.layout.addWidget(get_line())
+
+        self.layout.addWidget(self.specific_info_widget.widget)
 
         self.layout.addStretch() #insertStretch(-1, 0)
 
@@ -245,6 +271,8 @@ class ImportTableChooser(VRowEntry):
         tables_columns = self.tables_columns
         file_header = self.file_header
         import_method_name = self.import_method
+
+        self.specific_table_info.setText(defs.specific_table_info.get(import_method_name, u''))
 
         if file_header is None:
             return None
@@ -281,10 +309,11 @@ class ImportTableChooser(VRowEntry):
 
 
 class ColumnEntry(RowEntry):
-    def __init__(self, tables_columns_info, observation_columns, connect):
+    def __init__(self, tables_columns_info, file_header, connect):
         super(ColumnEntry, self).__init__()
         self.tables_columns_info = tables_columns_info
         self.connect = connect
+        self.obsids_from_selection = None
 
         self.db_column = tables_columns_info[1]
         column_type = tables_columns_info[2]
@@ -296,7 +325,7 @@ class ColumnEntry(RowEntry):
 
         self.combobox = PyQt4.QtGui.QComboBox()
         self.combobox.addItem(u'')
-        self.combobox.addItems(sorted(observation_columns))
+        self.combobox.addItems(sorted(file_header))
 
         self.layout.addWidget(label)
 
@@ -313,8 +342,9 @@ class ColumnEntry(RowEntry):
 
     @property
     def file_column_name(self):
-        if not self.combobox.isEnabled():
-            return Obsids_from_selection()
+        if self.obsids_from_selection is not None:
+            if self.obsids_from_selection.isChecked():
+                return Obsids_from_selection()
 
         selected = returnunicode(self.combobox.currentText())
         if self.notnull and not selected:
