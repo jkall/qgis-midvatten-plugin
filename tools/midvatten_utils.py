@@ -358,7 +358,7 @@ def find_layer(layer_name):
 
     return None
 
-def get_all_obsids():
+def get_all_obsids(table=u'obs_points'):
     """ Returns all obsids from obs_points
     :return: All obsids from obs_points
     """
@@ -367,7 +367,7 @@ def get_all_obsids():
     if myconnection.connect2db() == True:
         # skapa en cursor
         curs = myconnection.conn.cursor()
-        rs=curs.execute("""select distinct obsid from obs_points order by obsid""")
+        rs=curs.execute('''select distinct obsid from "%s" order by obsid'''%table)
 
         obsids = [row[0] for row in curs]
         rs.close()
@@ -1254,3 +1254,10 @@ def anything_to_string_representation(anything):
     else:
         aunicode = returnunicode(str(anything))
     return aunicode
+
+def get_foreign_keys(tname):
+    result_list = sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)"""%(tname))[1]
+    foreign_keys = {}
+    for row in result_list:
+        foreign_keys.setdefault(row[2], []).append((row[3], row[4]))
+    return foreign_keys

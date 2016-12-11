@@ -53,12 +53,12 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         PyQt4.QtGui.QDialog.__init__(self, parent)
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
+        self.setWindowTitle("Csv import")  # Set the title for the dialog
         self.table_chooser = None
         self.status = True
 
     def load_gui(self):
-        tables_columns = defs.tables_columns()
-
+        tables_columns = {k: v for (k, v) in defs.tables_columns().iteritems() if not k.endswith(u'_geom')}
         self.table_chooser = ImportTableChooser(tables_columns, self.connect, file_header=None)
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.add_line(self.main_vertical_layout)
@@ -88,59 +88,69 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             filename = filename
         self.filename = returnunicode(filename)
         delimiter = self.get_delimiter(self.filename, self.charset)
-        self.file_rows = self.file_to_list(self.filename, self.charset, delimiter)
+        self.file_data = self.file_to_list(self.filename, self.charset, delimiter)
 
-        self.table_chooser.file_header = self.file_rows[0]
-
+        self.table_chooser.file_header = self.file_data[0]
 
     def file_to_list(self, filename, charset, delimiter):
-        file_rows = []
         with io.open(filename, 'r', encoding=charset) as f:
-            for rawrow in f:
-                row = f.readline().rstrip(u'\r').rstrip(u'\n').rstrip(u'\r').rstrip(u'\n')
-                cols = row.split(delimiter)
-                file_rows.append(cols)
+            file_data = [rawrow.rstrip(u'\n').rstrip(u'\r').split(delimiter) for rawrow in f]
+        return file_data
 
     @staticmethod
     def get_delimiter(filename, charset):
         with io.open(filename, 'r', encoding=charset) as f:
-            header = f.readline().rstrip(u'\r').rstrip(u'\n').rstrip(u'\r').rstrip(u'\n')
+            header = f.readline().rstrip(u'\n').rstrip(u'\r')
         delimiters = [u',', u';']
         tested_header = [len(header.split(delimiter)) for delimiter in delimiters]
         delimiter = delimiters[tested_header.index(max(tested_header))]
         return delimiter
 
     def start_import(self):
-        translation_dict = self.get_translation_dict(self.table_chooser)
+        translation_dict = self.table_chooser.get_translation_dict()
+        if isinstance(translation_dict, Cancel):
+            return u'cancel'
+
+        goal_table = self.table_chooser.import_method
+
+        foreign_keys = utils.get_foreign_keys(goal_table)
+
+        foreign_key_obsid_tables = [tname for tname, colnames in foreign_keys.iteritems() if colnames[0] == u'obsid']
+        if len(foreign_key_obsid_tables) == 1:
+            foreign_key_obsid_table = foreign_key_obsid_tables[0]
+        else:
+            foreign_key_obsid_table = False
+
+        file_data = copy.deepcopy(self.file_data)
 
         for k, v in translation_dict.iteritems():
             if isinstance(v, Obsids_from_selection):
-                selected = utils.get_selected_features_as_tuple(u'obs_points')
+                if foreign_key_obsid_table:
+                    selected = utils.get_selected_features_as_tuple(foreign_key_obsid_table)
+                else:
+                    #TODO: Must create a useful error here.
+                    pass
                 if not selected:
                     utils.MessagebarAndLog.critical(bar_msg=u'Import error, no obsid selected')
                 try:
-                    obsidindex = self.file_rows[0].index(u'obsid')
+                    obsidindex = file_data[0].index(k)
                 except ValueError:
-                    self.file_rows[0].append(u'obsid')
-                    obsidindex = len(self.file_rows[0]) - 1
+                    file_data[0].append(k)
+                    obsidindex = len(file_data[0]) - 1
 
-                self.file_rows = [row.insert(obsidindex, selected[0]) for row in self.file_rows]
-                translation_dict[k] = u'obsid'
+                file_data = [row.insert(obsidindex, selected[0]) for row in self.file_data]
+                translation_dict[k] = k
 
         importer = import_data_to_db.midv_data_importer()
-        importer.csv_layer = importer.csv2qgsvectorlayer(self.filename)
-        importer.general_csv_import(goal_table=self.table_chooser.import_method,
-                                    column_header_translation_dict=translation_dict)
+
+        if foreign_key_obsid_table:
+            file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
+
+        importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import,
+                                                               goal_table=goal_table,
+                                                               column_header_translation_dict=translation_dict))
+
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
-
-    @staticmethod
-    def get_translation_dict(table_chooser):
-        translation_dict = table_chooser.get_translation_dict()
-
-        if not isinstance(translation_dict, Cancel):
-            utils.pop_up_info(str(translation_dict))
-
 
     def add_line(self, layout=None):
         """ just adds a line"""
@@ -285,17 +295,18 @@ class ColumnEntry(RowEntry):
         self.combobox.addItems(sorted(observation_columns))
 
         self.layout.addWidget(label)
-        self.layout.addWidget(self.combobox)
-
 
         if self.db_column == u'obsid':
+            utils.pop_up_info(self.db_column)
             self.obsids_from_selection = PyQt4.QtGui.QCheckBox(u'Obsid from qgis selection')
             self.connect(self.obsids_from_selection, PyQt4.QtCore.SIGNAL("clicked()"),
-                         lambda : self.combobox.setEnabled(True if not self.checkbox.isChecked() else False))
+                         lambda : self.combobox.setEnabled(True if not self.obsids_from_selection.isChecked() else False))
             self.widgets = [label, self.obsids_from_selection, self.combobox]
+            self.layout.addWidget(self.obsids_from_selection)
         else:
             self.widgets = [label, self.combobox]
 
+        self.layout.addWidget(self.combobox)
 
     @property
     def file_column_name(self):
@@ -308,6 +319,12 @@ class ColumnEntry(RowEntry):
             return Cancel()
         else:
             return selected
+
+    @file_column_name.setter
+    def file_column_name(self, value):
+        index = self.combobox.findText(utils.returnunicode(value))
+        if index != -1:
+            self.combobox.setCurrentIndex(index)
 
     def clear_widgets(self):
         for widget in self.widgets:

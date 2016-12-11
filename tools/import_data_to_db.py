@@ -19,26 +19,24 @@
  *                                                                         *
  ***************************************************************************/
 """
-import io
-import os
-import locale
-import qgis.utils
+import PyQt4
 import copy
+import io
+import qgis.utils
 from collections import OrderedDict
-from operator import itemgetter
-from functools import partial
 from datetime import datetime
+from functools import partial
+from operator import itemgetter
 from pyspatialite import dbapi2 as sqlite #could perhaps have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 from qgis.core import *
 
 import PyQt4.QtCore
 import PyQt4.QtGui
-import PyQt4
 
 import midvatten_utils as utils
-from definitions import midvatten_defs as defs
+from date_utils import find_date_format, datestring_to_date
+from tools.midvatten_utils import get_foreign_keys
 
-from date_utils import find_date_format, datestring_to_date, dateshift
 
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
 
@@ -107,7 +105,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         # Import foreign keys in some special cases
         nr_before = nr_after
-        foreign_keys = self.get_foreign_keys(goal_table)
+        foreign_keys = get_foreign_keys(goal_table)
         force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
 
         stop_question = utils.askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?"""%(u', '.join(force_import_of_foreign_keys_tables)), u"Info!")
@@ -538,12 +536,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def check_obsids(self, file_data):
-        return utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(), try_capitalize=False)
+    def check_obsids(self, file_data, table=u'obs_points'):
+        return utils.filter_nonexisting_values_and_ask(file_data, u'obsid', partial(utils.get_all_obsids, u'obs_points'), try_capitalize=False)
 
     def send_file_data_to_importer(self, file_data, importer, cleaning_function=None):
         self.csvlayer = None
         if len(file_data) < 2:
+            utils.MessagebarAndLog.info(bar_msg=u'Import error, see log message panel', log_msg=u'Import failed only a header was sent to importer')
             return
 
         if cleaning_function is not None:
@@ -845,13 +844,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                           u' || '.join([u'"{}"'.format(pk) for pk in pks]),
                                                                                           goal_table)
         utils.sql_alter_db(sql)
-
-    def get_foreign_keys(self, tname):
-        result_list = utils.sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)"""%(tname))[1]
-        foreign_keys = {}
-        for row in result_list:
-            foreign_keys.setdefault(row[2], []).append((row[3], row[4]))
-        return foreign_keys
 
     def check_remaining(self, nr_before, nr_after, bar_msg, log_msg):
         if nr_after == 0:

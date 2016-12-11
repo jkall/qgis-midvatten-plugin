@@ -27,6 +27,7 @@ import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 from date_utils import datestring_to_date
 import utils_for_tests as test_utils
+from tools.midvatten_utils import get_foreign_keys
 from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from nose.tools import raises
@@ -2390,7 +2391,7 @@ class _TestGetForeignKeys(object):
         self.mock_iface = mock_iface
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        test = self.importinstance.get_foreign_keys(u'w_levels')
+        test = get_foreign_keys(u'w_levels')
         assert len(test) > 0
         assert isinstance(test, (dict, OrderedDict))
         for k, v in test.iteritems():
