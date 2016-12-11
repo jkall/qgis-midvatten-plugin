@@ -147,6 +147,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         if foreign_key_obsid_table and foreign_key_obsid_table != goal_table:
             file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
+        if file_data == u'cancel':
+            return file_data
 
         importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import,
                                                                goal_table=goal_table,

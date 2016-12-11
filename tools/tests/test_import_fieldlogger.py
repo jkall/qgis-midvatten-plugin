@@ -6,7 +6,7 @@ from tools.tests.mocks_for_tests import DummyInterface
 from mock import MagicMock
 from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgisUtilsIface, MockQgsProjectInstance, mock_answer
 import mock
-import midvatten
+from midvatten.midvatten import midvatten
 import os
 import import_fieldlogger
 from import_fieldlogger import FieldloggerImport

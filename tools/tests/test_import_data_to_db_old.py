@@ -34,7 +34,7 @@ from mock import mock_open, patch
 from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance, DummyInterface2, mock_answer
 import mock
 import io
-import midvatten
+from midvatten.midvatten import midvatten
 import os
 import PyQt4
 from collections import OrderedDict

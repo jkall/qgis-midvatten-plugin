@@ -28,7 +28,7 @@ import midvatten_utils as utils
 from nose.tools import raises
 from mock import MagicMock
 import mock
-import midvatten
+from midvatten.midvatten import midvatten
 import os
 import utils_for_tests
 import unittest

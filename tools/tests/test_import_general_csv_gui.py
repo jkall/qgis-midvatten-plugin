@@ -21,7 +21,8 @@
  ***************************************************************************/
 """
 #
-
+import timeit
+import datetime
 import utils_for_tests
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
@@ -47,7 +48,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class TestGeneralCsvGui(object):
+class _TestGeneralCsvGui(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -81,7 +82,7 @@ class TestGeneralCsvGui(object):
         os.remove(TEMP_DB_PATH)
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    def _test_import_w_levels(self):
+    def test_import_w_levels(self):
         file = [u'obsid,date_time,meas',
                  u'rb1,2016-03-15 10:30:00,5.0']
 
@@ -113,8 +114,8 @@ class TestGeneralCsvGui(object):
 
                         for column in importer.table_chooser.columns:
                             names = {u'obsid': u'obsid', u'date_time': u'date_time', u'meas': u'meas'}
-                            column.file_column_name = names[column.file_column_name]
-
+                            if column.db_column in names:
+                                column.file_column_name = names[column.db_column]
 
                         importer.start_import()
 
@@ -124,7 +125,7 @@ class TestGeneralCsvGui(object):
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    def _test_import_obs_points(self):
+    def test_import_obs_points(self):
         file = [u'obsid,testcol',
                  u'rb1,test']
 
@@ -156,7 +157,8 @@ class TestGeneralCsvGui(object):
 
                         for column in importer.table_chooser.columns:
                             names = {u'obsid': u'obsid'}
-                            column.file_column_name = names[column.file_column_name]
+                            if column.db_column in names:
+                                column.file_column_name = names[column.db_column]
 
                         importer.start_import()
 
@@ -167,7 +169,7 @@ class TestGeneralCsvGui(object):
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    def _test_import_w_levels_obsid_not_in_db(self):
+    def test_import_w_levels_obsid_not_in_db(self):
         file = [u'obsid,date_time,meas',
                  u'rb1,2016-03-15 10:30:00,5.0']
 
@@ -203,7 +205,8 @@ class TestGeneralCsvGui(object):
 
                         for column in importer.table_chooser.columns:
                             names = {u'obsid': u'obsid', u'date_time': u'date_time', u'meas': u'meas'}
-                            column.file_column_name = names[column.file_column_name]
+                            if column.db_column in names:
+                                column.file_column_name = names[column.db_column]
 
                         importer.start_import()
 
@@ -237,7 +240,7 @@ class TestGeneralCsvGui(object):
                         mock_encoding.return_value = [u'utf-8', True]
 
                         mock_notfound.return_value.answer = u'ok'
-                        mock_notfound.return_value.value = u'obsid2'
+                        mock_notfound.return_value.value = u'obsid1'
 
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
@@ -249,14 +252,59 @@ class TestGeneralCsvGui(object):
 
                         for column in importer.table_chooser.columns:
                             names = {u'obsid': u'obsid', u'length': u'length2', u'real_comp': u'real_comp', u'imag_comp': u'imag_comp', u'comment': u'comment'}
-                            column.file_column_name = names[column.file_column_name]
-
+                            if column.db_column in names:
+                                column.file_column_name = names[column.db_column]
 
                         importer.start_import()
 
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from vlf_data'''))
-                    reference_string = u'''(True, [(obsid2, 500.0, 2.0, 10.0, acomment)])'''
-                    print(str(test_string))
+                    reference_string = u'''(True, [(obsid1, 500.0, 2.0, 10.0, acomment)])'''
                     assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_import_w_levels_many_rows(self):
+        file = [u'obsid,date_time,meas']
+        base = datestring_to_date(u'1900-01-01 00:01:01')
+        date_list = [base + datetime.timedelta(days=x) for x in range(0, 10000)]
+        file.extend([u'rb1,' + datetime.datetime.strftime(adate, u'%Y%M%D %H%m') + u',0.5' for adate in date_list])
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+                    utils_askuser_answer_no_obj.result = 0
+                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+                    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+
+                        mock_filename.return_value = filename
+                        mock_encoding.return_value = [u'utf-8', True]
+
+                        ms = MagicMock()
+                        ms.settingsdict = OrderedDict()
+                        importer = GeneralCsvImportGui(self.iface.mainWindow(), ms)
+                        importer.load_gui()
+
+                        importer.load_files()
+                        importer.table_chooser.import_method = u'w_levels'
+
+                        for column in importer.table_chooser.columns:
+                            names = {u'obsid': u'obsid', u'date_time': u'date_time', u'meas': u'meas'}
+                            if column.db_column in names:
+                                column.file_column_name = names[column.db_column]
+
+                        import_time = timeit.timeit(importer.start_import, number=1)
+                        return import_time
+
+                    import_time = _test(self, filename)
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select count(*) from w_levels'''))
+                    reference_string = ur'''(True, [(10000)])'''
+                    assert import_time < 10
+                    assert test_string == reference_string

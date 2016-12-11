@@ -29,7 +29,7 @@ from mock import mock_open, patch
 from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance, DummyInterface2, mock_answer
 import mock
 import io
-import midvatten
+from midvatten.midvatten import midvatten
 import os
 from qgis.core import QgsMapLayerRegistry, QgsDataSourceURI, QgsVectorLayer, QgsGeometry, QgsFeature, QgsApplication
 import qgis

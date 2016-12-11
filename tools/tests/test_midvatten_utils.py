@@ -21,7 +21,7 @@
 """
 import midvatten_utils as utils
 import mock
-import midvatten
+from midvatten.midvatten import midvatten
 from import_data_to_db import midv_data_importer
 import utils_for_tests
 from mocks_for_tests import MockNotFoundQuestion, MockUsingReturnValue, MockQgsProjectInstance, MockQgisUtilsIface, MockReturnUsingDictIn, DummyInterface2, mock_answer

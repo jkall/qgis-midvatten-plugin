@@ -32,11 +32,11 @@ from mock import MagicMock
 import mock
 from utils_for_tests import dict_to_sorted_list
 from wlevels_calc_calibr import calclvl
-import midvatten
+from midvatten.midvatten import midvatten
 import utils_for_tests
 
 
-class _TestCalclvl(object):
+class TestCalclvl(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
@@ -46,12 +46,12 @@ class _TestCalclvl(object):
     mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([temp_db_path]))
     selected_obsids = MockUsingReturnValue([u'rb1'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
     def setUp(self):
         self.iface = DummyInterface()
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
         try:
             os.remove(TestCalclvl.temp_db_path)
         except OSError:

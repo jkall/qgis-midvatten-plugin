@@ -33,7 +33,7 @@ from utils_for_tests import dict_to_sorted_list
 from definitions import midvatten_defs
 from nose.plugins.skip import SkipTest
 import os
-import midvatten
+from midvatten.midvatten import midvatten
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
