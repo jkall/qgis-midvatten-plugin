@@ -177,10 +177,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
     @staticmethod
     def get_stored_settings(ms, settingskey):
         """
-        Reads the settings from settingskey and returns a tuple
-
-        The settings string is assumed to look like this:
-        objname;attr1:value1;attr2:value2/objname2;attr3:value3...
+        Reads the settings from settingskey and returns a created dict/list/tuple using ast.literal_eval
 
         :param ms: midvatten settings
         :param settingskey: the key to get from midvatten settings.
