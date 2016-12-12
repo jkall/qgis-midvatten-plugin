@@ -49,6 +49,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.temptablename = ''
         self.charsetchoosen = ''
         self.csvlayer = None
+        self.foreign_keys_import_question = None
 
     def general_csv_import(self, goal_table=None, column_header_translation_dict=None):
         """General method for importing an sqlite table into a goal_table
@@ -107,11 +108,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         foreign_keys = utils.get_foreign_keys(goal_table)
         force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
 
-        stop_question = utils.askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?"""%(u', '.join(force_import_of_foreign_keys_tables)), u"Info!")
-        if stop_question.result == 0:      # if the user wants to abort
-            self.status = 'False'
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            return 0   # return simply to stop this function
+        if self.foreign_keys_import_question is None:
+            stop_question = utils.askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?"""%(u', '.join(force_import_of_foreign_keys_tables)), u"Info!")
+            if stop_question.result == 0:      # if the user wants to abort
+                self.status = 'False'
+                PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                return 0   # return simply to stop this function
+            else:
+                self.foreign_keys_import_question = 1
 
         for fk_table, from_to_fields in foreign_keys.iteritems():
             from_list = [x[0] for x in from_to_fields]
