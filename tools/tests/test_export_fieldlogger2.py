@@ -36,7 +36,7 @@ import mock
 import utils_for_tests
 from utils_for_tests import dict_to_sorted_list, create_test_string
 
-class _TestExportFieldloggerNoDb():
+class TestExportFieldloggerNoDb():
     def setUp(self):
         #self.ExportToFieldLogger = ExportToFieldLogger
         pass
@@ -267,7 +267,7 @@ class _TestExportFieldloggerNoDb():
         tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
 
         stored_settings = [(0, ((u'parameter_list', [u'par1;type1;hint1']), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'))),
-                           (1, ((u'parameter_list', [u'par1;type2;hint2']), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj')))]
+                           (1, ((u'parameter_list', [u'par1;type2;hint2']), (u'sublocation_suffix', u'proj.group2'), (u'location_suffix', u'proj')))]
         mock_connect = MagicMock()
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
@@ -276,8 +276,32 @@ class _TestExportFieldloggerNoDb():
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
-        reference_string = u'[FileVersion 1;1, NAME;INPUTTYPE;HINT, par1;type1;hint1 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1]'
+        reference_string = u'[FileVersion 1;1, NAME;INPUTTYPE;HINT, par1;type1;hint1 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 1.proj;1.proj.group2;lat1;lon1;par1]'
         assert reference_string == test_string
+
+    @staticmethod
+    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
+    def test_create_export_printlist_duplicate_sub_location_suffixes(mock_latlons, mock_MessagebarAndLog):
+        mock_latlons.return_value = {u'1': (u'lat1', u'lon1')}
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+
+        stored_settings = [(0, ((u'parameter_list', [u'par1;type1;hint1']), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'))),
+                           (1, ((u'parameter_list', [u'par2;type2;hint2']), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj')))]
+        mock_connect = MagicMock()
+
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
+        parameter_groups[0]._obsid_list.addItems([u'1'])
+        parameter_groups[1]._obsid_list.addItems([u'1'])
+
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        test_string = printlist
+        assert test_string is None
+        mock_MessagebarAndLog.critical.assert_called_with(bar_msg=u'Critical: Sub-location suffixes must be unique')
+
+
+
+
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')

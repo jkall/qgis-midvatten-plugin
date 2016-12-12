@@ -367,7 +367,6 @@ def test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units,
     assert test_string == reference_string
 
 
-
 def test_SublocationFilter():
     sublocation_filter = import_fieldlogger.SublocationFilter([u'a.1', u'a.2'])
 
