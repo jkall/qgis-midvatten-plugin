@@ -268,10 +268,11 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                 continue
 
             for location, sublocation, obsid in parameter_group.locations_sublocations_obsids:
+                lat, lon = [None, None]
 
                 if sublocation in sublocations_locations:
                     if sublocations_locations[sublocation] != location:
-                        utils.MessagebarAndLog.warning(bar_msg=u'Warning: Sublocation ' + sublocation + u' error, see log message panel', log_msg=u'Sublocation ' + sublocation + u' already existed for location ' + location_exists + u' and is duplicated by location ' + location + u'. It will be skipped.')
+                        utils.MessagebarAndLog.warning(bar_msg=u'Warning: Sublocation ' + sublocation + u' error, see log message panel', log_msg=u'Sublocation ' + sublocation + u' already existed for location ' + location + u'.\n Duplications not allowd. It will be skipped.')
                         continue
 
                 if location not in locations_lat_lon:
@@ -295,7 +296,8 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                         sublocations_parameters.setdefault(sublocation, []).append(_parameter)
 
                 if sublocations_parameters.get(sublocation, []):
-                    locations_lat_lon[location] = (returnunicode(lat), returnunicode(lon))
+                    if location not in locations_lat_lon:
+                        locations_lat_lon[location] = (returnunicode(lat), returnunicode(lon))
                     locations_sublocations.setdefault(location, []).append(sublocation)
                     if sublocation not in sublocations_locations:
                         sublocations_locations[sublocation] = location
@@ -304,7 +306,8 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         printlist = []
         printlist.append(u"FileVersion 1;" + str(len(parameters_inputtypes_hints)))
         printlist.append(u"NAME;INPUTTYPE;HINT")
-        printlist.extend(parameters_inputtypes_hints.values())
+        #Add a space after the parameter rows just to be sure that there will always be a hint (it needs to be.
+        printlist.extend([p_i_h + u' ' if not p_i_h.endswith(u' ') else p_i_h for p_i_h in parameters_inputtypes_hints.values()])
 
         printlist.append(u'NAME;SUBNAME;LAT;LON;INPUTFIELD')
 
@@ -548,8 +551,12 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         elif combined_name in unique_names:
             utils.MessagebarAndLog.critical(bar_msg=u'Error, input name already existing. No duplicates allowed')
             return
-        else:
-            self._input_field_list.paste_data([u';'.join([self.combined_name, self.input_type, self.hint])])
+
+        if not hint:
+            utils.MessagebarAndLog.warning(bar_msg=u'Warning, hint not given and will be set to a space (" ") as it must exist')
+            hint = hint + u' '
+
+        self._input_field_list.paste_data([u';'.join([combined_name, input_type, hint])])
 
     @property
     def parameter_table(self):

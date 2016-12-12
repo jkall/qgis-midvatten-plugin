@@ -48,7 +48,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class TestGeneralCsvGui(object):
+class _TestGeneralCsvGui(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')

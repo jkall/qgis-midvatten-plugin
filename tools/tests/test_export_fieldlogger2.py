@@ -182,7 +182,7 @@ class TestExportFieldloggerNoDb():
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
         mock_MessagebarAndLog.warning.assert_called_with(bar_msg=u'Import warning, see log message panel', log_msg=u'Sublocation 1.proj.group may be missing a parameter group comment-parameter. Make sure you add one')
-        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, p1.u1;it1:h1, comment;it1:h1, NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.commentgroup;lat1;lon1;comment, 1.proj;1.proj.group;lat1;lon1;p1.u1]'
+        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, p1.u1;it1:h1 , comment;it1:h1 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.commentgroup;lat1;lon1;comment, 1.proj;1.proj.group;lat1;lon1;p1.u1]'
 
         assert test_string == reference_string
 
@@ -202,7 +202,7 @@ class TestExportFieldloggerNoDb():
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
         mock_MessagebarAndLog.warning.assert_called_with(bar_msg=u'Import warning, see log message panel', log_msg=u'Location 1.proj may be missing a general comment parameter. Make sure you add one')
-        reference_string = u'[FileVersion 1;1, NAME;INPUTTYPE;HINT, p1.u1;it1:h1, NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;p1.u1]'
+        reference_string = u'[FileVersion 1;1, NAME;INPUTTYPE;HINT, p1.u1;it1:h1 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;p1.u1]'
         assert test_string == reference_string
 
     @staticmethod
@@ -229,7 +229,7 @@ class TestExportFieldloggerNoDb():
         mock_latlons.return_value = {u'1': (None, None)}
         tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
 
-        stored_settings = [(0, ((u'parameter_list', [u'p1.u1;it1:h1']), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj')))]
+        stored_settings = [(0, ((u'parameter_list', [u'p1.u1;it1:h1 ']), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj')))]
         mock_connect = MagicMock()
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
@@ -256,7 +256,7 @@ class TestExportFieldloggerNoDb():
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
-        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1, par2;type2;hint2, NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 2.proj2;2.proj2.group;lat2;lon2;par2, 4.proj;4.proj.group;lat4;lon4;par1, 4.proj2;4.proj2.group;lat4;lon4;par2]'
+        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 2.proj2;2.proj2.group;lat2;lon2;par2, 4.proj;4.proj.group;lat4;lon4;par1, 4.proj2;4.proj2.group;lat4;lon4;par2]'
         assert reference_string == test_string
 
     @staticmethod
@@ -276,7 +276,7 @@ class TestExportFieldloggerNoDb():
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
-        reference_string = u'[FileVersion 1;1, NAME;INPUTTYPE;HINT, par1;type1;hint1, NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1]'
+        reference_string = u'[FileVersion 1;1, NAME;INPUTTYPE;HINT, par1;type1;hint1 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1]'
         assert reference_string == test_string
 
     @staticmethod
@@ -297,7 +297,69 @@ class TestExportFieldloggerNoDb():
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
         mock_MessagebarAndLog.critical.assert_not_called()
-        reference_string = u'[FileVersion 1;3, NAME;INPUTTYPE;HINT, p1.u1;it1:h1, l.comment;test;make a comment, comment;test;make a general comment, NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.ls;1.with_comment;123;465;comment, 1.ls;1.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment, 2.ls;2.with_comment;123;465;comment, 2.ls;2.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment, 3.ls;3.with_comment;123;465;comment, 3.ls;3.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment]'
+        reference_string = u'[FileVersion 1;3, NAME;INPUTTYPE;HINT, p1.u1;it1:h1 , l.comment;test;make a comment , comment;test;make a general comment , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.ls;1.with_comment;123;465;comment, 1.ls;1.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment, 2.ls;2.with_comment;123;465;comment, 2.ls;2.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment, 3.ls;3.with_comment;123;465;comment, 3.ls;3.with_p1_u1_and_l_comment;123;465;p1.u1|l.comment]'
         assert test_string == reference_string
 
+    @staticmethod
+    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
+    def test_create_export_printlist_not_same_latlon(mock_latlons, mock_MessagebarAndLog):
+        mock_latlons.return_value = {u'1': (u'lat1', u'lon1'), u'2': (u'lat2', u'lon2'), u'4': (u'lat4', u'lon4')}
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
 
+        stored_settings = [(0, ((u'parameter_list', [u'par1;type1;hint1']), (u'sublocation_suffix', u'proj.group1'), (u'location_suffix', u'proj'))),
+                           (1, ((u'parameter_list', [u'par2;type2;hint2']), (u'sublocation_suffix', u'proj.group2'), (u'location_suffix', u'proj')))]
+        mock_connect = MagicMock()
+
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
+        parameter_groups[0]._obsid_list.addItems([u'1', u'4'])
+        parameter_groups[1]._obsid_list.addItems([u'2', u'3', u'4'])
+
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        test_string = create_test_string(printlist)
+        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group1;lat1;lon1;par1, 2.proj;2.proj.group2;lat2;lon2;par2, 4.proj;4.proj.group1;lat4;lon4;par1, 4.proj;4.proj.group2;lat4;lon4;par2]'
+        assert reference_string == test_string
+
+    @staticmethod
+    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
+    def test_create_export_printlist_not_same_latlon2(mock_latlons, mock_MessagebarAndLog):
+        mock_latlons.return_value = {u'1': (u'lat1', u'lon1'), u'2': (u'lat2', u'lon2'), u'4': (u'lat4', u'lon4')}
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+
+        stored_settings = [(0, ((u'parameter_list', [u'par1;type1;hint1']), (u'sublocation_suffix', u'proj.group1'), (u'location_suffix', u'proj'))),
+                           (1, ((u'parameter_list', [u'par2;type2;hint2']), (u'sublocation_suffix', u'proj.group2'), (u'location_suffix', u'proj'))),
+                           (2, ((u'parameter_list', [u'par3;type3;hint3']), (u'sublocation_suffix', u'proj.group3'), (u'location_suffix', u'proj')))]
+        mock_connect = MagicMock()
+
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
+        parameter_groups[0]._obsid_list.addItems([u'1', u'4'])
+        parameter_groups[1]._obsid_list.addItems([u'2', u'3', u'4'])
+        parameter_groups[2]._obsid_list.addItems([u'2', u'4'])
+
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        test_string = create_test_string(printlist)
+        reference_string = u'[FileVersion 1;3, NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , par3;type3;hint3 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group1;lat1;lon1;par1, 2.proj;2.proj.group2;lat2;lon2;par2, 2.proj;2.proj.group3;lat2;lon2;par3, 4.proj;4.proj.group1;lat4;lon4;par1, 4.proj;4.proj.group2;lat4;lon4;par2, 4.proj;4.proj.group3;lat4;lon4;par3]'
+        assert reference_string == test_string
+
+    @staticmethod
+    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
+    def test_create_export_printlist_not_same_latlon3(mock_latlons, mock_MessagebarAndLog):
+        mock_latlons.return_value = {u'1': (u'lat1', u'lon1'), u'2': (u'lat2', u'lon2'), u'4': (u'lat4', u'lon4')}
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+
+        stored_settings = [(0, ((u'parameter_list', [u'par1;type1;hint1', u'par2;type2;hint2']), (u'sublocation_suffix', u'proj.group1'), (u'location_suffix', u'proj'))),
+                           (1, ((u'parameter_list', [u'par3;type3;hint3']), (u'sublocation_suffix', u'proj.group2'), (u'location_suffix', u'proj')))]
+
+        mock_connect = MagicMock()
+
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
+        parameter_groups[0]._obsid_list.addItems([u'1', u'2', u'4'])
+        parameter_groups[1]._obsid_list.addItems([u'1', u'2', u'4'])
+
+
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        test_string = create_test_string(printlist)
+        reference_string = u'[FileVersion 1;3, NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , par3;type3;hint3 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group1;lat1;lon1;par1|par2, 1.proj;1.proj.group2;lat1;lon1;par3, 2.proj;2.proj.group1;lat2;lon2;par1|par2, 2.proj;2.proj.group2;lat2;lon2;par3, 4.proj;4.proj.group1;lat4;lon4;par1|par2, 4.proj;4.proj.group2;lat4;lon4;par3]'
+        assert reference_string == test_string
