@@ -1642,6 +1642,36 @@ class _TestWflowImport(object):
         reference_string = ur'''(True, [(obsid1, testid, Testtype, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_wflow_new_param_into_zz_flowtype(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        f = [[u'obsid', u'instrumentid', u'flowtype', u'date_time', u'reading', u'unit', u'comment'],
+             [u'obsid1', u'testid', u'Momflow2', u'2011-10-19 12:30:00', u'2', u'l/s', u'testcomment']]
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
+            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+                mock_filename.return_value = filename
+                mock_encoding.return_value = [True, u'utf-8']
+                self.mock_iface = mock_iface
+                self.importinstance.general_csv_import(goal_table=u'w_flow')
+            _test(self, filename)
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_flow'''))
+        reference_string = ur'''(True, [(obsid1, testid, Momflow2, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
+        assert test_string == reference_string
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from zz_flowtype'''))
+        reference_string = ur'''(True, [(Accvol, Accumulated volume), (Momflow, Momentary flow rate), (Aveflow, Average flow since last reading), (Momflow2, None)])'''
+        assert test_string == reference_string
+
 
 class _TestWqualfieldImport(object):
     answer_yes = mock_answer('yes')

@@ -266,7 +266,11 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             else:
                 last_used_instrumentid = sorted(
                     [(_date_time, _instrumentid) for _flowtype, _instrumentid, _date_time in instrumentids[obsid] if
-                     (_flowtype == flowtype)])[-1][1]
+                     (_flowtype == flowtype)])
+                if last_used_instrumentid:
+                    last_used_instrumentid = last_used_instrumentid[-1][1]
+                else:
+                    last_used_instrumentid = u''
             question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
                                               msg=u''.join([u'Submit the instrument id for the measurement:\n ',
                                                             u', '.join([obsid, date_time, flowtype, unit])]),
@@ -313,6 +317,13 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
     @staticmethod
     def filter_and_alter_data(observations, settings, settings_with_own_loop, parameter_imports):
         observations = copy.deepcopy(observations)
+
+        #Order the observations under the import methods, and filter out the parameters not set.
+        _observations = []
+        for observation in observations:
+            if parameter_imports[observation[u'parametername']].import_method and parameter_imports[observation[u'parametername']].import_method is not None:
+                _observations.append(observation)
+        observations = _observations
 
         #Filter and alter data
         filtered_observations = []
@@ -473,7 +484,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         observations_importmethods = {}
         for observation in observations:
-            observations_importmethods.setdefault(self.parameter_imports[observation[u'parametername']].import_method, []).append(observation)
+            if self.parameter_imports[observation[u'parametername']].import_method:
+                observations_importmethods.setdefault(self.parameter_imports[observation[u'parametername']].import_method, []).append(observation)
 
         importer = import_data_to_db.midv_data_importer()
 

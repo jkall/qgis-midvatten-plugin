@@ -18,7 +18,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class _TestFieldLoggerImporterDb(object):
+class TestFieldLoggerImporterDb(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -43,10 +43,10 @@ class _TestFieldLoggerImporterDb(object):
         os.remove(TEMP_DB_PATH)
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    def _test_load_file(self):
+    def test_load_file(self):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1")''')
         utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("HS")''')
-        utils.sql_alter_db(u'''INSERT INTO zz_flowtype ("type") VALUES ("Aveflow")''')
+        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Aveflow")''')
 
         f = [
             u"Location;date_time;value;comment\n",
@@ -92,7 +92,7 @@ class _TestFieldLoggerImporterDb(object):
             assert test_string == reference
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    def _test_staff_not_given(self):
+    def test_staff_not_given(self):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1")''')
 
         f = [
@@ -131,7 +131,7 @@ class _TestFieldLoggerImporterDb(object):
                 mock_MessagebarAndLog.critical.assert_called_with(bar_msg=u'Import error, staff not given')
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    def full_integration_test_to_db(self):
+    def test_full_integration_test_to_db(self):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
@@ -202,8 +202,77 @@ class _TestFieldLoggerImporterDb(object):
             reference_string = u'{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
             assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_full_into_zz_flowtype(self):
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("2")''')
+        #utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("5")''')
+        f = [u'LOCATION;DATE;TIME;VALUE;TYPE\n',
+            u'5.2892.level;12-12-2016;10:02:49;comment;l.comment\n',
+            u'5.2892.level;12-12-2016;10:02:49;123;meas.m\n',
+            u'5.2892.level;12-12-2016;10:02:57;onlycomment;l.comment\n',
+            u'2.2892.flow;12-12-2016;10:03:07;123;Aveflow.m3/s\n',
+            u'2.2892.flow;12-12-2016;10:03:15;onlycomment;f.comment\n',
+            u'2.2892.comment;12-12-2016;10:03:24;onlycomment;comment\n']
 
-class _TestCommentsImportFields(object):
+        with utils.tempinput(''.join(f)) as filename:
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
+            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
+            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_askuser):
+                mock_charset.return_value = ('utf-8', True)
+                mock_savefilename.return_value = [filename]
+                mock_ask_instrument.return_value.value = u'testid'
+
+                def side_effect(*args, **kwargs):
+                    mock_result = mock.MagicMock()
+                    if len(args) > 1:
+                        if args[1].startswith(u'Do you want to confirm'):
+                            mock_result.result = 0
+                            return mock_result
+                        elif args[1].startswith(u'Do you want to import all'):
+                            mock_result.result = 0
+                            return mock_result
+                        elif args[1].startswith(u'Please note!\nForeign keys'):
+                            mock_result.result = 1
+                            return mock_result
+                        elif args[1].startswith(u'Please note!\nThere are'):
+                            mock_result.result = 1
+                            return mock_result
+                        elif args[1].startswith(u'It is a strong recommendation'):
+                            mock_result.result = 0
+                            return mock_result
+
+                mock_askuser.side_effect = side_effect
+
+
+                ms = MagicMock()
+                ms.settingsdict = OrderedDict()
+                importer = FieldloggerImport(self.iface.mainWindow(), ms)
+                importer.parse_observations_and_populate_gui()
+
+                #Set settings:
+                for setting in importer.settings:
+                    if isinstance(setting, import_fieldlogger.StaffQuestion):
+                        setting.staff = u'teststaff'
+
+                stored_settings = OrderedDict({u'f.comment': {u'import_method': u'comments'},
+                                   u'Aveflow.m3/s': {u'import_method': u'w_flow', u'flowtype': u'Momflow2', u'unit': u'aunit'}})
+
+                importer.set_parameters_using_stored_settings(stored_settings, importer.parameter_imports)
+                importer.start_import(importer.observations)
+
+            _test(self, filename)
+
+            test_string = utils_for_tests.create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_flow', u'zz_staff', u'comments', u'zz_flowtype')]))
+            reference_string = u'{comments: (True, [(2, 2016-12-12 10:03:15, onlycomment, teststaff)]), w_flow: (True, [(2, testid, Momflow2, 2016-12-12 10:03:07, 123.0, aunit, None)]), zz_flowtype: (True, [(Accvol, Accumulated volume), (Momflow, Momentary flow rate), (Aveflow, Average flow since last reading), (Momflow2, None)]), zz_staff: (True, [(teststaff, None)])}'
+            assert test_string == reference_string
+
+
+class TestCommentsImportFields(object):
     def setUp(self):
         mock_import_method_chooser = MagicMock()
         mock_import_method_chooser.parameter_name = u'comment'
@@ -238,7 +307,7 @@ class _TestCommentsImportFields(object):
         assert test_string == reference_string
 
 
-class _TestStaffQuestion(object):
+class TestStaffQuestion(object):
 
     @mock.patch('import_fieldlogger.defs.staff_list')
     def setUp(self, mock_stafflist):
@@ -254,7 +323,7 @@ class _TestStaffQuestion(object):
         assert test_string == reference_string
 
 
-class _TestObsidFilter(object):
+class TestObsidFilter(object):
     def setUp(self):
         self.obsid_filter = import_fieldlogger.ObsidFilter()
 
