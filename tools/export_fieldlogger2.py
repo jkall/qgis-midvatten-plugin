@@ -154,11 +154,11 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                                    [PyQt4.QtGui.QLabel(u'Sub-location suffix'),
                                                     parameter_group._sublocation_suffix,
                                                     PyQt4.QtGui.QLabel(u'Input fields'),
-                                                    parameter_group._parameter_list,
-                                                    get_line()])
+                                                    parameter_group._parameter_list])
 
             self.create_widget_and_connect_widgets(widgets_layouts[1][1],
-                                                   [parameter_group.paste_from_selection_button,
+                                                   [PyQt4.QtGui.QLabel(u'Locations'),
+                                                    parameter_group.paste_from_selection_button,
                                                     parameter_group._obsid_list,
                                                    PyQt4.QtGui.QLabel(u'Location suffix\n(location name in map)'),
                                                    parameter_group._location_suffix])
@@ -399,8 +399,25 @@ class ParameterGroup(object):
         self._obsid_list = CopyPasteDeleteableQListWidget(keep_sorted=True)
         self.paste_from_selection_button = PyQt4.QtGui.QPushButton(u'Paste obs_points selection')
         #------------------------------------------------------------------------
-        self._location_suffix.setToolTip(u'(optional)\nFieldlogger NAME = obsid.SUFFIX\nUseful for separating projects or databases\nex: suffix = 1234 --> obsid.1234')
-        self._sublocation_suffix.setToolTip(u'(optional)\nFieldlogger sub-location = obsid.SUFFIX\nUseful for separating parameters into groups for the user.\nParameters sharing the same sub-location will be shown together\n ex: suffix 1234.quality --> obsid.1234.quality')
+        self._location_suffix.setToolTip(u"""(optional)\n""" +
+                                         u"""Fieldlogger NAME = obsid.SUFFIX\n""" +
+                                         u"""Useful for separating projects or databases\n""" +
+                                         u"""ex: suffix = 1234 --> obsid.1234""")
+        self._sublocation_suffix.setToolTip(u"""(optional)\n""" +
+                                            u"""Fieldlogger sub-location = obsid.SUFFIX\n""" +
+                                            u"""Useful for separating parameters into groups for the user.\n""" +
+                                            u"""Parameters sharing the same sub-location will be shown together\n""" +
+                                            u"""ex: suffix 1234.quality --> obsid.1234.quality""")
+        self._parameter_list.setToolTip(u"""Copy and paste input fields from "Create Input Fields" to this box\n""" +
+                                        u"""or from/to other input field boxes.\n""" +
+                                        u"""The input fields in Fieldlogger will appear in the same order as in\n""" +
+                                        u"""this list.\n""" +
+                                        u"""The topmost input field will be the first selected input field when\n""" +
+                                        u"""the user enters \nthe input fields in Fieldlogger.""")
+        self._obsid_list.setToolTip(u"""Add obsids to this box by selecting obsids from the table "obs_points"\n""" +
+                                    u"""using it's attribute table or select from map.\n""" +
+                                    u"""Then click the button "Paste obs_points selection"\n""" +
+                                    u"""Copy and paste obsids between Locations boxes""")
         #-------------------------------------------------------------------------------------
         connect(self.paste_from_selection_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : self._obsid_list.paste_data(utils.get_selected_features_as_tuple('obs_points')))
@@ -506,7 +523,7 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         self._input_type.setToolTip(u'(mandatory)\nDecides the keyboard layout in the Fieldlogger app.')
         self._hint.setToolTip(u'(optional)\nHint given to the Fieldlogger user for the parameter. Ex: "depth to water"')
         #------------------------------------------------------------------------------------
-        self._combined_name.setToolTip(u'Copy value using ctrl+v, ctrl+c to parameter name.')
+        self._input_field_list.setToolTip(u'Copy input fields to the "Input Fields" boxes using ctrl+v, ctrl+c.')
         self._input_field_list.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
         self._input_field_list.setMinimumWidth(200)
         #------------------------------------------------------------------------------------
