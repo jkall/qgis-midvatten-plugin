@@ -46,7 +46,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class TestImportObsPoints(object):
+class _TestImportObsPoints(object):
     temp_db_path = TEMP_DB_PATH
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -224,7 +224,7 @@ class TestImportObsPoints(object):
         assert test_string == reference_string
 
 
-class TestWquallabImport(object):
+class _TestWquallabImport(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
@@ -321,7 +321,7 @@ class TestWquallabImport(object):
         assert test_string == reference_string
 
 
-class TestWlvlloggImport(object):
+class _TestWlvlloggImport(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -388,7 +388,7 @@ class TestWlvlloggImport(object):
                     assert test_string == reference_string
 
 
-class TestWflowImport(object):
+class _TestWflowImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -476,7 +476,7 @@ class TestWflowImport(object):
         assert test_string == reference_string
 
 
-class TestWqualfieldImport(object):
+class _TestWqualfieldImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -637,7 +637,7 @@ class TestWqualfieldImport(object):
         assert test_string == reference_string
 
 
-class TestWlevelsImport(object):
+class _TestWlevelsImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -727,7 +727,7 @@ class TestWlevelsImport(object):
         assert test_string == reference_string
 
 
-class TestSeismicImport(object):
+class _TestSeismicImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -788,7 +788,7 @@ class TestSeismicImport(object):
         assert test_string == reference_string
 
 
-class TestStratImport(object):
+class _TestStratImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -850,7 +850,7 @@ class TestStratImport(object):
         assert test_string == reference_string
 
 
-class TestMeteoImport(object):
+class _TestMeteoImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -910,7 +910,7 @@ class TestMeteoImport(object):
         assert test_string == reference_string
 
 
-class TestVlfImport(object):
+class _TestVlfImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -995,7 +995,7 @@ class TestVlfImport(object):
         assert test_string == reference_string
 
 
-class TestObsLinesImport(object):
+class _TestObsLinesImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])

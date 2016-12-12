@@ -187,6 +187,203 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         utils.sql_alter_db(u"DROP table %s"%self.temptableName) # finally drop the temporary table
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
+    def send_file_data_to_importer(self, file_data, importer, cleaning_function=None):
+        self.csvlayer = None
+        if len(file_data) < 2:
+            utils.MessagebarAndLog.info(bar_msg=u'Import error, see log message panel', log_msg=u'Import failed only a header was sent to importer')
+            return
+
+        if cleaning_function is not None:
+            file_data = cleaning_function(file_data)
+
+        #QgsVectorLayer(path, "temporary_csv_layer", "ogr") doesn't work if the file only has one column, so an empty column has to be added
+        if len(file_data[0]) == 1:
+            [row.append(u'') for row in file_data]
+
+        file_string = utils.lists_to_string(file_data)
+
+        with utils.tempinput(file_string) as csvpath:
+            csvlayer = self.csv2qgsvectorlayer(csvpath)
+            if not csvlayer:
+                utils.MessagebarAndLog.critical("Import error: Creating csvlayer failed!")
+                return
+            self.csvlayer = csvlayer
+            importer()
+
+    def get_csvlayer(self): # general importer
+        """Select the csv file, user must also tell what charset to use"""
+        self.charsetchoosen = utils.ask_for_charset()
+        if not self.charsetchoosen:
+            return u'cancel'
+
+        csvpath = utils.select_files(only_one_file=True, extension="csv (*.csv)")
+        if not csvpath:
+            return u'cancel'
+
+        return self.csv2qgsvectorlayer(csvpath[0])
+
+    def csv2qgsvectorlayer(self, path):
+        """ Creates QgsVectorLayer from a csv file """
+        if not path:
+            qgis.utils.iface.messageBar().pushMessage("Failure, no csv file was selected.")
+            return False
+
+        csvlayer = QgsVectorLayer(path, "temporary_csv_layer", "ogr")
+
+        if not csvlayer.isValid():
+            qgis.utils.iface.messageBar().pushMessage("Failure","Impossible to Load File in QGis:\n" + str(path), 2)
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            return False
+        csvlayer.setProviderEncoding(str(self.charsetchoosen))
+        return csvlayer
+
+    def qgiscsv2sqlitetable(self, column_header_translation_dict=None): # general importer
+        """Upload qgis csv-csvlayer (QgsMapLayer) as temporary table (temptableName) in current DB. status='True' if succesfull, else 'false'.
+
+        :param column_header_translation_dict: a dict like {u'column_name_in_csv: column_name_in_db}
+
+        """
+
+        if column_header_translation_dict is None:
+            column_header_translation_dict = {}
+
+        self.status = 'False'
+        #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
+        existing_names= [str(existing_name[0]) for existing_name in utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""")[1]]
+        while self.temptableName in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
+            reponse = PyQt4.QtGui.QMessageBox.question(None, "Warning - Table name confusion!",'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''%(self.temptableName,self.temptableName,self.temptableName), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
+            if reponse == PyQt4.QtGui.QMessageBox.Yes:
+                self.temptableName = '%s_2'%self.temptableName
+            else:
+                return None
+
+        #Get all fields with corresponding types for the csv-csvlayer in qgis
+        fields=[]
+        fieldsNames=[]
+        provider=self.csvlayer.dataProvider()
+        for name in provider.fields(): #fix field names and types in temporary table
+            fldName = unicode(name.name()).replace("'"," ").replace('"'," ")  #Fixing field names
+            if column_header_translation_dict:
+                fldName = column_header_translation_dict.get(fldName, fldName)
+            #Avoid two cols with same name:
+            while fldName.upper() in fieldsNames:
+                fldName = '%s_2'%fldName
+            fldType=name.type()
+            fldTypeName=unicode(name.typeName()).upper()
+            if fldType in (PyQt4.QtCore.QVariant.Char,PyQt4.QtCore.QVariant.String): # field type is text  - this will be the case for all columns if not a .csvt file is defined beside the imported file.
+                fldLength=name.length()
+                fldType='text(%s)'%fldLength  #Add field Length Information
+            elif fldType in (PyQt4.QtCore.QVariant.Bool, PyQt4.QtCore.QVariant.Int, PyQt4.QtCore.QVariant.LongLong, PyQt4.QtCore.QVariant.UInt, PyQt4.QtCore.QVariant.ULongLong):  # field type is integer
+                fldType='integer'
+            elif fldType==PyQt4.QtCore.QVariant.Double: # field type is double
+                fldType='real'
+            else: # if field type is not recognized by qgis
+                fldType=fldTypeName
+            fields.append(""" "%s" %s """%(fldName,fldType))
+            fieldsNames.append(fldName.upper())
+
+        #Create the import-table in DB
+        fields=','.join(fields)
+        utils.sql_alter_db("""CREATE table "%s" (%s)"""%(self.temptableName, fields)) # Create a temporary table with only text columns (unless a .csvt file was defined by user parallell to the .csv file)
+        #create connection and cursor
+        dbpath = QgsProject.instance().readEntry("Midvatten","database")
+        conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        curs = conn.cursor()
+        curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+
+        # Retreive every feature from temporary .csv qgis csvlayer and write it to the temporary table in sqlite (still only text fields unless user specified a .csvt file)
+        for feature in self.csvlayer.getFeatures():
+            values_perso=[]
+            for attr in feature.attributes():
+                #If automatic convertion from PyQt4.QtCore.QVariant did not work, it must be done manually
+                if isinstance(attr, PyQt4.QtCore.QVariant):
+                    attr = attr.toPyObject()
+                values_perso.append(attr) # attr is supposed to be unicode and should be kept like that, sometimes though it ends up being a byte string, do not know why....
+            #Create line in DB table
+            if len(fields)>0:   # NOTE CANNOT USE utils.sql_alter_db() SINCE THE OPTION OF SENDING 2 ARGUMENTS TO .execute IS USED BELOW
+                #please note the usage of ? for parameter substitution - highly recommended
+                #curs.execute("""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso]))
+                try:
+                    curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([value for value in values_perso])) # Assuming value is unicode, send it as such to sqlite
+                except:
+                    curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso])) #in case of errors, the value must be a byte string, then try to convert to unicode
+                self.status = 'True'
+            else: #no attribute Datas
+                qgis.utils.iface.messageBar().pushMessage("No data found!!","No data will be imported!!", 2)
+                self.status = 'False'
+        conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
+        curs.close()
+        conn.close()
+
+    def delete_existing_date_times_from_temptable(self, primary_keys, goal_table):
+        pks = [pk for pk in primary_keys if pk != u'date_time']
+        pks.append(u'date_time')
+
+        #Delete records that have the same date_time but with :00 at the end. (2016-01-01 00:00 will not be imported if 2016-01-01 00:00:00 exists
+        pks_and_00 = [u'"{}"'.format(pk) for pk in pks]
+        pks_and_00.append(u"':00'")
+        sql = u'''delete from "%s" where %s in (select %s from "%s")'''%(self.temptableName,
+                                                                                          u' || '.join(pks_and_00),
+                                                                                          u' || '.join([u'"{}"'.format(pk) for pk in pks]),
+                                                                                          goal_table)
+        utils.sql_alter_db(sql)
+
+        # Delete records that have the same date_time but with :00 at the end. (2016-01-01 00:00:00 will not be imported if 2016-01-01 00:00 exists
+        sql = u'''delete from "%s" where SUBSTR(%s, 1, length(%s) - 3) in (select %s from "%s")'''%(self.temptableName,
+                                                                                          u' || '.join([u'"{}"'.format(pk) for pk in pks]),
+                                                                                          u' || '.join([u'"{}"'.format(pk) for pk in pks]),
+                                                                                          u' || '.join([u'"{}"'.format(pk) for pk in pks]),
+                                                                                          goal_table)
+        utils.sql_alter_db(sql)
+
+    def check_remaining(self, nr_before, nr_after, bar_msg, log_msg):
+        if nr_after == 0:
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error, nothing imported.')
+            self.status = False
+        elif nr_before > nr_after:
+            utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
+
+    def calculate_geometry(self, existing_columns):
+        # Calculate the geometry
+        sql = r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_lines'"""
+        SRID = str((utils.sql_load_fr_db(sql)[1])[0][0])  # THIS IS DUE TO WKT-import of geometries below
+        if u'WKT' in existing_columns:
+            geocol = u'WKT'
+        elif u'geometry' in existing_columns:
+            geocol = u'geometry'
+        else:
+            utils.MessagebarAndLog.warning(bar_msg=u'Obslines without geometry imported')
+            return None
+
+        utils.sql_alter_db(u'''update "%s" set geometry=ST_GeomFromText("%s",'%s')'''%(self.temptableName,
+                                                                                       geocol,
+                                                                                       SRID))
+
+    def check_and_delete_stratigraphy(self, existing_columns):
+        if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):
+            skip_obsids = []
+            obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from "%s"'%self.temptableName)[1]
+            for obsid, stratid_depthbot_depthtop  in obsid_strat.iteritems():
+                sorted_strats = sorted(stratid_depthbot_depthtop, key=itemgetter(0))
+                stratid_idx = 0
+                depthbot_idx = 1
+                depthtop_idx = 2
+                for index in xrange(len(sorted_strats)):
+                    if index == 0:
+                        continue
+                    #Check that there is no gap in the stratid:
+                    if float(sorted_strats[index][stratid_idx]) - float(sorted_strats[index - 1][stratid_idx]) != 1:
+                        utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'The obsid ' + obsid + u' will not be imported due to gaps in stratid')
+                        skip_obsids.append(obsid)
+                        break
+                    #Check that the current depthbot is equal to the previous depthtop
+                    elif sorted_strats[index][depthbot_idx] != sorted_strats[index - 1][depthtop_idx]:
+                        utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'The obsid ' + obsid + u' will not be imported due to gaps in depthtop/depthbot')
+                        skip_obsids.append(obsid)
+                        break
+            if skip_obsids:
+                utils.sql_alter_db(u'delete from "%s" where obsid in (%s)'%(self.temptableName, u', '.join([u'"{}"'.format(obsid) for obsid in skip_obsids]) ))
+
     def import_interlab4(self, filenames=None):
         all_lab_results = self.parse_interlab4(filenames)
         if all_lab_results == u'cancel':
@@ -543,54 +740,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def send_file_data_to_importer(self, file_data, importer, cleaning_function=None):
-        self.csvlayer = None
-        if len(file_data) < 2:
-            utils.MessagebarAndLog.info(bar_msg=u'Import error, see log message panel', log_msg=u'Import failed only a header was sent to importer')
-            return
-
-        if cleaning_function is not None:
-            file_data = cleaning_function(file_data)
-
-        #QgsVectorLayer(path, "temporary_csv_layer", "ogr") doesn't work if the file only has one column, so an empty column has to be added
-        if len(file_data[0]) == 1:
-            [row.append(u'') for row in file_data]
-
-        file_string = utils.lists_to_string(file_data)
-
-        with utils.tempinput(file_string) as csvpath:
-            csvlayer = self.csv2qgsvectorlayer(csvpath)
-            if not csvlayer:
-                utils.MessagebarAndLog.critical("Import error: Creating csvlayer failed!")
-                return
-            self.csvlayer = csvlayer
-            importer()
-
-    def stats_after(self, recsinfile=None, recsbefore=None, recsafter=None):
-        if recsinfile is None:
-            recsinfile = self.recstoimport
-        if recsafter is None:
-            recsafter = self.recsafter
-        if recsbefore is None:
-            recsbefore = self.recsbefore
-
-        NoExcluded = recsinfile - (recsafter - recsbefore)
-
-        if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-            utils.MessagebarAndLog.warning(bar_msg=u'Warning, In total %s posts were not imported.'%str(NoExcluded))
-
-    def get_csvlayer(self): # general importer
-        """Select the csv file, user must also tell what charset to use"""
-        self.charsetchoosen = utils.ask_for_charset()
-        if not self.charsetchoosen:
-            return u'cancel'
-
-        csvpath = utils.select_files(only_one_file=True, extension="csv (*.csv)")
-        if not csvpath:
-            return u'cancel'
-
-        return self.csv2qgsvectorlayer(csvpath[0])
-
     @staticmethod
     def parse_diveroffice_file(path, charset, existing_obsids=None, ask_for_names=True, begindate=None, enddate=None):
         """ Parses a diveroffice csv file into a string
@@ -741,167 +890,18 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         filtered_file_data.reverse()
         return filtered_file_data
 
-    def csv2qgsvectorlayer(self, path):
-        """ Creates QgsVectorLayer from a csv file """
-        if not path:
-            qgis.utils.iface.messageBar().pushMessage("Failure, no csv file was selected.")
-            return False
+    def stats_after(self, recsinfile=None, recsbefore=None, recsafter=None):
+        if recsinfile is None:
+            recsinfile = self.recstoimport
+        if recsafter is None:
+            recsafter = self.recsafter
+        if recsbefore is None:
+            recsbefore = self.recsbefore
 
-        csvlayer = QgsVectorLayer(path, "temporary_csv_layer", "ogr")
+        NoExcluded = recsinfile - (recsafter - recsbefore)
 
-        if not csvlayer.isValid():
-            qgis.utils.iface.messageBar().pushMessage("Failure","Impossible to Load File in QGis:\n" + str(path), 2)
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            return False
-        csvlayer.setProviderEncoding(str(self.charsetchoosen))
-        return csvlayer                
-                
-    def qgiscsv2sqlitetable(self, column_header_translation_dict=None): # general importer
-        """Upload qgis csv-csvlayer (QgsMapLayer) as temporary table (temptableName) in current DB. status='True' if succesfull, else 'false'.
-
-        :param column_header_translation_dict: a dict like {u'column_name_in_csv: column_name_in_db}
-
-        """
-
-        if column_header_translation_dict is None:
-            column_header_translation_dict = {}
-
-        self.status = 'False'
-        #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
-        existing_names= [str(existing_name[0]) for existing_name in utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""")[1]]
-        while self.temptableName in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
-            reponse = PyQt4.QtGui.QMessageBox.question(None, "Warning - Table name confusion!",'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''%(self.temptableName,self.temptableName,self.temptableName), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
-            if reponse == PyQt4.QtGui.QMessageBox.Yes:
-                self.temptableName = '%s_2'%self.temptableName
-            else:
-                return None
-                  
-        #Get all fields with corresponding types for the csv-csvlayer in qgis
-        fields=[]
-        fieldsNames=[]
-        provider=self.csvlayer.dataProvider()
-        for name in provider.fields(): #fix field names and types in temporary table
-            fldName = unicode(name.name()).replace("'"," ").replace('"'," ")  #Fixing field names
-            if column_header_translation_dict:
-                fldName = column_header_translation_dict.get(fldName, fldName)
-            #Avoid two cols with same name:
-            while fldName.upper() in fieldsNames:
-                fldName = '%s_2'%fldName
-            fldType=name.type()
-            fldTypeName=unicode(name.typeName()).upper()
-            if fldType in (PyQt4.QtCore.QVariant.Char,PyQt4.QtCore.QVariant.String): # field type is text  - this will be the case for all columns if not a .csvt file is defined beside the imported file.
-                fldLength=name.length()
-                fldType='text(%s)'%fldLength  #Add field Length Information
-            elif fldType in (PyQt4.QtCore.QVariant.Bool, PyQt4.QtCore.QVariant.Int, PyQt4.QtCore.QVariant.LongLong, PyQt4.QtCore.QVariant.UInt, PyQt4.QtCore.QVariant.ULongLong):  # field type is integer
-                fldType='integer'
-            elif fldType==PyQt4.QtCore.QVariant.Double: # field type is double
-                fldType='real'
-            else: # if field type is not recognized by qgis
-                fldType=fldTypeName
-            fields.append(""" "%s" %s """%(fldName,fldType))
-            fieldsNames.append(fldName.upper())
-        
-        #Create the import-table in DB
-        fields=','.join(fields) 
-        utils.sql_alter_db("""CREATE table "%s" (%s)"""%(self.temptableName, fields)) # Create a temporary table with only text columns (unless a .csvt file was defined by user parallell to the .csv file)
-        #create connection and cursor
-        dbpath = QgsProject.instance().readEntry("Midvatten","database")
-        conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-        curs = conn.cursor()
-        curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
-
-        # Retreive every feature from temporary .csv qgis csvlayer and write it to the temporary table in sqlite (still only text fields unless user specified a .csvt file)
-        for feature in self.csvlayer.getFeatures(): 
-            values_perso=[]
-            for attr in feature.attributes():
-                #If automatic convertion from PyQt4.QtCore.QVariant did not work, it must be done manually
-                if isinstance(attr, PyQt4.QtCore.QVariant):
-                    attr = attr.toPyObject()
-                values_perso.append(attr) # attr is supposed to be unicode and should be kept like that, sometimes though it ends up being a byte string, do not know why....
-            #Create line in DB table
-            if len(fields)>0:   # NOTE CANNOT USE utils.sql_alter_db() SINCE THE OPTION OF SENDING 2 ARGUMENTS TO .execute IS USED BELOW
-                #please note the usage of ? for parameter substitution - highly recommended
-                #curs.execute("""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso]))
-                try:
-                    curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([value for value in values_perso])) # Assuming value is unicode, send it as such to sqlite
-                except:
-                    curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso])) #in case of errors, the value must be a byte string, then try to convert to unicode
-                self.status = 'True'
-            else: #no attribute Datas
-                qgis.utils.iface.messageBar().pushMessage("No data found!!","No data will be imported!!", 2)
-                self.status = 'False'
-        conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
-        curs.close()
-        conn.close()
-
-    def delete_existing_date_times_from_temptable(self, primary_keys, goal_table):
-        pks = [pk for pk in primary_keys if pk != u'date_time']
-        pks.append(u'date_time')
-
-        #Delete records that have the same date_time but with :00 at the end. (2016-01-01 00:00 will not be imported if 2016-01-01 00:00:00 exists
-        pks_and_00 = [u'"{}"'.format(pk) for pk in pks]
-        pks_and_00.append(u"':00'")
-        sql = u'''delete from "%s" where %s in (select %s from "%s")'''%(self.temptableName,
-                                                                                          u' || '.join(pks_and_00),
-                                                                                          u' || '.join([u'"{}"'.format(pk) for pk in pks]),
-                                                                                          goal_table)
-        utils.sql_alter_db(sql)
-
-        # Delete records that have the same date_time but with :00 at the end. (2016-01-01 00:00:00 will not be imported if 2016-01-01 00:00 exists
-        sql = u'''delete from "%s" where SUBSTR(%s, 1, length(%s) - 3) in (select %s from "%s")'''%(self.temptableName,
-                                                                                          u' || '.join([u'"{}"'.format(pk) for pk in pks]),
-                                                                                          u' || '.join([u'"{}"'.format(pk) for pk in pks]),
-                                                                                          u' || '.join([u'"{}"'.format(pk) for pk in pks]),
-                                                                                          goal_table)
-        utils.sql_alter_db(sql)
-
-    def check_remaining(self, nr_before, nr_after, bar_msg, log_msg):
-        if nr_after == 0:
-            utils.MessagebarAndLog.critical(bar_msg=u'Import error, nothing imported.')
-            self.status = False
-        elif nr_before > nr_after:
-            utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
-
-    def calculate_geometry(self, existing_columns):
-        # Calculate the geometry
-        sql = r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_lines'"""
-        SRID = str((utils.sql_load_fr_db(sql)[1])[0][0])  # THIS IS DUE TO WKT-import of geometries below
-        if u'WKT' in existing_columns:
-            geocol = u'WKT'
-        elif u'geometry' in existing_columns:
-            geocol = u'geometry'
-        else:
-            utils.MessagebarAndLog.warning(bar_msg=u'Obslines without geometry imported')
-            return None
-
-        utils.sql_alter_db(u'''update "%s" set geometry=ST_GeomFromText("%s",'%s')'''%(self.temptableName,
-                                                                                       geocol,
-                                                                                       SRID))
-
-    def check_and_delete_stratigraphy(self, existing_columns):
-        if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):
-            skip_obsids = []
-            obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from "%s"'%self.temptableName)[1]
-            for obsid, stratid_depthbot_depthtop  in obsid_strat.iteritems():
-                sorted_strats = sorted(stratid_depthbot_depthtop, key=itemgetter(0))
-                stratid_idx = 0
-                depthbot_idx = 1
-                depthtop_idx = 2
-                for index in xrange(len(sorted_strats)):
-                    if index == 0:
-                        continue
-                    #Check that there is no gap in the stratid:
-                    if float(sorted_strats[index][stratid_idx]) - float(sorted_strats[index - 1][stratid_idx]) != 1:
-                        utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'The obsid ' + obsid + u' will not be imported due to gaps in stratid')
-                        skip_obsids.append(obsid)
-                        break
-                    #Check that the current depthbot is equal to the previous depthtop
-                    elif sorted_strats[index][depthbot_idx] != sorted_strats[index - 1][depthtop_idx]:
-                        utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'The obsid ' + obsid + u' will not be imported due to gaps in depthtop/depthbot')
-                        skip_obsids.append(obsid)
-                        break
-            if skip_obsids:
-                utils.sql_alter_db(u'delete from "%s" where obsid in (%s)'%(self.temptableName, u', '.join([u'"{}"'.format(obsid) for obsid in skip_obsids]) ))
+        if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
+            utils.MessagebarAndLog.warning(bar_msg=u'Warning, In total %s posts were not imported.'%str(NoExcluded))
 
     def SanityCheckVacuumDB(self):
         sanity = utils.askuser("YesNo","""It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""",'Vacuum the database?')
