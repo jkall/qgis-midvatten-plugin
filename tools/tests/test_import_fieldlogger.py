@@ -80,10 +80,6 @@ class TestFieldLoggerImporterDb(object):
                 importer = FieldloggerImport(self.iface.mainWindow(), ms)
                 importer.parse_observations_and_populate_gui()
 
-                # Set settings:
-                #for setting in importer.settings:
-                #    if isinstance(setting, import_fieldlogger.StaffQuestion):
-                #        setting.staff = u'teststaff'
                 test_string = utils_for_tests.create_test_string(importer.observations)
                 return test_string
 
@@ -182,17 +178,17 @@ class TestFieldLoggerImporterDb(object):
                     if isinstance(setting, import_fieldlogger.StaffQuestion):
                         setting.staff = u'teststaff'
 
-                stored_settings = OrderedDict({u's.comment': {u'import_method': u'comments'},
-                                   u'l.comment': {u'import_method': u'comments'},
-                                   u'f.comment': {u'import_method': u'comments'},
-                                   u'q.comment': {u'import_method': u'comments'},
-                                   u'l.meas.m': {u'import_method': u'w_levels'},
-                                   u'f.Accvol.m3': {u'import_method': u'w_flow', u'flowtype': u'Accvol', u'unit': u'm3'},
-                                   u's.turbiditet.FNU': {u'import_method': u'w_qual_field', u'parameter': u'turbiditet', u'unit': u'FNU', u'depth': u'', u'instrument': u'testid'},
-                                   u'q.konduktivitet.µS/cm': {u'import_method': u'w_qual_field', u'parameter': u'konduktivitet', u'unit': u'µS/cm', u'depth': u'', u'instrument': u'testid'},
-                                   u'q.syre.mg/L': {u'import_method': u'w_qual_field', u'parameter': u'syre', u'unit': u'mg/L', u'depth': u'', u'instrument': u'testid'},
-                                   u'q.syre.%': {u'import_method': u'w_qual_field', u'parameter': u'syre', u'unit': u'%', u'depth': u'', u'instrument': u'testid'},
-                                   u'q.temperatur.grC': {u'import_method': u'w_qual_field', u'parameter': u'temperatur', u'unit': u'grC', u'depth': u'', u'instrument': u'testid'}})
+                stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
+                                   [u'l.comment', [[u'import_method', u'comments']]],
+                                   [u'f.comment', [[u'import_method', u'comments']]],
+                                   [u'q.comment', [[u'import_method', u'comments']]],
+                                   [u'l.meas.m', [[u'import_method', u'w_levels']]],
+                                   [u'f.Accvol.m3', [[u'import_method', u'w_flow'], [u'flowtype', u'Accvol'], [u'unit', u'm3']]],
+                                   [u's.turbiditet.FNU', [[u'import_method', u'w_qual_field'], [u'parameter', u'turbiditet'], [u'unit', u'FNU'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.konduktivitet.µS/cm', [[u'import_method', u'w_qual_field'], [u'parameter', u'konduktivitet'], [u'unit', u'µS/cm'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.syre.mg/L', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'mg/L'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.syre.%', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'%'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.temperatur.grC', [[u'import_method', u'w_qual_field'], [u'parameter', u'temperatur'], [u'unit', u'grC'], [u'depth', u''], [u'instrument', u'testid']]]]
                 importer.set_parameters_using_stored_settings(stored_settings, importer.parameter_imports)
                 importer.start_import(importer.observations)
 
@@ -259,8 +255,8 @@ class TestFieldLoggerImporterDb(object):
                     if isinstance(setting, import_fieldlogger.StaffQuestion):
                         setting.staff = u'teststaff'
 
-                stored_settings = OrderedDict({u'f.comment': {u'import_method': u'comments'},
-                                   u'Aveflow.m3/s': {u'import_method': u'w_flow', u'flowtype': u'Momflow2', u'unit': u'aunit'}})
+                stored_settings = [[u'f.comment', [[u'import_method', u'comments']]],
+                                   [u'Aveflow.m3/s', [[u'import_method', u'w_flow'], [u'flowtype', u'Momflow2'], [u'unit', u'aunit']]]]
 
                 importer.set_parameters_using_stored_settings(stored_settings, importer.parameter_imports)
                 importer.start_import(importer.observations)
@@ -342,14 +338,13 @@ class TestObsidFilter(object):
 def test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units, mock_mock_message_bar):
     mock_w_qual_field_parameter_units.retun_value = {}
 
-    stored_settings = OrderedDict(
-                  {u's.comment': {u'import_method': u'comments'},
-                   u'l.meas.m': {u'import_method': u'w_level'},
-                   u'f.Accvol.m3': {u'import_method': u'w_flow', u'flowtype': u'Accvol', u'unit': u'm3'},
-                   u's.turbiditet.FNU': {u'import_method': u'w_qual_field', u'parameter': u'turbiditet', u'unit': u'FNU', u'depth': u'1', u'instrument': u'testid'}})
+    stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
+                   [u'l.meas.m', [[u'import_method', u'w_level']]],
+                   [u'f.Accvol.m3', [[u'import_method', u'w_flow'], [u'flowtype', u'Accvol'], [u'unit', u'm3']]],
+                   [u's.turbiditet.FNU', [[u'import_method', u'w_qual_field'], [u'parameter', u'turbiditet'], [u'unit', u'FNU'], [u'depth', u'1'], [u'instrument', u'testid']]]]
 
     mock_connect = MagicMock()
-    parameter_imports = OrderedDict([(k, import_fieldlogger.ImportMethodChooser(k, stored_settings.keys(), mock_connect)) for k in stored_settings.keys()])
+    parameter_imports = OrderedDict([(k, import_fieldlogger.ImportMethodChooser(k, [x[0] for x in stored_settings], mock_connect)) for k in [x[0] for x in stored_settings]])
 
     import_fieldlogger.FieldloggerImport.set_parameters_using_stored_settings(stored_settings, parameter_imports)
 
@@ -362,7 +357,13 @@ def test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units,
         else:
             settings.append((k, setting))
     test_string = utils_for_tests.create_test_string(settings)
-    reference_string = u'[(s.turbiditet.FNU, {depth: 1, instrument: testid, parameter: turbiditet, unit: FNU}), (f.Accvol.m3, {flowtype: Accvol, unit: m3})]'
+    reference_string = u'[(f.Accvol.m3, ((flowtype, Accvol), (unit, m3))), (s.turbiditet.FNU, ((parameter, turbiditet), (unit, FNU), (depth, 1), (instrument, testid)))]'
+    assert test_string == reference_string
+
+    new_stored = []
+    import_fieldlogger.FieldloggerImport.update_stored_settings(new_stored, parameter_imports)
+    test_string = utils_for_tests.create_test_string(new_stored)
+    reference_string = u'[[s.comment, [(import_method, comments)]], [f.Accvol.m3, [(import_method, w_flow), (flowtype, Accvol), (unit, m3)]], [s.turbiditet.FNU, [(import_method, w_qual_field), (parameter, turbiditet), (unit, FNU), (depth, 1), (instrument, testid)]]]'
     assert test_string == reference_string
 
 

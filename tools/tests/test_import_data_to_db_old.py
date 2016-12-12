@@ -46,7 +46,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class _TestImportObsPoints(object):
+class TestImportObsPoints(object):
     temp_db_path = TEMP_DB_PATH
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -144,8 +144,8 @@ class _TestImportObsPoints(object):
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.obsp_import()
-                assert mock_iface.messageBar.return_value.createMessage.called_with(u'Warning, In total 1 posts were not imported.')
-                assert mock_iface.messageBar.return_value.createMessage.called_with(u'In total 0 measurements were imported.')
+                mock_iface.messageBar.return_value.createMessage.assert_called_with(u'Warning, In total 1 posts were not imported.')
+                mock_iface.messageBar.return_value.createMessage.assert_called_with(u'In total 0 measurements were imported.')
 
             _test_import_obs_points_using_obsp_import(self)
 
@@ -181,8 +181,8 @@ class _TestImportObsPoints(object):
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.obsp_import()
-                assert mock_iface.messageBar.return_value.createMessage.called_with(u'Warning, In total 2 posts were not imported.')
-                assert mock_iface.messageBar.return_value.createMessage.called_with(u'In total 1 measurements were imported.')
+                mock_iface.messageBar.return_value.createMessage.assert_called_with(u'Warning, In total 2 posts were not imported.')
+                mock_iface.messageBar.return_value.createMessage.assert_called_with(u'In total 1 measurements were imported.')
             _test_import_obs_points_using_obsp_import(self)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
@@ -224,7 +224,7 @@ class _TestImportObsPoints(object):
         assert test_string == reference_string
 
 
-class _TestWquallabImport(object):
+class TestWquallabImport(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
@@ -321,7 +321,7 @@ class _TestWquallabImport(object):
         assert test_string == reference_string
 
 
-class _TestWlvlloggImport(object):
+class TestWlvlloggImport(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -388,7 +388,7 @@ class _TestWlvlloggImport(object):
                     assert test_string == reference_string
 
 
-class _TestWflowImport(object):
+class TestWflowImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -476,7 +476,7 @@ class _TestWflowImport(object):
         assert test_string == reference_string
 
 
-class _TestWqualfieldImport(object):
+class TestWqualfieldImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -593,8 +593,6 @@ class _TestWqualfieldImport(object):
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
                 self.importinstance.default_import(self.importinstance.wqualfield_import_from_csvlayer)
-                assert mock_iface.messageBar.return_value.createMessage.called_with(u'In total 0 measurements were imported.')
-                assert mock_iface.messageBar.return_value.createMessage.called_with(u'Warning, In total 1 posts were not imported.')
 
             _test_w_qual_field_import_from_csvlayer(self, filename)
 
@@ -630,8 +628,6 @@ class _TestWqualfieldImport(object):
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
                 self.importinstance.default_import(self.importinstance.wqualfield_import_from_csvlayer)
-                assert mock_iface.messageBar.return_value.createMessage.called_with(u'In total 1 measurements were imported.')
-                assert mock_iface.messageBar.return_value.createMessage.called_with(u'Warning, In total 1 posts were not imported.')
 
             _test_w_qual_field_import_from_csvlayer(self, filename)
 
@@ -641,7 +637,7 @@ class _TestWqualfieldImport(object):
         assert test_string == reference_string
 
 
-class _TestWlevelsImport(object):
+class TestWlevelsImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -731,7 +727,7 @@ class _TestWlevelsImport(object):
         assert test_string == reference_string
 
 
-class _TestSeismicImport(object):
+class TestSeismicImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -792,7 +788,7 @@ class _TestSeismicImport(object):
         assert test_string == reference_string
 
 
-class _TestStratImport(object):
+class TestStratImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -854,7 +850,7 @@ class _TestStratImport(object):
         assert test_string == reference_string
 
 
-class _TestMeteoImport(object):
+class TestMeteoImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -914,7 +910,7 @@ class _TestMeteoImport(object):
         assert test_string == reference_string
 
 
-class _TestVlfImport(object):
+class TestVlfImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -999,7 +995,7 @@ class _TestVlfImport(object):
         assert test_string == reference_string
 
 
-class _TestObsLinesImport(object):
+class TestObsLinesImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])

@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+import ast
 import io
 import os
 import locale
@@ -354,29 +355,21 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
     @staticmethod
     def get_stored_settings(ms, settingskey):
         """
-        Creates a parameter setting dict from midvattensettings
+        Reads the settings from settingskey and returns a created dict/list/tuple using ast.literal_eval
 
-        Reads a string entry from midvattensettings that looks like this:
-        importmethod:
-        :param ms: midvattensettings
-        :return:
+        :param ms: midvatten settings
+        :param settingskey: the key to get from midvatten settings.
+        :return: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
         """
-
-        settings = ms.settingsdict.get(settingskey, None)
-        if settings is None:
-            return OrderedDict()
-        parameter_settings_string = utils.returnunicode(settings)
-        parameter_settings = parameter_settings_string.split(u'/')
-        stored_settings = OrderedDict()
-
-        for parameter_setting in parameter_settings:
-            settings = parameter_setting.split(u'|')
-            parametername = settings[0]
-            stored_settings[parametername] = OrderedDict()
-
-            for attrs in settings[1:]:
-                attr, value = attrs.split(u':')
-                stored_settings[parametername][attr] = value
+        settings_string_raw = ms.settingsdict.get(settingskey, None)
+        if settings_string_raw is None:
+            utils.MessagebarAndLog.warning(bar_msg=u'Settings key ' + settingskey + u' did not exist in midvatten settings.')
+            return []
+        try:
+            stored_settings = ast.literal_eval(settings_string_raw)
+        except SyntaxError:
+            stored_settings = []
+            utils.MessagebarAndLog.warning(bar_msg=u'Getting stored settings failed for key ' + settingskey + u' see log message panel.', log_msg=u'Parsing the settingsstring ' + str(settings_string_raw) + u'failed.')
         return stored_settings
 
     @staticmethod
@@ -385,40 +378,50 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         Sets the parameter settings based on a stored setitngs dict.
 
         parametername|import_method:w_flow|flowtype:Aveflow|unit:m3/s/parametername2|import_method:comment ...
-        :param stored_settings: a dict like {parametername: {attribute1: value1, attribute2: value2 ...}}
+        :param stored_settings: alist like [[u'parametername', [[u'attr1', u'val1'], ...]], ...]
         :param import_method_choosers: a dict like {parametername: ImportMethodChooser, ...}
         :return:
         """
+        utils.MessagebarAndLog.info(log_msg=u'Setting parameters using stored settings: ' + str(stored_settings))
         for import_method_chooser in import_method_choosers.values():
 
-            setting = stored_settings.get(import_method_chooser.parameter_name, None)
-            if setting is None:
+            if not stored_settings:
+                continue
+            settings = [attrs for param, attrs in stored_settings if param == import_method_chooser.parameter_name]
+
+            if settings:
+                settings = settings[0]
+            else:
                 continue
 
-            import_method_chooser.import_method = setting[u'import_method']
+            if settings is None or not settings:
+                continue
+
+            import_method_chooser.import_method = [v if v else None for k, v in settings if k == u'import_method'][0]
 
             if import_method_chooser.parameter_import_fields is None:
                 import_method_chooser.choose_method(import_method_chooser.import_method_classes)
 
 
-            for attr, val in setting.iteritems():
+            for attr, val in settings:
                 if attr == u'import_method':
                     continue
                 try:
                     setattr(import_method_chooser.parameter_import_fields, attr, val)
                 except Exception, e:
-                    print(str(e))
+                    utils.MessagebarAndLog.info(log_msg=u'Setting parameter ' + str(attr) + u' for ' + import_method_chooser.parameter_name + u' to value ' + str(val) + u' failed, msg:\n' + str(e))
 
     @staticmethod
     def update_stored_settings(stored_settings, parameter_imports, force_update=False):
+
+        setted_pars = []
+        new_settings = []
         for parameter_name, import_method_chooser in parameter_imports.iteritems():
             if not force_update:
                 if import_method_chooser.import_method is None or not import_method_chooser.import_method:
                     continue
 
-            attrdict = stored_settings.get(import_method_chooser.parameter_name, OrderedDict())
-
-            attrdict[u'import_method'] = import_method_chooser.import_method
+            attrs = [(u'import_method', import_method_chooser.import_method)]
 
             parameter_import_fields = import_method_chooser.parameter_import_fields
             if parameter_import_fields is None:
@@ -427,36 +430,32 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             try:
                 settings = parameter_import_fields.get_settings()
             except AttributeError:
-                settings = OrderedDict()
-            for attr, value in settings.iteritems():
-                attrdict[attr] = value
+                settings = tuple()
 
-            stored_settings[import_method_chooser.parameter_name] = attrdict
+            if settings:
+                attrs.extend(settings)
+            new_settings.append([parameter_name, attrs])
+            setted_pars.append(parameter_name)
+
+        for parameter, attrs in stored_settings:
+            if parameter not in setted_pars:
+                new_settings.append([parameter, attrs])
+
+        stored_settings[:] = new_settings
 
     @staticmethod
     def save_stored_settings(ms, stored_settings, settingskey):
         """
         Saves the current parameter settings into midvatten settings
 
-        Stores the settings as a string:
-        parametername|import_method:w_flow|flowtype:Aveflow|unit:m3/s/parametername2|import_method:comment ...
-
         :param ms: midvattensettings
-        :param stored_settings: a dict like {parametername: {attribute1: value1, attribute2: value2 ...}}
-        :return:
+        :param stored_settings: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
+        :return: a string representation of stored_settings
         """
-        if stored_settings is None:
-            return
-        stored_settings = utils.returnunicode(stored_settings, keep_containers=True)
-        settings_list = []
-        for parameter_name, attrs in stored_settings.iteritems():
-            paramlist = [parameter_name]
-            paramlist.extend([u':'.join([attr, value]) for attr, value in attrs.iteritems()])
-            settings_list.append(u'|'.join(paramlist))
-
-        setting_string = u'/'.join(settings_list)
-        ms.settingsdict[settingskey] = utils.returnunicode(setting_string)
+        settings_string = utils.anything_to_string_representation(stored_settings)
+        ms.settingsdict[settingskey] = settings_string
         ms.save_settings()
+        utils.MessagebarAndLog.info(log_msg=u'Settings ' + settings_string + u' stored for key ' + settingskey)
 
     def start_import(self, observations):
         """
@@ -464,6 +463,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         :param observations:
         :return:
         """
+        observations = copy.deepcopy(observations)
 
         #Start by saving the parameter settings
         self.update_stored_settings(self.stored_settings, self.parameter_imports)
@@ -900,7 +900,7 @@ class WFlowImportFields(RowEntryGrid):
         combobox_var.addItems(utils.returnunicode(vals, keep_containers=True))
 
     def get_settings(self):
-        return OrderedDict([(u'flowtype', self.flowtype), (u'unit', self.unit)])
+        return ((u'flowtype', self.flowtype), (u'unit', self.unit))
 
     def alter_data(self, observations):
         if not self.flowtype:
@@ -1034,10 +1034,10 @@ class WQualFieldImportFields(RowEntryGrid):
         combobox_var.addItems(utils.returnunicode(vals, keep_containers=True))
 
     def get_settings(self):
-        return OrderedDict([(u'parameter', self.parameter),
+        return ((u'parameter', self.parameter),
                            (u'unit', self.unit),
                            (u'depth', self.depth),
-                           (u'instrument', self.instrument)])
+                           (u'instrument', self.instrument))
 
     def alter_data(self, observations):
         if not self.parameter:
@@ -1071,5 +1071,6 @@ def default_combobox(editable=True):
     combo_box = PyQt4.QtGui.QComboBox()
     combo_box.setEditable(editable)
     combo_box.setSizeAdjustPolicy(PyQt4.QtGui.QComboBox.AdjustToContents)
+    combo_box.setMinimumWidth(80)
     combo_box.addItem(u'')
     return combo_box
