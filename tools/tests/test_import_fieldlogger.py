@@ -360,6 +360,13 @@ def test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units,
     reference_string = u'[(f.Accvol.m3, ((flowtype, Accvol), (unit, m3))), (s.turbiditet.FNU, ((parameter, turbiditet), (unit, FNU), (depth, 1), (instrument, testid)))]'
     assert test_string == reference_string
 
+    new_stored = []
+    import_fieldlogger.FieldloggerImport.update_stored_settings(new_stored, parameter_imports)
+    test_string = utils_for_tests.create_test_string(new_stored)
+    reference_string = u'[[s.comment, [(import_method, comments)]], [f.Accvol.m3, [(import_method, w_flow), (flowtype, Accvol), (unit, m3)]], [s.turbiditet.FNU, [(import_method, w_qual_field), (parameter, turbiditet), (unit, FNU), (depth, 1), (instrument, testid)]]]'
+    assert test_string == reference_string
+
+
 
 def test_SublocationFilter():
     sublocation_filter = import_fieldlogger.SublocationFilter([u'a.1', u'a.2'])

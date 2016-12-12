@@ -382,6 +382,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         :param import_method_choosers: a dict like {parametername: ImportMethodChooser, ...}
         :return:
         """
+        utils.MessagebarAndLog.info(log_msg=u'Setting parameters using stored settings: ' + str(stored_settings))
         for import_method_chooser in import_method_choosers.values():
 
             if not stored_settings:
@@ -408,7 +409,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 try:
                     setattr(import_method_chooser.parameter_import_fields, attr, val)
                 except Exception, e:
-                    print(str(e))
+                    utils.MessagebarAndLog.info(log_msg=u'Setting parameter ' + str(attr) + u' for ' + import_method_chooser.parameter_name + u' to value ' + str(val) + u' failed, msg:\n' + str(e))
 
     @staticmethod
     def update_stored_settings(stored_settings, parameter_imports, force_update=False):
@@ -432,7 +433,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 settings = tuple()
 
             if settings:
-                attrs.append(settings)
+                attrs.extend(settings)
             new_settings.append([parameter_name, attrs])
             setted_pars.append(parameter_name)
 

@@ -815,7 +815,6 @@ def get_latlon_for_all_obsids():
     """
     latlon_dict = get_sql_result_as_dict('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')[1]
     latlon_dict = dict([(obsid, lat_lon[0]) for obsid, lat_lon in latlon_dict.iteritems()])
-    MessagebarAndLog.info(log_msg=u'Latlons:\n' + str(latlon_dict))
     return latlon_dict
 
 def get_last_used_flow_instruments():
