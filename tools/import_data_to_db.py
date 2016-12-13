@@ -175,7 +175,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         sql = u''.join(sql_list)
 
         recsbefore = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
-        utils.sql_alter_db(sql.encode(u'utf-8'))
+        try:
+            utils.sql_alter_db(sql.encode(u'utf-8'))
+        except Exception, e:
+            utils.MessagebarAndLog.critical(bar_msg=u'Error, import failed, see log message panel', log_msg=u'Sql\n' + sql + u' failed.\nMsg:\n' + str(e))
+            self.status = 'False'
+            return
         recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
         self.stats_after(recsinfile=recsinfile, recsbefore=recsbefore, recsafter=recsafter)
 

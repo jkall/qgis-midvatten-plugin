@@ -263,10 +263,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         parameters_inputtypes_hints = OrderedDict()
 
         #Check for duplicates in sublocation suffixes
-
-        sub_suffixes = [parameter_group.sublocation_suffix for parameter_group in parameter_groups]
-        if len(sub_suffixes) != len(set(sub_suffixes)):
-            utils.MessagebarAndLog.critical(bar_msg=u'Critical: Sub-location suffixes must be unique')
+        all_sublocations = [l_s_o[1] for parameter_group in parameter_groups for l_s_o in parameter_group.locations_sublocations_obsids if parameter_group.parameter_list]
+        if len(all_sublocations) != len(set(all_sublocations)):
+            utils.MessagebarAndLog.critical(bar_msg=u'Critical: Combination of obsid, locationsuffix and sublocation suffix must be unique')
             return
 
         for index, parameter_group in enumerate(parameter_groups):
