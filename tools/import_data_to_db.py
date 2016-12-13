@@ -171,7 +171,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         sql_list = [u"""INSERT OR IGNORE INTO "%s" ("""%goal_table]
         sql_list.append(u', '.join([u'"{}"'.format(k) for k in sorted(existing_columns)]))
         sql_list.append(u""") SELECT """)
-        sql_list.append(u', '.join([u"""(case when "%s"!='' then CAST("%s" as "%s") else null end)"""%(colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns)]))
+        sql_list.append(u', '.join([u"""(case when "%s"!='' or "%s"!=' ' then CAST("%s" as "%s") else null end)"""%(colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns)]))
         sql_list.append(u"""FROM %s"""%(self.temptableName))
         sql = u''.join(sql_list)
 

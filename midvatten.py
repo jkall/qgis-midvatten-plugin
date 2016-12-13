@@ -459,7 +459,7 @@ class midvatten:
                 iniText = QSettings(filenamepath , QSettings.IniFormat)
                 verno = str(iniText.value('version')) 
                 from create_db import newdb
-                newdbinstance = newdb(verno,'n',user_chosen_EPSG_code, set_locale=utils.getcurrentlocale())#flag 'n' to avoid user selection of EPSG
+                newdbinstance = newdb(verno,'n',user_chosen_EPSG_code)#flag 'n' to avoid user selection of EPSG
                 if not newdbinstance.dbpath=='':
                     newdb = newdbinstance.dbpath
                     exportinstance = ExportData(OBSID_P, OBSID_L)
@@ -816,17 +816,14 @@ class midvatten:
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict)
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
-    def new_db(self, set_locale=False):
-        if not set_locale:
-            set_locale = utils.getcurrentlocale()
-
+    def new_db(self):
         sanity = utils.askuser("YesNo","""This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""",'Are you sure?')
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
             verno = str(iniText.value('version')) 
             from create_db import newdb
-            newdbinstance = newdb(verno, set_locale=set_locale)
+            newdbinstance = newdb(verno)
             if not newdbinstance.dbpath=='':
                 db = newdbinstance.dbpath
                 self.ms.settingsdict['database'] = db

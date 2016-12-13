@@ -1180,8 +1180,26 @@ def remove_mean_from_nparray(x):
     return x
 
 def getcurrentlocale():
-    current_locale = QgsProject.instance().readEntry("Midvatten", "locale")[0]
+    current_locale = get_locale_from_db()
+    if current_locale is None:
+        current_locale  = locale.getdefaultlocale()[0]
+
     return current_locale
+
+def get_locale_from_db():
+    connection_ok, locale_row = sql_load_fr_db(u"select description from about_db where description like 'locale:%'")
+    if connection_ok:
+        try:
+            locale_setting = returnunicode(locale_row, keep_containers=True)[0][0].split(u':')
+        except IndexError:
+            return None
+
+        try:
+            locale_setting = locale_setting[1]
+        except IndexError:
+            return None
+        else:
+            return locale_setting
 
 def calculate_db_table_rows():
     results = {}

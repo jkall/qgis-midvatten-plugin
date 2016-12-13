@@ -31,12 +31,18 @@ import midvatten_utils as utils
 
 class newdb():
 
-    def __init__(self, verno, user_select_CRS='y', EPSG_code=u'4326', set_locale=False):
+    def __init__(self, verno, user_select_CRS='y', EPSG_code=u'4326'):
         self.dbpath = ''
-        self.create_new_db(verno,user_select_CRS,EPSG_code, set_locale)  #CreateNewDB(verno)
+        self.create_new_db(verno,user_select_CRS,EPSG_code)  #CreateNewDB(verno)
 
-    def create_new_db(self, verno, user_select_CRS='y', EPSG_code=u'4326', set_locale=False):  #CreateNewDB(self, verno):
+    def create_new_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
+
+        set_locale = self.ask_for_locale()
+        if set_locale == u'cancel':
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            return u'cancel'
+
         if user_select_CRS=='y':
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
         else:
@@ -95,7 +101,8 @@ class newdb():
                             for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
                                                                ('CHANGETOPLUGINVERSION', str(verno)),
                                                                ('CHANGETOQGISVERSION',qgisverno),
-                                                               ('CHANGETOSPLITEVERSION', str(versionstext[0][0]))]:
+                                                               ('CHANGETOSPLITEVERSION', str(versionstext[0][0])),
+                                                               ('CHANGETOLOCALE', str(set_locale))]:
                                 line = line.replace(replace_word, replace_with)
                             self.cur.execute(line)  # use tags to find and replace SRID and versioning info
                     except Exception, e:
@@ -130,6 +137,21 @@ class newdb():
                 AddLayerStyles(self.dbpath)
                 """
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
+
+    def ask_for_locale(self):
+        locales = [PyQt4.QtCore.QLocale(PyQt4.QtCore.QLocale.Swedish, PyQt4.QtCore.QLocale.Sweden), PyQt4.QtCore.QLocale(PyQt4.QtCore.QLocale.English, PyQt4.QtCore.QLocale.UnitedStates)]
+        locale_names = [localeobj.name() for localeobj in locales]
+        question = utils.NotFoundQuestion(dialogtitle=u'User input needed',
+                                    msg=u'Supply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.',
+                                    existing_list=locale_names,
+                                    default_value=u'',
+                                    button_names=[u'Cancel', u'Ok'])
+        answer = question.answer
+        submitted_value = utils.returnunicode(question.value)
+        if answer == u'cancel':
+            return answer
+        elif answer == u'ok':
+            return submitted_value
 
     def ask_for_CRS(self, set_locale):
         # USER MUST SELECT CRS FIRST!! 

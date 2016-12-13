@@ -36,7 +36,7 @@ from midvatten.midvatten import midvatten
 import utils_for_tests
 
 
-class _TestCalclvl(object):
+class TestCalclvl(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
@@ -46,10 +46,13 @@ class _TestCalclvl(object):
     mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([temp_db_path]))
     selected_obsids = MockUsingReturnValue([u'rb1'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
-    def setUp(self):
+    def setUp(self, mock_locale):
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.iface = DummyInterface()
         self.midvatten = midvatten(self.iface)
         try:

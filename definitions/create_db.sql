@@ -2,6 +2,7 @@
 select InitSpatialMetadata(1);
 create table about_db ("table" text, "column" text, "data_type" text, "not_null" text, "default_value" text, "primary_key" text, "foreign_key" text, "description" text, "upd_date" text, "upd_sign" text);
 insert into about_db values('*', '*', '', '', '', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION, running QGIS version CHANGETOQGISVERSION on top of SpatiaLite version CHANGETOSPLITEVERSION', '', '');
+insert into about_db values('*', '*', '', '', '', '', '', 'locale:CHANGETOLOCALE', '', '');
 insert into about_db values('about_db', '*', '', '', '', '', '', 'A status log for the tables in the db', '', '');
 insert into about_db values('about_db', 'table', 'text', '', '', '', '', 'Name of a table in the db', '', '');
 insert into about_db values('about_db', 'column', 'text', '', '', '', '', 'Name of column', '', '');

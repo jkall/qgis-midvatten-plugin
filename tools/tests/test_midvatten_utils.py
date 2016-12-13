@@ -29,12 +29,12 @@ import io
 import os
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
-MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
+MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class _TestFilterNonexistingObsidsAndAsk(object):
+class TestFilterNonexistingObsidsAndAsk(object):
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
     def test_filter_nonexisting_obsids_and_ask_ok(self, mock_notfound, mock_iface):
@@ -133,7 +133,7 @@ class _TestFilterNonexistingObsidsAndAsk(object):
             assert len(mock_notfound.mock_calls) == 2
 
 
-class _TestTempinput(object):
+class TestTempinput(object):
     def test_tempinput(self):
         rows = u'543\n21'
         with utils.tempinput(rows) as filename:
@@ -143,7 +143,7 @@ class _TestTempinput(object):
         assert res == reference_list
 
 
-class _TestAskUser(object):
+class TestAskUser(object):
     PyQt4_QtGui_QInputDialog_getText = MockUsingReturnValue([u'-1 hours'])
     cancel = MockUsingReturnValue([u''])
 
@@ -158,7 +158,7 @@ class _TestAskUser(object):
         assert question.result == u'cancel'
 
 
-class _TestGetFunctions(object):
+class TestGetFunctions(object):
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
@@ -209,7 +209,7 @@ class _TestGetFunctions(object):
         assert test_string == reference_string
 
 
-class _TestSqlToParametersUnitsTuple(object):
+class TestSqlToParametersUnitsTuple(object):
     @mock.patch('midvatten_utils.sql_load_fr_db', autospec=True)
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
         mock_sqlload.return_value = (True, [(u'par1', u'un1'), (u'par2', u'un2')])
@@ -219,7 +219,7 @@ class _TestSqlToParametersUnitsTuple(object):
         assert test_string == reference_string
 
 
-class _TestCalculateDbTableRows(object):
+class TestCalculateDbTableRows(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])

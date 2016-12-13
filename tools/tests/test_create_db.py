@@ -32,7 +32,7 @@ from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgi
 from tools.tests.mocks_for_tests import DummyInterface
 
 
-class _TestCreateMemoryDb():
+class TestCreateMemoryDb():
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_yes = MockUsingReturnValue(answer_yes_obj)
@@ -43,10 +43,14 @@ class _TestCreateMemoryDb():
         self.iface = DummyInterface()
         self.midvatten = midvatten(self.iface)
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
-    def test_new_db(self):
+    def test_new_db(self, mock_locale):
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
+
         self.midvatten.new_db()
 
     def tearDown(self):
@@ -54,7 +58,7 @@ class _TestCreateMemoryDb():
         self.midvatten = None
 
 
-class _TestCreateDb(object):
+class TestCreateDb(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -71,6 +75,7 @@ class _TestCreateDb(object):
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     def setUp(self):
+
         self.iface = DummyInterface()
         self.midvatten = midvatten(self.iface)
         try:
@@ -85,44 +90,58 @@ class _TestCreateDb(object):
         except OSError:
             pass
 
+    @mock.patch('qgis.utils.iface')
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', crs_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    def test_create_db_se(self):
-        self.midvatten.new_db(u'sv_SE')
+    def test_create_db_se(self, mock_locale, mock_iface):
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
+        self.midvatten.new_db()
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select * from zz_strat'))
         reference_string = ur"""(True, [(berg, berg), (b, berg), (rock, berg), (ro, berg), (grovgrus, grovgrus), (grg, grovgrus), (coarse gravel, grovgrus), (cgr, grovgrus), (grus, grus), (gr, grus), (gravel, grus), (mellangrus, mellangrus), (grm, mellangrus), (medium gravel, mellangrus), (mgr, mellangrus), (fingrus, fingrus), (grf, fingrus), (fine gravel, fingrus), (fgr, fingrus), (grovsand, grovsand), (sag, grovsand), (coarse sand, grovsand), (csa, grovsand), (sand, sand), (sa, sand), (mellansand, mellansand), (sam, mellansand), (medium sand, mellansand), (msa, mellansand), (finsand, finsand), (saf, finsand), (fine sand, finsand), (fsa, finsand), (silt, silt), (si, silt), (lera, lera), (ler, lera), (le, lera), (clay, lera), (cl, lera), (morän, morän), (moran, morän), (mn, morän), (till, morän), (ti, morän), (torv, torv), (t, torv), (peat, torv), (pt, torv), (fyll, fyll), (fyllning, fyll), (f, fyll), (made ground, fyll), (mg, fyll), (land fill, fyll)])"""
         assert test_string == reference_string
+        current_locale = utils.getcurrentlocale()
+        assert current_locale == u'sv_SE'
 
+    @mock.patch('qgis.utils.iface')
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', crs_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    @mock.patch('create_db.locale.getdefaultlocale', autospec=True)
-    def test_create_db_locale_se(self, mock_locale):
-        mock_locale.return_value = [u'se_SV']
-        self.midvatten.new_db(u'sv_SE')
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    def test_create_db_locale_se(self, mock_locale, mock_iface):
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
+        self.midvatten.new_db()
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select * from zz_strat'))
         reference_string = ur"""(True, [(berg, berg), (b, berg), (rock, berg), (ro, berg), (grovgrus, grovgrus), (grg, grovgrus), (coarse gravel, grovgrus), (cgr, grovgrus), (grus, grus), (gr, grus), (gravel, grus), (mellangrus, mellangrus), (grm, mellangrus), (medium gravel, mellangrus), (mgr, mellangrus), (fingrus, fingrus), (grf, fingrus), (fine gravel, fingrus), (fgr, fingrus), (grovsand, grovsand), (sag, grovsand), (coarse sand, grovsand), (csa, grovsand), (sand, sand), (sa, sand), (mellansand, mellansand), (sam, mellansand), (medium sand, mellansand), (msa, mellansand), (finsand, finsand), (saf, finsand), (fine sand, finsand), (fsa, finsand), (silt, silt), (si, silt), (lera, lera), (ler, lera), (le, lera), (clay, lera), (cl, lera), (morän, morän), (moran, morän), (mn, morän), (till, morän), (ti, morän), (torv, torv), (t, torv), (peat, torv), (pt, torv), (fyll, fyll), (fyllning, fyll), (f, fyll), (made ground, fyll), (mg, fyll), (land fill, fyll)])"""
         assert test_string == reference_string
+        current_locale = utils.getcurrentlocale()
+        assert current_locale == u'sv_SE'
 
+    @mock.patch('qgis.utils.iface')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', crs_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    @mock.patch('create_db.locale.getdefaultlocale', autospec=True)
-    def test_create_db_locale_en(self, mock_locale):
-        mock_locale.return_value = [u'en_US']
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    def test_create_db_locale_en(self, mock_locale, mock_iface):
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'en_US'
         self.midvatten.new_db()
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select * from zz_strat'))
         reference_string = ur"""(True, [(berg, rock), (b, rock), (rock, rock), (ro, rock), (grovgrus, coarse gravel), (grg, coarse gravel), (coarse gravel, coarse gravel), (cgr, coarse gravel), (grus, gravel), (gr, gravel), (gravel, gravel), (mellangrus, medium gravel), (grm, medium gravel), (medium gravel, medium gravel), (mgr, medium gravel), (fingrus, fine gravel), (grf, fine gravel), (fine gravel, fine gravel), (fgr, fine gravel), (grovsand, coarse sand), (sag, coarse sand), (coarse sand, coarse sand), (csa, coarse sand), (sand, sand), (sa, sand), (mellansand, medium sand), (sam, medium sand), (medium sand, medium sand), (msa, medium sand), (finsand, fine sand), (saf, fine sand), (fine sand, fine sand), (fsa, fine sand), (silt, silt), (si, silt), (lera, clay), (ler, clay), (le, clay), (clay, clay), (cl, clay), (morän, till), (moran, till), (mn, till), (till, till), (ti, till), (torv, peat), (t, peat), (peat, peat), (pt, peat), (fyll, made ground), (fyllning, made ground), (f, made ground), (made ground, made ground), (mg, made ground), (land fill, made ground), (unknown, unknown)])"""
         assert test_string == reference_string
+        current_locale = utils.getcurrentlocale()
+        assert current_locale == u'en_US'
 
 
-class _TestObsPointsTriggers(object):
+class TestObsPointsTriggers(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
