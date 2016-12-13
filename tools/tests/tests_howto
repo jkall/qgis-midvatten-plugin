@@ -36,3 +36,24 @@ def x(mock_askuser):
             mock_result.result = 0
             return mock_result
     mock_askuser.side_effect = side_effect
+
+#Using mock expected:
+
+(From mocks own tests)
+from mock import (
+    call, create_autospec, MagicMock,
+    Mock, ANY, patch, PropertyMock
+)
+
+expected = [
+    call(ANY, foo=ANY, bar=ANY),
+    call.method(ANY, zinga=ANY, alpha=ANY),
+    call(), call().method(a1=ANY, z99=ANY)
+]
+self.assertEqual(expected, mock.mock_calls)
+
+#This can be shortened into:
+#print(str(mock_iface.mock_calls)) #Copy the relevant calls from the print result.
+
+assert call.messageBar().createMessage(u'Warning, In total 2 posts were not imported.') in mock_iface.mock_calls
+assert call.messageBar().createMessage(u'In total 1 measurements were imported to "obs_points".') in mock_iface.mock_calls

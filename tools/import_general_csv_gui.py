@@ -105,7 +105,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
     def file_to_list(self, filename, charset, delimiter):
         with io.open(filename, 'r', encoding=charset) as f:
-            file_data = [rawrow.rstrip(u'\n').rstrip(u'\r').split(delimiter) for rawrow in f]
+            file_data = [rawrow.rstrip(u'\n').rstrip(u'\r').split(delimiter) for rawrow in f if rawrow.strip()]
         return file_data
 
     @staticmethod

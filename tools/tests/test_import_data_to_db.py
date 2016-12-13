@@ -31,7 +31,7 @@ from tools.midvatten_utils import get_foreign_keys
 from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from nose.tools import raises
-from mock import mock_open, patch
+from mock import mock_open, patch, call
 from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance, DummyInterface2, mock_answer
 import mock
 import io
@@ -609,6 +609,7 @@ class TestGeneralCsvImport(object):
                         mock_filename.return_value = filename
                         mock_encoding.return_value = [True, u'utf-8']
                         self.importinstance.general_csv_import(goal_table=u'w_levels_logger', column_header_translation_dict={u'test': u'head_cm'})
+
                         mock_iface.messageBar.return_value.createMessage.assert_called_with(u'Error: Import failed, see log message panel')
                     _test_general_csv_import_wlvllogg(self, filename)
 
@@ -1378,7 +1379,8 @@ class TestImportObsPoints(object):
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
-                mock_iface.messageBar.return_value.createMessage.assert_called_with(u'In total 0 measurements were imported to "obs_points".')
+                assert call.messageBar().createMessage(u'Warning, In total 1 posts were not imported.') in mock_iface.mock_calls
+                assert call.messageBar().createMessage(u'In total 0 measurements were imported to "obs_points".') in mock_iface.mock_calls
 
             _test_import_obs_points_using_obsp_import(self)
 
@@ -1414,7 +1416,8 @@ class TestImportObsPoints(object):
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
-                mock_iface.messageBar.return_value.createMessage.assert_called_with(u'In total 1 measurements were imported to "obs_points".')
+                assert call.messageBar().createMessage(u'Warning, In total 2 posts were not imported.') in mock_iface.mock_calls
+                assert call.messageBar().createMessage(u'In total 1 measurements were imported to "obs_points".') in mock_iface.mock_calls
             _test_import_obs_points_using_obsp_import(self)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
