@@ -40,7 +40,7 @@ TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 
 
-class TestSectionPlot(object):
+class _TestSectionPlot(object):
     """ The test doesn't go through the whole section plot unfortunately
     """
     answer_yes = mock_answer('yes')
@@ -50,11 +50,12 @@ class TestSectionPlot(object):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
@@ -66,6 +67,8 @@ class TestSectionPlot(object):
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.midvatten.ms.settingsareloaded = True
 

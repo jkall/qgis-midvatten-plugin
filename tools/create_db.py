@@ -43,6 +43,7 @@ class newdb():
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return u'cancel'
 
+
         if user_select_CRS=='y':
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
         else:

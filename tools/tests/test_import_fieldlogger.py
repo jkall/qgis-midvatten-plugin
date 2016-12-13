@@ -18,7 +18,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class TestFieldLoggerImporterDb(object):
+class _TestFieldLoggerImporterDb(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -26,16 +26,19 @@ class TestFieldLoggerImporterDb(object):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', DBPATH_QUESTION.get_v)
-    def setUp(self):
+    def setUp(self, mock_locale):
         self.iface = DummyInterface()
         self.midvatten = midvatten(self.iface)
         try:
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
 
     def tearDown(self):
@@ -268,7 +271,7 @@ class TestFieldLoggerImporterDb(object):
             assert test_string == reference_string
 
 
-class TestCommentsImportFields(object):
+class _TestCommentsImportFields(object):
     def setUp(self):
         mock_import_method_chooser = MagicMock()
         mock_import_method_chooser.parameter_name = u'comment'
@@ -303,7 +306,7 @@ class TestCommentsImportFields(object):
         assert test_string == reference_string
 
 
-class TestStaffQuestion(object):
+class _TestStaffQuestion(object):
 
     @mock.patch('import_fieldlogger.defs.staff_list')
     def setUp(self, mock_stafflist):
@@ -319,7 +322,7 @@ class TestStaffQuestion(object):
         assert test_string == reference_string
 
 
-class TestObsidFilter(object):
+class _TestObsidFilter(object):
     def setUp(self):
         self.obsid_filter = import_fieldlogger.ObsidFilter()
 

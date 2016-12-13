@@ -686,6 +686,11 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
         iface.messageBar().pushMessage("Error","No database found. Please check your Midvatten Settings. Reset if needed.", 2)
         #pop_up_info("Check settings! \nSelect database first!")        
         errorsignal += 1
+
+    if not os.path.isfile(mset.settingsdict['database']):
+        iface.messageBar().pushMessage("Error", "The selected database doesn't exist. Please check your Midvatten Settings and database location. Reset if needed.", 2)
+        errorsignal += 1
+
     return errorsignal    
 
 def verify_layer_selection(errorsignal,selectedfeatures=0):
@@ -908,17 +913,23 @@ def select_files(only_one_file=True, extension="csv (*.csv)"):
     csvpath = [p for p in csvpath if p]
     return csvpath
 
-def ask_for_charset(default_charset=None):
+def ask_for_charset(default_charset=None, msg=None):
     try:#MacOSX fix2
         localencoding = locale.getdefaultlocale()[1]
         if default_charset is None:
-            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])[0]
+            if msg is None:
+                msg = "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default."
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", msg,QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])[0]
         else:
-            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.", QtGui.QLineEdit.Normal, default_charset)[0]
+            if msg is None:
+                msg = "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252."
+            charsetchoosen = QtGui.QInputDialog.getText(None, msg, QtGui.QLineEdit.Normal, default_charset)[0]
     except:
         if default_charset is None:
             default_charset = 'utf-8'
-        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.", QtGui.QLineEdit.Normal, default_charset)[0]
+        if msg is None:
+            msg = "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252."
+        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", msg, QtGui.QLineEdit.Normal, default_charset)[0]
 
     return str(charsetchoosen)
 

@@ -36,7 +36,7 @@ from midvatten.midvatten import midvatten
 import utils_for_tests
 
 
-class TestCalclvl(object):
+class _TestCalclvl(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
@@ -59,6 +59,8 @@ class TestCalclvl(object):
             os.remove(TestCalclvl.temp_db_path)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         widget = QtGui.QWidget()
         self.calclvl = calclvl(widget, 1)

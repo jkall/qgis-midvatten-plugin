@@ -41,19 +41,19 @@ DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 
 
-class TestDefsFunctions():
+class _TestDefsFunctions():
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
     answer_no_obj.result = 0
     answer_yes = MockUsingReturnValue(answer_yes_obj)
 
-
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.instance.readEntry.return_value = [u'en_US']
@@ -66,6 +66,8 @@ class TestDefsFunctions():
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
 
     def tearDown(self):

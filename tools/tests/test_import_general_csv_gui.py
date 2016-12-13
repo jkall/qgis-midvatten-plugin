@@ -48,7 +48,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class TestGeneralCsvGui(object):
+class _TestGeneralCsvGui(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -58,11 +58,12 @@ class TestGeneralCsvGui(object):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
@@ -75,6 +76,8 @@ class TestGeneralCsvGui(object):
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
 
     def tearDown(self):

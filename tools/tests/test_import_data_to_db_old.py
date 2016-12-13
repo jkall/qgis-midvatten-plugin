@@ -46,7 +46,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class TestImportObsPoints(object):
+class _TestImportObsPoints(object):
     temp_db_path = TEMP_DB_PATH
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -60,16 +60,19 @@ class TestImportObsPoints(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
     #mocked_qgsproject = MockQgsProject(mocked_qgsinstance)
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
-    def setUp(self):
+    def setUp(self, mock_locale):
         self.iface = DummyInterface()
         self.midvatten = midvatten(self.iface)
         try:
             os.remove(TestImportObsPoints.temp_db_path)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 
@@ -224,7 +227,7 @@ class TestImportObsPoints(object):
         assert test_string == reference_string
 
 
-class TestWquallabImport(object):
+class _TestWquallabImport(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
@@ -236,11 +239,12 @@ class TestWquallabImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TestWquallabImport.temp_db_path
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
@@ -253,6 +257,8 @@ class TestWquallabImport(object):
             os.remove(TestWquallabImport.temp_db_path)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 
@@ -321,7 +327,7 @@ class TestWquallabImport(object):
         assert test_string == reference_string
 
 
-class TestWlvlloggImport(object):
+class _TestWlvlloggImport(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -331,11 +337,12 @@ class TestWlvlloggImport(object):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
@@ -348,6 +355,8 @@ class TestWlvlloggImport(object):
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
 
     def tearDown(self):
@@ -388,7 +397,7 @@ class TestWlvlloggImport(object):
                     assert test_string == reference_string
 
 
-class TestWflowImport(object):
+class _TestWflowImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -397,11 +406,12 @@ class TestWflowImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
@@ -414,6 +424,8 @@ class TestWflowImport(object):
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 
@@ -476,7 +488,7 @@ class TestWflowImport(object):
         assert test_string == reference_string
 
 
-class TestWqualfieldImport(object):
+class _TestWqualfieldImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -485,11 +497,12 @@ class TestWqualfieldImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
@@ -502,6 +515,8 @@ class TestWqualfieldImport(object):
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 
@@ -637,7 +652,7 @@ class TestWqualfieldImport(object):
         assert test_string == reference_string
 
 
-class TestWlevelsImport(object):
+class _TestWlevelsImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -646,11 +661,12 @@ class TestWlevelsImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
@@ -663,6 +679,8 @@ class TestWlevelsImport(object):
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 
@@ -727,7 +745,7 @@ class TestWlevelsImport(object):
         assert test_string == reference_string
 
 
-class TestSeismicImport(object):
+class _TestSeismicImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -736,11 +754,12 @@ class TestSeismicImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
@@ -753,6 +772,8 @@ class TestSeismicImport(object):
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 
@@ -788,7 +809,7 @@ class TestSeismicImport(object):
         assert test_string == reference_string
 
 
-class TestStratImport(object):
+class _TestStratImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -797,11 +818,12 @@ class TestStratImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
@@ -814,6 +836,8 @@ class TestStratImport(object):
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 
@@ -850,7 +874,7 @@ class TestStratImport(object):
         assert test_string == reference_string
 
 
-class TestMeteoImport(object):
+class _TestMeteoImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -859,11 +883,12 @@ class TestMeteoImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
@@ -876,6 +901,8 @@ class TestMeteoImport(object):
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 
@@ -910,7 +937,7 @@ class TestMeteoImport(object):
         assert test_string == reference_string
 
 
-class TestVlfImport(object):
+class _TestVlfImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -919,11 +946,12 @@ class TestVlfImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
@@ -936,6 +964,8 @@ class TestVlfImport(object):
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 
@@ -995,7 +1025,7 @@ class TestVlfImport(object):
         assert test_string == reference_string
 
 
-class TestObsLinesImport(object):
+class _TestObsLinesImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1004,11 +1034,12 @@ class TestObsLinesImport(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
@@ -1021,6 +1052,8 @@ class TestObsLinesImport(object):
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 

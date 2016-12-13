@@ -457,9 +457,9 @@ class midvatten:
 
                 filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
                 iniText = QSettings(filenamepath , QSettings.IniFormat)
-                verno = str(iniText.value('version')) 
+                verno = str(iniText.value('version'))
                 from create_db import newdb
-                newdbinstance = newdb(verno,'n',user_chosen_EPSG_code)#flag 'n' to avoid user selection of EPSG
+                newdbinstance = newdb(verno,'n',user_chosen_EPSG_code)#flag 'n' to avoid user selection of EPSG'
                 if not newdbinstance.dbpath=='':
                     newdb = newdbinstance.dbpath
                     exportinstance = ExportData(OBSID_P, OBSID_L)

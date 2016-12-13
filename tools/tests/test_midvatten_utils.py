@@ -34,7 +34,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestFilterNonexistingObsidsAndAsk(object):
+class _TestFilterNonexistingObsidsAndAsk(object):
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
     def test_filter_nonexisting_obsids_and_ask_ok(self, mock_notfound, mock_iface):
@@ -133,7 +133,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             assert len(mock_notfound.mock_calls) == 2
 
 
-class TestTempinput(object):
+class _TestTempinput(object):
     def test_tempinput(self):
         rows = u'543\n21'
         with utils.tempinput(rows) as filename:
@@ -143,7 +143,7 @@ class TestTempinput(object):
         assert res == reference_list
 
 
-class TestAskUser(object):
+class _TestAskUser(object):
     PyQt4_QtGui_QInputDialog_getText = MockUsingReturnValue([u'-1 hours'])
     cancel = MockUsingReturnValue([u''])
 
@@ -158,7 +158,7 @@ class TestAskUser(object):
         assert question.result == u'cancel'
 
 
-class TestGetFunctions(object):
+class _TestGetFunctions(object):
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
@@ -170,11 +170,12 @@ class TestGetFunctions(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.instance.readEntry.return_value = [u'en_US']
@@ -187,6 +188,8 @@ class TestGetFunctions(object):
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 
@@ -209,7 +212,7 @@ class TestGetFunctions(object):
         assert test_string == reference_string
 
 
-class TestSqlToParametersUnitsTuple(object):
+class _TestSqlToParametersUnitsTuple(object):
     @mock.patch('midvatten_utils.sql_load_fr_db', autospec=True)
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
         mock_sqlload.return_value = (True, [(u'par1', u'un1'), (u'par2', u'un2')])
@@ -219,7 +222,7 @@ class TestSqlToParametersUnitsTuple(object):
         assert test_string == reference_string
 
 
-class TestCalculateDbTableRows(object):
+class _TestCalculateDbTableRows(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -227,11 +230,12 @@ class TestCalculateDbTableRows(object):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
@@ -244,6 +248,8 @@ class TestCalculateDbTableRows(object):
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 

@@ -32,7 +32,7 @@ from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgi
 from tools.tests.mocks_for_tests import DummyInterface
 
 
-class TestCreateMemoryDb():
+class _TestCreateMemoryDb():
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_yes = MockUsingReturnValue(answer_yes_obj)
@@ -50,7 +50,6 @@ class TestCreateMemoryDb():
     def test_new_db(self, mock_locale):
         mock_locale.return_value.answer = u'ok'
         mock_locale.return_value.value = u'sv_SE'
-
         self.midvatten.new_db()
 
     def tearDown(self):
@@ -58,7 +57,7 @@ class TestCreateMemoryDb():
         self.midvatten = None
 
 
-class TestCreateDb(object):
+class _TestCreateDb(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -141,7 +140,7 @@ class TestCreateDb(object):
         assert current_locale == u'en_US'
 
 
-class TestObsPointsTriggers(object):
+class _TestObsPointsTriggers(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -156,17 +155,20 @@ class TestObsPointsTriggers(object):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
     skip_popup = MockUsingReturnValue('')
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', crs_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
-    def setUp(self):
+    def setUp(self, mock_locale):
         self.iface = DummyInterface()
         self.midvatten = midvatten(self.iface)
         try:
             os.remove(TestObsPointsTriggers.temp_db_path)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
         utils.sql_alter_db(u"""DROP TRIGGER IF EXISTS after_insert_obs_points_geom_fr_coords""")
