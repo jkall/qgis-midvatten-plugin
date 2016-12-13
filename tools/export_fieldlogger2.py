@@ -65,7 +65,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             self.parameter_groups = [ParameterGroup(self.connect)]
 
 
-        self.main_vertical_layout.addWidget(PyQt4.QtGui.QLabel(u'Fieldlogger parameters and locations:'))
+        self.main_vertical_layout.addWidget(PyQt4.QtGui.QLabel(u'Fieldlogger input fields and locations:'))
         self.main_vertical_layout.addWidget(get_line())
         self.splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(self.splitter)
@@ -198,6 +198,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
     def create_parameter_groups_using_stored_settings(stored_settings, connect):
         """
         """
+        if not stored_settings or stored_settings is None:
+            return []
+
         parameter_groups = []
         for index, attrs in stored_settings:
             parameter_group = ParameterGroup(connect)
@@ -214,6 +217,8 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
     @staticmethod
     def update_parameter_browser_using_stored_settings(stored_settings, parameter_browser):
+        if not stored_settings or stored_settings is None:
+            return
         for index, attrs in stored_settings:
             for attr in attrs:
                 if hasattr(parameter_browser, attr[0]):
@@ -306,7 +311,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                     if sublocation not in sublocations_locations:
                         sublocations_locations[sublocation] = location
 
-
         printlist = []
         printlist.append(u"FileVersion 1;" + str(len(parameters_inputtypes_hints)))
         printlist.append(u"NAME;INPUTTYPE;HINT")
@@ -318,28 +322,13 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         for location, sublocations in sorted(locations_sublocations.iteritems()):
             lat, lon = locations_lat_lon[location]
 
-            sublocation_with_only_one_comment = False
-
             for sublocation in sorted(sublocations):
-                parameters = sublocations_parameters[sublocation]
-
-                comments = [par for par in parameters if u'comment' in par or u'kommentar' in par]
-                if len(parameters) == 1 and comments:
-                    sublocation_with_only_one_comment = True
-
-                if not comments:
-                    utils.MessagebarAndLog.warning(bar_msg=u'Import warning, see log message panel',
-                                                   log_msg=u'Sublocation ' + sublocation + u' may be missing a parameter group comment-parameter. Make sure you add one')
 
                 parameters = u'|'.join(sublocations_parameters[sublocation])
                 printrow = u';'.join([location, sublocation, lat, lon, parameters])
                 #This test is really bad and is due to some logical error above.
                 if printrow not in printlist:
                     printlist.append(printrow)
-
-            if not sublocation_with_only_one_comment:
-                utils.MessagebarAndLog.warning(bar_msg=u'Import warning, see log message panel',
-                                               log_msg=u'Location ' + location + u' may be missing a general comment parameter. Make sure you add one')
 
         return printlist
 
@@ -421,8 +410,6 @@ class ParameterGroup(object):
         #-------------------------------------------------------------------------------------
         connect(self.paste_from_selection_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : self._obsid_list.paste_data(utils.get_selected_features_as_tuple('obs_points')))
-        connect(self._location_suffix, PyQt4.QtCore.SIGNAL("textChanged(const QString&)"),
-                         lambda : self.set_sublocation_suffix(self.location_suffix))
 
     def get_settings(self):
         settings = ((u'parameter_list', self.parameter_list),
@@ -431,17 +418,6 @@ class ParameterGroup(object):
 
         settings = tuple((k, v) for k, v in settings if v)
         return utils.returnunicode(settings, keep_containers=True)
-
-    def set_sublocation_suffix(self, location_suffix):
-        current_suffix = self.sublocation_suffix
-        try:
-            current_suffix = self.sublocation_suffix.split(u'.')[1]
-        except IndexError:
-            pass
-        if not current_suffix:
-            self.sublocation_suffix = location_suffix
-        else:
-            self.sublocation_suffix = u'.'.join([location_suffix, current_suffix])
 
     @property
     def location_suffix(self):
@@ -461,8 +437,12 @@ class ParameterGroup(object):
 
     @property
     def locations_sublocations_obsids(self):
+        """
+
+        :return: a list like [[obsid.locationsuffix as location, obsid.locationsuffix.sublocationsuffix as sublocation, obsid), ...]
+        """
         locations_sublocations_obsids = [(u'.'.join([x for x in [returnunicode(obsid), returnunicode(self.location_suffix)] if x]),
-                                      u'.'.join([x for x in [returnunicode(obsid), returnunicode(self.sublocation_suffix)] if x]), returnunicode(obsid))
+                                      u'.'.join([x for x in [returnunicode(obsid), returnunicode(self.location_suffix), returnunicode(self.sublocation_suffix)] if x]), returnunicode(obsid))
                                      for obsid in self._obsid_list.get_all_data()]
         return locations_sublocations_obsids
 
@@ -520,7 +500,12 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         # ------------------------------------------------------------------------------------
         self._input_type.addItem(u'')
         self._input_type.addItems([u'numberDecimal|numberSigned', u'numberDecimal', u'numberSigned', u'text'])
-        self._input_type.setToolTip(u'(mandatory)\nDecides the keyboard layout in the Fieldlogger app.')
+        self._input_type.setToolTip(u'(mandatory)\n' +
+                                    u'Decides the keyboard layout in the Fieldlogger app.\n' +
+                                    u'numberDecimal: Decimal number\n' +
+                                    u'numberSigned: Integers\n' +
+                                    u'numberDecimal|numberSigned: Both integers and decimal numbers\n' +
+                                    u'text: Text')
         self._hint.setToolTip(u'(optional)\nHint given to the Fieldlogger user for the parameter. Ex: "depth to water"')
         #------------------------------------------------------------------------------------
         self._input_field_list.setToolTip(u'Copy input fields to the "Input Fields" boxes using ctrl+v, ctrl+c.')

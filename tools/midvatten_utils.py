@@ -356,8 +356,6 @@ def find_layer(layer_name):
         if search_layer.name() == layer_name:
             return search_layer
 
-    return None
-
 def get_all_obsids(table=u'obs_points'):
     """ Returns all obsids from obs_points
     :return: All obsids from obs_points
@@ -378,13 +376,16 @@ def get_date_time():
     """returns date and time as a string in a pre-formatted format"""
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
-def get_selected_features_as_tuple(layername):
+def get_selected_features_as_tuple(layername=None):
     """ Returns all selected features from layername
      
         Returns a tuple of obsids stored as unicode
     """
-    obs_points_layer = find_layer(layername)
-    selected_obs_points = getselectedobjectnames(obs_points_layer)
+    if layername is not None:
+        obs_points_layer = find_layer(layername)
+        selected_obs_points = getselectedobjectnames(obs_points_layer)
+    else:
+        selected_obs_points = getselectedobjectnames()
     #module midv_exporting depends on obsid being a tuple
     #we cannot send unicode as string to sql because it would include the u' so str() is used
     obsidtuple = tuple([returnunicode(id) for id in selected_obs_points])

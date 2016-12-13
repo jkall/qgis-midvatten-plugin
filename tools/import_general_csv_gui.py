@@ -67,7 +67,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         #General buttons
         self.select_file_button = PyQt4.QtGui.QPushButton(u'Select file')
         self.gridLayout_buttons.addWidget(self.select_file_button, 0, 0)
-        self.connect(self.select_file_button, PyQt4.QtCore.SIGNAL("clicked()"), self.load_files)
+        self.connect(self.select_file_button, PyQt4.QtCore.SIGNAL("clicked()"),
+                     lambda: map(lambda x: x(), [self.load_files])) #TODO Add function here to reload import methods. Suggestion: First select the '' then select the previuous selection. Or see if there is a way to nudge the combobox.
 
         self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
         self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
@@ -138,7 +139,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         #Check if obsid should be set from selection and add an obsid-column if so.
         for file_column, db_column in translation_dict.iteritems():
             if isinstance(file_column, Obsids_from_selection):
-                selected = utils.get_selected_features_as_tuple(foreign_key_obsid_table)
+                selected = utils.get_selected_features_as_tuple()
                 if not selected:
                     utils.MessagebarAndLog.critical(bar_msg=u'Import error, no obsid selected')
                     return u'cancel'
