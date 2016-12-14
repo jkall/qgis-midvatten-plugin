@@ -401,7 +401,7 @@ class ParameterGroup(object):
                                         u"""The input fields in Fieldlogger will appear in the same order as in\n""" +
                                         u"""this list.\n""" +
                                         u"""The topmost input field will be the first selected input field when\n""" +
-                                        u"""the user enters \nthe input fields in Fieldlogger.""")
+                                        u"""the user enters the input fields in Fieldlogger.""")
         self._obsid_list.setToolTip(u"""Add obsids to this box by selecting obsids from the table "obs_points"\n""" +
                                     u"""using it's attribute table or select from map.\n""" +
                                     u"""Then click the button "Paste obs_points selection"\n""" +
