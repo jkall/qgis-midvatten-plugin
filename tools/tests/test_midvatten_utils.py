@@ -24,6 +24,7 @@ import mock
 from midvatten.midvatten import midvatten
 from import_data_to_db import midv_data_importer
 import utils_for_tests
+from utils_for_tests import create_test_string
 from mocks_for_tests import MockNotFoundQuestion, MockUsingReturnValue, MockQgsProjectInstance, MockQgisUtilsIface, MockReturnUsingDictIn, DummyInterface2, mock_answer
 import io
 import os
@@ -207,7 +208,7 @@ class _TestGetFunctions(object):
         utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2013-01-01 00:00:00')''')
         utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2016-01-01 00:00')''')
 
-        test_string = utils_for_tests.create_test_string(utils.get_last_logger_dates())
+        test_string = create_test_string(utils.get_last_logger_dates())
         reference_string = u'''{rb1: [(2015-01-01 00:00:00)], rb2: [(2016-01-01 00:00)]}'''
         assert test_string == reference_string
 
@@ -217,7 +218,7 @@ class _TestSqlToParametersUnitsTuple(object):
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
         mock_sqlload.return_value = (True, [(u'par1', u'un1'), (u'par2', u'un2')])
 
-        test_string = utils_for_tests.create_test_string(utils.sql_to_parameters_units_tuple(u'sql'))
+        test_string = create_test_string(utils.sql_to_parameters_units_tuple(u'sql'))
         reference_string = u'''((par1, (un1)), (par2, (un2)))'''
         assert test_string == reference_string
 
@@ -272,3 +273,14 @@ class _TestCalculateDbTableRows(object):
         assert """call.messageBar().createMessage(u'Some sql failure, see log for additional info.')""" not in calls
         assert """call.messageBar().createMessage(u'Calculation done, see log for results.')""" in calls
 
+
+class TestGetCurrentLocale(object):
+    @mock.patch('locale.getdefaultlocale')
+    @mock.patch('midvatten_utils.get_locale_from_db')
+    def test_getcurrentlocale(self, mock_get_locale, mock_default_locale):
+        mock_get_locale.return_value = u'a_lang'
+        mock_default_locale.return_value = [None, u'an_enc']
+
+        test_string = create_test_string(utils.getcurrentlocale())
+        reference_string = u'[a_lang, an_enc]'
+        assert test_string == reference_string

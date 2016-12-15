@@ -86,7 +86,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="TAB_TSPLOT_2">
        <attribute name="title">
@@ -1215,6 +1215,9 @@
                 </property>
                 <property name="toolTip">
                  <string>Affects zz_tables during database creation</string>
+                </property>
+                <property name="editable">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>

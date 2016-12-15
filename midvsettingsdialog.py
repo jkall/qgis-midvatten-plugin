@@ -176,8 +176,22 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ms.save_settings('piper_markers')
 
     def ChangedLocale(self):
-        self.ms.settingsdict['locale'] = self.locale_combobox.currentText()
-        self.ms.save_settings('locale')
+        sql = u"select description from about_db where description like 'locale:%'"
+        connection_ok, result = utils.sql_load_fr_db(sql)
+        if not self.locale_combobox.currentText():
+            return
+        if connection_ok:
+            print(str(result))
+            if len(result) > 1:
+                utils.MessagebarAndLog.info(bar_msg=u'More than one row with locale found in db. No update can be done.')
+                return
+            if len(result) == 1:
+                sql = u"update or ignore about_db set description='locale:%s'"%self.locale_combobox.currentText()
+                sql += u" where description like 'locale:%'"
+                utils.sql_alter_db(sql)
+            elif len(result) == 0:
+                sql = u"insert or ignore into about_db (description) values ('locale:%s')"%self.locale_combobox.currentText()
+                utils.sql_alter_db(sql)
 
     def ClearColumnLists(self):
         self.ListOfColumns.clear()
@@ -363,13 +377,14 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             self.checkBoxDataPoints_2.setChecked(False)
 
     def load_and_select_general_settings(self):
-        self.locales = [QLocale(QLocale.Swedish, QLocale.Sweden), QLocale(QLocale.English, QLocale.UnitedStates)]
-
-        self.locale_combobox.addItem(u'')
-        for localeobj in self.locales:
-            self.locale_combobox.addItem(localeobj.name())
-
-        current_locale = self.ms.settingsdict[u'locale']
+        locales = [QLocale(QLocale.Swedish, QLocale.Sweden), QLocale(QLocale.English, QLocale.UnitedStates)]
+        current_locale = utils.getcurrentlocale()[0]
+        items = set()
+        items.add(current_locale)
+        items.update([localeobj.name() for localeobj in locales])
+        items = [u'']
+        items.extend(sorted(list(items)))
+        self.locale_combobox.addItems(items)
         if current_locale:
             idx = self.locale_combobox.findText(current_locale)
             self.locale_combobox.setCurrentIndex(idx)

@@ -19,7 +19,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class TestFieldLoggerImporterDb(object):
+class _TestFieldLoggerImporterDb(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -227,7 +227,7 @@ class TestFieldLoggerImporterDb(object):
             assert test_string == reference_string
 
 
-class TestFieldLoggerImporterNoDb(object):
+class _TestFieldLoggerImporterNoDb(object):
 
     @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
     @mock.patch('import_fieldlogger.utils.get_last_used_flow_instruments')

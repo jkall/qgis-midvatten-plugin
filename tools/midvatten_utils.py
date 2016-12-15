@@ -1192,11 +1192,14 @@ def remove_mean_from_nparray(x):
     return x
 
 def getcurrentlocale():
-    current_locale = get_locale_from_db()
-    if current_locale is None:
-        current_locale  = locale.getdefaultlocale()[0]
+    saved_locale = locale.getlocale()
 
-    return current_locale
+    db_locale = get_locale_from_db()
+
+    if db_locale is not None:
+        return [db_locale, locale.getdefaultlocale()[1]]
+    else:
+        return locale.getdefaultlocale()[:2]
 
 def get_locale_from_db():
     connection_ok, locale_row = sql_load_fr_db(u"select description from about_db where description like 'locale:%'")
