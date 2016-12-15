@@ -29,7 +29,7 @@ from mock import mock_open, patch
 from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance, DummyInterface2, mock_answer
 import mock
 import io
-import midvatten
+from midvatten.midvatten import midvatten
 import os
 from qgis.core import QgsMapLayerRegistry, QgsDataSourceURI, QgsVectorLayer, QgsGeometry, QgsFeature, QgsApplication
 import qgis
@@ -37,7 +37,7 @@ import sectionplot
 from PyQt4 import QtCore
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
-MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
+MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 
 
 class TestSectionPlot(object):
@@ -50,22 +50,25 @@ class TestSectionPlot(object):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
         try:
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.midvatten.ms.settingsareloaded = True
 
@@ -97,8 +100,8 @@ class TestSectionPlot(object):
 
         self.vlayer.setSelectedFeatures([featureid])
 
-        @mock.patch('midvatten.utils.getselectedobjectnames', autospec=True)
-        @mock.patch('midvatten.qgis.utils.iface', autospec=True)
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
         def _test_plot_section(self, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
             mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
@@ -133,8 +136,8 @@ class TestSectionPlot(object):
 
         self.vlayer.setSelectedFeatures([featureid])
 
-        @mock.patch('midvatten.utils.getselectedobjectnames', autospec=True)
-        @mock.patch('midvatten.qgis.utils.iface', autospec=True)
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
         def _test_plot_section_with_depth(self, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
             mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
@@ -164,8 +167,8 @@ class TestSectionPlot(object):
 
         self.vlayer.setSelectedFeatures([featureid])
 
-        @mock.patch('midvatten.utils.getselectedobjectnames', autospec=True)
-        @mock.patch('midvatten.qgis.utils.iface', autospec=True)
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
         def _test_plot_section_with_depth(self, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
             mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')

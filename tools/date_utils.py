@@ -38,10 +38,12 @@ def find_date_format(datestring):
     >>> print(find_date_format('abc'))
     None
     """
+
     datestring = str(datestring)
     date_formats_to_try = ['%Y/%m/%d %H:%M:%S', '%Y-%m-%d %H:%M:%S',
                            '%Y%m%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y%m%d',
-                           '%Y-%m-%d', '%d-%m-%Y', '%H:%M:%S', '%d-%m-%Y %H:%M:%S']
+                           '%Y-%m-%d', '%d-%m-%Y', '%H:%M:%S', '%d-%m-%Y %H:%M:%S',
+                           '%d-%m-%Y %H:%M', '%d-%m-%Y %H']
     found_format = None
     for dateformat in date_formats_to_try:
         try:

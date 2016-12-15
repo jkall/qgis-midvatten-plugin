@@ -44,7 +44,7 @@ class drillreport():        # general observation point info for the selected ob
         rpt += r"""<head><title>%s General report from Midvatten plugin for QGIS</title></head>"""%obsid
         rpt += r"""<html><TABLE WIDTH=100% BORDER=0 CELLPADDING=1 CELLSPACING=1><TR VALIGN=TOP><TD WIDTH=15%><h3 style="font-family:'arial';font-size:18pt; font-weight:600">"""
         rpt += obsid
-        if  utils.getcurrentlocale() == 'sv_SE':
+        if  utils.getcurrentlocale()[0] == 'sv_SE':
             rpt += ''.join([r'''</h3><img src="''', os.path.join(imgpath, 'for_general_report_sv.png'), r'''" /><br><img src=''', r"""'"""])
             #rpt += r"""</h3><img src="for_general_report_sv.png" /><br><img src='"""
         else:
@@ -52,7 +52,7 @@ class drillreport():        # general observation point info for the selected ob
             #rpt += r"""</h3><img src="for_general_report.png" /><br><img src='"""
         rpt += logopath
         rpt +="""' /></TD><TD WIDTH=85%><TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
-        if  utils.getcurrentlocale() == 'sv_SE':
+        if  utils.getcurrentlocale()[0] == 'sv_SE':
             rpt += u'Allmän information' 
         else:
             rpt += u'General information' 
@@ -67,14 +67,14 @@ class drillreport():        # general observation point info for the selected ob
             CRS = utils.returnunicode(result2) #1st we need crs
             result3 = (utils.sql_load_fr_db(r"""SELECT ref_sys_name FROM spatial_ref_sys where srid =""" + CRS)[1])[0][0]
             CRSname = utils.returnunicode(result3) # and crs name
-            if  utils.getcurrentlocale() == 'sv_SE':
+            if  utils.getcurrentlocale()[0] == 'sv_SE':
                 reportdata_1 = self.rpt_upper_left_sv(GeneralData, CRS, CRSname)
             else:
                 reportdata_1 = self.rpt_upper_left(GeneralData, CRS, CRSname)
             f.write(reportdata_1)
 
             rpt = r"""</TABLE></TD><TD WIDTH=50%><P><U><B>"""
-            if  utils.getcurrentlocale() == 'sv_SE':
+            if  utils.getcurrentlocale()[0] == 'sv_SE':
                 rpt += u'Lagerföljd' 
             else:
                 rpt += u'Stratigraphy' 
@@ -83,14 +83,14 @@ class drillreport():        # general observation point info for the selected ob
 
             # STRATIGRAPHY DATA UPPER RIGHT QUADRANT
             StratData = self.GetData(obsid, 'stratigraphy', 'n')[1] #MacOSX fix1
-            if  utils.getcurrentlocale() == 'sv_SE':
+            if  utils.getcurrentlocale()[0] == 'sv_SE':
                 reportdata_2 = self.rpt_upper_right_sv(StratData)
             else:
                 reportdata_2 = self.rpt_upper_right(StratData)
             f.write(reportdata_2)
 
             rpt = r"""</TABLE></TD></TR><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>""" 
-            if  utils.getcurrentlocale() == 'sv_SE':
+            if  utils.getcurrentlocale()[0] == 'sv_SE':
                 rpt += u'Kommentarer' 
             else:
                 rpt += u'Comments' 
@@ -102,7 +102,7 @@ class drillreport():        # general observation point info for the selected ob
             f.write(reportdata_3)
 
             rpt = r"""</TD><TD WIDTH=50%><P><U><B>""" 
-            if  utils.getcurrentlocale() == 'sv_SE':
+            if  utils.getcurrentlocale()[0] == 'sv_SE':
                 rpt += u'Vattennivåer' 
             else:
                 rpt += u'Water levels' 
@@ -111,7 +111,7 @@ class drillreport():        # general observation point info for the selected ob
 
             # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
             meas_or_level_masl, statistics = GetStatistics(obsid)#MacOSX fix1
-            if  utils.getcurrentlocale() == 'sv_SE':
+            if  utils.getcurrentlocale()[0] == 'sv_SE':
                 reportdata_4 = self.rpt_lower_right_sv(statistics,meas_or_level_masl)
             else:
                 reportdata_4 = self.rpt_lower_right(statistics,meas_or_level_masl)

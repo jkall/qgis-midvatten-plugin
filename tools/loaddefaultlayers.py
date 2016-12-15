@@ -107,7 +107,7 @@ class LoadLayers():
                 #now try to load the style file
                 stylefile_sv = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + "_sv.qml")
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + ".qml")
-                if  utils.getcurrentlocale() == 'sv_SE' and os.path.isfile( stylefile_sv ): #swedish forms are loaded only if locale settings indicate sweden
+                if  utils.getcurrentlocale()[0] == 'sv_SE' and os.path.isfile( stylefile_sv ): #swedish forms are loaded only if locale settings indicate sweden
                     try:
                         layer.loadNamedStyle(stylefile_sv)
                     except:
@@ -155,7 +155,7 @@ class LoadLayers():
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filename)
                 layer.loadNamedStyle(stylefile)
                 if tablename in ('w_levels','w_flow','stratigraphy'):
-                    if  utils.getcurrentlocale() == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
+                    if  utils.getcurrentlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
                         filename = tablename + ".ui"
                     else:
                         filename = tablename + "_en.ui"
@@ -177,7 +177,7 @@ class LoadLayers():
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filename)
                 layer.loadNamedStyle(stylefile)
                 if tablename in defs.get_subset_of_tables_fr_db(category='default_layers_w_ui'):        #=   THE ONES WITH CUSTOM UI FORMS
-                    if utils.getcurrentlocale() == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
+                    if utils.getcurrentlocale()[0] == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
                         filename = tablename + ".ui"
                     else:
                         filename = tablename + "_en.ui"

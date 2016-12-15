@@ -28,13 +28,14 @@ import midvatten_utils as utils
 from nose.tools import raises
 from mock import MagicMock
 import mock
-import midvatten
+from midvatten.midvatten import midvatten
 import os
 import utils_for_tests
 import unittest
 import sqlite3 as sqlite
 import io
 from qgis.core import QgsMapLayerRegistry, QgsDataSourceURI, QgsVectorLayer
+from export_data import ExportData
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
@@ -55,27 +56,29 @@ class TestExport(unittest.TestCase):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
     skip_popup = MockUsingReturnValue('')
     mock_selection = MockReturnUsingDictIn({u'obs_points': (u'P1', ), u'obs_lines': (u'L1', )}, 0)
-    exported_csv_files = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv', 'zz_flowtype.csv', 'zz_meteoparam.csv', 'zz_staff.csv', 'zz_strat.csv', 'zz_capacity.csv', 'zz_w_qual_field_parameters.csv']]
+    exported_csv_files = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv', 'zz_flowtype.csv', 'zz_meteoparam.csv', 'zz_staff.csv', 'zz_strat.csv', 'zz_capacity.csv']]
     exported_csv_files_no_zz = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv']]
 
-
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.instance.readEntry.return_value = [u'en_US']
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
         for dbs in [TEMP_DB_PATH, EXPORT_DB_PATH]:
             try:
                 os.remove(dbs)
             except OSError:
                 pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.midvatten.ms.settingsareloaded = True
 
@@ -99,16 +102,15 @@ class TestExport(unittest.TestCase):
                 pass
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('midvatten.utils.get_selected_features_as_tuple', mock_selection.get_v)
-    @mock.patch('midvatten.QFileDialog.getExistingDirectory')
-    @mock.patch('midvatten.qgis.utils.iface', autospec=True)
-    def test_export_csv(self, mock_iface, mock_savepath):
+    @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
+    @mock.patch('PyQt4.QtGui.QFileDialog.getExistingDirectory')
+    @mock.patch('qgis.utils.iface', autospec=True)
+    def _test_export_csv(self, mock_iface, mock_savepath):
         mock_savepath.return_value = u'/tmp/'
         utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(633466, 711659)', 3006))''')
         utils.sql_alter_db(u'''insert into zz_staff (staff) values ('s1')''')
         utils.sql_alter_db(u'''insert into comments (obsid, date_time, staff, comment) values ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
         utils.sql_alter_db(u'''insert into w_qual_lab (obsid, parameter, report, staff) values ('P1', 'labpar1', 'report1', 's1')''')
-        utils.sql_alter_db(u'''insert into zz_w_qual_field_parameters (parameter, unit, shortname) values ('par1', 'unit1', 'parshortname1')''')
         utils.sql_alter_db(u'''insert into w_qual_field (obsid, parameter, staff, date_time) values ('P1', 'labpar1', 's1', '2015-01-01 01:00:00')''')
         utils.sql_alter_db(u'''insert into w_flow (obsid, instrumentid, flowtype, date_time, unit) values ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
         utils.sql_alter_db(u'''insert into w_levels (obsid, date_time, meas) values ('P1', '2015-01-02 00:00:01', '2')''')
@@ -146,8 +148,8 @@ class TestExport(unittest.TestCase):
             ", [obsid;depth;report;project;staff;date_time;anameth;parameter;reading_num;reading_txt;unit;comment",
             ", P1;;report1;;s1;;;labpar1;;;;",
             "], w_qual_field.csv",
-            ", [obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;comment",
-            ", P1;s1;2015-01-01 01:00:00;;labpar1;;;;",
+            ", [obsid;staff;date_time;instrument;parameter;reading_num;reading_txt;unit;depth;comment",
+            ", P1;s1;2015-01-01 01:00:00;;labpar1;;;;;",
             "], stratigraphy.csv",
             ", [obsid;stratid;depthtop;depthbot;geology;geoshort;capacity;development;comment",
             ", P1;strat1;;;;;;;",
@@ -164,15 +166,16 @@ class TestExport(unittest.TestCase):
 
         assert test_string == reference_string
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
-    @mock.patch('midvatten.utils.get_selected_features_as_tuple', mock_selection.get_v)
-    @mock.patch('midvatten.utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
+    @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    @mock.patch('midvatten.utils.find_layer', autospec=True)
-    @mock.patch('midvatten.qgis.utils.iface', autospec=True)
+    @mock.patch('midvatten_utils.find_layer', autospec=True)
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('export_data.utils.pop_up_info', autospec=True)
-    def test_export_spatialite(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify):
+    def test_export_spatialite(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify, mock_locale):
 
         mock_find_layer.return_value.crs.return_value.authid.return_value = u'EPSG:3006'
 
@@ -183,7 +186,6 @@ class TestExport(unittest.TestCase):
         utils.sql_alter_db(u'''insert into zz_staff (staff) values ('s1')''')
         utils.sql_alter_db(u'''insert into comments (obsid, date_time, staff, comment) values ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
         utils.sql_alter_db(u'''insert into w_qual_lab (obsid, parameter, report, staff) values ('P1', 'labpar1', 'report1', 's1')''')
-        utils.sql_alter_db(u'''insert into zz_w_qual_field_parameters (parameter, unit, shortname) values ('par1', 'unit1', 'parshortname1')''')
         utils.sql_alter_db(u'''insert into w_qual_field (obsid, parameter, staff, date_time, unit) values ('P1', 'par1', 's1', '2015-01-01 01:00:00', 'unit1')''')
         utils.sql_alter_db(u'''insert into w_flow (obsid, instrumentid, flowtype, date_time, unit) values ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
         utils.sql_alter_db(u'''insert into w_levels (obsid, date_time, meas) values ('P1', '2015-01-02 00:00:01', '2')''')
@@ -192,13 +194,14 @@ class TestExport(unittest.TestCase):
         utils.sql_alter_db(u'''insert into seismic_data (obsid, length) values ('L1', '5')''')
         utils.sql_alter_db(u'''insert into meteo (obsid, instrumentid, parameter, date_time) values ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''')
 
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.export_spatialite()
 
         sql_list = [u'''select obsid from obs_points''',
                     u'''select staff from zz_staff''',
                     u'''select obsid, date_time, staff, comment from comments''',
                     u'''select obsid, parameter, report, staff from w_qual_lab''',
-                    u'''select parameter, unit, shortname from zz_w_qual_field_parameters''',
                     u'''select obsid, parameter, staff, date_time, comment from w_qual_field''',
                     u'''select obsid, instrumentid, flowtype, date_time, unit from w_flow''',
                     u'''select obsid, date_time, meas from w_levels''',
@@ -229,8 +232,6 @@ class TestExport(unittest.TestCase):
                             u''', [(P1, 2015-01-01 00:00:00, s1, comment1)], ''',
                             u'''select obsid, parameter, report, staff from w_qual_lab''',
                             u''', [(P1, labpar1, report1, s1)], ''',
-                            u'''select parameter, unit, shortname from zz_w_qual_field_parameters''',
-                            u''', [(DO, %, DO), (DO, mg/L, DO), (conductivity, µS/cm, cond), (pH, None, pH), (reduction potential, mV, redox), (temperature, grC, temp), (turbidity, FNU, turb), (par1, unit1, None)], ''',
                             u'''select obsid, parameter, staff, date_time, comment from w_qual_field''',
                             u''', [(P1, par1, s1, 2015-01-01 01:00:00, None)], ''',
                             u'''select obsid, instrumentid, flowtype, date_time, unit from w_flow''',
@@ -247,6 +248,7 @@ class TestExport(unittest.TestCase):
                             u''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)]]''']
         reference_string = u'\n'.join(reference_string)
         assert test_string == reference_string
+
 
 
 

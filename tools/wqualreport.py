@@ -137,13 +137,13 @@ class wqualreport():        # extracts water quality data for selected objects, 
         for p, u in parameters:
             if not(self.settingsdict['wqual_unitcolumn']==''):
                 if u:
-                    #ReportTable[parametercounter][0] = p.encode(locale.getdefaultlocale()[1]) + ", " +  u.encode(locale.getdefaultlocale()[1])
+                    #ReportTable[parametercounter][0] = p.encode(utils.getcurrentlocale()[1]) + ", " +  u.encode(utils.getcurrentlocale()[1])
                     ReportTable[parametercounter][0] = p + ", " +  u
                 else: 
-                    #ReportTable[parametercounter][0] = p.encode(locale.getdefaultlocale()[1])
+                    #ReportTable[parametercounter][0] = p.encode(utils.getcurrentlocale()[1])
                     ReportTable[parametercounter][0] = p
             else:
-                #ReportTable[parametercounter][0] = p.encode(locale.getdefaultlocale()[1])
+                #ReportTable[parametercounter][0] = p.encode(utils.getcurrentlocale()[1])
                 ReportTable[parametercounter][0] = p
             parametercounter = parametercounter + 1
 

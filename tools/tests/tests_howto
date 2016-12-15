@@ -1,4 +1,5 @@
 
+#This howto is not complete as there usually are more requiremets. It's usually easier to start with a test that already works and copy that one.
 
 
 Mocking QgsProjectInstance:
@@ -11,4 +12,48 @@ class ATestClass():
     def atest(self, mock_qgsproject_instance):
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
 
+
+#Mock answers from import_data_to_db.utils.askuser:
 #----------------------------
+@mock.patch('import_data_to_db.utils.askuser')
+def x(mock_askuser):
+    def side_effect(*args, **kwargs):
+        mock_result = mock.MagicMock()
+        if args[1].startswith(u'Do you want to confirm'):
+            mock_result.result = 0
+            return mock_result
+            #mock_askuser.return_value.result.return_value = 0
+        elif args[1].startswith(u'Do you want to import all'):
+            mock_result.result = 0
+            return mock_result
+        elif args[1].startswith(u'Please note!\nForeign keys'):
+            mock_result.result = 1
+            return mock_result
+        elif args[1].startswith(u'Please note!\nThere are'):
+            mock_result.result = 1
+            return mock_result
+        elif args[1].startswith(u'It is a strong recommendation'):
+            mock_result.result = 0
+            return mock_result
+    mock_askuser.side_effect = side_effect
+
+#Using mock expected:
+
+(From mocks own tests)
+from mock import (
+    call, create_autospec, MagicMock,
+    Mock, ANY, patch, PropertyMock
+)
+
+expected = [
+    call(ANY, foo=ANY, bar=ANY),
+    call.method(ANY, zinga=ANY, alpha=ANY),
+    call(), call().method(a1=ANY, z99=ANY)
+]
+self.assertEqual(expected, mock.mock_calls)
+
+#This can be shortened into:
+#print(str(mock_iface.mock_calls)) #Copy the relevant calls from the print result.
+
+assert call.messageBar().createMessage(u'Warning, In total 2 posts were not imported.') in mock_iface.mock_calls
+assert call.messageBar().createMessage(u'In total 1 measurements were imported to "obs_points".') in mock_iface.mock_calls

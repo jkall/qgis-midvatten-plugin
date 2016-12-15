@@ -21,22 +21,24 @@
 """
 import midvatten_utils as utils
 import mock
-import midvatten
+from midvatten.midvatten import midvatten
 from import_data_to_db import midv_data_importer
 import utils_for_tests
+from utils_for_tests import create_test_string
 from mocks_for_tests import MockNotFoundQuestion, MockUsingReturnValue, MockQgsProjectInstance, MockQgisUtilsIface, MockReturnUsingDictIn, DummyInterface2, mock_answer
 import io
 import os
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
-MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
+MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
 class TestFilterNonexistingObsidsAndAsk(object):
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_ok(self, mock_notfound):
+    def test_filter_nonexisting_obsids_and_ask_ok(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'ok'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
@@ -45,8 +47,9 @@ class TestFilterNonexistingObsidsAndAsk(object):
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'10', u'b'], [u'10', u'h']]
             assert filtered_file_data == reference_list
 
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_ignore(self, mock_notfound):
+    def test_filter_nonexisting_obsids_and_ask_ignore(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'ignore'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
@@ -55,8 +58,9 @@ class TestFilterNonexistingObsidsAndAsk(object):
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'10', u'b'], [u'10', u'h']]
             assert filtered_file_data == reference_list
 
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_cancel(self, mock_notfound):
+    def test_filter_nonexisting_obsids_and_ask_cancel(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'cancel'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
@@ -65,8 +69,9 @@ class TestFilterNonexistingObsidsAndAsk(object):
             reference_list = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             assert filtered_file_data == u'cancel'
 
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_skip(self, mock_notfound):
+    def test_filter_nonexisting_obsids_and_ask_skip(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'skip'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
@@ -75,8 +80,9 @@ class TestFilterNonexistingObsidsAndAsk(object):
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g']]
             assert filtered_file_data == reference_list
 
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_none_value_skip(self, mock_notfound):
+    def test_filter_nonexisting_obsids_and_ask_none_value_skip(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'skip'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [None, u'h']]
@@ -85,22 +91,25 @@ class TestFilterNonexistingObsidsAndAsk(object):
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g']]
             assert filtered_file_data == reference_list
 
-    def test_filter_nonexisting_obsids_and_ask_header_not_found(self):
+    @mock.patch('qgis.utils.iface', autospec=True)
+    def test_filter_nonexisting_obsids_and_ask_header_not_found(self, mock_iface):
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'header_that_should_not_exist', existing_obsids)
             reference_list = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             assert filtered_file_data == reference_list
 
-    def test_filter_nonexisting_obsids_and_ask_header_capitalize(self):
+    @mock.patch('qgis.utils.iface', autospec=True)
+    def test_filter_nonexisting_obsids_and_ask_header_capitalize(self, mock_iface):
             file_data = [[u'obsid', u'ae'], [u'a', u'b'], [u'2', u'c']]
             existing_obsids = [u'A', u'2']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids, True)
             reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'A', u'b']]
             assert filtered_file_data == reference_list
 
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_only_ask_once(self, mock_notfound):
+    def test_filter_nonexisting_obsids_only_ask_once(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'ok'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h'], [u'1', u'i']]
@@ -111,8 +120,9 @@ class TestFilterNonexistingObsidsAndAsk(object):
             #The mock should only be called twice. First for 1, then for 21, and then 1 again should use the already given answer.
             assert len(mock_notfound.mock_calls) == 2
 
+    @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_skip_only_ask_once(self, mock_notfound):
+    def test_filter_nonexisting_obsids_and_ask_skip_only_ask_once(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'skip'
             mock_notfound.return_value.value = 10
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h'], [u'1', u'i']]
@@ -122,7 +132,6 @@ class TestFilterNonexistingObsidsAndAsk(object):
             assert filtered_file_data == reference_list
             #The mock should only be called twice. First for 1, then for 21, and then 1 again should use the already given answer.
             assert len(mock_notfound.mock_calls) == 2
-
 
 
 class TestTempinput(object):
@@ -162,23 +171,26 @@ class TestGetFunctions(object):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.instance.readEntry.return_value = [u'en_US']
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 
@@ -196,7 +208,7 @@ class TestGetFunctions(object):
         utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2013-01-01 00:00:00')''')
         utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2016-01-01 00:00')''')
 
-        test_string = utils_for_tests.create_test_string(utils.get_last_logger_dates())
+        test_string = create_test_string(utils.get_last_logger_dates())
         reference_string = u'''{rb1: [(2015-01-01 00:00:00)], rb2: [(2016-01-01 00:00)]}'''
         assert test_string == reference_string
 
@@ -206,9 +218,10 @@ class TestSqlToParametersUnitsTuple(object):
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
         mock_sqlload.return_value = (True, [(u'par1', u'un1'), (u'par2', u'un2')])
 
-        test_string = utils_for_tests.create_test_string(utils.sql_to_parameters_units_tuple(u'sql'))
+        test_string = create_test_string(utils.sql_to_parameters_units_tuple(u'sql'))
         reference_string = u'''((par1, (un1)), (par2, (un2)))'''
         assert test_string == reference_string
+
 
 class TestCalculateDbTableRows(object):
     answer_yes = mock_answer('yes')
@@ -218,23 +231,26 @@ class TestCalculateDbTableRows(object):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance):
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
         mock_crsquestion.return_value = [3006]
         mock_savefilename.return_value = TEMP_DB_PATH
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
 
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
 
         try:
             os.remove(TEMP_DB_PATH)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.importinstance = midv_data_importer()
 
@@ -257,3 +273,14 @@ class TestCalculateDbTableRows(object):
         assert """call.messageBar().createMessage(u'Some sql failure, see log for additional info.')""" not in calls
         assert """call.messageBar().createMessage(u'Calculation done, see log for results.')""" in calls
 
+
+class TestGetCurrentLocale(object):
+    @mock.patch('locale.getdefaultlocale')
+    @mock.patch('midvatten_utils.get_locale_from_db')
+    def test_getcurrentlocale(self, mock_get_locale, mock_default_locale):
+        mock_get_locale.return_value = u'a_lang'
+        mock_default_locale.return_value = [None, u'an_enc']
+
+        test_string = create_test_string(utils.getcurrentlocale())
+        reference_string = u'[a_lang, an_enc]'
+        assert test_string == reference_string

@@ -158,30 +158,32 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             except ValueError:
                 offset1 = 0.0
 
+            remove_mean1 = self.checkBox_remove_mean1.isChecked()
+
             while i < len(self.p):
                 if not (filter1 == '' or filter1==' ' or filter1list==[]) and not (filter2== '' or filter2==' ' or filter2list==[]):
                     for item1 in filter1list:
                         for item2 in filter2list:
                             sql = r""" select """ + unicode(self.xcol_ComboBox_1.currentText()) + """, """ + unicode(self.ycol_ComboBox_1.currentText()) + """ from """ + unicode(self.table_ComboBox_1.currentText()) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' and """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol_ComboBox_1.currentText())
                             self.plabels[i] = unicode(item1.text()) + """, """ + unicode(item2.text())
-                            self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1)
+                            self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1, remove_mean1)
                             i += 1
                 elif not (filter1 == '' or filter1==' ' or filter1list==[]):
                     for item1 in filter1list:
                         sql = r""" select """ + unicode(self.xcol_ComboBox_1.currentText()) + """, """ + unicode(self.ycol_ComboBox_1.currentText()) + """ from """ + unicode(self.table_ComboBox_1.currentText()) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' order by """ + unicode(self.xcol_ComboBox_1.currentText())
                         self.plabels[i] = unicode(item1.text()) 
-                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1)
+                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1, remove_mean1)
                         i += 1
                 elif not (filter2 == '' or filter2==' ' or filter2list==[]):
                     for item2 in filter2list:
                         sql = r""" select """ + unicode(self.xcol_ComboBox_1.currentText()) + """, """ + unicode(self.ycol_ComboBox_1.currentText()) + """ from """ + unicode(self.table_ComboBox_1.currentText()) + """ where """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol_ComboBox_1.currentText())
                         self.plabels[i] = unicode(item2.text())
-                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1)
+                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1, remove_mean1)
                         i += 1            
                 else:
                     sql = r""" select """ + unicode(self.xcol_ComboBox_1.currentText()) + """, """ + unicode(self.ycol_ComboBox_1.currentText()) + """ from """ + unicode(self.table_ComboBox_1.currentText()) + """ order by """ + unicode(self.xcol_ComboBox_1.currentText())
                     self.plabels[i] = unicode(self.ycol_ComboBox_1.currentText())+""", """+unicode(self.table_ComboBox_1.currentText())
-                    self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1)
+                    self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1, remove_mean1)
                     i += 1
 
         if not (self.table_ComboBox_2.currentText() == '' or self.table_ComboBox_2.currentText()==' ') and not (self.xcol_ComboBox_2.currentText()== '' or self.xcol_ComboBox_2.currentText()==' ') and not (self.ycol_ComboBox_2.currentText()== '' or self.ycol_ComboBox_2.currentText()==' '):#if anything is to be plotted from tab 2
@@ -205,30 +207,32 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             except ValueError:
                 offset2 = 0.0
 
+            remove_mean2 = self.checkBox_remove_mean2.isChecked()
+
             while i < len(self.p):
                 if not (filter1 == '' or filter1==' ' or filter1list==[]) and not (filter2== '' or filter2==' ' or filter2list==[]):
                     for item1 in filter1list:
                         for item2 in filter2list:
                             sql = r""" select """ + unicode(self.xcol_ComboBox_2.currentText()) + """, """ + unicode(self.ycol_ComboBox_2.currentText()) + """ from """ + unicode(self.table_ComboBox_2.currentText()) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' and """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol_ComboBox_2.currentText())
                             self.plabels[i] = unicode(item1.text()) + """, """ + unicode(item2.text())
-                            self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_2.currentText(), factor2, offset2)
+                            self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_2.currentText(), factor2, offset2, remove_mean2)
                             i += 1
                 elif not (filter1 == '' or filter1==' ' or filter1list==[]):
                     for item1 in filter1list:
                         sql = r""" select """ + unicode(self.xcol_ComboBox_2.currentText()) + """, """ + unicode(self.ycol_ComboBox_2.currentText()) + """ from """ + unicode(self.table_ComboBox_2.currentText()) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' order by """ + unicode(self.xcol_ComboBox_2.currentText())
                         self.plabels[i] = unicode(item1.text()) 
-                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_2.currentText(), factor2, offset2)
+                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_2.currentText(), factor2, offset2, remove_mean2)
                         i += 1
                 elif not (filter2 == '' or filter2==' ' or filter2list==[]):
                     for item2 in filter2list:
                         sql = r""" select """ + unicode(self.xcol_ComboBox_2.currentText()) + """, """ + unicode(self.ycol_ComboBox_2.currentText()) + """ from """ + unicode(self.table_ComboBox_2.currentText()) + """ where """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol_ComboBox_2.currentText())
                         self.plabels[i] = unicode(item2.text())
-                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_2.currentText(), factor2, offset2)
+                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_2.currentText(), factor2, offset2, remove_mean2)
                         i += 1            
                 else:
                     sql = r""" select """ + unicode(self.xcol_ComboBox_2.currentText()) + """, """ + unicode(self.ycol_ComboBox_2.currentText()) + """ from """ + unicode(self.table_ComboBox_2.currentText()) + """ order by """ + unicode(self.xcol_ComboBox_2.currentText())
                     self.plabels[i] = unicode(self.ycol2)+""", """+unicode(self.table_ComboBox_2.currentText())
-                    self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_2.currentText(), factor2, offset2)
+                    self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_2.currentText(), factor2, offset2, remove_mean2)
                     i += 1
             
         if not (self.table_ComboBox_3.currentText() == '' or self.table_ComboBox_3.currentText()==' ') and not (self.xcol_ComboBox_3.currentText()== '' or self.xcol_ComboBox_3.currentText()==' ') and not (self.ycol_ComboBox_3.currentText()== '' or self.ycol_ComboBox_3.currentText()==' '):#if anything is to be plotted from tab 3
@@ -252,30 +256,32 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             except ValueError:
                 offset3 = 0.0
 
+            remove_mean3 = self.checkBox_remove_mean3.isChecked()
+
             while i < len(self.p):
                 if not (filter1 == '' or filter1==' ' or filter1list==[]) and not (filter2== '' or filter2==' ' or filter2list==[]):
                     for item1 in filter1list:
                         for item2 in filter2list:
                             sql = r""" select """ + unicode(self.xcol_ComboBox_3.currentText()) + """, """ + unicode(self.ycol_ComboBox_3.currentText()) + """ from """ + unicode(self.table_ComboBox_3.currentText()) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' and """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol_ComboBox_3.currentText())
                             self.plabels[i] = unicode(item1.text()) + """, """ + unicode(item2.text())
-                            self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_3.currentText(), factor3, offset3)
+                            self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_3.currentText(), factor3, offset3, remove_mean3)
                             i += 1
                 elif not (filter1 == '' or filter1==' ' or filter1list==[]):
                     for item1 in filter1list:
                         sql = r""" select """ + unicode(self.xcol_ComboBox_3.currentText()) + """, """ + unicode(self.ycol_ComboBox_3.currentText()) + """ from """ + unicode(self.table_ComboBox_3.currentText()) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' order by """ + unicode(self.xcol_ComboBox_3.currentText())
                         self.plabels[i] = unicode(item1.text()) 
-                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_3.currentText(), factor3, offset3)
+                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_3.currentText(), factor3, offset3, remove_mean3)
                         i += 1
                 elif not (filter2 == '' or filter2==' ' or filter2list==[]):
                     for item2 in filter2list:
                         sql = r""" select """ + unicode(self.xcol_ComboBox_3.currentText()) + """, """ + unicode(self.ycol_ComboBox_3.currentText()) + """ from """ + unicode(self.table_ComboBox_3.currentText()) + """ where """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol_ComboBox_3.currentText())
                         self.plabels[i] = unicode(item2.text())
-                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_3.currentText(), factor3, offset3)
+                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_3.currentText(), factor3, offset3, remove_mean3)
                         i += 1            
                 else:
                     sql = r""" select """ + unicode(self.xcol_ComboBox_3.currentText()) + """, """ + unicode(self.ycol_ComboBox_3.currentText()) + """ from """ + unicode(self.table_ComboBox_3.currentText()) + """ order by """ + unicode(self.xcol_ComboBox_3.currentText())
                     self.plabels[i] = unicode(self.ycol_ComboBox_3.currentText())+""", """+unicode(self.table_ComboBox_3.currentText())
-                    self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_3.currentText(), factor3, offset3)
+                    self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_3.currentText(), factor3, offset3, remove_mean3)
                     i += 1
 
         #rs.close() # close the cursor
@@ -293,7 +299,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
         QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
-    def createsingleplotobject(self,sql,i,My_format,curs,plottype='line', factor=1.0, offset=0.0):
+    def createsingleplotobject(self,sql,i,My_format,curs,plottype='line', factor=1.0, offset=0.0, remove_mean=False):
         rs = curs.execute(sql) #Send SQL-syntax to cursor
         recs = rs.fetchall()  # All data are stored in recs
         # late fix for xy-plots
@@ -305,7 +311,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             FlagTimeXY = 'time'
             myTimestring = list(table2.date_time)
             numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
-        except:
+        except Exception, e:
+            utils.MessagebarAndLog.info(log_msg=u"Customplot, transforming to recarray with date_time as x-axis failed, msg: " + utils.returnunicode(str(e)))
             table = np.array(recs, dtype=[('numx', float), ('values', float)])  #NDARRAY #define a format for xy-plot (to use if not datetime on x-axis)
 
             table2=table.view(np.recarray)   # RECARRAY transform the 2 cols into callable objects
@@ -330,7 +337,11 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         if FlagTimeXY == "time" and plottype == "frequency":
             table2.values[:] = self.calc_frequency(table2)[:]
 
+        if remove_mean:
+            table2.values[:] = utils.remove_mean_from_nparray(table2.values)[:]
+
         table2.values[:] = utils.scale_nparray(table2.values, factor, offset)[:]
+
 
         if FlagTimeXY == "time" and plottype == "step-pre":
             self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-pre', linestyle='-', marker='None',c=np.random.rand(3,1),label=self.plabels[i])# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'

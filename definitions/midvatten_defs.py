@@ -20,9 +20,13 @@
 
 import locale
 from collections import OrderedDict
+from operator import itemgetter
 import qgis.utils
 
 import midvatten_utils as utils
+
+from midvatten_utils import get_sql_result_as_dict, returnunicode
+
 
 def settingsdict():    #These are the default settings, they shall not be changed!!!
     dictionary = { 'database' : '',
@@ -36,7 +40,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'xy_y2column' : 'bedrock',
             'xy_y3column' : '',
             'xydotmarkers' : 0,
-            'stratigraphytable' : 'stratigraphy',
+            'stratigraphytable' : 'stratigraphy', #TODO: Remove this and fix the references
             'wqualtable' : 'w_qual_lab',
             'wqual_paramcolumn' : 'parameter',
             'wqual_valuecolumn' : 'reading_txt',
@@ -93,7 +97,11 @@ def settingsdict():    #These are the default settings, they shall not be change
             'piper_ca':'Kalcium, Ca',
             'piper_mg':'Magnesium, Mg',
             'piper_markers':'type',
-            'locale': ''
+            'locale': '',
+            'fieldlogger_import_parameter_settings': '',
+            'fieldlogger_export_pgroups': '',
+            'fieldlogger_export_pbrowser': '',
+            'fieldlogger_export': ''
             }
     return dictionary
 
@@ -290,7 +298,7 @@ def get_subset_of_tables_fr_db(category='obs_points'):
     elif category == 'obs_lines':
         return ['obs_lines', 'vlf_data', 'seismic_data']
     elif category == 'data_domains':
-        return ['zz_flowtype', 'zz_meteoparam', 'zz_staff', 'zz_strat', 'zz_stratigraphy_plots', 'zz_capacity', 'zz_capacity_plots', 'zz_w_qual_field_parameters', 'zz_w_qual_field_parameters_groups']
+        return ['zz_flowtype', 'zz_meteoparam', 'zz_staff', 'zz_strat', 'zz_stratigraphy_plots', 'zz_capacity', 'zz_capacity_plots']
     elif category == 'default_layers':
         return ['obs_lines', 'obs_points', 'obs_p_w_qual_field', 'obs_p_w_qual_lab', 'obs_p_w_lvl', 'obs_p_w_strat', 'w_lvls_last_geom']
     elif category == 'default_nonspatlayers':
@@ -539,30 +547,6 @@ def staff_list():
         return False, tuple()
 
     return True, utils.returnunicode(tuple([x[0] for x in result_list]), True)
-    
-def standard_parameters_for_wquality():
-    """ Returns a dict with water quality parameters
-    :return: A dict with parameter as key and unit as value
-    """
-    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "groupname" = 'quality' ''')
-    shortname_parameter_unit = w_qual_field_parameters()
-    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
-    return shortname_unit
-
-def standard_parameters_for_wsample():
-    """ Returns a dict with water sample parameters
-    :return: A dict with parameter as key and unit as value
-    """
-    parameter_units = utils.sql_to_parameters_units_tuple(u'''select parameter, unit from zz_w_qual_field_parameter_groups where "groupname" = 'sample' ''')
-    shortname_parameter_unit = w_qual_field_parameters()
-    shortname_unit = tuple([(shortname, units) for parameter, units in parameter_units for shortname, _parameter, _unit in shortname_parameter_unit if parameter == _parameter])
-    return shortname_unit
-
-def standard_parameters_for_wflow():
-    """ Returns a dict with water flow parameters
-    :return: A dict with parameter as key and unit as value
-    """
-    return utils.sql_to_parameters_units_tuple(u'''select type, unit from zz_flowtype''')
 
 def SQLiteInternalTables():
     return r"""('geom_cols_ref_sys',
@@ -605,13 +589,64 @@ def sqlite_nonplot_tables():
                 'zz_strat',
                 'zz_hydro')"""
 
-def w_qual_field_parameters():
-    sql = 'select shortname, parameter, unit from zz_w_qual_field_parameters'
-    sql_result = utils.sql_load_fr_db(sql)
-    connection_ok, result_list = sql_result
+def w_flow_flowtypes_units():
+    sql = 'select distinct flowtype, unit from w_flow'
+    connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
 
     if not connection_ok:
-        textstring = """Cannot get data from sql """ + sql
-        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+        textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
+        utils.MessagebarAndLog.critical(bar_msg=u"Error, sql failed, see log message panel", log_msg=textstring)
+        return {}
 
-    return utils.returnunicode(result_list, True)
+    return utils.returnunicode(result_dict, keep_containers=True)
+
+def w_qual_field_parameter_units():
+    sql = 'select distinct parameter, unit from w_qual_field'
+    connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
+
+    if not connection_ok:
+        textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
+        utils.MessagebarAndLog.critical(bar_msg=u"Error, sql failed, see log message panel", log_msg=textstring)
+        return {}
+
+    return utils.returnunicode(result_dict, keep_containers=True)
+
+def tables_columns():
+    tables_sql = (r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + SQLiteInternalTables() + r""") ORDER BY tbl_name""")
+    connection_ok, tables = utils.sql_load_fr_db(tables_sql)
+
+    if not connection_ok:
+        textstring = u"""Cannot get data from sql """ + utils.returnunicode(tables_sql)
+        utils.MessagebarAndLog.critical(
+            bar_msg=u"Error, sql failed, see log message panel",
+            log_msg=textstring)
+        return []
+
+    tables_dict = {}
+
+    tablenames = [col[0] for col in tables]
+    for tablename in tablenames:
+        columns_sql = """PRAGMA table_info (%s)""" % tablename
+        connection_ok, columns = utils.sql_load_fr_db(columns_sql)
+
+        if not connection_ok:
+            textstring = u"""Cannot get data from sql """ + utils.returnunicode(columns_sql)
+            utils.MessagebarAndLog.critical(
+                bar_msg=u"Error, sql failed, see log message panel",
+                log_msg=textstring)
+            continue
+        tables_dict[tablename] = tuple(sorted(tuple(columns), key=itemgetter(1)))
+
+    return tables_dict
+
+
+def get_last_used_quality_instruments():
+    """
+    Returns quality instrumentids
+    :return: A tuple with instrument ids from w_qual_field
+    """
+    sql = 'select parameter, unit, instrument, staff, max(date_time) from w_qual_field group by parameter, unit, instrument, staff'
+    connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
+    return returnunicode(result_dict, True)
+
+specific_table_info = {u'obs_lines': u'The geometry column supports WKT ("well known text")'}

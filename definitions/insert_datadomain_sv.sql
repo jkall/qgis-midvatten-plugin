@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
-insert into zz_flowtype(type, unit, explanation) values("Accvol", "m3", "Accumulated volume");
-insert into zz_flowtype(type, unit, explanation) values("Momflow", "l/s", "Momentary flow rate");
-insert into zz_flowtype(type, unit, explanation) values("Aveflow", "l/s", "Average flow since last reading");
+insert into zz_flowtype(type, explanation) values("Accvol", "Accumulated volume");
+insert into zz_flowtype(type, explanation) values("Momflow", "Momentary flow rate");
+insert into zz_flowtype(type, explanation) values("Aveflow", "Average flow since last reading");
 insert into zz_meteoparam(parameter, explanation) values("precip", "Precipitation");
 insert into zz_meteoparam(parameter, explanation) values("temp", "Air temperature");
 insert into zz_strat(geoshort,strata) values('berg','berg');
@@ -121,19 +121,4 @@ insert into "zz_capacity_plots" (capacity,color_qt) values('6-', 'blue');
 insert into "zz_capacity_plots" (capacity,color_qt) values('6', 'blue');
 insert into "zz_capacity_plots" (capacity,color_qt) values('6 ', 'blue');
 insert into "zz_capacity_plots" (capacity,color_qt) values('6+', 'darkBlue');
-insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('DO', 'DO', '%', 'syremättnad');
-insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('DO', 'DO', 'mg/L', 'löst syre');
-insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('konduktivitet', 'kond', 'µS/cm', 'förmåga att leda elektricitet (ett mått på innehåll av joner i en lösning)');
-insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('pH', 'pH', NULL, 'negativ logaritm av vätejonaktivitet');
-insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('redoxpotential', 'redox', 'mV', 'förmåga att ta upp elektroner');
-insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('temperatur', 'temp', 'grC', 'vattentemperatur');
-insert into "zz_w_qual_field_parameters" (parameter, shortname, unit, explanation) values('turbiditet', 'turb', 'FNU', 'suspension av olösta partiklar');
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('DO', '%', 'quality');
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('DO', 'mg/L', 'quality');
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('konduktivitet', 'µS/cm', 'quality');
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('pH', NULL, 'quality');
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('redoxpotential', 'mV', 'quality');
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('temperatur', 'grC', 'quality');
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('turbiditet', 'FNU', 'sample');
-insert into "zz_w_qual_field_parameter_groups" ("parameter", "unit", "groupname") values('temperatur', 'grC', 'sample');
 

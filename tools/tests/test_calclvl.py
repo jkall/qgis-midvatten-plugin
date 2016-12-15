@@ -32,7 +32,7 @@ from mock import MagicMock
 import mock
 from utils_for_tests import dict_to_sorted_list
 from wlevels_calc_calibr import calclvl
-import midvatten
+from midvatten.midvatten import midvatten
 import utils_for_tests
 
 
@@ -46,16 +46,21 @@ class TestCalclvl(object):
     mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([temp_db_path]))
     selected_obsids = MockUsingReturnValue([u'rb1'])
 
-    @mock.patch('midvatten.utils.askuser', answer_yes.get_v)
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
-    def setUp(self):
+    def setUp(self, mock_locale):
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.iface = DummyInterface()
-        self.midvatten = midvatten.midvatten(self.iface)
+        self.midvatten = midvatten(self.iface)
         try:
             os.remove(TestCalclvl.temp_db_path)
         except OSError:
             pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         widget = QtGui.QWidget()
         self.calclvl = calclvl(widget, 1)

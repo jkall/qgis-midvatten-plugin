@@ -21,88 +21,193 @@
 """
 from qgis.core import QgsApplication, QgsProviderRegistry
 from utils_for_tests import init_test
+from collections import OrderedDict
 from tools.tests.mocks_for_tests import DummyInterface
 from PyQt4 import QtCore, QtGui, QtTest
 from export_fieldlogger import ExportToFieldLogger
 from mocks_for_tests import MockUsingReturnValue
+import export_fieldlogger
 import midvatten_utils as utils
 from nose.tools import raises
 from mock import MagicMock
 import mock
-from utils_for_tests import dict_to_sorted_list
+import utils_for_tests
+from utils_for_tests import dict_to_sorted_list, create_test_string
 
-class TestExportFieldlogger():
-    qual_params = MockUsingReturnValue(((u'redoxpotential', (u'mV',)), (u'syre', (u'mg/L', u'%')), (u'pH', (u'',))))
-    flow_params = MockUsingReturnValue(((u'Momflow', (u'l/s',)), (u'Accvol', (u'm3',))))
-    sample_params = MockUsingReturnValue(((u'turbiditet', (u'FNU',)),))
-    the_obsids = MockUsingReturnValue((u'Rb1301', u'Rb1302'))
-    the_latlons = MockUsingReturnValue({u'Rb1301': (60.0, 10.0), u'Rb1302': (50.0, 4.0)})
-    selected_obsids_from_map = MockUsingReturnValue((u'Rb1302',))
-    empty_dict = MockUsingReturnValue({})
-    importinstance = MockUsingReturnValue(MockUsingReturnValue(int))
-    importinstance.get_v().parse_wells_file = lambda : {u'Rb1301': {u'level': [(u'comment', u''), (u'meas', u'm')], u'quality': [(u'comment', u''), (u'syre', u'mg/L'), (u'konduktivitet', u'µS/cm'), (u'redoxpotential', u'mV'), (u'pH', u'')], u'sample': [(u'temperatur', u'grC'), (u'comment', u''), (u'turbiditet', u'FNU')]}, u'Rb1302': {u'quality': [(u'comment', u''), (u'syre', u'mg/L'), (u'konduktivitet', u'µS/cm'), (u'redoxpotential', u'mV'), (u'pH', u'')], u'sample': [(u'temperatur', u'grC'), (u'comment', u''), (u'turbiditet', u'FNU')]}}
-    skip_popup = MockUsingReturnValue('')
-
-    @mock.patch('export_fieldlogger.standard_parameters_for_wquality', qual_params.get_v)
-    @mock.patch('export_fieldlogger.standard_parameters_for_wflow', flow_params.get_v)
-    @mock.patch('export_fieldlogger.standard_parameters_for_wsample', sample_params.get_v)
-    @mock.patch('export_fieldlogger.utils.get_all_obsids', the_obsids.get_v)
+class TestExportFieldloggerNoDb():
     def setUp(self):
-        self.iface = DummyInterface()
-        widget = QtGui.QWidget()
-        self.export_fieldlogger_obj = ExportToFieldLogger(widget)
+        self.ExportToFieldLogger = ExportToFieldLogger
 
-    @mock.patch('export_fieldlogger.standard_parameters_for_wquality', qual_params.get_v)
-    @mock.patch('export_fieldlogger.standard_parameters_for_wflow', flow_params.get_v)
-    @mock.patch('export_fieldlogger.standard_parameters_for_wsample', sample_params.get_v)
-    def test_create_parameters(self):
-        parameters = [(types, parametername, parameter.hint) for types, parameterdict in sorted(self.export_fieldlogger_obj.create_parameters().iteritems()) for parametername, parameter in sorted(parameterdict.iteritems())]
-        assert parameters == [(u'flow', u'Accvol', u'm3'), (u'flow', u'Momflow', u'l/s'), (u'flow', u'comment', u'make comment...'), (u'level', u'comment', u'make comment...'), (u'level', u'meas', u'm'), (u'quality', u'comment', u'make comment...'), (u'quality', u'pH', u'pH'), (u'quality', u'redoxpotential', u'mV'), (u'quality', u'syre.%', u'%'), (u'quality', u'syre.mg/L', u'mg/L'), (u'sample', u'comment', u'make comment...'), (u'sample', u'turbiditet', u'FNU')]
+    @staticmethod
+    def test_get_stored_settings():
+        mock_ms = MagicMock()
+        mock_ms.settingsdict = {u'test_settings_key': u'0;final_parameter_name:testname;test:gotten_test/1;key1:value1;key2:value2;key3:value3'}
+        settingskey = u'test_settings_key'
+        stored_settings = create_test_string(ExportToFieldLogger.get_stored_settings(mock_ms, settingskey))
+        reference_string = u'((0, ((final_parameter_name, testname), (test, gotten_test))), (1, ((key1, value1), (key2, value2), (key3, value3))))'
+        assert stored_settings == reference_string
 
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', the_latlons.get_v)
-    def test_select_all_momflow(self):
-        self.export_fieldlogger_obj.select_all(u'flow.Momflow', True)
-        printlist = self.export_fieldlogger_obj.create_export_printlist()
-        assert printlist == [u'FileVersion 1;2', u'NAME;INPUTTYPE;HINT', u'f.Momflow.l/s;numberDecimal|numberSigned;l/s', u'f.comment;text;make comment...', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1301;Rb1301.flow;60.0;10.0;f.Momflow.l/s|f.comment', u'Rb1302;Rb1302.flow;50.0;4.0;f.Momflow.l/s|f.comment']
+    @staticmethod
+    def test_update_stored_settings():
 
-    @mock.patch('export_fieldlogger.utils.get_selected_features_as_tuple', selected_obsids_from_map.get_v)
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', the_latlons.get_v)
-    def test_select_from_map_click(self):
-        self.export_fieldlogger_obj.select_from_map(u'quality.syre.%')
-        printlist = self.export_fieldlogger_obj.create_export_printlist()
-        assert printlist == [u'FileVersion 1;2', u'NAME;INPUTTYPE;HINT', u'q.syre.%;numberDecimal|numberSigned;%', u'q.comment;text;make comment...', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1302;Rb1302.quality;50.0;4.0;q.comment|q.syre.%']
+        export_objects = [MagicMock(), MagicMock()]
+        export_objects[0].get_settings.return_value = ((u'key0_1', u'value0_1'), (u'key0_2', u'value0_2'))
+        export_objects[1].get_settings.return_value = ((u'key1_1', u'value1_1'), (u'key1_2', u'value1_2'))
 
-    @mock.patch('export_fieldlogger.utils.get_selected_features_as_tuple', selected_obsids_from_map.get_v)
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', the_latlons.get_v)
-    def test_select_three_from_map_click(self):
-        self.export_fieldlogger_obj.select_from_map(u'quality.syre.%')
-        self.export_fieldlogger_obj.select_from_map(u'quality.syre.mg/L')
-        self.export_fieldlogger_obj.select_from_map(u'sample.turbiditet')
-        printlist = self.export_fieldlogger_obj.create_export_printlist()
-        assert printlist == [u'FileVersion 1;5', u'NAME;INPUTTYPE;HINT', u'q.syre.mg/L;numberDecimal|numberSigned;mg/L', u'q.syre.%;numberDecimal|numberSigned;%', u'q.comment;text;make comment...', u's.turbiditet.FNU;numberDecimal|numberSigned;FNU', u's.comment;text;make comment...', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1302;Rb1302.quality;50.0;4.0;q.comment|q.syre.mg/L|q.syre.%', u'Rb1302;Rb1302.sample;50.0;4.0;s.comment|s.turbiditet.FNU']
+        stored_settings = ExportToFieldLogger.update_stored_settings(export_objects)
+        test_string = create_test_string(stored_settings)
+        reference_string = u'[(0, ((key0_1, value0_1), (key0_2, value0_2))), (1, ((key1_1, value1_1), (key1_2, value1_2)))]'
+        assert test_string == reference_string
 
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', autospec=True)
-    @mock.patch('export_fieldlogger.midv_data_importer', autospec=True)
-    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-    def test_select_from_wells(self, mock_skip_popup, mock_midv_data_importer, mock_latlons):
-        mock_midv_data_importer.return_value.parse_wells_file.return_value = {u'Rb1301': {u'level': [(u'comment', u''), (u'meas', u'm')], u'quality': [(u'comment', u''), (u'syre', u'mg/L'), (u'konduktivitet', u'µS/cm'), (u'redoxpotential', u'mV'), (u'pH', u'')], u'sample': [(u'temperatur', u'grC'), (u'comment', u''), (u'turbiditet', u'FNU')]}, u'Rb1302': {u'quality': [(u'comment', u''), (u'syre', u'mg/L'), (u'konduktivitet', u'µS/cm'), (u'redoxpotential', u'mV'), (u'pH', u'')], u'sample': [(u'temperatur', u'grC'), (u'comment', u''), (u'turbiditet', u'FNU')]}}
-        mock_latlons.return_value = {u'Rb1301': (60.0, 10.0), u'Rb1302': (50.0, 4.0)}
-        self.export_fieldlogger_obj.select_from_wells()
-        printlist = self.export_fieldlogger_obj.create_export_printlist()
-        assert printlist == [u'FileVersion 1;8', u'NAME;INPUTTYPE;HINT', u'l.meas.m;numberDecimal|numberSigned;m', u'l.comment;text;make comment...', u'q.redoxpotential.mV;numberDecimal|numberSigned;mV', u'q.syre.mg/L;numberDecimal|numberSigned;mg/L', u'q.pH;numberDecimal|numberSigned;pH', u'q.comment;text;make comment...', u's.turbiditet.FNU;numberDecimal|numberSigned;FNU', u's.comment;text;make comment...', u'NAME;SUBNAME;LAT;LON;INPUTFIELD', u'Rb1301;Rb1301.level;60.0;10.0;l.comment|l.meas.m', u'Rb1301;Rb1301.quality;60.0;10.0;q.pH|q.syre.mg/L|q.redoxpotential.mV|q.comment', u'Rb1301;Rb1301.sample;60.0;10.0;s.comment|s.turbiditet.FNU', u'Rb1302;Rb1302.quality;50.0;4.0;q.pH|q.syre.mg/L|q.redoxpotential.mV|q.comment', u'Rb1302;Rb1302.sample;50.0;4.0;s.comment|s.turbiditet.FNU']
+    @staticmethod
+    def test_update_stored_settings_using_real_export_objects():
 
-    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids', autospec=True)
-    @mock.patch('export_fieldlogger.midv_data_importer', autospec=True)
-    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-    def test_select_from_wells_cancel(self, mock_skip_popup, mock_midv_data_importer, mock_latlons):
-        mock_midv_data_importer.return_value.parse_wells_file.return_value = {}
-        mock_latlons.return_value = {u'Rb1301': (60.0, 10.0), u'Rb1302': (50.0, 4.0)}
-        self.export_fieldlogger_obj.select_from_wells()
-        printlist = self.export_fieldlogger_obj.create_export_printlist()
-        assert printlist == [u'FileVersion 1;0', u'NAME;INPUTTYPE;HINT', u'NAME;SUBNAME;LAT;LON;INPUTFIELD']
+        mock_connect = MagicMock()
+        export_objects = [export_fieldlogger.ExportObject(mock_connect),
+                          export_fieldlogger.ExportObject(mock_connect)]
+
+        setattr(export_objects[0], 'final_parameter_name', 'testname1')
+        setattr(export_objects[1], 'final_parameter_name', 'testname2')
+        setattr(export_objects[1], 'location_suffix', 'locationsuffix2')
+
+        stored_settings = ExportToFieldLogger.update_stored_settings(export_objects)
+        test_string = create_test_string(stored_settings)
+        reference_string = u'[(0, ((final_parameter_name, testname1))), (1, ((final_parameter_name, testname2), (location_suffix, locationsuffix2)))]'
+        assert test_string == reference_string
+
+    @staticmethod
+    def test_create_export_objects_using_stored_settings_no_settings():
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+        stored_settings = [(0, ((u'key0_1', u'value0_1'), (u'key0_2', u'value0_2'))), (1, ((u'key1_1', u'value1_1'), (u'key1_2', u'value1_2')))]
+        mock_connect = MagicMock()
+
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings, tables_columns, mock_connect)
+        stored_settings = ExportToFieldLogger.update_stored_settings(export_objects)
+        assert stored_settings == []
+
+    @staticmethod
+    def test_create_export_objects_using_stored_settings():
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+        stored_settings = [(0, ((u'final_parameter_name', u'value0_1'), (u'key0_2', u'value0_2'))),
+                           (1, ((u'location_suffix', u'value1_1'), (u'key1_2', u'value1_2')))]
+        mock_connect = MagicMock()
+
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
+                                                                                           tables_columns,
+                                                                                           mock_connect)
+        stored_settings = create_test_string(ExportToFieldLogger.update_stored_settings(export_objects))
+        reference = u'[(0, ((final_parameter_name, value0_1))), (1, ((location_suffix, value1_1)))]'
+        assert stored_settings == reference
+
+    @staticmethod
+    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
+    def test_create_export_printlist_assert_no_comment(mock_latlons, mock_MessagebarAndLog):
+        mock_latlons.return_value = {u'1': (u'lat1', u'lon1'), u'2': (u'lat2', u'lon2'), u'4': (u'lat4', u'lon4')}
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+
+        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
+                           (1, ((u'final_parameter_name', u'par2'), (u'sublocation_suffix', u'proj2.group'), (u'location_suffix', u'proj2'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
+        mock_connect = MagicMock()
+
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
+                                                                                           tables_columns,
+                                                                                           mock_connect)
+        export_objects[0].obsid_list.addItems([u'1', u'4'])
+        export_objects[1].obsid_list.addItems([u'2', u'3', u'4'])
+
+        printlist = ExportToFieldLogger.create_export_printlist(export_objects)
+        test_string = create_test_string(printlist)
+        mock_MessagebarAndLog.warning.assert_called_with(bar_msg=u'Warning: No comment parameter found. Is it forgotten?')
+
+    @staticmethod
+    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
+    def test_create_export_printlist_assert_no_latlon(mock_latlons, mock_MessagebarAndLog):
+        mock_latlons.return_value = {u'1': (u'lat1', u'lon1'), u'2': (u'lat2', u'lon2'), u'4': (u'lat4', u'lon4')}
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+
+        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
+                           (1, ((u'final_parameter_name', u'par2'), (u'sublocation_suffix', u'proj2.group'), (u'location_suffix', u'proj2'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
+        mock_connect = MagicMock()
+
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
+                                                                                           tables_columns,
+                                                                                           mock_connect)
+        export_objects[0].obsid_list.addItems([u'1', u'4'])
+        export_objects[1].obsid_list.addItems([u'2', u'3', u'4'])
+
+        printlist = ExportToFieldLogger.create_export_printlist(export_objects)
+        test_string = create_test_string(printlist)
+        mock_MessagebarAndLog.critical.assert_called_with(bar_msg=u'Critical: Obsid  did not have lat-lon coordinates. Check obs_points table')
+
+    @staticmethod
+    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
+    def test_create_export_printlist(mock_latlons, mock_MessagebarAndLog):
+        mock_latlons.return_value = {u'1': (u'lat1', u'lon1'), u'2': (u'lat2', u'lon2'), u'4': (u'lat4', u'lon4')}
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+
+        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
+                           (1, ((u'final_parameter_name', u'par2'), (u'sublocation_suffix', u'proj2.group'), (u'location_suffix', u'proj2'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
+        mock_connect = MagicMock()
+
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
+                                                                                           tables_columns,
+                                                                                           mock_connect)
+        export_objects[0].obsid_list.addItems([u'1', u'4'])
+        export_objects[1].obsid_list.addItems([u'2', u'3', u'4'])
+
+        printlist = ExportToFieldLogger.create_export_printlist(export_objects)
+        test_string = create_test_string(printlist)
+        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1, par2;type2;hint2, NAME;sublocation;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 2.proj2;2.proj2.group;lat2;lon2;par2, 4.proj;4.proj.group;lat4;lon4;par1, 4.proj2;4.proj2.group;lat4;lon4;par2]'
+        assert reference_string == test_string
+
+    @staticmethod
+    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
+    def test_create_export_printlist_one_obsid_two_parameters(mock_latlons, mock_MessagebarAndLog):
+        mock_latlons.return_value = {u'1': (u'lat1', u'lon1')}
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+
+        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
+                           (1, ((u'final_parameter_name', u'par2'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
+        mock_connect = MagicMock()
+
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
+                                                                                           tables_columns,
+                                                                                           mock_connect)
+        export_objects[0].obsid_list.addItems([u'1'])
+        export_objects[1].obsid_list.addItems([u'1'])
+
+        printlist = ExportToFieldLogger.create_export_printlist(export_objects)
+        test_string = create_test_string(printlist)
+
+        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1, par2;type2;hint2, NAME;sublocation;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1|par2]'
+        assert reference_string == test_string
+
+    @staticmethod
+    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
+    def test_create_export_printlist_duplicate_parameters(mock_latlons, mock_MessagebarAndLog):
+        mock_latlons.return_value = {u'1': (u'lat1', u'lon1')}
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+
+        stored_settings = [(0, ((u'final_parameter_name', u'par1'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type1'), (u'hint', u'hint1'))),
+                           (1, ((u'final_parameter_name', u'par1'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type2'), (u'hint', u'hint2'))),
+                           (2, ((u'final_parameter_name', u'comment'), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'), (u'input_type', u'type2'), (u'hint', u'hint2')))]
+        mock_connect = MagicMock()
+
+        export_objects = ExportToFieldLogger.create_export_objects_using_stored_settings(stored_settings,
+                                                                                           tables_columns,
+                                                                                           mock_connect)
+        export_objects[0].obsid_list.addItems([u'1'])
+        export_objects[1].obsid_list.addItems([u'1'])
+
+        test_string = create_test_string(ExportToFieldLogger.create_export_printlist(export_objects))
+        parameter = u'par1'
+        mock_MessagebarAndLog.warning.assert_called_with(bar_msg=u"Warning: Parameter " + parameter + u' error. See log message panel', log_msg=u'The parameter ' + parameter + u' already exists. Only the first occurence one will be written to file.')
+        reference_string = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1, comment;type2;hint2, NAME;sublocation;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1]'
+        assert test_string == reference_string
 
 
-    def tearDown(self):
-        self.iface = None
-        self.export_fieldlogger_obj = None
-        pass

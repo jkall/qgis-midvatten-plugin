@@ -18,30 +18,29 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4 import QtCore, QtGui, QtWebKit, uic
 import PyQt4
-from qgis.core import *
-from qgis.gui import *
-import csv
-import codecs
 import cStringIO
-import difflib
-import datetime
+import codecs
 import copy
-import qgis.utils
-import sys
+import csv
+import datetime
+import difflib
 import locale
-import os
 import math
 import numpy as np
+import os
+import qgis.utils
 import tempfile
+import time
+from PyQt4 import QtCore, QtGui, QtWebKit, uic
+from collections import OrderedDict
 from contextlib import contextmanager
 from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialite-specific sql clauses may be sent by sql_alter_db and sql_load_fr_db
 from pyspatialite.dbapi2 import IntegrityError
-from matplotlib.dates import datestr2num, num2date
-import time
-from collections import OrderedDict
-import re
+from qgis.core import *
+from qgis.gui import *
+
+from matplotlib.dates import num2date
 
 not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
 
@@ -103,6 +102,10 @@ class MessagebarAndLog():
     * If the user supplies only log_msg, the message is only written to message log.
     * If the user supplies both, a messageBar with bar_msg appears with a button to open message log.
       In the message log, the bar_msg and log_msg is written.
+
+      Activate writing of log messages to file by settings :
+      qgis Settings > Options > System > Environment > mark Use custom variables > Click Add >
+      enter "QGIS_LOG_FILE" in the field Variable and a filename as Value.
     """
     def __init__(self):
         pass
@@ -115,20 +118,26 @@ class MessagebarAndLog():
             if log_msg is not None and button:
                 widget.layout().addWidget(log_button)
             qgis.utils.iface.messageBar().pushWidget(widget, level=messagebar_level, duration=duration)
+            #This part can be used to push message to an additional messagebar, but dialogs closes after the timer
+            if hasattr(qgis.utils.iface, 'optional_bar'):
+                try:
+                    qgis.utils.iface.optional_bar.pushWidget(widget, level=messagebar_level, duration=duration)
+                except:
+                    pass
         QgsMessageLog.logMessage(returnunicode(bar_msg), u'Midvatten', level=log_level)
         if log_msg is not None:
             QgsMessageLog.logMessage(returnunicode(log_msg), u'Midvatten', level=log_level)
 
     @staticmethod
-    def info(bar_msg=None, log_msg=None, duration=10, button=True):
+    def info(bar_msg=None, log_msg=None, duration=10, button=True, optional_bar=False):
         MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.INFO, QgsMessageLog.INFO, button)
 
     @staticmethod
-    def warning(bar_msg=None, log_msg=None, duration=10, button=True):
+    def warning(bar_msg=None, log_msg=None, duration=10, button=True, optional_bar=False):
         MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.WARNING, QgsMessageLog.WARNING, button)
 
     @staticmethod
-    def critical(bar_msg=None, log_msg=None, duration=10, button=True):
+    def critical(bar_msg=None, log_msg=None, duration=10, button=True, optional_bar=False):
         MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.CRITICAL, QgsMessageLog.CRITICAL, button)
 
 
@@ -181,13 +190,14 @@ class askuser(QtGui.QDialog):
 
 
 class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
-    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None, button_names=[u'Ignore', u'Cancel', u'Ok']):
+    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None, button_names=[u'Ignore', u'Cancel', u'Ok'], combobox_label=u'Similar values found in db (choose or edit):'):
         QtGui.QDialog.__init__(self, parent)
         self.answer = None
         self.setupUi(self)
         self.setWindowTitle(dialogtitle)
         self.label.setText(msg)
         self.comboBox.addItem(default_value)
+        self.label_2.setText(combobox_label)
         if existing_list is not None:
             for existing in existing_list:
                 self.comboBox.addItem(existing)
@@ -346,9 +356,7 @@ def find_layer(layer_name):
         if search_layer.name() == layer_name:
             return search_layer
 
-    return None
-
-def get_all_obsids():
+def get_all_obsids(table=u'obs_points'):
     """ Returns all obsids from obs_points
     :return: All obsids from obs_points
     """
@@ -357,7 +365,7 @@ def get_all_obsids():
     if myconnection.connect2db() == True:
         # skapa en cursor
         curs = myconnection.conn.cursor()
-        rs=curs.execute("""select distinct obsid from obs_points order by obsid""")
+        rs=curs.execute('''select distinct obsid from "%s" order by obsid'''%table)
 
         obsids = [row[0] for row in curs]
         rs.close()
@@ -368,13 +376,16 @@ def get_date_time():
     """returns date and time as a string in a pre-formatted format"""
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
-def get_selected_features_as_tuple(layername):
+def get_selected_features_as_tuple(layername=None):
     """ Returns all selected features from layername
      
         Returns a tuple of obsids stored as unicode
     """
-    obs_points_layer = find_layer(layername)
-    selected_obs_points = getselectedobjectnames(obs_points_layer)
+    if layername is not None:
+        obs_points_layer = find_layer(layername)
+        selected_obs_points = getselectedobjectnames(obs_points_layer)
+    else:
+        selected_obs_points = getselectedobjectnames()
     #module midv_exporting depends on obsid being a tuple
     #we cannot send unicode as string to sql because it would include the u' so str() is used
     obsidtuple = tuple([returnunicode(id) for id in selected_obs_points])
@@ -481,10 +492,12 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
                 text = tuple([returnunicode(x, keep_containers) for x in anything])
             elif isinstance(anything, dict):
                 text = dict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
+            elif isinstance(anything, OrderedDict):
+                text = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
             else:
                 text = anything
 
-            if isinstance(text, (list, tuple, dict)):
+            if isinstance(text, (list, tuple, dict, OrderedDict)):
                 if not keep_containers:
                     text = unicode(text)
             elif isinstance(text, str):
@@ -674,6 +687,11 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
         iface.messageBar().pushMessage("Error","No database found. Please check your Midvatten Settings. Reset if needed.", 2)
         #pop_up_info("Check settings! \nSelect database first!")        
         errorsignal += 1
+
+    if not os.path.isfile(mset.settingsdict['database']):
+        iface.messageBar().pushMessage("Error", "The selected database doesn't exist. Please check your Midvatten Settings and database location. Reset if needed.", 2)
+        errorsignal += 1
+
     return errorsignal    
 
 def verify_layer_selection(errorsignal,selectedfeatures=0):
@@ -831,15 +849,6 @@ def get_quality_instruments():
 
     return True, returnunicode([x[0] for x in result_list], True)
 
-def get_last_used_quality_instruments():
-    """
-    Returns quality instrumentids
-    :return: A tuple with instrument ids from w_qual_field
-    """
-    sql = 'select parameter, unit, instrument, staff, max(date_time) from w_qual_field group by parameter, unit, instrument, staff'
-    connection_ok, result_dict = get_sql_result_as_dict(sql)
-    return returnunicode(result_dict, True)
-
 def get_sql_result_as_dict(sql):
     """
     Runs sql and returns result as dict
@@ -894,34 +903,39 @@ def rstrip(word, from_string):
         new_word = from_string[0:-len(word)]
     return new_word
 
-def select_files(only_one_file=True, extension="csv (*.csv)", should_ask_for_charset=True):
-    """Asks users to select file(s) and charset for the file(s)"""
-    if should_ask_for_charset:
-        charsetchoosen = ask_for_charset()
+def select_files(only_one_file=True, extension="csv (*.csv)"):
+    """Asks users to select file(s)"""
+    if only_one_file:
+        csvpath = QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)
     else:
-        charsetchoosen = 'nocharsetchosen'
-    if charsetchoosen and not (charsetchoosen[0]==0 or charsetchoosen[0]==''):
-        if only_one_file:
-            csvpath = QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)
-        else:
-            csvpath = QtGui.QFileDialog.getOpenFileNames(None, "Select Files","", extension)
-        if not isinstance(csvpath, (list, tuple)):
-            csvpath = [csvpath]
-        csvpath = [p for p in csvpath if p]
-        return csvpath, charsetchoosen
+        csvpath = QtGui.QFileDialog.getOpenFileNames(None, "Select Files","", extension)
+    if not isinstance(csvpath, (list, tuple)):
+        csvpath = [csvpath]
+    csvpath = [p for p in csvpath if p]
+    return csvpath
 
-def ask_for_charset(default_enchoding=None):
+def ask_for_charset(default_charset=None, msg=None):
     try:#MacOSX fix2
-        localencoding = locale.getdefaultlocale()[1]
-        if default_enchoding is None:
-            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default.",QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])
+        localencoding = getcurrentlocale()[1]
+        if default_charset is None:
+            if msg is None:
+                msg = "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default."
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", msg,QtGui.QLineEdit.Normal,getcurrentlocale()[1])[0]
         else:
-            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,default_enchoding)
+            if msg is None:
+                msg = "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252."
+            charsetchoosen = QtGui.QInputDialog.getText(None, msg, QtGui.QLineEdit.Normal, default_charset)[0]
     except:
-        if default_enchoding is None:
-            default_enchoding = 'utf-8'
-        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.",QtGui.QLineEdit.Normal,default_enchoding)
-    return str(charsetchoosen[0])
+        if default_charset is None:
+            default_charset = 'utf-8'
+        if msg is None:
+            msg = "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252."
+        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", msg, QtGui.QLineEdit.Normal, default_charset)[0]
+
+    return str(charsetchoosen)
+
+def ask_for_export_crs(default_crs=u''):
+    return str(QtGui.QInputDialog.getText(None, "Set export crs", "Give the crs for the exported database.\n",QtGui.QLineEdit.Normal,default_crs)[0])
 
 def lists_to_string(alist_of_lists):
     ur"""
@@ -977,7 +991,7 @@ def find_similar(word, wordlist, hits=5):
     matches = list(set(difflib.get_close_matches(word, matches, nr_of_hits)))
     return matches
 
-def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[], try_capitalize=False):
+def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=None, try_capitalize=False):
     """
 
     The class NotFoundQuestion is used with 4 buttons; u'Ignore', u'Cancel', u'Ok', u'Skip'.
@@ -994,6 +1008,8 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
 
 
     """
+    if existing_values is None:
+        existing_values = []
     header_value = returnunicode(header_value)
     filtered_data = []
     data_to_ask_for = []
@@ -1002,7 +1018,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
             try:
                 index = row.index(header_value)
             except ValueError:
-                #The header_value did not exist, returning file_data as it is.
+                MessagebarAndLog.warning(bar_msg=u'Warning, see log message panel', log_msg=u"filter_nonexisting_values_and_ask error: The header_value " + header_value + u" did not exist, returning file_data as it is.")
                 return file_data
             else:
                 filtered_data.append(row)
@@ -1029,7 +1045,9 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=[
                 filtered_data.append(row)
             continue
 
+        #Put the found similar values on top, but include all values in the database as well
         similar_values = find_similar(current_value, existing_values, hits=5)
+        similar_values.extend(sorted(existing_values))
 
         not_tried_capitalize = True
 
@@ -1159,9 +1177,46 @@ def scale_nparray(x, a=1, b=0):
     """
     return a * copy.deepcopy(x) + b
 
+def remove_mean_from_nparray(x):
+    """
+
+    """
+    x = copy.deepcopy(x)
+    mean = x[np.logical_not(np.isnan(x))]
+    mean = mean.mean(axis=0)
+    MessagebarAndLog.info(log_msg=str(mean))
+    x = x - mean
+
+    # for colnr, col in enumerate(x):
+    #     x[colnr] = x[colnr] - np.mean(x[colnr])
+    return x
+
 def getcurrentlocale():
-    current_locale = QgsProject.instance().readEntry("Midvatten", "locale")[0]
-    return current_locale
+    saved_locale = locale.getlocale()
+
+    db_locale = get_locale_from_db()
+
+    if db_locale is not None and db_locale:
+        return [db_locale, locale.getdefaultlocale()[1]]
+    else:
+        return locale.getdefaultlocale()[:2]
+
+def get_locale_from_db():
+    connection_ok, locale_row = sql_load_fr_db(u"select description from about_db where description like 'locale:%'")
+    if connection_ok:
+        try:
+            locale_setting = returnunicode(locale_row, keep_containers=True)[0][0].split(u':')
+        except IndexError:
+            return None
+
+        try:
+            locale_setting = locale_setting[1]
+        except IndexError:
+            return None
+        else:
+            return locale_setting
+    else:
+        return None
 
 def calculate_db_table_rows():
     results = {}
@@ -1205,3 +1260,47 @@ def calculate_db_table_rows():
         MessagebarAndLog.info(
             bar_msg='Calculation done, see log for results.',
             log_msg=printable_msg, duration=15, button=True)
+
+def anything_to_string_representation(anything):
+    ur""" Turns anything into a string used for testing
+    :param anything: just about anything
+    :return: A unicode string
+     >>> anything_to_string_representation({(u'123'): 4.5, "a": u'7'})
+     u'{u"123": 4.5, "a": u"7"}'
+     >>> anything_to_string_representation({(u'123', ): 4.5, "a": u'7'})
+     u'{"a": u"7", (u"123", ): 4.5}'
+     >>> anything_to_string_representation([u'1', '2', 3])
+     u'[u"1", "2", 3]'
+    """
+    if isinstance(anything, dict):
+        aunicode = u''.join([u'{', u', '.join([u': '.join([anything_to_string_representation(k), anything_to_string_representation(v)]) for k, v in sorted(anything.iteritems())]), u'}'])
+    elif isinstance(anything, list):
+        aunicode = u''.join([u'[', u', '.join([anything_to_string_representation(x) for x in anything]), u']'])
+    elif isinstance(anything, tuple):
+        aunicode = u''.join([u'(', u', '.join([anything_to_string_representation(x) for x in anything]), u', )'])
+    elif isinstance(anything, (float, int)):
+        aunicode = u'{}'.format(returnunicode(anything))
+    elif isinstance(anything, unicode):
+        aunicode = u'u"{}"'.format(anything)
+    elif isinstance(anything, str):
+        aunicode = u'"{}"'.format(anything)
+    elif isinstance(anything, PyQt4.QtCore.QVariant):
+        aunicode = returnunicode(anything.toString().data())
+    else:
+        aunicode = returnunicode(str(anything))
+    return aunicode
+
+def get_foreign_keys(tname):
+    result_list = sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)"""%(tname))[1]
+    foreign_keys = {}
+    for row in result_list:
+        foreign_keys.setdefault(row[2], []).append((row[3], row[4]))
+    return foreign_keys
+
+def waiting_cursor(func):
+    def func_wrapper(*args, **kwargs):
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))
+        ret = func(*args, **kwargs)
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        return ret
+    return func_wrapper
