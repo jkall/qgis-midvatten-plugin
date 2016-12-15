@@ -59,7 +59,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
         self.add_row(splitter)
 
-        self.observations = self.select_file_and_parse_rows()
+        self.observations = self.select_file_and_parse_rows(self.parse_rows)
         if self.observations == u'cancel':
             self.status = True
             return u'cancel'
@@ -127,10 +127,10 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         self.show()
 
-    def select_file_and_parse_rows(self):
+    @staticmethod
+    def select_file_and_parse_rows(row_parser):
         filenames = utils.select_files(only_one_file=False, extension="csv (*.csv)")
         if filenames is None or not filenames:
-            self.status = False
             return u'cancel'
 
         observations = []
@@ -139,7 +139,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             with io.open(filename, 'r', encoding='utf-8') as f:
                 #Skip header
                 f.readline()
-                observations.extend(self.parse_rows(f))
+                observations.extend(row_parser(f))
 
         #Remove duplicates
         observations = [dict(no_duplicate) for no_duplicate in set([tuple(possible_duplicate.items()) for possible_duplicate in observations])]
@@ -250,6 +250,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         file_data_list = [[u'obsid', u'instrumentid', u'flowtype', u'date_time', u'reading', u'unit', u'comment']]
         instrumentids = utils.get_last_used_flow_instruments()[1]
+        already_asked_instruments = {}
 
         for observation in observations:
             obsid = observation[u'obsid']
@@ -257,27 +258,30 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
             unit = observation[u'unit']
 
-            instrumentids_for_obsid = instrumentids.get(obsid, None)
-            if instrumentids_for_obsid is None:
-                last_used_instrumentid = u''
-            else:
-                last_used_instrumentid = sorted(
-                    [(_date_time, _instrumentid) for _flowtype, _instrumentid, _date_time in instrumentids[obsid] if
-                     (_flowtype == flowtype)])
-                if last_used_instrumentid:
-                    last_used_instrumentid = last_used_instrumentid[-1][1]
-                else:
+            instrumentid = already_asked_instruments.get(obsid, None)
+            if instrumentid is None:
+                instrumentids_for_obsid = instrumentids.get(obsid, None)
+                if instrumentids_for_obsid is None:
                     last_used_instrumentid = u''
-            question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
-                                              msg=u''.join([u'Submit the instrument id for the measurement:\n ',
-                                                            u', '.join([obsid, date_time, flowtype, unit])]),
-                                              existing_list=[last_used_instrumentid],
-                                              default_value=last_used_instrumentid,
-                                              combobox_label=u'Instrument id:s in database.\nThe last used instrument id for the current obsid is prefilled:')
-            answer = question.answer
-            if answer == u'cancel':
-                return u'cancel'
-            instrumentid = utils.returnunicode(question.value)
+                else:
+                    last_used_instrumentid = sorted(
+                        [(_date_time, _instrumentid) for _flowtype, _instrumentid, _date_time in instrumentids[obsid] if
+                         (_flowtype == flowtype)])
+                    if last_used_instrumentid:
+                        last_used_instrumentid = last_used_instrumentid[-1][1]
+                    else:
+                        last_used_instrumentid = u''
+                question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
+                                                  msg=u''.join([u'Submit the instrument id for the measurement:\n ',
+                                                                u', '.join([obsid, date_time, flowtype, unit])]),
+                                                  existing_list=[last_used_instrumentid],
+                                                  default_value=last_used_instrumentid,
+                                                  combobox_label=u'Instrument id:s in database.\nThe last used instrument id for the current obsid is prefilled:')
+                answer = question.answer
+                if answer == u'cancel':
+                    return u'cancel'
+                instrumentid = utils.returnunicode(question.value)
+                already_asked_instruments[obsid] = instrumentid
 
             reading = observation[u'value'].replace(u',', u'.')
 
