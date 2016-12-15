@@ -106,8 +106,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
-             <height>553</height>
+             <width>182</width>
+             <height>248</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_10">
@@ -1214,7 +1214,7 @@
                  </sizepolicy>
                 </property>
                 <property name="toolTip">
-                 <string>Affects zz_tables during database creation</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Changing locale updates the database table about_db.&lt;/p&gt;&lt;p&gt;The locale setting affects the language (swedish or english) for some tools.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="editable">
                  <bool>true</bool>

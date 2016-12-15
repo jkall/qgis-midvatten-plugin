@@ -379,15 +379,19 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def load_and_select_general_settings(self):
         locales = [QLocale(QLocale.Swedish, QLocale.Sweden), QLocale(QLocale.English, QLocale.UnitedStates)]
         current_locale = utils.getcurrentlocale()[0]
-        items = set()
-        items.add(current_locale)
-        items.update([localeobj.name() for localeobj in locales])
+        items_set = set()
+        items_set.add(current_locale)
+        items_set.update([localeobj.name() for localeobj in locales])
         items = [u'']
-        items.extend(sorted(list(items)))
+        items.extend(sorted(list(items_set)))
+
         self.locale_combobox.addItems(items)
         if current_locale:
             idx = self.locale_combobox.findText(current_locale)
-            self.locale_combobox.setCurrentIndex(idx)
+            try:
+                self.locale_combobox.setCurrentIndex(idx)
+            except:
+                pass
 
     def LoadColumnsFromTable(self, table=''):
         """ This method returns a list with all the columns in the table"""

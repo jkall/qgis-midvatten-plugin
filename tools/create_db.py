@@ -43,7 +43,6 @@ class newdb():
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return u'cancel'
 
-
         if user_select_CRS=='y':
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
         else:
@@ -142,6 +141,8 @@ class newdb():
     def ask_for_locale(self):
         locales = [PyQt4.QtCore.QLocale(PyQt4.QtCore.QLocale.Swedish, PyQt4.QtCore.QLocale.Sweden), PyQt4.QtCore.QLocale(PyQt4.QtCore.QLocale.English, PyQt4.QtCore.QLocale.UnitedStates)]
         locale_names = [localeobj.name() for localeobj in locales]
+        locale_names.append(locale.getdefaultlocale()[0])
+        locale_names = list(set(locale_names))
         question = utils.NotFoundQuestion(dialogtitle=u'User input needed',
                                     msg=u'Supply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.',
                                     existing_list=locale_names,

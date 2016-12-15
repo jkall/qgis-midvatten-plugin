@@ -127,7 +127,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                          self.temptableName)
                 utils.sql_alter_db(sql)
                 nr_fk_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%fk_table)[1][0][0]
-                utils.MessagebarAndLog.info(u'In total ' + str(nr_fk_after - nr_fk_before) + u'  were imported to foreign key table ' + fk_table)
+                utils.MessagebarAndLog.info(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table)
             else:
                 #Else check if there are foreign keys blocking the import and skip those rows
                 existing_keys = utils.sql_load_fr_db(u'select distinct "%s" from "%s"'%(u', '.join(to_list),

@@ -916,11 +916,11 @@ def select_files(only_one_file=True, extension="csv (*.csv)"):
 
 def ask_for_charset(default_charset=None, msg=None):
     try:#MacOSX fix2
-        localencoding = locale.getdefaultlocale()[1]
+        localencoding = getcurrentlocale()[1]
         if default_charset is None:
             if msg is None:
                 msg = "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default."
-            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", msg,QtGui.QLineEdit.Normal,locale.getdefaultlocale()[1])[0]
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", msg,QtGui.QLineEdit.Normal,getcurrentlocale()[1])[0]
         else:
             if msg is None:
                 msg = "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252."
@@ -1196,7 +1196,7 @@ def getcurrentlocale():
 
     db_locale = get_locale_from_db()
 
-    if db_locale is not None:
+    if db_locale is not None and db_locale:
         return [db_locale, locale.getdefaultlocale()[1]]
     else:
         return locale.getdefaultlocale()[:2]
@@ -1215,6 +1215,8 @@ def get_locale_from_db():
             return None
         else:
             return locale_setting
+    else:
+        return None
 
 def calculate_db_table_rows():
     results = {}
