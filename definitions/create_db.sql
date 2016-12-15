@@ -135,7 +135,7 @@ insert into about_db values('zz_meteoparam', '*', '', '', '', '', '', 'data doma
 insert into about_db values('zz_meteoparam', 'parameter', 'text', '1', 'precip, temp', '1', '', 'Existing types of parameter related to meteorological observations', '', '');
 insert into about_db values('zz_meteoparam', 'explanation', 'text', '', '', '', '', 'Explanation of the parameters', '', '');
 insert into about_db values('zz_staff', '*', '', '', '', '', '', 'data domain for field staff used when importing data', '', '');
-insert into about_db values('zz_staff', 'staff', 'text', '1', '', '1', '', 'initials of the field staff', '', '');
+insert into about_db values('zz_staff', 'staff', 'text', '', '', '1', '', 'initials of the field staff', '', '');
 insert into about_db values('zz_staff', 'name', 'text', '', '', '', '', 'name of the field staff', '', '');
 insert into about_db values('zz_strat', '*', '', '', '', '', '', 'data domain for stratigraphy classes, plot colors, symbols and geological short names used by the plugin', '', '');
 insert into about_db values('zz_strat', 'strat', 'text', '1', 'gravel, sand, silt, clay etc', '1', '', 'stratigraphy classes', '', '');
@@ -162,7 +162,7 @@ CREATE TABLE "meteo" (obsid text not null, instrumentid text not null, parameter
 create table "seismic_data" (obsid text not null, length double not null, ground double, bedrock double, gw_table double, comment text, primary key (obsid, Length), foreign key (obsid) references obs_lines(obsid));
 create table "vlf_data" (obsid text not null, length double not null, real_comp double, imag_comp double, comment text, primary key (obsid, Length), foreign key (obsid) references obs_lines(obsid));
 CREATE TABLE "comments" ("obsid" text not null, "date_time" text not null, "comment" text not null, "staff" text not null, primary key("obsid", "date_time"), foreign key(obsid) references obs_points(obsid), foreign key(staff) references zz_staff(staff));
-CREATE TABLE "zz_staff" ("staff" text not null, "name" text, primary key("staff"));
+CREATE TABLE "zz_staff" ("staff" text, "name" text, primary key("staff"));
 create table "zz_flowtype" (type text not null, explanation text, primary key(type));
 CREATE TABLE "zz_meteoparam" (parameter text not null,explanation text, primary key(parameter));
 CREATE TABLE "zz_strat" (geoshort text not null, strata text not null, primary key(geoshort));

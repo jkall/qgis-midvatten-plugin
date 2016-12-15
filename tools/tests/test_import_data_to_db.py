@@ -1860,6 +1860,48 @@ class TestWqualfieldImport(object):
         reference_string = ur'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
         assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_w_qual_field_staff_null(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid2")')
+        f = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'depth', u'comment'],
+             [u'obsid1', u'', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment'],
+             [u'obsid2', u'', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment']]
+
+        # utils.sql_alter_db(u'''insert into w_qual_field (obsid, date_time, parameter, reading_num, unit) values ('1', '2011-10-19 12:30:01', 'testp', '123', 'testunit')''')
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch(
+                'import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
+            def _test_w_qual_field_import_from_csvlayer(self, filename,
+                                                        mock_filename,
+                                                        mock_skippopup,
+                                                        mock_encoding, mock_iface, mock_askuser):
+                mock_filename.return_value = filename
+                mock_encoding.return_value = [True, u'utf-8']
+                self.mock_iface = mock_iface
+                self.importinstance.general_csv_import(goal_table=u'w_qual_field')
+                mock_iface.messageBar.return_value.createMessage.assert_called_with(u'In total 2 measurements were imported to "w_qual_field".')
+
+            _test_w_qual_field_import_from_csvlayer(self, filename)
+
+        test_string = utils_for_tests.create_test_string(
+            utils.sql_load_fr_db(u'''select * from w_qual_field'''))
+        reference_string = ur'''(True, [(obsid1, None, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment), (obsid2, None, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
+        assert test_string == reference_string
+
+        test_string = utils_for_tests.create_test_string(
+            utils.sql_load_fr_db(u'''select * from zz_staff'''))
+        reference_string = ur'''(True, [])'''
+        assert test_string == reference_string
+
 
 class TestWlevelsImport(object):
     answer_yes = mock_answer('yes')
@@ -2489,6 +2531,9 @@ class TestFilterDatesFromFiledata(object):
         reference_file_data = u'''[[obsid, date_time], [rb1, 2016-05-01 00:00], [rb3, 2015-05-01 00:00:00], [rb3, 2016-05-01 00:00]]'''
 
         assert test_file_data == reference_file_data
+
+
+
 
 
 
