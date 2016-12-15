@@ -117,13 +117,13 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                                                     self.stored_settingskey_parameterbrowser)]))
 
         self.clear_settings_button = PyQt4.QtGui.QPushButton(u'Clear settings')
-        self.clear_settings_button.setToolTip(u'Clear parameter and parameter group settings.\nReopen Fieldlogger export gui to reset have it reset,\nor press "Save settings" to undo.')
+        self.clear_settings_button.setToolTip(u'Clear input fields and settings.\nReopen Fieldlogger export gui to it reset,\nor press "Save settings" to undo.')
         self.gridLayout_buttons.addWidget(self.clear_settings_button, 4, 0)
         self.connect(self.clear_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(),
-                                 [lambda: self.save_stored_settings(self.ms, None, self.stored_settingskey),
-                                  lambda: self.save_stored_settings(self.ms, None, self.stored_settingskey_parameterbrowser),
-                                  lambda: utils.pop_up_info(u'Settings cleard. Restart Export Fieldlogger dialog')]))
+                                 [lambda: self.save_stored_settings(self.ms, [], self.stored_settingskey),
+                                  lambda: self.save_stored_settings(self.ms, [], self.stored_settingskey_parameterbrowser),
+                                  lambda: utils.pop_up_info(u'Settings cleared. Restart Export Fieldlogger dialog')]))
 
         self.gridLayout_buttons.addWidget(get_line(), 5, 0)
 

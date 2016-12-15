@@ -86,6 +86,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         sublocations_widget = PyQt4.QtGui.QWidget()
         sublocations_layout = PyQt4.QtGui.QVBoxLayout()
         sublocations_widget.setLayout(sublocations_layout)
+        sublocations_layout.addWidget(PyQt4.QtGui.QLabel(u'Select sublocations to import:'))
         splitter.addWidget(sublocations_widget)
         self.settings.append(SublocationFilter(sublocations))
         sublocations_layout.addWidget(self.settings[-1].widget)
@@ -96,6 +97,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         parameter_layout = PyQt4.QtGui.QVBoxLayout()
         parameter_widget.setLayout(parameter_layout)
         splitter.addWidget(parameter_widget)
+        parameter_layout.addWidget(PyQt4.QtGui.QLabel(u'Specify import methods for input fields'))
 
         self.parameter_names = list(set([observation[u'parametername'] for observation in self.observations]))
         self.parameter_imports = OrderedDict()
@@ -109,17 +111,26 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.stored_settingskey = u'fieldlogger_import_parameter_settings'
 
         #General buttons
-        self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
-        self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
-        self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
         self.save_settings_button = PyQt4.QtGui.QPushButton(u'Save settings')
-        self.gridLayout_buttons.addWidget(self.save_settings_button, 1, 0)
+        self.gridLayout_buttons.addWidget(self.save_settings_button, 0, 0)
         self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : map(lambda x: x(),
                                       [lambda : self.update_stored_settings(self.stored_settings, self.parameter_imports),
                                        lambda : self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]))
 
+        self.clear_settings_button = PyQt4.QtGui.QPushButton(u'Clear settings')
+        self.clear_settings_button.setToolTip(u'Clear all parameter settings\nReopen Fieldlogger import gui to have it reset,\nor press "Save settings" to undo.')
+        self.gridLayout_buttons.addWidget(self.clear_settings_button, 1, 0)
+        self.connect(self.clear_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
+                     lambda: map(lambda x: x(),
+                                 [lambda: self.save_stored_settings(self.ms, [], self.stored_settingskey),
+                                  lambda: utils.pop_up_info(u'Settings cleared. Restart import Fieldlogger dialog')]))
 
+        self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
+        self.gridLayout_buttons.addWidget(self.start_import_button, 2, 0)
+        self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
+
+        self.gridLayout_buttons.setRowStretch(3, 1)
 
         #Load stored parameter settings
         self.stored_settings = self.get_stored_settings(self.ms, self.stored_settingskey)
@@ -667,9 +678,6 @@ class SublocationFilter(RowEntry):
         :param sublocations: a list like [u'a.b', u'1.2.3', ...]
         """
         super(SublocationFilter, self).__init__()
-
-        self.label = PyQt4.QtGui.QLabel(u'Select sublocations to import:')
-        self.layout.addWidget(self.label)
 
         sublocations = sorted(list(set(sublocations)))
         num_rows = len(sublocations)
