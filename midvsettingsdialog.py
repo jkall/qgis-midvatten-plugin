@@ -48,7 +48,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             self.LoadAndSelectLastSettings()
 
         #Load general settings
-        self.load_and_select_general_settings()
+        #self.load_and_select_general_settings() # TODO: remove in version 1.4
 
         # SIGNALS
         #move dockwidget
@@ -85,7 +85,8 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.paramCa, SIGNAL("activated(int)"), partial(self.ChangedParamCa)) 
         self.connect(self.paramMg, SIGNAL("activated(int)"), partial(self.ChangedParamMg))         
         self.connect(self.MarkerComboBox, SIGNAL("activated(int)"), partial(self.ChangedPiperMarkerComboBox))
-        self.connect(self.locale_combobox, SIGNAL("activated(int)"), partial(self.ChangedLocale))
+        #tab general - TO BE REMOVED
+        #self.connect(self.locale_combobox, SIGNAL("activated(int)"), partial(self.ChangedLocale))# TODO: remove in version 1.4
 
         #Draw the widget
         self.iface.addDockWidget(max(self.ms.settingsdict['settingslocation'],1), self)
@@ -94,15 +95,15 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def ChangedCheckBoxDataPoints(self):
         self.ms.settingsdict['tsdotmarkers']=self.checkBoxDataPoints.checkState()
         self.ms.save_settings('tsdotmarkers')
-    
+
     def ChangedCheckBoxDataPoints2(self):
         self.ms.settingsdict['xydotmarkers']=self.checkBoxDataPoints_2.checkState()
         self.ms.save_settings('xydotmarkers')
-                
+
     def ChangedCheckBoxStepPlot(self):
         self.ms.settingsdict['tsstepplot']=self.checkBoxStepPlot.checkState()
         self.ms.save_settings('tsstepplot')
-    
+
     def ChangedListOfColumns(self):
         self.ms.settingsdict['tscolumn']=self.ListOfColumns.currentText()
         self.ms.save_settings('tscolumn')
@@ -114,7 +115,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def ChangedListOfColumns3(self):
         self.ms.settingsdict['xy_y1column']=self.ListOfColumns_3.currentText()
         self.ms.save_settings('xy_y1column')
-        
+
     def ChangedListOfColumns4(self):
         self.ms.settingsdict['xy_y2column']=self.ListOfColumns_4.currentText()
         self.ms.save_settings('xy_y2column')
@@ -175,7 +176,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ms.settingsdict['piper_markers']=self.MarkerComboBox.currentText()
         self.ms.save_settings('piper_markers')
 
-    def ChangedLocale(self):
+    def ChangedLocale(self):    # TODO: remove in version 1.4
         sql = u"select description from about_db where description like 'locale:%'"
         connection_ok, result = utils.sql_load_fr_db(sql)
         if not self.locale_combobox.currentText():
@@ -209,7 +210,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ClearTableLists()
         self.ClearColumnLists()
         self.ClearPiperParams()
-        self.ClearGeneral()
+        #self.ClearGeneral() # TODO: remove in version 1.4
 
     def ClearTableLists(self):
         self.ListOfTables.clear()    
@@ -226,7 +227,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.paramCa.clear()
         self.paramMg.clear()
 
-    def ClearGeneral(self):
+    def ClearGeneral(self):     # TODO: remove in version 1.4
         self.locale_combobox.clear()
 
     def ColumnsToComboBox(self, comboboxname='', table=None):
@@ -376,7 +377,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         else:
             self.checkBoxDataPoints_2.setChecked(False)
 
-    def load_and_select_general_settings(self):
+    def load_and_select_general_settings(self):     # TODO: remove in version 1.4
         locales = [QLocale(QLocale.Swedish, QLocale.Sweden), QLocale(QLocale.English, QLocale.UnitedStates)]
         current_locale = utils.getcurrentlocale()[0]
         items_set = set()
