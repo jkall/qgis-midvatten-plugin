@@ -1192,7 +1192,7 @@ def remove_mean_from_nparray(x):
     return x
 
 def getcurrentlocale():
-    saved_locale = locale.getlocale()
+    #saved_locale = locale.getlocale() #TODO: remove?
 
     db_locale = get_locale_from_db()
 

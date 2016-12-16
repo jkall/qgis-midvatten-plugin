@@ -482,7 +482,9 @@ class midvatten:
             except:
                 self.export_to_field_logger = ExportToFieldLogger(self.iface.mainWindow(), self.ms)
         else:
-            utils.pop_up_info("Err_flag was not 0")       
+            utils.MessagebarAndLog.warning(
+                bar_msg='Error! Verify Midvatten settings. Verify that no layer is in edit mode.',
+                duration=15, button=False)
 
     def import_obs_lines(self):
         allcritical_layers = ('obs_lines')#none of these layers must be in editing mode
