@@ -548,6 +548,9 @@ def staff_list():
 
     return True, utils.returnunicode(tuple([x[0] for x in result_list]), True)
 
+def stratigraphy_table():
+    return 'stratigraphy'
+    
 def SQLiteInternalTables():
     return r"""('geom_cols_ref_sys',
                 'geometry_columns',
@@ -638,7 +641,6 @@ def tables_columns():
         tables_dict[tablename] = tuple(sorted(tuple(columns), key=itemgetter(1)))
 
     return tables_dict
-
 
 def get_last_used_quality_instruments():
     """

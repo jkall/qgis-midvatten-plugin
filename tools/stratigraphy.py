@@ -54,7 +54,7 @@ class Stratigraphy:
     def __init__(self, iface, layer=None, settingsdict={}):
         self.iface = iface
         self.dataPath = settingsdict['database']
-        self.stratitable = settingsdict['stratigraphytable']  #no longer an option to select other tables than 'stratigraphy'
+        self.stratitable = defs.stratigraphy_table()  #no longer an option to select other tables than 'stratigraphy'
         self.layer = layer
         self.store = None
         #self.showSurvey()

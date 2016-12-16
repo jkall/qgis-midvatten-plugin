@@ -74,8 +74,10 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.ListOfdate_time_format, SIGNAL("activated(int)"), partial(self.ChangedListOfdate_time_format))
         self.connect(self.ListOfColumns_WQUALUNIT, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualUnit))         
         self.connect(self.ListOfColumns_WQUALSORTING, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualSorting))                 
-        #tab stratigraphy
-        self.connect(self.ListOfTables_3, SIGNAL("activated(int)"), partial(self.StratigraphyTableUpdated))  
+
+        #tab stratigraphy  - TO BE REMOVED
+        #self.connect(self.ListOfTables_3, SIGNAL("activated(int)"), partial(self.StratigraphyTableUpdated))  # TODO: remove in version 1.4
+
         #tab piper
         self.connect(self.paramCl, SIGNAL("activated(int)"), partial(self.ChangedParamCl)) 
         self.connect(self.paramHCO3, SIGNAL("activated(int)"), partial(self.ChangedParamHCO3)) 
@@ -215,7 +217,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def ClearTableLists(self):
         self.ListOfTables.clear()    
         self.ListOfTables_2.clear()    
-        self.ListOfTables_3.clear()
+        #self.ListOfTables_3.clear() #TODO: remove in version 1.4 (was for stratigraphy)
         self.ListOfTables_WQUAL.clear()
 
     def ClearPiperParams(self):
@@ -252,8 +254,8 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             #XY plot settings
             self.load_and_select_last_xyplot_settings()
             
-            #Stratigraphy settings
-            self.load_and_select_last_stratigraphy_settings()
+            #Stratigraphy settings # TODO: remove in version 1.4
+            #self.load_and_select_last_stratigraphy_settings()
             
             #Water Quality Reports settings
             self.load_and_select_last_wqual_settings()
@@ -292,7 +294,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         if searchindex >= 0:
             self.MarkerComboBox.setCurrentIndex(searchindex)
 
-    def load_and_select_last_stratigraphy_settings(self):
+    def load_and_select_last_stratigraphy_settings(self):#TODO: remove in version 1.4
         searchindex = self.ListOfTables_3.findText(self.ms.settingsdict['stratigraphytable'])
         print(searchindex)
         print(self.ms.settingsdict['stratigraphytable'])
@@ -422,13 +424,13 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             rs=cursor.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + midvatten_defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")  #SQL statement to get the relevant tables in the spatialite database
             self.ListOfTables.addItem('')
             self.ListOfTables_2.addItem('')
-            self.ListOfTables_3.addItem('')
+            #self.ListOfTables_3.addItem('') #TODO: remove in version 1.4
             self.ListOfTables_WQUAL.addItem('')
             
             for row in cursor:
                 self.ListOfTables.addItem(row[0])
                 self.ListOfTables_2.addItem(row[0])
-                self.ListOfTables_3.addItem(row[0])
+                #self.ListOfTables_3.addItem(row[0]) #TODO: remove in version 1.4
                 self.ListOfTables_WQUAL.addItem(row[0])
             rs.close()
             myconnection.closedb()# then close the database          
@@ -499,7 +501,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ms.settingsdict['settingslocation']=dockarea
         self.ms.save_settings('settingslocation')
         
-    def StratigraphyTableUpdated(self):
+    def StratigraphyTableUpdated(self): # TODO: remove in version 1.4
         """This method is called whenever stratigraphy table is changed"""
         # Make sure that columns obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, comment exists
         Needed_columns = ('comment', 'capacity', 'geology', 'geoshort', 'depthtop', 'depthbot', 'obsid', 'stratid')
