@@ -4,7 +4,7 @@ name=Midvatten
 qgisMinimumVersion=2.4
 qgisMaximumVersion=2.98
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.3.9
+version=Version 1.3.10
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 
@@ -19,8 +19,12 @@ experimental=False
 deprecated=False
 
 changelog=
-        Version 1.3.8
-        - ...
+        Version 1.3.8 - 1.3.10
+        - New feature: general csv importer!
+        - New feature: locale selected at database creation and embedded in db
+        - New feature: import Diver Office files
+        - Rework of new feature: Import/Export of FieldLogger files
+        - several bugfixes
         Version 1.3.7
         - several minor bugfixes
         Version 1.3.6
@@ -28,13 +32,13 @@ changelog=
         - stratigraphy plot can use svg color names (set in zz_strat table)
         - import of interlab 4 files
         Version 1.3.4
-        - support for exporting/importing files for the FieldLogger android/iPhone app
-        - automatic updates of attribute table coordinates when an obs_point is created/moved, and vice versa
-        - multiple import of logger files from diver office software
+        - New feature: for exporting/importing files for the FieldLogger android/iPhone app
+        - New feature:  updates of attribute table coordinates when an obs_point is created/moved, and vice versa
+        - New feature: multiple import of logger files from diver office software
         - improved calibration feature for water level from loggers
-        - on-the-fly conversion from pulse counts to frequency in the custom plot
-        - on-the-fly scaling (gain) and offset for y-values in the custom plot
-        - stratigraphy units, plot color and symbols are now editable by the user, so is also the water capacity (as given in stratigraphy table)
+        - New feature: on-the-fly conversion from pulse counts to frequency in the custom plot
+        - New feature: on-the-fly scaling (gain) and offset for y-values in the custom plot
+        - New feature: stratigraphy units, plot color and symbols are now editable by the user, so is also the water capacity (as given in stratigraphy table)
         - some database design changes (some new tables and more)
         - work-around in custom plot to fix xaxis date-time format when using  the matplotlib "figure options" to change labels and curves
         - from now the plugin needs spatialite 4
