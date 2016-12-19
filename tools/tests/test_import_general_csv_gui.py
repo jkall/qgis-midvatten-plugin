@@ -31,7 +31,7 @@ import utils_for_tests as test_utils
 from utils_for_tests import init_test
 from tests.mocks_for_tests import DummyInterface
 from nose.tools import raises
-from mock import mock_open, patch, MagicMock
+from mock import mock_open, patch, MagicMock, call
 from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance, DummyInterface2, mock_answer
 import mock
 import io
@@ -649,3 +649,51 @@ class TestGeneralCsvGui(object):
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
+
+
+class TestStaticMethods(object):
+    def test_get_delimiter_only_one_column(self):
+        file = [u'obsid',
+                 u'rb1']
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+            @mock.patch('qgis.utils.iface', autospec=True)
+            def _test(filename, mock_iface):
+                delimiter = GeneralCsvImportGui.get_delimiter(filename, u'utf-8')
+                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') in mock_iface.mock_calls
+            _test(filename)
+
+    def test_get_delimiter_delimiter_not_found(self):
+        file = [u'obsid;acol,acol2',
+                 u'rb1;1,2']
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+            @mock.patch('qgis.utils.iface', autospec=True)
+            def _test(filename, mock_iface):
+                delimiter = GeneralCsvImportGui.get_delimiter(filename, u'utf-8')
+                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') in mock_iface.mock_calls
+            _test(filename)
+
+    def test_get_delimiter_semicolon(self):
+        file = [u'obsid;acol;acol2',
+                 u'rb1;1;2']
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+            @mock.patch('qgis.utils.iface', autospec=True)
+            def _test(filename, mock_iface):
+                delimiter = GeneralCsvImportGui.get_delimiter(filename, u'utf-8')
+                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') not in mock_iface.mock_calls
+                assert delimiter == u';'
+            _test(filename)
+
+    def test_get_delimiter_comma(self):
+        file = [u'obsid,acol,acol2',
+                 u'rb1,1,2']
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+            @mock.patch('qgis.utils.iface', autospec=True)
+            def _test(filename, mock_iface):
+                delimiter = GeneralCsvImportGui.get_delimiter(filename, u'utf-8')
+                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') not in mock_iface.mock_calls
+                assert delimiter == u','
+            _test(filename)

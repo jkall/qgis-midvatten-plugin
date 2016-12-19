@@ -116,6 +116,11 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             header = f.readline().rstrip(u'\n').rstrip(u'\r')
         delimiters = [u',', u';']
         tested_header = [len(header.split(delimiter)) for delimiter in delimiters]
+        nr_of_delimiters = set()
+        nr_of_delimiters.update(tested_header)
+        if len(nr_of_delimiters) == 1:
+            utils.MessagebarAndLog.warning(bar_msg=u'File error, delimiter not found, see log message panel', log_msg=u'If the file only contains one column, ignore this message:\nThe delimiter might not have been found automatically.\nIt must be ' + u' or '.join(delimiters) + u'\n')
+            return None
         delimiter = delimiters[tested_header.index(max(tested_header))]
         return delimiter
 
