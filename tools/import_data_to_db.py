@@ -123,9 +123,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 if not all([_from in existing_columns for _from in from_list]):
                     continue
                 nr_fk_before = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%fk_table)[1][0][0]
+                _table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''% fk_table)[1]
+                _column_headers_types = dict([(row[1], row[2]) for row in _table_info])
                 sql = ur"""insert or ignore into %s (%s) select distinct %s from %s as b where %s"""%(fk_table,
                                                                                              u', '.join([u'"{}"'.format(k) for k in to_list]),
-                                                                                             u', '.join([u'"b"."{}"'.format(k) for k in from_list]),
+                                                                                             u', '.join([u'''CAST("b"."%s" as "%s")'''%(k, _column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
                                                                                              self.temptableName,
                                                                                              u' and '.join([u''' "b"."{}" IS NOT NULL and "b"."{}" != '' and "b"."{}" != ' ' '''.format(k, k, k) for k in from_list]))
                 utils.sql_alter_db(sql)
@@ -174,7 +176,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         sql_list = [u"""INSERT OR IGNORE INTO "%s" ("""%goal_table]
         sql_list.append(u', '.join([u'"{}"'.format(k) for k in sorted(existing_columns)]))
         sql_list.append(u""") SELECT """)
-        sql_list.append(u', '.join([u"""(case when ("%s"!='' and "%s"!=' ') then CAST("%s" as "%s") else null end)"""%(colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns)]))
+        sql_list.append(u', '.join([u"""(case when ("%s"!='' and "%s"!=' ' and "%s" IS NOT NULL) then CAST("%s" as "%s") else null end)"""%(colname, colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns)]))
         sql_list.append(u"""FROM %s"""%(self.temptableName))
         sql = u''.join(sql_list)
 

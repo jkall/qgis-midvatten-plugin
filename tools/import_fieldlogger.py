@@ -949,7 +949,7 @@ class WQualFieldImportFields(RowEntryGrid):
         self.__parameter.addItems(self._parameters_units.keys())
         self.label_unit = PyQt4.QtGui.QLabel(u'Unit: ')
         self.__unit = default_combobox()
-        self.label_depth = PyQt4.QtGui.QLabel(u'Depth parameter: ')
+        self.label_depth = PyQt4.QtGui.QLabel(u'Depth input field: ')
         self.__depth = default_combobox()
         self.__depth.addItems(self._import_method_chooser.parameter_names)
         self.__instrument = default_combobox()
