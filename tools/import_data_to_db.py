@@ -207,7 +207,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         file_string = utils.lists_to_string(file_data)
 
-        with utils.tempinput(file_string) as csvpath:
+        with utils.tempinput(file_string, charset=u'utf_8') as csvpath:
+            self.charsetchoosen = u'UTF-8'
             csvlayer = self.csv2qgsvectorlayer(csvpath)
             if not csvlayer:
                 utils.MessagebarAndLog.critical("Import error: Creating csvlayer failed!")
@@ -367,9 +368,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def check_and_delete_stratigraphy(self, existing_columns):
         if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):
             skip_obsids = []
-            obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from "%s"'%self.temptableName)[1]
+            obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthbot, depthtop from "%s"'%self.temptableName)[1]
             for obsid, stratid_depthbot_depthtop  in obsid_strat.iteritems():
-                sorted_strats = sorted(stratid_depthbot_depthtop, key=itemgetter(0))
+                #Turn everything to float
+                strats = [[float(x) for x in y] for y in stratid_depthbot_depthtop]
+                sorted_strats = sorted(strats, key=itemgetter(0))
                 stratid_idx = 0
                 depthbot_idx = 1
                 depthtop_idx = 2

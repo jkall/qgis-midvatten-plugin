@@ -176,6 +176,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
                                                                column_header_translation_dict=translation_dict))
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        self.close()
 
     def add_line(self, layout=None):
         """ just adds a line"""
@@ -230,7 +231,7 @@ class ImportTableChooser(VRowEntry):
 
         self.__import_method = PyQt4.QtGui.QComboBox()
         self.__import_method.addItem(u'')
-        self.__import_method.addItems(sorted(tables_columns.keys()))
+        self.__import_method.addItems(sorted(tables_columns.keys(), key=lambda s: s.lower()))
 
         self.connect(self.__import_method, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_method)
 
@@ -332,7 +333,7 @@ class ColumnEntry(RowEntry):
 
         self.combobox = PyQt4.QtGui.QComboBox()
         self.combobox.addItem(u'')
-        self.combobox.addItems(sorted(file_header))
+        self.combobox.addItems(sorted(file_header, key=lambda s: s.lower()))
 
         self.layout.addWidget(label)
 
