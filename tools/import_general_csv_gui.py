@@ -339,6 +339,7 @@ class ColumnEntry(RowEntry):
 
         if self.db_column == u'obsid':
             self.obsids_from_selection = PyQt4.QtGui.QCheckBox(u'Obsid from qgis selection')
+            self.obsids_from_selection.setToolTip(u'Select 1 obsid from obs_points or obs_lines attribute table or map.')
             self.connect(self.obsids_from_selection, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : self.combobox.setEnabled(True if not self.obsids_from_selection.isChecked() else False))
             self.widgets = [label, self.obsids_from_selection, self.combobox]
