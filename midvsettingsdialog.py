@@ -48,7 +48,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             self.LoadAndSelectLastSettings()
 
         #Load general settings
-        self.load_and_select_general_settings()
+        #self.load_and_select_general_settings() # TODO: remove in version 1.4
 
         # SIGNALS
         #move dockwidget
@@ -74,8 +74,10 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.ListOfdate_time_format, SIGNAL("activated(int)"), partial(self.ChangedListOfdate_time_format))
         self.connect(self.ListOfColumns_WQUALUNIT, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualUnit))         
         self.connect(self.ListOfColumns_WQUALSORTING, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualSorting))                 
-        #tab stratigraphy
-        self.connect(self.ListOfTables_3, SIGNAL("activated(int)"), partial(self.StratigraphyTableUpdated))  
+
+        #tab stratigraphy  - TO BE REMOVED
+        #self.connect(self.ListOfTables_3, SIGNAL("activated(int)"), partial(self.StratigraphyTableUpdated))  # TODO: remove in version 1.4
+
         #tab piper
         self.connect(self.paramCl, SIGNAL("activated(int)"), partial(self.ChangedParamCl)) 
         self.connect(self.paramHCO3, SIGNAL("activated(int)"), partial(self.ChangedParamHCO3)) 
@@ -85,7 +87,8 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.paramCa, SIGNAL("activated(int)"), partial(self.ChangedParamCa)) 
         self.connect(self.paramMg, SIGNAL("activated(int)"), partial(self.ChangedParamMg))         
         self.connect(self.MarkerComboBox, SIGNAL("activated(int)"), partial(self.ChangedPiperMarkerComboBox))
-        self.connect(self.locale_combobox, SIGNAL("activated(int)"), partial(self.ChangedLocale))
+        #tab general - TO BE REMOVED
+        #self.connect(self.locale_combobox, SIGNAL("activated(int)"), partial(self.ChangedLocale))# TODO: remove in version 1.4
 
         #Draw the widget
         self.iface.addDockWidget(max(self.ms.settingsdict['settingslocation'],1), self)
@@ -94,15 +97,15 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def ChangedCheckBoxDataPoints(self):
         self.ms.settingsdict['tsdotmarkers']=self.checkBoxDataPoints.checkState()
         self.ms.save_settings('tsdotmarkers')
-    
+
     def ChangedCheckBoxDataPoints2(self):
         self.ms.settingsdict['xydotmarkers']=self.checkBoxDataPoints_2.checkState()
         self.ms.save_settings('xydotmarkers')
-                
+
     def ChangedCheckBoxStepPlot(self):
         self.ms.settingsdict['tsstepplot']=self.checkBoxStepPlot.checkState()
         self.ms.save_settings('tsstepplot')
-    
+
     def ChangedListOfColumns(self):
         self.ms.settingsdict['tscolumn']=self.ListOfColumns.currentText()
         self.ms.save_settings('tscolumn')
@@ -114,7 +117,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def ChangedListOfColumns3(self):
         self.ms.settingsdict['xy_y1column']=self.ListOfColumns_3.currentText()
         self.ms.save_settings('xy_y1column')
-        
+
     def ChangedListOfColumns4(self):
         self.ms.settingsdict['xy_y2column']=self.ListOfColumns_4.currentText()
         self.ms.save_settings('xy_y2column')
@@ -175,7 +178,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ms.settingsdict['piper_markers']=self.MarkerComboBox.currentText()
         self.ms.save_settings('piper_markers')
 
-    def ChangedLocale(self):
+    def ChangedLocale(self):    # TODO: remove in version 1.4
         sql = u"select description from about_db where description like 'locale:%'"
         connection_ok, result = utils.sql_load_fr_db(sql)
         if not self.locale_combobox.currentText():
@@ -209,12 +212,12 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ClearTableLists()
         self.ClearColumnLists()
         self.ClearPiperParams()
-        self.ClearGeneral()
+        #self.ClearGeneral() # TODO: remove in version 1.4
 
     def ClearTableLists(self):
         self.ListOfTables.clear()    
         self.ListOfTables_2.clear()    
-        self.ListOfTables_3.clear()
+        #self.ListOfTables_3.clear() #TODO: remove in version 1.4 (was for stratigraphy)
         self.ListOfTables_WQUAL.clear()
 
     def ClearPiperParams(self):
@@ -226,7 +229,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.paramCa.clear()
         self.paramMg.clear()
 
-    def ClearGeneral(self):
+    def ClearGeneral(self):     # TODO: remove in version 1.4
         self.locale_combobox.clear()
 
     def ColumnsToComboBox(self, comboboxname='', table=None):
@@ -251,8 +254,8 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             #XY plot settings
             self.load_and_select_last_xyplot_settings()
             
-            #Stratigraphy settings
-            self.load_and_select_last_stratigraphy_settings()
+            #Stratigraphy settings # TODO: remove in version 1.4
+            #self.load_and_select_last_stratigraphy_settings()
             
             #Water Quality Reports settings
             self.load_and_select_last_wqual_settings()
@@ -291,7 +294,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         if searchindex >= 0:
             self.MarkerComboBox.setCurrentIndex(searchindex)
 
-    def load_and_select_last_stratigraphy_settings(self):
+    def load_and_select_last_stratigraphy_settings(self):#TODO: remove in version 1.4
         searchindex = self.ListOfTables_3.findText(self.ms.settingsdict['stratigraphytable'])
         print(searchindex)
         print(self.ms.settingsdict['stratigraphytable'])
@@ -376,7 +379,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         else:
             self.checkBoxDataPoints_2.setChecked(False)
 
-    def load_and_select_general_settings(self):
+    def load_and_select_general_settings(self):     # TODO: remove in version 1.4
         locales = [QLocale(QLocale.Swedish, QLocale.Sweden), QLocale(QLocale.English, QLocale.UnitedStates)]
         current_locale = utils.getcurrentlocale()[0]
         items_set = set()
@@ -421,13 +424,13 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             rs=cursor.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + midvatten_defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")  #SQL statement to get the relevant tables in the spatialite database
             self.ListOfTables.addItem('')
             self.ListOfTables_2.addItem('')
-            self.ListOfTables_3.addItem('')
+            #self.ListOfTables_3.addItem('') #TODO: remove in version 1.4
             self.ListOfTables_WQUAL.addItem('')
             
             for row in cursor:
                 self.ListOfTables.addItem(row[0])
                 self.ListOfTables_2.addItem(row[0])
-                self.ListOfTables_3.addItem(row[0])
+                #self.ListOfTables_3.addItem(row[0]) #TODO: remove in version 1.4
                 self.ListOfTables_WQUAL.addItem(row[0])
             rs.close()
             myconnection.closedb()# then close the database          
@@ -498,7 +501,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ms.settingsdict['settingslocation']=dockarea
         self.ms.save_settings('settingslocation')
         
-    def StratigraphyTableUpdated(self):
+    def StratigraphyTableUpdated(self): # TODO: remove in version 1.4
         """This method is called whenever stratigraphy table is changed"""
         # Make sure that columns obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, comment exists
         Needed_columns = ('comment', 'capacity', 'geology', 'geoshort', 'depthtop', 'depthbot', 'obsid', 'stratid')

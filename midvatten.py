@@ -482,7 +482,9 @@ class midvatten:
             except:
                 self.export_to_field_logger = ExportToFieldLogger(self.iface.mainWindow(), self.ms)
         else:
-            utils.pop_up_info("Err_flag was not 0")       
+            utils.MessagebarAndLog.warning(
+                bar_msg='Error! Verify Midvatten settings. Verify that no layer is in edit mode.',
+                duration=15, button=False)
 
     def import_obs_lines(self):
         allcritical_layers = ('obs_lines')#none of these layers must be in editing mode
@@ -848,9 +850,12 @@ class midvatten:
     def plot_stratigraphy(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
+        #TODO: remove all "settingsdict['stratigraphytable']" in version 1.4
+        """
         if self.ms.settingsdict['stratigraphytable']=='':
             err_flag += 1
             self.iface.messageBar().pushMessage("Error","Please set stratigraphy table in Midvatten settings.", 2,duration =15)
+        """
         if err_flag == 0 and utils.strat_selection_check(qgis.utils.iface.activeLayer()) == 'ok':
             dlg = Stratigraphy(self.iface, qgis.utils.iface.activeLayer(), self.ms.settingsdict)
             dlg.showSurvey()

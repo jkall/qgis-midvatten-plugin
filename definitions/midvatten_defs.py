@@ -548,6 +548,9 @@ def staff_list():
 
     return True, utils.returnunicode(tuple([x[0] for x in result_list]), True)
 
+def stratigraphy_table():
+    return 'stratigraphy'
+    
 def SQLiteInternalTables():
     return r"""('geom_cols_ref_sys',
                 'geometry_columns',
@@ -648,4 +651,4 @@ def get_last_used_quality_instruments():
     connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
     return returnunicode(result_dict, True)
 
-specific_table_info = {u'obs_lines': u'The geometry column supports WKT ("well known text") of type LINESTRING and\nthe geometries must correspond to SRID in the database.'}
+specific_table_info = {u'obs_lines': u'The geometry column supports WKT ("well known text")'}
