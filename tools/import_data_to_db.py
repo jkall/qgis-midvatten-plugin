@@ -120,6 +120,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             from_list = [x[0] for x in from_to_fields]
             to_list = [x[1] for x in from_to_fields]
             if fk_table in force_import_of_foreign_keys_tables:
+                if not all([_from in existing_columns for _from in from_list]):
+                    continue
                 nr_fk_before = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%fk_table)[1][0][0]
                 sql = ur"""insert or ignore into %s (%s) select distinct %s from %s as b where %s"""%(fk_table,
                                                                                              u', '.join([u'"{}"'.format(k) for k in to_list]),
