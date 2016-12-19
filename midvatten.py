@@ -144,7 +144,7 @@ class midvatten:
         self.actionimport_meteo = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import meteorological observations", self.iface.mainWindow())
         QObject.connect(self.actionimport_meteo, SIGNAL("triggered()"), self.import_meteo)
 
-        self.actionimport_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import data with FieldLogger format", self.iface.mainWindow())
+        self.actionimport_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import data from FieldLogger format", self.iface.mainWindow())
         QObject.connect(self.actionimport_fieldlogger, SIGNAL("triggered()"), self.import_fieldlogger)
 
         self.actiongeneral_import_csv = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import data from general csv format", self.iface.mainWindow())
@@ -704,7 +704,7 @@ class midvatten:
         Imports data from FieldLogger android app format.
         :return: Writes to db.
         """
-        allcritical_layers = ('obs_points', 'w_qual_field', 'w_levels', 'w_flow')#none of these layers must be in editing mode
+        allcritical_layers = ('obs_points', 'w_qual_field', 'w_levels', 'w_flow', 'comments')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):
@@ -732,7 +732,7 @@ class midvatten:
         :return: Writes to db.
         """
         #TODO: Add all layers here
-        allcritical_layers = ('obs_points', 'w_qual_field', 'w_levels', 'w_flow', '')#none of these layers must be in editing mode
+        allcritical_layers = ('obs_points', 'obs_lines', 'zz_flowtype', 'staff') #Editing mode is checked when selecting table
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):

@@ -87,7 +87,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         missing_columns = [column for column in not_null_columns if column not in existing_columns]
 
         if missing_columns:
-            utils.MessagebarAndLog.critical(bar_msg=u'Error: Import failed, see log message panel', log_msg=u'Required columns ' + u', '.join(missing_columns) + u' are missing for table ' + goal_table)
+            utils.MessagebarAndLog.critical(bar_msg=u'Error: Import failed, see log message panel', log_msg=u'Required columns ' + u', '.join(missing_columns) + u' are missing for table ' + goal_table, duration=999)
             self.status = False
             return
 
@@ -120,10 +120,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             from_list = [x[0] for x in from_to_fields]
             to_list = [x[1] for x in from_to_fields]
             if fk_table in force_import_of_foreign_keys_tables:
+                if not all([_from in existing_columns for _from in from_list]):
+                    continue
                 nr_fk_before = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%fk_table)[1][0][0]
+                _table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''% fk_table)[1]
+                _column_headers_types = dict([(row[1], row[2]) for row in _table_info])
                 sql = ur"""insert or ignore into %s (%s) select distinct %s from %s as b where %s"""%(fk_table,
                                                                                              u', '.join([u'"{}"'.format(k) for k in to_list]),
-                                                                                             u', '.join([u'"b"."{}"'.format(k) for k in from_list]),
+                                                                                             u', '.join([u'''CAST("b"."%s" as "%s")'''%(k, _column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
                                                                                              self.temptableName,
                                                                                              u' and '.join([u''' "b"."{}" IS NOT NULL and "b"."{}" != '' and "b"."{}" != ' ' '''.format(k, k, k) for k in from_list]))
                 utils.sql_alter_db(sql)
@@ -141,7 +145,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel',
                                                    log_msg=u'There was ' + str(len(missing_keys)) +
                                                    u'entries where foreign keys were missing from ' + fk_table +
-                                                   u' which will not be imported:\n' + u'\n'.join([u', '.join(f) for f in missing_keys]))
+                                                   u' which will not be imported:\n' + u'\n'.join([u', '.join(f) for f in missing_keys]),
+                                                   duration=999)
 
                     utils.sql_alter_db(u'delete from "%s" where %s in (%s)'%(self.temptableName,
                                                                              u' || '.join(from_list),
@@ -171,7 +176,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         sql_list = [u"""INSERT OR IGNORE INTO "%s" ("""%goal_table]
         sql_list.append(u', '.join([u'"{}"'.format(k) for k in sorted(existing_columns)]))
         sql_list.append(u""") SELECT """)
-        sql_list.append(u', '.join([u"""(case when ("%s"!='' and "%s"!=' ') then CAST("%s" as "%s") else null end)"""%(colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns)]))
+        sql_list.append(u', '.join([u"""(case when ("%s"!='' and "%s"!=' ' and "%s" IS NOT NULL) then CAST("%s" as "%s") else null end)"""%(colname, colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns)]))
         sql_list.append(u"""FROM %s"""%(self.temptableName))
         sql = u''.join(sql_list)
 
@@ -179,7 +184,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         try:
             utils.sql_alter_db(sql.encode(u'utf-8'))
         except Exception, e:
-            utils.MessagebarAndLog.critical(bar_msg=u'Error, import failed, see log message panel', log_msg=u'Sql\n' + sql + u' failed.\nMsg:\n' + str(e))
+            utils.MessagebarAndLog.critical(bar_msg=u'Error, import failed, see log message panel', log_msg=u'Sql\n' + sql + u' failed.\nMsg:\n' + str(e), duration=999)
             self.status = 'False'
             return
         recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
@@ -207,7 +212,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         file_string = utils.lists_to_string(file_data)
 
-        with utils.tempinput(file_string) as csvpath:
+        with utils.tempinput(file_string, charset=u'utf_8') as csvpath:
+            self.charsetchoosen = u'UTF-8'
             csvlayer = self.csv2qgsvectorlayer(csvpath)
             if not csvlayer:
                 utils.MessagebarAndLog.critical("Import error: Creating csvlayer failed!")
@@ -369,10 +375,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             skip_obsids = []
             obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from "%s"'%self.temptableName)[1]
             for obsid, stratid_depthbot_depthtop  in obsid_strat.iteritems():
-                sorted_strats = sorted(stratid_depthbot_depthtop, key=itemgetter(0))
+                #Turn everything to float
+                strats = [[float(x) for x in y] for y in stratid_depthbot_depthtop]
+                sorted_strats = sorted(strats, key=itemgetter(0))
                 stratid_idx = 0
-                depthbot_idx = 1
-                depthtop_idx = 2
+                depthtop_idx = 1
+                depthbot_idx = 2
                 for index in xrange(len(sorted_strats)):
                     if index == 0:
                         continue
@@ -381,8 +389,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'The obsid ' + obsid + u' will not be imported due to gaps in stratid')
                         skip_obsids.append(obsid)
                         break
-                    #Check that the current depthbot is equal to the previous depthtop
-                    elif sorted_strats[index][depthbot_idx] != sorted_strats[index - 1][depthtop_idx]:
+                    #Check that the current depthtop is equal to the previous depthbot
+                    elif sorted_strats[index][depthtop_idx] != sorted_strats[index - 1][depthbot_idx]:
                         utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'The obsid ' + obsid + u' will not be imported due to gaps in depthtop/depthbot')
                         skip_obsids.append(obsid)
                         break

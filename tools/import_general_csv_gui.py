@@ -116,6 +116,11 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             header = f.readline().rstrip(u'\n').rstrip(u'\r')
         delimiters = [u',', u';']
         tested_header = [len(header.split(delimiter)) for delimiter in delimiters]
+        nr_of_delimiters = set()
+        nr_of_delimiters.update(tested_header)
+        if len(nr_of_delimiters) == 1:
+            utils.MessagebarAndLog.warning(bar_msg=u'File error, delimiter not found, see log message panel', log_msg=u'If the file only contains one column, ignore this message:\nThe delimiter might not have been found automatically.\nIt must be ' + u' or '.join(delimiters) + u'\n')
+            return None
         delimiter = delimiters[tested_header.index(max(tested_header))]
         return delimiter
 
@@ -142,7 +147,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             if isinstance(file_column, Obsids_from_selection):
                 selected = utils.get_selected_features_as_tuple()
                 if len(selected) != 1:
-                    utils.MessagebarAndLog.critical(bar_msg=u'Import error, must select 1 obsid')
+                    utils.MessagebarAndLog.critical(bar_msg=u'Import error, must select 1 obsid', duration=60)
                     return u'cancel'
                 try:
                     obsidindex = file_data[0].index(u'obsid')
@@ -176,6 +181,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
                                                                column_header_translation_dict=translation_dict))
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        self.close()
 
     def add_line(self, layout=None):
         """ just adds a line"""
@@ -230,7 +236,7 @@ class ImportTableChooser(VRowEntry):
 
         self.__import_method = PyQt4.QtGui.QComboBox()
         self.__import_method.addItem(u'')
-        self.__import_method.addItems(sorted(tables_columns.keys()))
+        self.__import_method.addItems(sorted(tables_columns.keys(), key=lambda s: s.lower()))
 
         self.connect(self.__import_method, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_method)
 
@@ -273,6 +279,13 @@ class ImportTableChooser(VRowEntry):
         tables_columns = self.tables_columns
         file_header = self.file_header
         import_method_name = self.import_method
+
+        layer = utils.find_layer(import_method_name)
+        if layer is not None:
+            if layer.isEditable():
+                utils.pop_up_info("Layer " + str(layer.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", "Error",)
+                self.import_method = u''
+                import_method_name = None
 
         self.specific_table_info.setText(defs.specific_table_info.get(import_method_name, u''))
 
@@ -332,12 +345,13 @@ class ColumnEntry(RowEntry):
 
         self.combobox = PyQt4.QtGui.QComboBox()
         self.combobox.addItem(u'')
-        self.combobox.addItems(sorted(file_header))
+        self.combobox.addItems(sorted(file_header, key=lambda s: s.lower()))
 
         self.layout.addWidget(label)
 
         if self.db_column == u'obsid':
             self.obsids_from_selection = PyQt4.QtGui.QCheckBox(u'Obsid from qgis selection')
+            self.obsids_from_selection.setToolTip(u'Select 1 obsid from obs_points or obs_lines attribute table or map.')
             self.connect(self.obsids_from_selection, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : self.combobox.setEnabled(True if not self.obsids_from_selection.isChecked() else False))
             self.widgets = [label, self.obsids_from_selection, self.combobox]
@@ -355,7 +369,7 @@ class ColumnEntry(RowEntry):
 
         selected = returnunicode(self.combobox.currentText())
         if self.notnull and not selected:
-            utils.MessagebarAndLog.critical(bar_msg=u'Import error, the column ' + self.db_column + u' must have a value')
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error, the column ' + self.db_column + u' must have a value', duration=999)
             return Cancel()
         else:
             return selected
