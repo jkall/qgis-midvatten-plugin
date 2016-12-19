@@ -142,7 +142,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             if isinstance(file_column, Obsids_from_selection):
                 selected = utils.get_selected_features_as_tuple()
                 if len(selected) != 1:
-                    utils.MessagebarAndLog.critical(bar_msg=u'Import error, must select 1 obsid')
+                    utils.MessagebarAndLog.critical(bar_msg=u'Import error, must select 1 obsid', duration=60)
                     return u'cancel'
                 try:
                     obsidindex = file_data[0].index(u'obsid')
@@ -364,7 +364,7 @@ class ColumnEntry(RowEntry):
 
         selected = returnunicode(self.combobox.currentText())
         if self.notnull and not selected:
-            utils.MessagebarAndLog.critical(bar_msg=u'Import error, the column ' + self.db_column + u' must have a value')
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error, the column ' + self.db_column + u' must have a value', duration=999)
             return Cancel()
         else:
             return selected

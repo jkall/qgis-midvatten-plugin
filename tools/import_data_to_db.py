@@ -87,7 +87,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         missing_columns = [column for column in not_null_columns if column not in existing_columns]
 
         if missing_columns:
-            utils.MessagebarAndLog.critical(bar_msg=u'Error: Import failed, see log message panel', log_msg=u'Required columns ' + u', '.join(missing_columns) + u' are missing for table ' + goal_table)
+            utils.MessagebarAndLog.critical(bar_msg=u'Error: Import failed, see log message panel', log_msg=u'Required columns ' + u', '.join(missing_columns) + u' are missing for table ' + goal_table, duration=999)
             self.status = False
             return
 
@@ -141,7 +141,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel',
                                                    log_msg=u'There was ' + str(len(missing_keys)) +
                                                    u'entries where foreign keys were missing from ' + fk_table +
-                                                   u' which will not be imported:\n' + u'\n'.join([u', '.join(f) for f in missing_keys]))
+                                                   u' which will not be imported:\n' + u'\n'.join([u', '.join(f) for f in missing_keys]),
+                                                   duration=999)
 
                     utils.sql_alter_db(u'delete from "%s" where %s in (%s)'%(self.temptableName,
                                                                              u' || '.join(from_list),
@@ -179,7 +180,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         try:
             utils.sql_alter_db(sql.encode(u'utf-8'))
         except Exception, e:
-            utils.MessagebarAndLog.critical(bar_msg=u'Error, import failed, see log message panel', log_msg=u'Sql\n' + sql + u' failed.\nMsg:\n' + str(e))
+            utils.MessagebarAndLog.critical(bar_msg=u'Error, import failed, see log message panel', log_msg=u'Sql\n' + sql + u' failed.\nMsg:\n' + str(e), duration=999)
             self.status = 'False'
             return
         recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
