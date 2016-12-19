@@ -368,14 +368,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def check_and_delete_stratigraphy(self, existing_columns):
         if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):
             skip_obsids = []
-            obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthbot, depthtop from "%s"'%self.temptableName)[1]
+            obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from "%s"'%self.temptableName)[1]
             for obsid, stratid_depthbot_depthtop  in obsid_strat.iteritems():
                 #Turn everything to float
                 strats = [[float(x) for x in y] for y in stratid_depthbot_depthtop]
                 sorted_strats = sorted(strats, key=itemgetter(0))
                 stratid_idx = 0
-                depthbot_idx = 1
-                depthtop_idx = 2
+                depthtop_idx = 1
+                depthbot_idx = 2
                 for index in xrange(len(sorted_strats)):
                     if index == 0:
                         continue
@@ -384,8 +384,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'The obsid ' + obsid + u' will not be imported due to gaps in stratid')
                         skip_obsids.append(obsid)
                         break
-                    #Check that the current depthbot is equal to the previous depthtop
-                    elif sorted_strats[index][depthbot_idx] != sorted_strats[index - 1][depthtop_idx]:
+                    #Check that the current depthtop is equal to the previous depthbot
+                    elif sorted_strats[index][depthtop_idx] != sorted_strats[index - 1][depthbot_idx]:
                         utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'The obsid ' + obsid + u' will not be imported due to gaps in depthtop/depthbot')
                         skip_obsids.append(obsid)
                         break

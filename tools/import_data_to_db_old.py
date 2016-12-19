@@ -507,7 +507,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         file_string = utils.lists_to_string(file_data)
 
-        with utils.tempinput(file_string) as csvpath:
+        with utils.tempinput(file_string, charset=u'utf_8') as csvpath:
+            self.charsetchoosen = u'UTF-8'
             csvlayer = self.csv2qgsvectorlayer(csvpath)
             if not csvlayer:
                 utils.pop_up_info("Creating csvlayer for " + str(importer) + " failed!")
