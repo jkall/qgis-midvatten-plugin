@@ -63,7 +63,14 @@ class ExportData():
         self.write_data(self.zz_to_sql, u'no_obsids', defs.get_subset_of_tables_fr_db(category='data_domains'), self.verify_table_in_attached_db, 'a.')
         conn.commit()
 
-        self.curs.execute(r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSG_code)
+        delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSG_code
+        try:
+            self.curs.execute(delete_srid_sql)
+        except:
+            utils.MessagebarAndLog.info(
+                log_msg=u'Removing srids failed using: ' + str(
+                    delete_srid_sql))
+
         conn.commit()
 
         #Statistics
