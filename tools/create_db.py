@@ -113,7 +113,11 @@ class newdb():
                         #utils.pop_up_info('Failed to create DB!')
 
                 #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
-                self.cur.execute(r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID)
+                delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
+                try:
+                    self.cur.execute(delete_srid_sql)
+                except:
+                    utils.MessagebarAndLog.info(log_msg=u'Removing srids failed using: ' + str(delete_srid_sql))
 
                 self.insert_datadomains(set_locale)
 
