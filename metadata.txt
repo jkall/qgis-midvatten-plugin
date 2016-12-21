@@ -19,6 +19,9 @@ experimental=False
 deprecated=False
 
 changelog=
+        Version 1.3.12
+        - Bug fix for fieldlogger import.
+        - Bug fix for diveroffice import.
         Version 1.3.11
         - Bug fix for file imports under windows.
         - Small improvements and better error messages for general csv importer
