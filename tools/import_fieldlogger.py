@@ -341,7 +341,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         filtered_observations = []
         for observation in observations:
             for setting in settings:
-                observation =  setting.alter_data(observation)
+                observation = setting.alter_data(observation)
                 if observation == u'cancel':
                     return u'cancel'
                 elif observation is None:
@@ -360,6 +360,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             parameter_import_fields = import_method_chooser.parameter_import_fields
             if parameter_import_fields is not None:
                 observations = parameter_import_fields.alter_data(observations)
+                if observations == u'cancel':
+                    return u'cancel'
 
         return observations
 
@@ -978,19 +980,6 @@ class WQualFieldImportFields(RowEntryGrid):
         self.connect(self.__parameter, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
                      lambda: self.fill_list(self.__instrument, self.parameter, self.parameter_instruments))
 
-    def alter_data(self, observation, observations):
-        observation = copy.deepcopy(observation)
-        observation[u'unit'] = self.unit
-        observation[u'parameter'] = self.parameter
-        observation[u'instrument'] = self.instrument
-        observation[u'depth'] = None
-        if self.depth is not None:
-            depth = [_observation[u'value'] for _observation in observations for _observation in observations
-                     if all(_observation[u'date_time'] == observation[u'date_time'], _observation[u'sublocation'] == observation[u'sublocation' ])]
-            if depth:
-                observation[u'depth'] = depth
-        return observation
-
     @property
     def parameter(self):
         return utils.returnunicode(self.__parameter.currentText())
@@ -1051,15 +1040,23 @@ class WQualFieldImportFields(RowEntryGrid):
         if not self.parameter:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error, parameter not given')
             return u'cancel'
-        if not self.unit:
-            utils.MessagebarAndLog.critical(bar_msg=u'Import error, unit not given')
-            return u'cancel'
-        if not self.instrument:
-            utils.MessagebarAndLog.critical(bar_msg=u'Import error, instrument not given')
-            return u'cancel'
 
         observations = copy.deepcopy(observations)
+
+        """
+        #Only for dev
+        adepth_dict = {}
+        try:
+            for obs in observations:
+                utils.MessagebarAndLog.info(log_msg="Obs: " + str(obs))
+                if obs[u'parametername'] == self.depth:
+                    adepth_dict[obs[u'date_time']] = obs[u'value']
+        except TypeError, e:
+            raise Exception("Obs: " + str(obs) + " e " + str(e))
+        """
+
         depth_dict = dict([(obs[u'date_time'], obs[u'value']) for obs in observations if obs[u'parametername'] == self.depth])
+
         for observation in observations:
             try:
                 if observation[u'parametername'] == self._import_method_chooser.parameter_name:
@@ -1082,3 +1079,8 @@ def default_combobox(editable=True):
     combo_box.setMinimumWidth(80)
     combo_box.addItem(u'')
     return combo_box
+
+
+class Cancel(object):
+    def __init__(self):
+        pass

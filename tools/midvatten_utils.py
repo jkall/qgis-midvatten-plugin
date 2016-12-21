@@ -919,18 +919,18 @@ def ask_for_charset(default_charset=None, msg=None):
         localencoding = getcurrentlocale()[1]
         if default_charset is None:
             if msg is None:
-                msg = "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default."
-            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", msg,QtGui.QLineEdit.Normal,getcurrentlocale()[1])[0]
+                _msg = "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default."
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", _msg,QtGui.QLineEdit.Normal,getcurrentlocale()[1])[0]
         else:
             if msg is None:
-                msg = "Set charset encoding", "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252."
-            charsetchoosen = QtGui.QInputDialog.getText(None, msg, QtGui.QLineEdit.Normal, default_charset)[0]
-    except:
+                _msg = "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252."
+            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", _msg, QtGui.QLineEdit.Normal, default_charset)[0]
+    except Exception, e:
         if default_charset is None:
-            default_charset = 'utf-8'
+            _default_charset = 'utf-8'
         if msg is None:
-            msg = "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252."
-        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", msg, QtGui.QLineEdit.Normal, default_charset)[0]
+            _msg = "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252."
+        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", _msg, QtGui.QLineEdit.Normal, _default_charset)[0]
 
     return str(charsetchoosen)
 
