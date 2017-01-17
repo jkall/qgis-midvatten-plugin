@@ -23,6 +23,9 @@ $ cd ~/pythoncode/qgis_plugins/midvatten/ui && pyuic4 -xo myui.py myui.ui
 cd path/to/midvatten/plugin/
 nosetests -vv --with-doctest --nocapture
 
+# ---------- Metadata -----------
+- Update the file metadata.txt by changing version=Version 1.3.13 to the new number.
+- Add the changelog for the new version number in metadata.txt
 
 # ---------- prepare for upload to qgis plugin repo ---------------
 make a zipped archive of midvatten folder, excluding: 

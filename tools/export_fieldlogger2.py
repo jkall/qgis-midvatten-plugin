@@ -93,7 +93,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.update_parameter_browser_using_stored_settings(self.get_stored_settings(self.ms, self.stored_settingskey_parameterbrowser), self.parameter_browser)
 
         self.add_parameter_group = PyQt4.QtGui.QPushButton(u'More Fields and Locations')
-Cha        self.add_parameter_group.setToolTip(u'Creates an additional empty input field group.')
+        self.add_parameter_group.setToolTip(u'Creates an additional empty input field group.')
         self.gridLayout_buttons.addWidget(self.add_parameter_group, 1, 0)
         #Lambda and map is used to run several functions for every button click
         self.connect(self.add_parameter_group, PyQt4.QtCore.SIGNAL("clicked()"),
