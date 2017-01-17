@@ -81,8 +81,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''%goal_table)[1]
         column_headers_types = dict([(row[1], row[2]) for row in table_info])
-        primary_keys = [row[1] for row in table_info if int(row[5])]
-        not_null_columns = [row[1] for row in table_info if int(row[3])]
+        primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
+        not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
         #Only use the columns that exists in the goal table.
         existing_columns = [x[1] for x in utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName)[1] if x[1] in column_headers_types]
         missing_columns = [column for column in not_null_columns if column not in existing_columns]

@@ -19,6 +19,9 @@ experimental=False
 deprecated=False
 
 changelog=
+        Version 1.3.13
+        - Bug fix during import (not null columns allowed if default value is set)
+        - Better handling or errors and user "cancels" in Fieldlogger import.
         Version 1.3.12
         - Bug fix for fieldlogger import.
         - Bug fix for diveroffice import.

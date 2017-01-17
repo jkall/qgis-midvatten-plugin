@@ -60,7 +60,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.add_row(splitter)
 
         self.observations = self.select_file_and_parse_rows(self.parse_rows)
-        if self.observations == u'cancel':
+        if isinstance(self.observations, Cancel):
             self.status = True
             return u'cancel'
 
@@ -142,7 +142,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
     def select_file_and_parse_rows(row_parser):
         filenames = utils.select_files(only_one_file=False, extension="csv (*.csv)")
         if filenames is None or not filenames:
-            return u'cancel'
+            return Cancel()
 
         observations = []
         for filename in filenames:
@@ -290,7 +290,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                                   combobox_label=u'Instrument id:s in database.\nThe last used instrument id for the current obsid is prefilled:')
                 answer = question.answer
                 if answer == u'cancel':
-                    return u'cancel'
+                    return Cancel()
                 instrumentid = utils.returnunicode(question.value)
                 already_asked_instruments[obsid] = instrumentid
 
@@ -342,8 +342,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         for observation in observations:
             for setting in settings:
                 observation = setting.alter_data(observation)
-                if observation == u'cancel':
-                    return u'cancel'
+                if isinstance(observation, Cancel):
+                    return observation
                 elif observation is None:
                     break
             if observation is not None:
@@ -352,16 +352,16 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         for setting in settings_with_own_loop:
             observations = setting.alter_data(observations)
-            if observations == u'cancel':
-                return u'cancel'
+            if isinstance(observations, Cancel):
+                return observations
 
         #Update observations from parameter fields
         for parameter_name, import_method_chooser in parameter_imports.iteritems():
             parameter_import_fields = import_method_chooser.parameter_import_fields
             if parameter_import_fields is not None:
                 observations = parameter_import_fields.alter_data(observations)
-                if observations == u'cancel':
-                    return u'cancel'
+                if isinstance(observations, Cancel):
+                    return observations
 
         return observations
 
@@ -414,7 +414,6 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
             if import_method_chooser.parameter_import_fields is None:
                 import_method_chooser.choose_method(import_method_chooser.import_method_classes)
-
 
             for attr, val in settings:
                 if attr == u'import_method':
@@ -487,11 +486,11 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         if not chosen_methods:
             utils.pop_up_info("Must choose at least one parameter import method")
             utils.MessagebarAndLog.critical(bar_msg="No parameter import method chosen")
-            return u'cancel'
+            return Cancel()
 
         #Update the observations using the general settings, filters and parameter settings
         observations = self.filter_and_alter_data(observations, self.settings, self.settings_with_own_loop, self.parameter_imports)
-        if observations == u'cancel':
+        if isinstance(observations, Cancel):
             utils.MessagebarAndLog.warning(bar_msg=u"No observations left to import after filtering")
             return None
 
@@ -549,7 +548,7 @@ class ObsidFilter(object):
 
         answer = utils.filter_nonexisting_values_and_ask(obsids, u'new_obsid', existing_values=existing_obsids, try_capitalize=False)
         if answer == u'cancel':
-            return answer
+            return Cancel()
 
         if answer is not None:
             if isinstance(answer, (list, tuple)):
@@ -564,7 +563,7 @@ class ObsidFilter(object):
             utils.MessagebarAndLog.warning(bar_msg=u'No observations imported, see log message panel',
                                            log_msg=u'No observations returned from obsid verification.' +
                                                    u'Were all skipped?')
-            return u'cancel'
+            return Cancel()
         return observations
 
 
@@ -593,7 +592,7 @@ class StaffQuestion(RowEntry):
         if self.staff is None or not self.staff:
             utils.MessagebarAndLog.critical(log_msg=u'Import error, staff not given')
             utils.pop_up_info(u'Import error, staff not given')
-            return u'cancel'
+            return Cancel()
 
         observation[u'staff'] = self.staff
         return observation
@@ -625,18 +624,18 @@ class DateShiftQuestion(RowEntry):
 
         if len(step_steplength) != 2:
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
-            return u'cancel'
+            return Cancel()
         try:
             step = float(step_steplength[0])
             steplength = step_steplength[1]
         except:
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
-            return u'cancel'
+            return Cancel()
 
         test_shift = dateshift('2015-02-01', step, steplength)
         if test_shift == None:
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
-            return u'cancel'
+            return Cancel()
 
         observation[u'date_time'] = dateshift(observation[u'date_time'], step, steplength)
 
@@ -915,10 +914,10 @@ class WFlowImportFields(RowEntryGrid):
     def alter_data(self, observations):
         if not self.flowtype:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error, flowtype not given')
-            return u'cancel'
+            return Cancel()
         if not self.unit:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error, unit not given')
-            return u'cancel'
+            return Cancel()
 
         observations = copy.deepcopy(observations)
         for observation in observations:
@@ -1039,7 +1038,7 @@ class WQualFieldImportFields(RowEntryGrid):
     def alter_data(self, observations):
         if not self.parameter:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error, parameter not given')
-            return u'cancel'
+            return Cancel()
 
         observations = copy.deepcopy(observations)
 

@@ -93,7 +93,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.update_parameter_browser_using_stored_settings(self.get_stored_settings(self.ms, self.stored_settingskey_parameterbrowser), self.parameter_browser)
 
         self.add_parameter_group = PyQt4.QtGui.QPushButton(u'More Fields and Locations')
-        self.add_parameter_group.setToolTip(u'Creates an additional empty parameter group.')
+Cha        self.add_parameter_group.setToolTip(u'Creates an additional empty input field group.')
         self.gridLayout_buttons.addWidget(self.add_parameter_group, 1, 0)
         #Lambda and map is used to run several functions for every button click
         self.connect(self.add_parameter_group, PyQt4.QtCore.SIGNAL("clicked()"),
@@ -105,7 +105,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         #Buttons
         self.save_settings_button = PyQt4.QtGui.QPushButton(u'Save settings')
-        self.save_settings_button.setToolTip(u'Saves the current parameter and parameter group setup to midvatten settings.')
+        self.save_settings_button.setToolTip(u'Saves the current input fields settings to midvatten settings.')
         self.gridLayout_buttons.addWidget(self.save_settings_button, 3, 0)
         self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                         lambda: map(lambda x: x(),
@@ -128,7 +128,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.gridLayout_buttons.addWidget(get_line(), 5, 0)
 
         self.export_button = PyQt4.QtGui.QPushButton(u'Export')
-        self.export_button.setToolTip(u'Exports the current combination of locations, sublocations and parameters to a Fieldlogger wells file.')
+        self.export_button.setToolTip(u'Exports the current combination of locations, sublocations and input fields to a Fieldlogger wells file.')
         self.gridLayout_buttons.addWidget(self.export_button, 7, 0)
         # Lambda and map is used to run several functions for every button click
         self.connect(self.export_button, PyQt4.QtCore.SIGNAL("clicked()"), self.export)
