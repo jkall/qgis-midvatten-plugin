@@ -681,14 +681,8 @@ class InputFields(RowEntry):
 
         maximumwidth = 0
         for parametername in parameter_names:
-            #row_entry = RowEntry()
             testlabel = PyQt4.QtGui.QLabel()
             testlabel.setText(parametername)
-            #row_entry.layout.addWidget(testlabel)
-            #row_entry.layout.insertStretch(-1, 1)
-            #utils.pop_up_info("Width: " + str(testlabel.width()) +
-            #                  "\nMinimumWidth: " + str(testlabel.minimumWidth()) +
-            #                  "\nsizeHint(): " + str(testlabel.sizeHint()))
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
 
