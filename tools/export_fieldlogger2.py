@@ -187,6 +187,10 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         if settings_string_raw is None:
             utils.MessagebarAndLog.warning(bar_msg=u'Settings key ' + settingskey + u' did not exist in midvatten settings.')
             return []
+        if not settings_string_raw:
+            utils.MessagebarAndLog.warning(log_msg=u'Settings key ' + settingskey + u' was empty.')
+            return []
+
         try:
             stored_settings = ast.literal_eval(settings_string_raw)
         except SyntaxError:
