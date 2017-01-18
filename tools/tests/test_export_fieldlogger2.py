@@ -31,10 +31,11 @@ import export_fieldlogger2 as export_fieldlogger
 import midvatten_utils as utils
 from midvatten_utils import anything_to_string_representation
 from nose.tools import raises
-from mock import MagicMock, call
+from mock import MagicMock, call, patch
 import mock
 import utils_for_tests
 from utils_for_tests import dict_to_sorted_list, create_test_string
+import ast
 
 class TestExportFieldloggerNoDb():
     def setUp(self):
@@ -343,3 +344,24 @@ class TestExportFieldloggerNoDb():
         test_string = create_test_string(printlist)
         reference_string = u'[FileVersion 1;3, NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , par3;type3;hint3 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group1;lat1;lon1;par1|par2, 1.proj;1.proj.group2;lat1;lon1;par3, 2.proj;2.proj.group1;lat2;lon2;par1|par2, 2.proj;2.proj.group2;lat2;lon2;par3, 4.proj;4.proj.group1;lat4;lon4;par1|par2, 4.proj;4.proj.group2;lat4;lon4;par3]'
         assert reference_string == test_string
+
+    @mock.patch('export_fieldlogger2.utils.pop_up_info')
+    @mock.patch('export_fieldlogger2.utils.MessagebarAndLog')
+    @mock.patch('export_fieldlogger2.PyQt4.QtGui.QInputDialog.getText')
+    @mock.patch('export_fieldlogger2.defs.tables_columns')
+    @mock.patch('qgis.utils.iface', autospec=True)
+    def test_create_parameter_groups_using_stored_settings_string(self, mock_iface, mock_tables_columns, mock_settingsstrings, mock_settingsbarandlog, mock_popup):
+        mock_tables_columns.return_value = {}
+        mock_ms = MagicMock()
+        mock_ms.settingsdict = {'fieldlogger_export_pbrowser': '',
+                                'fieldlogger_export_pgroups': ''}
+        mock_settingsstrings.side_effect = [(u'[[0, ((u"input_field_list", [u"DO.mg/L;numberDecimal|numberSigned; ", u"comment;text;Obsid related comment"], ), )]]', True),
+                                            (u'[[0, ((u"parameter_list", [u"DO.mg/L;numberDecimal|numberSigned; ", u"comment;text;Obsid related comment"], ), (u"location_suffix", u"2766", ), (u"sublocation_suffix", u"level", ), )], [1, ((u"parameter_list", [u"comment;text;Obsid related comment"], ), (u"location_suffix", u"1234", ), (u"sublocation_suffix", u"comment", ), )]]', True)]
+
+        exportfieldlogger = ExportToFieldLogger(None, mock_ms)
+
+        exportfieldlogger.settings_strings_dialogs()
+
+        assert mock_ms.settingsdict['fieldlogger_export_pbrowser'] == u'[[0, ((u"input_field_list", [u"DO.mg/L;numberDecimal|numberSigned; ", u"comment;text;Obsid related comment"], ), )]]'
+        assert mock_ms.settingsdict['fieldlogger_export_pgroups'] == u'[[0, ((u"parameter_list", [u"DO.mg/L;numberDecimal|numberSigned; ", u"comment;text;Obsid related comment"], ), (u"location_suffix", u"2766", ), (u"sublocation_suffix", u"level", ), )], [1, ((u"parameter_list", [u"comment;text;Obsid related comment"], ), (u"location_suffix", u"1234", ), (u"sublocation_suffix", u"comment", ), )]]'
+
