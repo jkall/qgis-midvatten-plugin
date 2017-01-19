@@ -2701,7 +2701,138 @@ class TestFilterDatesFromFiledata(object):
         assert test_file_data == reference_file_data
 
 
+class TestDeleteExistingDateTimesFromTemptable(object):
+    answer_yes = mock_answer('yes')
+    answer_no = mock_answer('no')
+    CRS_question = MockUsingReturnValue([3006])
+    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
+    skip_popup = MockUsingReturnValue('')
+    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
+
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
+        mock_crsquestion.return_value = [3006]
+        mock_savefilename.return_value = TEMP_DB_PATH
+        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
+
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
+        self.midvatten = midvatten(self.iface)
+
+        try:
+            os.remove(TEMP_DB_PATH)
+        except OSError:
+            pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
+        self.midvatten.new_db()
+        self.importinstance = midv_data_importer()
+
+    def tearDown(self):
+        #Delete database
+        os.remove(TEMP_DB_PATH)
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_delete_existing_date_times_from_temptable_00_already_exists(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        utils.sql_alter_db(u'INSERT INTO w_levels ("obsid", "date_time", "level_masl") VALUES ("obsid1", "2016-01-01 00:00:00", "123.0")')
+
+        f = [[u'obsid', u'date_time', u'level_masl'],
+             [u'obsid1', u'2016-01-01 00:00', u'345']]
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
+            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+                mock_filename.return_value = filename
+                mock_encoding.return_value = [True, u'utf-8']
+                self.mock_iface = mock_iface
+                self.importinstance.general_csv_import(goal_table=u'w_levels')
+            _test(self, filename)
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_levels'''))
+        reference_string = ur'''(True, [(obsid1, 2016-01-01 00:00:00, None, None, 123.0, None)])'''
+        assert test_string == reference_string
 
 
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_delete_existing_date_times_from_temptable_00_already_exists(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        utils.sql_alter_db(
+            u'INSERT INTO w_levels ("obsid", "date_time", "level_masl") VALUES ("obsid1", "2016-01-01 00:00:00", "123.0")')
+
+        f = [[u'obsid', u'date_time', u'level_masl'],
+             [u'obsid1', u'2016-01-01 00:00', u'345']]
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch(
+                'import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
+            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding,
+                      mock_iface, mock_askuser):
+                mock_filename.return_value = filename
+                mock_encoding.return_value = [True, u'utf-8']
+                self.mock_iface = mock_iface
+                self.importinstance.general_csv_import(goal_table=u'w_levels')
+
+            _test(self, filename)
+
+        test_string = utils_for_tests.create_test_string(
+            utils.sql_load_fr_db(u'''select * from w_levels'''))
+        reference_string = ur'''(True, [(obsid1, 2016-01-01 00:00:00, None, None, 123.0, None)])'''
+        assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_delete_existing_date_times_from_temptable_minute_already_exists(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        utils.sql_alter_db(
+            u'INSERT INTO w_levels ("obsid", "date_time", "level_masl") VALUES ("obsid1", "2016-01-01 00:00", "123.0")')
+
+        f = [[u'obsid', u'date_time', u'level_masl'],
+             [u'obsid1', u'2016-01-01 00:00:00', u'345'],
+             [u'obsid1', u'2016-01-01 00:00:01', u'456'],
+             [u'obsid1', u'2016-01-01 00:02:00', u'789']]
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('qgis.utils.iface', autospec=True)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+            @mock.patch(
+                'import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
+            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding,
+                      mock_iface, mock_askuser):
+                mock_filename.return_value = filename
+                mock_encoding.return_value = [True, u'utf-8']
+                self.mock_iface = mock_iface
+                self.importinstance.general_csv_import(goal_table=u'w_levels')
+
+            _test(self, filename)
+
+        test_string = utils_for_tests.create_test_string(
+            utils.sql_load_fr_db(u'''select * from w_levels'''))
+        reference_string = ur'''(True, [(obsid1, 2016-01-01 00:00, None, None, 123.0, None), (obsid1, 2016-01-01 00:02:00, None, None, 789.0, None)])'''
+        assert test_string == reference_string
 
 
