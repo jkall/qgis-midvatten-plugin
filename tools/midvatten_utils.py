@@ -963,8 +963,10 @@ def find_similar(word, wordlist, hits=5):
     :param hits: the number of hits in first match (more hits will be added than this)
     :return:  a set with the matches
 
+    some code from http://stackoverflow.com/questions/480214/how-do-you-remove-duplicates-from-a-list-in-whilst-preserving-order
+
     >>> find_similar(u'rb1203', [u'Rb1203', u'rb 1203', u'gert', u'rb', u'rb1203', u'b1203', u'rb120', u'rb11', u'rb123', u'rb1203_bgfgf'], 5)
-    [u'rb 1203', u'b1203', u'rb120', u'Rb1203', u'rb1203_bgfgf', u'rb123', u'rb1203']
+    [u'rb1203', u'rb 1203', u'rb123', u'rb120', u'b1203', u'Rb1203', u'rb1203_bgfgf']
     >>> find_similar(u'1', [u'2', u'3'], 5)
     [u'']
     >>> find_similar(None, [u'2', u'3'], 5)
@@ -982,13 +984,18 @@ def find_similar(word, wordlist, hits=5):
     if None in [word, wordlist] or not wordlist or not word:
         return [u'']
 
-    matches = set(difflib.get_close_matches(word, wordlist, hits))
-    matches.update([x for x in wordlist if any((x.startswith(word.lower()), x.startswith(word.upper()), x.startswith(word.capitalize())))])
+    matches = difflib.get_close_matches(word, wordlist, hits)
+
+    matches.extend([x for x in wordlist if any((x.startswith(word.lower()), x.startswith(word.upper()), x.startswith(word.capitalize())))])
     nr_of_hits = len(matches)
     if nr_of_hits == 0:
         return [u'']
-    #Sort again to get best hit first
-    matches = list(set(difflib.get_close_matches(word, matches, nr_of_hits)))
+
+    #Remove duplicates
+    seen = set()
+    seen_add = seen.add
+    matches = [x for x in matches if x and not (x in seen or seen_add(x))]
+
     return matches
 
 def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=None, try_capitalize=False):
