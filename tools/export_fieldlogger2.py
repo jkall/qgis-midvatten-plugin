@@ -123,9 +123,14 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                      lambda: map(lambda x: x(),
                                  [lambda: self.save_stored_settings(self.ms, [], self.stored_settingskey),
                                   lambda: self.save_stored_settings(self.ms, [], self.stored_settingskey_parameterbrowser),
-                                  lambda: utils.pop_up_info(u'Settings cleared. Restart Export Fieldlogger dialog')]))
+                                  lambda: utils.pop_up_info(u'Settings cleared. Restart Export Fieldlogger dialog\nor press "Save settings" to undo.')]))
 
-        self.gridLayout_buttons.addWidget(get_line(), 5, 0)
+        self.settings_strings_button = PyQt4.QtGui.QPushButton(u'Settings strings')
+        self.settings_strings_button.setToolTip(u'Access the settings strings to copy and paste all settings between different qgis projects.\n Usage: Select string and copy to a text editor or directly\ninto Settings strings dialog of another qgis project.')
+        self.gridLayout_buttons.addWidget(self.settings_strings_button, 5, 0)
+        self.connect(self.settings_strings_button, PyQt4.QtCore.SIGNAL("clicked()"), self.settings_strings_dialogs)
+
+        self.gridLayout_buttons.addWidget(get_line(), 6, 0)
 
         self.export_button = PyQt4.QtGui.QPushButton(u'Export')
         self.export_button.setToolTip(u'Exports the current combination of locations, sublocations and input fields to a Fieldlogger wells file.')
@@ -187,9 +192,16 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         if settings_string_raw is None:
             utils.MessagebarAndLog.warning(bar_msg=u'Settings key ' + settingskey + u' did not exist in midvatten settings.')
             return []
+        if not settings_string_raw:
+            utils.MessagebarAndLog.warning(log_msg=u'Settings key ' + settingskey + u' was empty.')
+            return []
+
         try:
             stored_settings = ast.literal_eval(settings_string_raw)
         except SyntaxError:
+            stored_settings = []
+            utils.MessagebarAndLog.warning(bar_msg=u'Getting stored settings failed for key ' + settingskey + u' see log message panel.', log_msg=u'Parsing the settingsstring ' + str(settings_string_raw) + u'failed.')
+        except ValueError:
             stored_settings = []
             utils.MessagebarAndLog.warning(bar_msg=u'Getting stored settings failed for key ' + settingskey + u' see log message panel.', log_msg=u'Parsing the settingsstring ' + str(settings_string_raw) + u'failed.')
         return stored_settings
@@ -241,6 +253,37 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         ms.settingsdict[settingskey] = settings_string
         ms.save_settings()
         utils.MessagebarAndLog.info(log_msg=u'Settings ' + settings_string + u' stored for key ' + settingskey)
+
+    def settings_strings_dialogs(self):
+
+        msg = u'Edit the settings string for input fields browser and restart export fieldlogger dialog\nto load the change.'
+        browser_updated = self.ask_and_update_settings([self.parameter_browser], self.stored_settingskey_parameterbrowser, msg)
+        msg = u'Edit the settings string for input fields groups and restart export fieldlogger dialog\nto load the change.'
+        groups_updated = self.ask_and_update_settings(self.parameter_groups, self.stored_settingskey, msg)
+        if browser_updated or groups_updated:
+            utils.pop_up_info(u'Settings updated. Restart Export Fieldlogger dialog\nor press "Save settings" to undo.')
+
+    def ask_and_update_settings(self, objects_with_get_settings, settingskey, msg=''):
+
+        old_string = utils.anything_to_string_representation(self.update_stored_settings(objects_with_get_settings))
+
+        new_string = PyQt4.QtGui.QInputDialog.getText(None, "Edit settings string", msg,
+                                                           PyQt4.QtGui.QLineEdit.Normal, old_string)
+        if not new_string[1]:
+            return False
+
+        new_string_text = returnunicode(new_string[0])
+
+        try:
+            stored_settings = ast.literal_eval(new_string_text)
+        except SyntaxError, e:
+            stored_settings = []
+            utils.MessagebarAndLog.warning(bar_msg=u'Parsing settings failed, see log message panel', log_msg=u'Parsing settings failed using string\n' + new_string_text + u'\n' + str(e))
+            return False
+
+        self.save_stored_settings(self.ms, stored_settings, settingskey)
+
+        return True
 
     @utils.waiting_cursor
     def export(self):

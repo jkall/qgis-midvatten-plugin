@@ -9,7 +9,7 @@ import mock
 from midvatten.midvatten import midvatten
 import os
 import import_fieldlogger
-from import_fieldlogger import FieldloggerImport
+from import_fieldlogger import FieldloggerImport, InputFields
 from collections import OrderedDict
 from utils_for_tests import create_test_string
 
@@ -148,7 +148,7 @@ class TestFieldLoggerImporterDb(object):
                                    [u'q.syre.mg/L', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'mg/L'], [u'depth', u''], [u'instrument', u'testid']]],
                                    [u'q.syre.%', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'%'], [u'depth', u''], [u'instrument', u'testid']]],
                                    [u'q.temperatur.grC', [[u'import_method', u'w_qual_field'], [u'parameter', u'temperatur'], [u'unit', u'grC'], [u'depth', u''], [u'instrument', u'testid']]]]
-                importer.set_parameters_using_stored_settings(stored_settings, importer.parameter_imports)
+                importer.input_fields.set_parameters_using_stored_settings(stored_settings)
                 importer.start_import(importer.observations)
 
             _full_integration_test_to_db(self, filename)
@@ -217,7 +217,7 @@ class TestFieldLoggerImporterDb(object):
                 stored_settings = [[u'f.comment', [[u'import_method', u'comments']]],
                                    [u'Aveflow.m3/s', [[u'import_method', u'w_flow'], [u'flowtype', u'Momflow2'], [u'unit', u'aunit']]]]
 
-                importer.set_parameters_using_stored_settings(stored_settings, importer.parameter_imports)
+                importer.input_fields.set_parameters_using_stored_settings(stored_settings)
                 importer.start_import(importer.observations)
 
             _test(self, filename)
@@ -392,12 +392,13 @@ def test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units,
                    [u's.turbiditet.FNU', [[u'import_method', u'w_qual_field'], [u'parameter', u'turbiditet'], [u'unit', u'FNU'], [u'depth', u'1'], [u'instrument', u'testid']]]]
 
     mock_connect = MagicMock()
-    parameter_imports = OrderedDict([(k, import_fieldlogger.ImportMethodChooser(k, [x[0] for x in stored_settings], mock_connect)) for k in [x[0] for x in stored_settings]])
+    input_fields = InputFields(mock_connect)
+    input_fields.parameter_imports = OrderedDict([(k, import_fieldlogger.ImportMethodChooser(k, [x[0] for x in stored_settings], mock_connect)) for k in [x[0] for x in stored_settings]])
 
-    import_fieldlogger.FieldloggerImport.set_parameters_using_stored_settings(stored_settings, parameter_imports)
+    input_fields.set_parameters_using_stored_settings(stored_settings)
 
     settings = []
-    for k, v in parameter_imports.iteritems():
+    for k, v in input_fields.parameter_imports.iteritems():
         try:
             setting = v.parameter_import_fields.get_settings()
         except Exception, e:
@@ -409,7 +410,7 @@ def test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units,
     assert test_string == reference_string
 
     new_stored = []
-    import_fieldlogger.FieldloggerImport.update_stored_settings(new_stored, parameter_imports)
+    input_fields.update_stored_settings(new_stored)
     test_string = create_test_string(new_stored)
     reference_string = u'[[s.comment, [(import_method, comments)]], [f.Accvol.m3, [(import_method, w_flow), (flowtype, Accvol), (unit, m3)]], [s.turbiditet.FNU, [(import_method, w_qual_field), (parameter, turbiditet), (unit, FNU), (depth, 1), (instrument, testid)]]]'
     assert test_string == reference_string

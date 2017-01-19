@@ -359,6 +359,9 @@ class ColumnEntry(RowEntry):
         else:
             self.widgets = [label, self.combobox]
 
+        #This line prefills the columns if the header names matches the database column names
+        self.file_column_name = self.db_column
+
         self.layout.addWidget(self.combobox)
 
     @property

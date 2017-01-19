@@ -92,30 +92,21 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         sublocations_layout.addWidget(self.settings[-1].widget)
         self.add_line(sublocations_layout)
 
-        #Parameters
-        parameter_widget = PyQt4.QtGui.QWidget()
-        parameter_layout = PyQt4.QtGui.QVBoxLayout()
-        parameter_widget.setLayout(parameter_layout)
-        splitter.addWidget(parameter_widget)
-        parameter_layout.addWidget(PyQt4.QtGui.QLabel(u'Specify import methods for input fields'))
-
-        self.parameter_names = list(set([observation[u'parametername'] for observation in self.observations]))
-        self.parameter_imports = OrderedDict()
-        for parametername in self.parameter_names:
-            param_import_obj = ImportMethodChooser(parametername, self.parameter_names, self.connect)
-            self.parameter_imports[parametername] = param_import_obj
-            parameter_layout.addWidget(param_import_obj.widget)
-
-        #self.main_vertical_layout.addStretch(1)
-
         self.stored_settingskey = u'fieldlogger_import_parameter_settings'
+        self.stored_settings = self.get_stored_settings(self.ms, self.stored_settingskey)
+
+        #Input fields
+        self.input_fields = InputFields(self.connect)
+        self.input_fields.update_parameter_imports(self.observations, self.stored_settings)
+
+        splitter.addWidget(self.input_fields.widget)
 
         #General buttons
         self.save_settings_button = PyQt4.QtGui.QPushButton(u'Save settings')
         self.gridLayout_buttons.addWidget(self.save_settings_button, 0, 0)
         self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : map(lambda x: x(),
-                                      [lambda : self.update_stored_settings(self.stored_settings, self.parameter_imports),
+                                      [lambda : self.input_fields.update_stored_settings(self.stored_settings),
                                        lambda : self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]))
 
         self.clear_settings_button = PyQt4.QtGui.QPushButton(u'Clear settings')
@@ -130,11 +121,13 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.gridLayout_buttons.addWidget(self.start_import_button, 2, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
 
-        self.gridLayout_buttons.setRowStretch(3, 1)
+        #Button click first filters data from the settings and then updates input fields.
+        self.connect(self.input_fields.update_parameters_button, PyQt4.QtCore.SIGNAL("clicked()"),
+                     lambda: self.input_fields.update_parameter_imports(self.filter_by_settings_using_shared_loop(
+                         self.filter_by_settings_using_own_loop(self.observations,
+                                                                self.settings_with_own_loop), self.settings), self.stored_settings))
 
-        #Load stored parameter settings
-        self.stored_settings = self.get_stored_settings(self.ms, self.stored_settingskey)
-        self.set_parameters_using_stored_settings(self.stored_settings, self.parameter_imports)
+        self.gridLayout_buttons.setRowStretch(3, 1)
 
         self.show()
 
@@ -327,17 +320,11 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         return file_data_list
 
     @staticmethod
-    def filter_and_alter_data(observations, settings, settings_with_own_loop, parameter_imports):
+    def filter_by_settings_using_shared_loop(observations, settings):
+        if isinstance(observations, Cancel):
+            return observations
+
         observations = copy.deepcopy(observations)
-
-        #Order the observations under the import methods, and filter out the parameters not set.
-        _observations = []
-        for observation in observations:
-            if parameter_imports[observation[u'parametername']].import_method and parameter_imports[observation[u'parametername']].import_method is not None:
-                _observations.append(observation)
-        observations = _observations
-
-        #Filter and alter data
         filtered_observations = []
         for observation in observations:
             for setting in settings:
@@ -349,20 +336,18 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             if observation is not None:
                 filtered_observations.append(observation)
         observations = filtered_observations
+        return observations
 
+    @staticmethod
+    def filter_by_settings_using_own_loop(observations, settings_with_own_loop):
+        if isinstance(observations, Cancel):
+            return observations
+
+        observations = copy.deepcopy(observations)
         for setting in settings_with_own_loop:
             observations = setting.alter_data(observations)
             if isinstance(observations, Cancel):
                 return observations
-
-        #Update observations from parameter fields
-        for parameter_name, import_method_chooser in parameter_imports.iteritems():
-            parameter_import_fields = import_method_chooser.parameter_import_fields
-            if parameter_import_fields is not None:
-                observations = parameter_import_fields.alter_data(observations)
-                if isinstance(observations, Cancel):
-                    return observations
-
         return observations
 
     @staticmethod
@@ -378,82 +363,16 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         if settings_string_raw is None:
             utils.MessagebarAndLog.warning(bar_msg=u'Settings key ' + settingskey + u' did not exist in midvatten settings.')
             return []
+        if not settings_string_raw:
+            utils.MessagebarAndLog.warning(log_msg=u'Settings key ' + settingskey + u' was empty.')
+            return []
+
         try:
             stored_settings = ast.literal_eval(settings_string_raw)
         except SyntaxError:
             stored_settings = []
             utils.MessagebarAndLog.warning(bar_msg=u'Getting stored settings failed for key ' + settingskey + u' see log message panel.', log_msg=u'Parsing the settingsstring ' + str(settings_string_raw) + u'failed.')
         return stored_settings
-
-    @staticmethod
-    def set_parameters_using_stored_settings(stored_settings, import_method_choosers):
-        """
-        Sets the parameter settings based on a stored setitngs dict.
-
-        parametername|import_method:w_flow|flowtype:Aveflow|unit:m3/s/parametername2|import_method:comment ...
-        :param stored_settings: alist like [[u'parametername', [[u'attr1', u'val1'], ...]], ...]
-        :param import_method_choosers: a dict like {parametername: ImportMethodChooser, ...}
-        :return:
-        """
-        utils.MessagebarAndLog.info(log_msg=u'Setting parameters using stored settings: ' + str(stored_settings))
-        for import_method_chooser in import_method_choosers.values():
-
-            if not stored_settings:
-                continue
-            settings = [attrs for param, attrs in stored_settings if param == import_method_chooser.parameter_name]
-
-            if settings:
-                settings = settings[0]
-            else:
-                continue
-
-            if settings is None or not settings:
-                continue
-
-            import_method_chooser.import_method = [v if v else None for k, v in settings if k == u'import_method'][0]
-
-            if import_method_chooser.parameter_import_fields is None:
-                import_method_chooser.choose_method(import_method_chooser.import_method_classes)
-
-            for attr, val in settings:
-                if attr == u'import_method':
-                    continue
-                try:
-                    setattr(import_method_chooser.parameter_import_fields, attr, val)
-                except Exception, e:
-                    utils.MessagebarAndLog.info(log_msg=u'Setting parameter ' + str(attr) + u' for ' + import_method_chooser.parameter_name + u' to value ' + str(val) + u' failed, msg:\n' + str(e))
-
-    @staticmethod
-    def update_stored_settings(stored_settings, parameter_imports, force_update=False):
-
-        setted_pars = []
-        new_settings = []
-        for parameter_name, import_method_chooser in parameter_imports.iteritems():
-            if not force_update:
-                if import_method_chooser.import_method is None or not import_method_chooser.import_method:
-                    continue
-
-            attrs = [(u'import_method', import_method_chooser.import_method)]
-
-            parameter_import_fields = import_method_chooser.parameter_import_fields
-            if parameter_import_fields is None:
-                continue
-
-            try:
-                settings = parameter_import_fields.get_settings()
-            except AttributeError:
-                settings = tuple()
-
-            if settings:
-                attrs.extend(settings)
-            new_settings.append([parameter_name, attrs])
-            setted_pars.append(parameter_name)
-
-        for parameter, attrs in stored_settings:
-            if parameter not in setted_pars:
-                new_settings.append([parameter, attrs])
-
-        stored_settings[:] = new_settings
 
     @staticmethod
     def save_stored_settings(ms, stored_settings, settingskey):
@@ -478,10 +397,10 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         observations = copy.deepcopy(observations)
 
         #Start by saving the parameter settings
-        self.update_stored_settings(self.stored_settings, self.parameter_imports)
+        self.input_fields.update_stored_settings(self.stored_settings)
         self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)
 
-        chosen_methods = [import_method_chooser.import_method for import_method_chooser in self.parameter_imports.values()
+        chosen_methods = [import_method_chooser.import_method for import_method_chooser in self.input_fields.parameter_imports.values()
                           if import_method_chooser.import_method]
         if not chosen_methods:
             utils.pop_up_info("Must choose at least one parameter import method")
@@ -489,15 +408,16 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             return Cancel()
 
         #Update the observations using the general settings, filters and parameter settings
-        observations = self.filter_and_alter_data(observations, self.settings, self.settings_with_own_loop, self.parameter_imports)
+        observations = self.input_fields.filter_import_methods_not_set(observations)
+        observations = self.filter_by_settings_using_shared_loop(observations, self.settings)
+        observations = self.filter_by_settings_using_own_loop(observations, self.settings_with_own_loop)
+        observations = self.input_fields.update_observations(observations)
+
         if isinstance(observations, Cancel):
             utils.MessagebarAndLog.warning(bar_msg=u"No observations left to import after filtering")
             return None
 
-        observations_importmethods = {}
-        for observation in observations:
-            if self.parameter_imports[observation[u'parametername']].import_method:
-                observations_importmethods.setdefault(self.parameter_imports[observation[u'parametername']].import_method, []).append(observation)
+        observations_importmethods = self.input_fields.get_observations_importmethods(observations)
 
         importer = import_data_to_db.midv_data_importer()
 
@@ -532,6 +452,7 @@ class RowEntryGrid(object):
 
 class ObsidFilter(object):
     def __init__(self):
+        self.obsid_rename_dict = {}
         pass
 
     def alter_data(self, observations):
@@ -541,23 +462,26 @@ class ObsidFilter(object):
         for observation in observations:
             observation[u'obsid'] = observation[u'sublocation'].split(u'.')[0]
 
-        obsids = [list(x) for x in sorted(set([(observation[u'obsid'], observation[u'obsid']) for observation in observations]))]
-        obsids.reverse()
-        obsids.append([u'old_obsid', u'new_obsid'])
-        obsids.reverse()
+        obsids = [list(x) for x in sorted(set([(observation[u'obsid'], observation[u'obsid']) for observation in observations if observation[u'obsid'] not in self.obsid_rename_dict]))]
+        if obsids:
+            obsids.reverse()
+            obsids.append([u'old_obsid', u'new_obsid'])
+            obsids.reverse()
 
-        answer = utils.filter_nonexisting_values_and_ask(obsids, u'new_obsid', existing_values=existing_obsids, try_capitalize=False)
-        if answer == u'cancel':
-            return Cancel()
+            answer = utils.filter_nonexisting_values_and_ask(obsids, u'new_obsid', existing_values=existing_obsids, try_capitalize=False)
+            if answer == u'cancel':
+                return Cancel()
 
-        if answer is not None:
-            if isinstance(answer, (list, tuple)):
-                if len(answer) > 1:
-                    obsid_rename_dict = dict([(old_obsid_new_obsid[0], old_obsid_new_obsid[1]) for old_obsid_new_obsid in answer[1:]])
-                    #Filter and rename obsids
-                    [observation.update({u'obsid': obsid_rename_dict.get(observation[u'obsid'], None)})
-                        for observation in observations]
-                    observations = [observation for observation in observations if all([observation[u'obsid'] is not None, observation[u'obsid']])]
+            if answer is not None:
+                if isinstance(answer, (list, tuple)):
+                    if len(answer) > 1:
+                        self.obsid_rename_dict.update(dict([(old_obsid_new_obsid[0], old_obsid_new_obsid[1]) for old_obsid_new_obsid in answer[1:]]))
+
+        #Filter and rename obsids
+        if self.obsid_rename_dict:
+            [observation.update({u'obsid': self.obsid_rename_dict.get(observation[u'obsid'], None)})
+                for observation in observations]
+            observations = [observation for observation in observations if all([observation[u'obsid'] is not None, observation[u'obsid']])]
 
         if len(observations) == 0:
             utils.MessagebarAndLog.warning(bar_msg=u'No observations imported, see log message panel',
@@ -726,6 +650,156 @@ class SublocationFilter(RowEntry):
             return observation
         else:
             return None
+
+
+class InputFields(RowEntry):
+    def __init__(self, connect):
+        self.widget = PyQt4.QtGui.QWidget()
+        self.layout = PyQt4.QtGui.QVBoxLayout()
+        self.widget.setLayout(self.layout)
+        self.connect = connect
+
+        self.layout.addWidget(PyQt4.QtGui.QLabel(u'Specify import methods for input fields'))
+
+        self.parameter_imports = OrderedDict()
+
+        #This button has to get filtered observations as input, so it has to be
+        #connected elsewhere.
+        self.update_parameters_button = PyQt4.QtGui.QPushButton(u'Filter observations and update input fields')
+        self.update_parameters_button.setToolTip(u'Update parameter fields using filtered observations.')
+        self.layout.addWidget(self.update_parameters_button)
+
+    def update_parameter_imports(self, observations, stored_settings=None):
+        if stored_settings is None:
+            stored_settings = []
+        if isinstance(observations, Cancel):
+            return observations
+        self.clear_widgets()
+        observations = copy.deepcopy(observations)
+        parameter_names = list(set([observation[u'parametername'] for observation in observations]))
+        self.parameter_imports = OrderedDict()
+
+        maximumwidth = 0
+        for parametername in parameter_names:
+            testlabel = PyQt4.QtGui.QLabel()
+            testlabel.setText(parametername)
+            maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
+        testlabel = None
+
+        for parametername in parameter_names:
+            param_import_obj = ImportMethodChooser(parametername, parameter_names, self.connect)
+            param_import_obj.label.setFixedWidth(maximumwidth)
+            self.parameter_imports[parametername] = param_import_obj
+            self.layout.addWidget(param_import_obj.widget)
+
+        self.set_parameters_using_stored_settings(stored_settings)
+
+    def update_observations(self, observations):
+        if isinstance(observations, Cancel):
+            return observations
+
+        observations = copy.deepcopy(observations)
+        for parameter_name, import_method_chooser in self.parameter_imports.iteritems():
+            parameter_import_fields = import_method_chooser.parameter_import_fields
+            if parameter_import_fields is not None:
+                observations = parameter_import_fields.alter_data(
+                    observations)
+                if isinstance(observations, Cancel):
+                    return observations
+        return observations
+
+    def filter_import_methods_not_set(self, observations):
+        if isinstance(observations, Cancel):
+            return observations
+
+        observations = copy.deepcopy(observations)
+        #Order the observations under the import methods, and filter out the parameters not set.
+        _observations = []
+        for observation in observations:
+            if self.parameter_imports[observation[u'parametername']].import_method and self.parameter_imports[observation[u'parametername']].import_method is not None:
+                _observations.append(observation)
+        observations = _observations
+        return observations
+
+    def get_observations_importmethods(self, observations):
+        observations = copy.deepcopy(observations)
+        observations_importmethods = {}
+        for observation in observations:
+            if self.parameter_imports[observation[u'parametername']].import_method:
+                observations_importmethods.setdefault(self.parameter_imports[observation[u'parametername']].import_method, []).append(observation)
+        return observations_importmethods
+
+    def set_parameters_using_stored_settings(self, stored_settings):
+        """
+        Sets the parameter settings based on a stored settings dict.
+
+        parametername|import_method:w_flow|flowtype:Aveflow|unit:m3/s/parametername2|import_method:comment ...
+        :param stored_settings: alist like [[u'parametername', [[u'attr1', u'val1'], ...]], ...]
+        :return:
+        """
+        utils.MessagebarAndLog.info(log_msg=u'Setting parameters using stored settings: ' + str(stored_settings))
+        for import_method_chooser in self.parameter_imports.values():
+
+            if not stored_settings:
+                continue
+            settings = [attrs for param, attrs in stored_settings if param == import_method_chooser.parameter_name]
+
+            if settings:
+                settings = settings[0]
+            else:
+                continue
+
+            if settings is None or not settings:
+                continue
+
+            import_method_chooser.import_method = [v if v else None for k, v in settings if k == u'import_method'][0]
+
+            if import_method_chooser.parameter_import_fields is None:
+                import_method_chooser.choose_method(import_method_chooser.import_method_classes)
+
+            for attr, val in settings:
+                if attr == u'import_method':
+                    continue
+                try:
+                    setattr(import_method_chooser.parameter_import_fields, attr, val)
+                except Exception, e:
+                    utils.MessagebarAndLog.info(log_msg=u'Setting parameter ' + str(attr) + u' for ' + import_method_chooser.parameter_name + u' to value ' + str(val) + u' failed, msg:\n' + str(e))
+
+    def update_stored_settings(self, stored_settings, force_update=False):
+        setted_pars = []
+        new_settings = []
+        for parameter_name, import_method_chooser in self.parameter_imports.iteritems():
+            if not force_update:
+                if import_method_chooser.import_method is None or not import_method_chooser.import_method:
+                    continue
+
+            attrs = [(u'import_method', import_method_chooser.import_method)]
+
+            parameter_import_fields = import_method_chooser.parameter_import_fields
+            if parameter_import_fields is None:
+                continue
+
+            try:
+                settings = parameter_import_fields.get_settings()
+            except AttributeError:
+                settings = tuple()
+
+            if settings:
+                attrs.extend(settings)
+            new_settings.append([parameter_name, attrs])
+            setted_pars.append(parameter_name)
+
+        for parameter, attrs in stored_settings:
+            if parameter not in setted_pars:
+                new_settings.append([parameter, attrs])
+
+        stored_settings[:] = new_settings
+
+    def clear_widgets(self):
+        for name, param_import_obj in self.parameter_imports.iteritems():
+            self.layout.removeWidget(param_import_obj.widget)
+            param_import_obj.widget.close()
+        self.parameter_imports = OrderedDict()
 
 
 class ImportMethodChooser(RowEntry):

@@ -328,8 +328,25 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         conn.close()
 
     def delete_existing_date_times_from_temptable(self, primary_keys, goal_table):
+        """
+        Deletes duplicate times
+        :param primary_keys: a table like ['obsid', 'date_time', ...]
+        :param goal_table: a string like 'w_levels'
+        :return: None. Alters the temptable self.temptableName
+
+        If date 2016-01-01 00:00:00 exists for obsid1, then 2016-01-01 00:00 will not be imported for obsid1.
+        (and 2016-01-01 00 will block 2016-01-01 00:00)
+
+        If date 2016-01-01 00:00 exists for obsid1, then 2016-01-01 00:00:XX will not be imported for obsid1.
+        (and 2016-01-01 00 will block 2016-01-01 00:XX)
+        (but 2016-01-01 00 will not block 2016-01-01 00:00:XX, inconsistently)
+
+        The function uses all primary keys to identify unique combinations, so different parameters will not block each other.
+        """
         pks = [pk for pk in primary_keys if pk != u'date_time']
         pks.append(u'date_time')
+
+        #TODO: Maybe the length should be checked so that the test is only made for 2016-01-01 00:00 and 2016-01-01 00:00:00?
 
         #Delete records that have the same date_time but with :00 at the end. (2016-01-01 00:00 will not be imported if 2016-01-01 00:00:00 exists
         pks_and_00 = [u'"{}"'.format(pk) for pk in pks]
@@ -340,7 +357,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                           goal_table)
         utils.sql_alter_db(sql)
 
-        # Delete records that have the same date_time but with :00 at the end. (2016-01-01 00:00:00 will not be imported if 2016-01-01 00:00 exists
+        # Delete records from temptable that have date_time yyyy-mm-dd HH:MM:XX when yyyy-mm-dd HH:MM exist.
+        #delete from temptable where SUBSTR("obsid" || "date_time", 1, length("obsid" || "date_time") - 3) in (select "obsid" || "date_time" from goaltable)
         sql = u'''delete from "%s" where SUBSTR(%s, 1, length(%s) - 3) in (select %s from "%s")'''%(self.temptableName,
                                                                                           u' || '.join([u'"{}"'.format(pk) for pk in pks]),
                                                                                           u' || '.join([u'"{}"'.format(pk) for pk in pks]),
