@@ -437,7 +437,7 @@ class TestGeneralCsvGui(object):
         file = [u'obsid,date_time,meas']
         base = datestring_to_date(u'1900-01-01 00:01:01')
         date_list = [base + datetime.timedelta(days=x) for x in range(0, 10000)]
-        file.extend([u'rb1,' + datetime.datetime.strftime(adate, u'%Y%M%D %H%m') + u',0.5' for adate in date_list])
+        file.extend([u'rb1,' + datetime.datetime.strftime(adate, u'%Y%m%d %H%M') + u',0.5' for adate in date_list])
 
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 

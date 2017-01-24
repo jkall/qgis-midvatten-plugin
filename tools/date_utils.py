@@ -18,6 +18,7 @@
  ***************************************************************************/
 """
 import datetime
+import midvatten_utils as utils
 
 def find_date_format(datestring):
     """
@@ -27,23 +28,22 @@ def find_date_format(datestring):
 
     Can only parse a list of preconfigured datestrings. See the code.
 
-    >>> find_date_format('2015-01-01 01:01:01')
-    '%Y-%m-%d %H:%M:%S'
-    >>> find_date_format('01-01-2015 01:01:01')
-    '%d-%m-%Y %H:%M:%S'
-    >>> find_date_format('01:01:01')
-    '%H:%M:%S'
-    >>> find_date_format('2015-01-01')
-    '%Y-%m-%d'
-    >>> print(find_date_format('abc'))
+    >>> find_date_format(u'2015-01-01 01:01:01')
+    u'%Y-%m-%d %H:%M:%S'
+    >>> find_date_format(u'01-01-2015 01:01:01')
+    u'%d-%m-%Y %H:%M:%S'
+    >>> find_date_format(u'01:01:01')
+    u'%H:%M:%S'
+    >>> find_date_format(u'2015-01-01')
+    u'%Y-%m-%d'
+    >>> print(find_date_format(u'abc'))
     None
     """
-
     datestring = str(datestring)
-    date_formats_to_try = ['%Y/%m/%d %H:%M:%S', '%Y-%m-%d %H:%M:%S',
-                           '%Y%m%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y%m%d',
-                           '%Y-%m-%d', '%d-%m-%Y', '%H:%M:%S', '%d-%m-%Y %H:%M:%S',
-                           '%d-%m-%Y %H:%M', '%d-%m-%Y %H']
+    date_formats_to_try = [u'%Y/%m/%d %H:%M:%S', u'%Y-%m-%d %H:%M:%S',
+                           u'%Y%m%d %H:%M:%S', u'%Y-%m-%d %H:%M', u'%Y%m%d',
+                           u'%Y-%m-%d', u'%d-%m-%Y', u'%H:%M:%S', u'%d-%m-%Y %H:%M:%S',
+                           u'%d-%m-%Y %H:%M', u'%d-%m-%Y %H']
     found_format = None
     for dateformat in date_formats_to_try:
         try:
@@ -53,6 +53,14 @@ def find_date_format(datestring):
         else:
             found_format = dateformat
             break
+
+    if found_format is None:
+        utils.MessagebarAndLog.critical(
+            bar_msg=u'Date parsing failed, see log message panel',
+            log_msg=u'Could not find the date format for string "'
+                    + utils.returnunicode(datestring) + u'"'
+                    + u'\nSupported date formats:\n' + u'\n'.join(
+                    date_formats_to_try))
 
     return found_format
 
