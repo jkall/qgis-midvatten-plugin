@@ -367,6 +367,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             utils.MessagebarAndLog.warning(log_msg=u'Settings key ' + settingskey + u' was empty.')
             return []
 
+        settings_string_raw = utils.returnunicode(settings_string_raw)
+
         try:
             stored_settings = ast.literal_eval(settings_string_raw)
         except SyntaxError:

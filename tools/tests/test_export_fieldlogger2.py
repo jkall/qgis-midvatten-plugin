@@ -122,6 +122,28 @@ class TestExportFieldloggerNoDb():
         assert stored_settings == reference
 
     @staticmethod
+    def test_create_parameter_groups_using_stored_settings_nonexisting_variable_name():
+        stored_settings = [(0, ((u'parameter_liöst', [u'p1.u1;it1:h1, p2.u2;it2:h2']), (u'key0_2', u'value0_2'))),
+                           (1, ((u'location_suffix', u'value1_1'), (u'key1_2', u'value1_2')))]
+        mock_connect = MagicMock()
+
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
+        stored_settings = create_test_string(ExportToFieldLogger.update_stored_settings(parameter_groups))
+        reference = u'[[0, ((location_suffix, value1_1))]]'
+        assert stored_settings == reference
+
+    @staticmethod
+    def test_create_parameter_groups_using_stored_settings_nonexisting_variable_name_empty_result():
+        stored_settings = [(0, ((u'parameter_liöst', [u'p1.u1;it1:h1, p2.u2;it2:h2']), (u'key0_2', u'value0_2'))),
+                           (1, ((u'location_s%uffix', u'value1_1'), (u'key1_2', u'value1_2')))]
+        mock_connect = MagicMock()
+
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
+        stored_settings = create_test_string(ExportToFieldLogger.update_stored_settings(parameter_groups))
+        reference = u'[]'
+        assert stored_settings == reference
+
+    @staticmethod
     def test_create_parameter_browser_using_stored_settings():
         tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
         stored_settings = [(0, ((u'input_field_list', [u'p1.u1;it1:h1', u'p2.u2;it2:h2']), (u'key0_2', u'value0_2'))),
@@ -133,6 +155,20 @@ class TestExportFieldloggerNoDb():
 
         test_string = create_test_string(ExportToFieldLogger.update_stored_settings([parameter_browser]))
         reference = u'[[0, ((input_field_list, [p1.u1;it1:h1, p2.u2;it2:h2]))]]'
+        assert test_string == reference
+
+    @staticmethod
+    def test_create_parameter_browser_using_stored_settings_nonexisting_variable_name():
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+        stored_settings = [(0, ((u'input_field_läist', [u'p1.u1;it1:h1', u'p2.u2;it2:h2']), (u'key0_2', u'value0_2'))),
+                           (1, ((u'location_suffix', u'value1_1'), (u'key1_2', u'value1_2')))]
+        mock_connect = MagicMock()
+
+        parameter_browser = export_fieldlogger.ParameterBrowser(tables_columns, mock_connect)
+        ExportToFieldLogger.update_parameter_browser_using_stored_settings(stored_settings, parameter_browser)
+
+        test_string = create_test_string(ExportToFieldLogger.update_stored_settings([parameter_browser]))
+        reference = u'[]'
         assert test_string == reference
 
     @staticmethod
