@@ -196,6 +196,8 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             utils.MessagebarAndLog.warning(log_msg=u'Settings key ' + settingskey + u' was empty.')
             return []
 
+        settings_string_raw = utils.returnunicode(settings_string_raw)
+
         try:
             stored_settings = ast.literal_eval(settings_string_raw)
         except SyntaxError:
@@ -218,9 +220,11 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             parameter_group = ParameterGroup(connect)
             attrs_set = False
             for attr in attrs:
-                if hasattr(parameter_group, attr[0]):
-                    setattr(parameter_group, attr[0], attr[1])
+                if hasattr(parameter_group, attr[0].encode(u'utf-8')):
+                    setattr(parameter_group, attr[0].encode(u'utf-8'), attr[1])
                     attrs_set = True
+                else:
+                    utils.MessagebarAndLog.warning(log_msg=u'Tried to load input field groups but the variable ' + attr[0] + u' did not exist')
 
             if attrs_set:
                 parameter_groups.append(parameter_group)
@@ -233,8 +237,10 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             return
         for index, attrs in stored_settings:
             for attr in attrs:
-                if hasattr(parameter_browser, attr[0]):
-                    setattr(parameter_browser, attr[0], attr[1])
+                if hasattr(parameter_browser, attr[0].encode(u'utf-8')):
+                    setattr(parameter_browser, attr[0].encode(u'utf-8'), attr[1])
+                else:
+                    utils.MessagebarAndLog.warning(log_msg=u'Tried to load input field fields browser but the variable ' + attr[0] + u' did not exist')
 
     @staticmethod
     def update_stored_settings(objects_with_get_settings):
@@ -583,6 +589,8 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         combobox.addItems(items)
 
     def get_settings(self):
+        if not self.input_field_list:
+            return None
         settings = ((u'input_field_list', self.input_field_list),)
         return utils.returnunicode(settings, keep_containers=True)
 
