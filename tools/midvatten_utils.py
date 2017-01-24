@@ -112,6 +112,8 @@ class MessagebarAndLog():
 
     @staticmethod
     def log(bar_msg=None, log_msg=None, duration=10, messagebar_level=QgsMessageBar.INFO, log_level=QgsMessageLog.INFO, button=True):
+        if qgis.utils.iface is None:
+            return None
         if bar_msg is not None:
             widget = qgis.utils.iface.messageBar().createMessage(returnunicode(bar_msg))
             log_button = QtGui.QPushButton(u"View message log", pressed=show_message_log)

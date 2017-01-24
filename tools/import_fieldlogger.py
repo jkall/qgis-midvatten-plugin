@@ -885,7 +885,7 @@ class CommentsImportFields(RowEntry):
         observations = copy.deepcopy(observations)
         parameter_name = self.import_method_chooser.parameter_name
         comment_obsdict = {}
-        dateformat = '%Y%M%D %H:%m:%s'
+        dateformat = u'%Y%m%d %H:%M:%S'
         for observation in observations:
             if observation[u'parametername'] == parameter_name:
                 datestring = datetime.strftime(observation[u'date_time'], dateformat)
