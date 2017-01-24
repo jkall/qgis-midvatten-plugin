@@ -48,7 +48,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class _TestGeneralCsvGui(object):
+class TestGeneralCsvGui(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -651,7 +651,7 @@ class _TestGeneralCsvGui(object):
                     assert test_string == reference_string
 
 
-class _TestStaticMethods(object):
+class TestStaticMethods(object):
     def test_get_delimiter_only_one_column(self):
         file = [u'obsid',
                  u'rb1']
