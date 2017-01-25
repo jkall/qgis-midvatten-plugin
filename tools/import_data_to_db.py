@@ -825,6 +825,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
                 #Parse data
                 if begin_extraction:
+                    #This skips the last line.
+                    if len(cols) < 2:
+                        continue
                     dateformat = find_date_format(cols[0])
                     if dateformat is not None:
                         if len(cols) != num_cols:
