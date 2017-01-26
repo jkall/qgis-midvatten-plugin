@@ -57,6 +57,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle("Csv import")  # Set the title for the dialog
         self.table_chooser = None
+        self.file_data = None
         self.status = True
 
     def load_gui(self):
@@ -97,6 +98,13 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         header_question = utils.askuser(question=u"YesNo", msg=u"""Does the file contain a header?""")
         if header_question.result:
+            # Remove duplicate header entries
+            header = self.file_data[0]
+            seen = set()
+            seen_add = seen.add
+            remove_cols = [idx for idx, x in enumerate(header) if x and (x in seen or seen_add(x))]
+            self.file_data = [[col for idx, col in enumerate(row) if idx not in remove_cols] for row in self.file_data]
+
             self.table_chooser.file_header = self.file_data[0]
         else:
             header = [u'Column ' + str(colnr) for colnr in xrange(len(self.file_data[0]))]
@@ -126,6 +134,10 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
     @utils.waiting_cursor
     def start_import(self):
+        if self.file_data is None:
+            utils.MessagebarAndLog.critical(bar_msg=u'Error, must select a file first!')
+            return u'cancel'
+
         translation_dict = self.table_chooser.get_translation_dict()
         if isinstance(translation_dict, Cancel):
             return u'cancel'
@@ -143,7 +155,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             foreign_key_obsid_table = goal_table
 
         #Check if obsid should be set from selection and add an obsid-column if so.
-        for file_column, db_column in translation_dict.iteritems():
+        for file_column in translation_dict.keys():
             if isinstance(file_column, Obsids_from_selection):
                 selected = utils.get_selected_features_as_tuple()
                 if len(selected) != 1:
@@ -163,25 +175,30 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
                 #[row.insert(obsidindex, selected[0]) if obsidindex + 1 < len(file_data[0]) else row.append(selected[0]) for row in file_data[1:]]
                 del translation_dict[file_column]
-                translation_dict[u'obsid'] = u'obsid'
+                translation_dict[u'obsid'] = [u'obsid']
 
-        # Filter out columns that was not set by the user
-        file_data = [[col for idx, col in enumerate(row) if file_data[0][idx] in translation_dict.keys()] for row in file_data]
-        importer = import_data_to_db.midv_data_importer()
+        #Translate column names and add columns that appear more than once
+        file_data = self.translate_and_reorder_file_data(file_data, translation_dict)
 
-        reversed_translation_dict = {v: k for (k, v) in translation_dict.iteritems()}
-
-        if foreign_key_obsid_table and foreign_key_obsid_table != goal_table:
-            file_data = utils.filter_nonexisting_values_and_ask(file_data, reversed_translation_dict[u'obsid'], utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
+        if foreign_key_obsid_table and foreign_key_obsid_table != goal_table and u'obsid' in file_data[0]:
+            file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
         if file_data == u'cancel':
             return file_data
 
+        importer = import_data_to_db.midv_data_importer()
         importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import,
-                                                               goal_table=goal_table,
-                                                               column_header_translation_dict=translation_dict))
+                                                               goal_table=goal_table))
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.close()
+
+    @staticmethod
+    def translate_and_reorder_file_data(file_data, translation_dict):
+        new_file_header = [db_column for file_column, db_columns in sorted(translation_dict.iteritems()) for db_column in sorted(db_columns)]
+        file_column_index = dict([(file_column, idx) for idx, file_column in enumerate(file_data[0])])
+        new_file_data = [new_file_header]
+        new_file_data.extend([[row[file_column_index[file_column]] for file_column, db_columns in sorted(translation_dict.iteritems()) for db_column in sorted(db_columns)] for row in file_data[1:]])
+        return new_file_data
 
     def add_line(self, layout=None):
         """ just adds a line"""
@@ -262,7 +279,10 @@ class ImportTableChooser(VRowEntry):
             if isinstance(file_column_name, Cancel):
                 return file_column_name
             if file_column_name:
-                translation_dict[file_column_name] = column_entry.db_column
+                column_list = translation_dict.get(file_column_name, [])
+                column_list = copy.deepcopy(column_list)
+                column_list.append(column_entry.db_column)
+                translation_dict[file_column_name] = column_list
         return translation_dict
 
     @property
@@ -392,6 +412,7 @@ class ColumnEntry(RowEntry):
 class Cancel(object):
     def __init__(self):
         pass
+
 
 class Obsids_from_selection(object):
     def __init__(self):
