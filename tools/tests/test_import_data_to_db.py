@@ -563,37 +563,7 @@ class TestGeneralCsvImport(object):
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    def test_general_csv_import_wlvllogg_translation(self):
-        file = [u'obsid,date_time,test',
-                 u'rb1,2016-03-15 10:30:00,1']
-
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
-                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
-                    utils_askuser_answer_no_obj.result = 0
-                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
-                    @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
-                    def _test_general_csv_import_wlvllogg(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                        mock_filename.return_value = filename
-                        mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', column_header_translation_dict={u'test': u'head_cm', u'obsid': u'obsid', u'date_time': u'date_time'})
-
-                    _test_general_csv_import_wlvllogg(self, filename)
-
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, None)])'''
-                    assert test_string == reference_string
-
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    def test_general_csv_import_wlvllogg_translation_missing_not_null_column(self):
+    def test_general_csv_import_wlvllogg_missing_not_null_column(self):
         file = [u'obsids,date_time,test',
                  u'rb1,2016-03-15 10:30:00,1']
 
@@ -614,7 +584,7 @@ class TestGeneralCsvImport(object):
                     def _test_general_csv_import_wlvllogg(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
                         mock_filename.return_value = filename
                         mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', column_header_translation_dict={u'test': u'head_cm'})
+                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
 
                         mock_iface.messageBar.return_value.createMessage.assert_called_with(u'Error: Import failed, see log message panel')
                     _test_general_csv_import_wlvllogg(self, filename)

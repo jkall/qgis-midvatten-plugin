@@ -124,8 +124,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         #Button click first filters data from the settings and then updates input fields.
         self.connect(self.input_fields.update_parameters_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: self.input_fields.update_parameter_imports(self.filter_by_settings_using_shared_loop(
-                         self.filter_by_settings_using_own_loop(self.observations,
-                                                                self.settings_with_own_loop), self.settings), self.stored_settings))
+                                                                        self.observations,
+                                                                        self.settings), self.stored_settings))
 
         self.gridLayout_buttons.setRowStretch(3, 1)
 

@@ -650,6 +650,74 @@ class TestGeneralCsvGui(object):
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_import_meteo_two_header_columns_same_name(self):
+        file = [u'obsid,instrumentid,parameter,date_time,reading_num,reading_num,aunit',
+                 u'rb1,inst1,precip,2016-03-15 10:30:00,5.0,6.0,cm(H2O)']
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+                    utils_askuser_answer_no_obj.result = 0
+                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+                    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+
+                        mock_filename.return_value = filename
+                        mock_encoding.return_value = [u'utf-8', True]
+
+                        def side_effect(*args, **kwargs):
+                            mock_result = mock.MagicMock()
+                            if u'msg' in kwargs:
+                                if kwargs[u'msg'].startswith(u'Does the file contain a header?'):
+                                    mock_result.result = 1
+                                    return mock_result
+                            if len(args) > 1:
+                                if args[1].startswith(u'Do you want to confirm'):
+                                    mock_result.result = 0
+                                    return mock_result
+                                    #mock_askuser.return_value.result.return_value = 0
+                                elif args[1].startswith(u'Do you want to import all'):
+                                    mock_result.result = 0
+                                    return mock_result
+                                elif args[1].startswith(u'Please note!\nForeign keys'):
+                                    mock_result.result = 1
+                                    return mock_result
+                                elif args[1].startswith(u'Please note!\nThere are'):
+                                    mock_result.result = 1
+                                    return mock_result
+                                elif args[1].startswith(u'It is a strong recommendation'):
+                                    mock_result.result = 0
+                                    return mock_result
+                        mock_askuser.side_effect = side_effect
+
+                        ms = MagicMock()
+                        ms.settingsdict = OrderedDict()
+                        importer = GeneralCsvImportGui(self.iface.mainWindow(), ms)
+                        importer.load_gui()
+
+                        importer.load_files()
+                        importer.table_chooser.import_method = u'meteo'
+
+                        for column in importer.table_chooser.columns:
+                            names = {u'obsid': u'obsid', u'instrumentid': u'instrumentid', u'parameter': u'parameter', u'date_time': u'date_time', u'reading_num': u'reading_num', u'reading_txt': u'reading_num', u'unit': u'aunit'}
+                            if column.db_column in names:
+                                column.file_column_name = names[column.db_column]
+
+                        importer.start_import()
+
+                    _test(self, filename)
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, instrumentid, parameter, date_time, reading_num, reading_txt, unit, comment from meteo'''))
+                    reference_string = u'''(True, [(rb1, inst1, precip, 2016-03-15 10:30:00, 5.0, 5.0, cm(H2O), None)])'''
+                    assert test_string == reference_string
+
 
 class TestStaticMethods(object):
     def test_get_delimiter_only_one_column(self):
@@ -697,3 +765,13 @@ class TestStaticMethods(object):
                 assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') not in mock_iface.mock_calls
                 assert delimiter == u','
             _test(filename)
+
+    def test_translate_and_reorder_file_data(self):
+        file_data = [[u'obsid', u'acol', u'acol2'],
+                    [u'rb1', u'1', u'2']]
+
+        translation_dict = {u'obsid': [u'obsid'], u'acol': [u'num', u'txt'], u'acol2': [u'comment']}
+
+        test_string = utils_for_tests.create_test_string(GeneralCsvImportGui.translate_and_reorder_file_data(file_data, translation_dict))
+        reference_string = u'[[num, txt, comment, obsid], [1, 1, 2, rb1]]'
+        assert test_string == reference_string

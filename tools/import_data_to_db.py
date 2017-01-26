@@ -51,12 +51,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.csvlayer = None
         self.foreign_keys_import_question = None
 
-    def general_csv_import(self, goal_table=None, column_header_translation_dict=None):
+    def general_csv_import(self, goal_table=None):
         """General method for importing an sqlite table into a goal_table
 
             self.temptableName must be the name of the table containing the new data to import.
 
-        :param column_header_translation_dict: a dict like {u'column_name_in_csv: column_name_in_db}
         :param goal_table:
         :return:
         """
@@ -75,7 +74,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = 'True'
             return
 
-        self.qgiscsv2sqlitetable(column_header_translation_dict) #loads qgis csvlayer into sqlite table
+        self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
 
         recsinfile = utils.sql_load_fr_db(u'select count(*) from "%s"'%self.temptableName)[1][0][0]
 
@@ -249,15 +248,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         csvlayer.setProviderEncoding(str(self.charsetchoosen))
         return csvlayer
 
-    def qgiscsv2sqlitetable(self, column_header_translation_dict=None): # general importer
+    def qgiscsv2sqlitetable(self): # general importer
         """Upload qgis csv-csvlayer (QgsMapLayer) as temporary table (temptableName) in current DB. status='True' if succesfull, else 'false'.
 
         :param column_header_translation_dict: a dict like {u'column_name_in_csv: column_name_in_db}
 
         """
-
-        if column_header_translation_dict is None:
-            column_header_translation_dict = {}
 
         self.status = 'False'
         #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
@@ -275,8 +271,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         provider=self.csvlayer.dataProvider()
         for name in provider.fields(): #fix field names and types in temporary table
             fldName = unicode(name.name()).replace("'"," ").replace('"'," ")  #Fixing field names
-            if column_header_translation_dict:
-                fldName = column_header_translation_dict.get(fldName, fldName)
             #Avoid two cols with same name:
             while fldName.upper() in fieldsNames:
                 fldName = '%s_2'%fldName
@@ -825,6 +819,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
                 #Parse data
                 if begin_extraction:
+                    #This skips the last line.
+                    if len(cols) < 2:
+                        continue
                     dateformat = find_date_format(cols[0])
                     if dateformat is not None:
                         if len(cols) != num_cols:
