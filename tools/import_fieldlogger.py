@@ -764,6 +764,8 @@ class InputFields(RowEntry):
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
 
+        if self.parameter_imports:
+            return
         for parametername in parameter_names:
             param_import_obj = ImportMethodChooser(parametername, parameter_names, self.connect)
             param_import_obj.label.setFixedWidth(maximumwidth)
