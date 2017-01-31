@@ -9,7 +9,7 @@ import mock
 from midvatten.midvatten import midvatten
 import os
 import import_fieldlogger
-from import_fieldlogger import FieldloggerImport, InputFields
+from import_fieldlogger import FieldloggerImport, InputFields, DateTimeFilter
 from collections import OrderedDict
 from utils_for_tests import create_test_string
 
@@ -158,6 +158,264 @@ class TestFieldLoggerImporterDb(object):
             assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_full_integration_test_to_db_datetimefilter(self):
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
+        utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
+
+        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
+
+        f = [
+            u"Location;date_time;value;comment\n",
+            u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
+            u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
+            u"Rb1615.flow;30-03-2016;15:30:09;gick bra;f.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:13;ergv;l.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:13;555;l.meas.m\n",
+            u"Rb1512.sample;30-03-2016;15:31:30;899;s.turbiditet.FNU\n",
+            u"Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
+            u"Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
+            u"Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
+            ]
+
+        with utils.tempinput(''.join(f)) as filename:
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
+            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
+            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
+                mock_vacuum.return_value.result = 1
+                mock_charset.return_value = ('utf-8', True)
+                mock_savefilename.return_value = [filename]
+                mock_ask_instrument.return_value.value = u'testid'
+
+                ms = MagicMock()
+                ms.settingsdict = OrderedDict()
+                importer = FieldloggerImport(self.iface.mainWindow(), ms)
+                importer.parse_observations_and_populate_gui()
+
+                for setting in importer.settings:
+                    if isinstance(setting, DateTimeFilter):
+                        setting.to_date = u'2016-03-30 15:30:40'
+                        break
+
+                #Set settings:
+                for setting in importer.settings:
+                    if isinstance(setting, import_fieldlogger.StaffQuestion):
+                        setting.staff = u'teststaff'
+
+                stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
+                                   [u'l.comment', [[u'import_method', u'comments']]],
+                                   [u'f.comment', [[u'import_method', u'comments']]],
+                                   [u'q.comment', [[u'import_method', u'comments']]],
+                                   [u'l.meas.m', [[u'import_method', u'w_levels']]],
+                                   [u'f.Accvol.m3', [[u'import_method', u'w_flow'], [u'flowtype', u'Accvol'], [u'unit', u'm3']]],
+                                   [u's.turbiditet.FNU', [[u'import_method', u'w_qual_field'], [u'parameter', u'turbiditet'], [u'unit', u'FNU'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.konduktivitet.µS/cm', [[u'import_method', u'w_qual_field'], [u'parameter', u'konduktivitet'], [u'unit', u'µS/cm'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.syre.mg/L', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'mg/L'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.syre.%', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'%'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.temperatur.grC', [[u'import_method', u'w_qual_field'], [u'parameter', u'temperatur'], [u'unit', u'grC'], [u'depth', u''], [u'instrument', u'testid']]]]
+                importer.input_fields.set_parameters_using_stored_settings(stored_settings)
+                importer.start_import(importer.observations)
+
+            _test(self, filename)
+
+            test_string = create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
+            reference_string = u'{comments: (True, []), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
+            assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_full_integration_test_to_db_datetimefilter_still_work_after_update_button(self):
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
+        utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
+
+        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
+
+        f = [
+            u"Location;date_time;value;comment\n",
+            u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
+            u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
+            u"Rb1615.flow;30-03-2016;15:30:09;gick bra;f.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:13;ergv;l.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:13;555;l.meas.m\n",
+            u"Rb1512.sample;30-03-2016;15:31:30;899;s.turbiditet.FNU\n",
+            u"Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
+            u"Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
+            u"Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
+            ]
+
+        with utils.tempinput(''.join(f)) as filename:
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
+            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
+            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
+                mock_vacuum.return_value.result = 1
+                mock_charset.return_value = ('utf-8', True)
+                mock_savefilename.return_value = [filename]
+                mock_ask_instrument.return_value.value = u'testid'
+
+                ms = MagicMock()
+                ms.settingsdict = OrderedDict()
+                importer = FieldloggerImport(self.iface.mainWindow(), ms)
+                importer.parse_observations_and_populate_gui()
+
+
+
+                for setting in importer.settings:
+                    if isinstance(setting, DateTimeFilter):
+                        setting.to_date = u'2016-03-30 15:30:40'
+                        break
+
+                #Set settings:
+                for setting in importer.settings:
+                    if isinstance(setting, import_fieldlogger.StaffQuestion):
+                        setting.staff = u'teststaff'
+
+                stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
+                                   [u'l.comment', [[u'import_method', u'comments']]],
+                                   [u'f.comment', [[u'import_method', u'comments']]],
+                                   [u'q.comment', [[u'import_method', u'comments']]],
+                                   [u'l.meas.m', [[u'import_method', u'w_levels']]],
+                                   [u'f.Accvol.m3', [[u'import_method', u'w_flow'], [u'flowtype', u'Accvol'], [u'unit', u'm3']]],
+                                   [u's.turbiditet.FNU', [[u'import_method', u'w_qual_field'], [u'parameter', u'turbiditet'], [u'unit', u'FNU'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.konduktivitet.µS/cm', [[u'import_method', u'w_qual_field'], [u'parameter', u'konduktivitet'], [u'unit', u'µS/cm'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.syre.mg/L', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'mg/L'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.syre.%', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'%'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.temperatur.grC', [[u'import_method', u'w_qual_field'], [u'parameter', u'temperatur'], [u'unit', u'grC'], [u'depth', u''], [u'instrument', u'testid']]]]
+                importer.input_fields.set_parameters_using_stored_settings(stored_settings)
+
+                importer.input_fields.update_parameter_imports(
+                    importer.filter_by_settings_using_shared_loop(
+                        importer.observations,
+                        importer.settings), importer.stored_settings)
+
+                importer.input_fields.set_parameters_using_stored_settings(
+                    stored_settings)
+
+                importer.start_import(importer.observations)
+
+            _test(self, filename)
+
+            test_string = create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
+            reference_string = u'{comments: (True, []), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
+            assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_full_integration_test_to_db_change_datetimefilter_after_update_button(self):
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
+        utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
+
+        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
+
+        f = [
+            u"Location;date_time;value;comment\n",
+            u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
+            u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
+            u"Rb1615.flow;30-03-2016;15:30:09;gick bra;f.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:13;ergv;l.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:13;555;l.meas.m\n",
+            u"Rb1512.sample;30-03-2016;15:31:30;899;s.turbiditet.FNU\n",
+            u"Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
+            u"Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
+            u"Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
+            ]
+
+        with utils.tempinput(''.join(f)) as filename:
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
+            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
+            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
+                mock_vacuum.return_value.result = 1
+                mock_charset.return_value = ('utf-8', True)
+                mock_savefilename.return_value = [filename]
+                mock_ask_instrument.return_value.value = u'testid'
+
+                ms = MagicMock()
+                ms.settingsdict = OrderedDict()
+                importer = FieldloggerImport(self.iface.mainWindow(), ms)
+                importer.parse_observations_and_populate_gui()
+
+                for setting in importer.settings:
+                    if isinstance(setting, DateTimeFilter):
+                        setting.to_date = u'2016-03-30 15:30:40'
+                        break
+
+                #Set settings:
+                for setting in importer.settings:
+                    if isinstance(setting, import_fieldlogger.StaffQuestion):
+                        setting.staff = u'teststaff'
+
+                stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
+                                   [u'l.comment', [[u'import_method', u'comments']]],
+                                   [u'f.comment', [[u'import_method', u'comments']]],
+                                   [u'q.comment', [[u'import_method', u'comments']]],
+                                   [u'l.meas.m', [[u'import_method', u'w_levels']]],
+                                   [u'f.Accvol.m3', [[u'import_method', u'w_flow'], [u'flowtype', u'Accvol'], [u'unit', u'm3']]],
+                                   [u's.turbiditet.FNU', [[u'import_method', u'w_qual_field'], [u'parameter', u'turbiditet'], [u'unit', u'FNU'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.konduktivitet.µS/cm', [[u'import_method', u'w_qual_field'], [u'parameter', u'konduktivitet'], [u'unit', u'µS/cm'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.syre.mg/L', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'mg/L'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.syre.%', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'%'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.temperatur.grC', [[u'import_method', u'w_qual_field'], [u'parameter', u'temperatur'], [u'unit', u'grC'], [u'depth', u''], [u'instrument', u'testid']]]]
+                importer.input_fields.set_parameters_using_stored_settings(stored_settings)
+
+                importer.input_fields.update_parameter_imports(
+                    importer.filter_by_settings_using_shared_loop(
+                        importer.observations,
+                        importer.settings), importer.stored_settings)
+
+                importer.input_fields.set_parameters_using_stored_settings(
+                    stored_settings)
+
+                for setting in importer.settings:
+                    if isinstance(setting, DateTimeFilter):
+                        setting.to_date = u'2016-03-30 15:31:59'
+                        break
+
+                importer.start_import(importer.observations)
+
+            _test(self, filename)
+
+            test_string = create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
+            print(test_string)
+            reference_string = u'{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
+            assert test_string == reference_string
+
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     def test_full_into_zz_flowtype(self):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("2")''')
         #utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("5")''')
@@ -227,7 +485,7 @@ class TestFieldLoggerImporterDb(object):
             assert test_string == reference_string
 
 
-class TestFieldLoggerImporterNoDb(object):
+class _TestFieldLoggerImporterNoDb(object):
 
     @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
     @mock.patch('import_fieldlogger.utils.get_last_used_flow_instruments')
@@ -316,7 +574,7 @@ class TestFieldLoggerImporterNoDb(object):
             assert test_string == reference
 
 
-class TestCommentsImportFields(object):
+class _TestCommentsImportFields(object):
     def setUp(self):
         mock_import_method_chooser = MagicMock()
         mock_import_method_chooser.parameter_name = u'comment'
@@ -351,7 +609,7 @@ class TestCommentsImportFields(object):
         assert test_string == reference_string
 
 
-class TestStaffQuestion(object):
+class _TestStaffQuestion(object):
 
     @mock.patch('import_fieldlogger.defs.staff_list')
     def setUp(self, mock_stafflist):
@@ -367,7 +625,7 @@ class TestStaffQuestion(object):
         assert test_string == reference_string
 
 
-class TestObsidFilter(object):
+class _TestObsidFilter(object):
     def setUp(self):
         self.obsid_filter = import_fieldlogger.ObsidFilter()
 
@@ -428,6 +686,47 @@ def test_SublocationFilter():
     sublocation_filter.set_selection([u'a.1'], True)
     assert u'{sublocation: a.1}' == create_test_string(sublocation_filter.alter_data({u'sublocation': u'a.1'}))
     assert u'{sublocation: a.2}' == create_test_string(sublocation_filter.alter_data({u'sublocation': u'a.2'}))
+
+class TestDateTimeFilter(object):
+    def test_date_time_filter_observation_should_be_none(self):
+        datetimefilter = DateTimeFilter()
+        datetimefilter.from_date = u'2016-01-01'
+        datetimefilter.to_date = u'2016-01-10'
+        observation = datetimefilter.alter_data({u'date_time': datestring_to_date(u'2015-01-01')})
+        assert observation is None
+
+    def test_date_time_filter_observation_return_observation(self):
+        datetimefilter = DateTimeFilter()
+        datetimefilter.from_date = u'2016-01-01'
+        datetimefilter.to_date = u'2016-01-10'
+        observation = datetimefilter.alter_data({u'date_time': datestring_to_date(u'2016-01-05')})
+        test_string = create_test_string(observation)
+        reference = u'{date_time: 2016-01-05 00:00:00}'
+        assert test_string == reference
+
+    def test_date_time_filter_observation_return_observation_one_second_to_to(self):
+        datetimefilter = DateTimeFilter()
+        datetimefilter.from_date = u'2016-01-01'
+        datetimefilter.to_date = u'2016-01-10'
+        observation = datetimefilter.alter_data({u'date_time': datestring_to_date(u'2016-01-09 23:59:59')})
+        test_string = create_test_string(observation)
+        reference = u'{date_time: 2016-01-09 23:59:59}'
+        assert test_string == reference
+
+    def test_date_time_filter_observation_skip_from(self):
+        datetimefilter = DateTimeFilter()
+        datetimefilter.from_date = u'2016-01-01'
+        datetimefilter.to_date = u'2016-01-10'
+        observation = datetimefilter.alter_data({u'date_time': datestring_to_date(u'2016-01-01')})
+        assert observation is None
+
+    def test_date_time_filter_observation_skip_to(self):
+        datetimefilter = DateTimeFilter()
+        datetimefilter.from_date = u'2016-01-01'
+        datetimefilter.to_date = u'2016-01-10'
+        observation = datetimefilter.alter_data({u'date_time': datestring_to_date(u'2016-01-10')})
+        assert observation is None
+
 
 
 
