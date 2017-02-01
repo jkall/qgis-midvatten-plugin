@@ -796,6 +796,8 @@ class InputFields(RowEntry):
         #Order the observations under the import methods, and filter out the parameters not set.
         _observations = []
         for observation in observations:
+            #This test is needed when the input fields have been filtered so that not all
+            #parameternames exists as parameter import.
             if observation[u'parametername'] in self.parameter_imports:
                 if self.parameter_imports[observation[u'parametername']].import_method and self.parameter_imports[observation[u'parametername']].import_method is not None:
                     _observations.append(observation)
