@@ -407,7 +407,6 @@ class midvatten:
         err_flag = utils.verify_layer_selection(err_flag,1)#verify the selected layer has attribute "obsid" and that exactly one feature is selected
         if err_flag == 0:
             obsids = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())  # selected obs_point is now found in obsid[0]
-            utils.pop_up_info(str(obsids))
             from drillreport import drillreport
             drillreport(obsids,self.ms.settingsdict)
 

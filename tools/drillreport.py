@@ -26,105 +26,139 @@ import os
 import locale
 import midvatten_utils as utils
 import codecs
+from time import sleep
 
 class drillreport():        # general observation point info for the selected object
     
     def __init__(self, obsids=[''], settingsdict = {}):
-         #open connection to report file
+
         reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
         if not os.path.exists(reportfolder):
             os.makedirs(reportfolder)
         reportpath = os.path.join(reportfolder, "drill_report.html")
         logopath = os.path.join(os.sep,os.path.dirname(__file__),"..","templates","midvatten_logga.png")
         imgpath = os.path.join(os.sep,os.path.dirname(__file__),"..","templates")
+
+        if len(obsids) == 0:
+            utils.pop_up_info("Must select one or more obsids!")
+            return None
+        elif len(obsids) == 1:
+            merged_question = False
+        else:
+            merged_question = utils.askuser(question='YesNo', msg="Do you want to open all drill reports merged on the same tab?\n"
+                                                "Else they will be opened separately.\n\n(If answering no, creating drill reports for many obsids take 0.2 seconds per obsid.\nIt might fail if the computer is to slow.\nIf it fails, try to select only one obsid at the time)").result
+        if merged_question:
+            f, rpt = self.open_file(', '.join(obsids), reportpath)
+            for obsid in obsids:
+                self.write_obsid(obsid, rpt, imgpath, logopath, f)
+            self.close_file(f, reportpath)
+        else:
+            opened = False
+            for obsid in obsids:
+                f, rpt = self.open_file(obsid, reportpath)
+                self.write_obsid(obsid, rpt, imgpath, logopath, f)
+                url_status = self.close_file(f, reportpath)
+                if not opened:
+                    sleep(2)
+                    opened = True
+                else:
+                    sleep(0.2)
+
+
+    def open_file(self, header, reportpath):
+        #open connection to report file
         f = codecs.open(reportpath, "wb", "utf-8")
-        
-        #write some initiating html, header and also 
-        rpt = r"""<meta http-equiv="content-type" content="text/html; charset=utf-8" />""" 
-        rpt += r"""<head><title>%s General report from Midvatten plugin for QGIS</title></head>"""%obsids[0]
+        #write some initiating html, header and also
+        rpt = r"""<meta http-equiv="content-type" content="text/html; charset=utf-8" />"""
+        rpt += r"""<head><title>%s General report from Midvatten plugin for QGIS</title></head>"""%header
 
+        return f, rpt
 
-        for obsid in obsids:
-            rpt += r"""<html><TABLE WIDTH=100% BORDER=0 CELLPADDING=1 CELLSPACING=1><TR VALIGN=TOP><TD WIDTH=15%><h3 style="font-family:'arial';font-size:18pt; font-weight:600">"""
-            rpt += obsid
-            if  utils.getcurrentlocale()[0] == 'sv_SE':
-                rpt += ''.join([r'''</h3><img src="''', os.path.join(imgpath, 'for_general_report_sv.png'), r'''" /><br><img src=''', r"""'"""])
-                #rpt += r"""</h3><img src="for_general_report_sv.png" /><br><img src='"""
-            else:
-                rpt += ''.join([r'''</h3><img src="''', os.path.join(imgpath, 'for_general_report.png'), r'''" /><br><img src=''', r"""'"""])
-                #rpt += r"""</h3><img src="for_general_report.png" /><br><img src='"""
-            rpt += logopath
-            rpt +="""' /></TD><TD WIDTH=85%><TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
-            if  utils.getcurrentlocale()[0] == 'sv_SE':
-                rpt += u'Allmän information'
-            else:
-                rpt += u'General information'
-            rpt += r"""</B></U></P><TABLE style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*>"""
-            f.write(rpt)
-
-            # GENERAL DATA UPPER LEFT QUADRANT
-            ConnectionOK, GeneralData = self.GetData(obsid, 'obs_points', 'n')#MacOSX fix1
-            #utils.pop_up_info(str(ConnectionOK))#debug
-            if ConnectionOK==True:
-                result2 = (utils.sql_load_fr_db(r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""")[1])[0][0]
-                CRS = utils.returnunicode(result2) #1st we need crs
-                result3 = (utils.sql_load_fr_db(r"""SELECT ref_sys_name FROM spatial_ref_sys where srid =""" + CRS)[1])[0][0]
-                CRSname = utils.returnunicode(result3) # and crs name
-                if  utils.getcurrentlocale()[0] == 'sv_SE':
-                    reportdata_1 = self.rpt_upper_left_sv(GeneralData, CRS, CRSname)
-                else:
-                    reportdata_1 = self.rpt_upper_left(GeneralData, CRS, CRSname)
-                f.write(reportdata_1)
-
-                rpt = r"""</TABLE></TD><TD WIDTH=50%><P><U><B>"""
-                if  utils.getcurrentlocale()[0] == 'sv_SE':
-                    rpt += u'Lagerföljd'
-                else:
-                    rpt += u'Stratigraphy'
-                rpt += r"""</B></U></P><TABLE style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*>"""
-                f.write(rpt)
-
-                # STRATIGRAPHY DATA UPPER RIGHT QUADRANT
-                StratData = self.GetData(obsid, 'stratigraphy', 'n')[1] #MacOSX fix1
-                if  utils.getcurrentlocale()[0] == 'sv_SE':
-                    reportdata_2 = self.rpt_upper_right_sv(StratData)
-                else:
-                    reportdata_2 = self.rpt_upper_right(StratData)
-                f.write(reportdata_2)
-
-                rpt = r"""</TABLE></TD></TR><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
-                if  utils.getcurrentlocale()[0] == 'sv_SE':
-                    rpt += u'Kommentarer'
-                else:
-                    rpt += u'Comments'
-                rpt += r"""</B></U></P>"""
-                f.write(rpt)
-
-                # COMMENTS LOWER LEFT QUADRANT
-                reportdata_3 = self.rpt_lower_left(GeneralData)
-                f.write(reportdata_3)
-
-                rpt = r"""</TD><TD WIDTH=50%><P><U><B>"""
-                if  utils.getcurrentlocale()[0] == 'sv_SE':
-                    rpt += u'Vattennivåer'
-                else:
-                    rpt += u'Water levels'
-                rpt += r"""</B></U></P>"""
-                f.write(rpt)
-
-                # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
-                meas_or_level_masl, statistics = GetStatistics(obsid)#MacOSX fix1
-                if  utils.getcurrentlocale()[0] == 'sv_SE':
-                    reportdata_4 = self.rpt_lower_right_sv(statistics,meas_or_level_masl)
-                else:
-                    reportdata_4 = self.rpt_lower_right(statistics,meas_or_level_masl)
-                f.write(reportdata_4)
-
-                f.write(r"""</TD></TR></TABLE></TD></TR></TABLE>""")
+    def close_file(self, f, reportpath):
         f.write("\n</p></body></html>")
         f.close()
         #print reportpath#debug
-        QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
+        url_status = QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
+        return url_status
+
+    def write_obsid(self, obsid, rpt, imgpath, logopath, f):
+        rpt += r"""<html><TABLE WIDTH=100% BORDER=0 CELLPADDING=1 CELLSPACING=1><TR VALIGN=TOP><TD WIDTH=15%><h3 style="font-family:'arial';font-size:18pt; font-weight:600">"""
+        rpt += obsid
+        if  utils.getcurrentlocale()[0] == 'sv_SE':
+            rpt += ''.join([r'''</h3><img src="''', os.path.join(imgpath, 'for_general_report_sv.png'), r'''" /><br><img src=''', r"""'"""])
+            #rpt += r"""</h3><img src="for_general_report_sv.png" /><br><img src='"""
+        else:
+            rpt += ''.join([r'''</h3><img src="''', os.path.join(imgpath, 'for_general_report.png'), r'''" /><br><img src=''', r"""'"""])
+            #rpt += r"""</h3><img src="for_general_report.png" /><br><img src='"""
+        rpt += logopath
+        rpt +="""' /></TD><TD WIDTH=85%><TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
+        if  utils.getcurrentlocale()[0] == 'sv_SE':
+            rpt += u'Allmän information'
+        else:
+            rpt += u'General information'
+        rpt += r"""</B></U></P><TABLE style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*>"""
+        f.write(rpt)
+
+        # GENERAL DATA UPPER LEFT QUADRANT
+        ConnectionOK, GeneralData = self.GetData(obsid, 'obs_points', 'n')#MacOSX fix1
+        #utils.pop_up_info(str(ConnectionOK))#debug
+        if ConnectionOK==True:
+            result2 = (utils.sql_load_fr_db(r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""")[1])[0][0]
+            CRS = utils.returnunicode(result2) #1st we need crs
+            result3 = (utils.sql_load_fr_db(r"""SELECT ref_sys_name FROM spatial_ref_sys where srid =""" + CRS)[1])[0][0]
+            CRSname = utils.returnunicode(result3) # and crs name
+            if  utils.getcurrentlocale()[0] == 'sv_SE':
+                reportdata_1 = self.rpt_upper_left_sv(GeneralData, CRS, CRSname)
+            else:
+                reportdata_1 = self.rpt_upper_left(GeneralData, CRS, CRSname)
+            f.write(reportdata_1)
+
+            rpt = r"""</TABLE></TD><TD WIDTH=50%><P><U><B>"""
+            if  utils.getcurrentlocale()[0] == 'sv_SE':
+                rpt += u'Lagerföljd'
+            else:
+                rpt += u'Stratigraphy'
+            rpt += r"""</B></U></P><TABLE style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*>"""
+            f.write(rpt)
+
+            # STRATIGRAPHY DATA UPPER RIGHT QUADRANT
+            StratData = self.GetData(obsid, 'stratigraphy', 'n')[1] #MacOSX fix1
+            if  utils.getcurrentlocale()[0] == 'sv_SE':
+                reportdata_2 = self.rpt_upper_right_sv(StratData)
+            else:
+                reportdata_2 = self.rpt_upper_right(StratData)
+            f.write(reportdata_2)
+
+            rpt = r"""</TABLE></TD></TR><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
+            if  utils.getcurrentlocale()[0] == 'sv_SE':
+                rpt += u'Kommentarer'
+            else:
+                rpt += u'Comments'
+            rpt += r"""</B></U></P>"""
+            f.write(rpt)
+
+            # COMMENTS LOWER LEFT QUADRANT
+            reportdata_3 = self.rpt_lower_left(GeneralData)
+            f.write(reportdata_3)
+
+            rpt = r"""</TD><TD WIDTH=50%><P><U><B>"""
+            if  utils.getcurrentlocale()[0] == 'sv_SE':
+                rpt += u'Vattennivåer'
+            else:
+                rpt += u'Water levels'
+            rpt += r"""</B></U></P>"""
+            f.write(rpt)
+
+            # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
+            meas_or_level_masl, statistics = GetStatistics(obsid)#MacOSX fix1
+            if  utils.getcurrentlocale()[0] == 'sv_SE':
+                reportdata_4 = self.rpt_lower_right_sv(statistics,meas_or_level_masl)
+            else:
+                reportdata_4 = self.rpt_lower_right(statistics,meas_or_level_masl)
+            f.write(reportdata_4)
+
+            f.write(r"""</TD></TR></TABLE></TD></TR></TABLE>""")
+
 
     def rpt_upper_left_sv(self, GeneralData, CRS='', CRSname=''):
         rpt = r"""<p style="font-family:'arial'; font-size:8pt; font-weight:400; font-style:normal;">"""
