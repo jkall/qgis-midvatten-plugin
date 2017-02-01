@@ -33,7 +33,7 @@ import import_data_to_db
 import copy
 from collections import OrderedDict
 import midvatten_utils as utils
-from midvatten_utils import returnunicode
+from midvatten_utils import returnunicode, Cancel
 from definitions import midvatten_defs as defs
 from date_utils import find_date_format, datestring_to_date, dateshift
 from datetime import datetime
@@ -407,11 +407,6 @@ class ColumnEntry(RowEntry):
         for widget in self.widgets:
             self.layout.removeWidget(widget)
             widget.close()
-
-
-class Cancel(object):
-    def __init__(self):
-        pass
 
 
 class Obsids_from_selection(object):

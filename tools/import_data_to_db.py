@@ -34,6 +34,7 @@ import PyQt4.QtCore
 import PyQt4.QtGui
 
 import midvatten_utils as utils
+from midvatten_utils import Cancel
 from date_utils import find_date_format, datestring_to_date
 
 
@@ -66,12 +67,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if goal_table is None:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error: No goal table given!')
             self.status = 'False'
+            self.drop_temptable()
             return
 
         if not self.csvlayer:
             self.csvlayer = self.get_csvlayer()  # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer == u'cancel' or not self.csvlayer:
             self.status = 'True'
+            self.drop_temptable()
             return
 
         self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
@@ -89,6 +92,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if missing_columns:
             utils.MessagebarAndLog.critical(bar_msg=u'Error: Import failed, see log message panel', log_msg=u'Required columns ' + u', '.join(missing_columns) + u' are missing for table ' + goal_table, duration=999)
             self.status = False
+            self.drop_temptable()
             return
 
         #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
@@ -100,6 +104,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         nr_same_date = nr_after - nr_before
         self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_same_date)))
         if not self.status:
+            self.drop_temptable()
             return
 
         # Import foreign keys in some special cases
@@ -112,7 +117,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if stop_question.result == 0:      # if the user wants to abort
                 self.status = 'False'
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                return 0   # return simply to stop this function
+                self.drop_temptable()
+                return Cancel()   # return simply to stop this function
             else:
                 self.foreign_keys_import_question = 1
 
@@ -156,6 +162,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         nr_after_foreign_keys = nr_before - nr_after
         self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
         if not self.status:
+            self.drop_temptable()
             return
 
         #Special cases for some tables
@@ -171,7 +178,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if stop_question.result == 0:      # if the user wants to abort
                 self.status = 'False'
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                return 0   # return simply to stop this function
+                self.drop_temptable()
+                return Cancel()   # return simply to stop this function
 
         sql_list = [u"""INSERT OR IGNORE INTO "%s" ("""%goal_table]
         sql_list.append(u', '.join([u'"{}"'.format(k) for k in sorted(existing_columns)]))
@@ -186,6 +194,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         except Exception, e:
             utils.MessagebarAndLog.critical(bar_msg=u'Error, import failed, see log message panel', log_msg=u'Sql\n' + sql + u' failed.\nMsg:\n' + str(e), duration=999)
             self.status = 'False'
+            self.drop_temptable()
             return
         recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
         self.stats_after(recsinfile=recsinfile, recsbefore=recsbefore, recsafter=recsafter)
@@ -194,7 +203,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         utils.MessagebarAndLog.info(bar_msg=u'In total %s measurements were imported to "%s".'''%(recsafter - recsbefore, goal_table))
 
-        utils.sql_alter_db(u"DROP table %s"%self.temptableName) # finally drop the temporary table
+        self.drop_temptable() # finally drop the temporary table
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def send_file_data_to_importer(self, file_data, importer, cleaning_function=None):
@@ -421,7 +430,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = False
             return wquallab_data_table
 
-        utils.filter_nonexisting_values_and_ask(wquallab_data_table, u'obsid', utils.get_all_obsids(table=u'obs_points'), try_capitalize=False)
         self.send_file_data_to_importer(wquallab_data_table, partial(self.general_csv_import, goal_table=u'w_qual_lab'))
         self.SanityCheckVacuumDB()
 
@@ -931,6 +939,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
             utils.MessagebarAndLog.warning(bar_msg=u'Warning, In total %s posts were not imported.'%str(NoExcluded))
+
+    def drop_temptable(self):
+        try:
+            utils.sql_alter_db(u"DROP table %s" % self.temptableName)  # finally drop the temporary table
+        except:
+            pass
 
     def SanityCheckVacuumDB(self):
         sanity = utils.askuser("YesNo","""It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""",'Vacuum the database?')

@@ -20,26 +20,24 @@
  *                                                                         *
  ***************************************************************************/
 """
+import PyQt4
 import ast
+import copy
 import io
 import os
-import locale
-import qgis.utils
-import copy
-from functools import partial
-
-import definitions.midvatten_defs
-import import_data_to_db
-import copy
 from collections import OrderedDict
-import midvatten_utils as utils
-from definitions import midvatten_defs as defs
-from date_utils import find_date_format, datestring_to_date, dateshift
 from datetime import datetime
+from functools import partial
 
 import PyQt4.QtCore
 import PyQt4.QtGui
-import PyQt4
+
+import definitions.midvatten_defs
+import import_data_to_db
+import midvatten_utils as utils
+from date_utils import datestring_to_date, dateshift
+from definitions import midvatten_defs as defs
+from midvatten_utils import Cancel
 
 import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -72,7 +70,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.settings = []
         self.settings.append(StaffQuestion())
         self.settings.append(DateShiftQuestion())
-        self.settings.append(DateTimeFilter()) #This includes a checkbox for "include only latest
+        self.date_time_filter = DateTimeFilter()
+        self.settings.append(self.date_time_filter) #This includes a checkbox for "include only latest
         for setting in self.settings:
             if hasattr(setting, u'widget'):
                 settings_layout.addWidget(setting.widget)
@@ -88,7 +87,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         sublocations_widget.setLayout(sublocations_layout)
         sublocations_layout.addWidget(PyQt4.QtGui.QLabel(u'Select sublocations to import:'))
         splitter.addWidget(sublocations_widget)
-        self.settings.append(SublocationFilter(sublocations))
+        self.sublocation_filter = SublocationFilter(sublocations)
+        self.settings.append(self.sublocation_filter)
         sublocations_layout.addWidget(self.settings[-1].widget)
         self.add_line(sublocations_layout)
 
@@ -121,11 +121,15 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.gridLayout_buttons.addWidget(self.start_import_button, 2, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
 
+        self.connect(self.date_time_filter.from_datetimeedit, PyQt4.QtCore.SIGNAL("editingFinished()"),
+                     self.update_sublocations_and_inputfields_on_date_change)
+
+        self.connect(self.date_time_filter.to_datetimeedit, PyQt4.QtCore.SIGNAL("editingFinished()"),
+                     self.update_sublocations_and_inputfields_on_date_change)
+
         #Button click first filters data from the settings and then updates input fields.
         self.connect(self.input_fields.update_parameters_button, PyQt4.QtCore.SIGNAL("clicked()"),
-                     lambda: self.input_fields.update_parameter_imports(self.filter_by_settings_using_shared_loop(
-                                                                        self.observations,
-                                                                        self.settings), self.stored_settings))
+                     self.update_input_fields_from_button)
 
         self.gridLayout_buttons.setRowStretch(3, 1)
 
@@ -212,6 +216,25 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 #a dict like {1: [set()], 2: [set(), set()], ...}
                 sublocation_groups.setdefault(length, [set()for i in xrange(length)])[index].add(splitted[index])
         return sublocation_groups
+
+    def update_sublocations_and_inputfields_on_date_change(self):
+        observations = copy.deepcopy(self.observations)
+        date_time_filter = self.date_time_filter
+        sublocation_filter = self.sublocation_filter
+        input_fields = self.input_fields
+        stored_settings = self.stored_settings
+
+        observations = copy.deepcopy(observations)
+        observations = self.filter_by_settings_using_shared_loop(observations, [date_time_filter])
+        sublocations = [observation[u'sublocation'] for observation in observations]
+        sublocation_filter.update_sublocations(sublocations)
+        observations = self.filter_by_settings_using_shared_loop(observations, [sublocation_filter])
+        input_fields.update_parameter_imports(observations, stored_settings)
+
+    def update_input_fields_from_button(self):
+        self.input_fields.update_parameter_imports(
+            self.filter_by_settings_using_shared_loop(self.observations, self.settings),
+            self.stored_settings)
 
     @staticmethod
     def prepare_w_level_data(observations):
@@ -407,15 +430,23 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         if not chosen_methods:
             utils.pop_up_info("Must choose at least one parameter import method")
             utils.MessagebarAndLog.critical(bar_msg="No parameter import method chosen")
-            return Cancel()
+            return None
 
         #Update the observations using the general settings, filters and parameter settings
         observations = self.input_fields.filter_import_methods_not_set(observations)
-        observations = self.filter_by_settings_using_shared_loop(observations, self.settings)
-        observations = self.filter_by_settings_using_own_loop(observations, self.settings_with_own_loop)
-        observations = self.input_fields.update_observations(observations)
-
         if isinstance(observations, Cancel):
+            return observations
+        observations = self.filter_by_settings_using_shared_loop(observations, self.settings)
+        if isinstance(observations, Cancel):
+            return observations
+        observations = self.filter_by_settings_using_own_loop(observations, self.settings_with_own_loop)
+        if isinstance(observations, Cancel):
+            return observations
+        observations = self.input_fields.update_observations(observations)
+        if isinstance(observations, Cancel):
+            return observations
+
+        if not observations:
             utils.MessagebarAndLog.warning(bar_msg=u"No observations left to import after filtering")
             return None
 
@@ -431,8 +462,13 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         for import_method, observations in observations_importmethods.iteritems():
             if import_method:
                 file_data = data_preparers[import_method](observations)
+                if isinstance(file_data, Cancel):
+                    return file_data
 
-                importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import, goal_table=import_method))
+                answer = importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import, goal_table=import_method))
+                if isinstance(answer, Cancel):
+                    self.status = True
+                    return answer
 
         importer.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -573,8 +609,10 @@ class DateTimeFilter(RowEntry):
         super(DateTimeFilter, self).__init__()
         self.label = PyQt4.QtGui.QLabel(u'Import data from: ')
         self.from_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'1900-01-01 00:00:00'))
+        self.from_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh-mm-ss')
         self.label_to = PyQt4.QtGui.QLabel(u'to: ')
         self.to_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'2099-12-31 23:59:59'))
+        self.to_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh-mm-ss')
         #self.import_after_last_date = PyQt4.QtGui.QCheckBox(u"Import after latest date in database for each obsid")
         for widget in [self.label, self.from_datetimeedit, self.label_to, self.to_datetimeedit]:
             self.layout.addWidget(widget)
@@ -598,6 +636,23 @@ class DateTimeFilter(RowEntry):
         return None
 
 
+    @property
+    def from_date(self):
+        return self.from_datetimeedit.dateTime().toPyDateTime()
+
+    @from_date.setter
+    def from_date(self, value):
+        self.from_datetimeedit.setDateTime(datestring_to_date(value))
+
+    @property
+    def to_date(self):
+        return self.to_datetimeedit.dateTime().toPyDateTime()
+
+    @to_date.setter
+    def to_date(self, value):
+        self.to_datetimeedit.setDateTime(datestring_to_date(value))
+
+
 class SublocationFilter(RowEntry):
     def __init__(self, sublocations):
         """
@@ -605,31 +660,15 @@ class SublocationFilter(RowEntry):
         :param sublocations: a list like [u'a.b', u'1.2.3', ...]
         """
         super(SublocationFilter, self).__init__()
-
-        sublocations = sorted(list(set(sublocations)))
-        num_rows = len(sublocations)
-        #num_columns = reduce(lambda x, y: max(x , len(y.split(u'.'))), sublocations, 0)
-        num_columns = max([len(sublocation.split(u'.')) for sublocation in sublocations])
-
-        self.table = PyQt4.QtGui.QTableWidget(num_rows, num_columns)
+        self.table = PyQt4.QtGui.QTableWidget()
         self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)
         self.table.sizePolicy().setVerticalPolicy(PyQt4.QtGui.QSizePolicy.MinimumExpanding)
         self.table.sizePolicy().setVerticalStretch(2)
         self.table.setSelectionMode(PyQt4.QtGui.QAbstractItemView.ExtendedSelection)
         self.table.horizontalHeader().setStretchLastSection(True)
-
-        self.table_items = {}
-        for rownr, sublocation in enumerate(sublocations):
-            for colnr, value in enumerate(sublocation.split(u'.')):
-                tablewidgetitem = PyQt4.QtGui.QTableWidgetItem(value)
-                if sublocation not in self.table_items:
-                    self.table_items[sublocation] = tablewidgetitem
-                self.table.setItem(rownr, colnr, tablewidgetitem)
-
         self.table.setSortingEnabled(True)
-        self.table.resizeColumnsToContents()
 
-        self.table.selectAll()
+        self.update_sublocations(sublocations)
 
         self.layout.addWidget(self.table)
         self.layout.addStretch()
@@ -653,6 +692,34 @@ class SublocationFilter(RowEntry):
         else:
             return None
 
+    def update_sublocations(self, sublocations):
+        self.table.clear()
+
+        sublocations = sorted(list(set(sublocations)))
+
+        if not sublocations:
+            num_rows = 1
+            num_columns = 1
+        else:
+            num_rows = len(sublocations)
+            #num_columns = reduce(lambda x, y: max(x , len(y.split(u'.'))), sublocations, 0)
+            num_columns = max([len(sublocation.split(u'.')) for sublocation in sublocations])
+
+        self.table.setRowCount(num_rows)
+        self.table.setColumnCount(num_columns)
+
+        self.table_items = {}
+        for rownr, sublocation in enumerate(sublocations):
+            for colnr, value in enumerate(sublocation.split(u'.')):
+                tablewidgetitem = PyQt4.QtGui.QTableWidgetItem(value)
+                if sublocation not in self.table_items:
+                    self.table_items[sublocation] = tablewidgetitem
+                self.table.setItem(rownr, colnr, tablewidgetitem)
+
+        self.table.resizeColumnsToContents()
+
+        self.table.selectAll()
+
 
 class InputFields(RowEntry):
     def __init__(self, connect):
@@ -667,8 +734,8 @@ class InputFields(RowEntry):
 
         #This button has to get filtered observations as input, so it has to be
         #connected elsewhere.
-        self.update_parameters_button = PyQt4.QtGui.QPushButton(u'Filter observations and update input fields')
-        self.update_parameters_button.setToolTip(u'Update parameter fields using filtered observations.')
+        self.update_parameters_button = PyQt4.QtGui.QPushButton(u'Update input fields')
+        self.update_parameters_button.setToolTip(u'Update input fields using the observations remaining after filtering by date and sublocation selection.')
         self.layout.addWidget(self.update_parameters_button)
 
     def update_parameter_imports(self, observations, stored_settings=None):
@@ -676,10 +743,18 @@ class InputFields(RowEntry):
             stored_settings = []
         if isinstance(observations, Cancel):
             return observations
-        self.clear_widgets()
+
+        #Remove and close all widgets
+        while self.parameter_imports:
+            try:
+                k, imp_obj = self.parameter_imports.popitem()
+            except KeyError:
+                break
+            self.layout.removeWidget(imp_obj.widget)
+            imp_obj.close()
+
         observations = copy.deepcopy(observations)
         parameter_names = list(set([observation[u'parametername'] for observation in observations]))
-        self.parameter_imports = OrderedDict()
 
         maximumwidth = 0
         for parametername in parameter_names:
@@ -688,11 +763,14 @@ class InputFields(RowEntry):
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
 
+        if self.parameter_imports:
+            return
         for parametername in parameter_names:
             param_import_obj = ImportMethodChooser(parametername, parameter_names, self.connect)
             param_import_obj.label.setFixedWidth(maximumwidth)
-            self.parameter_imports[parametername] = param_import_obj
-            self.layout.addWidget(param_import_obj.widget)
+            if parametername not in self.parameter_imports:
+                self.parameter_imports[parametername] = param_import_obj
+                self.layout.addWidget(param_import_obj.widget)
 
         self.set_parameters_using_stored_settings(stored_settings)
 
@@ -718,8 +796,9 @@ class InputFields(RowEntry):
         #Order the observations under the import methods, and filter out the parameters not set.
         _observations = []
         for observation in observations:
-            if self.parameter_imports[observation[u'parametername']].import_method and self.parameter_imports[observation[u'parametername']].import_method is not None:
-                _observations.append(observation)
+            if observation[u'parametername'] in self.parameter_imports:
+                if self.parameter_imports[observation[u'parametername']].import_method and self.parameter_imports[observation[u'parametername']].import_method is not None:
+                    _observations.append(observation)
         observations = _observations
         return observations
 
@@ -871,6 +950,12 @@ class ImportMethodChooser(RowEntry):
             self.parameter_import_fields = parameter_import_fields_class(self, self.connect)
             self.parameter_widget = self.parameter_import_fields.widget
             self.layout.addWidget(self.parameter_widget)
+
+    def close(self):
+        for child in self.layout.children():
+            #self.layout.removeWidget(child)
+            child.close()
+        self.widget.close()
 
 
 class CommentsImportFields(RowEntry):
@@ -1026,7 +1111,7 @@ class WQualFieldImportFields(RowEntryGrid):
         self.__parameter.addItems(self._parameters_units.keys())
         self.label_unit = PyQt4.QtGui.QLabel(u'Unit: ')
         self.__unit = default_combobox()
-        self.label_depth = PyQt4.QtGui.QLabel(u'Depth input field: ')
+        self.label_depth = PyQt4.QtGui.QLabel(u'Depth input field (optional): ')
         self.__depth = default_combobox()
         self.__depth.addItems(self._import_method_chooser.parameter_names)
         self.__instrument = default_combobox()
@@ -1154,8 +1239,3 @@ def default_combobox(editable=True):
     combo_box.setMinimumWidth(80)
     combo_box.addItem(u'')
     return combo_box
-
-
-class Cancel(object):
-    def __init__(self):
-        pass
