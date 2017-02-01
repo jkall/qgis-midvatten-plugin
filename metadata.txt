@@ -24,6 +24,7 @@ changelog=
         - Fieldlogger import: Many hidden improvements.
         - Fieldlogger import: Changing period filter updates sublocations.
         - General csv import: Fixed bug when two database columns were to use the same file column.
+        - Calculate water level from logger: Added checkbox to normalize head to logger line.
         Version 1.3.14
         - Bugfix for fieldlogger import for windows users.
         - Several improvements for fieldlogger import and export.

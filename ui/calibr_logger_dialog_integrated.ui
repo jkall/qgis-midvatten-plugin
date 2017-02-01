@@ -1006,11 +1006,11 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout">
-            <item>
+           <layout class="QGridLayout" name="gridLayout_7">
+            <item row="0" column="0">
              <widget class="QCheckBox" name="loggerLineNodes">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -1033,10 +1033,10 @@
               </property>
              </widget>
             </item>
-            <item>
+            <item row="2" column="0">
              <widget class="QCheckBox" name="plot_logger_head">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -1056,6 +1056,20 @@
               </property>
               <property name="text">
                <string>Plot logger head (water column)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="normalize_head">
+              <property name="text">
+               <string>Normalize head to logger line</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="2">
+             <widget class="Line" name="line99">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
               </property>
              </widget>
             </item>
