@@ -26,7 +26,6 @@ import os
 import locale
 import qgis.utils
 import copy
-import Queue
 from functools import partial
 
 import definitions.midvatten_defs
@@ -125,19 +124,14 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
 
         self.connect(self.date_time_filter.from_datetimeedit, PyQt4.QtCore.SIGNAL("editingFinished()"),
-                     lambda: self.update_sublocations_and_inputfields_on_date_change(self.observations, self.date_time_filter, self.sublocation_filter, self.input_fields, self.stored_settings))
+                     self.update_sublocations_and_inputfields_on_date_change)
 
         self.connect(self.date_time_filter.to_datetimeedit, PyQt4.QtCore.SIGNAL("editingFinished()"),
-                     lambda: self.update_sublocations_and_inputfields_on_date_change(self.observations, self.date_time_filter, self.sublocation_filter, self.input_fields, self.stored_settings))
-
-        self.connect(self.sublocation_filter.table, PyQt4.QtCore.SIGNAL("itemSelectionChanged()"),
-                     lambda: self.update_inputfields_on_sublocation_change(self.observations, self.date_time_filter, self.sublocation_filter, self.input_fields, self.stored_settings))
+                     self.update_sublocations_and_inputfields_on_date_change)
 
         #Button click first filters data from the settings and then updates input fields.
         self.connect(self.input_fields.update_parameters_button, PyQt4.QtCore.SIGNAL("clicked()"),
-                     lambda: self.input_fields.update_parameter_imports(self.filter_by_settings_using_shared_loop(
-                                                                        self.observations,
-                                                                        self.settings), self.stored_settings))
+                     self.update_input_fields_from_button)
 
         self.gridLayout_buttons.setRowStretch(3, 1)
 
@@ -225,7 +219,13 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 sublocation_groups.setdefault(length, [set()for i in xrange(length)])[index].add(splitted[index])
         return sublocation_groups
 
-    def update_sublocations_and_inputfields_on_date_change(self, observations, date_time_filter, sublocation_filter, input_fields, stored_settings):
+    def update_sublocations_and_inputfields_on_date_change(self):
+        observations = copy.deepcopy(self.observations)
+        date_time_filter = self.date_time_filter
+        sublocation_filter = self.sublocation_filter
+        input_fields = self.input_fields
+        stored_settings = self.stored_settings
+
         observations = copy.deepcopy(observations)
         observations = self.filter_by_settings_using_shared_loop(observations, [date_time_filter])
         sublocations = [observation[u'sublocation'] for observation in observations]
@@ -233,12 +233,10 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         observations = self.filter_by_settings_using_shared_loop(observations, [sublocation_filter])
         input_fields.update_parameter_imports(observations, stored_settings)
 
-    def update_inputfields_on_sublocation_change(self, observations, date_time_filter, sublocation_filter, input_fields, stored_settings):
-        observations = copy.deepcopy(observations)
-        observations = self.filter_by_settings_using_shared_loop(observations, [date_time_filter, sublocation_filter])
-        input_fields.update_parameter_imports(observations, stored_settings)
-
-
+    def update_input_fields_from_button(self):
+        self.input_fields.update_parameter_imports(
+            self.filter_by_settings_using_shared_loop(self.observations, self.settings),
+            self.stored_settings)
 
     @staticmethod
     def prepare_w_level_data(observations):
@@ -711,13 +709,13 @@ class SublocationFilter(RowEntry):
 
         self.table.selectAll()
 
+
 class InputFields(RowEntry):
     def __init__(self, connect):
         self.widget = PyQt4.QtGui.QWidget()
         self.layout = PyQt4.QtGui.QVBoxLayout()
         self.widget.setLayout(self.layout)
         self.connect = connect
-        self.update_queue = Queue.Queue()
 
         self.layout.addWidget(PyQt4.QtGui.QLabel(u'Specify import methods for input fields'))
 
@@ -725,21 +723,11 @@ class InputFields(RowEntry):
 
         #This button has to get filtered observations as input, so it has to be
         #connected elsewhere.
-        self.update_parameters_button = PyQt4.QtGui.QPushButton(u'Filter observations and update input fields')
-        self.update_parameters_button.setToolTip(u'Update parameter fields using filtered observations.')
+        self.update_parameters_button = PyQt4.QtGui.QPushButton(u'Update input fields')
+        self.update_parameters_button.setToolTip(u'Update input fields using the observations remaining after filtering by date and sublocation selection.')
         self.layout.addWidget(self.update_parameters_button)
 
     def update_parameter_imports(self, observations, stored_settings=None):
-        queueitem = QueueItem()
-
-        if not self.update_queue.empty():
-            return
-        else:
-            self.update_queue.put(queueitem)
-
-        while self.update_queue.queue[0] is not queueitem:
-            pass
-
         if stored_settings is None:
             stored_settings = []
         if isinstance(observations, Cancel):
@@ -774,8 +762,6 @@ class InputFields(RowEntry):
                 self.layout.addWidget(param_import_obj.widget)
 
         self.set_parameters_using_stored_settings(stored_settings)
-
-        self.update_queue.get()
 
     def update_observations(self, observations):
         if isinstance(observations, Cancel):
@@ -959,6 +945,7 @@ class ImportMethodChooser(RowEntry):
             #self.layout.removeWidget(child)
             child.close()
         self.widget.close()
+
 
 class CommentsImportFields(RowEntry):
     """
