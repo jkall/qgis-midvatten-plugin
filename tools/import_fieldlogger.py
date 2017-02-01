@@ -20,26 +20,24 @@
  *                                                                         *
  ***************************************************************************/
 """
+import PyQt4
 import ast
+import copy
 import io
 import os
-import locale
-import qgis.utils
-import copy
-from functools import partial
-
-import definitions.midvatten_defs
-import import_data_to_db
-import copy
 from collections import OrderedDict
-import midvatten_utils as utils
-from definitions import midvatten_defs as defs
-from date_utils import find_date_format, datestring_to_date, dateshift
 from datetime import datetime
+from functools import partial
 
 import PyQt4.QtCore
 import PyQt4.QtGui
-import PyQt4
+
+import definitions.midvatten_defs
+import import_data_to_db
+import midvatten_utils as utils
+from date_utils import datestring_to_date, dateshift
+from definitions import midvatten_defs as defs
+from midvatten_utils import Cancel
 
 import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -432,15 +430,23 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         if not chosen_methods:
             utils.pop_up_info("Must choose at least one parameter import method")
             utils.MessagebarAndLog.critical(bar_msg="No parameter import method chosen")
-            return Cancel()
+            return None
 
         #Update the observations using the general settings, filters and parameter settings
         observations = self.input_fields.filter_import_methods_not_set(observations)
-        observations = self.filter_by_settings_using_shared_loop(observations, self.settings)
-        observations = self.filter_by_settings_using_own_loop(observations, self.settings_with_own_loop)
-        observations = self.input_fields.update_observations(observations)
-
         if isinstance(observations, Cancel):
+            return observations
+        observations = self.filter_by_settings_using_shared_loop(observations, self.settings)
+        if isinstance(observations, Cancel):
+            return observations
+        observations = self.filter_by_settings_using_own_loop(observations, self.settings_with_own_loop)
+        if isinstance(observations, Cancel):
+            return observations
+        observations = self.input_fields.update_observations(observations)
+        if isinstance(observations, Cancel):
+            return observations
+
+        if not observations:
             utils.MessagebarAndLog.warning(bar_msg=u"No observations left to import after filtering")
             return None
 
@@ -456,8 +462,13 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         for import_method, observations in observations_importmethods.iteritems():
             if import_method:
                 file_data = data_preparers[import_method](observations)
+                if isinstance(file_data, Cancel):
+                    return file_data
 
-                importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import, goal_table=import_method))
+                answer = importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import, goal_table=import_method))
+                if isinstance(answer, Cancel):
+                    self.status = True
+                    return answer
 
         importer.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -1228,12 +1239,3 @@ def default_combobox(editable=True):
     combo_box.setMinimumWidth(80)
     combo_box.addItem(u'')
     return combo_box
-
-
-class Cancel(object):
-    def __init__(self):
-        pass
-
-class QueueItem(object):
-    def __init__(self):
-        pass

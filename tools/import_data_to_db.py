@@ -34,6 +34,7 @@ import PyQt4.QtCore
 import PyQt4.QtGui
 
 import midvatten_utils as utils
+from midvatten_utils import Cancel
 from date_utils import find_date_format, datestring_to_date
 
 
@@ -112,7 +113,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if stop_question.result == 0:      # if the user wants to abort
                 self.status = 'False'
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                return 0   # return simply to stop this function
+                return Cancel()   # return simply to stop this function
             else:
                 self.foreign_keys_import_question = 1
 
@@ -171,7 +172,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if stop_question.result == 0:      # if the user wants to abort
                 self.status = 'False'
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                return 0   # return simply to stop this function
+                return Cancel()   # return simply to stop this function
 
         sql_list = [u"""INSERT OR IGNORE INTO "%s" ("""%goal_table]
         sql_list.append(u', '.join([u'"{}"'.format(k) for k in sorted(existing_columns)]))

@@ -1313,3 +1313,20 @@ def waiting_cursor(func):
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         return ret
     return func_wrapper
+
+
+class Cancel(object):
+    """Object for transmitting cancel messages instead of using string 'cancel'.
+        use isinstance(variable, Cancel) to check for it.
+
+        Usage:
+        return Cancel()
+
+        Return the same Cancel object.
+        if isinstance(answer, Cancel):
+            return answer
+
+        Potential improvements could be to include messages inside the objects.
+    """
+    def __init__(self):
+        pass
