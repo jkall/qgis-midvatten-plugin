@@ -138,6 +138,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.y_pos = None
         self.meas_ts = None
         self.head_ts = None
+        self.head_ts_for_plot = None
         self.level_masl_ts = None
         self.loggerpos_masl_or_offset_state = 1
 
@@ -216,11 +217,19 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
         meas_sql = r"""SELECT date_time, level_masl FROM w_levels WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
         self.meas_ts = self.sql_into_recarray(meas_sql)
-        if self.normalize_head.isChecked():
-            head_sql = r"""SELECT date_time AS 'date [datetime]', (head_cm / 100) + ((SELECT AVG(level_masl) FROM w_levels_logger AS l WHERE obsid = '""" + obsid + """') - (SELECT AVG(head_cm / 100) FROM w_levels_logger AS h where obsid = '""" + obsid + """')) AS avg FROM w_levels_logger AS a WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
-        else:
-            head_sql = r"""SELECT date_time as 'date [datetime]', head_cm / 100 FROM w_levels_logger WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
+
+        head_sql = r"""SELECT date_time as 'date [datetime]', head_cm / 100 FROM w_levels_logger WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
         self.head_ts = self.sql_into_recarray(head_sql)
+
+        if self.plot_logger_head.isChecked():
+            if self.normalize_head.isChecked():
+                head_sql_for_plot = r"""SELECT date_time AS 'date [datetime]', (head_cm / 100) + ((SELECT AVG(level_masl) FROM w_levels_logger AS l WHERE obsid = '""" + obsid + """') - (SELECT AVG(head_cm / 100) FROM w_levels_logger AS h where obsid = '""" + obsid + """')) AS avg FROM w_levels_logger AS a WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
+                self.head_ts_for_plot = self.sql_into_recarray(head_sql_for_plot)
+            else:
+                self.head_ts_for_plot = self.head_ts
+        else:
+            self.head_ts_for_plot = None
+
         self.obsid = obsid
         level_masl_ts_sql = r"""SELECT date_time as 'date [datetime]', level_masl FROM w_levels_logger WHERE obsid = '""" + self.obsid + """' ORDER BY date_time"""
         self.level_masl_ts = self.sql_into_recarray(level_masl_ts_sql)
@@ -353,7 +362,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
         #Plot the original head_cm
         if self.plot_logger_head.isChecked():
-            self.plot_recarray(self.axes, self.head_ts, obsid + unicode(' original logger head', 'utf-8'), logger_line_style, 10)
+            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + unicode(' original logger head', 'utf-8'), logger_line_style, 10)
 
         """ Finish plot """
         self.axes.grid(True)
