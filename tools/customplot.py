@@ -45,7 +45,16 @@ import matplotlib.ticker as tick
 #import midvatten_utils as utils
 import midvatten_utils as utils
 from definitions import midvatten_defs
+import PyQt4
 
+try:
+    import pandas as pd
+except:
+    pandas_on = False
+else:
+    pandas_on = True
+
+utils.MessagebarAndLog.info(bar_msg=u"Pandas: " + str(pandas_on))
 customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..', 'ui', 'customplotdialog.ui'))[0]
 
 class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
@@ -102,6 +111,22 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.LineEditOffset1.setValidator(validator)
         self.LineEditOffset2.setValidator(validator)
         self.LineEditOffset3.setValidator(validator)
+
+        if pandas_on:
+            self.pandas_widget_1 = PyQt4.QtGui.QWidget()
+            self.pandas_layout_1 = PyQt4.QtGui.QVBoxLayout()
+            self.pandas_widget_1.setLayout(self.pandas_layout_1)
+
+            self.wid1 = PyQt4.QtGui.QWidget()
+            self.lay1 =  PyQt4.QtGui.QHBoxLayout()
+            self.wid1.setLayout(self.lay1)
+            self.lay1.addWidget(PyQt4.QtGui.QLabel(u'Moving average'))
+            self.pandas_moving_average_box_1 = PyQt4.QtGui.QLineEdit(u'Moving average')
+            self.lay1.addWidget(self.pandas_moving_average_box_1)
+
+            self.pandas_layout_1.addWidget(self.wid1)
+
+            self.gridLayout_7.addWidget(self.pandas_widget_1)
         
         self.show()
 
