@@ -175,8 +175,9 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.connect(self.pushButtonMpos, PyQt4.QtCore.SIGNAL("clicked()"), self.catch_new_level)
         self.pushButtonMpos.setEnabled(False)
         self.connect(self.pushButtonCalcBestFit, PyQt4.QtCore.SIGNAL("clicked()"), self.logger_pos_best_fit)
+        self.pushButtonCalcBestFit.setToolTip(u'This will calibrate all values inside the chosen period\nusing the mean difference between head_cm and w_levels measurements.\n\nThe search radius is the maximum time distance allowed\n between a logger measurement and a w_level measurement.')
         self.connect(self.pushButtonCalcBestFit2, PyQt4.QtCore.SIGNAL("clicked()"), self.level_masl_best_fit)
-
+        self.pushButtonCalcBestFit2.setToolTip(u'This will calibrate all values inside the chosen period\nusing the mean difference between level_masl and w_levels measurements.\n\nThe search radius is the maximum time distance allowed\n between a logger measurement and a w_level measurement.')
         self.connect(self.pushButton_delete_logger, PyQt4.QtCore.SIGNAL("clicked()"), lambda: self.delete_selected_range(u'w_levels_logger'))
 
         self.get_search_radius()
@@ -186,21 +187,31 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
+    @property
+    def selected_obsid(self):
+        uncalibrated_str = u' (uncalibrated)'
+        return unicode(self.combobox_obsid.currentText().replace(uncalibrated_str, u''))
+
     def load_obsid_from_db(self):
         print ('am here')#debug
         self.combobox_obsid.clear()
-        myconnection = utils.dbconnection()
-        if myconnection.connect2db() == True:
-            print('connected')#debug
-            # skapa en cursor
-            curs = myconnection.conn.cursor()
-            rs=curs.execute("""select distinct obsid from w_levels_logger order by obsid""")
-            self.combobox_obsid.addItem('')
-            for row in curs:
-                print(row[0])#debug
-                self.combobox_obsid.addItem(row[0])
-            rs.close()
-            myconnection.closedb()
+        all_obsids = [x[0] for x in utils.sql_load_fr_db("""select distinct obsid from w_levels_logger order by obsid""")[1]]
+        self.combobox_obsid.addItems(all_obsids)
+        self.update_combobox_with_calibration_info()
+
+    def update_combobox_with_calibration_info(self):
+        uncalibrated_str = u' (uncalibrated)'
+        obsids_with_uncalibrated_data = [x[0] for x in utils.sql_load_fr_db("""select distinct obsid from w_levels_logger where level_masl is NULL""")[1]]
+        #utils.MessagebarAndLog.info(log_msg=u"Uncalibrated obsids: " + str(obsids_with_uncalibrated_data))
+        num_entries = self.combobox_obsid.count()
+
+        for idx in xrange(num_entries):
+            current_obsid = self.combobox_obsid.itemText(idx).replace(uncalibrated_str, u'')
+            if current_obsid in obsids_with_uncalibrated_data:
+                new_text = current_obsid + uncalibrated_str
+            else:
+                new_text = current_obsid
+            self.combobox_obsid.setItemText(idx, new_text)
 
     def load_obsid_and_init(self):
         """ Checks the current obsid and reloads all ts.
@@ -210,7 +221,9 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         data was changed in the background in for example spatialite gui. Now all time series are reloaded always.
         It's rather fast anyway.
         """
-        obsid = unicode(self.combobox_obsid.currentText())
+        self.update_combobox_with_calibration_info()
+        uncalibrated_str = u' (uncalibrated)'
+        obsid = self.selected_obsid
         if not obsid:
             utils.pop_up_info("ERROR: no obsid is chosen")
             return None
@@ -247,7 +260,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                 text += obsid
                 text += """ was """ + str(self.lastcalibr[0][1]) + """ masl at """ +  str(self.lastcalibr[0][0])
             else:
-                text = """There is no earlier known position for the logger in """ + unicode(self.combobox_obsid.currentText())#self.obsid[0]
+                text = """There is no earlier known position for the logger in """ + self.selected_obsid #self.obsid[0]
             self.INFO.setText(text)
 
     def set_logger_pos(self):
@@ -255,7 +268,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         obsid = self.load_obsid_and_init()
         if not self.LoggerPos.text() == '':
             self.calibrate()
-        self.update_plot()
+            self.update_plot()
 
     def add_to_level_masl(self):
         self.loggerpos_masl_or_offset_state = 0
@@ -351,18 +364,18 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         p=[None]*2 # List for plot objects
     
         # Load manual reading (full time series) for the obsid
-        self.plot_recarray(self.axes, self.meas_ts, obsid, 'o-', 10)
+        self.plot_recarray(self.axes, self.meas_ts, obsid, 'o-', 5)
         
         # Load Loggerlevels (full time series) for the obsid
         if self.loggerLineNodes.isChecked():
             logger_line_style = '.-'
         else:
             logger_line_style = '-'                
-        self.plot_recarray(self.axes, self.level_masl_ts, obsid + unicode(' logger', 'utf-8'), logger_line_style, 10)
+        self.plot_recarray(self.axes, self.level_masl_ts, obsid + unicode(' logger', 'utf-8'), logger_line_style, 5)
 
         #Plot the original head_cm
         if self.plot_logger_head.isChecked():
-            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + unicode(' original logger head', 'utf-8'), logger_line_style, 10)
+            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + unicode(' original logger head', 'utf-8'), logger_line_style, 5)
 
         """ Finish plot """
         self.axes.grid(True)
@@ -383,7 +396,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
         self.getlastcalibration()
 
-    def plot_recarray(self, axes, a_recarray, lable, line_style, picker=10):
+    def plot_recarray(self, axes, a_recarray, lable, line_style, picker=5):
         """ Plots a recarray to the supplied axes object """
         # Get help from function datestr2num to get date and time into float
         myTimestring = [a_recarray.date_time[idx] for idx in xrange(len(a_recarray))]
@@ -529,14 +542,10 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             logger_ts = self.head_ts
             text_field = self.LoggerPos
             calib_func = self.set_logger_pos
-            really_calibrate_question = utils.askuser("YesNo", """This will calibrate all values inside the chosen period\nusing the mean difference between head_cm and w_levels measurements.\n\nSearch radius for matching logger and measurement nodes set to '""" + ' '.join(search_radius) + """'\n\nContinue?""")
         else:# UPDATE TO RELEVANT TEXT
             logger_ts = self.level_masl_ts
             text_field = self.Add2Levelmasl
             calib_func = self.add_to_level_masl
-            really_calibrate_question = utils.askuser("YesNo", """This will calibrate all values inside the chosen period\nusing the mean difference between level_masl and w_levels measurements.\n\nSearch radius for matching logger and measurement nodes set to '""" + ' '.join(search_radius) + """'\n\nContinue?""")
-        if really_calibrate_question.result == 0: # if the user wants to abort
-            return
 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
 
@@ -544,8 +553,13 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         if not coupled_vals:
             utils.pop_up_info("There was no matched measurements or logger values inside the chosen period.\n Try to increase the search radius!")
         else:
-            text_field.setText(str(utils.calc_mean_diff(coupled_vals)))
-            calib_func()
+            calculated_diff = str(utils.calc_mean_diff(coupled_vals))
+            if not calculated_diff or calculated_diff.lower() == 'nan':
+                utils.pop_up_info("There was no matched measurements or logger values inside the chosen period.\n Try to increase the search radius!")
+                utils.MessagebarAndLog.info(log_msg="Calculated water level from logger: utils.calc_mean_diff(coupled_vals) didn't return a useable value.")
+            else:
+                text_field.setText(calculated_diff)
+                calib_func()
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
      
