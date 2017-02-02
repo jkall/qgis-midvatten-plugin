@@ -609,7 +609,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                 break
 
             #Skip logger steps that are earlier than the chosen begin date or are not inside the measurement period.
-            while logger_step < step_begin or logger_step < outer_begin:
+            while logger_step <= step_begin or logger_step <= outer_begin:
                 try:
                     l = next(logger_gen)
                 except StopIteration:
