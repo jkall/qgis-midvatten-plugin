@@ -228,7 +228,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 utils.MessagebarAndLog.critical("Import error: Creating csvlayer failed!")
                 return
             self.csvlayer = csvlayer
-            importer()
+            answer = importer()
+            return answer
 
     def get_csvlayer(self): # general importer
         """Select the csv file, user must also tell what charset to use"""
@@ -430,7 +431,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = False
             return wquallab_data_table
 
-        self.send_file_data_to_importer(wquallab_data_table, partial(self.general_csv_import, goal_table=u'w_qual_lab'))
+        answer = self.send_file_data_to_importer(wquallab_data_table, partial(self.general_csv_import, goal_table=u'w_qual_lab'))
+        if isinstance(answer, Cancel):
+            self.status = True
+            return answer
         self.SanityCheckVacuumDB()
 
     def parse_interlab4(self, filenames=None):
@@ -743,6 +747,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             elif not isinstance(file_data, list):
                 utils.MessagebarAndLog.critical(bar_msg="Import Failure: Something went wrong with file " + str(selected_file))
                 continue
+            elif len(file_data) == 0:
+                utils.MessagebarAndLog.warning(bar_msg="Import warning: No rows could be parsed from " + str(selected_file))
 
             parsed_files.append(file_data)
 
@@ -758,17 +764,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if not import_all_data.result:
             file_to_import_to_db = self.filter_dates_from_filedata(file_to_import_to_db, utils.get_last_logger_dates())
 
-        file_string = utils.lists_to_string(file_to_import_to_db)
-
-        with utils.tempinput(file_string, self.charsetchoosen) as csvpath:
-            self.csvlayer = self.csv2qgsvectorlayer(csvpath)
-            #Continue to next file if the file failed to import
-            if not self.csvlayer:
-                qgis.utils.iface.messageBar().pushMessage("Import Failure","""No files imported""")
-                PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                return
-            else:
-                self.general_csv_import(goal_table=u'w_levels_logger')
+        answer = self.send_file_data_to_importer(file_to_import_to_db, partial(self.general_csv_import, goal_table=u'w_levels_logger'))
+        if isinstance(answer, Cancel):
+            self.status = True
+            return answer
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.SanityCheckVacuumDB()
@@ -797,9 +796,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         begin_extraction = False
         delimiter = u';'
         num_cols = None
-        with io.open(path, u'r', encoding=str(charset)) as f:
+        with io.open(path, u'rt', encoding=str(charset)) as f:
             obsid = None
             for rawrow in f:
+                rawrow = utils.returnunicode(rawrow)
                 row = rawrow.rstrip(u'\n').rstrip(u'\r').lstrip()
 
                 #Try to get obsid

@@ -4,7 +4,7 @@ name=Midvatten
 qgisMinimumVersion=2.4
 qgisMaximumVersion=2.98
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.3.16
+version=Version 1.3.17
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 
@@ -19,6 +19,8 @@ experimental=False
 deprecated=False
 
 changelog=
+        Version 1.3.17
+        - Diveroffice import: Corrected bug happening while using Windows.
         Version 1.3.16
         - Calculate water level from logger: Corrected bug related to normalizing head...
         Version 1.3.15
