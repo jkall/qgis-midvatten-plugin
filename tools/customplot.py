@@ -112,21 +112,10 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.LineEditOffset2.setValidator(validator)
         self.LineEditOffset3.setValidator(validator)
 
+        self.pandas_calc_1 = None
         if pandas_on:
-            self.pandas_widget_1 = PyQt4.QtGui.QWidget()
-            self.pandas_layout_1 = PyQt4.QtGui.QVBoxLayout()
-            self.pandas_widget_1.setLayout(self.pandas_layout_1)
+            self.pandas_calc_1 = PandasCalculations(self.gridLayout_7)
 
-            self.wid1 = PyQt4.QtGui.QWidget()
-            self.lay1 =  PyQt4.QtGui.QHBoxLayout()
-            self.wid1.setLayout(self.lay1)
-            self.lay1.addWidget(PyQt4.QtGui.QLabel(u'Moving average'))
-            self.pandas_moving_average_box_1 = PyQt4.QtGui.QLineEdit(u'Moving average')
-            self.lay1.addWidget(self.pandas_moving_average_box_1)
-
-            self.pandas_layout_1.addWidget(self.wid1)
-
-            self.gridLayout_7.addWidget(self.pandas_widget_1)
         
         self.show()
 
@@ -191,24 +180,24 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                         for item2 in filter2list:
                             sql = r""" select """ + unicode(self.xcol_ComboBox_1.currentText()) + """, """ + unicode(self.ycol_ComboBox_1.currentText()) + """ from """ + unicode(self.table_ComboBox_1.currentText()) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' and """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol_ComboBox_1.currentText())
                             self.plabels[i] = unicode(item1.text()) + """, """ + unicode(item2.text())
-                            self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1, remove_mean1)
+                            self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1, remove_mean1, self.pandas_calc_1)
                             i += 1
                 elif not (filter1 == '' or filter1==' ' or filter1list==[]):
                     for item1 in filter1list:
                         sql = r""" select """ + unicode(self.xcol_ComboBox_1.currentText()) + """, """ + unicode(self.ycol_ComboBox_1.currentText()) + """ from """ + unicode(self.table_ComboBox_1.currentText()) + """ where """ + filter1 + """='""" + unicode(item1.text())+ """' order by """ + unicode(self.xcol_ComboBox_1.currentText())
                         self.plabels[i] = unicode(item1.text()) 
-                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1, remove_mean1)
+                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1, remove_mean1, self.pandas_calc_1)
                         i += 1
                 elif not (filter2 == '' or filter2==' ' or filter2list==[]):
                     for item2 in filter2list:
                         sql = r""" select """ + unicode(self.xcol_ComboBox_1.currentText()) + """, """ + unicode(self.ycol_ComboBox_1.currentText()) + """ from """ + unicode(self.table_ComboBox_1.currentText()) + """ where """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(self.xcol_ComboBox_1.currentText())
                         self.plabels[i] = unicode(item2.text())
-                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1, remove_mean1)
+                        self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1, remove_mean1, self.pandas_calc_1)
                         i += 1            
                 else:
                     sql = r""" select """ + unicode(self.xcol_ComboBox_1.currentText()) + """, """ + unicode(self.ycol_ComboBox_1.currentText()) + """ from """ + unicode(self.table_ComboBox_1.currentText()) + """ order by """ + unicode(self.xcol_ComboBox_1.currentText())
                     self.plabels[i] = unicode(self.ycol_ComboBox_1.currentText())+""", """+unicode(self.table_ComboBox_1.currentText())
-                    self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1, remove_mean1)
+                    self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_1.currentText(), factor1, offset1, remove_mean1, self.pandas_calc_1)
                     i += 1
 
         if not (self.table_ComboBox_2.currentText() == '' or self.table_ComboBox_2.currentText()==' ') and not (self.xcol_ComboBox_2.currentText()== '' or self.xcol_ComboBox_2.currentText()==' ') and not (self.ycol_ComboBox_2.currentText()== '' or self.ycol_ComboBox_2.currentText()==' '):#if anything is to be plotted from tab 2
@@ -324,12 +313,13 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
         QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
-    def createsingleplotobject(self,sql,i,My_format,curs,plottype='line', factor=1.0, offset=0.0, remove_mean=False):
+    def createsingleplotobject(self,sql,i,My_format,curs,plottype='line', factor=1.0, offset=0.0, remove_mean=False, pandas_calc=None):
         rs = curs.execute(sql) #Send SQL-syntax to cursor
         recs = rs.fetchall()  # All data are stored in recs
         # late fix for xy-plots
 
         #Transform data to a numpy.recarray
+        use_datetime = True
         try:
             table = np.array(recs, dtype=My_format)  #NDARRAY
             table2=table.view(np.recarray)   # RECARRAY transform the 2 cols into callable objects
@@ -343,6 +333,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             table2=table.view(np.recarray)   # RECARRAY transform the 2 cols into callable objects
             FlagTimeXY = 'XY'
             numtime = list(table2.numx)
+            use_datetime = False
 
         # from version 0.2 there is a possibility to make discontinuous plot if timestep bigger than maxtstep
         if self.spnmaxtstep.value() > 0: # if user selected a time step bigger than zero than thre may be discontinuous plots
@@ -366,6 +357,22 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             table2.values[:] = utils.remove_mean_from_nparray(table2.values)[:]
 
         table2.values[:] = utils.scale_nparray(table2.values, factor, offset)[:]
+
+        if pandas_calc and use_datetime:
+            df = pd.DataFrame(table2.values, index=table2.date_time)
+            #df = pd.DataFrame.from_records(table2)
+            utils.MessagebarAndLog.info(log_msg=u"Df before: " + str(df))
+            df = pandas_calc.calculate(df)
+            utils.MessagebarAndLog.info(log_msg=u"Result df: " + str(df))
+            if df:
+                table2 = df.to_records()
+                utils.MessagebarAndLog.info(log_msg=u"Result table2: " + str(table2))
+                raise Exception
+            else:
+                utils.MessagebarAndLog.info(bar_msg=u"Pandas calculate failed.")
+
+            #My_format = [('date_time', datetime.datetime), ('values', float)]
+
 
 
         if FlagTimeXY == "time" and plottype == "step-pre":
@@ -704,3 +711,57 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.ms.settingsdict['custplot_ytitle'] = unicode(self.axes.get_ylabel())
         self.ms.settingsdict['custplot_tabwidget'] = self.tabWidget.currentIndex()
         self.ms.save_settings()
+
+
+class PandasCalculations(object):
+    def __init__(self, gridlayout):
+
+        self.widget = PyQt4.QtGui.QWidget()
+
+        #General settings
+        self.use_pandas = PyQt4.QtGui.QCheckBox(u'Use pandas')
+        self.rule_label = PyQt4.QtGui.QLabel(u'Rule')
+        self.rule = PyQt4.QtGui.QLineEdit(u'1h')
+        self.rule.setToolTip(u'Steplength, ex: "1h", "24h"')
+
+        #Moving average:
+        self.window_label = PyQt4.QtGui.QLabel(u'Moving average window')
+        self.window = PyQt4.QtGui.QLineEdit(u'0')
+        self.window.setToolTip(u'The number of hours in each moving average (rolling mean) mean\nThe result is stored at the center timestep of each mean.')
+        self.base_label = PyQt4.QtGui.QLabel(u'Base')
+        self.base = PyQt4.QtGui.QLineEdit()
+        self.base.setToolTip(u'The hour to start each timestep when Rule is 24h.\nEx: 7 (= 07:00). Default is 0 (00:00)')
+
+        for col1, col2 in [(horizontal_line(), u''),
+                           (self.use_pandas, u''),
+                           (self.rule_label, self.rule),
+                           (self.window_label, self.window),
+                           (self.base_label, self.base)]:
+            current_row = gridlayout.rowCount()
+
+            #If col2 is not given, make col1 span both columns
+            if not col2:
+                gridlayout.addWidget(col1, current_row, 0, 1, 2)
+            else:
+                gridlayout.addWidget(col1, current_row, 0)
+                gridlayout.addWidget(col2, current_row, 1)
+
+    def calculate(self, df):
+        if not self.use_pandas.isChecked():
+            return None
+
+        rule = self.rule.text()
+        base = self.base.text()
+        window = self.window.text()
+        df = df.resample(rule, how='mean')
+        if window:
+            df = pd.rolling_mean(df, window=window, center=True, base=int(base))
+        return df
+
+
+def horizontal_line():
+    line = PyQt4.QtGui.QFrame()
+    line.setGeometry(PyQt4.QtCore.QRect(320, 150, 118, 3))
+    line.setFrameShape(PyQt4.QtGui.QFrame.HLine)
+    line.setFrameShadow(PyQt4.QtGui.QFrame.Sunken)
+    return line
