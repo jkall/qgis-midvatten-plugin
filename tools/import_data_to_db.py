@@ -60,6 +60,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :param goal_table:
         :return:
         """
+        utils.MessagebarAndLog.info(log_msg=u'Import to %s starting\n--------------------'%goal_table)
+        detailed_msg_list = [u'Import to %s done:'%goal_table]
+
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.status = 'False' #True if upload to sqlite and cleaning of data succeeds
         self.temptableName = goal_table + u'_temp'
@@ -138,7 +141,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                              u' and '.join([u''' "b"."{}" IS NOT NULL and "b"."{}" != '' and "b"."{}" != ' ' '''.format(k, k, k) for k in from_list]))
                 utils.sql_alter_db(sql)
                 nr_fk_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%fk_table)[1][0][0]
-                utils.MessagebarAndLog.info(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table)
+
+                detailed_msg_list.append(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table + u' while importing to ' + goal_table)
             else:
                 #Else check if there are foreign keys blocking the import and skip those rows
                 existing_keys = utils.sql_load_fr_db(u'select distinct "%s" from "%s"'%(u', '.join(to_list),
@@ -197,12 +201,48 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.drop_temptable()
             return
         recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
-        self.stats_after(recsinfile=recsinfile, recsbefore=recsbefore, recsafter=recsafter)
 
+        nr_imported = recsafter - recsbefore
+        detailed_msg_list.append(u'In total %s measurements were imported to "%s".'''%(nr_imported, goal_table))
+
+        #Stats and messages after import
+        if recsinfile is None:
+            recsinfile = self.recstoimport
+        if recsafter is None:
+            recsafter = self.recsafter
+        if recsbefore is None:
+            recsbefore = self.recsbefore
+        NoExcluded = recsinfile - (recsafter - recsbefore)
+
+        if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
+            detailed_msg_list.append(u'In total %s rows were not imported. Probably due to a primary key combination already existing in the database.'%str(NoExcluded))
+
+            '''
+            sql_list = []
+            sql_list.append(u"""SELECT %s from ("""%u', '.join([u'"{}"'.format(k) for k in primary_keys]))
+            sql_list.append(u"""SELECT %s, """%u', '.join([u'"{}"'.format(k) for k in primary_keys]))
+            sql_list.append(u""" %s AS newrows FROM "%s" """%(u'||'.join([u'"{}"'.format(k) for k in primary_keys]), self.temptableName))
+            sql_list.append(u""" LEFT OUTER JOIN (SELECT %s AS goal FROM "%s") AS allrows """%(u'||'.join([u'"{}"'.format(k) for k in primary_keys]), goal_table))
+            sql_list.append(u"""  ON newrows=="allrows"."goal" WHERE "allrows"."goal" IS NULL LIMIT 10)""")
+            sql = u''.join(sql_list)
+            print(sql)
+
+            rows_not_imported = utils.returnunicode(utils.sql_load_fr_db(sql)[1], keep_containers=True)
+            print(str(rows_not_imported))
+
+            detailed_msg_list.append(u'\nRows not imported to %s, 10 first rows:'%goal_table)
+            detailed_msg_list.append(u', '.join(primary_keys))
+            detailed_msg_list.extend([u', '.join(row) for row in rows_not_imported])
+            detailed_msg_list.append(u'\n')
+            '''
+
+        detailed_msg = u'\n'.join(detailed_msg_list)
+
+        utils.MessagebarAndLog.info(bar_msg=u'%s rows imported and %s excluded for table %s. See log message panel for details'%(nr_imported, NoExcluded, goal_table), log_msg=detailed_msg)
+        utils.MessagebarAndLog.info(log_msg=u'--------------------')
+
+        #select obsid || h_toc as com1 from obs_points left outer join (select obsid || length as com2 from obs_points) as r on com1==r.com2 where r.com2 is null
         self.status = 'True'
-
-        utils.MessagebarAndLog.info(bar_msg=u'In total %s measurements were imported to "%s".'''%(recsafter - recsbefore, goal_table))
-
         self.drop_temptable() # finally drop the temporary table
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
@@ -926,19 +966,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         filtered_file_data.append(file_data[0])
         filtered_file_data.reverse()
         return filtered_file_data
-
-    def stats_after(self, recsinfile=None, recsbefore=None, recsafter=None):
-        if recsinfile is None:
-            recsinfile = self.recstoimport
-        if recsafter is None:
-            recsafter = self.recsafter
-        if recsbefore is None:
-            recsbefore = self.recsbefore
-
-        NoExcluded = recsinfile - (recsafter - recsbefore)
-
-        if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-            utils.MessagebarAndLog.warning(bar_msg=u'Warning, In total %s posts were not imported.'%str(NoExcluded))
 
     def drop_temptable(self):
         try:
