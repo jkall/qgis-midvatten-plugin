@@ -1364,8 +1364,7 @@ class TestImportObsPoints(object):
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
-                assert call.messageBar().createMessage(u'Warning, In total 1 posts were not imported.') in mock_iface.mock_calls
-                assert call.messageBar().createMessage(u'In total 0 measurements were imported to "obs_points".') in mock_iface.mock_calls
+                assert call.messageBar().createMessage(u'0 rows imported and 1 excluded for table obs_points. See log message panel for details') in mock_iface.mock_calls
 
             _test_import_obs_points_using_obsp_import(self)
 
@@ -1401,8 +1400,7 @@ class TestImportObsPoints(object):
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
-                assert call.messageBar().createMessage(u'Warning, In total 2 posts were not imported.') in mock_iface.mock_calls
-                assert call.messageBar().createMessage(u'In total 1 measurements were imported to "obs_points".') in mock_iface.mock_calls
+                assert call.messageBar().createMessage(u'1 rows imported and 2 excluded for table obs_points. See log message panel for details') in mock_iface.mock_calls
             _test_import_obs_points_using_obsp_import(self)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
@@ -1851,7 +1849,7 @@ class TestWqualfieldImport(object):
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
                 self.importinstance.general_csv_import(goal_table=u'w_qual_field')
-                mock_iface.messageBar.return_value.createMessage.assert_called_with(u'In total 1 measurements were imported to "w_qual_field".')
+                mock_iface.messageBar.return_value.createMessage.assert_called_with(u'1 rows imported and 1 excluded for table w_qual_field. See log message panel for details')
 
             _test_w_qual_field_import_from_csvlayer(self, filename)
 
@@ -1888,7 +1886,7 @@ class TestWqualfieldImport(object):
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
                 self.importinstance.general_csv_import(goal_table=u'w_qual_field')
-                mock_iface.messageBar.return_value.createMessage.assert_called_with(u'In total 2 measurements were imported to "w_qual_field".')
+                mock_iface.messageBar.return_value.createMessage.assert_called_with(u'2 rows imported and 0 excluded for table w_qual_field. See log message panel for details')
 
             _test_w_qual_field_import_from_csvlayer(self, filename)
 

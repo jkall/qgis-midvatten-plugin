@@ -25,6 +25,7 @@ changelog=
         - Calculate water level from logger: Improved best fit calculation (logger values equal to begin/end are now excluded).
         - Calculate water level from logger: The obsid list now says (uncalibrated) for obsids containing NULL values.
         - Calculate water level from logger: "auto set" and "auto adjust" buttons now have tooltip instead of a pop-up-info for explaining what they do.
+        - Better log messages after database import.
         Version 1.3.17
         - Diveroffice import: Corrected bug happening while using Windows...
         Version 1.3.16
