@@ -217,25 +217,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
             detailed_msg_list.append(u'In total %s rows were not imported. Probably due to a primary key combination already existing in the database.'%str(NoExcluded))
 
-            '''
-            sql_list = []
-            sql_list.append(u"""SELECT %s from ("""%u', '.join([u'"{}"'.format(k) for k in primary_keys]))
-            sql_list.append(u"""SELECT %s, """%u', '.join([u'"{}"'.format(k) for k in primary_keys]))
-            sql_list.append(u""" %s AS newrows FROM "%s" """%(u'||'.join([u'"{}"'.format(k) for k in primary_keys]), self.temptableName))
-            sql_list.append(u""" LEFT OUTER JOIN (SELECT %s AS goal FROM "%s") AS allrows """%(u'||'.join([u'"{}"'.format(k) for k in primary_keys]), goal_table))
-            sql_list.append(u"""  ON newrows=="allrows"."goal" WHERE "allrows"."goal" IS NULL LIMIT 10)""")
-            sql = u''.join(sql_list)
-            print(sql)
-
-            rows_not_imported = utils.returnunicode(utils.sql_load_fr_db(sql)[1], keep_containers=True)
-            print(str(rows_not_imported))
-
-            detailed_msg_list.append(u'\nRows not imported to %s, 10 first rows:'%goal_table)
-            detailed_msg_list.append(u', '.join(primary_keys))
-            detailed_msg_list.extend([u', '.join(row) for row in rows_not_imported])
-            detailed_msg_list.append(u'\n')
-            '''
-
         detailed_msg = u'\n'.join(detailed_msg_list)
 
         utils.MessagebarAndLog.info(bar_msg=u'%s rows imported and %s excluded for table %s. See log message panel for details'%(nr_imported, NoExcluded, goal_table), log_msg=detailed_msg)
