@@ -60,8 +60,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :param goal_table:
         :return:
         """
-        utils.MessagebarAndLog.info(log_msg=u'Import to %s starting\n--------------------'%goal_table)
-        detailed_msg_list = [u'Import to %s done:'%goal_table]
+        utils.MessagebarAndLog.info(log_msg=u'\nImport to %s starting\n--------------------'%goal_table)
+        detailed_msg_list = []
 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.status = 'False' #True if upload to sqlite and cleaning of data succeeds
@@ -203,7 +203,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
 
         nr_imported = recsafter - recsbefore
-        detailed_msg_list.append(u'In total %s measurements were imported to "%s".'''%(nr_imported, goal_table))
+        detailed_msg_list.append(u'''In total %s measurements were imported to %s.'''%(nr_imported, goal_table))
 
         #Stats and messages after import
         if recsinfile is None:
@@ -215,14 +215,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         NoExcluded = recsinfile - (recsafter - recsbefore)
 
         if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-            detailed_msg_list.append(u'In total %s rows were not imported. Probably due to a primary key combination already existing in the database.'%str(NoExcluded))
+            detailed_msg_list.append(u'In total %s rows were not imported to %s. Probably due to a primary key combination already existing in the database.'%(str(NoExcluded), goal_table))
 
         detailed_msg = u'\n'.join(detailed_msg_list)
-
         utils.MessagebarAndLog.info(bar_msg=u'%s rows imported and %s excluded for table %s. See log message panel for details'%(nr_imported, NoExcluded, goal_table), log_msg=detailed_msg)
         utils.MessagebarAndLog.info(log_msg=u'--------------------')
 
-        #select obsid || h_toc as com1 from obs_points left outer join (select obsid || length as com2 from obs_points) as r on com1==r.com2 where r.com2 is null
         self.status = 'True'
         self.drop_temptable() # finally drop the temporary table
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
