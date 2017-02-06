@@ -32,6 +32,7 @@ import definitions.midvatten_defs as defs
 from import_data_to_db import midv_data_importer
 import import_fieldlogger
 from midvatten_utils import returnunicode
+from gui_utils import SplitterWithHandel
 
 export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 parameter_browser_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'fieldlogger_parameter_browser.ui'))[0]
@@ -67,7 +68,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         self.main_vertical_layout.addWidget(PyQt4.QtGui.QLabel(u'Fieldlogger input fields and locations:'))
         self.main_vertical_layout.addWidget(get_line())
-        self.splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
+        self.splitter = SplitterWithHandel(PyQt4.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(self.splitter)
 
         #This is about adding a messagebar to the fieldlogger window. But for some reason qgis crashes or closes
@@ -190,10 +191,10 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         """
         settings_string_raw = ms.settingsdict.get(settingskey, None)
         if settings_string_raw is None:
-            utils.MessagebarAndLog.warning(bar_msg=u'Settings key ' + settingskey + u' did not exist in midvatten settings.')
+            utils.MessagebarAndLog.info(bar_msg=u'Settings key ' + settingskey + u' did not exist in midvatten settings.')
             return []
         if not settings_string_raw:
-            utils.MessagebarAndLog.warning(log_msg=u'Settings key ' + settingskey + u' was empty.')
+            utils.MessagebarAndLog.info(log_msg=u'Settings key ' + settingskey + u' was empty.')
             return []
 
         settings_string_raw = utils.returnunicode(settings_string_raw)
@@ -813,9 +814,6 @@ def set_combobox(combobox, value):
         index = combobox.findText(returnunicode(value))
         combobox.setCurrentIndex(index)
 
-def add_line(layout):
-    """ just adds a line"""
-    layout.addWidget(get_line())
 
 def get_line():
     line = PyQt4.QtGui.QFrame()

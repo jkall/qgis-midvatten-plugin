@@ -20,28 +20,22 @@
  *                                                                         *
  ***************************************************************************/
 """
+import PyQt4
+import copy
 import io
 import os
-import locale
-import qgis.utils
-import copy
-from operator import itemgetter
 from functools import partial
-
-import definitions.midvatten_defs
-import import_data_to_db
-import copy
-from collections import OrderedDict
-import midvatten_utils as utils
-from midvatten_utils import returnunicode, Cancel
-from definitions import midvatten_defs as defs
-from date_utils import find_date_format, datestring_to_date, dateshift
-from datetime import datetime
-from export_fieldlogger import get_line
+from operator import itemgetter
 
 import PyQt4.QtCore
 import PyQt4.QtGui
-import PyQt4
+
+import import_data_to_db
+import midvatten_utils as utils
+from definitions import midvatten_defs as defs
+from export_fieldlogger import get_line
+from midvatten_utils import returnunicode, Cancel
+from gui_utils import RowEntry, VRowEntry
 
 import_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -215,27 +209,6 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             self.add_row(line)
         else:
             layout.addWidget(line)
-
-
-class RowEntry(object):
-    def __init__(self):
-        self.widget = PyQt4.QtGui.QWidget()
-        self.layout = PyQt4.QtGui.QHBoxLayout()
-        self.widget.setLayout(self.layout)
-
-
-class VRowEntry(object):
-    def __init__(self):
-        self.widget = PyQt4.QtGui.QWidget()
-        self.layout = PyQt4.QtGui.QVBoxLayout()
-        self.widget.setLayout(self.layout)
-
-
-class RowEntryGrid(object):
-    def __init__(self):
-        self.widget = PyQt4.QtGui.QWidget()
-        self.layout = PyQt4.QtGui.QGridLayout()
-        self.widget.setLayout(self.layout)
 
 
 class ImportTableChooser(VRowEntry):
