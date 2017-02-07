@@ -567,20 +567,57 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         If kalium is below 1, they will have values '<2,5' and '<1' in 'mätvärdetext'
                         If both are above 2,5, there is no good way to separate them. In that case, use the last one.
                         """
-                        if data[u'parameter'] == u'kalium':
-                            if u'kalium' not in lab_results[data[u'lablittera']]:
+                        if u'kalium' in data[u'parameter'].lower():
+                            current_kalium_name = data[u'parameter'].lower()
+                            existing_same_names = [x for x in lab_results[data[u'lablittera']] if x == current_kalium_name]
+                            if not existing_same_names:
                                 #kalium has not been parsed yet. Keep the current one.
                                 pass
                             else:
-                                if data.get(u'mätvärdetext', u'').strip(u' ') == u'<1' or lab_results[data[u'lablittera']][u'kalium'].get(u'mätvärdetext', u'').strip(u' ').replace(u',', u'.') == u'<2.5':
-                                    #The current one is the high resolution one. Keep it to overwrite the other one.
-                                    pass
-                                elif data.get(u'mätvärdetext', u'').strip(u' ').replace(u',', u'.') == u'<2.5' or lab_results[data[u'lablittera']][u'kalium'].get(u'mätvärdetext', u'').strip(u' ') == u'<1':
-                                    #The current one is the low resolution one, skip it.
-                                    continue
-                                else:
-                                    #Hope that the current one (the last one) is the high resolution one and let it overwrite the existing one
-                                    pass
+                                parameter_chosen = False
+                                #Method 1: Use mätosäkerhet to find the high resolution kalium.
+                                _previous_resolution = lab_results[data[u'lablittera']][current_kalium_name].get(u'mätosäkerhet', u'')
+                                previous_resolution = _previous_resolution.replace(u'±', u'').replace(u'<', u'')
+                                _current_resolution = data.get(u'mätosäkerhet', u'')
+                                current_resolution = _current_resolution.replace(u'±', u'').replace(u'<', u'')
+                                if previous_resolution and current_resolution:
+                                    try:
+                                        previous_resolution = float(previous_resolution)
+                                        current_resolution = float(current_resolution)
+                                    except ValueError:
+                                        #mätosäkerhet could not be used. Try the other method
+                                        parameter_chosen = False
+                                        pass
+                                    else:
+                                        if previous_resolution > current_resolution:
+                                            # The current one is the high resolution one. Keep it to overwrite the other one.
+                                            parameter_chosen = True
+                                            utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The one with mätosäkerhet "' + _current_resolution + u'" was used.')
+                                        elif current_resolution > previous_resolution:
+                                            # The current one is the low resolution one, skip it.
+                                            utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The one with mätosäkerhet "' + _previous_resolution + u'" was used.')
+                                            parameter_chosen = True
+                                            continue
+                                        elif current_resolution == previous_resolution:
+                                            # This method could not be used to find the high resolution one. Try the other method.
+                                            parameter_chosen = False
+
+                                if not parameter_chosen:
+                                    current_txt = data.get(u'mätvärdetext', u'').strip(u' ')
+                                    previous_txt = lab_results[data[u'lablittera']][current_kalium_name].get(u'mätvärdetext', u'')
+                                    #Method 2: Use < and <2.5 limits to try to find the high resolution one.
+                                    if current_txt == u'<1' or previous_txt.strip(u' ').replace(u',', u'.') == u'<2.5':
+                                        #The current one is the high resolution one. Keep it to overwrite the other one.
+                                        utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The one with mätvärdetext "' + current_txt + u'" was used.')
+                                        pass
+                                    elif current_txt == u'<2.5' or previous_txt.strip(u' ') == u'<1':
+                                        #The current one is the low resolution one, skip it.
+                                        utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The one with mätvärdetext "' + previous_txt + u'" was used.')
+                                        continue
+                                    else:
+                                        utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The high resolution one could not be found. The one with mätvärdetext "' + current_txt + u'" was used.')
+                                        #Hope that the current one (the last one) is the high resolution one and let it overwrite the existing one
+                                        pass
 
                         lab_results[data[u'lablittera']][data[u'parameter']] = data
 
