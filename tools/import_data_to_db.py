@@ -445,10 +445,22 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = False
             return u'cancel'
 
-        wquallab_data_table = self.interlab4_to_table(all_lab_results, utils.get_all_obsids())
+        wquallab_data_table = self.interlab4_to_table(all_lab_results)
         if wquallab_data_table in [u'cancel', u'error']:
             self.status = False
             return wquallab_data_table
+
+        existing_obsids = utils.get_all_obsids()
+        answer = utils.filter_nonexisting_values_and_ask(wquallab_data_table, u'obsid', existing_values=existing_obsids, try_capitalize=False)
+        if answer == u'cancel':
+            self.status = True
+            return Cancel()
+        elif not answer:
+            self.status = False
+            utils.MessagebarAndLog.critical(bar_msg=u'Error, no observations remain. No import done.')
+            return Cancel()
+        else:
+            wquallab_data_table = answer
 
         answer = self.send_file_data_to_importer(wquallab_data_table, partial(self.general_csv_import, goal_table=u'w_qual_lab'))
         if isinstance(answer, Cancel):
@@ -469,7 +481,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         all_lab_results = {}
 
         for filename in filenames:
-            file_error, version, encoding, decimalsign, quotechar = (True, None, None, None, None)
             file_error, version, encoding, decimalsign, quotechar = self.interlab4_parse_filesettings(filename)
             if file_error:
                 utils.pop_up_info("Warning: The file information" + filename + " could not be read. Skipping file")
@@ -627,7 +638,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         return (file_error, version, encoding, decimalsign, quotechar)
 
-    def interlab4_to_table(self, _data_dict, existing_obsids=[]):
+    def interlab4_to_table(self, _data_dict):
         """
         Converts a parsed interlab4 dict into a table for w_qual_lab import
 
@@ -644,29 +655,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         for lablittera, lab_results in data_dict.iteritems():
             metadata = lab_results.pop(u'metadata')
 
-            try:
-                obsid = metadata[u'provplatsid']
-            except KeyError, e:
-                obsid = None
-
-            if obsid not in existing_obsids:
-                metadata_as_text = [u': '.join([u'lablittera', lablittera])]
-                metadata_as_text.extend([u': '.join([k, v]) for k, v in sorted(metadata.iteritems())])
-                metadata_as_text = u'\n'.join(metadata_as_text)
-
-                question = utils.NotFoundQuestion(dialogtitle=u'Submit obsid',
-                                                  msg=u''.join([u'Submit the obsid for the metadata:\n ', metadata_as_text]),
-                                                  existing_list=existing_obsids,
-                                                  default_value=u'',
-                                                  button_names=[u'Skip', u'Ok', u'Cancel'])
-                answer = question.answer
-                if answer == u'cancel':
-                    return u'cancel'
-                elif answer == u'skip':
-                    continue
-
-                obsid = utils.returnunicode(question.value)
-
+            obsid = u' '.join([x for x in [metadata.get(u'provplatsid', u''), metadata.get(u'provplatsnamn', u''), metadata.get(u'specifik provplats', u'')] if x])
             depth = None
             report = lablittera
             project = metadata.get(u'projekt', None)
