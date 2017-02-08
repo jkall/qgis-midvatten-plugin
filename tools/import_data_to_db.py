@@ -142,7 +142,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 utils.sql_alter_db(sql)
                 nr_fk_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%fk_table)[1][0][0]
 
-                detailed_msg_list.append(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table + u' while importing to ' + goal_table)
+                detailed_msg_list.append(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table + u' while importing to ' + goal_table + u'.')
             else:
                 #Else check if there are foreign keys blocking the import and skip those rows
                 existing_keys = utils.sql_load_fr_db(u'select distinct "%s" from "%s"'%(u', '.join(to_list),
@@ -203,7 +203,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
 
         nr_imported = recsafter - recsbefore
-        detailed_msg_list.append(u'''In total %s measurements were imported to %s.'''%(nr_imported, goal_table))
 
         #Stats and messages after import
         if recsinfile is None:
@@ -217,9 +216,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
             detailed_msg_list.append(u'In total %s rows were not imported to %s. Probably due to a primary key combination already existing in the database.'%(str(NoExcluded), goal_table))
 
+        detailed_msg_list.append(u'--------------------')
         detailed_msg = u'\n'.join(detailed_msg_list)
         utils.MessagebarAndLog.info(bar_msg=u'%s rows imported and %s excluded for table %s. See log message panel for details'%(nr_imported, NoExcluded, goal_table), log_msg=detailed_msg)
-        utils.MessagebarAndLog.info(log_msg=u'--------------------')
 
         self.status = 'True'
         self.drop_temptable() # finally drop the temporary table
@@ -265,13 +264,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def csv2qgsvectorlayer(self, path):
         """ Creates QgsVectorLayer from a csv file """
         if not path:
-            qgis.utils.iface.messageBar().pushMessage("Failure, no csv file was selected.")
+            utils.MessagebarAndLog.critical(bar_msg=u'Failure, no csv file was selected.')
             return False
 
         csvlayer = QgsVectorLayer(path, "temporary_csv_layer", "ogr")
 
         if not csvlayer.isValid():
-            qgis.utils.iface.messageBar().pushMessage("Failure","Impossible to Load File in QGis:\n" + str(path), 2)
+            utils.MessagebarAndLog.critical(bar_msg=u'Failure, Impossible to Load File in QGis:\n' + str(path))
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return False
         csvlayer.setProviderEncoding(str(self.charsetchoosen))
@@ -344,7 +343,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso])) #in case of errors, the value must be a byte string, then try to convert to unicode
                 self.status = 'True'
             else: #no attribute Datas
-                qgis.utils.iface.messageBar().pushMessage("No data found!!","No data will be imported!!", 2)
+                utils.MessagebarAndLog.critical(bar_msg=u'No data found!! No data will be imported!!')
                 self.status = 'False'
         conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
         curs.close()
@@ -543,7 +542,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         continue
 
                     if parse_data_values:
-
                         data = dict([(data_header[idx], value.lstrip(' ').rstrip(' ')) for idx, value in enumerate(cols) if value.lstrip(' ').rstrip(' ')])
                         if u'mätvärdetal' in data:
                             data[u'mätvärdetal'] = data[u'mätvärdetal'].replace(decimalsign, '.')
@@ -700,7 +698,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             sampledate = metadata.get(u'provtagningsdatum', None)
             if sampledate is None:
-                qgis.utils.iface.messageBar().pushMessage('Interlab4 import warning: There was no sample date found (column "provtagningsdatum"). Importing without it.')
+                utils.MessagebarAndLog.warning(bar_msg=u'Interlab4 import warning: There was no sample date found (column "provtagningsdatum") for lablittera ' + lablittera + u'. Importing without it.')
                 date_time = None
             else:
                 sampletime = metadata.get(u'provtagningstid', None)
@@ -708,7 +706,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     date_time = datetime.strftime(datestring_to_date(u' '.join([sampledate, sampletime])), u'%Y-%m-%d %H:%M:%S')
                 else:
                     date_time = datetime.strftime(datestring_to_date(sampledate), u'%Y-%m-%d %H:%M:%S')
-                    qgis.utils.iface.messageBar().pushMessage('Interlab4 import warning: There was no sample time found (column "provtagningstid"). Importing without it.')
+                    utils.MessagebarAndLog.warning(bar_msg=u'Interlab4 import warning: There was no sample time found (column "provtagningstid") for lablittera ' + lablittera + u'. Importing without it.')
 
             meta_comment = metadata.get(u'kommentar', None)
             additional_meta_comments = [u'provtagningsorsak',
@@ -716,15 +714,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                         u'provtypspecifikation',
                                         u'bedömning',
                                         u'kemisk bedömning',
-                                        u'mikrobiologisk bedömning',
-                                        u'mätvärdetalanm',
-                                        u'rapporteringsgräns',
-                                        u'detektionsgräns',
-                                        u'mätosäkerhet',
-                                        u'mätvärdespår',
-                                        u'parameterbedömning']
+                                        u'mikrobiologisk bedömning']
+
             #Only keep the comments that really has a value.
-            more_meta_comments = u'. '.join([u': '.join([_x, metadata[_x]]) for _x in [_y for _y in additional_meta_comments if _y in metadata]  if all([metadata[_x], metadata[_x] is not None, metadata[_x].lower() != u'ej bedömt'])])
+            more_meta_comments = u'. '.join([u': '.join([_x, metadata[_x]]) for _x in [_y for _y in additional_meta_comments if _y in metadata]  if all([metadata[_x], metadata[_x] is not None, metadata[_x].lower() != u'ej bedömt', metadata[_x] != u'-'])])
             if not more_meta_comments:
                 more_meta_comments = None
 
@@ -735,10 +728,18 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 try:
                     reading_txt = parameter_dict[u'mätvärdetext']
                 except KeyError:
-                    reading_txt = reading_num
+                    reading_txt = u''.join([x for x in [parameter_dict.get(u'mätvärdetalanm', False), reading_num] if x])
 
                 unit = parameter_dict.get(u'enhet', None)
                 parameter_comment = parameter_dict.get(u'kommentar', None)
+                additional_parameter_comments = [u'rapporteringsgräns',
+                                                u'detektionsgräns',
+                                                u'mätosäkerhet',
+                                                u'mätvärdespår',
+                                                u'parameterbedömning'
+                                                #u'mätvärdetalanm' This is used for creating reading_txt
+                                                ]
+                more_parameter_comments = u'. '.join([u': '.join([_x, parameter_dict[_x]]) for _x in [_y for _y in additional_parameter_comments if _y in parameter_dict]  if all([parameter_dict[_x], parameter_dict[_x] is not None, parameter_dict[_x].lower() != u'ej bedömt', parameter_dict[_x] != u'-'])])
 
                 file_data.append([obsid,
                                   depth,
@@ -751,7 +752,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                   reading_num,
                                   reading_txt,
                                   unit,
-                                  u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments] if comment is not None])]
+                                  u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments, more_parameter_comments] if comment is not None and comment])]
                                  )
         return file_data
         
@@ -984,6 +985,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
+
 
 
 
