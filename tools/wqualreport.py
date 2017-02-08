@@ -37,7 +37,6 @@ class wqualreport():        # extracts water quality data for selected objects, 
         provider = layer.dataProvider()  # OGR provider
         kolumnindex = provider.fieldNameIndex('obsid') # To find the column named 'obsid'
         observations = layer.selectedFeatures()
-        i = 0
 
         reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
         if not os.path.exists(reportfolder):
@@ -54,7 +53,7 @@ class wqualreport():        # extracts water quality data for selected objects, 
         #rpt2 = rpt.encode("utf-8")
         f.write(rpt)
 
-        for object in observations:
+        for i, object in enumerate(observations):
             attributes = observations[i]
             obsid = attributes[kolumnindex]
             print('about to get data for ' + obsid + ', at time: ' + str(time.time()))#debug
@@ -62,7 +61,6 @@ class wqualreport():        # extracts water quality data for selected objects, 
             print('done with getting data for ' + obsid + ', at time: ' + str(time.time()))#debug
             if ReportData:
                 self.WriteHTMLReport(ReportData, f)
-            i = i+1
             print('wrote html report for ' + obsid + ', at time: ' + str(time.time()))#debug
 
         #write some finishing html and close the file
