@@ -38,6 +38,7 @@ import midvatten_utils as utils
 from date_utils import datestring_to_date, dateshift
 from definitions import midvatten_defs as defs
 from midvatten_utils import Cancel
+from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid
 
 import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -54,7 +55,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
     def parse_observations_and_populate_gui(self):
 
-        splitter = PyQt4.QtGui.QSplitter(PyQt4.QtCore.Qt.Vertical)
+        splitter = SplitterWithHandel(PyQt4.QtCore.Qt.Vertical)
         self.add_row(splitter)
 
         self.observations = self.select_file_and_parse_rows(self.parse_rows)
@@ -75,7 +76,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         for setting in self.settings:
             if hasattr(setting, u'widget'):
                 settings_layout.addWidget(setting.widget)
-        self.add_line(settings_layout)
+        #self.add_line(settings_layout)
 
         #Settings with own loop gets self.observations to work on.
         self.settings_with_own_loop = [ObsidFilter()]
@@ -90,7 +91,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.sublocation_filter = SublocationFilter(sublocations)
         self.settings.append(self.sublocation_filter)
         sublocations_layout.addWidget(self.settings[-1].widget)
-        self.add_line(sublocations_layout)
+        #self.add_line(sublocations_layout)
 
         self.stored_settingskey = u'fieldlogger_import_parameter_settings'
         self.stored_settings = self.get_stored_settings(self.ms, self.stored_settingskey)
@@ -237,19 +238,26 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             self.stored_settings)
 
     @staticmethod
-    def prepare_w_level_data(observations):
+    def prepare_w_levels_data(observations):
         """
         Produces a filestring with columns "obsid, date_time, meas, comment" and imports it
         :param obsdict: a dict like {obsid: {date_time: {parameter: value}}}
         :return: None
         """
-        file_data_list = [[u'obsid', u'date_time', u'meas', u'comment']]
+        file_data_list = [[u'obsid', u'date_time', u'meas', u'level_masl', u'comment']]
         for observation in observations:
             obsid = observation[u'obsid']
             date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
-            meas = observation[u'value'].replace(u',', u'.')
+            level_masl = observation.get(u'level_masl', None)
+            if level_masl is not None:
+                level_masl = level_masl.replace(u',', u'.')
+                meas = u''
+            else:
+                level_masl = u''
+                meas = observation[u'value'].replace(u',', u'.')
+
             comment = observation.get(u'comment', u'')
-            file_data_list.append([obsid, date_time, meas, comment])
+            file_data_list.append([obsid, date_time, meas, level_masl, comment])
 
         return file_data_list
 
@@ -454,7 +462,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         importer = import_data_to_db.midv_data_importer()
 
-        data_preparers = {u'w_levels': self.prepare_w_level_data,
+        data_preparers = {u'w_levels': self.prepare_w_levels_data,
                           u'w_flow': self.prepare_w_flow_data,
                           u'w_qual_field': self.prepare_w_qual_field_data,
                           u'comments': self.prepare_comments_data}
@@ -472,20 +480,6 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         importer.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
-
-class RowEntry(object):
-    def __init__(self):
-        self.widget = PyQt4.QtGui.QWidget()
-        self.layout = PyQt4.QtGui.QHBoxLayout()
-        self.widget.setLayout(self.layout)
-
-
-class RowEntryGrid(object):
-    def __init__(self):
-        self.widget = PyQt4.QtGui.QWidget()
-        self.layout = PyQt4.QtGui.QGridLayout()
-        self.widget.setLayout(self.layout)
 
 
 class ObsidFilter(object):
@@ -991,7 +985,7 @@ class CommentsImportFields(RowEntry):
         return observations
 
 
-class WLevelsImportFields(RowEntry):
+class WLevelsImportFields(RowEntryGrid):
     """
     """
 
@@ -1000,10 +994,33 @@ class WLevelsImportFields(RowEntry):
         """
         super(WLevelsImportFields, self).__init__()
         self.import_method_chooser = import_method_chooser
-        self.layout.insertStretch(-1, 0)
+        self.label_value_column = PyQt4.QtGui.QLabel(u'Value column: ')
+        self._value_column = PyQt4.QtGui.QComboBox()
+        self._value_column.addItems([u'meas', u'level_masl'])
+        self.value_column = u'meas'
+        self.layout.addWidget(self.label_value_column, 0, 0)
+        self.layout.addWidget(self._value_column, 1, 0)
+        self.layout.setColumnStretch(1, 1)
+
+    @property
+    def value_column(self):
+        return str(self._value_column.currentText())
+
+    @value_column.setter
+    def value_column(self, value):
+        index = self._value_column.findText(utils.returnunicode(value))
+        if index != -1:
+            self._value_column.setCurrentIndex(index)
 
     def alter_data(self, observations):
+        if self.value_column == u'level_masl':
+            for observation in observations:
+                if observation[u'parametername'] == self.import_method_chooser.parameter_name:
+                    observation[u'level_masl'] = observation[u'value']
         return observations
+
+    def get_settings(self):
+        return ((u'value_column', self.value_column), )
 
 
 class WFlowImportFields(RowEntryGrid):
@@ -1241,3 +1258,5 @@ def default_combobox(editable=True):
     combo_box.setMinimumWidth(80)
     combo_box.addItem(u'')
     return combo_box
+
+
