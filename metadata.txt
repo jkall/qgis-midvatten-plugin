@@ -24,6 +24,7 @@ changelog=
         - Wqualreport: Fixed bug when using sorting column. Added labels for obsid, date_time and the used sorting column.
         - Interlab4 import: Bug fixes.
         - Fieldlogger import: Import to w_levels now support choosing import column.
+        - Custom plot: Functions for rolling mean and resampling now exists in custom plot if python pandas is installed.
         - And more small fixes.
         Version 1.3.18
         - Fieldlogger import: Import to w_levels now support choosing import column.
