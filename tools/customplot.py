@@ -55,7 +55,7 @@ except:
 else:
     pandas_on = True
 
-utils.MessagebarAndLog.info(bar_msg=u"Pandas: " + str(pandas_on))
+utils.MessagebarAndLog.info(log_msg=u"Python pandas: " + str(pandas_on))
 customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..', 'ui', 'customplotdialog.ui'))[0]
 
 class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
