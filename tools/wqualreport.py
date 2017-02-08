@@ -96,19 +96,22 @@ class wqualreport():        # extracts water quality data for selected objects, 
         print(sql)#debug
         parameters = parameters_cursor.fetchall()
         if not parameters:
-            qgis.utils.iface.messageBar().pushMessage("Debug","Something is wrong, no parameters are found in table w_qual_lab for "+ obsid, 0 ,duration=10)#DEBUG
+            utils.MessagebarAndLog.warning(bar_msg=u'Debug, something is wrong, no parameters are found in table w_qual_lab for '+ obsid)
             return False
         print('parameters for ' + obsid + ' is loaded at time: ' + str(time.time()))#debug
         # Load all date_times, stored in two result columns: reportnr, date_time
-        if not (self.settingsdict['wqual_sortingcolumn'] == ''):          #If there is a a specific sorting column
-            sql =r"""select distinct """
-            sql += self.settingsdict['wqual_sortingcolumn']
-            sql += r""", date_time from """      #including parameters
+        if self.settingsdict['wqual_sortingcolumn']:          #If there is a a specific sorting column
+            if len(self.settingsdict['wqual_date_time_format']) > 16:
+                sql =r"""select distinct """
+                sql += self.settingsdict['wqual_sortingcolumn']
+                sql += r""", date_time from """      #including parameters
+            else:
+                sql = r"""select distinct %s, date_time from (select %s, substr(date_time,1,%s) as date_time from """%(self.settingsdict['wqual_sortingcolumn'], self.settingsdict['wqual_sortingcolumn'], len(self.settingsdict['wqual_date_time_format']))
         else:                     # IF no specific column exist for sorting
             if len(self.settingsdict['wqual_date_time_format'])>16:
                 sql =r"""select distinct date_time, date_time from """ # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
             else:
-                sql =r"""select distinct date_time, dummy from (select substr(date_time,1,%s) as date_time, substr(date_time,1,%s) as dummy from """%(len(self.settingsdict['wqual_date_time_format']),len(self.settingsdict['wqual_date_time_format']))      # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
+                sql =r"""select distinct dummy, date_time from (select substr(date_time,1,%s) as dummy, substr(date_time,1,%s) as date_time from """%(len(self.settingsdict['wqual_date_time_format']),len(self.settingsdict['wqual_date_time_format']))      # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
         sql += self.settingsdict['wqualtable']
         sql += """ where obsid = '"""
         sql += obsid
@@ -117,7 +120,10 @@ class wqualreport():        # extracts water quality data for selected objects, 
         else:
             sql += """') ORDER BY date_time"""
         #sql2 = unicode(sql) #To get back to unicode-string
-        date_times_cursor = curs.execute(sql) #Send SQL-syntax to cursor,
+        try:
+            date_times_cursor = curs.execute(sql) #Send SQL-syntax to cursor,
+        except Exception, e:
+            raise Exception("Error. SQL :" + sql + "\ne:\n" + str(e))
         date_times = date_times_cursor.fetchall()
         print(date_times)
 
@@ -125,16 +131,23 @@ class wqualreport():        # extracts water quality data for selected objects, 
         print('loaded distinct date_time for the parameters for ' + obsid + ' at time: ' + str(time.time()))#debug
         
         if not date_times:
-            qgis.utils.iface.messageBar().pushMessage("Debug","Something is wrong, no parameters are found in table w_qual_lab for "+ obsid, 0 ,duration=10)#DEBUG
+            utils.MessagebarAndLog.warning(bar_msg=u"Debug, Something is wrong, no parameters are found in table w_qual_lab for "+ obsid)
             return
 
-        ReportTable = ['']*(len(parameters)+2)    # Define size of ReportTable
-        for i in range(len(parameters)+2): # Fill the table with ''
+        if self.settingsdict['wqual_sortingcolumn']:
+            self.nr_header_rows = 3
+        else:
+            self.nr_header_rows = 2
+
+        ReportTable = [''] * (len(parameters) + self.nr_header_rows)    # Define size of ReportTable
+
+        for i in range(len(parameters)+self.nr_header_rows): # Fill the table with ''
             ReportTable[i] = [''] * (len(date_times)+1)
 
         #Populate First 'column' w parameters
-        parametercounter = 2    #First two rows are for obsid and date_time    
-        for p, u in parameters:
+
+        for parametercounter, p_u in enumerate(parameters, start=self.nr_header_rows):
+            p, u = p_u
             if not(self.settingsdict['wqual_unitcolumn']==''):
                 if u:
                     #ReportTable[parametercounter][0] = p.encode(utils.getcurrentlocale()[1]) + ", " +  u.encode(utils.getcurrentlocale()[1])
@@ -145,21 +158,25 @@ class wqualreport():        # extracts water quality data for selected objects, 
             else:
                 #ReportTable[parametercounter][0] = p.encode(utils.getcurrentlocale()[1])
                 ReportTable[parametercounter][0] = p
-            parametercounter = parametercounter + 1
 
         print('now go for each parameter value for ' + obsid + ', at time: ' + str(time.time()))#debug
-        #Populate First 'row' w obsid
-        datecounter = 1    #First col is 'parametercolumn'
-        for r, d in date_times: #date_times includes both report and date_time (or possibly date_time and date_time if there is no reportnr)
-            ReportTable[0][datecounter]=obsid 
-            datecounter += 1
-        
-        datecounter=1    # first 'column' is for parameter names
-        for k, v in date_times:    # Loop through all report    
-            parametercounter = 1    # first row is for obsid    
-            ReportTable[parametercounter][datecounter] = v # v is date_time
-            for p, u in parameters:
-                parametercounter = parametercounter + 1 # one 'row' down after date was stored
+        ReportTable[0][0] = u'obsid'
+        ReportTable[1][0] = u'date_time'
+        for datecounter, r_d in enumerate(date_times, start=1): #date_times includes both report and date_time (or possibly date_time and date_time if there is no reportnr)
+            r, d = r_d
+            ReportTable[0][datecounter]=obsid
+            ReportTable[1][datecounter] = d  # d is date_time
+            if self.settingsdict['wqual_sortingcolumn']:
+                ReportTable[2][0] = self.settingsdict['wqual_sortingcolumn']
+                ReportTable[2][datecounter] = r
+
+
+        for datecounter, sorting_date_time in enumerate(date_times, start=1):    # Loop through all report
+            sorting, date_time = sorting_date_time
+
+            # Parameter rows starts after date or sorting row
+            for parametercounter, p_u in enumerate(parameters, start=self.nr_header_rows):
+                p, u = p_u
                 sql =r"""SELECT """
                 sql += self.settingsdict['wqual_valuecolumn']
                 sql += r""" from """
@@ -170,7 +187,7 @@ class wqualreport():        # extracts water quality data for selected objects, 
                     sql += "' and date_time  = '"
                 else:
                     sql += "' and substr(date_time,1,%s)  = '"%str(len(self.settingsdict['wqual_date_time_format']))
-                sql += v 
+                sql += date_time
                 if not(self.settingsdict['wqual_unitcolumn'] == '') and u:
                     sql += """' and parameter = '"""
                     sql += p
@@ -183,6 +200,9 @@ class wqualreport():        # extracts water quality data for selected objects, 
                     sql += """' and parameter = '"""
                     sql += p
                     sql += """'"""
+                if self.settingsdict['wqual_sortingcolumn']:
+                    sql += """ and "%s" = '%s'"""%(self.settingsdict['wqual_sortingcolumn'], sorting)
+
                 rs = curs.execute(sql) #Send SQL-syntax to cursor, NOTE: here we send sql which was utf-8 already from interpreting it
                 #print (sql)#debug
                 #print('time: ' + str(time.time()))#debug
@@ -193,11 +213,10 @@ class wqualreport():        # extracts water quality data for selected objects, 
                         ReportTable[parametercounter][datecounter] = utils.returnunicode(recs[0][0])
                     except:
                         ReportTable[parametercounter][datecounter]=''
-                        qgis.utils.iface.messageBar().pushMessage("Note!","The value for %s [%s] at %s, %s was not readable. Check your data!"%(p,u,k,v),0,duration=15)
+                        utils.MessagebarAndLog.warning(bar_msg=u"Note!, the value for %s [%s] at %s, %s was not readable. Check your data!"%(p,u,sorting,date_time))
                 else: 
                     ReportTable[parametercounter][datecounter] =' '
 
-            datecounter = datecounter + 1
         self.htmlcols = datecounter + 1    # to be able to set a relevant width to the table
         parameters_cursor.close()
         date_times_cursor.close()
@@ -212,10 +231,10 @@ class wqualreport():        # extracts water quality data for selected objects, 
         rpt += str(tabellbredd) # set table total width from no of water quality analyses
         rpt += "\" border=\"1\">\n"
         f.write(rpt)
-        counter = 0
-        for sublist in ReportData:
+
+        for counter, sublist in enumerate(ReportData):
             try:
-                if counter <2:
+                if counter < self.nr_header_rows:
                     rpt = "  <tr><th>"
                     rpt += "    </th><th width =\"75\">".join(sublist)
                     rpt += "  </th></tr>\n"
@@ -226,6 +245,5 @@ class wqualreport():        # extracts water quality data for selected objects, 
             except:
                 print "here was an error: ", sublist
             f.write(rpt)
-            counter = counter + 1
         f.write("\n</table><p></p><p></p>")
 
