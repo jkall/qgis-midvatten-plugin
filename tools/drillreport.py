@@ -26,22 +26,66 @@ import os
 import locale
 import midvatten_utils as utils
 import codecs
+from time import sleep
 
 class drillreport():        # general observation point info for the selected object
     
-    def __init__(self, obsid='', settingsdict = {}):
-         #open connection to report file
+    def __init__(self, obsids=[''], settingsdict = {}):
+
         reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
         if not os.path.exists(reportfolder):
             os.makedirs(reportfolder)
         reportpath = os.path.join(reportfolder, "drill_report.html")
         logopath = os.path.join(os.sep,os.path.dirname(__file__),"..","templates","midvatten_logga.png")
         imgpath = os.path.join(os.sep,os.path.dirname(__file__),"..","templates")
+
+        if len(obsids) == 0:
+            utils.pop_up_info("Must select one or more obsids!")
+            return None
+        elif len(obsids) == 1:
+            merged_question = False
+        else:
+            #Due to problems regarding speed when opening many tabs, only the merge mode is used.
+            #merged_question = utils.askuser(question='YesNo', msg="Do you want to open all drill reports merged on the same tab?\n"
+            #                                    "Else they will be opened separately.\n\n(If answering no, creating drill reports for many obsids take 0.2 seconds per obsid.\nIt might fail if the computer is to slow.\nIf it fails, try to select only one obsid at the time)").result
+            merged_question = True
+
+        if merged_question:
+            f, rpt = self.open_file(', '.join(obsids), reportpath)
+            for obsid in obsids:
+                self.write_obsid(obsid, rpt, imgpath, logopath, f)
+            self.close_file(f, reportpath)
+        else:
+            #opened = False
+            for obsid in obsids:
+                f, rpt = self.open_file(obsid, reportpath)
+                self.write_obsid(obsid, rpt, imgpath, logopath, f)
+                url_status = self.close_file(f, reportpath)
+                #This must be used if many obsids are allowed to used this method.
+                #if not opened:
+                #    sleep(2)
+                #    opened = True
+                #else:
+                #    sleep(0.2)
+
+
+    def open_file(self, header, reportpath):
+        #open connection to report file
         f = codecs.open(reportpath, "wb", "utf-8")
-        
-        #write some initiating html, header and also 
-        rpt = r"""<meta http-equiv="content-type" content="text/html; charset=utf-8" />""" 
-        rpt += r"""<head><title>%s General report from Midvatten plugin for QGIS</title></head>"""%obsid
+        #write some initiating html, header and also
+        rpt = r"""<meta http-equiv="content-type" content="text/html; charset=utf-8" />"""
+        rpt += r"""<head><title>%s General report from Midvatten plugin for QGIS</title></head>"""%header
+
+        return f, rpt
+
+    def close_file(self, f, reportpath):
+        f.write("\n</p></body></html>")
+        f.close()
+        #print reportpath#debug
+        url_status = QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
+        return url_status
+
+    def write_obsid(self, obsid, rpt, imgpath, logopath, f):
         rpt += r"""<html><TABLE WIDTH=100% BORDER=0 CELLPADDING=1 CELLSPACING=1><TR VALIGN=TOP><TD WIDTH=15%><h3 style="font-family:'arial';font-size:18pt; font-weight:600">"""
         rpt += obsid
         if  utils.getcurrentlocale()[0] == 'sv_SE':
@@ -53,12 +97,12 @@ class drillreport():        # general observation point info for the selected ob
         rpt += logopath
         rpt +="""' /></TD><TD WIDTH=85%><TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
         if  utils.getcurrentlocale()[0] == 'sv_SE':
-            rpt += u'Allmän information' 
+            rpt += u'Allmän information'
         else:
-            rpt += u'General information' 
+            rpt += u'General information'
         rpt += r"""</B></U></P><TABLE style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*>"""
         f.write(rpt)
-        
+
         # GENERAL DATA UPPER LEFT QUADRANT
         ConnectionOK, GeneralData = self.GetData(obsid, 'obs_points', 'n')#MacOSX fix1
         #utils.pop_up_info(str(ConnectionOK))#debug
@@ -75,11 +119,11 @@ class drillreport():        # general observation point info for the selected ob
 
             rpt = r"""</TABLE></TD><TD WIDTH=50%><P><U><B>"""
             if  utils.getcurrentlocale()[0] == 'sv_SE':
-                rpt += u'Lagerföljd' 
+                rpt += u'Lagerföljd'
             else:
-                rpt += u'Stratigraphy' 
+                rpt += u'Stratigraphy'
             rpt += r"""</B></U></P><TABLE style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*>"""
-            f.write(rpt)        
+            f.write(rpt)
 
             # STRATIGRAPHY DATA UPPER RIGHT QUADRANT
             StratData = self.GetData(obsid, 'stratigraphy', 'n')[1] #MacOSX fix1
@@ -89,23 +133,23 @@ class drillreport():        # general observation point info for the selected ob
                 reportdata_2 = self.rpt_upper_right(StratData)
             f.write(reportdata_2)
 
-            rpt = r"""</TABLE></TD></TR><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>""" 
+            rpt = r"""</TABLE></TD></TR><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
             if  utils.getcurrentlocale()[0] == 'sv_SE':
-                rpt += u'Kommentarer' 
+                rpt += u'Kommentarer'
             else:
-                rpt += u'Comments' 
+                rpt += u'Comments'
             rpt += r"""</B></U></P>"""
-            f.write(rpt)        
+            f.write(rpt)
 
             # COMMENTS LOWER LEFT QUADRANT
             reportdata_3 = self.rpt_lower_left(GeneralData)
             f.write(reportdata_3)
 
-            rpt = r"""</TD><TD WIDTH=50%><P><U><B>""" 
+            rpt = r"""</TD><TD WIDTH=50%><P><U><B>"""
             if  utils.getcurrentlocale()[0] == 'sv_SE':
-                rpt += u'Vattennivåer' 
+                rpt += u'Vattennivåer'
             else:
-                rpt += u'Water levels' 
+                rpt += u'Water levels'
             rpt += r"""</B></U></P>"""
             f.write(rpt)
 
@@ -116,12 +160,9 @@ class drillreport():        # general observation point info for the selected ob
             else:
                 reportdata_4 = self.rpt_lower_right(statistics,meas_or_level_masl)
             f.write(reportdata_4)
-            
-            f.write(r"""</TD></TR></TABLE></TD></TR></TABLE>""")    
-            f.write("\n</p></body></html>")        
-            f.close()
-            #print reportpath#debug
-            QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
+
+            f.write(r"""</TD></TR></TABLE></TD></TR></TABLE>""")
+
 
     def rpt_upper_left_sv(self, GeneralData, CRS='', CRSname=''):
         rpt = r"""<p style="font-family:'arial'; font-size:8pt; font-weight:400; font-style:normal;">"""
