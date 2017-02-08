@@ -748,9 +748,23 @@ class PandasCalculations(object):
                            u'See Pandas pandas.rolling_mean documentation for more info.')
 
         for lineedit in [self.rule, self.base, self.window]:
-            lineedit.setMinimumWidth(60)
+            lineedit.setFixedWidth(60)
+            lineedit.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Fixed)
 
-        for col1, col2 in [(horizontal_line(), u''),
+        maximumwidth = 0
+        for label in [self.rule_label, self.base_label, self.window_label]:
+            testlabel = PyQt4.QtGui.QLabel()
+            testlabel.setText(label.text())
+            maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
+        testlabel = None
+        for label in [self.use_pandas, self.rule_label, self.base_label, self.window_label]:
+            label.setFixedWidth(maximumwidth)
+            #label.setMinimumWidth(maximumwidth)
+            label.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Fixed)
+
+        hline = horizontal_line()
+        hline.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Fixed)
+        for col1, col2 in [(hline, u''),
                            (self.use_pandas, u''),
                            (self.rule_label, self.rule),
                            (self.base_label, self.base),
