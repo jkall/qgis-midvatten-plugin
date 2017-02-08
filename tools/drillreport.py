@@ -45,24 +45,28 @@ class drillreport():        # general observation point info for the selected ob
         elif len(obsids) == 1:
             merged_question = False
         else:
-            merged_question = utils.askuser(question='YesNo', msg="Do you want to open all drill reports merged on the same tab?\n"
-                                                "Else they will be opened separately.\n\n(If answering no, creating drill reports for many obsids take 0.2 seconds per obsid.\nIt might fail if the computer is to slow.\nIf it fails, try to select only one obsid at the time)").result
+            #Due to problems regarding speed when opening many tabs, only the merge mode is used.
+            #merged_question = utils.askuser(question='YesNo', msg="Do you want to open all drill reports merged on the same tab?\n"
+            #                                    "Else they will be opened separately.\n\n(If answering no, creating drill reports for many obsids take 0.2 seconds per obsid.\nIt might fail if the computer is to slow.\nIf it fails, try to select only one obsid at the time)").result
+            merged_question = True
+
         if merged_question:
             f, rpt = self.open_file(', '.join(obsids), reportpath)
             for obsid in obsids:
                 self.write_obsid(obsid, rpt, imgpath, logopath, f)
             self.close_file(f, reportpath)
         else:
-            opened = False
+            #opened = False
             for obsid in obsids:
                 f, rpt = self.open_file(obsid, reportpath)
                 self.write_obsid(obsid, rpt, imgpath, logopath, f)
                 url_status = self.close_file(f, reportpath)
-                if not opened:
-                    sleep(2)
-                    opened = True
-                else:
-                    sleep(0.2)
+                #This must be used if many obsids are allowed to used this method.
+                #if not opened:
+                #    sleep(2)
+                #    opened = True
+                #else:
+                #    sleep(0.2)
 
 
     def open_file(self, header, reportpath):
