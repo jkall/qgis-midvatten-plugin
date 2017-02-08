@@ -203,7 +203,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
 
         nr_imported = recsafter - recsbefore
-        detailed_msg_list.append(u'''In total %s measurements were imported to %s.'''%(nr_imported, goal_table))
 
         #Stats and messages after import
         if recsinfile is None:
