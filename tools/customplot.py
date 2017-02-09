@@ -361,7 +361,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         table2.values[:] = utils.scale_nparray(table2.values, factor, offset)[:]
 
         if pandas_calc and FlagTimeXY == "time":
-            if pandas_calc.use_pandas.isChecked():
+            if pandas_calc.use_pandas():
                 df = pd.DataFrame(table2.values, index=[datestring_to_date(x) for x in table2.date_time])
                 df.index.name = u'date_time'
                 df.columns = [u'values']
@@ -724,15 +724,19 @@ class PandasCalculations(object):
         self.widget = PyQt4.QtGui.QWidget()
 
         #General settings
-        self.use_pandas = PyQt4.QtGui.QCheckBox(u'Use pandas')
         self.rule_label = PyQt4.QtGui.QLabel(u'Resample rule')
-        self.rule = PyQt4.QtGui.QLineEdit(u'1h')
+        self.rule = PyQt4.QtGui.QLineEdit()
         for wid in [self.rule_label, self.rule]:
-            wid.setToolTip(u'Steplength for resampling, ex: "1h", "24h", "20T"(=20 minutes)\n'
+            wid.setToolTip(u'Steplength for resampling, ex:\n'
+                           u'"10S" = 10 seconds\n'
+                           u'"20T" = 20 minutes\n'
+                           u'"1h" = 1 hour\n'
+                           u'"24h" = 24 hours\n'
+                           u'No resampling if field is empty'
                            u'See pandas pandas.DataFrame.resample documentation for more info.')
 
         self.base_label = PyQt4.QtGui.QLabel(u'Resample base')
-        self.base = PyQt4.QtGui.QLineEdit(u'0')
+        self.base = PyQt4.QtGui.QLineEdit()
         for wid in [self.base_label, self.base]:
             wid.setToolTip(u'The hour to start each timestep when rule "evenly subdivide 1 day" (for example Rule = 24h)\n'
                            u'Ex: 7 (= 07:00). Default is 0 (00:00)\n'
@@ -746,7 +750,8 @@ class PandasCalculations(object):
         for wid in [self.window_label, self.window]:
             wid.setToolTip(u'The number of timesteps in each moving average (rolling mean) mean\n'
                            u'The result is stored at the center timestep of each mean.'
-                           u'See Pandas pandas.rolling_mean documentation for more info.')
+                           u'See Pandas pandas.rolling_mean documentation for more info.'
+                           u'No rolling mean if field is empty.')
 
         for lineedit in [self.rule, self.base, self.window]:
             lineedit.setFixedWidth(122)
@@ -758,7 +763,7 @@ class PandasCalculations(object):
             testlabel.setText(label.text())
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
-        for label in [self.use_pandas, self.rule_label, self.base_label, self.window_label]:
+        for label in [self.rule_label, self.base_label, self.window_label]:
             label.setFixedWidth(maximumwidth)
             #label.setMinimumWidth(maximumwidth)
             label.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Fixed)
@@ -766,8 +771,7 @@ class PandasCalculations(object):
         hline = horizontal_line()
         hline.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Fixed)
         gridlayout.addWidget(hline)
-        for col1, col2 in [(self.use_pandas, u''),
-                           (self.rule_label, self.rule),
+        for col1, col2 in [(self.rule_label, self.rule),
                            (self.base_label, self.base),
                            (self.window_label, self.window)]:
             current_row = gridlayout.rowCount()
@@ -796,19 +800,33 @@ class PandasCalculations(object):
             #    gridlayout.addWidget(col1, current_row, 0)
             #    gridlayout.addWidget(col2, current_row, 1)
 
-    def calculate(self, df):
-        if not self.use_pandas.isChecked():
-            return None
+    def use_pandas(self):
+        if self.rule.text() or self.window.text():
+            return True
+        else:
+            return False
 
+    def calculate(self, df):
         #Resample
         rule = self.rule.text()
-        base = self.base.text()
-        df = df.resample(rule, how='mean', base=int(base))
+        base = self.base.text() if self.base.text() else 0
+        if rule:
+            try:
+                base = int(base)
+            except ValueError:
+                utils.MessagebarAndLog.critical(bar_msg=u'Resample base must be an integer')
+            else:
+                df = df.resample(rule, how='mean', base=int(base))
 
         #Rolling mean
         window = self.window.text()
         if window:
-            df = pd.rolling_mean(df, window=int(window), center=True)
+            try:
+                window = int(window)
+            except ValueError:
+                utils.MessagebarAndLog.critical(bar_msg=u'Rolling mean window must be an integer')
+            else:
+                df = pd.rolling_mean(df, window=window, center=True)
         return df
 
 
