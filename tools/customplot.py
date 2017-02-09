@@ -358,7 +358,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         if remove_mean:
             table2.values[:] = utils.remove_mean_from_nparray(table2.values)[:]
 
-        table2.values[:] = utils.scale_nparray(table2.values, factor, offset)[:]
+        if any([factor != 1 and factor, offset,]):
+            table2.values[:] = utils.scale_nparray(table2.values, factor, offset)[:]
 
         if pandas_calc and FlagTimeXY == "time":
             if pandas_calc.use_pandas():

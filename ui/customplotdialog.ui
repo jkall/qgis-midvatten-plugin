@@ -72,7 +72,7 @@
              <string notr="true"/>
             </property>
             <property name="currentIndex">
-             <number>0</number>
+             <number>2</number>
             </property>
             <widget class="QWidget" name="tab_1">
              <attribute name="title">
@@ -540,7 +540,7 @@
                    <string>a in y=ax+b</string>
                   </property>
                   <property name="text">
-                   <string>1</string>
+                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -588,13 +588,13 @@
                    <string>b in y=ax+b</string>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string/>
                   </property>
                  </widget>
                 </item>
                </layout>
               </item>
-              <item row="9" column="0">
+              <item row="3" column="0">
                <widget class="QCheckBox" name="checkBox_remove_mean1">
                 <property name="text">
                  <string>Remove mean</string>
@@ -1009,7 +1009,7 @@
                 </item>
                </layout>
               </item>
-              <item row="3" column="0">
+              <item row="4" column="0">
                <layout class="QHBoxLayout" name="horizontalLayout_9">
                 <item>
                  <widget class="QLabel" name="label_12">
@@ -1039,13 +1039,13 @@
                    <string>a in y=ax+b</string>
                   </property>
                   <property name="text">
-                   <string>1</string>
+                   <string/>
                   </property>
                  </widget>
                 </item>
                </layout>
               </item>
-              <item row="4" column="0">
+              <item row="5" column="0">
                <layout class="QHBoxLayout" name="horizontalLayout_12">
                 <item>
                  <widget class="QLabel" name="label_15">
@@ -1075,13 +1075,13 @@
                    <string>b in y=ax+b</string>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string/>
                   </property>
                  </widget>
                 </item>
                </layout>
               </item>
-              <item row="5" column="0">
+              <item row="3" column="0">
                <widget class="QCheckBox" name="checkBox_remove_mean2">
                 <property name="text">
                  <string>Remove mean</string>
@@ -1496,7 +1496,7 @@
                 </item>
                </layout>
               </item>
-              <item row="3" column="0">
+              <item row="4" column="0">
                <layout class="QHBoxLayout" name="horizontalLayout_10">
                 <item>
                  <widget class="QLabel" name="label_13">
@@ -1526,13 +1526,13 @@
                    <string>a in y=ax+b</string>
                   </property>
                   <property name="text">
-                   <string>1</string>
+                   <string/>
                   </property>
                  </widget>
                 </item>
                </layout>
               </item>
-              <item row="4" column="0">
+              <item row="5" column="0">
                <layout class="QHBoxLayout" name="horizontalLayout_13">
                 <item>
                  <widget class="QLabel" name="label_16">
@@ -1562,13 +1562,13 @@
                    <string>b in y=ax+b</string>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string/>
                   </property>
                  </widget>
                 </item>
                </layout>
               </item>
-              <item row="5" column="0">
+              <item row="3" column="0">
                <widget class="QCheckBox" name="checkBox_remove_mean3">
                 <property name="text">
                  <string>Remove mean</string>
@@ -1706,7 +1706,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <property name="sizeConstraint">
          <enum>QLayout::SetDefaultConstraint</enum>
