@@ -119,7 +119,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.pandas_calc_2 = PandasCalculations(self.gridLayout_10)
             self.pandas_calc_3 = PandasCalculations(self.gridLayout_13)
 
-        
+        self.custplotfigure.tight_layout()
+
         self.show()
 
     def calc_frequency(self,table2):
@@ -748,7 +749,7 @@ class PandasCalculations(object):
                            u'See Pandas pandas.rolling_mean documentation for more info.')
 
         for lineedit in [self.rule, self.base, self.window]:
-            lineedit.setFixedWidth(60)
+            lineedit.setFixedWidth(122)
             lineedit.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Fixed)
 
         maximumwidth = 0
@@ -764,19 +765,36 @@ class PandasCalculations(object):
 
         hline = horizontal_line()
         hline.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Fixed)
-        for col1, col2 in [(hline, u''),
-                           (self.use_pandas, u''),
+        gridlayout.addWidget(hline)
+        for col1, col2 in [(self.use_pandas, u''),
                            (self.rule_label, self.rule),
                            (self.base_label, self.base),
                            (self.window_label, self.window)]:
             current_row = gridlayout.rowCount()
 
+            try:
+                col1.setMaximumHeight(27)
+                col2.setMaximumHeight(27)
+            except:
+                pass
+
+
+            layout = PyQt4.QtGui.QHBoxLayout()
+
+            try:
+                layout.addWidget(col1)
+                layout.addStretch()
+                layout.addWidget(col2)
+            except TypeError:
+                pass
+
             #If col2 is not given, make col1 span both columns
-            if not col2:
-                gridlayout.addWidget(col1, current_row, 0, 1, 2)
-            else:
-                gridlayout.addWidget(col1, current_row, 0)
-                gridlayout.addWidget(col2, current_row, 1)
+            gridlayout.addLayout(layout, current_row, 0)
+            #if not col2:
+            #    gridlayout.addWidget(col1, current_row, 0, 1, 2)
+            #else:
+            #    gridlayout.addWidget(col1, current_row, 0)
+            #    gridlayout.addWidget(col2, current_row, 1)
 
     def calculate(self, df):
         if not self.use_pandas.isChecked():
