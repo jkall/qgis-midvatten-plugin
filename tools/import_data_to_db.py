@@ -142,7 +142,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 utils.sql_alter_db(sql)
                 nr_fk_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%fk_table)[1][0][0]
 
-                detailed_msg_list.append(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table + u' while importing to ' + goal_table)
+                detailed_msg_list.append(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table + u' while importing to ' + goal_table + u'.')
             else:
                 #Else check if there are foreign keys blocking the import and skip those rows
                 existing_keys = utils.sql_load_fr_db(u'select distinct "%s" from "%s"'%(u', '.join(to_list),
@@ -203,7 +203,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
 
         nr_imported = recsafter - recsbefore
-        detailed_msg_list.append(u'''In total %s measurements were imported to %s.'''%(nr_imported, goal_table))
 
         #Stats and messages after import
         if recsinfile is None:
@@ -217,9 +216,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
             detailed_msg_list.append(u'In total %s rows were not imported to %s. Probably due to a primary key combination already existing in the database.'%(str(NoExcluded), goal_table))
 
+        detailed_msg_list.append(u'--------------------')
         detailed_msg = u'\n'.join(detailed_msg_list)
         utils.MessagebarAndLog.info(bar_msg=u'%s rows imported and %s excluded for table %s. See log message panel for details'%(nr_imported, NoExcluded, goal_table), log_msg=detailed_msg)
-        utils.MessagebarAndLog.info(log_msg=u'--------------------')
 
         self.status = 'True'
         self.drop_temptable() # finally drop the temporary table
@@ -265,13 +264,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def csv2qgsvectorlayer(self, path):
         """ Creates QgsVectorLayer from a csv file """
         if not path:
-            qgis.utils.iface.messageBar().pushMessage("Failure, no csv file was selected.")
+            utils.MessagebarAndLog.critical(bar_msg=u'Failure, no csv file was selected.')
             return False
 
         csvlayer = QgsVectorLayer(path, "temporary_csv_layer", "ogr")
 
         if not csvlayer.isValid():
-            qgis.utils.iface.messageBar().pushMessage("Failure","Impossible to Load File in QGis:\n" + str(path), 2)
+            utils.MessagebarAndLog.critical(bar_msg=u'Failure, Impossible to Load File in QGis:\n' + str(path))
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return False
         csvlayer.setProviderEncoding(str(self.charsetchoosen))
@@ -344,7 +343,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso])) #in case of errors, the value must be a byte string, then try to convert to unicode
                 self.status = 'True'
             else: #no attribute Datas
-                qgis.utils.iface.messageBar().pushMessage("No data found!!","No data will be imported!!", 2)
+                utils.MessagebarAndLog.critical(bar_msg=u'No data found!! No data will be imported!!')
                 self.status = 'False'
         conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
         curs.close()
@@ -445,10 +444,22 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = False
             return u'cancel'
 
-        wquallab_data_table = self.interlab4_to_table(all_lab_results, utils.get_all_obsids())
+        wquallab_data_table = self.interlab4_to_table(all_lab_results)
         if wquallab_data_table in [u'cancel', u'error']:
             self.status = False
             return wquallab_data_table
+
+        existing_obsids = utils.get_all_obsids()
+        answer = utils.filter_nonexisting_values_and_ask(wquallab_data_table, u'obsid', existing_values=existing_obsids, try_capitalize=False)
+        if answer == u'cancel':
+            self.status = True
+            return Cancel()
+        elif not answer:
+            self.status = False
+            utils.MessagebarAndLog.critical(bar_msg=u'Error, no observations remain. No import done.')
+            return Cancel()
+        else:
+            wquallab_data_table = answer
 
         answer = self.send_file_data_to_importer(wquallab_data_table, partial(self.general_csv_import, goal_table=u'w_qual_lab'))
         if isinstance(answer, Cancel):
@@ -469,7 +480,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         all_lab_results = {}
 
         for filename in filenames:
-            file_error, version, encoding, decimalsign, quotechar = (True, None, None, None, None)
             file_error, version, encoding, decimalsign, quotechar = self.interlab4_parse_filesettings(filename)
             if file_error:
                 utils.pop_up_info("Warning: The file information" + filename + " could not be read. Skipping file")
@@ -532,7 +542,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         continue
 
                     if parse_data_values:
-
                         data = dict([(data_header[idx], value.lstrip(' ').rstrip(' ')) for idx, value in enumerate(cols) if value.lstrip(' ').rstrip(' ')])
                         if u'mätvärdetal' in data:
                             data[u'mätvärdetal'] = data[u'mätvärdetal'].replace(decimalsign, '.')
@@ -556,20 +565,57 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         If kalium is below 1, they will have values '<2,5' and '<1' in 'mätvärdetext'
                         If both are above 2,5, there is no good way to separate them. In that case, use the last one.
                         """
-                        if data[u'parameter'] == u'kalium':
-                            if u'kalium' not in lab_results[data[u'lablittera']]:
+                        if u'kalium' in data[u'parameter'].lower():
+                            current_kalium_name = data[u'parameter'].lower()
+                            existing_same_names = [x for x in lab_results[data[u'lablittera']] if x == current_kalium_name]
+                            if not existing_same_names:
                                 #kalium has not been parsed yet. Keep the current one.
                                 pass
                             else:
-                                if data.get(u'mätvärdetext', u'').strip(u' ') == u'<1' or lab_results[data[u'lablittera']][u'kalium'].get(u'mätvärdetext', u'').strip(u' ').replace(u',', u'.') == u'<2.5':
-                                    #The current one is the high resolution one. Keep it to overwrite the other one.
-                                    pass
-                                elif data.get(u'mätvärdetext', u'').strip(u' ').replace(u',', u'.') == u'<2.5' or lab_results[data[u'lablittera']][u'kalium'].get(u'mätvärdetext', u'').strip(u' ') == u'<1':
-                                    #The current one is the low resolution one, skip it.
-                                    continue
-                                else:
-                                    #Hope that the current one (the last one) is the high resolution one and let it overwrite the existing one
-                                    pass
+                                parameter_chosen = False
+                                #Method 1: Use mätosäkerhet to find the high resolution kalium.
+                                _previous_resolution = lab_results[data[u'lablittera']][current_kalium_name].get(u'mätosäkerhet', u'')
+                                previous_resolution = _previous_resolution.replace(u'±', u'').replace(u'<', u'')
+                                _current_resolution = data.get(u'mätosäkerhet', u'')
+                                current_resolution = _current_resolution.replace(u'±', u'').replace(u'<', u'')
+                                if previous_resolution and current_resolution:
+                                    try:
+                                        previous_resolution = float(previous_resolution)
+                                        current_resolution = float(current_resolution)
+                                    except ValueError:
+                                        #mätosäkerhet could not be used. Try the other method
+                                        parameter_chosen = False
+                                        pass
+                                    else:
+                                        if previous_resolution > current_resolution:
+                                            # The current one is the high resolution one. Keep it to overwrite the other one.
+                                            parameter_chosen = True
+                                            utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The one with mätosäkerhet "' + _current_resolution + u'" was used.')
+                                        elif current_resolution > previous_resolution:
+                                            # The current one is the low resolution one, skip it.
+                                            utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The one with mätosäkerhet "' + _previous_resolution + u'" was used.')
+                                            parameter_chosen = True
+                                            continue
+                                        elif current_resolution == previous_resolution:
+                                            # This method could not be used to find the high resolution one. Try the other method.
+                                            parameter_chosen = False
+
+                                if not parameter_chosen:
+                                    current_txt = data.get(u'mätvärdetext', u'').strip(u' ')
+                                    previous_txt = lab_results[data[u'lablittera']][current_kalium_name].get(u'mätvärdetext', u'')
+                                    #Method 2: Use < and <2.5 limits to try to find the high resolution one.
+                                    if current_txt == u'<1' or previous_txt.strip(u' ').replace(u',', u'.') == u'<2.5':
+                                        #The current one is the high resolution one. Keep it to overwrite the other one.
+                                        utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The one with mätvärdetext "' + current_txt + u'" was used.')
+                                        pass
+                                    elif current_txt == u'<2.5' or previous_txt.strip(u' ') == u'<1':
+                                        #The current one is the low resolution one, skip it.
+                                        utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The one with mätvärdetext "' + previous_txt + u'" was used.')
+                                        continue
+                                    else:
+                                        utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The high resolution one could not be found. The one with mätvärdetext "' + current_txt + u'" was used.')
+                                        #Hope that the current one (the last one) is the high resolution one and let it overwrite the existing one
+                                        pass
 
                         lab_results[data[u'lablittera']][data[u'parameter']] = data
 
@@ -627,7 +673,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         return (file_error, version, encoding, decimalsign, quotechar)
 
-    def interlab4_to_table(self, _data_dict, existing_obsids=[]):
+    def interlab4_to_table(self, _data_dict):
         """
         Converts a parsed interlab4 dict into a table for w_qual_lab import
 
@@ -644,29 +690,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         for lablittera, lab_results in data_dict.iteritems():
             metadata = lab_results.pop(u'metadata')
 
-            try:
-                obsid = metadata[u'provplatsid']
-            except KeyError, e:
-                obsid = None
-
-            if obsid not in existing_obsids:
-                metadata_as_text = [u': '.join([u'lablittera', lablittera])]
-                metadata_as_text.extend([u': '.join([k, v]) for k, v in sorted(metadata.iteritems())])
-                metadata_as_text = u'\n'.join(metadata_as_text)
-
-                question = utils.NotFoundQuestion(dialogtitle=u'Submit obsid',
-                                                  msg=u''.join([u'Submit the obsid for the metadata:\n ', metadata_as_text]),
-                                                  existing_list=existing_obsids,
-                                                  default_value=u'',
-                                                  button_names=[u'Skip', u'Ok', u'Cancel'])
-                answer = question.answer
-                if answer == u'cancel':
-                    return u'cancel'
-                elif answer == u'skip':
-                    continue
-
-                obsid = utils.returnunicode(question.value)
-
+            obsid = u' '.join([x for x in [metadata.get(u'provplatsid', u''), metadata.get(u'provplatsnamn', u''), metadata.get(u'specifik provplats', u'')] if x])
             depth = None
             report = lablittera
             project = metadata.get(u'projekt', None)
@@ -674,7 +698,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             sampledate = metadata.get(u'provtagningsdatum', None)
             if sampledate is None:
-                qgis.utils.iface.messageBar().pushMessage('Interlab4 import warning: There was no sample date found (column "provtagningsdatum"). Importing without it.')
+                utils.MessagebarAndLog.warning(bar_msg=u'Interlab4 import warning: There was no sample date found (column "provtagningsdatum") for lablittera ' + lablittera + u'. Importing without it.')
                 date_time = None
             else:
                 sampletime = metadata.get(u'provtagningstid', None)
@@ -682,7 +706,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     date_time = datetime.strftime(datestring_to_date(u' '.join([sampledate, sampletime])), u'%Y-%m-%d %H:%M:%S')
                 else:
                     date_time = datetime.strftime(datestring_to_date(sampledate), u'%Y-%m-%d %H:%M:%S')
-                    qgis.utils.iface.messageBar().pushMessage('Interlab4 import warning: There was no sample time found (column "provtagningstid"). Importing without it.')
+                    utils.MessagebarAndLog.warning(bar_msg=u'Interlab4 import warning: There was no sample time found (column "provtagningstid") for lablittera ' + lablittera + u'. Importing without it.')
 
             meta_comment = metadata.get(u'kommentar', None)
             additional_meta_comments = [u'provtagningsorsak',
@@ -690,15 +714,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                         u'provtypspecifikation',
                                         u'bedömning',
                                         u'kemisk bedömning',
-                                        u'mikrobiologisk bedömning',
-                                        u'mätvärdetalanm',
-                                        u'rapporteringsgräns',
-                                        u'detektionsgräns',
-                                        u'mätosäkerhet',
-                                        u'mätvärdespår',
-                                        u'parameterbedömning']
+                                        u'mikrobiologisk bedömning']
+
             #Only keep the comments that really has a value.
-            more_meta_comments = u'. '.join([u': '.join([_x, metadata[_x]]) for _x in [_y for _y in additional_meta_comments if _y in metadata]  if all([metadata[_x], metadata[_x] is not None, metadata[_x].lower() != u'ej bedömt'])])
+            more_meta_comments = u'. '.join([u': '.join([_x, metadata[_x]]) for _x in [_y for _y in additional_meta_comments if _y in metadata]  if all([metadata[_x], metadata[_x] is not None, metadata[_x].lower() != u'ej bedömt', metadata[_x] != u'-'])])
             if not more_meta_comments:
                 more_meta_comments = None
 
@@ -709,10 +728,18 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 try:
                     reading_txt = parameter_dict[u'mätvärdetext']
                 except KeyError:
-                    reading_txt = reading_num
+                    reading_txt = u''.join([x for x in [parameter_dict.get(u'mätvärdetalanm', False), reading_num] if x])
 
                 unit = parameter_dict.get(u'enhet', None)
                 parameter_comment = parameter_dict.get(u'kommentar', None)
+                additional_parameter_comments = [u'rapporteringsgräns',
+                                                u'detektionsgräns',
+                                                u'mätosäkerhet',
+                                                u'mätvärdespår',
+                                                u'parameterbedömning'
+                                                #u'mätvärdetalanm' This is used for creating reading_txt
+                                                ]
+                more_parameter_comments = u'. '.join([u': '.join([_x, parameter_dict[_x]]) for _x in [_y for _y in additional_parameter_comments if _y in parameter_dict]  if all([parameter_dict[_x], parameter_dict[_x] is not None, parameter_dict[_x].lower() != u'ej bedömt', parameter_dict[_x] != u'-'])])
 
                 file_data.append([obsid,
                                   depth,
@@ -725,7 +752,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                   reading_num,
                                   reading_txt,
                                   unit,
-                                  u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments] if comment is not None])]
+                                  u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments, more_parameter_comments] if comment is not None and comment])]
                                  )
         return file_data
         
@@ -958,6 +985,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
+
 
 
 

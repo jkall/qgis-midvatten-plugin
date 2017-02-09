@@ -854,7 +854,7 @@ class TestFieldLoggerImporterNoDb(object):
                          u'date_time': datestring_to_date(u'2016-01-02 00:00'),
                          u'unit': u'aunit', u'value': u'223,4'}]
         test_string = create_test_string(FieldloggerImport.prepare_w_flow_data(observations))
-        mock_instrument_not_found.assert_called_once_with(combobox_label=u'Instrument id:s in database.\nThe last used instrument id for the current obsid is prefilled:', default_value=u'', dialogtitle=u'Submit instrument id', existing_list=[u''], msg=u'Submit the instrument id for the measurement:\n obs1, 2016-01-01 00:00:00, atype, aunit')
+        mock_instrument_not_found.assert_called_once_with(combobox_label=u'Instrument id:s in database for obsid obs1.\nThe last used instrument id for obsid obs1 is prefilled:', default_value=u'', dialogtitle=u'Submit instrument id', existing_list=[u''], msg=u'Submit the instrument id for the measurement:\n obs1, 2016-01-01 00:00:00, atype, aunit')
         reference_string = u'[[obsid, instrumentid, flowtype, date_time, reading, unit, comment], [obs1, inst1, atype, 2016-01-01 00:00:00, 123.4, aunit, ], [obs1, inst1, atype, 2016-01-02 00:00:00, 223.4, aunit, ]]'
         assert test_string == reference_string
 
@@ -875,8 +875,8 @@ class TestFieldLoggerImporterNoDb(object):
                          u'date_time': datestring_to_date(u'2016-01-03 00:00'),
                          u'unit': u'aunit', u'value': u'223,4'}]
         test_string = create_test_string(FieldloggerImport.prepare_w_flow_data(observations))
-        expected_calls = [call(combobox_label=u'Instrument id:s in database.\nThe last used instrument id for the current obsid is prefilled:', default_value=u'', dialogtitle=u'Submit instrument id', existing_list=[u''], msg=u'Submit the instrument id for the measurement:\n obs1, 2016-01-01 00:00:00, atype, aunit'),
- call(combobox_label=u'Instrument id:s in database.\nThe last used instrument id for the current obsid is prefilled:', default_value=u'', dialogtitle=u'Submit instrument id', existing_list=[u''], msg=u'Submit the instrument id for the measurement:\n obs2, 2016-01-02 00:00:00, atype, aunit')]
+        expected_calls = [call(combobox_label=u'Instrument id:s in database for obsid obs1.\nThe last used instrument id for obsid obs1 is prefilled:', default_value=u'', dialogtitle=u'Submit instrument id', existing_list=[u''], msg=u'Submit the instrument id for the measurement:\n obs1, 2016-01-01 00:00:00, atype, aunit'),
+ call(combobox_label=u'Instrument id:s in database for obsid obs2.\nThe last used instrument id for obsid obs2 is prefilled:', default_value=u'', dialogtitle=u'Submit instrument id', existing_list=[u''], msg=u'Submit the instrument id for the measurement:\n obs2, 2016-01-02 00:00:00, atype, aunit')]
         assert mock_instrument_not_found.mock_calls == expected_calls
         reference_string = u'[[obsid, instrumentid, flowtype, date_time, reading, unit, comment], [obs1, inst1, atype, 2016-01-01 00:00:00, 123.4, aunit, ], [obs2, inst1, atype, 2016-01-02 00:00:00, 223.4, aunit, ], [obs2, inst1, atype, 2016-01-03 00:00:00, 223.4, aunit, ]]'
         assert test_string == reference_string

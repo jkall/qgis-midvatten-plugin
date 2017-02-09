@@ -1057,10 +1057,11 @@ class TestInterlab4Importer():
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse_interlab4([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result, [u'Demo1 vattenverk']))
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, 5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, 5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
+
         assert result_string == reference_string
 
     def test_interlab4_to_table_kalium_above_2_5(self):
@@ -1083,10 +1084,10 @@ class TestInterlab4Importer():
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse_interlab4([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result, [u'Demo1 vattenverk']))
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 4, 4, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 4, 4, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
         assert result_string == reference_string
 
     def test_interlab4_to_table_kalium_between_1_and_2_5(self):
@@ -1109,10 +1110,10 @@ class TestInterlab4Importer():
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse_interlab4([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result, [u'Demo1 vattenverk']))
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.5, 1,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.5, 1,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
         assert result_string == reference_string
 
     def test_interlab4_to_table_kalium_below_1(self):
@@ -1135,12 +1136,89 @@ class TestInterlab4Importer():
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
             parsed_result = self.importinstance.parse_interlab4([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result, [u'Demo1 vattenverk']))
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
         assert result_string == reference_string
 
+    def test_interlab4_to_table_kalium_using_resolution(self):
+        interlab4_lines = (
+            u'#Interlab',
+            u'#Version=4.0',
+            u'#Tecken=UTF-8',
+            u'#Textavgränsare=Nej',
+            u'#Decimaltecken=,',
+            u'#Provadm',
+            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
+            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            u'#Provdat',
+            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;3;3;;mg/l Pt;;;±1;;;;',
+            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;10;10;;mg/l Pt;;;±0.1;;;;',
+            u'#Slut'
+                )
+
+        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
+            parsed_result = self.importinstance.parse_interlab4([testfile])
+
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+
+        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±0.1]]'
+        assert result_string == reference_string
+
+    def test_interlab4_to_table_kalium_using_resolution_same_resolution_use_last_one(self):
+        interlab4_lines = (
+            u'#Interlab',
+            u'#Version=4.0',
+            u'#Tecken=UTF-8',
+            u'#Textavgränsare=Nej',
+            u'#Decimaltecken=,',
+            u'#Provadm',
+            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
+            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            u'#Provdat',
+            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;3;3;;mg/l Pt;;;±1;;;;',
+            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;10;10;;mg/l Pt;;;±1;;;;',
+            u'#Slut'
+                )
+
+        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
+            parsed_result = self.importinstance.parse_interlab4([testfile])
+
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+
+        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±1]]'
+        assert result_string == reference_string
+
+    def test_interlab4_to_table_matvardetalanm(self):
+        interlab4_lines = (
+            u'#Interlab',
+            u'#Version=4.0',
+            u'#Tecken=UTF-8',
+            u'#Textavgränsare=Nej',
+            u'#Decimaltecken=,',
+            u'#Provadm',
+            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
+            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
+            u'#Provdat',
+            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
+            u'DM-990908-2773;SS-EN ISO 7887-1/4;Färgtal;;5;<;mg/l Pt;;;±1;;;;',
+            u'#Slut'
+                )
+
+        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
+            parsed_result = self.importinstance.parse_interlab4([testfile])
+
+        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+
+        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, <5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±1]]'
+        assert result_string == reference_string
+        
     def tearDown(self):
         self.importinstance = None
         pass
@@ -1206,19 +1284,22 @@ class TestInterlab4ImporterDB(object):
                 )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as filename:
+            @mock.patch('midvatten_utils.NotFoundQuestion')
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
             @mock.patch('import_data_to_db.utils.askuser', TestInterlab4ImporterDB.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileNames')
-            def _test_interlab4_full_test_to_db(self, filename, mock_filenames, mock_skippopup, mock_iface):
+            def _test(self, filename, mock_filenames, mock_skippopup, mock_iface, mock_not_found_question):
+                mock_not_found_question.return_value.answer = u'ok'
+                mock_not_found_question.return_value.value = u'Demo1 vattenverk'
                 mock_filenames.return_value = filename
                 self.mock_iface = mock_iface
                 self.importinstance.import_interlab4()
-                test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
-                return test_string
 
-            test_string = _test_interlab4_full_test_to_db(self, filename)
+
+            _test(self, filename)
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
         reference_string = ur'''(True, [(Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt)])'''
         assert test_string == reference_string
 

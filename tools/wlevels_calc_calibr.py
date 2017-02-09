@@ -122,7 +122,7 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
             sql2 += str(fr_d_t)
             sql2 += """' AND date_time <= '"""
             sql2 += str(to_d_t)
-            sql2 += """' """        
+            sql2 += """' and meas is not null and h_toc is not null """
             utils.sql_alter_db(sql2.replace("[","(").replace("]",")"))
             self.close()        
         else:
@@ -246,12 +246,14 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.obsid = obsid
         level_masl_ts_sql = r"""SELECT date_time as 'date [datetime]', level_masl FROM w_levels_logger WHERE obsid = '""" + self.obsid + """' ORDER BY date_time"""
         self.level_masl_ts = self.sql_into_recarray(level_masl_ts_sql)
+
+        self.getlastcalibration(obsid)
+
         return obsid
 
-    def getlastcalibration(self):
-        obsid = self.load_obsid_and_init()
+    def getlastcalibration(self, obsid):
         if not obsid=='':
-            sql = """SELECT MAX(date_time), loggerpos FROM (SELECT date_time, (level_masl - (head_cm/100)) as loggerpos FROM w_levels_logger WHERE level_masl > -990 AND obsid = '"""
+            sql = """SELECT MAX(date_time), loggerpos FROM (SELECT date_time, (level_masl - (head_cm/100)) as loggerpos FROM w_levels_logger WHERE level_masl is not Null and level_masl > -990 AND obsid = '"""
             sql += obsid
             sql += """')"""
             self.lastcalibr = utils.sql_load_fr_db(sql)[1]
@@ -293,7 +295,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                 else:
                     self.update_level_masl_from_level_masl(obsid, fr_d_t, to_d_t, self.Add2Levelmasl.text())
 
-                self.getlastcalibration()
+                self.getlastcalibration(obsid)
             else:
                 utils.pop_up_info("Calibration aborted!!\nThere must not be empty cells or\nnull values in the 'head_cm' column!")
         else:
@@ -394,7 +396,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.calib_help.setText("")
 
-        self.getlastcalibration()
+        self.getlastcalibration(obsid)
 
     def plot_recarray(self, axes, a_recarray, lable, line_style, picker=5):
         """ Plots a recarray to the supplied axes object """

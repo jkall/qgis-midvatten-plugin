@@ -14,11 +14,47 @@
    <string>Custom plot generator for Midvatten plugin</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout_14">
-    <item row="0" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="20,1,50">
-      <item>
+   <layout class="QHBoxLayout" name="horizontalLayout_7">
+    <item>
+     <widget class="QSplitter" name="splitter">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="midLineWidth">
+       <number>2</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="opaqueResize">
+       <bool>true</bool>
+      </property>
+      <property name="handleWidth">
+       <number>10</number>
+      </property>
+      <property name="childrenCollapsible">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="left_wid" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>300</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <layout class="QGridLayout" name="gridLayout_6">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
         <item row="0" column="0">
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
@@ -45,6 +81,9 @@
              <layout class="QGridLayout" name="gridLayout_7">
               <item row="0" column="0">
                <layout class="QGridLayout" name="gridLayout_2">
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetMaximumSize</enum>
+                </property>
                 <item row="0" column="0">
                  <widget class="QLabel" name="table_QLabel">
                   <property name="sizePolicy">
@@ -66,9 +105,6 @@
                   </property>
                   <property name="text">
                    <string>Table:</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>table_ComboBox_1</cstring>
                   </property>
                  </widget>
                 </item>
@@ -93,9 +129,6 @@
                   </property>
                   <property name="text">
                    <string>x-axis:</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>table_ComboBox_1</cstring>
                   </property>
                  </widget>
                 </item>
@@ -147,9 +180,6 @@
                   </property>
                   <property name="text">
                    <string>y-axis:</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>table_ComboBox_1</cstring>
                   </property>
                  </widget>
                 </item>
@@ -211,6 +241,9 @@
               </item>
               <item row="1" column="0">
                <layout class="QGridLayout" name="gridLayout_3">
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetNoConstraint</enum>
+                </property>
                 <item row="0" column="0">
                  <widget class="QLabel" name="Filter1_QLabel">
                   <property name="enabled">
@@ -241,9 +274,6 @@
                   </property>
                   <property name="text">
                    <string>Filter #1</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>Filter1_ComboBox_1</cstring>
                   </property>
                  </widget>
                 </item>
@@ -277,9 +307,6 @@
                   </property>
                   <property name="text">
                    <string>Filter #2</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>Filter1_ComboBox_1</cstring>
                   </property>
                  </widget>
                 </item>
@@ -389,6 +416,9 @@
               </item>
               <item row="2" column="0">
                <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetMaximumSize</enum>
+                </property>
                 <item>
                  <widget class="QLabel" name="label_7">
                   <property name="font">
@@ -403,6 +433,24 @@
                 </item>
                 <item>
                  <widget class="QComboBox" name="PlotType_comboBox_1">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>122</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>122</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="font">
                    <font>
                     <pointsize>9</pointsize>
@@ -449,6 +497,9 @@
               </item>
               <item row="4" column="0" rowspan="2">
                <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0">
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetMaximumSize</enum>
+                </property>
                 <item>
                  <widget class="QLabel" name="label_11">
                   <property name="toolTip">
@@ -467,6 +518,24 @@
                 </item>
                 <item>
                  <widget class="QLineEdit" name="LineEditFactor1">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>122</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>122</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="toolTip">
                    <string>a in y=ax+b</string>
                   </property>
@@ -479,6 +548,9 @@
               </item>
               <item row="8" column="0">
                <layout class="QHBoxLayout" name="horizontalLayout_11">
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetMaximumSize</enum>
+                </property>
                 <item>
                  <widget class="QLabel" name="label_14">
                   <property name="toolTip">
@@ -494,6 +566,24 @@
                 </item>
                 <item>
                  <widget class="QLineEdit" name="LineEditOffset1">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>122</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>122</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="toolTip">
                    <string>b in y=ax+b</string>
                   </property>
@@ -542,9 +632,6 @@
                   <property name="text">
                    <string>Table:</string>
                   </property>
-                  <property name="buddy">
-                   <cstring>table_ComboBox_1</cstring>
-                  </property>
                  </widget>
                 </item>
                 <item row="1" column="0">
@@ -568,9 +655,6 @@
                   </property>
                   <property name="text">
                    <string>x-axis:</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>table_ComboBox_1</cstring>
                   </property>
                  </widget>
                 </item>
@@ -622,9 +706,6 @@
                   </property>
                   <property name="text">
                    <string>y-axis:</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>table_ComboBox_1</cstring>
                   </property>
                  </widget>
                 </item>
@@ -717,9 +798,6 @@
                   <property name="text">
                    <string>Filter #1</string>
                   </property>
-                  <property name="buddy">
-                   <cstring>Filter1_ComboBox_1</cstring>
-                  </property>
                  </widget>
                 </item>
                 <item row="0" column="1">
@@ -752,9 +830,6 @@
                   </property>
                   <property name="text">
                    <string>Filter #2</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>Filter1_ComboBox_1</cstring>
                   </property>
                  </widget>
                 </item>
@@ -878,6 +953,18 @@
                 </item>
                 <item>
                  <widget class="QComboBox" name="PlotType_comboBox_2">
+                  <property name="minimumSize">
+                   <size>
+                    <width>122</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>122</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="font">
                    <font>
                     <pointsize>9</pointsize>
@@ -936,6 +1023,18 @@
                 </item>
                 <item>
                  <widget class="QLineEdit" name="LineEditFactor2">
+                  <property name="minimumSize">
+                   <size>
+                    <width>122</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>122</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="toolTip">
                    <string>a in y=ax+b</string>
                   </property>
@@ -960,6 +1059,18 @@
                 </item>
                 <item>
                  <widget class="QLineEdit" name="LineEditOffset2">
+                  <property name="minimumSize">
+                   <size>
+                    <width>122</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>122</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="toolTip">
                    <string>b in y=ax+b</string>
                   </property>
@@ -1008,9 +1119,6 @@
                   <property name="text">
                    <string>Table:</string>
                   </property>
-                  <property name="buddy">
-                   <cstring>table_ComboBox_1</cstring>
-                  </property>
                  </widget>
                 </item>
                 <item row="1" column="0">
@@ -1034,9 +1142,6 @@
                   </property>
                   <property name="text">
                    <string>x-axis:</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>table_ComboBox_1</cstring>
                   </property>
                  </widget>
                 </item>
@@ -1088,9 +1193,6 @@
                   </property>
                   <property name="text">
                    <string>y-axis:</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>table_ComboBox_1</cstring>
                   </property>
                  </widget>
                 </item>
@@ -1183,9 +1285,6 @@
                   <property name="text">
                    <string>Filter #1</string>
                   </property>
-                  <property name="buddy">
-                   <cstring>Filter1_ComboBox_1</cstring>
-                  </property>
                  </widget>
                 </item>
                 <item row="0" column="1">
@@ -1218,9 +1317,6 @@
                   </property>
                   <property name="text">
                    <string>Filter #2</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>Filter1_ComboBox_1</cstring>
                   </property>
                  </widget>
                 </item>
@@ -1344,6 +1440,18 @@
                 </item>
                 <item>
                  <widget class="QComboBox" name="PlotType_comboBox_3">
+                  <property name="minimumSize">
+                   <size>
+                    <width>122</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>122</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="font">
                    <font>
                     <pointsize>9</pointsize>
@@ -1402,6 +1510,18 @@
                 </item>
                 <item>
                  <widget class="QLineEdit" name="LineEditFactor3">
+                  <property name="minimumSize">
+                   <size>
+                    <width>122</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>122</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="toolTip">
                    <string>a in y=ax+b</string>
                   </property>
@@ -1426,6 +1546,18 @@
                 </item>
                 <item>
                  <widget class="QLineEdit" name="LineEditOffset3">
+                  <property name="minimumSize">
+                   <size>
+                    <width>122</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>122</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="toolTip">
                    <string>b in y=ax+b</string>
                   </property>
@@ -1476,9 +1608,6 @@
             <property name="wordWrap">
              <bool>true</bool>
             </property>
-            <property name="buddy">
-             <cstring>table_ComboBox_1</cstring>
-            </property>
            </widget>
           </item>
           <item>
@@ -1488,6 +1617,18 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>133</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>133</width>
+              <height>16777215</height>
+             </size>
             </property>
             <property name="maximum">
              <double>1000.000000000000000</double>
@@ -1564,28 +1705,12 @@
          </widget>
         </item>
        </layout>
-      </item>
-      <item>
-       <widget class="Line" name="line">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>400</height>
-         </size>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
+      </widget>
+      <widget class="QWidget" name="">
        <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
         <item>
          <layout class="QGridLayout" name="gridLayout"/>
         </item>
@@ -1890,8 +2015,8 @@
          </layout>
         </item>
        </layout>
-      </item>
-     </layout>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>

@@ -297,21 +297,21 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             if instrumentid is None:
                 instrumentids_for_obsid = instrumentids.get(obsid, None)
                 if instrumentids_for_obsid is None:
-                    last_used_instrumentid = u''
+                    last_used_instrumentid = [u'']
                 else:
                     last_used_instrumentid = sorted(
                         [(_date_time, _instrumentid) for _flowtype, _instrumentid, _date_time in instrumentids[obsid] if
-                         (_flowtype == flowtype)])
+                         (_flowtype == flowtype)], reverse=True)
                     if last_used_instrumentid:
-                        last_used_instrumentid = last_used_instrumentid[-1][1]
+                        last_used_instrumentid = [x[1] for x in last_used_instrumentid]
                     else:
-                        last_used_instrumentid = u''
+                        last_used_instrumentid = [u'']
                 question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
                                                   msg=u''.join([u'Submit the instrument id for the measurement:\n ',
                                                                 u', '.join([obsid, date_time, flowtype, unit])]),
-                                                  existing_list=[last_used_instrumentid],
-                                                  default_value=last_used_instrumentid,
-                                                  combobox_label=u'Instrument id:s in database.\nThe last used instrument id for the current obsid is prefilled:')
+                                                  existing_list=last_used_instrumentid,
+                                                  default_value=last_used_instrumentid[0],
+                                                  combobox_label=u'Instrument id:s in database for obsid %s.\nThe last used instrument id for obsid %s is prefilled:'%(obsid, obsid))
                 answer = question.answer
                 if answer == u'cancel':
                     return Cancel()

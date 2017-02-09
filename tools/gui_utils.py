@@ -21,6 +21,7 @@
 """
 import PyQt4
 
+
 class SplitterWithHandel(PyQt4.QtGui.QSplitter):
     """
     Creates a splitter with a handle
@@ -30,6 +31,7 @@ class SplitterWithHandel(PyQt4.QtGui.QSplitter):
     def __init__(self, *args, **kwargs):
         super(SplitterWithHandel, self).__init__(*args, **kwargs)
         handle = self.handle(1)
+        self.setHandleWidth(10)
         layout = PyQt4.QtGui.QVBoxLayout(handle)
         layout.setSpacing(0)
         layout.setMargin(0)
