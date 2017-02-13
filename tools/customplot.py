@@ -735,7 +735,7 @@ class PandasCalculations(object):
                            u'"20T" = 20 minutes\n'
                            u'"1h" = 1 hour\n'
                            u'"24h" = 24 hours\n'
-                           u'No resampling if field is empty'
+                           u'No resampling if field is empty\n'
                            u'See pandas pandas.DataFrame.resample documentation for more info.')
 
         self.base_label = PyQt4.QtGui.QLabel(u'Resample base')
@@ -752,8 +752,8 @@ class PandasCalculations(object):
         self.window = PyQt4.QtGui.QLineEdit(u'')
         for wid in [self.window_label, self.window]:
             wid.setToolTip(u'The number of timesteps in each moving average (rolling mean) mean\n'
-                           u'The result is stored at the center timestep of each mean.'
-                           u'See Pandas pandas.rolling_mean documentation for more info.'
+                           u'The result is stored at the center timestep of each mean.\n'
+                           u'See Pandas pandas.rolling_mean documentation for more info.\n'
                            u'No rolling mean if field is empty.')
 
         for lineedit in [self.rule, self.base, self.window]:
