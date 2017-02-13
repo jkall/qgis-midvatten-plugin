@@ -114,6 +114,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.LineEditOffset3.setValidator(validator)
 
         self.pandas_calc_1 = None
+        self.pandas_calc_2 = None
+        self.pandas_calc_3 = None
         if pandas_on:
             self.pandas_calc_1 = PandasCalculations(self.gridLayout_7)
             self.pandas_calc_2 = PandasCalculations(self.gridLayout_10)
