@@ -525,7 +525,7 @@ class TestFieldLoggerImporterDb(object):
                                    [u'q.temperatur.grC', [[u'import_method', u'w_qual_field'], [u'parameter', u'temperatur'], [u'unit', u'grC'], [u'depth', u''], [u'instrument', u'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
 
-                importer.input_fields.update_parameter_imports(
+                importer.input_fields.update_parameter_imports_queue(
                     importer.filter_by_settings_using_shared_loop(
                         importer.observations,
                         importer.settings), importer.stored_settings)

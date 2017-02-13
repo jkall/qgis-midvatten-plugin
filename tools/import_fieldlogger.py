@@ -28,6 +28,7 @@ import os
 from collections import OrderedDict
 from datetime import datetime
 from functools import partial
+from Queue import Queue
 
 import PyQt4.QtCore
 import PyQt4.QtGui
@@ -98,7 +99,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         #Input fields
         self.input_fields = InputFields(self.connect)
-        self.input_fields.update_parameter_imports(self.observations, self.stored_settings)
+        self.input_fields.update_parameter_imports_queue(self.observations, self.stored_settings)
 
         splitter.addWidget(self.input_fields.widget)
 
@@ -230,12 +231,10 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         sublocations = [observation[u'sublocation'] for observation in observations]
         sublocation_filter.update_sublocations(sublocations)
         observations = self.filter_by_settings_using_shared_loop(observations, [sublocation_filter])
-        input_fields.update_parameter_imports(observations, stored_settings)
+        input_fields.update_parameter_imports_queue(observations, stored_settings)
 
     def update_input_fields_from_button(self):
-        self.input_fields.update_parameter_imports(
-            self.filter_by_settings_using_shared_loop(self.observations, self.settings),
-            self.stored_settings)
+        self.input_fields.update_parameter_imports_queue(self.filter_by_settings_using_shared_loop(self.observations, self.settings), self.stored_settings)
 
     @staticmethod
     def prepare_w_levels_data(observations):
@@ -722,6 +721,12 @@ class InputFields(RowEntry):
         self.widget.setLayout(self.layout)
         self.connect = connect
 
+        self.all_children = []
+
+        self.active_updater = False
+        self.update_queue = Queue()
+        self.update_queue_working = False
+
         self.layout.addWidget(PyQt4.QtGui.QLabel(u'Specify import methods for input fields'))
 
         self.parameter_imports = OrderedDict()
@@ -732,7 +737,23 @@ class InputFields(RowEntry):
         self.update_parameters_button.setToolTip(u'Update input fields using the observations remaining after filtering by date and sublocation selection.')
         self.layout.addWidget(self.update_parameters_button)
 
+    def update_parameter_imports_queue(self, *args, **kwargs):
+        if self.update_queue_working:
+            self.update_queue.put(partial(self.update_parameter_imports, *args, **kwargs))
+            return
+        else:
+            self.update_queue_working = True
+            self.update_queue.put(partial(self.update_parameter_imports, *args, **kwargs))
+            while not self.update_queue.empty():
+                upd_func = self.update_queue.get()
+                upd_func()
+                self.update_queue.task_done()
+            else:
+                self.update_queue_working = False
+
+
     def update_parameter_imports(self, observations, stored_settings=None):
+
         if stored_settings is None:
             stored_settings = []
         if isinstance(observations, Cancel):
@@ -747,6 +768,9 @@ class InputFields(RowEntry):
             self.layout.removeWidget(imp_obj.widget)
             imp_obj.close()
 
+        for child in self.all_children:
+            child.close()
+
         observations = copy.deepcopy(observations)
         parameter_names = list(set([observation[u'parametername'] for observation in observations]))
 
@@ -759,14 +783,21 @@ class InputFields(RowEntry):
 
         if self.parameter_imports:
             return
+
         for parametername in parameter_names:
             param_import_obj = ImportMethodChooser(parametername, parameter_names, self.connect)
             param_import_obj.label.setFixedWidth(maximumwidth)
             if parametername not in self.parameter_imports:
                 self.parameter_imports[parametername] = param_import_obj
                 self.layout.addWidget(param_import_obj.widget)
+                if param_import_obj.widget not in self.all_children:
+                    self.all_children.append(param_import_obj.widget)
 
         self.set_parameters_using_stored_settings(stored_settings)
+
+        #utils.MessagebarAndLog.info(log_msg=u"Imports in self.parameter_imports:\n" + u'\n'.join([u': '.join([k, str(v), v.parameter_name, str(v.widget)]) for k, v in self.parameter_imports.iteritems()]))
+        #utils.MessagebarAndLog.info(log_msg=u"Conected widgets:\n" + u'\n'.join([u' ,parent:'.join([str(self.layout.itemAt(wid).widget()), str(self.layout.itemAt(wid).widget().parentWidget())]) for wid in xrange(self.layout.count())]))
+        #utils.MessagebarAndLog.info(log_msg=u"All children parents:\n" + u'\n'.join([u': '.join([str(w), str(w.parentWidget())]) for w in self.all_children]))
 
     def update_observations(self, observations):
         if isinstance(observations, Cancel):
@@ -1258,5 +1289,4 @@ def default_combobox(editable=True):
     combo_box.setMinimumWidth(80)
     combo_box.addItem(u'')
     return combo_box
-
 
