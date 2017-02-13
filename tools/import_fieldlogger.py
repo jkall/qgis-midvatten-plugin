@@ -722,6 +722,8 @@ class InputFields(RowEntry):
         self.widget.setLayout(self.layout)
         self.connect = connect
 
+        self.all_children = []
+
         self.layout.addWidget(PyQt4.QtGui.QLabel(u'Specify import methods for input fields'))
 
         self.parameter_imports = OrderedDict()
@@ -747,6 +749,9 @@ class InputFields(RowEntry):
             self.layout.removeWidget(imp_obj.widget)
             imp_obj.close()
 
+        for child in self.all_children:
+            child.close()
+
         observations = copy.deepcopy(observations)
         parameter_names = list(set([observation[u'parametername'] for observation in observations]))
 
@@ -765,8 +770,15 @@ class InputFields(RowEntry):
             if parametername not in self.parameter_imports:
                 self.parameter_imports[parametername] = param_import_obj
                 self.layout.addWidget(param_import_obj.widget)
+                if param_import_obj.widget not in self.all_children:
+                    self.all_children.append(param_import_obj.widget)
 
         self.set_parameters_using_stored_settings(stored_settings)
+
+        #utils.MessagebarAndLog.info(log_msg=u"Imports in self.parameter_imports:\n" + u'\n'.join([u': '.join([k, str(v), v.parameter_name, str(v.widget)]) for k, v in self.parameter_imports.iteritems()]))
+        #utils.MessagebarAndLog.info(log_msg=u"Conected widgets:\n" + u'\n'.join([u' ,parent:'.join([str(self.layout.itemAt(wid).widget()), str(self.layout.itemAt(wid).widget().parentWidget())]) for wid in xrange(self.layout.count())]))
+        #utils.MessagebarAndLog.info(log_msg=u"All children parents:\n" + u'\n'.join([u': '.join([str(w), str(w.parentWidget())]) for w in self.all_children]))
+
 
     def update_observations(self, observations):
         if isinstance(observations, Cancel):
