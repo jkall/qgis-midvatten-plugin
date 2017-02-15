@@ -757,8 +757,8 @@ class PandasCalculations(object):
                            u'No rolling mean if field is empty.')
 
         for lineedit in [self.rule, self.base, self.window]:
-            lineedit.setFixedWidth(122)
-            lineedit.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Fixed)
+            #lineedit.sizeHint()setFixedWidth(122)
+            lineedit.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Preferred)
 
         maximumwidth = 0
         for label in [self.rule_label, self.base_label, self.window_label]:
