@@ -128,11 +128,11 @@ class ExportData():
         return result
 
     def format_obsids(self, obsids):
-        formatted_obsids = u''.join([u'(', u', '.join([u"'{}'".format(k) for k in utils.returnunicode(obsids, True)]), u')']).encode('utf-8')
+        formatted_obsids = u''.join([u'(', u', '.join([u"'{}'".format(k) for k in utils.returnunicode(obsids, True)]), u')'])
         return formatted_obsids
 
     def get_number_of_obsids(self, obsids, tname):
-        no_of_obs_cursor = self.curs.execute(r"select count(obsid) from %s where obsid in %s" %(tname, self.format_obsids(obsids)))
+        no_of_obs_cursor = self.curs.execute(u"select count(obsid) from %s where obsid in %s" %(tname, self.format_obsids(obsids)))
         no_of_obs = no_of_obs_cursor.fetchall()
         return no_of_obs
 
@@ -160,7 +160,7 @@ class ExportData():
         :return:
         """
         output = UnicodeWriter(file(os.path.join(self.exportfolder, tname + ".csv"), 'w'))
-        self.curs.execute(r"select * from %s where obsid in %s"%(tname, self.format_obsids(obsids)))
+        self.curs.execute(u"select * from %s where obsid in %s"%(tname, self.format_obsids(obsids)))
         output.writerow([col[0] for col in self.curs.description])
         filter(None, (output.writerow(row) for row in self.curs))
 
@@ -184,9 +184,9 @@ class ExportData():
 
             #If the current table contains obsid, filter only the chosen ones.
             try:
-                sql = r"""insert or ignore into %s (%s) select distinct %s from  %s where obsid in %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix, self.format_obsids(obsids))
+                sql = u"""insert or ignore into %s (%s) select distinct %s from  %s where obsid in %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix, self.format_obsids(obsids))
             except:
-                sql = r"""insert or ignore into %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
+                sql = u"""insert or ignore into %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
             self.curs.execute(sql)
 
         #Make a transformation for column names that are geometries #Transformation doesn't work yet.
@@ -196,7 +196,7 @@ class ExportData():
         #    transformed_column_names = self.transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict) #Transformation doesn't work since east, north is not updated.
         transformed_column_names = column_names
 
-        sql = r"""insert into %s (%s) select %s from %s where obsid in %s"""%(tname, ', '.join(column_names), ', '.join(transformed_column_names), tname_with_prefix, self.format_obsids(obsids))
+        sql = u"""insert into %s (%s) select %s from %s where obsid in %s"""%(tname, ', '.join(column_names), ', '.join(transformed_column_names), tname_with_prefix, self.format_obsids(obsids))
         try:
             self.curs.execute(sql)
         except Exception, e:
@@ -383,8 +383,12 @@ class ExportData():
             for tablename in tablenames:
                 tablename = tablename[0]
                 sql = u"""SELECT count(*) FROM %s"""%(prefix + tablename)
-                nr_of_rows = self.curs.execute(sql).fetchall()[0][0]
-                results.setdefault(tablename, {})[alias] = str(nr_of_rows)
+                try:
+                    nr_of_rows = self.curs.execute(sql).fetchall()[0][0]
+                except:
+                    utils.MessagebarAndLog.warning(log_msg=u'Sql failed while getting table row differences: ' + sql)
+                else:
+                    results.setdefault(tablename, {})[alias] = str(nr_of_rows)
 
         printable_results = []
 

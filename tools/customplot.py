@@ -89,7 +89,9 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.connect(self.Filter2_ComboBox_2, QtCore.SIGNAL("activated(int)"), partial(self.Filter2_2Changed)) 
         self.connect(self.table_ComboBox_3, QtCore.SIGNAL("activated(int)"), partial(self.Table3Changed)) 
         self.connect(self.Filter1_ComboBox_3, QtCore.SIGNAL("activated(int)"), partial(self.Filter1_3Changed))
-        self.connect(self.Filter2_ComboBox_3, QtCore.SIGNAL("activated(int)"), partial(self.Filter2_3Changed)) 
+        self.connect(self.Filter2_ComboBox_3, QtCore.SIGNAL("activated(int)"), partial(self.Filter2_3Changed))
+        self.connect(self.plot_width, QtCore.SIGNAL("editingFinished()"), partial(self.change_plot_size))
+        self.connect(self.plot_height, QtCore.SIGNAL("editingFinished()"), partial(self.change_plot_size))
         self.PlotChart_QPushButton.clicked.connect(self.drawPlot)
         self.Redraw_pushButton.clicked.connect( self.refreshPlot )
         
@@ -121,7 +123,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.pandas_calc_2 = PandasCalculations(self.gridLayout_10)
             self.pandas_calc_3 = PandasCalculations(self.gridLayout_13)
 
-        self.custplotfigure.tight_layout()
+        #self.custplotfigure.tight_layout()
 
         self.show()
 
@@ -138,7 +140,35 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 freqs[j] = diff/delta_time
         freqs[0]=freqs[1]#assuming start frequency to get a nicer plot
 
-        return freqs 
+        return freqs
+
+    def change_plot_size(self):
+        width = self.plot_width.text()
+        height = self.plot_height.text()
+
+        try:
+            width = int(width)
+        except ValueError:
+            #self.layoutplot.setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Extended)
+            #self.widgetPlot.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
+            self.widgetPlot.setMinimumWidth(100)
+            self.widgetPlot.setMaximumWidth(16777215)
+            #self.widgetPlot.adjustSize()
+        else:
+            #self.widgetPlot.setMinimum
+            #self.widgetPlot.setFixedWidth(width)
+            self.widgetPlot.setMinimumWidth(width)
+            self.widgetPlot.setMaximumWidth(width)
+
+        try:
+            height = int(height)
+        except ValueError:
+            #self.widgetPlot.sizePolicy().setVerticalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
+            self.widgetPlot.setMinimumHeight(100)
+            self.widgetPlot.setMaximumHeight(16777215)
+        else:
+            self.widgetPlot.setMinimumHeight(height)
+            self.widgetPlot.setMaximumHeight(height)
         
     def drawPlot(self):
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))#show the user this may take a long time...
@@ -757,8 +787,8 @@ class PandasCalculations(object):
                            u'No rolling mean if field is empty.')
 
         for lineedit in [self.rule, self.base, self.window]:
-            lineedit.setFixedWidth(122)
-            lineedit.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Fixed)
+            #lineedit.sizeHint()setFixedWidth(122)
+            lineedit.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Preferred)
 
         maximumwidth = 0
         for label in [self.rule_label, self.base_label, self.window_label]:
