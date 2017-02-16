@@ -25,6 +25,7 @@ import qgis.utils
 import os
 import locale
 from pyspatialite import dbapi2 as sqlite# pyspatialite is absolutely necessary (sqlite3 not enough) due to InitSpatialMetaData()
+import psycopg2
 import datetime
 #plugin modules
 import midvatten_utils as utils
@@ -33,9 +34,9 @@ class newdb():
 
     def __init__(self, verno, user_select_CRS='y', EPSG_code=u'4326'):
         self.dbpath = ''
-        self.create_new_db(verno,user_select_CRS,EPSG_code)  #CreateNewDB(verno)
+        self.create_db_schema(verno,user_select_CRS,EPSG_code)  #CreateNewDB(verno)
 
-    def create_new_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):  #CreateNewDB(self, verno):
+    def create_db_schema(self, verno, user_select_CRS='y', EPSG_code=u'4326'):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
 
         set_locale = self.ask_for_locale()
@@ -52,94 +53,97 @@ class newdb():
             utils.pop_up_info("Cancelling...")
         else: # If a CRS is selectd, go on and create the database
             #path and name of new db
-            self.dbpath = PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)")
-            if not self.dbpath:
+
+            #self.dbpath = PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)")
+            #self.dbpath = PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite", "Spatialite (*.sqlite)")
+            #if not self.dbpath:
+            #    PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            #    return ''
+            #create Spatialite database
+            #else:
+            #delete the file if exists
+            #if os.path.exists(self.dbpath):
+            #    try:
+            #        os.remove(self.dbpath)
+            #    except OSError, e:
+            #        utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", "%s - %s." % (e.filename,e.strerror), duration=10)
+            #
+            #        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            #        return ''
+            try:
+                # creating/connecting the test_db
+                self.conn = psycopg2.connect("dbname='postgres' user='Henrik' host='localhost' password=''")
+                # creating a Cursor
+                self.cur = self.conn.cursor()
+                self.cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+            except:
+                qgis.utils.iface.messageBar().pushMessage("Impossible to connect to selected DataBase", 2,duration=3)
+                #utils.pop_up_info("Impossible to connect to selected DataBase")
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
                 return ''
-            #create Spatialite database
-            else:
-                #delete the file if exists
-                if os.path.exists(self.dbpath):
-                    try:
-                        os.remove(self.dbpath)
-                    except OSError, e:
-                        utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", "%s - %s." % (e.filename,e.strerror), duration=10)
 
-                        PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                        return ''
+            #First, find spatialite version
+            versionstext = self.cur.execute('select spatialite_version()').fetchall()
+            # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
+            # then the syntax defines a Midvatten project db according to the loaded .sql-file
+            if not int(versionstext[0][0][0]) > 3: # which file to use depends on spatialite version installed
+                utils.pop_up_info("Midvatten plugin needs spatialite4.\nDatabase can not be created")
+                return ''
+
+            filenamestring = "create_db.sql"
+
+            SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
+            qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
+            with open(SQLFile, 'r') as f:
+                f.readline()  # first line is encoding info....
                 try:
-                    # creating/connecting the test_db
-                    self.conn = sqlite.connect(self.dbpath)
-                    # creating a Cursor
-                    self.cur = self.conn.cursor()
-                    self.cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+                    for line in f:
+                        if not line:
+                            continue
+                        if line.startswith("#"):
+                            continue
+                        for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
+                                                           ('CHANGETOPLUGINVERSION', str(verno)),
+                                                           ('CHANGETOQGISVERSION',qgisverno),
+                                                           ('CHANGETOSPLITEVERSION', str(versionstext[0][0])),
+                                                           ('CHANGETOLOCALE', str(set_locale))]:
+                            line = line.replace(replace_word, replace_with)
+                        self.cur.execute(line)  # use tags to find and replace SRID and versioning info
+                except Exception, e:
+                    #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
+                    utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n'%(line ,str(e)), duration=5)
                 except:
-                    qgis.utils.iface.messageBar().pushMessage("Impossible to connect to selected DataBase", 2,duration=3)
-                    #utils.pop_up_info("Impossible to connect to selected DataBase")
-                    PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                    return ''
-                #First, find spatialite version
-                versionstext = self.cur.execute('select spatialite_version()').fetchall()
-                # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
-                # then the syntax defines a Midvatten project db according to the loaded .sql-file
-                if not int(versionstext[0][0][0]) > 3: # which file to use depends on spatialite version installed
-                    utils.pop_up_info("Midvatten plugin needs spatialite4.\nDatabase can not be created")
-                    return ''
+                    qgis.utils.iface.messageBar().pushMessage("Failed to create database", 2,duration=3)
+                    #utils.pop_up_info('Failed to create DB!')
 
-                filenamestring = "create_db.sql"
+            #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
+            delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
+            try:
+                self.cur.execute(delete_srid_sql)
+            except:
+                utils.MessagebarAndLog.info(log_msg=u'Removing srids failed using: ' + str(delete_srid_sql))
 
-                SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
-                qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
-                with open(SQLFile, 'r') as f:
-                    f.readline()  # first line is encoding info....
-                    try:
-                        for line in f:
-                            if not line:
-                                continue
-                            if line.startswith("#"):
-                                continue
-                            for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
-                                                               ('CHANGETOPLUGINVERSION', str(verno)),
-                                                               ('CHANGETOQGISVERSION',qgisverno),
-                                                               ('CHANGETOSPLITEVERSION', str(versionstext[0][0])),
-                                                               ('CHANGETOLOCALE', str(set_locale))]:
-                                line = line.replace(replace_word, replace_with)
-                            self.cur.execute(line)  # use tags to find and replace SRID and versioning info
-                    except Exception, e:
-                        #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
-                        utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n'%(line ,str(e)), duration=5)
-                    except:
-                        qgis.utils.iface.messageBar().pushMessage("Failed to create database", 2,duration=3)
-                        #utils.pop_up_info('Failed to create DB!')
+            self.insert_datadomains(set_locale)
 
-                #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
-                delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
-                try:
-                    self.cur.execute(delete_srid_sql)
-                except:
-                    utils.MessagebarAndLog.info(log_msg=u'Removing srids failed using: ' + str(delete_srid_sql))
+            self.add_triggers_to_obs_points()
 
-                self.insert_datadomains(set_locale)
+            self.cur.execute('vacuum')
 
-                self.add_triggers_to_obs_points()
+            #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
+            self.conn.commit()
+            self.conn.close()
+            #create SpatiaLite Connection in QGIS QSettings
+            settings=PyQt4.QtCore.QSettings()
+            settings.beginGroup('/SpatiaLite/connections')
+            settings.setValue(u'%s/sqlitepath'%os.path.basename(self.dbpath),'%s'%self.dbpath)
+            settings.endGroup()
 
-                self.cur.execute('vacuum')
+            """
+            #The intention is to keep layer styles in the database by using the class AddLayerStyles but due to limitations in how layer styles are stored in the database, I will put this class on hold for a while.
 
-                #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
-                self.conn.commit()
-                self.conn.close()
-                #create SpatiaLite Connection in QGIS QSettings
-                settings=PyQt4.QtCore.QSettings()
-                settings.beginGroup('/SpatiaLite/connections')
-                settings.setValue(u'%s/sqlitepath'%os.path.basename(self.dbpath),'%s'%self.dbpath)
-                settings.endGroup()
-
-                """
-                #The intention is to keep layer styles in the database by using the class AddLayerStyles but due to limitations in how layer styles are stored in the database, I will put this class on hold for a while. 
-
-                #Finally add the layer styles info into the data base
-                AddLayerStyles(self.dbpath)
-                """
+            #Finally add the layer styles info into the data base
+            AddLayerStyles(self.dbpath)
+            """
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def ask_for_locale(self):
