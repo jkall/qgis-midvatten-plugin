@@ -557,7 +557,7 @@
                 </layout>
                </item>
                <item row="4" column="0" rowspan="2">
-                <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0">
+                <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="0,0,0">
                  <item>
                   <widget class="QLabel" name="label_11">
                    <property name="minimumSize">
@@ -594,7 +594,26 @@
                    <property name="text">
                     <string/>
                    </property>
+                   <property name="dragEnabled">
+                    <bool>false</bool>
+                   </property>
                   </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_2">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Fixed</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>0</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
                  </item>
                 </layout>
                </item>
@@ -634,6 +653,22 @@
                     <string/>
                    </property>
                   </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_3">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Fixed</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>0</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
                  </item>
                 </layout>
                </item>
