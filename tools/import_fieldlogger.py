@@ -149,15 +149,23 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         for filename in filenames:
             filename = utils.returnunicode(filename)
 
-            delimiter = utils.get_delimiter(filename=filename, charset=u'utf-8', delimiters=[u';', u','], num_fields=5)
+            supported_encodings = [u'utf-8', u'cp1252']
+            for encoding in supported_encodings:
+                try:
+                    delimiter = utils.get_delimiter(filename=filename, charset=encoding, delimiters=[u';', u','], num_fields=5)
 
-            if delimiter is None:
-                return None
+                    if delimiter is None:
+                        return None
 
-            with io.open(filename, 'r', encoding='utf-8') as f:
-                #Skip header
-                f.readline()
-                observations.extend(row_parser(f, delimiter))
+                    with io.open(filename, 'rt', encoding=encoding) as f:
+                        #Skip header
+                        f.readline()
+                        observations.extend(row_parser(f, delimiter))
+
+                except UnicodeDecodeError:
+                    continue
+                else:
+                    break
 
         #Remove duplicates
         observations = [dict(no_duplicate) for no_duplicate in set([tuple(possible_duplicate.items()) for possible_duplicate in observations])]
