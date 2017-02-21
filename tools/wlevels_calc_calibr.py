@@ -366,7 +366,8 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         p=[None]*2 # List for plot objects
     
         # Load manual reading (full time series) for the obsid
-        self.plot_recarray(self.axes, self.meas_ts, obsid, 'o-', 5)
+        if self.meas_ts:
+            self.plot_recarray(self.axes, self.meas_ts, obsid, 'o-', 5)
         
         # Load Loggerlevels (full time series) for the obsid
         if self.loggerLineNodes.isChecked():
