@@ -52,7 +52,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -98,7 +98,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -170,7 +170,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -242,7 +242,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -314,7 +314,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -388,7 +388,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -465,7 +465,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -561,7 +561,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -659,7 +659,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
