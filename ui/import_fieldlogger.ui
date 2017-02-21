@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1013</width>
+    <width>800</width>
     <height>476</height>
    </rect>
   </property>
@@ -29,8 +29,7 @@
         <height>0</height>
        </size>
       </property>
-      <layout class="QGridLayout" name="gridLayout_buttons">
-      </layout>
+      <layout class="QGridLayout" name="gridLayout_buttons"/>
      </widget>
     </item>
     <item row="0" column="1" rowspan="3">
@@ -44,7 +43,7 @@
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>400</height>
+        <height>200</height>
        </size>
       </property>
       <property name="orientation">
@@ -62,8 +61,8 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>900</width>
-        <height>400</height>
+        <width>200</width>
+        <height>200</height>
        </size>
       </property>
       <property name="verticalScrollBarPolicy">
@@ -80,8 +79,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>898</width>
-         <height>456</height>
+         <width>643</width>
+         <height>454</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -92,8 +91,8 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>880</width>
-         <height>400</height>
+         <width>180</width>
+         <height>200</height>
         </size>
        </property>
        <layout class="QVBoxLayout" name="main_vertical_layout">

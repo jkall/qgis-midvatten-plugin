@@ -172,8 +172,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         #Special cases for some tables
         if goal_table == u'stratigraphy':
             self.check_and_delete_stratigraphy(existing_columns)
-        if goal_table == u'obs_lines':
-            self.calculate_geometry(existing_columns)
+        if goal_table in (u'obs_lines', u'obs_points'):
+            self.calculate_geometry(existing_columns, goal_table)
 
         #Finally import data:
         nr_failed_import = recsinfile - nr_after
@@ -395,21 +395,29 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         elif nr_before > nr_after:
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
 
-    def calculate_geometry(self, existing_columns):
+    def calculate_geometry(self, existing_columns, table_name):
+        print("In calculate_geometry")
         # Calculate the geometry
-        sql = r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_lines'"""
+        sql = r"""SELECT srid FROM geometry_columns where f_table_name = '%s'"""%table_name
         SRID = str((utils.sql_load_fr_db(sql)[1])[0][0])  # THIS IS DUE TO WKT-import of geometries below
+        print(str(existing_columns))
         if u'WKT' in existing_columns:
             geocol = u'WKT'
         elif u'geometry' in existing_columns:
             geocol = u'geometry'
         else:
-            utils.MessagebarAndLog.warning(bar_msg=u'Obslines without geometry imported')
+            utils.MessagebarAndLog.warning(bar_msg=u'%s without geometry imported'%table_name)
+            print(u"ithout geometry imported")
             return None
 
-        utils.sql_alter_db(u'''update "%s" set geometry=ST_GeomFromText("%s",'%s')'''%(self.temptableName,
-                                                                                       geocol,
-                                                                                       SRID))
+        print(str(utils.sql_load_fr_db(u'select * from %s'%self.temptableName)))
+        #TODO: Fix this, it's not working
+        sql = u"""update "%s" set geometry=ST_GeomFromText(%s,%s)"""%(self.temptableName, geocol, SRID)
+        print(str(sql))
+
+        utils.sql_alter_db(sql)
+        print(str(utils.sql_load_fr_db(u'select * from %s' % self.temptableName)))
+
 
     def check_and_delete_stratigraphy(self, existing_columns):
         if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):
