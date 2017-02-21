@@ -63,6 +63,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         if isinstance(self.observations, Cancel):
             self.status = True
             return u'cancel'
+        elif self.observations is None:
+            return u'cancel'
 
         #Filters and general settings
         settings_widget = PyQt4.QtGui.QWidget()
@@ -146,10 +148,16 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         observations = []
         for filename in filenames:
             filename = utils.returnunicode(filename)
+
+            delimiter = utils.get_delimiter(filename=filename, charset=u'utf-8', delimiters=[u';', u','], num_fields=5)
+
+            if delimiter is None:
+                return None
+
             with io.open(filename, 'r', encoding='utf-8') as f:
                 #Skip header
                 f.readline()
-                observations.extend(row_parser(f))
+                observations.extend(row_parser(f, delimiter))
 
         #Remove duplicates
         observations = [dict(no_duplicate) for no_duplicate in set([tuple(possible_duplicate.items()) for possible_duplicate in observations])]
@@ -157,7 +165,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         return observations
 
     @staticmethod
-    def parse_rows(f):
+    def parse_rows(f, delimiter=u';'):
         """
         Parses rows from fieldlogger format into a dict
         :param f: File_data, often an open file or a list of rows without header
@@ -170,14 +178,15 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             row = utils.returnunicode(rawrow).rstrip(u'\r').rstrip(u'\n')
             if not row:
                 continue
-            cols = row.split(u';')
+            cols = row.split(delimiter)
             observation[u'sublocation'] = cols[0]
             date = cols[1]
             time = cols[2]
             observation[u'date_time'] = datestring_to_date(u' '.join([date, time]))
             observation[u'value'] = cols[3]
             observation[u'parametername'] = cols[4]
-            observations.append(observation)
+            if observation[u'value']:
+                observations.append(observation)
         return observations
 
     def add_row(self, a_widget):

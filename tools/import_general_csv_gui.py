@@ -87,7 +87,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         else:
             filename = filename
         self.filename = returnunicode(filename)
-        delimiter = self.get_delimiter(self.filename, self.charset)
+        delimiter = utils.get_delimiter(filename=self.filename, charset=self.charset, delimiters=[u',', u';'])
         self.file_data = self.file_to_list(self.filename, self.charset, delimiter)
 
         header_question = utils.askuser(question=u"YesNo", msg=u"""Does the file contain a header?""")
@@ -111,20 +111,6 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         with io.open(filename, 'r', encoding=charset) as f:
             file_data = [rawrow.rstrip(u'\n').rstrip(u'\r').split(delimiter) for rawrow in f if rawrow.strip()]
         return file_data
-
-    @staticmethod
-    def get_delimiter(filename, charset):
-        with io.open(filename, 'r', encoding=charset) as f:
-            header = f.readline().rstrip(u'\n').rstrip(u'\r')
-        delimiters = [u',', u';']
-        tested_header = [len(header.split(delimiter)) for delimiter in delimiters]
-        nr_of_delimiters = set()
-        nr_of_delimiters.update(tested_header)
-        if len(nr_of_delimiters) == 1:
-            utils.MessagebarAndLog.warning(bar_msg=u'File error, delimiter not found, see log message panel', log_msg=u'If the file only contains one column, ignore this message:\nThe delimiter might not have been found automatically.\nIt must be ' + u' or '.join(delimiters) + u'\n')
-            return None
-        delimiter = delimiters[tested_header.index(max(tested_header))]
-        return delimiter
 
     @utils.waiting_cursor
     def start_import(self):

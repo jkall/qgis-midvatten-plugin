@@ -25,7 +25,9 @@ import copy
 import csv
 import datetime
 import difflib
+from operator import itemgetter
 import locale
+import io
 import math
 import numpy as np
 import os
@@ -1329,3 +1331,40 @@ class Cancel(object):
     """
     def __init__(self):
         pass
+
+
+def get_delimiter(filename=None, charset=u'utf-8', delimiters=None, num_fields=None):
+    delimiter = None
+    if filename is None:
+        MessagebarAndLog.critical(u'Must give filename')
+        return None
+    if delimiters is None:
+        delimiters = [u',', u';']
+    with io.open(filename, 'r', encoding=charset) as f:
+        rows = f.readlines()
+
+    tested_delim = []
+    for _delimiter in delimiters:
+        cols_on_all_rows = set()
+        cols_on_all_rows.update([len(row.split(_delimiter)) for row in rows])
+        if len(cols_on_all_rows) == 1:
+            nr_of_cols = cols_on_all_rows.pop()
+            if num_fields is not None and nr_of_cols == num_fields:
+                delimiter = _delimiter
+                break
+            tested_delim.append((_delimiter, len(_delimiter)))
+
+    if delimiter is None:
+        if num_fields is not None:
+            MessagebarAndLog.critical(u'Delimiter not found for ' + filename + u'. The file must contain ' + str(num_fields) + u' fields, but none of ' + u' or '.join(delimiters) + u' worked as delimiter.')
+            return None
+
+        delimiter = max(tested_delim, key=itemgetter(1))[0]
+        lenght = max(tested_delim, key=itemgetter(1))[1]
+        if lenght == 1:
+            MessagebarAndLog.warning(
+                bar_msg=u'Warning, only one column found, see log message panel',
+                log_msg=u'If the file only contains one column, ignore this message:\nThe delimiter might not have been found automatically.\nIt must be ' + u' or '.join(
+                    delimiters) + u'\n')
+    return delimiter
+
