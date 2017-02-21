@@ -401,3 +401,23 @@ class TestExportFieldloggerNoDb():
         assert mock_ms.settingsdict['fieldlogger_export_pbrowser'] == u'[[0, ((u"input_field_list", [u"DO.mg/L;numberDecimal|numberSigned; ", u"comment;text;Obsid related comment"], ), )]]'
         assert mock_ms.settingsdict['fieldlogger_export_pgroups'] == u'[[0, ((u"parameter_list", [u"DO.mg/L;numberDecimal|numberSigned; ", u"comment;text;Obsid related comment"], ), (u"location_suffix", u"2766", ), (u"sublocation_suffix", u"level", ), )], [1, ((u"parameter_list", [u"comment;text;Obsid related comment"], ), (u"location_suffix", u"1234", ), (u"sublocation_suffix", u"comment", ), )]]'
 
+    @staticmethod
+    @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
+    @mock.patch('export_fieldlogger.utils.get_latlon_for_all_obsids')
+    def test_create_export_printlist_correct_order(mock_latlons, mock_MessagebarAndLog):
+        mock_latlons.return_value = {u'1': (u'lat1', u'lon1'), u'2': (u'lat2', u'lon2'), u'4': (u'lat4', u'lon4')}
+        tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
+
+        stored_settings = [(0, ((u'parameter_list', [u'par4;type1;hint1', u'par1;type1;hint1']), (u'sublocation_suffix', u'group'), (u'location_suffix', u'proj'))),
+                           (1, ((u'parameter_list', [u'par2;type2;hint2']), (u'sublocation_suffix', u'group'), (u'location_suffix', u'proj2')))]
+        mock_connect = MagicMock()
+
+        parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
+        parameter_groups[0]._obsid_list.addItems([u'1', u'4'])
+        parameter_groups[1]._obsid_list.addItems([u'2', u'3', u'4'])
+
+        printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
+        test_string = create_test_string(printlist)
+        reference_string = u'[FileVersion 1;3, NAME;INPUTTYPE;HINT, par4;type1;hint1 , par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par4|par1, 2.proj2;2.proj2.group;lat2;lon2;par2, 4.proj;4.proj.group;lat4;lon4;par4|par1, 4.proj2;4.proj2.group;lat4;lon4;par2]'
+        assert reference_string == test_string
+

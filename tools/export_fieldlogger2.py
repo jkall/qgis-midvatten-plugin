@@ -399,35 +399,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 class ParameterGroup(object):
     def __init__(self, connect):
         """
-        This one should contain:
-
-        Two widgets and two layouts (separate classes.
-
-        Widget 1 contains the comboboxes and fields for producing the parameter names.
-
-            part 1: parameter names
-                option 1:
-                less flexible. Choosing a table and a pre-created list of parameters/units will appear using select distinct parameter, unit from ...
-                option 2:
-                choosing table, then column, then distinct parameter, then table, column and distinct unit.
-                This could create bad combinations of parameters and units. and takes up more space.
-                Maybe these could be set using a separate pop-up dialog.
-
-                qlineedit: final_parameter_name. This is the one that really matters. The other fields are only for help
-                qcombobox: inputtype?
-                qcombobox: color?
-
-            part 2: obsids.
-                obsidnames (obsid.suffix)
-                sublocation-names (obsid.suffix.groupname)
-                This, two qlineedits, obsid-suffix, and sublocation-suffix. (Which can be unequal or equal.
-
-        Widget 2 contains all the obsids which will be under the first widget.
-
-        Maybe a vertical splitter can be used to hide parts.
-
-        QCombobox
-
         """
         #Widget list:
 
@@ -451,7 +422,8 @@ class ParameterGroup(object):
                                         u"""The input fields in Fieldlogger will appear in the same order as in\n""" +
                                         u"""this list.\n""" +
                                         u"""The topmost input field will be the first selected input field when\n""" +
-                                        u"""the user enters the input fields in Fieldlogger.""")
+                                        u"""the user enters the input fields in Fieldlogger. (!!! If the input\n""" +
+                                        u"""field already exists in a previous group it will end up on top!!!)""")
         self._obsid_list.setToolTip(u"""Add obsids to this box by selecting obsids from the table "obs_points"\n""" +
                                     u"""using it's attribute table or select from map.\n""" +
                                     u"""Then click the button "Paste obs_points selection"\n""" +
