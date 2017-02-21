@@ -720,51 +720,6 @@ class TestGeneralCsvGui(object):
 
 
 class TestStaticMethods(object):
-    def test_get_delimiter_only_one_column(self):
-        file = [u'obsid',
-                 u'rb1']
-
-        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
-            @mock.patch('qgis.utils.iface', autospec=True)
-            def _test(filename, mock_iface):
-                delimiter = GeneralCsvImportGui.get_delimiter(filename, u'utf-8')
-                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') in mock_iface.mock_calls
-            _test(filename)
-
-    def test_get_delimiter_delimiter_not_found(self):
-        file = [u'obsid;acol,acol2',
-                 u'rb1;1,2']
-
-        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
-            @mock.patch('qgis.utils.iface', autospec=True)
-            def _test(filename, mock_iface):
-                delimiter = GeneralCsvImportGui.get_delimiter(filename, u'utf-8')
-                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') in mock_iface.mock_calls
-            _test(filename)
-
-    def test_get_delimiter_semicolon(self):
-        file = [u'obsid;acol;acol2',
-                 u'rb1;1;2']
-
-        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
-            @mock.patch('qgis.utils.iface', autospec=True)
-            def _test(filename, mock_iface):
-                delimiter = GeneralCsvImportGui.get_delimiter(filename, u'utf-8')
-                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') not in mock_iface.mock_calls
-                assert delimiter == u';'
-            _test(filename)
-
-    def test_get_delimiter_comma(self):
-        file = [u'obsid,acol,acol2',
-                 u'rb1,1,2']
-
-        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
-            @mock.patch('qgis.utils.iface', autospec=True)
-            def _test(filename, mock_iface):
-                delimiter = GeneralCsvImportGui.get_delimiter(filename, u'utf-8')
-                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') not in mock_iface.mock_calls
-                assert delimiter == u','
-            _test(filename)
 
     def test_translate_and_reorder_file_data(self):
         file_data = [[u'obsid', u'acol', u'acol2'],

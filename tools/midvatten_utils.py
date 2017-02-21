@@ -1352,19 +1352,30 @@ def get_delimiter(filename=None, charset=u'utf-8', delimiters=None, num_fields=N
             if num_fields is not None and nr_of_cols == num_fields:
                 delimiter = _delimiter
                 break
-            tested_delim.append((_delimiter, len(_delimiter)))
+            tested_delim.append((_delimiter, nr_of_cols))
 
     if delimiter is None:
         if num_fields is not None:
             MessagebarAndLog.critical(u'Delimiter not found for ' + filename + u'. The file must contain ' + str(num_fields) + u' fields, but none of ' + u' or '.join(delimiters) + u' worked as delimiter.')
             return None
 
-        delimiter = max(tested_delim, key=itemgetter(1))[0]
         lenght = max(tested_delim, key=itemgetter(1))[1]
+
+        more_than_one_delimiter = [x[0] for x in tested_delim if x[1] == lenght]
+
+        delimiter = max(tested_delim, key=itemgetter(1))[0]
+
         if lenght == 1:
             MessagebarAndLog.warning(
                 bar_msg=u'Warning, only one column found, see log message panel',
                 log_msg=u'If the file only contains one column, ignore this message:\nThe delimiter might not have been found automatically.\nIt must be ' + u' or '.join(
                     delimiters) + u'\n')
+        elif len(more_than_one_delimiter) > 1:
+            MessagebarAndLog.warning(
+                bar_msg=u'File error, delimiter not found, see log message panel',
+                log_msg=u'The delimiter might not have been found automatically.\nIt must be ' + u' or '.join(
+                    delimiters) + u'\n')
+            delimiter = None
+
     return delimiter
 
