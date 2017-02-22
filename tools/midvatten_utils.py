@@ -38,7 +38,7 @@ from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
 from contextlib import contextmanager
 from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialite-specific sql clauses may be sent by sql_alter_db and sql_load_fr_db
-from pyspatialite.dbapi2 import IntegrityError
+from pyspatialite.dbapi2 import IntegrityError, OperationalError
 from qgis.core import *
 from qgis.gui import *
 
@@ -543,6 +543,10 @@ def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list
             MessagebarAndLog.warning(bar_msg='Some sql failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
             ConnectionOK = False
             result = ''
+            try:
+                conn.close()
+            except:
+                pass
     else:
         #pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
         textstring = """Could not connect to db %s!\nDB call causing this error:%s\n"""%(dbpath[0],sql)
@@ -563,7 +567,17 @@ def sql_alter_db(sql=''):
         try:
             resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
         except IntegrityError, e:
+            try:
+                conn.close()
+            except:
+                pass
             raise IntegrityError("The sql failed:\n" + sql2 + "\nmsg:\n" + str(e))
+        except OperationalError, e:
+            try:
+                conn.close()
+            except:
+                pass
+            raise OperationalError("The sql failed:\n" + sql2 + "\nmsg:\n" + str(e))
     else:
         try:
             resultfromsql = curs.executemany(sql2[0], sql2[1])
@@ -574,7 +588,6 @@ def sql_alter_db(sql=''):
     conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
     resultfromsql.close()
     conn.close()
-
     return result
 
 def sql_alter_db_by_param_subst(sql='',*subst_params):
