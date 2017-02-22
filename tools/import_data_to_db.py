@@ -85,7 +85,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         recsinfile = utils.sql_load_fr_db(u'select count(*) from "%s"'%self.temptableName)[1][0][0]
 
         table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''%goal_table)[1]
-        column_headers_types = dict([(row[1], row[2]) for row in table_info])
+        #POINT and LINESTRING must be cast as BLOB. So change the type to BLOB.
+        column_headers_types = dict([(row[1], row[2]) if row[2] not in (u'POINT', u'LINESTRING') else (row[1], u'BLOB') for row in table_info])
         primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
         not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
         #Only use the columns that exists in the goal table.
@@ -134,12 +135,18 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 nr_fk_before = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%fk_table)[1][0][0]
                 _table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''% fk_table)[1]
                 _column_headers_types = dict([(row[1], row[2]) for row in _table_info])
-                sql = ur"""insert or ignore into %s (%s) select distinct %s from %s as b where %s"""%(fk_table,
+                sql = ur"""INSERT INTO %s (%s) select distinct %s from %s as b where %s"""%(fk_table,
                                                                                              u', '.join([u'"{}"'.format(k) for k in to_list]),
                                                                                              u', '.join([u'''CAST("b"."%s" as "%s")'''%(k, _column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
                                                                                              self.temptableName,
                                                                                              u' and '.join([u''' "b"."{}" IS NOT NULL and "b"."{}" != '' and "b"."{}" != ' ' '''.format(k, k, k) for k in from_list]))
-                utils.sql_alter_db(sql)
+                try:
+                    utils.sql_alter_db(sql)
+                except Exception, e:
+                    sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
+                    detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%fk_table + str(e))
+                    utils.sql_alter_db(sql)
+
                 nr_fk_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%fk_table)[1][0][0]
 
                 detailed_msg_list.append(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table + u' while importing to ' + goal_table + u'.')
@@ -185,7 +192,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 self.drop_temptable()
                 return Cancel()   # return simply to stop this function
 
-        sql_list = [u"""INSERT OR IGNORE INTO "%s" ("""%goal_table]
+        sql_list = [u"""INSERT INTO "%s" ("""%goal_table]
         sql_list.append(u', '.join([u'"{}"'.format(k) for k in sorted(existing_columns)]))
         sql_list.append(u""") SELECT """)
         sql_list.append(u', '.join([u"""(case when ("%s"!='' and "%s"!=' ' and "%s" IS NOT NULL) then CAST("%s" as "%s") else null end)"""%(colname, colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns)]))
@@ -193,13 +200,23 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         sql = u''.join(sql_list)
 
         recsbefore = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
+
         try:
             utils.sql_alter_db(sql.encode(u'utf-8'))
         except Exception, e:
-            utils.MessagebarAndLog.critical(bar_msg=u'Error, import failed, see log message panel', log_msg=u'Sql\n' + sql + u' failed.\nMsg:\n' + str(e), duration=999)
-            self.status = 'False'
-            self.drop_temptable()
-            return
+            detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%goal_table + str(e))
+            sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
+            try:
+                utils.sql_alter_db(sql.encode(u'utf-8'))
+            except Exception, e:
+                utils.MessagebarAndLog.critical(
+                    bar_msg=u'Error, import failed, see log message panel',
+                    log_msg=u'Sql\n' + sql + u' failed.\nMsg:\n' + str(e),
+                    duration=999)
+                self.status = 'False'
+                self.drop_temptable()
+                return
+
         recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
 
         nr_imported = recsafter - recsbefore
@@ -396,28 +413,19 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
 
     def calculate_geometry(self, existing_columns, table_name):
-        print("In calculate_geometry")
         # Calculate the geometry
         sql = r"""SELECT srid FROM geometry_columns where f_table_name = '%s'"""%table_name
         SRID = str((utils.sql_load_fr_db(sql)[1])[0][0])  # THIS IS DUE TO WKT-import of geometries below
-        print(str(existing_columns))
         if u'WKT' in existing_columns:
             geocol = u'WKT'
         elif u'geometry' in existing_columns:
             geocol = u'geometry'
         else:
             utils.MessagebarAndLog.warning(bar_msg=u'%s without geometry imported'%table_name)
-            print(u"ithout geometry imported")
             return None
 
-        print(str(utils.sql_load_fr_db(u'select * from %s'%self.temptableName)))
-        #TODO: Fix this, it's not working
-        sql = u"""update "%s" set geometry=ST_GeomFromText(%s,%s)"""%(self.temptableName, geocol, SRID)
-        print(str(sql))
-
+        sql = u"""update "%s" set geometry=GeomFromText(%s,%s)"""%(self.temptableName, geocol, SRID)
         utils.sql_alter_db(sql)
-        print(str(utils.sql_load_fr_db(u'select * from %s' % self.temptableName)))
-
 
     def check_and_delete_stratigraphy(self, existing_columns):
         if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):

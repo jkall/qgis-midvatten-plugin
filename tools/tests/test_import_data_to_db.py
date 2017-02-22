@@ -48,7 +48,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class _TestParseDiverofficeFile(object):
+class TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
                                                            'Failure, parsing failed for file': 'cancel'},
@@ -207,7 +207,7 @@ class _TestParseDiverofficeFile(object):
         assert test_string == reference_string
 
 
-class _TestWlvllogImportFromDiverofficeFiles(object):
+class TestWlvllogImportFromDiverofficeFiles(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -494,7 +494,7 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     assert test_string == reference_string
 
 
-class _TestGeneralCsvImport(object):
+class TestGeneralCsvImport(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -804,7 +804,7 @@ class _TestGeneralCsvImport(object):
                     assert test_string == reference_string
 
 
-class _TestInterlab4Importer():
+class TestInterlab4Importer():
     def setUp(self):
         self.importinstance = midv_data_importer()
 
@@ -1224,7 +1224,7 @@ class _TestInterlab4Importer():
         pass
 
 
-class _TestInterlab4ImporterDB(object):
+class TestInterlab4ImporterDB(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1304,7 +1304,7 @@ class _TestInterlab4ImporterDB(object):
         assert test_string == reference_string
 
 
-class _TestDbCalls(object):
+class TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -1344,7 +1344,7 @@ class _TestDbCalls(object):
         assert exists
 
 
-class TestImportObsPoints(object):
+class TestImportObsPointsObsLines(object):
     temp_db_path = TEMP_DB_PATH
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -1366,7 +1366,7 @@ class TestImportObsPoints(object):
         self.iface = DummyInterface()
         self.midvatten = midvatten(self.iface)
         try:
-            os.remove(TestImportObsPoints.temp_db_path)
+            os.remove(TestImportObsPointsObsLines.temp_db_path)
         except OSError:
             pass
         mock_locale.return_value.answer = u'ok'
@@ -1376,7 +1376,7 @@ class TestImportObsPoints(object):
 
     def tearDown(self):
         #Delete database
-        os.remove(TestImportObsPoints.temp_db_path)
+        os.remove(TestImportObsPointsObsLines.temp_db_path)
 
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
@@ -1386,7 +1386,7 @@ class TestImportObsPoints(object):
         utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid2")')
         result = utils.sql_load_fr_db(u'select * from obs_points')
 
-        msgbar = TestImportObsPoints.mocked_iface.messagebar.messages
+        msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
         if msgbar:
             print str(msgbar)
 
@@ -1405,18 +1405,18 @@ class TestImportObsPoints(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             selected_file = MockUsingReturnValue(filename)
 
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPoints.mock_encoding.get_v)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPoints.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPoints.mock_askuser.get_v)
-            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPoints.skip_popup.get_v)
+            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
             _test_import_obs_points_using_obsp_import(self)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
-        msgbar = TestImportObsPoints.mocked_iface.messagebar.messages
+        msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
         if msgbar:
             print str(msgbar)
 
@@ -1437,11 +1437,11 @@ class TestImportObsPoints(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             selected_file = MockUsingReturnValue(filename)
 
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPoints.mock_encoding.get_v)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPoints.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPoints.mock_askuser.get_v)
-            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPoints.skip_popup.get_v)
+            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
@@ -1450,7 +1450,7 @@ class TestImportObsPoints(object):
             _test_import_obs_points_using_obsp_import(self)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
-        msgbar = TestImportObsPoints.mocked_iface.messagebar.messages
+        msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
 
         #if msgbar:
         #    print str(msgbar)
@@ -1473,11 +1473,11 @@ class TestImportObsPoints(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             selected_file = MockUsingReturnValue(filename)
 
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPoints.mock_encoding.get_v)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPoints.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPoints.mock_askuser.get_v)
-            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPoints.skip_popup.get_v)
+            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
@@ -1485,7 +1485,7 @@ class TestImportObsPoints(object):
             _test_import_obs_points_using_obsp_import(self)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
-        msgbar = TestImportObsPoints.mocked_iface.messagebar.messages
+        msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
         #if msgbar:
         #    print str(msgbar)
 
@@ -1504,18 +1504,18 @@ class TestImportObsPoints(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             selected_file = MockUsingReturnValue(filename)
 
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPoints.mock_encoding.get_v)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPoints.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPoints.mock_askuser.get_v)
-            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPoints.skip_popup.get_v)
+            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
             _test_import_obs_points_using_obsp_import(self)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
-        msgbar = TestImportObsPoints.mocked_iface.messagebar.messages
+        msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
         if msgbar:
             print str(msgbar)
 
@@ -1529,33 +1529,54 @@ class TestImportObsPoints(object):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         f = [[u'obsid', u'name', u'place', u'type', u'length', u'drillstop', u'diam', u'material', u'screen', u'capacity', u'drilldate', u'wmeas_yn', u'wlogg_yn', u'east', u'north', u'ne_accur', u'ne_source', u'h_toc', u'h_tocags', u'h_gs', u'h_accur', u'h_syst', u'h_source', u'source', u'com_onerow', u'com_html', u'geometry'],
-             [u'rb1', u'rb1', u'a', u'pipe', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'', u'', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u"'POINT(45 55)'"]]
+             [u'rb1', u'rb1', u'a', u'pipe', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'', u'', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'POINT(45 55)']]
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             selected_file = MockUsingReturnValue(filename)
 
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPoints.mock_encoding.get_v)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPoints.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPoints.mock_askuser.get_v)
-            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPoints.skip_popup.get_v)
+            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(self, mock_iface):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
-                print(str(mock_iface.mock_calls))
             _test(self)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
-        msgbar = TestImportObsPoints.mocked_iface.messagebar.messages
-        if msgbar:
-            print str(msgbar)
 
-        reference_string = ur'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, None, None, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, POINT(45 55)])'''
-        print(test_string)
+        reference_string = ur'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, 45.0, 55.0, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, POINT(45 55))])'''
         assert test_string == reference_string
 
+    @mock.patch('qgis.utils.iface', mocked_iface)
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+    def test_import_obs_lines_geometry_as_wkt(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
 
-class _TestWquallabImport(object):
+        f = [[u'obsid', u'geometry'],
+             [u'line1', u'LINESTRING(1 2, 3 4, 5 6, 7 8)']]
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+            selected_file = MockUsingReturnValue(filename)
+
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
+            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            def _test(self, mock_iface):
+                self.importinstance.general_csv_import(goal_table=u'obs_lines')
+            _test(self)
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, AsText(geometry) from obs_lines'''))
+
+        reference_string = ur'''(True, [(line1, LINESTRING(1 2, 3 4, 5 6, 7 8))])'''
+        assert test_string == reference_string
+
+class TestWquallabImport(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
@@ -1685,7 +1706,7 @@ class _TestWquallabImport(object):
         assert test_string == reference_string
 
 
-class _TestWflowImport(object):
+class TestWflowImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1806,7 +1827,7 @@ class _TestWflowImport(object):
         assert test_string == reference_string
 
 
-class _TestWqualfieldImport(object):
+class TestWqualfieldImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2014,7 +2035,7 @@ class _TestWqualfieldImport(object):
         assert test_string == reference_string
 
 
-class _TestWlevelsImport(object):
+class TestWlevelsImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2107,7 +2128,7 @@ class _TestWlevelsImport(object):
         assert test_string == reference_string
 
 
-class _TestWlevelsImportOldWlevels(object):
+class TestWlevelsImportOldWlevels(object):
     """
     This test is for an older version of w_levels where level_masl was not null
     but had a default value of -999
@@ -2208,7 +2229,7 @@ class _TestWlevelsImportOldWlevels(object):
         assert test_string == reference_string
 
 
-class _TestSeismicImport(object):
+class TestSeismicImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2272,7 +2293,7 @@ class _TestSeismicImport(object):
         assert test_string == reference_string
 
 
-class _TestCommentsImport(object):
+class TestCommentsImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2336,7 +2357,7 @@ class _TestCommentsImport(object):
         assert test_string == reference_string
 
 
-class _TestStratImport(object):
+class TestStratImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2498,7 +2519,7 @@ class _TestStratImport(object):
         assert test_string == reference_string
 
 
-class _TestMeteoImport(object):
+class TestMeteoImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2561,7 +2582,7 @@ class _TestMeteoImport(object):
         assert test_string == reference_string
 
 
-class _TestVlfImport(object):
+class TestVlfImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2711,7 +2732,7 @@ class TestObsLinesImport(object):
         assert test_string == reference_string
 
 
-class _TestGetForeignKeys(object):
+class TestGetForeignKeys(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2766,7 +2787,7 @@ class _TestGetForeignKeys(object):
             assert isinstance(v, (list, tuple))
 
 
-class _TestFilterDatesFromFiledata(object):
+class TestFilterDatesFromFiledata(object):
 
     def setUp(self):
         self.importinstance = midv_data_importer()
@@ -2782,7 +2803,7 @@ class _TestFilterDatesFromFiledata(object):
         assert test_file_data == reference_file_data
 
 
-class _TestDeleteExistingDateTimesFromTemptable(object):
+class TestDeleteExistingDateTimesFromTemptable(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
