@@ -33,7 +33,9 @@ import midvatten_utils as utils
 from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from nose.tools import raises
+from functools import partial
 from mock import mock_open, patch
+from multiprocessing import Pool, Process
 from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance, DummyInterface2, mock_answer
 import mock
 import io
@@ -47,6 +49,7 @@ from PyQt4 import QtCore
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
 TEMP_DB_PATH2 = u'/tmp/tmp_midvatten_temp_db2.sqlite'
 TEMP_DB_PATH3 = u'/tmp/tmp_midvatten_temp_db3.sqlite'
+TEMP_DB_PATH4 = u'/tmp/tmp_midvatten_temp_db4.sqlite'
 
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 
@@ -367,6 +370,99 @@ class TestSectionPlot3(object):
 
         test_string = utils_for_tests.create_test_string(myplot.LengthAlong)
         assert test_string == u"[ 1.  3.  5.]"
+        
+        
+class __TestSectionPlot4(object):
+    """ The test doesn't go through the whole section plot unfortunately
+    """
+    answer_yes = mock_answer('yes')
+    answer_no = mock_answer('no')
+    crs_question = MockUsingReturnValue([3006])
+    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
+    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
+    skip_popup = MockUsingReturnValue('')
 
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
+        mock_crsquestion.return_value = [3006]
+        mock_savefilename.return_value = TEMP_DB_PATH4
+        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
+
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
+        self.midvatten = midvatten(self.iface)
+        try:
+            os.remove(TEMP_DB_PATH4)
+        except OSError:
+            pass
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
+        self.midvatten.new_db()
+        self.midvatten.ms.settingsareloaded = True
+
+    def tearDown(self):
+        #Delete database
+        try:
+            os.remove(TEMP_DB_PATH4)
+        except OSError:
+            pass
+        try:
+            self.midvatten.myplot = None
+        except:
+            pass
+        try:
+            self.midvatten.myplot.close()
+        except:
+            pass
+
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    def test_multiple_plots(self, mock_qgsproject_instance):
+        mock_qgsproject_instance.return_value.readEntry = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH4]}[(x, y)]
+
+        """For now, the test only initiates the plot. Check that it does not crash """
+        utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(0 0, 1 0, 10 0)', 3006))''')
+        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(1 0)', 3006))''')
+        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P2", GeomFromText('POINT(3 5)', 3006))''')
+        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P3", GeomFromText('POINT(5 10)', 3006))''')
+
+        uri = QgsDataSourceURI()
+        uri.setDatabase(TEMP_DB_PATH4)
+        uri.setDataSource('', 'obs_lines', 'geometry', '', 'obsid')
+
+        vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', 'spatialite')
+        features = vlayer.getFeatures()
+        for feature in features:
+            featureid = feature.id()
+
+        vlayer.setSelectedFeatures([featureid])
+
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
+        def _test(self, midvatten, vlayer, mock_iface, mock_getselectedobjectnames):
+            mock_iface.mapCanvas.return_value.currentLayer.return_value = vlayer
+            self.miface = mock_iface
+            mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
+            mock_mapcanvas = mock_iface.mapCanvas.return_value
+            mock_mapcanvas.layerCount.return_value = 0
+            midvatten.plot_section()
+            myplot = midvatten.myplot
+            myplot.drillstoplineEdit.setText(u"%berg%")
+            myplot.draw_plot()
+            return myplot
+
+        def worker():
+            _test(self, self.midvatten, vlayer)
+
+        jobs = []
+        for i in xrange(4):
+            p = Process(target=worker)
+            jobs.append(p)
+            p.start()
+
+        print("Test worked")
 
 
