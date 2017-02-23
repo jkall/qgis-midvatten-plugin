@@ -131,11 +131,16 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.gridLayout_buttons.addWidget(self.settings_strings_button, 5, 0)
         self.connect(self.settings_strings_button, PyQt4.QtCore.SIGNAL("clicked()"), self.settings_strings_dialogs)
 
-        self.gridLayout_buttons.addWidget(get_line(), 6, 0)
+        self.default_settings_button = PyQt4.QtGui.QPushButton(u'Default settings')
+        self.default_settings_button.setToolTip(u'Updates to default settings.')
+        self.gridLayout_buttons.addWidget(self.default_settings_button, 6, 0)
+        self.connect(self.default_settings_button, PyQt4.QtCore.SIGNAL("clicked()"), self.restore_default_settings)
+
+        self.gridLayout_buttons.addWidget(get_line(), 7, 0)
 
         self.export_button = PyQt4.QtGui.QPushButton(u'Export')
         self.export_button.setToolTip(u'Exports the current combination of locations, sublocations and input fields to a Fieldlogger wells file.')
-        self.gridLayout_buttons.addWidget(self.export_button, 7, 0)
+        self.gridLayout_buttons.addWidget(self.export_button, 8, 0)
         # Lambda and map is used to run several functions for every button click
         self.connect(self.export_button, PyQt4.QtCore.SIGNAL("clicked()"), self.export)
 
@@ -160,7 +165,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                                    [PyQt4.QtGui.QLabel(u'Sub-location suffix'),
                                                     parameter_group._sublocation_suffix,
                                                     PyQt4.QtGui.QLabel(u'Input fields'),
-                                                    parameter_group._parameter_list])
+                                                    parameter_group._input_field_group_list])
 
             self.create_widget_and_connect_widgets(widgets_layouts[1][1],
                                                    [PyQt4.QtGui.QLabel(u'Locations'),
@@ -261,6 +266,12 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         ms.save_settings()
         utils.MessagebarAndLog.info(log_msg=u'Settings ' + settings_string + u' stored for key ' + settingskey)
 
+    def restore_default_settings(self):
+        input_field_browser, input_fields_groups = defs.export_fieldlogger_defaults()
+        self.update_settings(input_field_browser, self.stored_settingskey_parameterbrowser)
+        self.update_settings(input_fields_groups, self.stored_settingskey)
+        utils.pop_up_info(u'Settings updated. Restart Export Fieldlogger dialog\nor press "Save settings" to undo.')
+
     def settings_strings_dialogs(self):
 
         msg = u'Edit the settings string for input fields browser and restart export fieldlogger dialog\nto load the change.'
@@ -281,6 +292,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         new_string_text = returnunicode(new_string[0])
 
+        self.update_settings(new_string_text, settingskey)
+
+    def update_settings(self, new_string_text, settingskey):
         try:
             stored_settings = ast.literal_eval(new_string_text)
         except SyntaxError, e:
@@ -313,13 +327,13 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         parameters_inputtypes_hints = OrderedDict()
 
         #Check for duplicates in sublocation suffixes
-        all_sublocations = [l_s_o[1] for parameter_group in parameter_groups for l_s_o in parameter_group.locations_sublocations_obsids if parameter_group.parameter_list]
+        all_sublocations = [l_s_o[1] for parameter_group in parameter_groups for l_s_o in parameter_group.locations_sublocations_obsids if parameter_group.input_field_group_list]
         if len(all_sublocations) != len(set(all_sublocations)):
             utils.MessagebarAndLog.critical(bar_msg=u'Critical: Combination of obsid, locationsuffix and sublocation suffix must be unique')
             return
 
         for index, parameter_group in enumerate(parameter_groups):
-            _parameters_inputtypes_hints = parameter_group.parameter_list
+            _parameters_inputtypes_hints = parameter_group.input_field_group_list
             if not _parameters_inputtypes_hints:
                 utils.MessagebarAndLog.warning(
                     bar_msg=u"Warning: Empty parameter list for group nr " + str(index + 1))
@@ -404,7 +418,7 @@ class ParameterGroup(object):
 
         self._location_suffix = PyQt4.QtGui.QLineEdit()
         self._sublocation_suffix = PyQt4.QtGui.QLineEdit()
-        self._parameter_list = CopyPasteDeleteableQListWidget(keep_sorted=False)
+        self._input_field_group_list = CopyPasteDeleteableQListWidget(keep_sorted=False)
         self._obsid_list = CopyPasteDeleteableQListWidget(keep_sorted=True)
         self.paste_from_selection_button = PyQt4.QtGui.QPushButton(u'Paste obs_points selection')
         #------------------------------------------------------------------------
@@ -417,7 +431,7 @@ class ParameterGroup(object):
                                             u"""Useful for separating parameters into groups for the user.\n""" +
                                             u"""Parameters sharing the same sub-location will be shown together\n""" +
                                             u"""ex: suffix 1234.quality --> obsid.1234.quality""")
-        self._parameter_list.setToolTip(u"""Copy and paste input fields from "Create Input Fields" to this box\n""" +
+        self._input_field_group_list.setToolTip(u"""Copy and paste input fields from "Create Input Fields" to this box\n""" +
                                         u"""or from/to other input field boxes.\n""" +
                                         u"""The input fields in Fieldlogger will appear in the same order as in\n""" +
                                         u"""this list.\n""" +
@@ -433,7 +447,7 @@ class ParameterGroup(object):
                          lambda : self._obsid_list.paste_data(utils.get_selected_features_as_tuple('obs_points')))
 
     def get_settings(self):
-        settings = ((u'parameter_list', self.parameter_list),
+        settings = ((u'input_field_group_list', self.input_field_group_list),
                    (u'location_suffix', self.location_suffix),
                    (u'sublocation_suffix', self.sublocation_suffix))
 
@@ -468,16 +482,16 @@ class ParameterGroup(object):
         return locations_sublocations_obsids
 
     @property
-    def parameter_list(self):
-        return utils.returnunicode(self._parameter_list.get_all_data(), keep_containers=True)
+    def input_field_group_list(self):
+        return utils.returnunicode(self._input_field_group_list.get_all_data(), keep_containers=True)
 
-    @parameter_list.setter
-    def parameter_list(self, value):
+    @input_field_group_list.setter
+    def input_field_group_list(self, value):
         value = returnunicode(value, keep_containers=True)
         if isinstance(value, (list, tuple)):
-            self._parameter_list.paste_data(paste_list=value)
+            self._input_field_group_list.paste_data(paste_list=value)
         else:
-            self._parameter_list.paste_data(paste_list=value.split(u'\n'))
+            self._input_field_group_list.paste_data(paste_list=value.split(u'\n'))
 
 
 class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):

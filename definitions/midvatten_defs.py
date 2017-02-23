@@ -653,3 +653,101 @@ def get_last_used_quality_instruments():
 
 specific_table_info = {u'obs_lines': u'The geometry column supports WKT ("well known text") of type LINESTRING and\nthe geometries must correspond to SRID in the database.',
                        u'obs_points': u'The geometry column supports WKT ("well known text") of type POINT and\nthe geometries must correspond to SRID in the database.'}
+
+
+def export_fieldlogger_defaults():
+    current_locale = utils.getcurrentlocale()[0]
+
+    if current_locale != u'sv_SE':
+        input_field_browser =  [
+            [0, ((u"input_field_list",[
+            u"Accvol.m3;numberDecimal|numberSigned; ",
+            u"DO.mg/L;numberDecimal|numberSigned; ",
+            u"Momflow.l/s;numberDecimal|numberSigned; ",
+            u"comment;text;Obsid related comment",
+            u"cond.µS/cm;numberDecimal|numberSigned; ",
+            u"f.comment;text;Measurement related comment",
+            u"l.comment;text;Measurement related comment",
+            u"meas.m;numberDecimal|numberSigned;depth to water",
+            u"pH;numberDecimal|numberSigned; ",
+            u"q.comment;text;Measurement related comment",
+            u"redox.mV;numberDecimal|numberSigned; ",
+            u"s.comment;text;Measurement related comment",
+            u"temp.°C;numberDecimal|numberSigned; ",
+            u"turb.FNU;numberDecimal|numberSigned; "
+            ]),)]]
+        input_fields_groups = [
+            [0, ((u"input_field_group_list",
+                  [u"meas.m;numberDecimal|numberSigned;depth to water",
+                   u"l.comment;text;Measurement related comment"]),
+                (u"sublocation_suffix", u"level"))],
+            [1, ((u"input_field_group_list",
+                  [u"comment;text;Obsid related comment"]),
+                 (u"sublocation_suffix", u"comment"))],
+            [2, ((u"input_field_group_list",
+                  [u"cond.µS/cm;numberDecimal|numberSigned; ",
+                   u"DO.mg/L;numberDecimal|numberSigned; ",
+                   u"pH;numberDecimal|numberSigned; ",
+                   u"redox.mV;numberDecimal|numberSigned; ",
+                   u"temp.°C;numberDecimal|numberSigned; ",
+                   u"turb.FNU;numberDecimal|numberSigned; ",
+                   u"q.comment;text;Measurement related comment"]),
+                 (u"sublocation_suffix", u"quality"))],
+            [3, ((u"input_field_group_list",
+                  [u"temp.°C;numberDecimal|numberSigned; ",
+                   u"turb.FNU;numberDecimal|numberSigned; ",
+                   u"s.comment;text;Measurement related comment"]),
+                 (u"sublocation_suffix", u"sample"))],
+            [4, ((u"input_field_group_list",
+                  [u"Accvol.m3;numberDecimal|numberSigned; ",
+                   u"Momflow.l/s;numberDecimal|numberSigned; ",
+                   u"f.comment;text;Measurement related comment"]),
+                 (u"sublocation_suffix", u"flow"))]]
+    else:
+        input_field_browser = [[0, ((u"input_field_list", [
+            u"Accvol.m3;numberDecimal|numberSigned; ",
+            u"DO.mg/L;numberDecimal|numberSigned; ",
+            u"Momflow.l/s;numberDecimal|numberSigned; ",
+            u"f.kommentar;text;mätrelaterad kommentar",
+            u"k.kommentar;text;mätrelaterad kommentar",
+            u"kommentar;text;obsidrelaterad kommentar",
+            u"kond.µS/cm;numberDecimal|numberSigned; ",
+            u"meas.m;numberDecimal|numberSigned;djup till vatten",
+            u"n.kommentar;text;mätrelaterad kommentar",
+            u"nedmätning.m;numberDecimal|numberSigned;djup till vatten",
+            u"p.kommentar;text;mätrelaterad kommentar", u"pH;numberDecimal|numberSigned; ",
+            u"redox.mV;numberDecimal|numberSigned; ", u"temp.°C;numberDecimal|numberSigned; ",
+            u"turb.FNU;numberDecimal|numberSigned; "
+            ], ), )]]
+
+        input_fields_groups = [
+            [0, ((u"input_field_group_list",
+               [u"nedmätning.m;numberDecimal|numberSigned;djup till vatten",
+                u"n.kommentar;text;mätrelaterad kommentar"]),
+              (u"sublocation_suffix", u"nivå"))],
+            [1, ((u"input_field_group_list",
+                  [u"kommentar;text;obsidrelaterad kommentar"]),
+                 (u"sublocation_suffix", u"kommentar"))],
+            [2, ((u"input_field_group_list",
+                  [u"kond.µS/cm;numberDecimal|numberSigned; ",
+                   u"DO.mg/L;numberDecimal|numberSigned; ",
+                   u"pH;numberDecimal|numberSigned; ",
+                   u"redox.mV;numberDecimal|numberSigned; ",
+                   u"temp.°C;numberDecimal|numberSigned; ",
+                   u"turb.FNU;numberDecimal|numberSigned; ",
+                   u"k.kommentar;text;mätrelaterad kommentar"]),
+                 (u"sublocation_suffix", u"kvalitet"))],
+            [3, ((u"input_field_group_list",
+                  [u"temp.°C;numberDecimal|numberSigned; ",
+                   u"turb.FNU;numberDecimal|numberSigned; ",
+                   u"p.kommentar;text;mätrelaterad kommentar"]),
+                 (u"sublocation_suffix", u"prov"))],
+            [4, ((u"input_field_group_list",
+                  [u"Accvol.m3;numberDecimal|numberSigned; ",
+                   u"Momflow.l/s;numberDecimal|numberSigned; ",
+                   u"f.kommentar;text;mätrelaterad kommentar"],),
+                 (u"sublocation_suffix", u"flöde"))]]
+
+    input_field_browser = utils.anything_to_string_representation(input_field_browser)
+    input_fields_groups = utils.anything_to_string_representation(input_fields_groups)
+    return input_field_browser, input_fields_groups
