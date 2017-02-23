@@ -1060,7 +1060,7 @@ class TestInterlab4Importer():
         result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, 5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. Platsinfo: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, 5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
         assert result_string == reference_string
 
     def test_interlab4_to_table_kalium_above_2_5(self):
@@ -1086,7 +1086,7 @@ class TestInterlab4Importer():
         result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 4, 4, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. Platsinfo: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 4, 4, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
         assert result_string == reference_string
 
     def test_interlab4_to_table_kalium_between_1_and_2_5(self):
@@ -1112,7 +1112,7 @@ class TestInterlab4Importer():
         result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.5, 1,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. Platsinfo: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.5, 1,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
         assert result_string == reference_string
 
     def test_interlab4_to_table_kalium_below_1(self):
@@ -1138,7 +1138,7 @@ class TestInterlab4Importer():
         result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. Platsinfo: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
         assert result_string == reference_string
 
     def test_interlab4_to_table_kalium_using_resolution(self):
@@ -1164,7 +1164,7 @@ class TestInterlab4Importer():
         result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±0.1. Platsinfo: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±0.1. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
         assert result_string == reference_string
 
     def test_interlab4_to_table_kalium_using_resolution_same_resolution_use_last_one(self):
@@ -1190,7 +1190,7 @@ class TestInterlab4Importer():
         result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±1. Platsinfo: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±1. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
         assert result_string == reference_string
 
     def test_interlab4_to_table_matvardetalanm(self):
@@ -1215,7 +1215,7 @@ class TestInterlab4Importer():
         result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, <5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±1. Platsinfo: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
+        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, <5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±1. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
         assert result_string == reference_string
         
     def tearDown(self):
@@ -1299,7 +1299,7 @@ class TestInterlab4ImporterDB(object):
 
             _test(self, filename)
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
-        reference_string = ur'''(True, [(Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. Platsinfo: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30)])'''
+        reference_string = ur'''(True, [(Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30)])'''
         assert test_string == reference_string
 
 
