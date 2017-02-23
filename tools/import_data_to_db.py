@@ -768,7 +768,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                   reading_num,
                                   reading_txt,
                                   unit,
-                                  u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments, more_parameter_comments] if comment is not None and comment])]
+                                  u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments, more_parameter_comments, u'Platsinfo: ' + obsid] if comment is not None and comment])]
                                  )
         return file_data
         
