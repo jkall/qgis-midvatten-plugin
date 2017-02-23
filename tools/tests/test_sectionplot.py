@@ -395,6 +395,10 @@ class __TestSectionPlot4(object):
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
         self.midvatten = midvatten(self.iface)
+        self.midvatten2 = midvatten(self.iface)
+        self.midvatten3 = midvatten(self.iface)
+        self.midvatten4 = midvatten(self.iface)
+
         try:
             os.remove(TEMP_DB_PATH4)
         except OSError:
@@ -403,6 +407,10 @@ class __TestSectionPlot4(object):
         mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
         self.midvatten.ms.settingsareloaded = True
+        self.midvatten2.ms.settingsareloaded = True
+        self.midvatten3.ms.settingsareloaded = True
+        self.midvatten4.ms.settingsareloaded = True
+        self.midvattens = [self.midvatten, self.midvatten2, self.midvatten3, self.midvatten4]
 
     def tearDown(self):
         #Delete database
@@ -444,7 +452,6 @@ class __TestSectionPlot4(object):
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(self, midvatten, vlayer, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = vlayer
-            self.miface = mock_iface
             mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
@@ -454,14 +461,15 @@ class __TestSectionPlot4(object):
             myplot.draw_plot()
             return myplot
 
-        def worker():
-            _test(self, self.midvatten, vlayer)
+        def worker(i):
+            _test(self, self.midvattens[i], vlayer)
 
         jobs = []
         for i in xrange(4):
-            p = Process(target=worker)
+            p = Process(target=lambda: worker(i))
             jobs.append(p)
             p.start()
+        p.join()
 
         print("Test worked")
 
