@@ -106,8 +106,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.LengthAlong = LengthAlongTable.length
 
         # hidden feature, printout to python console
-        print([x for x in self.selected_obsids])
-        print([x for x in self.LengthAlong])
+        #print([x for x in self.selected_obsids])
+        #print([x for x in self.LengthAlong])
         
         self.fill_dem_list()
         
@@ -201,7 +201,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 self.connectionObject.commit()
         except sqlite.OperationalError, Msg:
             self.connectionObject.rollback()
-            utils.pop_up_info("The SQL query\n %s\n seems to be invalid.\n\n%s" %(query,Msg),None)
+            utils.pop_up_info("The SQL query\n %s\n seems to be invalid.\n\n%s" %(query,Msg), 'Error', None)
             self.queryPb=True #Indicates pb with current query
             
         return header,data
