@@ -144,7 +144,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         # Lambda and map is used to run several functions for every button click
         self.connect(self.export_button, PyQt4.QtCore.SIGNAL("clicked()"), self.export)
 
-        self.gridLayout_buttons.setRowStretch(8, 1)
+        self.gridLayout_buttons.setRowStretch(9, 1)
 
         self.show()
 
