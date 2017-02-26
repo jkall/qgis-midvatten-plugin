@@ -30,7 +30,7 @@ from midvatten_utils import get_sql_result_as_dict, returnunicode
 
 
 def settingsdict():    #These are the default settings, they shall not be changed!!!
-    dictionary = { 'database' : '',
+    dictionary = { 'database' : '{}',
             'tstable' : 'w_levels',
             'tscolumn' : 'level_masl',
             'tsdotmarkers' : 0,

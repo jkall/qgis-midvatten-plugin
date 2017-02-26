@@ -74,15 +74,15 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.ListOfColumns_WQUALVALUE, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualValue))
         self.connect(self.ListOfdate_time_format, SIGNAL("activated(int)"), partial(self.ChangedListOfdate_time_format))
         self.connect(self.ListOfColumns_WQUALUNIT, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualUnit))         
-        self.connect(self.ListOfColumns_WQUALSORTING, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualSorting))                 
+        self.connect(self.ListOfColumns_WQUALSORTING, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualSorting))
 
         #tab stratigraphy  - TO BE REMOVED
         #self.connect(self.ListOfTables_3, SIGNAL("activated(int)"), partial(self.StratigraphyTableUpdated))  # TODO: remove in version 1.4
 
         #tab piper
-        self.connect(self.paramCl, SIGNAL("activated(int)"), partial(self.ChangedParamCl)) 
-        self.connect(self.paramHCO3, SIGNAL("activated(int)"), partial(self.ChangedParamHCO3)) 
-        self.connect(self.paramSO4, SIGNAL("activated(int)"), partial(self.ChangedParamSO4)) 
+        self.connect(self.paramCl, SIGNAL("activated(int)"), partial(self.ChangedParamCl))
+        self.connect(self.paramHCO3, SIGNAL("activated(int)"), partial(self.ChangedParamHCO3))
+        self.connect(self.paramSO4, SIGNAL("activated(int)"), partial(self.ChangedParamSO4))
         self.connect(self.paramNa, SIGNAL("activated(int)"), partial(self.ChangedParamNa)) 
         self.connect(self.paramK, SIGNAL("activated(int)"), partial(self.ChangedParamK)) 
         self.connect(self.paramCa, SIGNAL("activated(int)"), partial(self.ChangedParamCa)) 
@@ -182,6 +182,14 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ms.settingsdict['piper_markers']=self.MarkerComboBox.currentText()
         self.ms.save_settings('piper_markers')
 
+    def changed_combobox(self, combobox, settings_string):
+        """All "ChangedX" that are comboboxed should be replaced to this one
+        Usage:
+        self.connect(self.paramHCO3, SIGNAL("activated(int)"), partial(self.changed_combobox, self.paramHCO3, 'piper_hco3'))
+        """
+        self.ms.settingsdict[settings_string] = combobox.currentText()
+        self.ms.save_settings(settings_string)
+
     def ChangedLocale(self):    # TODO: remove in version 1.4
         sql = u"select description from about_db where description like 'locale:%'"
         connection_ok, result = utils.sql_load_fr_db(sql)
@@ -246,38 +254,34 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 getattr(self, comboboxname).addItem(columnName)  # getattr is to combine a function and a string to a combined function
 
     def LoadAndSelectLastSettings(self):
-        #TODO: Here
 
-        db_settings = self.ms.settingsdict['database']
-        dbtype = db_settings.keys()[0]
-        if dbtype == u'spatialite':
-            dbpath = db_settings[dbtype][u'path']
+        connection = utils.dbconnection()
+        if connection.connect2db():
+            self.ms.save_settings('database')
+            self.database_settings.update_settings(self.ms.settingsdict['database'])
 
-            if os.path.isfile(dbpath):#absolute path
-                self.ms.save_settings('database')
-                self.txtpath.setText(self.ms.settingsdict['database'])
-                self.loadTablesFromDB(self.ms.settingsdict['database'])        # All ListOfTables are filled with relevant information
-                self.LoadDistinctPiperParams(self.ms.settingsdict['database'])
+            self.loadTablesFromDB(self.ms.settingsdict['database'])        # All ListOfTables are filled with relevant information
+            self.LoadDistinctPiperParams(self.ms.settingsdict['database'])
 
-                #TS plot settings
-                self.load_and_select_last_ts_plot_settings()
+            #TS plot settings
+            self.load_and_select_last_ts_plot_settings()
 
-                #XY plot settings
-                self.load_and_select_last_xyplot_settings()
+            #XY plot settings
+            self.load_and_select_last_xyplot_settings()
 
-                #Stratigraphy settings # TODO: remove in version 1.4
-                #self.load_and_select_last_stratigraphy_settings()
+            #Stratigraphy settings # TODO: remove in version 1.4
+            #self.load_and_select_last_stratigraphy_settings()
 
-                #Water Quality Reports settings
-                self.load_and_select_last_wqual_settings()
+            #Water Quality Reports settings
+            self.load_and_select_last_wqual_settings()
 
-                #piper diagram settings
-                self.load_and_select_last_piper_settings()
+            #piper diagram settings
+            self.load_and_select_last_piper_settings()
 
-                # finally, set dockwidget to last choosen tab
-                self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['tabwidget']))
-            else:
-                self.iface.messageBar().pushMessage("Warning","Could not recover Midvatten settings. You will have to reset.", 1,duration=5)
+            # finally, set dockwidget to last choosen tab
+            self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['tabwidget']))
+        else:
+            utils.MessagebarAndLog.warning(bar_msg=u"Could not recover Midvatten settings. You will have to reset.")
 
     def load_and_select_last_piper_settings(self):
         searchindex = self.paramCl.findText(self.ms.settingsdict['piper_cl'])
@@ -413,7 +417,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def loadTablesFromDB(self,db): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
         # start with cleaning comboboxes before filling with new entries
-        internal_tables = midvatten_defs.SQLiteInternalTables(as_tuple=True)
         tables = midvatten_defs.tables_columns().keys()
 
         self.ListOfTables.addItem('')
@@ -581,6 +584,7 @@ class DatabaseSettings(object):
         self.midvsettingsdialogdock = midvsettingsdialogdock
         self.vlayout = vlayout
         self.dbtype_comboBox = dbtype_comboBox
+        self.db_settings_obj = None
 
         self.child_widgets = []
 
@@ -622,9 +626,23 @@ class DatabaseSettings(object):
             spatialite_settings = SpatialiteSettings(self.connect, self.ms)
             self.vlayout.addWidget(spatialite_settings.widget)
             self.child_widgets.append(spatialite_settings.widget)
+            self.db_settings_obj = spatialite_settings
 
         self.layout.addStretch()
 
+    def update_settings(self, db_settings):
+        if not db_settings or db_settings is None:
+            return
+
+        for dbtype, settings in db_settings.iteritems():
+            self.dbtype_comboBox = dbtype
+            self.choose_dbtype()
+
+            for setting_name, value in settings.iteritems():
+                if hasattr(self.db_settings_obj, setting_name.encode(u'utf-8')):
+                    setattr(self.db_settings_obj, setting_name.encode(u'utf-8'), value)
+                else:
+                    utils.MessagebarAndLog.warning(log_msg=u'Databasetype ' + dbtype + u" didn' t have setting " + setting)
 
 class SpatialiteSettings(gui_utils.RowEntry):
     def __init__(self, midvsettingsdialogdock):
@@ -632,11 +650,19 @@ class SpatialiteSettings(gui_utils.RowEntry):
         self.midvsettingsdialogdock = midvsettingsdialogdock
         self.btnSetDB = PyQt4.QtGui.QPushButton(u'Select db')
         self.layout.addWidget(self.btnSetDB)
-        self.txtpath = PyQt4.QtGui.QLineEdit(u'')
+        self._dbpath = PyQt4.QtGui.QLineEdit(u'')
         self.layout.addWidget(self.txtpath)
 
         #select file
         self.midvsettingsdialogdock.connect(self.btnSetDB, SIGNAL("clicked()"), self.select_file)
+
+    @property
+    def dbpath(self):
+        return utils.returnunicode(self._dbpath.text())
+
+    @dbpath.setter
+    def dbpath(self, value):
+        self._dbpath.setText(utils.returnunicode(value))
 
     def select_file(self):
         """ Open a dialog to locate the sqlite file and some more..."""

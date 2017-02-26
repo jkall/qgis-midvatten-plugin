@@ -48,14 +48,22 @@ not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','u
 class dbconnection():
     def __init__(self, *args, **kwargs):
         self.dbconnection = None
+        db_settings = QgsProject.instance().readEntry("Midvatten", "database")[0]
+        self.dbtype = db_settings.keys()[0]
 
-        self.dbtype = u'postgis'
-        if self.dbtype == u'postgis':
-            self.dbconnection = PostgisDbconnection(*args, **kwargs)
-        elif self.dbtype == u'spatialite':
-            self.dbconnection = SpatialiteDbconnection(*args, **kwargs)
+        dbtypes_classes = {u'postgis': PostgisDbconnection,
+                           u'spatialite': SpatialiteDbconnection}
+
+        dbclass = dbtypes_classes.get(self.dbtype, None)
+        if dbclass is None:
+            MessagebarAndLog.critical(bar_msg=u'Error.  Database type wrong')
+        else:
+            self.dbconnection = dbclass(db_settings.values(), *args, **kwargs)
 
     def connect2db(self):
+        if self.dbconnection is None:
+            return False
+
         connectionOK = self.dbconnection.connect2db()
         self.conn = self.dbconnection.conn
         self.cursor = self.conn.cursor()
@@ -67,11 +75,11 @@ class dbconnection():
 
 
 class SpatialiteDbconnection():
-    def __init__(self, db=''):
-        if db == '':
-            self.dbpath = QgsProject.instance().readEntry("Midvatten","database")[0]
+    def __init__(self, db_settings, dbpath=''):
+        if dbpath == '':
+            self.dbpath = db_settings[u'dbpath']
         else:
-            self.dbpath = db
+            self.dbpath = dbpath
     
     def connect2db(self):
         if os.path.exists(self.dbpath):
@@ -92,16 +100,12 @@ class SpatialiteDbconnection():
 
 
 class PostgisDbconnection():
-    def __init__(self):
-        self.dbname = u'midv1'
-        self.user = u'henrik'
-        self.host = u'localhost'
-        self.password = u'1234'
-
-        #if db == '':
-        #    self.dbpath = QgsProject.instance().readEntry("Midvatten","database")[0]
-        #else:
-        #    self.dbpath = db
+    def __init__(self, db_settings):
+        self.dbname = db_settings[u'dbname']
+        self.user = db_settings[u'user']
+        self.host = db_settings[u'host']
+        #TODO: The password has to be handled differently
+        self.password = db_settings[u'password']
 
     def connect2db(self):
         try:#verify this is an existing sqlite database
@@ -109,7 +113,7 @@ class PostgisDbconnection():
             #self.conn.cursor().execute("select count(*) from sqlite_master")
             ConnectionOK = True
         except:
-            pop_up_info("Could not connect to  " + self.dbpath + "\nYou will have to reset Midvatten settings for this project!")
+            pop_up_info("Could not connect to postgis database\nYou will have to reset Midvatten settings for this project!")
             ConnectionOK = False
 
         return ConnectionOK

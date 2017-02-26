@@ -49,7 +49,12 @@ class midvsettings():
                      }
         output = {}
         for (key, value) in self.settingsdict.items():
-            value = ast.literal_eval(value)
+            try:
+                _value = ast.literal_eval(value)
+            except:
+                pass
+            else:
+                value = _value
             dataType = type(value).__name__
             try:
                 func = functions[dataType]
