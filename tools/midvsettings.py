@@ -13,6 +13,7 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
+import ast
 import midvatten_utils as utils
 from definitions import midvatten_defs
 
@@ -48,13 +49,14 @@ class midvsettings():
                      }
         output = {}
         for (key, value) in self.settingsdict.items():
+            value = ast.literal_eval(value)
             dataType = type(value).__name__
             try:
                 func = functions[dataType]
                 output[key] = func("Midvatten", key)
                 self.settingsdict[key] = output[key][0]
             except KeyError:
-                self.iface.messageBar().pushMessage("Info","Settings key %s does not exist in project file. Maybe this file was last used with old Midvatten plugin?"%str(key), 0,duration=30)
+                utils.MessagebarAndLog.info(bar_msg="Settings key %s does not exist in project file. Maybe this file was last used with old Midvatten plugin?"%str(key))
         self.readingSettings = False
         self.settingsareloaded = True
 
@@ -66,12 +68,12 @@ class midvsettings():
             if key =='': #if no argument, then save all settings according to dictionary
                 for (key, value) in self.settingsdict.items():        
                     try: # write plugin settings to QgsProject
-                        QgsProject.instance().writeEntry("Midvatten",key, value )
+                        QgsProject.instance().writeEntry("Midvatten",key, utils.anything_to_string_representation(value))
                     except TypeError: 
                         print("debug info; midvsettings found that "+key+" had type: "+str(type(value))+" which is not appropriate")
             else:#otherwise only save specific setting as per given key
                 try:
-                    QgsProject.instance().writeEntry("Midvatten",key, self.settingsdict[key])
+                    QgsProject.instance().writeEntry("Midvatten",key, utils.anything_to_string_representation(self.settingsdict[key]))
                     #print ('debug info, wrote %s value %s' %(key, self.settingsdict[key]))#debug
                 except TypeError: 
                     print("debug info; midvsettings found that "+key+" had type: "+str(type(self.settingsdict[key]))+" which is not appropriate")

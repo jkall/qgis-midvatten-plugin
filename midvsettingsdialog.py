@@ -16,6 +16,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import uic
 from PyQt4.QtCore import QLocale
+import PyQt4
 
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency  
 import os.path
@@ -23,6 +24,7 @@ import qgis.utils
 from functools import partial # only to get combobox signals to work
 import locale
 import midvatten_utils as utils
+import gui_utils
 from definitions import midvatten_defs
 #from ui.midvsettingsdock_ui import Ui_MidDockSettings
 midvsettingsdock_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'midvsettingsdock.ui'))[0]
@@ -53,8 +55,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         # SIGNALS
         #move dockwidget
         self.connect(self, SIGNAL("dockLocationChanged(Qt::DockWidgetArea)"), self.set_location)
-        #select file
-        self.connect(self.btnSetDB, SIGNAL("clicked()"), self.selectFile)
+
         #tab TS
         self.connect(self.ListOfTables, SIGNAL("activated(int)"), partial(self.TSTableUpdated)) 
         self.connect(self.ListOfColumns, SIGNAL("activated(int)"), partial(self.ChangedListOfColumns)) 
@@ -89,6 +90,9 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.MarkerComboBox, SIGNAL("activated(int)"), partial(self.ChangedPiperMarkerComboBox))
         #tab general - TO BE REMOVED
         #self.connect(self.locale_combobox, SIGNAL("activated(int)"), partial(self.ChangedLocale))# TODO: remove in version 1.4
+
+        #tab db
+        self.database_settings = DatabaseSettings(self, self.db_verticalLayout, self.dbtype_comboBox)
 
         #Draw the widget
         self.iface.addDockWidget(max(self.ms.settingsdict['settingslocation'],1), self)
@@ -242,31 +246,38 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 getattr(self, comboboxname).addItem(columnName)  # getattr is to combine a function and a string to a combined function
 
     def LoadAndSelectLastSettings(self):
-        if os.path.isfile( self.ms.settingsdict['database'] ):#absolute path
-            self.ms.save_settings('database')
-            self.txtpath.setText(self.ms.settingsdict['database'])
-            self.loadTablesFromDB(self.ms.settingsdict['database'])        # All ListOfTables are filled with relevant information
-            self.LoadDistinctPiperParams(self.ms.settingsdict['database'])
+        #TODO: Here
 
-            #TS plot settings
-            self.load_and_select_last_ts_plot_settings()
-            
-            #XY plot settings
-            self.load_and_select_last_xyplot_settings()
-            
-            #Stratigraphy settings # TODO: remove in version 1.4
-            #self.load_and_select_last_stratigraphy_settings()
-            
-            #Water Quality Reports settings
-            self.load_and_select_last_wqual_settings()
+        db_settings = self.ms.settingsdict['database']
+        dbtype = db_settings.keys()[0]
+        if dbtype == u'spatialite':
+            dbpath = db_settings[dbtype][u'path']
 
-            #piper diagram settings
-            self.load_and_select_last_piper_settings()
+            if os.path.isfile(dbpath):#absolute path
+                self.ms.save_settings('database')
+                self.txtpath.setText(self.ms.settingsdict['database'])
+                self.loadTablesFromDB(self.ms.settingsdict['database'])        # All ListOfTables are filled with relevant information
+                self.LoadDistinctPiperParams(self.ms.settingsdict['database'])
 
-            # finally, set dockwidget to last choosen tab
-            self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['tabwidget']))
-        else:
-            self.iface.messageBar().pushMessage("Warning","Could not recover Midvatten settings. You will have to reset.", 1,duration=5)
+                #TS plot settings
+                self.load_and_select_last_ts_plot_settings()
+
+                #XY plot settings
+                self.load_and_select_last_xyplot_settings()
+
+                #Stratigraphy settings # TODO: remove in version 1.4
+                #self.load_and_select_last_stratigraphy_settings()
+
+                #Water Quality Reports settings
+                self.load_and_select_last_wqual_settings()
+
+                #piper diagram settings
+                self.load_and_select_last_piper_settings()
+
+                # finally, set dockwidget to last choosen tab
+                self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['tabwidget']))
+            else:
+                self.iface.messageBar().pushMessage("Warning","Could not recover Midvatten settings. You will have to reset.", 1,duration=5)
 
     def load_and_select_last_piper_settings(self):
         searchindex = self.paramCl.findText(self.ms.settingsdict['piper_cl'])
@@ -467,15 +478,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ms.settingsdict['piper_mg']= unicode(self.paramMg.currentText())
         self.ms.save_settings('piper_mg')#save this specific setting
         
-    def selectFile(self):
-        """ Open a dialog to locate the sqlite file and some more..."""        
-        path = QFileDialog.getOpenFileName(None,str("Select database:"),"*.sqlite")
-        if path: #Only get new db name if not cancelling the FileDialog
-            self.ms.settingsdict['database'] = path #
-        else:#debug
-            print "cancelled and still using database path " + self.ms.settingsdict['database'] #debug
-        self.LoadAndSelectLastSettings()
-
     def set_location(self):
         dockarea = self.parent.dockWidgetArea(self)
         self.ms.settingsdict['settingslocation']=dockarea
@@ -572,3 +574,81 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.InfoTxtXYPlot.setText(text)
         self.ms.settingsdict['xytable']=self.ListOfTables_2.currentText()
         self.ms.save_settings('xytable')#save this specific setting
+
+
+class DatabaseSettings(object):
+    def __init__(self, midvsettingsdialogdock, vlayout, dbtype_comboBox):
+        self.midvsettingsdialogdock = midvsettingsdialogdock
+        self.vlayout = vlayout
+        self.dbtype_comboBox = dbtype_comboBox
+
+        self.child_widgets = []
+
+        self.midvsettingsdialogdock.connect(self._dbtype_comboBox, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_dbtype)
+
+        self.layout.addStretch()
+
+    @property
+    def dbtype_comboBox(self):
+        return utils.returnunicode(self._dbtype_comboBox.currentText())
+
+    @dbtype_comboBox.setter
+    def dbtype_comboBox(self, value):
+        index = self._dbtype_comboBox.findText(utils.returnunicode(value))
+        if index != -1:
+            self._dbtype_comboBox.setCurrentIndex(index)
+
+    def choose_dbtype(self):
+        dbtype = self.dbtype_comboBox
+
+        #Remove stretch
+        self.layout.takeAt(-1)
+        for widget in self.child_widgets:
+            try:
+                widget.clear_widgets()
+            except:
+                pass
+            try:
+                self.vlayout.removeWidget(widget)
+            except:
+                pass
+            try:
+                widget.close()
+            except:
+                pass
+        self.child_widgets = []
+
+        if self.dbtype_comboBox == u'spatialite':
+            spatialite_settings = SpatialiteSettings(self.connect, self.ms)
+            self.vlayout.addWidget(spatialite_settings.widget)
+            self.child_widgets.append(spatialite_settings.widget)
+
+        self.layout.addStretch()
+
+
+class SpatialiteSettings(gui_utils.RowEntry):
+    def __init__(self, midvsettingsdialogdock):
+        super(SpatialiteSettings, self).__init__()
+        self.midvsettingsdialogdock = midvsettingsdialogdock
+        self.btnSetDB = PyQt4.QtGui.QPushButton(u'Select db')
+        self.layout.addWidget(self.btnSetDB)
+        self.txtpath = PyQt4.QtGui.QLineEdit(u'')
+        self.layout.addWidget(self.txtpath)
+
+        #select file
+        self.midvsettingsdialogdock.connect(self.btnSetDB, SIGNAL("clicked()"), self.select_file)
+
+    def select_file(self):
+        """ Open a dialog to locate the sqlite file and some more..."""
+        path = QFileDialog.getOpenFileName(None, str("Select database:"), "*.sqlite")
+        if path:  # Only get new db name if not cancelling the FileDialog
+            self.midvsettingsdialogdock.ms.settingsdict['database'] = {u'spatialite': {u'path': path}}  #
+        else:  # debug
+            print "cancelled and still using database path " + utils.returnunicode(self.midvsettingsdialogdock.ms.settingsdict['database'])
+        self.midvsettingsdialogdock.LoadAndSelectLastSettings()
+
+
+
+
+
+
