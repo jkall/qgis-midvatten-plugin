@@ -408,7 +408,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 rs = curs.execute(sql)  #Send the SQL statement to get the columns in the table            
                 columns = {} 
                 columns = [tuple[0] for tuple in curs.description]
-                rs.close()
                 myconnection.closedb()# then close the database         
         else:
             columns = {}
@@ -432,7 +431,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 self.ListOfTables_2.addItem(row[0])
                 #self.ListOfTables_3.addItem(row[0]) #TODO: remove in version 1.4
                 self.ListOfTables_WQUAL.addItem(row[0])
-            rs.close()
             myconnection.closedb()# then close the database          
 
     def LoadDistinctPiperParams(self,db):
@@ -456,7 +454,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 self.paramK.addItem(row[0])
                 self.paramCa.addItem(row[0])
                 self.paramMg.addItem(row[0])
-            rs.close()
             myconnection.closedb()# then close the database
 
     def PiperClUpdated(self):

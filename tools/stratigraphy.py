@@ -225,7 +225,6 @@ class SurveyStore:
                         insertAt += 1
                     survey.strata.insert(insertAt, st)
             """ Close SQLite-connections """
-            rs.close() # First close the table 
             myconnection.closedb()# then close the database
             DataLoadingStatus = True
             return DataLoadingStatus, surveys

@@ -32,6 +32,7 @@ import os
 import qgis.utils
 import tempfile
 import time
+import psycopg2
 from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -45,6 +46,25 @@ from matplotlib.dates import num2date
 not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
 
 class dbconnection():
+    def __init__(self, *args, **kwargs):
+        self.dbconnection = None
+
+        self.dbtype = u'postgis'
+        if self.dbtype == u'postgis':
+            self.dbconnection = PostgisDbconnection(*args, **kwargs)
+        elif self.dbtype == u'spatialite':
+            self.dbconnection = SpatialiteDbconnection(*args, **kwargs)
+
+    def connect2db(self):
+        connectionOK = self.dbconnection.connect2db()
+        self.conn = self.dbconnection.conn
+        return connectionOK
+
+    def closedb(self):
+        self.dbconnection.closedb()
+
+
+class SpatialiteDbconnection():
     def __init__(self, db=''):
         if db == '':
             self.dbpath = QgsProject.instance().readEntry("Midvatten","database")[0]
@@ -67,6 +87,35 @@ class dbconnection():
         
     def closedb(self):
             self.conn.close()
+
+
+class PostgisDbconnection():
+    def __init__(self):
+        self.dbname = u'midv1'
+        self.user = u'henrik'
+        self.host = u'localhost'
+        self.password = u'1234'
+
+        #if db == '':
+        #    self.dbpath = QgsProject.instance().readEntry("Midvatten","database")[0]
+        #else:
+        #    self.dbpath = db
+
+    def connect2db(self):
+        try:#verify this is an existing sqlite database
+            self.conn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'"%(self.dbname, self.user, self.host, self.password))
+            #self.conn.cursor().execute("select count(*) from sqlite_master")
+            ConnectionOK = True
+        except:
+            pop_up_info("Could not connect to  " + self.dbpath + "\nYou will have to reset Midvatten settings for this project!")
+            ConnectionOK = False
+
+        return ConnectionOK
+
+    def closedb(self):
+            self.conn.close()
+
+
 
 def show_message_log(pop_error=False):
     """
@@ -362,16 +411,10 @@ def get_all_obsids(table=u'obs_points'):
     """ Returns all obsids from obs_points
     :return: All obsids from obs_points
     """
-    myconnection = dbconnection()
     obsids = []
-    if myconnection.connect2db() == True:
-        # skapa en cursor
-        curs = myconnection.conn.cursor()
-        rs=curs.execute('''select distinct obsid from "%s" order by obsid'''%table)
-
-        obsids = [row[0] for row in curs]
-        rs.close()
-        myconnection.closedb()
+    connection_ok, result = sql_load_fr_db(u'''select distinct obsid from %s order by obsid'''%table)
+    if connection_ok:
+        obsids = [row[0] for row in result]
     return obsids
 
 def get_date_time():
@@ -524,15 +567,16 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
     return text
 
 def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
-    dbpath = QgsProject.instance().readEntry("Midvatten","database")
-    if os.path.exists(dbpath[0]):
+
+    connection = dbconnection()
+    connection_ok = connection.connect2db
+
+    if connection_ok:
         try:
-            conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)#dbpath[0] is unicode already #MacOSC fix1 
-            curs = conn.cursor()
+            curs = connection.conn.cursor()
             resultfromsql = curs.execute(sql) #Send SQL-syntax to cursor #MacOSX fix1
             result = resultfromsql.fetchall()
-            resultfromsql.close()
-            conn.close()
+            connection.closedb()
             ConnectionOK = True
         except:
             #pop_up_info("Could not connect to DB, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
@@ -551,29 +595,29 @@ def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list
     return ConnectionOK, result
 
 def sql_alter_db(sql=''):
-    dbpath = QgsProject.instance().readEntry("Midvatten","database")
-    conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-    curs = conn.cursor()
-    sql2 = sql 
-    curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+    connection = dbconnection()
+    connection_ok = connection.connect2db
 
-    if isinstance(sql2, basestring):
-        try:
-            resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
-        except IntegrityError, e:
-            raise IntegrityError("The sql failed:\n" + sql2 + "\nmsg:\n" + str(e))
-    else:
-        try:
-            resultfromsql = curs.executemany(sql2[0], sql2[1])
-        except IntegrityError, e:
-            raise IntegrityError(str(e))
+    if connection_ok:
+        curs = connection.conn.cursor()
+        sql2 = sql
+        curs.execute("PRAGMA foreign_keys = ON")  # Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+        if isinstance(sql2, basestring):
+            try:
+                resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
+            except IntegrityError, e:
+                raise IntegrityError("The sql failed:\n" + sql2 + "\nmsg:\n" + str(e))
+        else:
+            try:
+                resultfromsql = curs.executemany(sql2[0], sql2[1])
+            except IntegrityError, e:
+                raise IntegrityError(str(e))
 
-    result = resultfromsql.fetchall()
-    conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
-    resultfromsql.close()
-    conn.close()
+        result = resultfromsql.fetchall()
+        connection.conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
+        connection.closedb()
 
-    return result
+        return result
 
 def sql_alter_db_by_param_subst(sql='',*subst_params):
     """

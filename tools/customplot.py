@@ -304,7 +304,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                     self.createsingleplotobject(sql,i,My_format,curs,self.PlotType_comboBox_3.currentText(), factor3, offset3, remove_mean3, self.pandas_calc_3)
                     i += 1
 
-        #rs.close() # close the cursor
         myconnection.closedb()  # close the database
 
         self.xaxis_formatters = (self.axes.xaxis.get_major_formatter(), self.axes.xaxis.get_major_locator())
@@ -509,8 +508,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 self.table_ComboBox_1.addItem(row[0])
                 self.table_ComboBox_2.addItem(row[0])
                 self.table_ComboBox_3.addItem(row[0])
-            
-            rs.close()
+
             myconnection.closedb()        
 
     def LoadColumnsFromTable(self, table=''):
@@ -526,7 +524,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 rs=curs.execute(sql)
                 columns = {} 
                 columns = [tuple[0] for tuple in curs.description]
-                rs.close()
                 myconnection.closedb()        
         else:
             #QMessageBox.information(None,"info","no table is loaded")    # DEBUGGING

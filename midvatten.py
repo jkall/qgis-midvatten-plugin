@@ -1080,7 +1080,6 @@ class midvatten:
             curs = myconnection.conn.cursor()
             rs=curs.execute("""select distinct obsid from w_levels_logger order by obsid""")
             obsids = [row[0] for row in rs]
-            rs.close()
             myconnection.closedb()
 
             from drillreport import GetStatistics

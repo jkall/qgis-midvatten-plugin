@@ -218,7 +218,6 @@ class wqualreport():        # extracts water quality data for selected objects, 
         self.htmlcols = datecounter + 1    # to be able to set a relevant width to the table
         parameters_cursor.close()
         date_times_cursor.close()
-        rs.close()
         #conn.close()
         myconnection.closedb()
         return ReportTable
