@@ -132,7 +132,6 @@ class XYPlot:
                         i = i+1
 
                     """ Close SQLite-connections """
-                    rs.close() # First close the table 
                     myconnection.closedb()# then close the database
 
                     """ Finish plot """

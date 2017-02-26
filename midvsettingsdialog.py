@@ -397,41 +397,24 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 pass
 
     def LoadColumnsFromTable(self, table=''):
-        """ This method returns a list with all the columns in the table"""
-        if len(table)>0 and len(self.ms.settingsdict['database'])>0:            # Should not be needed since the function never should be called without existing table...
-            myconnection = utils.dbconnection(self.ms.settingsdict['database'])
-            if myconnection.connect2db() == True:
-                curs = myconnection.conn.cursor()
-                sql = r"""SELECT * FROM '"""
-                sql += str(table)
-                sql += """'"""     
-                rs = curs.execute(sql)  #Send the SQL statement to get the columns in the table            
-                columns = {} 
-                columns = [tuple[0] for tuple in curs.description]
-                myconnection.closedb()# then close the database         
-        else:
-            columns = {}
-        return columns        # This method returns a list with all the columns in the table
+        return midvatten_defs.tables_columns.get(table, {})
 
     def loadTablesFromDB(self,db): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
-        # start with cleaning comboboxes before filling with new entries   
+        # start with cleaning comboboxes before filling with new entries
+        internal_tables = midvatten_defs.SQLiteInternalTables(as_tuple=True)
+        tables = midvatten_defs.tables_columns().keys()
 
-        myconnection = utils.dbconnection(db)#self.ms.settingsdict['database'])
-        if myconnection.connect2db() == True:
-            cursor = myconnection.conn.cursor()
-            rs=cursor.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + midvatten_defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")  #SQL statement to get the relevant tables in the spatialite database
-            self.ListOfTables.addItem('')
-            self.ListOfTables_2.addItem('')
-            #self.ListOfTables_3.addItem('') #TODO: remove in version 1.4
-            self.ListOfTables_WQUAL.addItem('')
-            
-            for row in cursor:
-                self.ListOfTables.addItem(row[0])
-                self.ListOfTables_2.addItem(row[0])
-                #self.ListOfTables_3.addItem(row[0]) #TODO: remove in version 1.4
-                self.ListOfTables_WQUAL.addItem(row[0])
-            myconnection.closedb()# then close the database          
+        self.ListOfTables.addItem('')
+        self.ListOfTables_2.addItem('')
+        # self.ListOfTables_3.addItem('') #TODO: remove in version 1.4
+        self.ListOfTables_WQUAL.addItem('')
+
+        for table in sorted(tables):
+            self.ListOfTables.addItem(table)
+            self.ListOfTables_2.addItem(table)
+            #self.ListOfTables_3.addItem(row[0]) #TODO: remove in version 1.4
+            self.ListOfTables_WQUAL.addItem(table)
 
     def LoadDistinctPiperParams(self,db):
         self.ClearPiperParams()

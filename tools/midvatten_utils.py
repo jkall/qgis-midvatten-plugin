@@ -58,9 +58,11 @@ class dbconnection():
     def connect2db(self):
         connectionOK = self.dbconnection.connect2db()
         self.conn = self.dbconnection.conn
+        self.cursor = self.conn.cursor()
         return connectionOK
 
     def closedb(self):
+        self.cursor.close()
         self.dbconnection.closedb()
 
 

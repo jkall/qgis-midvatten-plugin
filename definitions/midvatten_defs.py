@@ -22,6 +22,7 @@ import locale
 from collections import OrderedDict
 from operator import itemgetter
 import qgis.utils
+import ast
 
 import midvatten_utils as utils
 
@@ -551,8 +552,8 @@ def staff_list():
 def stratigraphy_table():
     return 'stratigraphy'
     
-def SQLiteInternalTables():
-    return r"""('geom_cols_ref_sys',
+def SQLiteInternalTables(as_tuple=False):
+    astring = r"""('geom_cols_ref_sys',
                 'geometry_columns',
                 'geometry_columns_time',
                 'spatial_ref_sys',
@@ -583,6 +584,11 @@ def SQLiteInternalTables():
                 'geometry_columns',
                 'spatialindex',
                 'SpatialIndex')"""
+    if as_tuple:
+        return ast.literal_eval(astring)
+    else:
+        return astring
+
 
 def sqlite_nonplot_tables():
     return r"""('about_db',

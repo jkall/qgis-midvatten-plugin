@@ -1053,37 +1053,34 @@ class midvatten:
             except:
                 self.calibrplot = calibrlogger(self.iface.mainWindow(), self.ms.settingsdict)#,obsid)
 
+    @utils.waiting_cursor
     def zip_db(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
-            QApplication.setOverrideCursor(Qt.WaitCursor)
             connection = utils.dbconnection()
-            connection.connect2db()
-            connection.conn.cursor().execute("begin immediate")
-            bkupname = self.ms.settingsdict['database'] + datetime.datetime.now().strftime('%Y%m%dT%H%M') + '.zip'
-            zf = zipfile.ZipFile(bkupname, mode='w')
-            zf.write(self.ms.settingsdict['database'], compress_type=compression) #compression will depend on if zlib is found or not
-            zf.close()
-            connection.conn.rollback()
-            connection.closedb()
-            self.iface.messageBar().pushMessage("Information","Database backup was written to " + bkupname, 1,duration=15)
-            QApplication.restoreOverrideCursor()
+            connection_ok = connection.connect2db()
+            if connection_ok:
+                curs = connection.cursor
+                curs.execute("begin immediate")
+                bkupname = self.ms.settingsdict['database'] + datetime.datetime.now().strftime('%Y%m%dT%H%M') + '.zip'
+                zf = zipfile.ZipFile(bkupname, mode='w')
+                zf.write(self.ms.settingsdict['database'], compress_type=compression) #compression will depend on if zlib is found or not
+                zf.close()
+                connection.conn.rollback()
+                connection.closedb()
+                self.iface.messageBar().pushMessage("Information","Database backup was written to " + bkupname, 1,duration=15)
 
+    @utils.waiting_cursor
     def calculate_statistics_for_all_w_logger_data(self):
         """ Calculates min, median, nr of values and max for all obsids and writes to file
 
             Uses GetStatistics from drillreport for the calculations
         """
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-        myconnection = utils.dbconnection()
-        if myconnection.connect2db() == True:
-            curs = myconnection.conn.cursor()
-            rs=curs.execute("""select distinct obsid from w_levels_logger order by obsid""")
-            obsids = [row[0] for row in rs]
-            myconnection.closedb()
+        connection_ok, result = utils.sql_load_fr_db("""select distinct obsid from w_levels_logger order by obsid""")
+        if connection_ok:
+            obsids = [row[0] for row in result]
 
             from drillreport import GetStatistics
-            dbname = unicode(self.ms.settingsdict['database'])
             printlist = [obsid + "\t" + '\t'.join([str(x) for x in GetStatistics(obsid)[1]]) for obsid in sorted(obsids)]
             printlist.reverse()
             printlist.append('Obsid\tMin\tMedian\tNr of values\tMax')
@@ -1091,8 +1088,6 @@ class midvatten:
             utils.MessagebarAndLog.info(
                 bar_msg='Statistics done, see log for results.',
                 log_msg='\n'.join(printlist), duration=15, button=True)
-
-        QApplication.restoreOverrideCursor()
 
     def calculate_db_table_rows(self):
         """ Counts the number of rows for all tables in the database """

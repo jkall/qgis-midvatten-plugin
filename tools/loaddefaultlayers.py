@@ -40,6 +40,8 @@ class LoadLayers():
         self.legend = self.iface.legendInterface()
         self.remove_layers()
         self.add_layers()
+        self.dbtype = u'postgis'
+        #self.dbtype = y'spatialite
 
     def add_layers(self):
         """
@@ -66,12 +68,13 @@ class LoadLayers():
         if self.group_name == 'Midvatten_OBS_DB':
             for tablename in self.default_nonspatlayers: #first load all non-spatial layers
                 uristring= 'dbname="' + self.settingsdict['database'] + '" table="' + tablename + '"'
-                layer = QgsVectorLayer(uristring,tablename, 'spatialite')
+                
+                layer = QgsVectorLayer(uristring, self.dbtype)
                 layer_list.append(layer)
 
             for tablename in self.default_layers:    # then all the spatial ones
                 uri.setDataSource('',tablename, 'Geometry')
-                layer = QgsVectorLayer(uri.uri(), tablename, 'spatialite') # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
+                layer = QgsVectorLayer(uri.uri(), self.dbtype) # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
                 layer_list.append(layer)
 
         elif self.group_name == 'Midvatten_data_domains': #if self.group_name == 'Midvatten_data_domains':
@@ -81,7 +84,7 @@ class LoadLayers():
             d_domain_tables = [str(dd_table[0]) for dd_table in dd_tables]
             for tablename in d_domain_tables:
                 uristring= 'dbname="' + self.settingsdict['database'] + '" table="' + tablename + '"'
-                layer = QgsVectorLayer(uristring,tablename, 'spatialite')
+                layer = QgsVectorLayer(uristring, self.dbtype)
                 layer_list.append(layer)
 
         #now loop over all the layers and set styles etc
@@ -144,7 +147,7 @@ class LoadLayers():
         uri.setDatabase(self.settingsdict['database'])#MacOSX fix1 #earlier sent byte string, now intending to send unicode string
         for tablename in self.default_nonspatlayers:    # first the non-spatial tables, THEY DO NOT ALL HAVE CUSTOM UI FORMS
             firststring= 'dbname="' + self.settingsdict['database'] + '" table="' + tablename + '"'#MacOSX fix1  #earlier sent byte string, now unicode
-            layer = QgsVectorLayer(firststring,tablename, 'spatialite')   # Adding the layer as 'spatialite' and not ogr vector layer is preferred
+            layer = QgsVectorLayer(firststring,self.dbtype)   # Adding the layer as 'spatialite' and not ogr vector layer is preferred
             if not layer.isValid():
                 qgis.utils.iface.messageBar().pushMessage("Error","""Failed to load layer %s!"""%tablename,2)
             else:
@@ -169,7 +172,7 @@ class LoadLayers():
                     layer.setEditFormInit(formlogic)
         for tablename in self.default_layers:    # then the spatial ones, NOT ALL HAVE CUSTOM UI FORMS
             uri.setDataSource('',tablename, 'Geometry')
-            layer = QgsVectorLayer(uri.uri(), tablename, 'spatialite') # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
+            layer = QgsVectorLayer(uri.uri(), self.dbtype) # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
             if not layer.isValid():
                 qgis.utils.iface.messageBar().pushMessage("Error","""Failed to load layer %s!"""%tablename,2)                
             else:
