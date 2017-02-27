@@ -216,12 +216,9 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             filter2 = unicode(Filter2_ComboBox.currentText())
             filter2list= Filter2_QListWidget.selectedItems()
             nop = max(len(filter1list),1)*max(len(filter2list),1)
-            utils.MessagebarAndLog.info("nop: " + str(nop))
             #self.p= [None]*nop#list for plot objects
             self.p.extend([None]*nop)#list for plot objects
             self.plabels.extend([None]*nop)# List for plot labels
-            utils.MessagebarAndLog.info("Len self.p: " + str(len(self.p)))
-            utils.MessagebarAndLog.info("Len self.plabels: " + str(len(self.plabels)))
             try:
                 factor = float(LineEditFactor.text().replace(',','.'))
             except ValueError:
@@ -237,27 +234,23 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 if not (filter1 == '' or filter1==' ' or filter1list==[]) and not (filter2== '' or filter2==' ' or filter2list==[]):
                     for item1 in filter1list:
                         for item2 in filter2list:
-                            utils.MessagebarAndLog.info("i: " + str(i))
                             sql = r""" select """ + unicode(xcol_ComboBox.currentText()) + """, """ + unicode(ycol_ComboBox.currentText()) + """ from """ + unicode(table_ComboBox.currentText()) + """ where """ + unicode(xcol_ComboBox.currentText()) + """ is not NULL and """ + unicode(ycol_ComboBox.currentText()) + """ is not NULL and """ + filter1 + """='""" + unicode(item1.text())+ """' and """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(xcol_ComboBox.currentText())
                             self.plabels[i] = unicode(item1.text()) + """, """ + unicode(item2.text())
                             self.createsingleplotobject(sql,i,My_format,curs,PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
                             i += 1
                 elif not (filter1 == '' or filter1==' ' or filter1list==[]):
                     for item1 in filter1list:
-                        utils.MessagebarAndLog.info("i: " + str(i))
                         sql = r""" select """ + unicode(xcol_ComboBox.currentText()) + """, """ + unicode(ycol_ComboBox.currentText()) + """ from """ + unicode(table_ComboBox.currentText()) + """ where """ + unicode(xcol_ComboBox.currentText()) + """ is not NULL and """ + unicode(ycol_ComboBox.currentText()) + """ is not NULL and """ + filter1 + """='""" + unicode(item1.text())+ """' order by """ + unicode(xcol_ComboBox.currentText())
                         self.plabels[i] = unicode(item1.text()) 
                         self.createsingleplotobject(sql,i,My_format,curs,PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
                         i += 1
                 elif not (filter2 == '' or filter2==' ' or filter2list==[]):
                     for item2 in filter2list:
-                        utils.MessagebarAndLog.info("i: " + str(i))
                         sql = r""" select """ + unicode(xcol_ComboBox.currentText()) + """, """ + unicode(ycol_ComboBox.currentText()) + """ from """ + unicode(table_ComboBox.currentText()) + """ where """ + unicode(xcol_ComboBox.currentText()) + """ is not NULL and """ + unicode(ycol_ComboBox.currentText()) + """ is not NULL and """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(xcol_ComboBox.currentText())
                         self.plabels[i] = unicode(item2.text())
                         self.createsingleplotobject(sql,i,My_format,curs,PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
                         i += 1            
                 else:
-                    utils.MessagebarAndLog.info("i: " + str(i))
                     sql = r""" select """ + unicode(xcol_ComboBox.currentText()) + """, """ + unicode(ycol_ComboBox.currentText()) + """ from """ + unicode(table_ComboBox.currentText()) + """ where """ + unicode(xcol_ComboBox.currentText()) + """ is not NULL and """ + unicode(ycol_ComboBox.currentText()) + """ is not NULL and """ + """ order by """ + unicode(xcol_ComboBox.currentText())
                     self.plabels[i] = unicode(ycol_ComboBox.currentText())+""", """+unicode(table_ComboBox.currentText())
                     self.createsingleplotobject(sql,i,My_format,curs,PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
