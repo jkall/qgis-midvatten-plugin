@@ -92,7 +92,7 @@
        <attribute name="title">
         <string>DB</string>
        </attribute>
-       <widget class="QWidget" name="verticalLayoutWidget">
+       <widget class="QWidget" name="verticalWidget" native="true">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -115,12 +115,17 @@
             <widget class="QComboBox" name="_dbtype_comboBox">
              <item>
               <property name="text">
-               <string>Spatialite</string>
+               <string/>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>Postgres</string>
+               <string>spatialite</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>postgis</string>
               </property>
              </item>
             </widget>

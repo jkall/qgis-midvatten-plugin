@@ -32,6 +32,7 @@ import os
 import qgis.utils
 import tempfile
 import time
+import ast
 import psycopg2
 from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
@@ -48,7 +49,16 @@ not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','u
 class dbconnection():
     def __init__(self, *args, **kwargs):
         self.dbconnection = None
+
         db_settings = QgsProject.instance().readEntry("Midvatten", "database")[0]
+        try:
+            db_settings = ast.literal_eval(db_settings)
+        except:
+            pass
+
+        if not isinstance(db_settings, dict):
+            return None
+
         self.dbtype = db_settings.keys()[0]
 
         dbtypes_classes = {u'postgis': PostgisDbconnection,
@@ -56,7 +66,7 @@ class dbconnection():
 
         dbclass = dbtypes_classes.get(self.dbtype, None)
         if dbclass is None:
-            MessagebarAndLog.critical(bar_msg=u'Error.  Database type wrong')
+            MessagebarAndLog.critical(bar_msg=u'Error. Database type wrong')
         else:
             self.dbconnection = dbclass(db_settings.values(), *args, **kwargs)
 
