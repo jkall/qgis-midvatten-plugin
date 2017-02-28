@@ -16,10 +16,12 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import uic
 from PyQt4.QtCore import QLocale
+from PyQt4.QtCore import QSettings
 import PyQt4
 
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency  
 import os.path
+import ast
 import qgis.utils
 from functools import partial # only to get combobox signals to work
 import locale
@@ -45,7 +47,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
     def initUI(self):        
         # The settings dialog is cleared, filled with relevant information and the last selected settings are preset
-        self.database_settings = DatabaseSettings(self, self.db_verticalLayout, self._dbtype_comboBox)
+        self.database_settings = DatabaseSettings(self, self.gridLayout_db)
         self.ClearEverything()
         if len(self.ms.settingsdict['database'])>0:
             self.LoadAndSelectLastSettings()
@@ -254,14 +256,15 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 getattr(self, comboboxname).addItem(columnName)  # getattr is to combine a function and a string to a combined function
 
     def LoadAndSelectLastSettings(self):
-
+        #self.ms.save_settings('database')
         connection = utils.dbconnection()
         if connection.connect2db():
-            self.ms.save_settings('database')
+            connection.closedb()
+
             self.database_settings.update_settings(self.ms.settingsdict['database'])
 
-            self.loadTablesFromDB(self.ms.settingsdict['database'])        # All ListOfTables are filled with relevant information
-            self.LoadDistinctPiperParams(self.ms.settingsdict['database'])
+            self.loadTablesFromDB()        # All ListOfTables are filled with relevant information
+            self.LoadDistinctPiperParams()
 
             #TS plot settings
             self.load_and_select_last_ts_plot_settings()
@@ -281,6 +284,9 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             # finally, set dockwidget to last choosen tab
             self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['tabwidget']))
         else:
+            connection.closedb()
+            utils.MessagebarAndLog.info(
+                log_msg=u"LoadAndSelectLastSettings: connect2db didn't work")
             utils.MessagebarAndLog.warning(bar_msg=u"Could not recover Midvatten settings. You will have to reset.")
 
     def load_and_select_last_piper_settings(self):
@@ -414,7 +420,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def LoadColumnsFromTable(self, table=''):
         return midvatten_defs.tables_columns.get(table, {})
 
-    def loadTablesFromDB(self,db): # This method populates all table-comboboxes with the tables inside the database
+    def loadTablesFromDB(self): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
         # start with cleaning comboboxes before filling with new entries
         tables = midvatten_defs.tables_columns().keys()
@@ -430,12 +436,11 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             #self.ListOfTables_3.addItem(row[0]) #TODO: remove in version 1.4
             self.ListOfTables_WQUAL.addItem(table)
 
-    def LoadDistinctPiperParams(self,db):
+    def LoadDistinctPiperParams(self):
         self.ClearPiperParams()
-        myconnection = utils.dbconnection(db)#self.ms.settingsdict['database'])
-        if myconnection.connect2db() == True:
-            cursor = myconnection.conn.cursor()
-            rs=cursor.execute(r"""SELECT DISTINCT parameter FROM w_qual_lab ORDER BY parameter""")  #SQL statement to get all unique parameter names
+
+        connection_ok, result = utils.sql_load_fr_db(r"""SELECT DISTINCT parameter FROM w_qual_lab ORDER BY parameter""")
+        if connection_ok:
             self.paramCl.addItem('')
             self.paramHCO3.addItem('')
             self.paramSO4.addItem('')
@@ -443,7 +448,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             self.paramK.addItem('')
             self.paramCa.addItem('')
             self.paramMg.addItem('')
-            for row in cursor:
+            for row in result:
                 self.paramCl.addItem(row[0])
                 self.paramHCO3.addItem(row[0])
                 self.paramSO4.addItem(row[0])
@@ -451,7 +456,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 self.paramK.addItem(row[0])
                 self.paramCa.addItem(row[0])
                 self.paramMg.addItem(row[0])
-            myconnection.closedb()# then close the database
 
     def PiperClUpdated(self):
         self.ms.settingsdict['piper_cl']= unicode(self.paramCl.currentText())
@@ -580,31 +584,41 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
 
 class DatabaseSettings(object):
-    def __init__(self, midvsettingsdialogdock, vlayout, dbtype_comboBox):
+    def __init__(self, midvsettingsdialogdock, gridLayout_db):
         self.midvsettingsdialogdock = midvsettingsdialogdock
-        self.layout = vlayout
-        self._dbtype_comboBox = dbtype_comboBox
+        self.layout = gridLayout_db
         self.db_settings_obj = None
+        self.label_width = self.maximum_label_width()
+
+        self._label = PyQt4.QtGui.QLabel(u'Database type')
+        self._label.setFixedWidth(self.label_width)
+        self._dbtype_combobox = PyQt4.QtGui.QComboBox()
+        self._dbtype_combobox.addItems([u'', u'spatialite', u'postgis'])
+
+        self.grid = gui_utils.RowEntryGrid()
+        self.grid.layout.addWidget(self._label, 0, 0)
+        self.grid.layout.addWidget(self._dbtype_combobox, 0, 1)
+        self.layout.addWidget(self.grid.widget)
 
         self.child_widgets = []
 
-        self.midvsettingsdialogdock.connect(self._dbtype_comboBox, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_dbtype)
+        self.midvsettingsdialogdock.connect(self._dbtype_combobox, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_dbtype)
 
-        self.layout.addStretch()
+        self.layout.setRowStretch(self.layout.rowCount() + 1, 1)
 
     @property
-    def dbtype_comboBox(self):
-        return utils.returnunicode(self._dbtype_comboBox.currentText())
+    def dbtype_combobox(self):
+        return utils.returnunicode(self._dbtype_combobox.currentText())
 
-    @dbtype_comboBox.setter
-    def dbtype_comboBox(self, value):
-        index = self._dbtype_comboBox.findText(utils.returnunicode(value))
+    @dbtype_combobox.setter
+    def dbtype_combobox(self, value):
+        index = self._dbtype_combobox.findText(utils.returnunicode(value))
         if index != -1:
-            self._dbtype_comboBox.setCurrentIndex(index)
+            self._dbtype_combobox.setCurrentIndex(index)
 
     def choose_dbtype(self):
         #Remove stretch
-        self.layout.takeAt(-1)
+        self.layout.setRowStretch(self.layout.rowCount() + 1, 0)
         for widget in self.child_widgets:
             try:
                 widget.clear_widgets()
@@ -623,49 +637,62 @@ class DatabaseSettings(object):
         dbclasses = {u'spatialite': SpatialiteSettings,
                      u'postgis': PostgisSettings}
 
-        dbclass = dbclasses.get(self.dbtype_comboBox, None)
+        dbclass = dbclasses.get(self.dbtype_combobox, None)
 
         if dbclass is None:
             self.db_settings_obj = None
             return
 
-        self.db_settings_obj = dbclass(self.midvsettingsdialogdock)
-        self.layout.addWidget(self.db_settings_obj.widget)
+        self.db_settings_obj = dbclass(self.midvsettingsdialogdock, self.label_width)
+        self.layout.addWidget(self.db_settings_obj.widget, self.layout.rowCount(), 0)
         self.child_widgets.append(self.db_settings_obj.widget)
 
-        self.layout.addStretch()
+        self.layout.setRowStretch(self.layout.rowCount() + 1, 1)
 
     def update_settings(self, db_settings):
         if not db_settings or db_settings is None:
             return
 
+        try:
+            db_settings = ast.literal_eval(db_settings)
+        except:
+            pass
+
         for dbtype, settings in db_settings.iteritems():
-            self.dbtype_comboBox = dbtype
+            self.dbtype_combobox = dbtype
             self.choose_dbtype()
 
             for setting_name, value in settings.iteritems():
                 if hasattr(self.db_settings_obj, setting_name.encode(u'utf-8')):
                     setattr(self.db_settings_obj, setting_name.encode(u'utf-8'), value)
                 else:
-                    utils.MessagebarAndLog.warning(log_msg=u'Databasetype ' + dbtype + u" didn' t have setting " + setting)
+                    utils.MessagebarAndLog.warning(log_msg=u'Databasetype ' + dbtype + u" didn' t have setting " + setting_name)
 
     def clear(self):
-        self.dbtype_comboBox = u''
+        self.dbtype_combobox = u''
         self.choose_dbtype()
+
+    def maximum_label_width(self):
+        maximumwidth = 0
+        for label_name in [u'Database type', u'Select db', u'Host', u'Database', u'User', u'Password', u'Port (optional)', u'Schema (optional)']:
+            testlabel = PyQt4.QtGui.QLabel(label_name)
+            maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
+        testlabel = None
+        return maximumwidth
 
 
 class SpatialiteSettings(gui_utils.RowEntryGrid):
-    def __init__(self, midvsettingsdialogdock):
+    def __init__(self, midvsettingsdialogdock, label_width):
         super(SpatialiteSettings, self).__init__()
         self.midvsettingsdialogdock = midvsettingsdialogdock
         self.btnSetDB = PyQt4.QtGui.QPushButton(u'Select db')
+        self.btnSetDB.setFixedWidth(label_width)
         self.layout.addWidget(self.btnSetDB, 0, 0)
         self._dbpath = PyQt4.QtGui.QLineEdit(u'')
         self.layout.addWidget(self._dbpath, 0, 1)
 
         #select file
         self.midvsettingsdialogdock.connect(self.btnSetDB, SIGNAL("clicked()"), self.select_file)
-        utils.MessagebarAndLog.info(bar_msg=u'Spatialite created')
 
     @property
     def dbpath(self):
@@ -677,46 +704,52 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
 
     def select_file(self):
         """ Open a dialog to locate the sqlite file and some more..."""
-        path = QFileDialog.getOpenFileName(None, str("Select database:"), "*.sqlite")
-        if path:  # Only get new db name if not cancelling the FileDialog
-            self.midvsettingsdialogdock.ms.settingsdict['database'] = {u'spatialite': {u'path': path}}  #
+        dbpath = QFileDialog.getOpenFileName(None, str("Select database:"), "*.sqlite")
+        if dbpath:  # Only get new db name if not cancelling the FileDialog
+            self.dbpath = dbpath
+            self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({u'spatialite': {u'dbpath': dbpath}})
+            self.midvsettingsdialogdock.ms.save_settings('database')
+            #self.midvsettingsdialogdock.LoadAndSelectLastSettings()
         else:  # debug
-            print "cancelled and still using database path " + utils.returnunicode(self.midvsettingsdialogdock.ms.settingsdict['database'])
-        self.midvsettingsdialogdock.LoadAndSelectLastSettings()
-        
+            utils.MessagebarAndLog.info(log_msg=u"DB selection cancelled and still using database path " + utils.returnunicode(self.midvsettingsdialogdock.ms.settingsdict['database']))
+
 
 class PostgisSettings(gui_utils.RowEntryGrid):
-    def __init__(self, midvsettingsdialogdock):
+    def __init__(self, midvsettingsdialogdock, label_width):
         super(PostgisSettings, self).__init__()
+
+        qs = QSettings()
+        for k in sorted(qs.allKeys()):
+            if str(k).startswith(u'Post'):
+                utils.MessagebarAndLog.info(log_msg=u"Keys:" + str(k))
+                utils.MessagebarAndLog.info(log_msg=u"qs.value:" + qs.value(k))
+
+
+
 
         self.midvsettingsdialogdock = midvsettingsdialogdock
         self._host = PyQt4.QtGui.QLineEdit(u'')
+        self._port = PyQt4.QtGui.QLineEdit(u'')
         self._dbname = PyQt4.QtGui.QLineEdit(u'')
+        self._schema = PyQt4.QtGui.QLineEdit(u'')
         self._user = PyQt4.QtGui.QLineEdit(u'')
         #TODO: The password must be handled differently
         self._password = PyQt4.QtGui.QLineEdit(u'')
 
-        maximumwidth = 0
-        for label_name in [u'Host', u'Database', u'User', u'Password']:
-            testlabel = PyQt4.QtGui.QLabel(label_name)
-            maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
-        testlabel = None
-
-        for rownr, col1_col2 in enumerate([(PyQt4.QtGui.QLabel(u'Host'), self._host),
-                           (PyQt4.QtGui.QLabel(u'Database'), self._dbname),
-                           (PyQt4.QtGui.QLabel(u'User'), self._user),
-                           (PyQt4.QtGui.QLabel(u'Password'), self._password)]):
+        for rownr, col1_col2 in enumerate([
+            (PyQt4.QtGui.QLabel(u'Host'), self._host),
+            (PyQt4.QtGui.QLabel(u'Port (optional)'), self._port),
+            (PyQt4.QtGui.QLabel(u'Database'), self._dbname),
+            (PyQt4.QtGui.QLabel(u'Schema (optional)'), self._schema),
+            (PyQt4.QtGui.QLabel(u'User'), self._user),
+            (PyQt4.QtGui.QLabel(u'Password'), self._password)]):
             col1, col2 = col1_col2
-            col1.setFixedWidth(maximumwidth)
+            col1.setFixedWidth(label_width)
             self.layout.addWidget(col1, rownr, 0)
             self.layout.addWidget(col2, rownr, 1)
 
-
-
         for field in [self._host, self._dbname, self._user, self._password]:
             self.midvsettingsdialogdock.connect(field, SIGNAL("editingFinished()"), self.set_db)
-
-        utils.MessagebarAndLog.info(bar_msg=u'Postgis created')
 
     @property
     def host(self):
@@ -727,12 +760,28 @@ class PostgisSettings(gui_utils.RowEntryGrid):
         self._host.setText(utils.returnunicode(value))
         
     @property
+    def port(self):
+        return utils.returnunicode(self._port.text())
+
+    @port.setter
+    def port(self, value):
+        self._port.setText(utils.returnunicode(value))
+        
+    @property
     def dbname(self):
         return utils.returnunicode(self._dbname.text())
 
     @dbname.setter
     def dbname(self, value):
         self._dbname.setText(utils.returnunicode(value))
+        
+    @property
+    def schema(self):
+        return utils.returnunicode(self._schema.text())
+
+    @schema.setter
+    def schema(self, value):
+        self._schema.setText(utils.returnunicode(value))
 
     @property
     def user(self):
@@ -752,14 +801,15 @@ class PostgisSettings(gui_utils.RowEntryGrid):
 
     def set_db(self):
         if all([self.host, self.dbname, self.user, self._password]):
-            
-            self.midvsettingsdialogdock.ms.settingsdict['database'] = {u'postgis': {u'host': self.host,
-                                                                                    u'dbname:': self.dbname,
+            self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({u'postgis':
+                                                                                   {u'host': self.host,
+                                                                                    u'port': self.port,
+                                                                                    u'dbname': self.dbname,
+                                                                                    u'schema': self.schema,
                                                                                     u'user': self.user,
-                                                                                    u'password': self.password}}
-            conn = utils.dbconnection()
-            connection_ok = conn.connect2db()
-            self.midvsettingsdialogdock.LoadAndSelectLastSettings()
+                                                                                    u'password': self.password}})
+            self.midvsettingsdialogdock.ms.save_settings('database')
+            #self.midvsettingsdialogdock.LoadAndSelectLastSettings()
         else:  # debug
             pass
 

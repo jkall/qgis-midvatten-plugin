@@ -795,8 +795,10 @@ class midvatten:
     def load_data_domains(self):
         #utils.pop_up_info(msg='This feature is not yet implemented',title='Hold on...')
         #return
+
         QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
+        utils.MessagebarAndLog.info(log_msg=u'load_data_domains err_flag: ' + str(err_flag))
         if err_flag == 0:
             conn_ok, dd_tables = utils.sql_load_fr_db("select name from sqlite_master where name like 'zz_%'")
             if not conn_ok:
@@ -810,6 +812,7 @@ class midvatten:
 
     def loadthelayers(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        utils.MessagebarAndLog.info(log_msg=u'loadthelayers error flag: ' + str(err_flag))
         if err_flag == 0:
             sanity = utils.askuser("YesNo","""This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""",'Warning!')
             if sanity.result == 1:

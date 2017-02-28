@@ -40,8 +40,6 @@ class LoadLayers():
         self.legend = self.iface.legendInterface()
         self.remove_layers()
         self.add_layers()
-        self.dbtype = u'postgis'
-        #self.dbtype = y'spatialite
 
     def add_layers(self):
         """
@@ -51,6 +49,7 @@ class LoadLayers():
         self.add_layers_new_method()
 
     def add_layers_new_method(self):
+        utils.MessagebarAndLog.info(log_msg=u'In add_layers_new_method')
         try:#qgis>=2.4
             if self.group_name == 'Midvatten_OBS_DB':
                 position_index = 0
@@ -59,32 +58,40 @@ class LoadLayers():
             MyGroup = self.root.insertGroup(position_index, self.group_name)
         except:#qgis < 2.4
             MyGroup = self.legend.addGroup (self.group_name,1,-1)
-        uri = QgsDataSourceURI()
-        uri.setDatabase(self.settingsdict['database'])
+
+        dbconnection = utils.dbconnection()
+        connection_ok = dbconnection.connect2db()
+        uri = dbconnection.uri
+        dbtype = dbconnection.dbtype
         canvas = self.iface.mapCanvas()
         layer_list = []
         map_canvas_layer_list=[]
 
         if self.group_name == 'Midvatten_OBS_DB':
             for tablename in self.default_nonspatlayers: #first load all non-spatial layers
-                uristring= 'dbname="' + self.settingsdict['database'] + '" table="' + tablename + '"'
-                
-                layer = QgsVectorLayer(uristring, self.dbtype)
+                if dbtype == u'spatialite':
+                    uristring= 'dbname="' + dbconnection.dbpath.encode('utf-8') + '" table="' + tablename + '"'
+                    layer = QgsVectorLayer(uristring, tablename, dbtype.encode('utf-8'))
+                else:
+                    layer = QgsVectorLayer(uri.uri(), tablename, dbtype.encode('utf-8'))
+
                 layer_list.append(layer)
 
             for tablename in self.default_layers:    # then all the spatial ones
-                uri.setDataSource('',tablename, 'Geometry')
-                layer = QgsVectorLayer(uri.uri(), self.dbtype) # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
+                uri.setDataSource(dbconnection.schemas(), tablename, 'Geometry')
+                layer = QgsVectorLayer(uri.uri(), tablename, dbtype.encode('utf-8')) # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
                 layer_list.append(layer)
 
         elif self.group_name == 'Midvatten_data_domains': #if self.group_name == 'Midvatten_data_domains':
-            conn_ok, dd_tables = utils.sql_load_fr_db("select name from sqlite_master where name like 'zz_%'")
-            if not conn_ok:
-                return
-            d_domain_tables = [str(dd_table[0]) for dd_table in dd_tables]
+            tables_columns = defs.tables_columns()
+            d_domain_tables = [x for x in tables_columns.keys() if x.startswith(u'zz_')]
+            utils.MessagebarAndLog.info(log_msg=u'd_domain_tables: ' + str(d_domain_tables))
             for tablename in d_domain_tables:
-                uristring= 'dbname="' + self.settingsdict['database'] + '" table="' + tablename + '"'
-                layer = QgsVectorLayer(uristring, self.dbtype)
+                if dbtype == u'spatialite':
+                    uristring= 'dbname="' + dbconnection.dbpath.encode('utf-8') + '" table="' + tablename + '"'
+                else:
+                    layer = QgsVectorLayer(uri.uri(), tablename, dbtype.encode('utf-8'))
+                layer = QgsVectorLayer(uristring, tablename, dbtype.encode('utf-8'))
                 layer_list.append(layer)
 
         #now loop over all the layers and set styles etc

@@ -30,7 +30,7 @@ from midvatten_utils import get_sql_result_as_dict, returnunicode
 
 
 def settingsdict():    #These are the default settings, they shall not be changed!!!
-    dictionary = { 'database' : '{}',
+    dictionary = { 'database' : '',
             'tstable' : 'w_levels',
             'tscolumn' : 'level_masl',
             'tsdotmarkers' : 0,
@@ -621,30 +621,21 @@ def w_qual_field_parameter_units():
     return utils.returnunicode(result_dict, keep_containers=True)
 
 def tables_columns():
-    tables_sql = (r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + SQLiteInternalTables() + r""") ORDER BY tbl_name""")
+    tables_sql = (u"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + returnunicode(SQLiteInternalTables()) + u""") ORDER BY tbl_name""")
     connection_ok, tables = utils.sql_load_fr_db(tables_sql)
-
     if not connection_ok:
-        textstring = u"""Cannot get data from sql """ + utils.returnunicode(tables_sql)
-        utils.MessagebarAndLog.critical(
-            bar_msg=u"Error, sql failed, see log message panel",
-            log_msg=textstring)
-        return []
-
+        return {}
     tables_dict = {}
 
     tablenames = [col[0] for col in tables]
     for tablename in tablenames:
         columns_sql = """PRAGMA table_info (%s)""" % tablename
         connection_ok, columns = utils.sql_load_fr_db(columns_sql)
-
         if not connection_ok:
-            textstring = u"""Cannot get data from sql """ + utils.returnunicode(columns_sql)
-            utils.MessagebarAndLog.critical(
-                bar_msg=u"Error, sql failed, see log message panel",
-                log_msg=textstring)
             continue
         tables_dict[tablename] = tuple(sorted(tuple(columns), key=itemgetter(1)))
+
+    utils.MessagebarAndLog.info(log_msg=u'tables_columns worked')
 
     return tables_dict
 

@@ -34,6 +34,10 @@ import tempfile
 import time
 import ast
 import psycopg2
+import db_manager.db_plugins.postgis.connector as postgis_connector
+import db_manager.db_plugins.spatialite.connector as spatialite_connector
+
+
 from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -46,91 +50,71 @@ from matplotlib.dates import num2date
 
 not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
 
-class dbconnection():
-    def __init__(self, *args, **kwargs):
-        self.dbconnection = None
 
+
+class dbconnection():
+    def __init__(self):
         db_settings = QgsProject.instance().readEntry("Midvatten", "database")[0]
+        self.schema = None
+
         try:
             db_settings = ast.literal_eval(db_settings)
-        except:
+        except SyntaxError:
             pass
 
-        if not isinstance(db_settings, dict):
-            return None
-
         self.dbtype = db_settings.keys()[0]
+        self.connection_settings = db_settings.values()[0]
 
-        dbtypes_classes = {u'postgis': PostgisDbconnection,
-                           u'spatialite': SpatialiteDbconnection}
+        self.uri = QgsDataSourceURI()
 
-        dbclass = dbtypes_classes.get(self.dbtype, None)
-        if dbclass is None:
-            MessagebarAndLog.critical(bar_msg=u'Error. Database type wrong')
-        else:
-            self.dbconnection = dbclass(db_settings.values(), *args, **kwargs)
-
-    def connect2db(self):
-        if self.dbconnection is None:
-            return False
-
-        connectionOK = self.dbconnection.connect2db()
-        self.conn = self.dbconnection.conn
-        self.cursor = self.conn.cursor()
-        return connectionOK
-
-    def closedb(self):
-        self.cursor.close()
-        self.dbconnection.closedb()
-
-
-class SpatialiteDbconnection():
-    def __init__(self, db_settings, dbpath=''):
-        if dbpath == '':
-            self.dbpath = db_settings[u'dbpath']
-        else:
-            self.dbpath = dbpath
-    
-    def connect2db(self):
-        if os.path.exists(self.dbpath):
-            try:#verify this is an existing sqlite database
-                self.conn = sqlite.connect(self.dbpath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-                self.conn.cursor().execute("select count(*) from sqlite_master") 
-                ConnectionOK = True
-            except:
-                pop_up_info("Could not connect to  " + self.dbpath + "\nYou will have to reset Midvatten settings for this project!")
-                ConnectionOK = False
-        else:
-            pop_up_info("The file " + self.dbpath + " do not exist.\nYou will have to reset Midvatten settings for this project!")
-            ConnectionOK = False
-        return ConnectionOK
-        
-    def closedb(self):
-            self.conn.close()
-
-
-class PostgisDbconnection():
-    def __init__(self, db_settings):
-        self.dbname = db_settings[u'dbname']
-        self.user = db_settings[u'user']
-        self.host = db_settings[u'host']
-        #TODO: The password has to be handled differently
-        self.password = db_settings[u'password']
+        if self.dbtype == u'spatialite':
+            self.dbpath = self.connection_settings[u'dbpath']
+            self.uri.setDatabase(self.dbpath)
+            self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
+        elif self.dbtype == u'postgis':
+            MessagebarAndLog.info(log_msg=u'Settings: ' + str(self.connection_settings))
+            self.host = self.connection_settings.get(u'host', u'127.0.0.1')
+            self.port = self.connection_settings.get(u'port', u'5432')
+            self.dbname = self.connection_settings[u'dbname']
+            self.user = self.connection_settings[u'user']
+            self.password = self.connection_settings[u'password']
+            self.schema = self.connection_settings.get(u'schema', None)
+            self.uri.setConnection(self.host, self.port, self.dbname, self.user, self.password)
+            self.connector = postgis_connector.PostGisDBConnector(self.uri)
 
     def connect2db(self):
         try:#verify this is an existing sqlite database
-            self.conn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'"%(self.dbname, self.user, self.host, self.password))
-            #self.conn.cursor().execute("select count(*) from sqlite_master")
+            if self.dbtype == u'postgis':
+                self.conn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'"%(self.dbname, self.user, self.host, self.password, self.port))
+                self.cursor = self.conn.cursor()
+            elif self.dbtype == u'spatialite':
+                self.conn = sqlite.connect(self.dbpath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+                self.cursor = self.conn.cursor()
+                self.cursor.execute("select count(*) from sqlite_master")
             ConnectionOK = True
         except:
-            pop_up_info("Could not connect to postgis database\nYou will have to reset Midvatten settings for this project!")
+            MessagebarAndLog.critical(bar_msg=u"Could not connect to database\nYou will have to reset Midvatten settings for this project!")
             ConnectionOK = False
-
         return ConnectionOK
 
     def closedb(self):
+        try:
+            self.cursor.close()
             self.conn.close()
+        except:
+            pass
 
+    def schemas(self):
+        if self.schema is None:
+            schemas = self.connector.getSchemas()
+            if schemas is None:
+                return ''
+            else:
+                if len(schemas) > 1:
+                    MessagebarAndLog.info(bar_msg=u'Found more than one schema. Using the first.')
+                return schemas[0][1]
+        else:
+            return self.schema
 
 
 def show_message_log(pop_error=False):
@@ -217,7 +201,7 @@ def write_qgs_log_to_file(message, tag, level):
 class askuser(QtGui.QDialog):
     def __init__(self, question="YesNo", msg = '', dialogtitle='User input needed', parent=None):
         self.result = ''
-        if question == 'YesNo':         #  Yes/No dialog 
+        if question == 'YesNo':         #  Yes/No dialog
             reply = QtGui.QMessageBox.information(parent, dialogtitle, msg, QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
             if reply==QtGui.QMessageBox.Yes:
                 self.result = 1 #1 = "yes"
@@ -411,7 +395,7 @@ def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-tab
 
     if not connection_ok:
         textstring = """Cannot create dictionary from columns %s and %s in table %s!"""%(params)#col1,col2,table)
-        #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)        
+        #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
         MessagebarAndLog.warning(bar_msg='Some sql failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
         return False, {'':''}
 
@@ -436,10 +420,10 @@ def get_all_obsids(table=u'obs_points'):
 def get_date_time():
     """returns date and time as a string in a pre-formatted format"""
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    
+
 def get_selected_features_as_tuple(layername=None):
     """ Returns all selected features from layername
-     
+
         Returns a tuple of obsids stored as unicode
     """
     if layername is not None:
@@ -450,11 +434,11 @@ def get_selected_features_as_tuple(layername=None):
     #module midv_exporting depends on obsid being a tuple
     #we cannot send unicode as string to sql because it would include the u' so str() is used
     obsidtuple = tuple([returnunicode(id) for id in selected_obs_points])
-    return obsidtuple      
+    return obsidtuple
 
 def getselectedobjectnames(thelayer='default'):
     """ Returns a list of obsid as unicode
-    
+
         thelayer is an optional argument, if not given then activelayer is used
     """
     if thelayer == 'default':
@@ -507,9 +491,9 @@ def pop_up_info(msg='',title='Information',parent=None):
 
 def return_lower_ascii_string(textstring):
     def onlyascii(char):
-        if ord(char) < 48 or ord(char) > 127: 
+        if ord(char) < 48 or ord(char) > 127:
             return ''
-        else: 
+        else:
             return char
     filtered_string=filter(onlyascii, textstring)
     filtered_string = filtered_string.lower()
@@ -585,29 +569,27 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
 def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
 
     connection = dbconnection()
-    connection_ok = connection.connect2db
+    connection_ok = connection.connect2db()
 
     if connection_ok:
         try:
-            curs = connection.conn.cursor()
+            curs = connection.cursor
             resultfromsql = curs.execute(sql) #Send SQL-syntax to cursor #MacOSX fix1
             result = resultfromsql.fetchall()
-            connection.closedb()
             ConnectionOK = True
-        except:
+        except Exception, e:
             #pop_up_info("Could not connect to DB, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
-            textstring = """DB error!\nDB call causing this error:%s\n"""%(sql)
+            textstring = u"""DB error!\n SQL causing this error:%s\n\n%s"""%(returnunicode(sql), returnunicode(str(e)))
             #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15)
             MessagebarAndLog.warning(bar_msg='Some sql failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
             ConnectionOK = False
             result = ''
-    else:
-        #pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
-        textstring = """Could not connect to db %s!\nDB call causing this error:%s\n"""%(dbpath[0],sql)
-        #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15)
-        MessagebarAndLog.critical(bar_msg='Db connection failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
-        ConnectionOK = False
-        result = ''
+
+    try:
+        connection.closedb()
+    except:
+        pass
+
     return ConnectionOK, result
 
 def sql_alter_db(sql=''):
@@ -645,8 +627,8 @@ def sql_alter_db_by_param_subst(sql='',*subst_params):
     subst_params = ('date_time', 'level_masl', 'well01')
     #and since it is a tuple, then one single parameter must be given with a tailing comma:
     sql = 'select * from obs_points where obsid = ?'
-    subst_params = ('well01',) 
-    """ 
+    subst_params = ('well01',)
+    """
     dbpath = QgsProject.instance().readEntry("Midvatten","database")
     if os.path.exists(dbpath[0]):
         #print('debug info about the tuple %s'%(subst_params[0],))#debug
@@ -655,16 +637,16 @@ def sql_alter_db_by_param_subst(sql='',*subst_params):
             curs = conn.cursor()
             try:
                 curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
-                
-                resultfromsql = curs.execute(sql,subst_params[0])#please note, index 0 is pointing to the first optional argument, not index in tuple 
-                #det får antagligen inte vara något annat än själva värdena i subst_params, strängen som anger kolumner och obsid-namn osv för select är nog string-concatenation som vanligt, det är alltså bara input värdena som ska använda parameter substs            
-            
+
+                resultfromsql = curs.execute(sql,subst_params[0])#please note, index 0 is pointing to the first optional argument, not index in tuple
+                #det får antagligen inte vara något annat än själva värdena i subst_params, strängen som anger kolumner och obsid-namn osv för select är nog string-concatenation som vanligt, det är alltså bara input värdena som ska använda parameter substs
+
             except:#in case it is an sql without parameter substitution
                 print('debugging info: failed loading with parameter substitution, trying the sql without any parameters at all')#debug
-                resultfromsql = curs.execute(sql) 
+                resultfromsql = curs.execute(sql)
             result = resultfromsql.fetchall()
             conn.commit()
-            
+
             resultfromsql.close()
             conn.close()
             ConnectionOK = True
@@ -681,7 +663,7 @@ def sql_alter_db_by_param_subst(sql='',*subst_params):
 def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatures=0 is for a check if any features are selected at all, the number is unimportant
     if layer.dataProvider().fieldNameIndex('obsid')  > -1 or layer.dataProvider().fieldNameIndex('OBSID')  > -1: # 'OBSID' to get backwards compatibility
         if selectedfeatures == 0 and layer.selectedFeatureCount() > 0:
-            return 'ok'        
+            return 'ok'
         elif not(selectedfeatures==0) and layer.selectedFeatureCount()==selectedfeatures:
             return 'ok'
         elif selectedfeatures == 0 and not(layer.selectedFeatureCount() > 0):
@@ -694,7 +676,7 @@ def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatur
 
 def strat_selection_check(layer=''):
     if layer.dataProvider().fieldNameIndex('h_gs')  > -1 or layer.dataProvider().fieldNameIndex('h_toc')  > -1  or layer.dataProvider().fieldNameIndex('SURF_LVL')  > -1: # SURF_LVL to enable backwards compatibility
-            return 'ok'        
+            return 'ok'
     else:
         qgis.utils.iface.messageBar().pushMessage("Error","Select a qgis layer with field h_gs!", 2,duration=10)
 
@@ -735,26 +717,27 @@ def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
 def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=('')):
     errorsignal = 0
     if mset.settingsareloaded == False:
-        mset.loadSettings()    
-        
+        mset.loadSettings()
+
     for layername in allcritical_layers:
         layerexists = find_layer(str(layername))
         if layerexists:
             if layerexists.isEditable():
-                iface.messageBar().pushMessage("Error","Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", 2)
-                #pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", "Warning")
+                MessagebarAndLog.critical(bar_msg=u'Error, layer ' + str(layerexists.name()) + u" is currently in editing mode.\nPlease exit this mode before proceeding with this operation.")
                 errorsignal += 1
 
     if mset.settingsdict['database'] == '': #Check that database is selected
-        iface.messageBar().pushMessage("Error","No database found. Please check your Midvatten Settings. Reset if needed.", 2)
-        #pop_up_info("Check settings! \nSelect database first!")        
+        MessagebarAndLog.critical(bar_msg=u'Error, no database found. Please check your Midvatten Settings. Reset if needed.')
         errorsignal += 1
+    else:
+        connection = dbconnection()
+        connection_ok = connection.connect2db()
+        connection.closedb()
+        if not connection_ok:
+            MessagebarAndLog.critical(bar_msg=u"Error, connecting to database failed. Please check your Midvatten Settings and database location. Reset if needed.")
+            errorsignal += 1
 
-    if not os.path.isfile(mset.settingsdict['database']):
-        iface.messageBar().pushMessage("Error", "The selected database doesn't exist. Please check your Midvatten Settings and database location. Reset if needed.", 2)
-        errorsignal += 1
-
-    return errorsignal    
+    return errorsignal
 
 def verify_layer_selection(errorsignal,selectedfeatures=0):
     layer = get_active_layer()
@@ -807,7 +790,7 @@ def verify_table_exists(tablename):
 @contextmanager
 def tempinput(data, charset=u'UTF-8'):
     """ Creates and yields a temporary file from data
-    
+
         The file can't be deleted in windows for some strange reason.
         There shouldn't be so many temporary files using this function
         for it to be a major problem though. Relying on windows temp file
@@ -821,31 +804,31 @@ def tempinput(data, charset=u'UTF-8'):
     yield temp.name
     #os.unlink(temp.name) #TODO: This results in an error: WindowsError: [Error 32] Det går inte att komma åt filen eftersom den används av en annan process: 'c:\\users\\dator\\appdata\\local\\temp\\tmpxvcfna.csv'
 
-def find_nearest_date_from_event(event): 
+def find_nearest_date_from_event(event):
     """ Returns the nearest date from a picked list event artist from mouse click
-    
+
         The x-axis of the artist is assumed to be a date as float or int.
         The found date float is then converted into datetime and returned.
     """
     line_nodes = np.array(zip(event.artist.get_xdata(), event.artist.get_ydata()))
     xy_click = np.array((event.mouseevent.xdata, event.mouseevent.ydata))
-    nearest_xy = find_nearest_using_pythagoras(xy_click, line_nodes)    
+    nearest_xy = find_nearest_using_pythagoras(xy_click, line_nodes)
     nearest_date = num2date(nearest_xy[0])
-    return nearest_date 
+    return nearest_date
 
 def find_nearest_using_pythagoras(xy_point, xy_array):
     """ Finds the point in xy_array that is nearest xy_point
 
         xy_point: tuple with two floats representing x and y
-        xy_array: list of tuples with floats representing x and y points 
-    
+        xy_array: list of tuples with floats representing x and y points
+
         The search is using pythagoras theorem.
         If the search becomes very slow when the xy_array gets long,
         it could probably we rewritten using numpy methods.
 
         >>> find_nearest_using_pythagoras((1, 2), ((4, 5), (3, 5), (-1, 1)))
         (-1, 1)
-    """    
+    """
     distances = [math.sqrt((float(xy_point[0]) - float(xy_array[x][0]))**2 + (float(xy_point[1]) - float(xy_array[x][1]))**2) for x in xrange(len(xy_array))]
     min_index = distances.index(min(distances))
     return xy_array[min_index]
@@ -854,7 +837,7 @@ def ts_gen(ts):
     """ A generator that supplies one tuple from a list of tuples at a time
 
         ts: a list of tuples where the tuple contains two positions.
-        
+
         Usage:
         a = ts_gen(ts)
         b = next(a)
@@ -862,13 +845,13 @@ def ts_gen(ts):
         >>> for x in ts_gen(((1, 2), ('a', 'b'))): print x
         (1, 2)
         ('a', 'b')
-    """        
+    """
     for idx in xrange(len(ts)):
-        yield (ts[idx][0], ts[idx][1])  
+        yield (ts[idx][0], ts[idx][1])
 
 def calc_mean_diff(coupled_vals):
-    """ Calculates the mean difference for all value couples in a list of tuples 
-    
+    """ Calculates the mean difference for all value couples in a list of tuples
+
         Nan-values are excluded from the mean.
 
     >>> calc_mean_diff(([5, 2] , [8, 1]))
@@ -925,7 +908,7 @@ def get_sql_result_as_dict(sql):
         #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
         MessagebarAndLog.warning(bar_msg='Some sql failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
         return False, {}
-    
+
     result_dict = {}
     for res in result_list:
         result_dict.setdefault(res[0], []).append(tuple(res[1:]))
