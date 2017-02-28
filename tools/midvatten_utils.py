@@ -33,11 +33,10 @@ import qgis.utils
 import tempfile
 import time
 import ast
-import psycopg2
 import db_manager.db_plugins.postgis.connector as postgis_connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
 
-
+from PyQt4.QtCore import QSettings
 from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -54,8 +53,13 @@ not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','u
 
 class dbconnection():
     def __init__(self):
+        """
+        Manuals for db connectors:
+        https://github.com/qgis/QGIS/blob/master/python/plugins/db_manager/db_plugins/connector.py
+        https://github.com/qgis/QGIS/blob/master/python/plugins/db_manager/db_plugins/postgis/connector.py
+        https://github.com/qgis/QGIS/blob/master/python/plugins/db_manager/db_plugins/spatialite/connector.py
+        """
         db_settings = QgsProject.instance().readEntry("Midvatten", "database")[0]
-        self.schema = None
 
         try:
             db_settings = ast.literal_eval(db_settings)
@@ -72,20 +76,17 @@ class dbconnection():
             self.uri.setDatabase(self.dbpath)
             self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
         elif self.dbtype == u'postgis':
-            MessagebarAndLog.info(log_msg=u'Settings: ' + str(self.connection_settings))
-            self.host = self.connection_settings.get(u'host', u'127.0.0.1')
-            self.port = self.connection_settings.get(u'port', u'5432')
-            self.dbname = self.connection_settings[u'dbname']
-            self.user = self.connection_settings[u'user']
-            self.password = self.connection_settings[u'password']
-            self.schema = self.connection_settings.get(u'schema', None)
-            self.uri.setConnection(self.host, self.port, self.dbname, self.user, self.password)
+            connection_name = self.connection_settings[u'connection'].split(u'/')[0]
+            self.postgis_settings = get_postgis_connections()[connection_name]
+            MessagebarAndLog.info(log_msg=u'postgis_settings: ' + str(self.postgis_settings))
+            self.uri.setConnection(self.postgis_settings[u'host'], self.postgis_settings[u'port'], self.postgis_settings[u'database'], self.postgis_settings[u'username'], self.postgis_settings[u'password'])
             self.connector = postgis_connector.PostGisDBConnector(self.uri)
 
     def connect2db(self):
         try:#verify this is an existing sqlite database
             if self.dbtype == u'postgis':
-                self.conn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s'"%(self.dbname, self.user, self.host, self.password, self.port))
+                self.conn = self.connector.connection
+                #self.conn = psycopg2.connect("host='%s' port='%s' dbname='%s' user='%s' password='%s'"%(self.postgis_settings[u'host'], self.postgis_settings[u'port'], self.postgis_settings[u'database'], self.postgis_settings[u'username'], self.uri.password()))
                 self.cursor = self.conn.cursor()
             elif self.dbtype == u'spatialite':
                 self.conn = sqlite.connect(self.dbpath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
@@ -93,7 +94,7 @@ class dbconnection():
                 self.cursor.execute("select count(*) from sqlite_master")
             ConnectionOK = True
         except:
-            MessagebarAndLog.critical(bar_msg=u"Could not connect to database\nYou will have to reset Midvatten settings for this project!")
+            MessagebarAndLog.critical(bar_msg=u"Could not connect to database\nYou might have to reset Midvatten settings for this project!")
             ConnectionOK = False
         return ConnectionOK
 
@@ -105,16 +106,18 @@ class dbconnection():
             pass
 
     def schemas(self):
-        if self.schema is None:
-            schemas = self.connector.getSchemas()
-            if schemas is None:
-                return ''
-            else:
-                if len(schemas) > 1:
-                    MessagebarAndLog.info(bar_msg=u'Found more than one schema. Using the first.')
-                return schemas[0][1]
+        """Postgis schemas look like this:
+        Schemas: [(2200, u'public', u'postgres', '{postgres=UC/postgres,=UC/postgres}', u'standard public schema')]
+        This function only returns the first schema.
+        """
+
+        schemas = self.connector.getSchemas()
+        if schemas is None:
+            return ''
         else:
-            return self.schema
+            if len(schemas) > 1:
+                MessagebarAndLog.info(bar_msg=u'Found more than one schema. Using the first.')
+            return schemas[0][1]
 
 
 def show_message_log(pop_error=False):
@@ -125,6 +128,23 @@ def show_message_log(pop_error=False):
         qgis.utils.iface.messageBar().popWidget()
 
     qgis.utils.iface.openMessageLog()
+
+
+def get_postgis_connections():
+    qs = QSettings()
+    postgresql_connections = {}
+    for k in sorted(qs.allKeys()):
+        if k.startswith(u'PostgreSQL'):
+            cols = k.split(u'/')
+            conn_name = cols[2]
+            try:
+                setting = cols[3]
+            except IndexError:
+                MessagebarAndLog.info(log_msg=u'Postgresql connection info: Setting ' + str(k) + u" couldn't be read")
+                continue
+            value = qs.value(k)
+            postgresql_connections.setdefault(conn_name, {})[setting] = value
+    return postgresql_connections
 
 
 class MessagebarAndLog():
@@ -597,7 +617,7 @@ def sql_alter_db(sql=''):
     connection_ok = connection.connect2db
 
     if connection_ok:
-        curs = connection.conn.cursor()
+        curs = connection.cursor
         sql2 = sql
         curs.execute("PRAGMA foreign_keys = ON")  # Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
         if isinstance(sql2, basestring):
@@ -629,6 +649,7 @@ def sql_alter_db_by_param_subst(sql='',*subst_params):
     sql = 'select * from obs_points where obsid = ?'
     subst_params = ('well01',)
     """
+    #TODO: This one is not updated for postgis yet!!!
     dbpath = QgsProject.instance().readEntry("Midvatten","database")
     if os.path.exists(dbpath[0]):
         #print('debug info about the tuple %s'%(subst_params[0],))#debug
@@ -1356,7 +1377,6 @@ def waiting_cursor(func):
         return ret
     return func_wrapper
 
-
 class Cancel(object):
     """Object for transmitting cancel messages instead of using string 'cancel'.
         use isinstance(variable, Cancel) to check for it.
@@ -1372,3 +1392,14 @@ class Cancel(object):
     """
     def __init__(self):
         pass
+
+
+class UnprintableString(unicode):
+    def __init__(self, value):
+        self._value = value
+
+    def __repr__(self):
+        return u''
+
+    def __str__(self):
+        return u''

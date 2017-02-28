@@ -63,84 +63,83 @@ class LoadLayers():
         connection_ok = dbconnection.connect2db()
         uri = dbconnection.uri
         dbtype = dbconnection.dbtype
+        schema = dbconnection.schemas()
+        #For QgsVectorLayer, dbtype has to be postgres instead of postgis
+        if dbtype == u'postgis':
+            dbtype = u'postgres'
+
         canvas = self.iface.mapCanvas()
         layer_list = []
         map_canvas_layer_list=[]
-
         if self.group_name == 'Midvatten_OBS_DB':
-            for tablename in self.default_nonspatlayers: #first load all non-spatial layers
-                if dbtype == u'spatialite':
-                    uristring= 'dbname="' + dbconnection.dbpath.encode('utf-8') + '" table="' + tablename + '"'
-                    layer = QgsVectorLayer(uristring, tablename, dbtype.encode('utf-8'))
-                else:
-                    layer = QgsVectorLayer(uri.uri(), tablename, dbtype.encode('utf-8'))
-
-                layer_list.append(layer)
-
-            for tablename in self.default_layers:    # then all the spatial ones
-                uri.setDataSource(dbconnection.schemas(), tablename, 'Geometry')
-                layer = QgsVectorLayer(uri.uri(), tablename, dbtype.encode('utf-8')) # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
-                layer_list.append(layer)
+            self.add_layers_to_list(layer_list, uri, schema, self.default_nonspatlayers, dbtype)
+            self.add_layers_to_list(layer_list, uri, schema, self.default_layers, dbtype, 'geometry')
 
         elif self.group_name == 'Midvatten_data_domains': #if self.group_name == 'Midvatten_data_domains':
             tables_columns = defs.tables_columns()
             d_domain_tables = [x for x in tables_columns.keys() if x.startswith(u'zz_')]
-            utils.MessagebarAndLog.info(log_msg=u'd_domain_tables: ' + str(d_domain_tables))
-            for tablename in d_domain_tables:
-                if dbtype == u'spatialite':
-                    uristring= 'dbname="' + dbconnection.dbpath.encode('utf-8') + '" table="' + tablename + '"'
-                else:
-                    layer = QgsVectorLayer(uri.uri(), tablename, dbtype.encode('utf-8'))
-                layer = QgsVectorLayer(uristring, tablename, dbtype.encode('utf-8'))
-                layer_list.append(layer)
+            self.add_layers_to_list(layer_list, uri, schema, d_domain_tables, dbtype)
 
         #now loop over all the layers and set styles etc
         for layer in layer_list:
-            if not layer.isValid():
-                utils.pop_up_info(layer.name() + ' is not valid layer')
-                print(layer.name() + ' is not valid layer')
-                pass
-            else:
-                map_canvas_layer_list.append(QgsMapCanvasLayer(layer))
-                try:#qgis>=2.4
-                    QgsMapLayerRegistry.instance().addMapLayers([layer],False)
-                    MyGroup.insertLayer(0,layer)
-                    #MyGroup.addLayer(layer)
-                except:#qgis<2.4
-                    QgsMapLayerRegistry.instance().addMapLayers([layer])
-                    group_index = self.legend.groups().index(self.group_name) 
-                    self.legend.moveLayer (self.legend.layers()[0],group_index)
+            map_canvas_layer_list.append(QgsMapCanvasLayer(layer))
+            try:#qgis>=2.4
+                QgsMapLayerRegistry.instance().addMapLayers([layer],False)
+                MyGroup.insertLayer(0,layer)
+                #MyGroup.addLayer(layer)
+            except:#qgis<2.4
+                QgsMapLayerRegistry.instance().addMapLayers([layer])
+                group_index = self.legend.groups().index(self.group_name)
+                self.legend.moveLayer (self.legend.layers()[0],group_index)
 
-                if self.group_name == 'Midvatten_OBS_DB':
-                    layer.setEditorLayout(1)#perhaps this is unnecessary since it gets set from the loaded qml below?
+            if self.group_name == 'Midvatten_OBS_DB':
+                layer.setEditorLayout(1)#perhaps this is unnecessary since it gets set from the loaded qml below?
 
-                #now try to load the style file
-                stylefile_sv = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + "_sv.qml")
-                stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + ".qml")
-                if  utils.getcurrentlocale()[0] == 'sv_SE' and os.path.isfile( stylefile_sv ): #swedish forms are loaded only if locale settings indicate sweden
-                    try:
-                        layer.loadNamedStyle(stylefile_sv)
-                    except:
-                        try:
-                            layer.loadNamedStyle(stylefile)
-                        except:
-                            pass
-                else:
+            #now try to load the style file
+            stylefile_sv = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + "_sv.qml")
+            stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + ".qml")
+            if  utils.getcurrentlocale()[0] == 'sv_SE' and os.path.isfile( stylefile_sv ): #swedish forms are loaded only if locale settings indicate sweden
+                try:
+                    layer.loadNamedStyle(stylefile_sv)
+                except:
                     try:
                         layer.loadNamedStyle(stylefile)
                     except:
                         pass
-
-                if layer.name() == 'obs_points':#zoom to obs_points extent
-                    obsp_lyr = layer
-                    canvas.setExtent(layer.extent())
-                elif layer.name() == 'w_lvls_last_geom':#we do not want w_lvls_last_geom to be visible by default
-                    self.legend.setLayerVisible(layer,False)
-                else:
+            else:
+                try:
+                    layer.loadNamedStyle(stylefile)
+                except:
                     pass
+
+            if layer.name() == 'obs_points':#zoom to obs_points extent
+                obsp_lyr = layer
+                canvas.setExtent(layer.extent())
+            elif layer.name() == 'w_lvls_last_geom':#we do not want w_lvls_last_geom to be visible by default
+                self.legend.setLayerVisible(layer,False)
+            else:
+                pass
 
         #finally refresh canvas
         canvas.refresh()
+
+    def add_layers_to_list(self, resultlist, uri, schema, tablenames, dbtype, geometrycolumn=None):
+        for tablename in tablenames:  # first load all non-spatial layers
+            layer = self.create_layer(uri, schema, tablename, dbtype, geometrycolumn)
+            if not layer.isValid():
+                #Try to add it as a view by adding key column
+                layer = self.create_layer(uri, schema, tablename, dbtype, geometrycolumn, 'obsid')
+                if not layer.isValid():
+                    utils.MessagebarAndLog.critical(bar_msg=layer.name() + u' is not valid layer')
+                else:
+                    resultlist.append(layer)
+            else:
+                resultlist.append(layer)
+
+    def create_layer(self, uri, schema, tablename, dbtype, geometrycolumn=None, keycolumn=None):
+        uri.setDataSource(schema, tablename, geometrycolumn, keycolumn)
+        layer = QgsVectorLayer(uri.uri(), tablename, dbtype.encode('utf-8'))
+        return layer
                 
     def add_layers_old_method(self):
         """

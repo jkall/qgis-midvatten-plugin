@@ -604,7 +604,7 @@ class DatabaseSettings(object):
 
         self.midvsettingsdialogdock.connect(self._dbtype_combobox, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_dbtype)
 
-        self.layout.setRowStretch(self.layout.rowCount() + 1, 1)
+        self.layout.setRowStretch(self.layout.rowCount(), 1)
 
     @property
     def dbtype_combobox(self):
@@ -618,7 +618,7 @@ class DatabaseSettings(object):
 
     def choose_dbtype(self):
         #Remove stretch
-        self.layout.setRowStretch(self.layout.rowCount() + 1, 0)
+        self.layout.setRowStretch(self.layout.rowCount(), 0)
         for widget in self.child_widgets:
             try:
                 widget.clear_widgets()
@@ -647,7 +647,7 @@ class DatabaseSettings(object):
         self.layout.addWidget(self.db_settings_obj.widget, self.layout.rowCount(), 0)
         self.child_widgets.append(self.db_settings_obj.widget)
 
-        self.layout.setRowStretch(self.layout.rowCount() + 1, 1)
+        self.layout.setRowStretch(self.layout.rowCount(), 1)
 
     def update_settings(self, db_settings):
         if not db_settings or db_settings is None:
@@ -674,7 +674,7 @@ class DatabaseSettings(object):
 
     def maximum_label_width(self):
         maximumwidth = 0
-        for label_name in [u'Database type', u'Select db', u'Host', u'Database', u'User', u'Password', u'Port (optional)', u'Schema (optional)']:
+        for label_name in [u'Database type', u'Select db', u'Connections']:
             testlabel = PyQt4.QtGui.QLabel(label_name)
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
@@ -715,113 +715,38 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
 
 
 class PostgisSettings(gui_utils.RowEntryGrid):
+    """Using a guide from http://gis.stackexchange.com/questions/180427/retrieve-available-postgis-connections-in-pyqgis"""
     def __init__(self, midvsettingsdialogdock, label_width):
         super(PostgisSettings, self).__init__()
-
-        qs = QSettings()
-        for k in sorted(qs.allKeys()):
-            if str(k).startswith(u'Post'):
-                utils.MessagebarAndLog.info(log_msg=u"Keys:" + str(k))
-                utils.MessagebarAndLog.info(log_msg=u"qs.value:" + qs.value(k))
-
-
-
-
         self.midvsettingsdialogdock = midvsettingsdialogdock
-        self._host = PyQt4.QtGui.QLineEdit(u'')
-        self._port = PyQt4.QtGui.QLineEdit(u'')
-        self._dbname = PyQt4.QtGui.QLineEdit(u'')
-        self._schema = PyQt4.QtGui.QLineEdit(u'')
-        self._user = PyQt4.QtGui.QLineEdit(u'')
-        #TODO: The password must be handled differently
-        self._password = PyQt4.QtGui.QLineEdit(u'')
 
-        for rownr, col1_col2 in enumerate([
-            (PyQt4.QtGui.QLabel(u'Host'), self._host),
-            (PyQt4.QtGui.QLabel(u'Port (optional)'), self._port),
-            (PyQt4.QtGui.QLabel(u'Database'), self._dbname),
-            (PyQt4.QtGui.QLabel(u'Schema (optional)'), self._schema),
-            (PyQt4.QtGui.QLabel(u'User'), self._user),
-            (PyQt4.QtGui.QLabel(u'Password'), self._password)]):
-            col1, col2 = col1_col2
-            col1.setFixedWidth(label_width)
-            self.layout.addWidget(col1, rownr, 0)
-            self.layout.addWidget(col2, rownr, 1)
+        postgis_connections = utils.get_postgis_connections()
 
-        for field in [self._host, self._dbname, self._user, self._password]:
-            self.midvsettingsdialogdock.connect(field, SIGNAL("editingFinished()"), self.set_db)
+        self.label = PyQt4.QtGui.QLabel(u'Connections')
+        self.label.setFixedWidth(label_width)
+        self._connection = PyQt4.QtGui.QComboBox()
+        self._connection.addItem(u'')
+        connection_names = [u'/'.join([k, u':'.join([v.get(u'host', u''), v.get(u'port', u'')]), v.get(u'database', u'')]) for k, v in postgis_connections.iteritems()]
+        self._connection.addItems(sorted(connection_names))
+
+        self.midvsettingsdialogdock.connect(self._connection,
+                                            PyQt4.QtCore.SIGNAL(
+                                                "currentIndexChanged(const QString&)"),
+                                            self.set_db)
+
+        self.layout.addWidget(self.label, 0, 0)
+        self.layout.addWidget(self._connection, 0, 1)
 
     @property
-    def host(self):
-        return utils.returnunicode(self._host.text())
+    def connection(self):
+        return utils.returnunicode(self._connection.currentText())
 
-    @host.setter
-    def host(self, value):
-        self._host.setText(utils.returnunicode(value))
-        
-    @property
-    def port(self):
-        return utils.returnunicode(self._port.text())
-
-    @port.setter
-    def port(self, value):
-        self._port.setText(utils.returnunicode(value))
-        
-    @property
-    def dbname(self):
-        return utils.returnunicode(self._dbname.text())
-
-    @dbname.setter
-    def dbname(self, value):
-        self._dbname.setText(utils.returnunicode(value))
-        
-    @property
-    def schema(self):
-        return utils.returnunicode(self._schema.text())
-
-    @schema.setter
-    def schema(self, value):
-        self._schema.setText(utils.returnunicode(value))
-
-    @property
-    def user(self):
-        return utils.returnunicode(self._user.text())
-
-    @user.setter
-    def user(self, value):
-        self._user.setText(utils.returnunicode(value))
-        
-    @property
-    def password(self):
-        return utils.returnunicode(self._password.text())
-
-    @password.setter
-    def password(self, value):
-        self._password.setText(utils.returnunicode(value))
+    @connection.setter
+    def connection(self, value):
+        index = self._connection.findText(utils.returnunicode(value))
+        if index != -1:
+            self._connection.setCurrentIndex(index)
 
     def set_db(self):
-        if all([self.host, self.dbname, self.user, self._password]):
-            self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({u'postgis':
-                                                                                   {u'host': self.host,
-                                                                                    u'port': self.port,
-                                                                                    u'dbname': self.dbname,
-                                                                                    u'schema': self.schema,
-                                                                                    u'user': self.user,
-                                                                                    u'password': self.password}})
-            self.midvsettingsdialogdock.ms.save_settings('database')
-            #self.midvsettingsdialogdock.LoadAndSelectLastSettings()
-        else:  # debug
-            pass
-
-
-
-
-
-
-
-
-
-
-
-
-
+        self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({u'postgis': {u'connection': self.connection}})
+        self.midvsettingsdialogdock.ms.save_settings('database')
