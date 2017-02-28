@@ -650,34 +650,31 @@ def sql_alter_db_by_param_subst(sql='',*subst_params):
     subst_params = ('well01',)
     """
     #TODO: This one is not updated for postgis yet!!!
-    dbpath = QgsProject.instance().readEntry("Midvatten","database")
-    if os.path.exists(dbpath[0]):
-        #print('debug info about the tuple %s'%(subst_params[0],))#debug
+    connection = dbconnection()
+    connection_ok = connection.connect2db
+
+    if connection_ok:
+        curs = connection.cursor
+        conn = connection.conn
+
         try:
-            conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-            curs = conn.cursor()
-            try:
-                curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
-
-                resultfromsql = curs.execute(sql,subst_params[0])#please note, index 0 is pointing to the first optional argument, not index in tuple
-                #det får antagligen inte vara något annat än själva värdena i subst_params, strängen som anger kolumner och obsid-namn osv för select är nog string-concatenation som vanligt, det är alltså bara input värdena som ska använda parameter substs
-
-            except:#in case it is an sql without parameter substitution
-                print('debugging info: failed loading with parameter substitution, trying the sql without any parameters at all')#debug
-                resultfromsql = curs.execute(sql)
+            curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+            resultfromsql = curs.execute(sql,subst_params[0])#please note, index 0 is pointing to the first optional argument, not index in tuple
+            #det får antagligen inte vara något annat än själva värdena i subst_params, strängen som anger kolumner och obsid-namn osv för select är nog string-concatenation som vanligt, det är alltså bara input värdena som ska använda parameter substs
+        except:#in case it is an sql without parameter substitution
+            resultfromsql = curs.execute(sql)
             result = resultfromsql.fetchall()
             conn.commit()
-
-            resultfromsql.close()
-            conn.close()
+            connection.closedb()
             ConnectionOK = True
-        except:
-            pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
-            ConnectionOK = False
-            result = ''
+        else:
+            conn.commit()
+            connection.closedb()
+            ConnectionOK = True
     else:
-        pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
+        MessagebarAndLog.critical(bar_msg=u"Could not connect to the database, please reset Midvatten settings! See log message panel", log_msg=u"DB call causing this error (debug info):\n"+sql)
         ConnectionOK = False
+        connection.closedb()
         result = ''
     return ConnectionOK, result
 
