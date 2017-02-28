@@ -78,7 +78,7 @@ class dbconnection():
         elif self.dbtype == u'postgis':
             connection_name = self.connection_settings[u'connection'].split(u'/')[0]
             self.postgis_settings = get_postgis_connections()[connection_name]
-            MessagebarAndLog.info(log_msg=u'postgis_settings: ' + str(self.postgis_settings))
+            #MessagebarAndLog.info(log_msg=u'postgis_settings: ' + str(self.postgis_settings))
             self.uri.setConnection(self.postgis_settings[u'host'], self.postgis_settings[u'port'], self.postgis_settings[u'database'], self.postgis_settings[u'username'], self.postgis_settings[u'password'])
             self.connector = postgis_connector.PostGisDBConnector(self.uri)
 
@@ -140,7 +140,7 @@ def get_postgis_connections():
             try:
                 setting = cols[3]
             except IndexError:
-                MessagebarAndLog.info(log_msg=u'Postgresql connection info: Setting ' + str(k) + u" couldn't be read")
+                #MessagebarAndLog.info(log_msg=u'Postgresql connection info: Setting ' + str(k) + u" couldn't be read")
                 continue
             value = qs.value(k)
             postgresql_connections.setdefault(conn_name, {})[setting] = value
@@ -591,11 +591,13 @@ def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list
     connection = dbconnection()
     connection_ok = connection.connect2db()
 
+    if connection.cursor is None:
+        connection.cursor = connection.conn.cursor()
+
     if connection_ok:
         try:
-            curs = connection.cursor
-            resultfromsql = curs.execute(sql) #Send SQL-syntax to cursor #MacOSX fix1
-            result = resultfromsql.fetchall()
+            connection.cursor.execute(sql) #Send SQL-syntax to cursor #MacOSX fix1
+            result = connection.cursor.fetchall()
             ConnectionOK = True
         except Exception, e:
             #pop_up_info("Could not connect to DB, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
@@ -1271,7 +1273,7 @@ def getcurrentlocale():
         return locale.getdefaultlocale()[:2]
 
 def get_locale_from_db():
-    connection_ok, locale_row = sql_load_fr_db(u"select description from about_db where description like 'locale:%'")
+    connection_ok, locale_row = sql_load_fr_db(u"SELECT description FROM about_db WHERE description LIKE 'locale:%'")
     if connection_ok:
         try:
             locale_setting = returnunicode(locale_row, keep_containers=True)[0][0].split(u':')
@@ -1285,6 +1287,7 @@ def get_locale_from_db():
         else:
             return locale_setting
     else:
+        MessagebarAndLog.info(log_msg=u'Connection to db failed when getting locale from db.')
         return None
 
 def calculate_db_table_rows():

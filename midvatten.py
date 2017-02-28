@@ -58,6 +58,7 @@ from midvsettings import midvsettings
 import midvsettingsdialog
 from piper import PiperPlot
 from export_data import ExportData
+from definitions import midvatten_defs as defs
 #import profilefromdem
 
 class midvatten:
@@ -339,7 +340,6 @@ class midvatten:
         #Log file name must be set as env. variable QGIS_LOG_FILE in
         # settings > options > system > environment.
         QgsMessageLog.instance().messageReceived.connect(utils.write_qgs_log_to_file)
-
 
     def unload(self):    
         try:
@@ -800,11 +800,7 @@ class midvatten:
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
         utils.MessagebarAndLog.info(log_msg=u'load_data_domains err_flag: ' + str(err_flag))
         if err_flag == 0:
-            conn_ok, dd_tables = utils.sql_load_fr_db("select name from sqlite_master where name like 'zz_%'")
-            if not conn_ok:
-                return
-            d_domain_tables = [str(dd_table[0]) for dd_table in dd_tables]
-            print d_domain_tables#debug
+            d_domain_tables = [str(x) for x in defs.tables_columns.keys() if x.startswith(u'zz_')]
             err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms, d_domain_tables)#verify none of the tables are already loaded and in edit mode
             if err_flag == 0:
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict,'Midvatten_data_domains')
@@ -812,7 +808,6 @@ class midvatten:
 
     def loadthelayers(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
-        utils.MessagebarAndLog.info(log_msg=u'loadthelayers error flag: ' + str(err_flag))
         if err_flag == 0:
             sanity = utils.askuser("YesNo","""This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""",'Warning!')
             if sanity.result == 1:
