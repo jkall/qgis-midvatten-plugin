@@ -218,21 +218,23 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
         if isinstance(reuse_header_list, (list, tuple)):
             self.reuse_layout.addWidget(self.reuse_label)
             self.reuse_layout.addWidget(self._reuse_column)
+            self.reuse_layout.addStretch()
             self._reuse_column.addItems(reuse_header_list)
-            self._reuse_column = reuse_column
+            self.reuse_column_temp = reuse_column
 
         self.exec_()
 
     @property
-    def reuse_column(self):
-        return str(self._reuse_column.currentText())
-
-    @reuse_column.setter
-    def reuse_column(self, value):
+    def reuse_column_temp(self, value):
         index = self._reuse_column.findText(returnunicode(value))
         if index != -1:
             self._reuse_column.setCurrentIndex(index)
-        
+
+    @reuse_column_temp.setter
+    def reuse_column_temp(self, value):
+        index = self._reuse_column.findText(returnunicode(value))
+        if index != -1:
+            self._reuse_column.setCurrentIndex(index)
 
     def button_clicked(self):
         button = self.sender()
@@ -242,7 +244,8 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
 
     def set_answer_and_value(self, answer):
         self.answer = answer
-        self.value = self.comboBox.currentText()
+        self.value = returnunicode(self.comboBox.currentText())
+        self.reuse_column = self._reuse_column.currentText()
 
     def closeEvent(self, event):
         if self.answer == None:
