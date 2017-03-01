@@ -42,6 +42,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_ok(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'ok'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
@@ -53,6 +54,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_ignore(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'ignore'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
@@ -64,6 +66,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_cancel(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'cancel'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
@@ -75,6 +78,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_skip(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'skip'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
@@ -86,6 +90,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_none_value_skip(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'skip'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [None, u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
@@ -113,6 +118,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_only_ask_once(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'ok'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h'], [u'1', u'i']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
@@ -126,6 +132,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_skip_only_ask_once(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'skip'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h'], [u'1', u'i']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)

@@ -194,7 +194,7 @@ class askuser(QtGui.QDialog):
 
 
 class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
-    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None, button_names=[u'Ignore', u'Cancel', u'Ok'], combobox_label=u'Similar values found in db (choose or edit):'):
+    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None, button_names=[u'Ignore', u'Cancel', u'Ok'], combobox_label=u'Similar values found in db (choose or edit):', reuse_header_list=None, reuse_column=u''):
         QtGui.QDialog.__init__(self, parent)
         self.answer = None
         self.setupUi(self)
@@ -212,7 +212,27 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
             self.buttonBox.addButton(button, QtGui.QDialogButtonBox.ActionRole)
             self.connect(button, PyQt4.QtCore.SIGNAL("clicked()"), self.button_clicked)
 
+        self.reuse_label = PyQt4.QtGui.QLabel(u'Reuse answer for all identical')
+        self._reuse_column = PyQt4.QtGui.QComboBox()
+        self._reuse_column.addItem(u'')
+        if isinstance(reuse_header_list, (list, tuple)):
+            self.reuse_layout.addWidget(self.reuse_label)
+            self.reuse_layout.addWidget(self._reuse_column)
+            self._reuse_column.addItems(reuse_header_list)
+            self._reuse_column = reuse_column
+
         self.exec_()
+
+    @property
+    def reuse_column(self):
+        return str(self._reuse_column.currentText())
+
+    @reuse_column.setter
+    def reuse_column(self, value):
+        index = self._reuse_column.findText(returnunicode(value))
+        if index != -1:
+            self._reuse_column.setCurrentIndex(index)
+        
 
     def button_clicked(self):
         button = self.sender()
@@ -1054,19 +1074,30 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
         else:
             filtered_data.append(row)
 
-    already_asked_values = {}
+    headers_colnr = dict([(header, colnr) for colnr, header in enumerate(file_data[0])])
 
+    already_asked_values = {} # {u'obsid': {u'asked_for': u'answer'}, u'report': {u'asked_for_report': u'answer'}}
+    reuse_column = u''
     for rownr, row in enumerate(data_to_ask_for):
-
+        current_value = row[index]
+        found = False
         #First check if the current value already has been asked for and if so
         # use the same answer again.
-        try:
-            row[index] = already_asked_values[row[index]]
-        except KeyError:
-            current_value = row[index]
-        else:
-            if row[index] is not None:
-                filtered_data.append(row)
+        for asked_header, asked_answers in already_asked_values.iteritems():
+            colnr = headers_colnr[asked_header]
+            try:
+                row[index] = asked_answers[row[colnr]]
+            except KeyError:
+                current_value = row[index]
+            else:
+                if row[index] is not None:
+                    filtered_data.append(row)
+                    found = True
+                    break
+                else:
+                    found = True
+                    break
+        if found:
             continue
 
         #Put the found similar values on top, but include all values in the database as well
@@ -1090,9 +1121,13 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
                                         msg=u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'" on row:\n"' + u', '.join(returnunicode(row, keep_containers=True)) + u'".\ndid not exist in db.\n\nPlease submit it again!\nIt will be used for all occurences of the same ' + header_value + u'\n',
                                         existing_list=similar_values,
                                         default_value=similar_values[0],
-                                        button_names=[u'Ignore', u'Cancel', u'Ok', u'Skip'])
+                                        button_names=[u'Ignore', u'Cancel', u'Ok', u'Skip'],
+                                        reuse_header_list=sorted(headers_colnr.keys()),
+                                        reuse_column=reuse_column
+                                        )
             answer = question.answer
             submitted_value = returnunicode(question.value)
+            reuse_column = returnunicode(question.reuse_column)
             if answer == u'cancel':
                 return answer
             elif answer == u'ignore':
@@ -1105,11 +1140,12 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
                 break
 
         if answer == u'skip':
-            if row[index] not in already_asked_values:
-                already_asked_values[row[index]] = None
+            if reuse_column:
+                already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = None
         else:
-            if row[index] not in already_asked_values:
-                already_asked_values[row[index]] = current_value
+            if reuse_column:
+                already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = current_value
+
             row[index] = current_value
             filtered_data.append(row)
 
