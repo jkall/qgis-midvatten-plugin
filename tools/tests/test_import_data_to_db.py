@@ -189,6 +189,7 @@ class TestParseDiverofficeFile(object):
     def test_parse_diveroffice_file_cancel(self, mock_notfoundquestion):
         mock_notfoundquestion.return_value.answer = u'cancel'
         mock_notfoundquestion.return_value.value = u''
+        mock_notfoundquestion.return_value.reuse_column = u'obsid'
 
         f = (u'Location=rb1',
              u'Date/time,Water head[cm],Temperature[°C]',
@@ -804,506 +805,6 @@ class TestGeneralCsvImport(object):
                     assert test_string == reference_string
 
 
-class TestInterlab4Importer():
-    def setUp(self):
-        self.importinstance = midv_data_importer()
-
-    def test_interlab4_parse_filesettings_utf16(self):
-        interlab4_lines = (
-                    u"#Interlab",
-                    u"#Version=4.0",
-                    u"#Tecken=UTF-16",
-                    u"#Textavgränsare=Nej",
-                    u"#Decimaltecken=,",
-                    u"#Provadm",
-                    u"Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsn",
-                        )
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-16') as testfile:
-            result_string = str(utils_for_tests.dict_to_sorted_list(self.importinstance.interlab4_parse_filesettings(testfile)))
-
-        reference_string = "['False', '4.0', 'utf-16', ',', 'False']"
-
-        assert result_string == reference_string
-
-    def test_interlab4_parse_filesettings_utf8(self):
-        interlab4_lines = (
-                    u"#Interlab",
-                    u"#Version=4.0",
-                    u"#Tecken=UTF-8",
-                    u"#Textavgränsare=Nej",
-                    u"#Decimaltecken=,",
-                    u"#Provadm",
-                    u"Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsn",
-                        )
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            result_string = str(utils_for_tests.dict_to_sorted_list(self.importinstance.interlab4_parse_filesettings(testfile)))
-
-        reference_string = "['False', '4.0', 'utf-8', ',', 'False']"
-
-        assert result_string == reference_string
-
-    def test_parse_interlab4_utf16(self):
-
-        interlab4_lines = (
-                    u"#Interlab",
-                    u"#Version=4.0",
-                    u"#Tecken=UTF-16",
-                    u"#Textavgränsare=Nej",
-                    u"#Decimaltecken=,",
-                    u"#Provadm",
-                    u"Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;",
-                    u"DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;",
-                    u"#Provdat",
-                    u"Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;",
-                    u"DM-990908-2773;SS-EN ISO 7887-1/4;Färgtal;;5;;mg/l Pt;;;;;;;",
-                    u"DM-990908-2773;ISO 17294-2;Järn;;0,06;;mg/l;;;;;;;",
-                    u"DM-990908-2773;Saknas;Temperatur vid provtagning;;14,5;;grader C;;;;;;;",
-                    u"DM-990908-2773;SLV METOD1990-01-01 TA;Temperatur vid ankomst;;16,8;;grader C;;;;;;Ej kylt;",
-                    u"DM-990908-2773;ISO 17294-2;Mangan;;0,001;<;mg/l;;;;;;;",
-                    u"#Provadm ",
-                    u"Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;",
-                    u"DM-990908-2774;MFR;;;;;;Demo-Laboratoriet;NSG;DV;VV1784;Demo2 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;11:30;2010-09-07;14:15;",
-                    u"#Provdat",
-                    u"Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;",
-                    u"DM-990908-2774;SS-EN ISO 7887-1/4;Färgtal;;6,5;;mg/l Pt;;;;;;;",
-                    u"DM-990908-2774;ISO 17294-2;Järn;;0,05;<;mg/l;;;;;;;",
-                    u"DM-990908-2774;Saknas;Temperatur vid provtagning;;14,8;;grader C;;;;;;;",
-                    u"DM-990908-2774;Saknas;Temperatur vid ankomst;;17,3;;grader C;;;;;;Ej kylt;",
-                    u"DM-990908-2774;ISO 17294-2;Mangan;;0,004;;mg/l;;;;;;; ",
-                    u"#Slut"
-                        )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-16') as testfile:
-            result = self.importinstance.parse_interlab4([testfile])
-        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_interlab4([testfile])))
-        reference_string = 'DM-990908-2773;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.06;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.001;mätvärdetalanm;<;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2773;metodbeteckning;SLV METOD1990-01-01 TA;mätvärdetal;16.8;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2773;metodbeteckning;Saknas;mätvärdetal;14.5;parameter;Temperatur vid provtagning;metadata;adress;PG Vejdes väg 15;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;kommunkod;0780;lablittera;DM-990908-2773;laboratorium;Demo-Laboratoriet;namn;MFR;ort;Växjö;postnr;351 96;projekt;Demoproj;provplatsid;Demo1 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;10:15;provtyp;Utgående;provtypspecifikation;Nej;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010;DM-990908-2774;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2774;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;6.5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.05;mätvärdetalanm;<;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.004;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;17.3;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;14.8;parameter;Temperatur vid provtagning;metadata;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;lablittera;DM-990908-2774;laboratorium;Demo-Laboratoriet;namn;MFR;provplatsid;Demo2 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;11:30;provtyp;Utgående;provtypspecifikation;Nej;registertyp;VV1784;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010'
-
-        assert result_string == reference_string
-
-    def test_parse_interlab4_iso_8859_1(self):
-
-        interlab4_lines = (
-                    u"#Interlab",
-                    u"#Version=4.0",
-                    u"#Tecken=ISO-8859-1",
-                    u"#Textavgränsare=Nej",
-                    u"#Decimaltecken=,",
-                    u"#Provadm",
-                    u"Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;",
-                    u"DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;",
-                    u"#Provdat",
-                    u"Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;",
-                    u"DM-990908-2773;SS-EN ISO 7887-1/4;Färgtal;;5;;mg/l Pt;;;;;;;",
-                    u"DM-990908-2773;ISO 17294-2;Järn;;0,06;;mg/l;;;;;;;",
-                    u"DM-990908-2773;Saknas;Temperatur vid provtagning;;14,5;;grader C;;;;;;;",
-                    u"DM-990908-2773;SLV METOD1990-01-01 TA;Temperatur vid ankomst;;16,8;;grader C;;;;;;Ej kylt;",
-                    u"DM-990908-2773;ISO 17294-2;Mangan;;0,001;<;mg/l;;;;;;;",
-                    u"#Provadm ",
-                    u"Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;",
-                    u"DM-990908-2774;MFR;;;;;;Demo-Laboratoriet;NSG;DV;VV1784;Demo2 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;11:30;2010-09-07;14:15;",
-                    u"#Provdat",
-                    u"Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;",
-                    u"DM-990908-2774;SS-EN ISO 7887-1/4;Färgtal;;6,5;;mg/l Pt;;;;;;;",
-                    u"DM-990908-2774;ISO 17294-2;Järn;;0,05;<;mg/l;;;;;;;",
-                    u"DM-990908-2774;Saknas;Temperatur vid provtagning;;14,8;;grader C;;;;;;;",
-                    u"DM-990908-2774;Saknas;Temperatur vid ankomst;;17,3;;grader C;;;;;;Ej kylt;",
-                    u"DM-990908-2774;ISO 17294-2;Mangan;;0,004;;mg/l;;;;;;; ",
-                    u"#Slut"
-                        )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'iso-8859-1') as testfile:
-            result = self.importinstance.parse_interlab4([testfile])
-        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_interlab4([testfile])))
-        reference_string = 'DM-990908-2773;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.06;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.001;mätvärdetalanm;<;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2773;metodbeteckning;SLV METOD1990-01-01 TA;mätvärdetal;16.8;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2773;metodbeteckning;Saknas;mätvärdetal;14.5;parameter;Temperatur vid provtagning;metadata;adress;PG Vejdes väg 15;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;kommunkod;0780;lablittera;DM-990908-2773;laboratorium;Demo-Laboratoriet;namn;MFR;ort;Växjö;postnr;351 96;projekt;Demoproj;provplatsid;Demo1 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;10:15;provtyp;Utgående;provtypspecifikation;Nej;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010;DM-990908-2774;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2774;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;6.5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.05;mätvärdetalanm;<;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.004;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;17.3;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;14.8;parameter;Temperatur vid provtagning;metadata;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;lablittera;DM-990908-2774;laboratorium;Demo-Laboratoriet;namn;MFR;provplatsid;Demo2 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;11:30;provtyp;Utgående;provtypspecifikation;Nej;registertyp;VV1784;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010'
-
-        assert result_string == reference_string
-
-    def test_parse_interlab4_utf8(self):
-        interlab4_lines = (
-                    u"#Interlab",
-                    u"#Version=4.0",
-                    u"#Tecken=UTF-8",
-                    u"#Textavgränsare=Nej",
-                    u"#Decimaltecken=,",
-                    u"#Provadm",
-                    u"Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;",
-                    u"DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;",
-                    u"#Provdat",
-                    u"Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;",
-                    u"DM-990908-2773;SS-EN ISO 7887-1/4;Färgtal;;5;;mg/l Pt;;;;;;;",
-                    u"DM-990908-2773;ISO 17294-2;Järn;;0,06;;mg/l;;;;;;;",
-                    u"DM-990908-2773;Saknas;Temperatur vid provtagning;;14,5;;grader C;;;;;;;",
-                    u"DM-990908-2773;SLV METOD1990-01-01 TA;Temperatur vid ankomst;;16,8;;grader C;;;;;;Ej kylt;",
-                    u"DM-990908-2773;ISO 17294-2;Mangan;;0,001;<;mg/l;;;;;;;",
-                    u"#Provadm ",
-                    u"Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;",
-                    u"DM-990908-2774;MFR;;;;;;Demo-Laboratoriet;NSG;DV;VV1784;Demo2 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;11:30;2010-09-07;14:15;",
-                    u"#Provdat",
-                    u"Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;",
-                    u"DM-990908-2774;SS-EN ISO 7887-1/4;Färgtal;;6,5;;mg/l Pt;;;;;;;",
-                    u"DM-990908-2774;ISO 17294-2;Järn;;0,05;<;mg/l;;;;;;;",
-                    u"DM-990908-2774;Saknas;Temperatur vid provtagning;;14,8;;grader C;;;;;;;",
-                    u"DM-990908-2774;Saknas;Temperatur vid ankomst;;17,3;;grader C;;;;;;Ej kylt;",
-                    u"DM-990908-2774;ISO 17294-2;Mangan;;0,004;;mg/l;;;;;;; ",
-                    u"#Slut"
-                        )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            result = self.importinstance.parse_interlab4([testfile])
-        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_interlab4([testfile])))
-        reference_string = 'DM-990908-2773;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.06;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.001;mätvärdetalanm;<;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2773;metodbeteckning;SLV METOD1990-01-01 TA;mätvärdetal;16.8;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2773;metodbeteckning;Saknas;mätvärdetal;14.5;parameter;Temperatur vid provtagning;metadata;adress;PG Vejdes väg 15;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;kommunkod;0780;lablittera;DM-990908-2773;laboratorium;Demo-Laboratoriet;namn;MFR;ort;Växjö;postnr;351 96;projekt;Demoproj;provplatsid;Demo1 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;10:15;provtyp;Utgående;provtypspecifikation;Nej;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010;DM-990908-2774;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2774;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;6.5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.05;mätvärdetalanm;<;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.004;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;17.3;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;14.8;parameter;Temperatur vid provtagning;metadata;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;lablittera;DM-990908-2774;laboratorium;Demo-Laboratoriet;namn;MFR;provplatsid;Demo2 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;11:30;provtyp;Utgående;provtypspecifikation;Nej;registertyp;VV1784;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010'
-
-        assert result_string == reference_string
-
-    def test_parse_interlab4_ignore_bland_line(self):
-        interlab4_lines = (
-                    u"#Interlab",
-                    u"#Version=4.0",
-                    u"#Tecken=UTF-8",
-                    u"#Textavgränsare=Nej",
-                    u"#Decimaltecken=,",
-                    u"#Provadm",
-                    u"Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;",
-                    u"DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;",
-                    u"#Provdat",
-                    u"Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;",
-                    u"DM-990908-2773;SS-EN ISO 7887-1/4;Färgtal;;5;;mg/l Pt;;;;;;;",
-                    u"DM-990908-2773;ISO 17294-2;Järn;;0,06;;mg/l;;;;;;;",
-                    u"DM-990908-2773;Saknas;Temperatur vid provtagning;;14,5;;grader C;;;;;;;",
-                    u"DM-990908-2773;SLV METOD1990-01-01 TA;Temperatur vid ankomst;;16,8;;grader C;;;;;;Ej kylt;",
-                    u"DM-990908-2773;ISO 17294-2;Mangan;;0,001;<;mg/l;;;;;;;",
-                    u"#Provadm ",
-                    u"Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;",
-                    u"DM-990908-2774;MFR;;;;;;Demo-Laboratoriet;NSG;DV;VV1784;Demo2 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;11:30;2010-09-07;14:15;",
-                    u"#Provdat",
-                    u'',
-                    u"Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;",
-                    u"DM-990908-2774;SS-EN ISO 7887-1/4;Färgtal;;6,5;;mg/l Pt;;;;;;;",
-                    u"DM-990908-2774;ISO 17294-2;Järn;;0,05;<;mg/l;;;;;;;",
-                    u"DM-990908-2774;Saknas;Temperatur vid provtagning;;14,8;;grader C;;;;;;;",
-                    u"DM-990908-2774;Saknas;Temperatur vid ankomst;;17,3;;grader C;;;;;;Ej kylt;",
-                    u"DM-990908-2774;ISO 17294-2;Mangan;;0,004;;mg/l;;;;;;; ",
-                    u"#Slut"
-                        )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            result = self.importinstance.parse_interlab4([testfile])
-        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_interlab4([testfile])))
-        reference_string = 'DM-990908-2773;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.06;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.001;mätvärdetalanm;<;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2773;metodbeteckning;SLV METOD1990-01-01 TA;mätvärdetal;16.8;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2773;metodbeteckning;Saknas;mätvärdetal;14.5;parameter;Temperatur vid provtagning;metadata;adress;PG Vejdes väg 15;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;kommunkod;0780;lablittera;DM-990908-2773;laboratorium;Demo-Laboratoriet;namn;MFR;ort;Växjö;postnr;351 96;projekt;Demoproj;provplatsid;Demo1 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;10:15;provtyp;Utgående;provtypspecifikation;Nej;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010;DM-990908-2774;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2774;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;6.5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.05;mätvärdetalanm;<;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.004;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;17.3;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;14.8;parameter;Temperatur vid provtagning;metadata;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;lablittera;DM-990908-2774;laboratorium;Demo-Laboratoriet;namn;MFR;provplatsid;Demo2 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;11:30;provtyp;Utgående;provtypspecifikation;Nej;registertyp;VV1784;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010'
-
-        assert result_string == reference_string
-
-    def test_parse_interlab4_quotechar(self):
-        interlab4_lines = (
-                    u'#Interlab',
-                    u'#Version=4.0',
-                    u'#Tecken=UTF-8',
-                    u'#Textavgränsare=Ja',
-                    u'#Decimaltecken=,',
-                    u'#Provadm',
-                    u'"Lablittera";"Namn";"Adress";"Postnr";"Ort";',
-                    u'"DM-990908-2773";"MFR";"PG Vejdes väg 15";"351 96";"Växjö";',
-                    u'#Provdat',
-                    u'"Lablittera";"Metodbeteckning";"Parameter";"Mätvärdetext";"Mätvärdetal";',
-                    u'"DM-990908-2773";"SS-EN ISO 7887-1/4";"Färgtal";;"5";',
-                    u'#Slut'
-                        )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            result = self.importinstance.parse_interlab4([testfile])
-        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_interlab4([testfile])))
-        reference_string = 'DM-990908-2773;Färgtal;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;metadata;adress;PG Vejdes väg 15;lablittera;DM-990908-2773;namn;MFR;ort;Växjö;postnr;351 96'
-        assert result_string == reference_string
-
-    def test_parse_interlab4_quotechar_semicolon(self):
-        interlab4_lines = (
-                    u'#Interlab',
-                    u'#Version=4.0',
-                    u'#Tecken=UTF-8',
-                    u'#Textavgränsare=Ja',
-                    u'#Decimaltecken=,',
-                    u'#Provadm',
-                    u'"Lablittera";"Namn";"Adress";"Postnr";"Ort";',
-                    u'"DM-990908-2773";"MFR";"PG ;Vejdes väg 15";"351 96";"Växjö";',
-                    u'#Provdat',
-                    u'"Lablittera";"Metodbeteckning";"Parameter";"Mätvärdetext";"Mätvärdetal";',
-                    u'"DM-990908-2773";"SS-EN ISO 7887-1/4";"Färgtal";;"5";',
-                    u'#Slut'
-                        )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            result = self.importinstance.parse_interlab4([testfile])
-        result_string = '|'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_interlab4([testfile])))
-        reference_string = 'DM-990908-2773|Färgtal|lablittera|DM-990908-2773|metodbeteckning|SS-EN ISO 7887-1/4|mätvärdetal|5|parameter|Färgtal|metadata|adress|PG ;Vejdes väg 15|lablittera|DM-990908-2773|namn|MFR|ort|Växjö|postnr|351 96'
-
-        assert result_string == reference_string
-
-    def test_interlab4_to_table(self):
-        interlab4_lines = (
-            u'#Interlab',
-            u'#Version=4.0',
-            u'#Tecken=UTF-8',
-            u'#Textavgränsare=Nej',
-            u'#Decimaltecken=,',
-            u'#Provadm',
-            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
-            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
-            u'#Provdat',
-            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Färgtal;;5;;mg/l Pt;;;;;;;',
-            u'#Slut'
-                )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
-
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
-
-        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, 5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
-
-        assert result_string == reference_string
-
-    def test_interlab4_to_table_kalium_above_2_5(self):
-        interlab4_lines = (
-            u'#Interlab',
-            u'#Version=4.0',
-            u'#Tecken=UTF-8',
-            u'#Textavgränsare=Nej',
-            u'#Decimaltecken=,',
-            u'#Provadm',
-            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
-            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
-            u'#Provdat',
-            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;5;5;;mg/l Pt;;;;;;;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;4;4;;mg/l Pt;;;;;;;',
-            u'#Slut'
-                )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
-
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
-
-        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 4, 4, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
-        assert result_string == reference_string
-
-    def test_interlab4_to_table_kalium_between_1_and_2_5(self):
-        interlab4_lines = (
-            u'#Interlab',
-            u'#Version=4.0',
-            u'#Tecken=UTF-8',
-            u'#Textavgränsare=Nej',
-            u'#Decimaltecken=,',
-            u'#Provadm',
-            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
-            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
-            u'#Provdat',
-            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<2,5;2,5;;mg/l Pt;;;;;;;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;1,5;1,5;;mg/l Pt;;;;;;;',
-            u'#Slut'
-                )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
-
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
-
-        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.5, 1,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
-        assert result_string == reference_string
-
-    def test_interlab4_to_table_kalium_below_1(self):
-        interlab4_lines = (
-            u'#Interlab',
-            u'#Version=4.0',
-            u'#Tecken=UTF-8',
-            u'#Textavgränsare=Nej',
-            u'#Decimaltecken=,',
-            u'#Provadm',
-            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
-            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
-            u'#Provdat',
-            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<2,5;2,5;;mg/l Pt;;;;;;;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
-            u'#Slut'
-                )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
-
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
-
-        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt]]'
-        assert result_string == reference_string
-
-    def test_interlab4_to_table_kalium_using_resolution(self):
-        interlab4_lines = (
-            u'#Interlab',
-            u'#Version=4.0',
-            u'#Tecken=UTF-8',
-            u'#Textavgränsare=Nej',
-            u'#Decimaltecken=,',
-            u'#Provadm',
-            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
-            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
-            u'#Provdat',
-            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;3;3;;mg/l Pt;;;±1;;;;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;10;10;;mg/l Pt;;;±0.1;;;;',
-            u'#Slut'
-                )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
-
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
-
-        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±0.1]]'
-        assert result_string == reference_string
-
-    def test_interlab4_to_table_kalium_using_resolution_same_resolution_use_last_one(self):
-        interlab4_lines = (
-            u'#Interlab',
-            u'#Version=4.0',
-            u'#Tecken=UTF-8',
-            u'#Textavgränsare=Nej',
-            u'#Decimaltecken=,',
-            u'#Provadm',
-            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
-            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
-            u'#Provdat',
-            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;3;3;;mg/l Pt;;;±1;;;;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;10;10;;mg/l Pt;;;±1;;;;',
-            u'#Slut'
-                )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
-
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
-
-        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±1]]'
-        assert result_string == reference_string
-
-    def test_interlab4_to_table_matvardetalanm(self):
-        interlab4_lines = (
-            u'#Interlab',
-            u'#Version=4.0',
-            u'#Tecken=UTF-8',
-            u'#Textavgränsare=Nej',
-            u'#Decimaltecken=,',
-            u'#Provadm',
-            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
-            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
-            u'#Provdat',
-            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Färgtal;;5;<;mg/l Pt;;;±1;;;;',
-            u'#Slut'
-                )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
-
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
-
-        # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
-        reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, <5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±1]]'
-        assert result_string == reference_string
-        
-    def tearDown(self):
-        self.importinstance = None
-        pass
-
-
-class TestInterlab4ImporterDB(object):
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
-    skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance')
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
-    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
-        mock_crsquestion.return_value = [3006]
-        mock_savefilename.return_value = TEMP_DB_PATH
-        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
-
-        self.dummy_iface = DummyInterface2()
-        self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten(self.iface)
-
-        try:
-            os.remove(TEMP_DB_PATH)
-        except OSError:
-            pass
-        mock_locale.return_value.answer = u'ok'
-        mock_locale.return_value.value = u'sv_SE'
-        self.midvatten.new_db()
-        self.importinstance = midv_data_importer()
-
-    def tearDown(self):
-        #Delete database
-        os.remove(TEMP_DB_PATH)
-
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    def test_interlab4_full_test_to_db(self):
-
-        utils.sql_alter_db(u'''insert into zz_staff (staff) values ('DV')''')
-
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("Demo1 vattenverk")')
-
-        interlab4_lines = (
-            u'#Interlab',
-            u'#Version=4.0',
-            u'#Tecken=UTF-8',
-            u'#Textavgränsare=Nej',
-            u'#Decimaltecken=,',
-            u'#Provadm',
-            u'Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsnamn;Specifik provplats;Provtagningsorsak;Provtyp;Provtypspecifikation;Bedömning;Kemisk bedömning;Mikrobiologisk bedömning;Kommentar;År;Provtagningsdatum;Provtagningstid;Inlämningsdatum;Inlämningstid;',
-            u'DM-990908-2773;MFR;PG Vejdes väg 15;351 96;Växjö;0780;Demoproj;Demo-Laboratoriet;NSG;DV;;Demo1 vattenverk;;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;Dricksvatten enligt SLVFS 2001:30;Utgående;Nej;Tjänligt;;;;2010;2010-09-07;10:15;2010-09-07;14:15;',
-            u'#Provdat',
-            u'Lablittera;Metodbeteckning;Parameter;Mätvärdetext;Mätvärdetal;Mätvärdetalanm;Enhet;Rapporteringsgräns;Detektionsgräns;Mätosäkerhet;Mätvärdespår;Parameterbedömning;Kommentar;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<2,5;2,5;;mg/l Pt;;;;;;;',
-            u'DM-990908-2773;SS-EN ISO 7887-1/4;Kalium;<1;1;;mg/l Pt;;;;;;;',
-            u'#Slut'
-                )
-
-        with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as filename:
-            @mock.patch('midvatten_utils.NotFoundQuestion')
-            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestInterlab4ImporterDB.mock_askuser.get_v)
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileNames')
-            def _test(self, filename, mock_filenames, mock_skippopup, mock_iface, mock_not_found_question):
-                mock_not_found_question.return_value.answer = u'ok'
-                mock_not_found_question.return_value.value = u'Demo1 vattenverk'
-                mock_filenames.return_value = filename
-                self.mock_iface = mock_iface
-                self.importinstance.import_interlab4()
-
-
-            _test(self, filename)
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
-        reference_string = ur'''(True, [(Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt)])'''
-        assert test_string == reference_string
-
-
 class TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
@@ -1344,7 +845,7 @@ class TestDbCalls(object):
         assert exists
 
 
-class TestImportObsPoints(object):
+class TestImportObsPointsObsLines(object):
     temp_db_path = TEMP_DB_PATH
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -1366,7 +867,7 @@ class TestImportObsPoints(object):
         self.iface = DummyInterface()
         self.midvatten = midvatten(self.iface)
         try:
-            os.remove(TestImportObsPoints.temp_db_path)
+            os.remove(TestImportObsPointsObsLines.temp_db_path)
         except OSError:
             pass
         mock_locale.return_value.answer = u'ok'
@@ -1376,17 +877,17 @@ class TestImportObsPoints(object):
 
     def tearDown(self):
         #Delete database
-        os.remove(TestImportObsPoints.temp_db_path)
+        os.remove(TestImportObsPointsObsLines.temp_db_path)
 
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
-    def test_import_obsids_directly(self):
+    def _test_import_obsids_directly(self):
         utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid2")')
         result = utils.sql_load_fr_db(u'select * from obs_points')
 
-        msgbar = TestImportObsPoints.mocked_iface.messagebar.messages
+        msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
         if msgbar:
             print str(msgbar)
 
@@ -1395,7 +896,7 @@ class TestImportObsPoints(object):
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
-    def test_import_obs_points(self):
+    def _test_import_obs_points(self):
 
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1405,18 +906,18 @@ class TestImportObsPoints(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             selected_file = MockUsingReturnValue(filename)
 
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPoints.mock_encoding.get_v)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPoints.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPoints.mock_askuser.get_v)
-            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPoints.skip_popup.get_v)
+            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
             _test_import_obs_points_using_obsp_import(self)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
-        msgbar = TestImportObsPoints.mocked_iface.messagebar.messages
+        msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
         if msgbar:
             print str(msgbar)
 
@@ -1426,7 +927,7 @@ class TestImportObsPoints(object):
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
-    def test_import_obs_points_already_exist(self):
+    def _test_import_obs_points_already_exist(self):
 
         utils.sql_alter_db(u'''insert into obs_points ("obsid") values ('rb1')''')
         self.importinstance.charsetchoosen = [u'utf-8']
@@ -1437,11 +938,11 @@ class TestImportObsPoints(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             selected_file = MockUsingReturnValue(filename)
 
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPoints.mock_encoding.get_v)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPoints.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPoints.mock_askuser.get_v)
-            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPoints.skip_popup.get_v)
+            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
@@ -1450,7 +951,7 @@ class TestImportObsPoints(object):
             _test_import_obs_points_using_obsp_import(self)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
-        msgbar = TestImportObsPoints.mocked_iface.messagebar.messages
+        msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
 
         #if msgbar:
         #    print str(msgbar)
@@ -1461,7 +962,7 @@ class TestImportObsPoints(object):
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
-    def test_import_obs_points_duplicates(self):
+    def _test_import_obs_points_duplicates(self):
 
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1473,11 +974,11 @@ class TestImportObsPoints(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             selected_file = MockUsingReturnValue(filename)
 
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPoints.mock_encoding.get_v)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPoints.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPoints.mock_askuser.get_v)
-            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPoints.skip_popup.get_v)
+            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
@@ -1485,7 +986,7 @@ class TestImportObsPoints(object):
             _test_import_obs_points_using_obsp_import(self)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
-        msgbar = TestImportObsPoints.mocked_iface.messagebar.messages
+        msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
         #if msgbar:
         #    print str(msgbar)
 
@@ -1495,7 +996,7 @@ class TestImportObsPoints(object):
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
-    def test_import_obs_points_no_east_north(self):
+    def _test_import_obs_points_no_east_north(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         f = [[u'obsid', u'name', u'place', u'type', u'length', u'drillstop', u'diam', u'material', u'screen', u'capacity', u'drilldate', u'wmeas_yn', u'wlogg_yn', u'east', u'north', u'ne_accur', u'ne_source', u'h_toc', u'h_tocags', u'h_gs', u'h_accur', u'h_syst', u'h_source', u'source', u'com_onerow', u'com_html'],
@@ -1504,22 +1005,76 @@ class TestImportObsPoints(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             selected_file = MockUsingReturnValue(filename)
 
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPoints.mock_encoding.get_v)
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPoints.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPoints.mock_askuser.get_v)
-            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPoints.skip_popup.get_v)
+            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
             _test_import_obs_points_using_obsp_import(self)
 
         test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
-        msgbar = TestImportObsPoints.mocked_iface.messagebar.messages
+        msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
         if msgbar:
             print str(msgbar)
 
         reference_string = ur'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, None, None, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, None)])'''
+        assert test_string == reference_string
+
+    @mock.patch('qgis.utils.iface', mocked_iface)
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+    def test_import_obs_points_geometry_as_wkt(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        f = [[u'obsid', u'name', u'place', u'type', u'length', u'drillstop', u'diam', u'material', u'screen', u'capacity', u'drilldate', u'wmeas_yn', u'wlogg_yn', u'east', u'north', u'ne_accur', u'ne_source', u'h_toc', u'h_tocags', u'h_gs', u'h_accur', u'h_syst', u'h_source', u'source', u'com_onerow', u'com_html', u'geometry'],
+             [u'rb1', u'rb1', u'a', u'pipe', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'', u'', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'POINT(45 55)']]
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+            selected_file = MockUsingReturnValue(filename)
+
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
+            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            def _test(self, mock_iface):
+                self.importinstance.general_csv_import(goal_table=u'obs_points')
+            _test(self)
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
+
+        reference_string = ur'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, 45.0, 55.0, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, POINT(45 55))])'''
+        assert test_string == reference_string
+
+    @mock.patch('qgis.utils.iface', mocked_iface)
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+    def test_import_obs_lines_geometry_as_wkt(self):
+        self.importinstance.charsetchoosen = [u'utf-8']
+
+        f = [[u'obsid', u'geometry'],
+             [u'line1', u'LINESTRING(1 2, 3 4, 5 6, 7 8)']]
+
+        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
+            selected_file = MockUsingReturnValue(filename)
+
+            @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
+            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
+            @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
+            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
+            @mock.patch('qgis.utils.iface', autospec=True)
+            def _test(self, mock_iface):
+                self.importinstance.general_csv_import(goal_table=u'obs_lines')
+            _test(self)
+
+        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, AsText(geometry) from obs_lines'''))
+
+        reference_string = ur'''(True, [(line1, LINESTRING(1 2, 3 4, 5 6, 7 8))])'''
         assert test_string == reference_string
 
 

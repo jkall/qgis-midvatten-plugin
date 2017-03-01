@@ -4,7 +4,7 @@ name=Midvatten
 qgisMinimumVersion=2.4
 qgisMaximumVersion=2.98
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.3.20
+version=Version 1.3.21
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 
@@ -19,6 +19,13 @@ experimental=False
 deprecated=False
 
 changelog=
+        Version 1.3.21
+        - Interlab4: Gui for chosing what to import from interlab4-files.
+        - Sectionplot now saves to temporary memory database instead of a real table.
+        - Export to fieldlogger: A button with default/example setup created.
+        - Fieldlogger import less sensitive to column delimiters and encoding.
+        - Fixed bug where importing geometries to obs_points and obs_lines using WKT didn't work.
+        - Reduced the size of the often shared ui (Fieldlogger import/export, csv import, interlab4 import)
         Version 1.3.20
         - Bug correction in custom plot.
         - Fix for fieldlogger import.

@@ -757,9 +757,9 @@ class midvatten:
         if err_flag == 0:        # unless none of the critical layers are in editing mode
             sanity = utils.askuser("YesNo","""You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.\nSpecifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf\n\nContinue?""",'Are you sure?')
             if sanity.result == 1:
-                from import_data_to_db import midv_data_importer
-                importinstance = midv_data_importer()
-                importinstance.import_interlab4()
+                from import_interlab4 import Interlab4Import
+                importinstance = Interlab4Import(self.iface.mainWindow(), self.ms)
+                importinstance.parse_observations_and_populate_gui()
                 if importinstance.status=='True':      #
                     self.iface.messageBar().pushMessage("Info","%s water quality parameters were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
                     try:

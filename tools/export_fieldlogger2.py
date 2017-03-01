@@ -17,22 +17,17 @@
  *                                                                         *
  ***************************************************************************/
 """
-import ast
 import PyQt4
-import os
-import os.path
-import qgis.utils
+import ast
 import copy
-from collections import OrderedDict
-import warnings
+import os.path
 import qgis.gui
+from collections import OrderedDict
 
-import midvatten_utils as utils
 import definitions.midvatten_defs as defs
-from import_data_to_db import midv_data_importer
-import import_fieldlogger
+import midvatten_utils as utils
+from gui_utils import SplitterWithHandel, CopyPasteDeleteableQListWidget
 from midvatten_utils import returnunicode
-from gui_utils import SplitterWithHandel
 
 export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 parameter_browser_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'fieldlogger_parameter_browser.ui'))[0]
@@ -131,15 +126,20 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.gridLayout_buttons.addWidget(self.settings_strings_button, 5, 0)
         self.connect(self.settings_strings_button, PyQt4.QtCore.SIGNAL("clicked()"), self.settings_strings_dialogs)
 
-        self.gridLayout_buttons.addWidget(get_line(), 6, 0)
+        self.default_settings_button = PyQt4.QtGui.QPushButton(u'Default settings')
+        self.default_settings_button.setToolTip(u'Updates to default settings.')
+        self.gridLayout_buttons.addWidget(self.default_settings_button, 6, 0)
+        self.connect(self.default_settings_button, PyQt4.QtCore.SIGNAL("clicked()"), self.restore_default_settings)
+
+        self.gridLayout_buttons.addWidget(get_line(), 7, 0)
 
         self.export_button = PyQt4.QtGui.QPushButton(u'Export')
         self.export_button.setToolTip(u'Exports the current combination of locations, sublocations and input fields to a Fieldlogger wells file.')
-        self.gridLayout_buttons.addWidget(self.export_button, 7, 0)
+        self.gridLayout_buttons.addWidget(self.export_button, 8, 0)
         # Lambda and map is used to run several functions for every button click
         self.connect(self.export_button, PyQt4.QtCore.SIGNAL("clicked()"), self.export)
 
-        self.gridLayout_buttons.setRowStretch(8, 1)
+        self.gridLayout_buttons.setRowStretch(9, 1)
 
         self.show()
 
@@ -160,7 +160,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                                    [PyQt4.QtGui.QLabel(u'Sub-location suffix'),
                                                     parameter_group._sublocation_suffix,
                                                     PyQt4.QtGui.QLabel(u'Input fields'),
-                                                    parameter_group._parameter_list])
+                                                    parameter_group._input_field_group_list])
 
             self.create_widget_and_connect_widgets(widgets_layouts[1][1],
                                                    [PyQt4.QtGui.QLabel(u'Locations'),
@@ -261,6 +261,12 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         ms.save_settings()
         utils.MessagebarAndLog.info(log_msg=u'Settings ' + settings_string + u' stored for key ' + settingskey)
 
+    def restore_default_settings(self):
+        input_field_browser, input_fields_groups = defs.export_fieldlogger_defaults()
+        self.update_settings(input_field_browser, self.stored_settingskey_parameterbrowser)
+        self.update_settings(input_fields_groups, self.stored_settingskey)
+        utils.pop_up_info(u'Settings updated. Restart Export Fieldlogger dialog\nor press "Save settings" to undo.')
+
     def settings_strings_dialogs(self):
 
         msg = u'Edit the settings string for input fields browser and restart export fieldlogger dialog\nto load the change.'
@@ -281,6 +287,9 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         new_string_text = returnunicode(new_string[0])
 
+        self.update_settings(new_string_text, settingskey)
+
+    def update_settings(self, new_string_text, settingskey):
         try:
             stored_settings = ast.literal_eval(new_string_text)
         except SyntaxError, e:
@@ -313,13 +322,13 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         parameters_inputtypes_hints = OrderedDict()
 
         #Check for duplicates in sublocation suffixes
-        all_sublocations = [l_s_o[1] for parameter_group in parameter_groups for l_s_o in parameter_group.locations_sublocations_obsids if parameter_group.parameter_list]
+        all_sublocations = [l_s_o[1] for parameter_group in parameter_groups for l_s_o in parameter_group.locations_sublocations_obsids if parameter_group.input_field_group_list]
         if len(all_sublocations) != len(set(all_sublocations)):
             utils.MessagebarAndLog.critical(bar_msg=u'Critical: Combination of obsid, locationsuffix and sublocation suffix must be unique')
             return
 
         for index, parameter_group in enumerate(parameter_groups):
-            _parameters_inputtypes_hints = parameter_group.parameter_list
+            _parameters_inputtypes_hints = parameter_group.input_field_group_list
             if not _parameters_inputtypes_hints:
                 utils.MessagebarAndLog.warning(
                     bar_msg=u"Warning: Empty parameter list for group nr " + str(index + 1))
@@ -399,41 +408,12 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 class ParameterGroup(object):
     def __init__(self, connect):
         """
-        This one should contain:
-
-        Two widgets and two layouts (separate classes.
-
-        Widget 1 contains the comboboxes and fields for producing the parameter names.
-
-            part 1: parameter names
-                option 1:
-                less flexible. Choosing a table and a pre-created list of parameters/units will appear using select distinct parameter, unit from ...
-                option 2:
-                choosing table, then column, then distinct parameter, then table, column and distinct unit.
-                This could create bad combinations of parameters and units. and takes up more space.
-                Maybe these could be set using a separate pop-up dialog.
-
-                qlineedit: final_parameter_name. This is the one that really matters. The other fields are only for help
-                qcombobox: inputtype?
-                qcombobox: color?
-
-            part 2: obsids.
-                obsidnames (obsid.suffix)
-                sublocation-names (obsid.suffix.groupname)
-                This, two qlineedits, obsid-suffix, and sublocation-suffix. (Which can be unequal or equal.
-
-        Widget 2 contains all the obsids which will be under the first widget.
-
-        Maybe a vertical splitter can be used to hide parts.
-
-        QCombobox
-
         """
         #Widget list:
 
         self._location_suffix = PyQt4.QtGui.QLineEdit()
         self._sublocation_suffix = PyQt4.QtGui.QLineEdit()
-        self._parameter_list = CopyPasteDeleteableQListWidget(keep_sorted=False)
+        self._input_field_group_list = CopyPasteDeleteableQListWidget(keep_sorted=False)
         self._obsid_list = CopyPasteDeleteableQListWidget(keep_sorted=True)
         self.paste_from_selection_button = PyQt4.QtGui.QPushButton(u'Paste obs_points selection')
         #------------------------------------------------------------------------
@@ -446,12 +426,13 @@ class ParameterGroup(object):
                                             u"""Useful for separating parameters into groups for the user.\n""" +
                                             u"""Parameters sharing the same sub-location will be shown together\n""" +
                                             u"""ex: suffix 1234.quality --> obsid.1234.quality""")
-        self._parameter_list.setToolTip(u"""Copy and paste input fields from "Create Input Fields" to this box\n""" +
+        self._input_field_group_list.setToolTip(u"""Copy and paste input fields from "Create Input Fields" to this box\n""" +
                                         u"""or from/to other input field boxes.\n""" +
                                         u"""The input fields in Fieldlogger will appear in the same order as in\n""" +
                                         u"""this list.\n""" +
                                         u"""The topmost input field will be the first selected input field when\n""" +
-                                        u"""the user enters the input fields in Fieldlogger.""")
+                                        u"""the user enters the input fields in Fieldlogger. (!!! If the input\n""" +
+                                        u"""field already exists in a previous group it will end up on top!!!)""")
         self._obsid_list.setToolTip(u"""Add obsids to this box by selecting obsids from the table "obs_points"\n""" +
                                     u"""using it's attribute table or select from map.\n""" +
                                     u"""Then click the button "Paste obs_points selection"\n""" +
@@ -461,7 +442,7 @@ class ParameterGroup(object):
                          lambda : self._obsid_list.paste_data(utils.get_selected_features_as_tuple('obs_points')))
 
     def get_settings(self):
-        settings = ((u'parameter_list', self.parameter_list),
+        settings = ((u'input_field_group_list', self.input_field_group_list),
                    (u'location_suffix', self.location_suffix),
                    (u'sublocation_suffix', self.sublocation_suffix))
 
@@ -496,16 +477,16 @@ class ParameterGroup(object):
         return locations_sublocations_obsids
 
     @property
-    def parameter_list(self):
-        return utils.returnunicode(self._parameter_list.get_all_data(), keep_containers=True)
+    def input_field_group_list(self):
+        return utils.returnunicode(self._input_field_group_list.get_all_data(), keep_containers=True)
 
-    @parameter_list.setter
-    def parameter_list(self, value):
+    @input_field_group_list.setter
+    def input_field_group_list(self, value):
         value = returnunicode(value, keep_containers=True)
         if isinstance(value, (list, tuple)):
-            self._parameter_list.paste_data(paste_list=value)
+            self._input_field_group_list.paste_data(paste_list=value)
         else:
-            self._parameter_list.paste_data(paste_list=value.split(u'\n'))
+            self._input_field_group_list.paste_data(paste_list=value.split(u'\n'))
 
 
 class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
@@ -698,88 +679,6 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
             self._input_field_list.paste_data(paste_list=value)
         else:
             self._input_field_list.paste_data(paste_list=value.split(u'\n'))
-
-
-class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
-    """
-
-    """
-    def __init__(self, keep_sorted=False, *args, **kwargs):
-        super(CopyPasteDeleteableQListWidget, self).__init__(*args, **kwargs)
-        self.setSelectionMode(PyQt4.QtGui.QAbstractItemView.ExtendedSelection)
-        self.keep_sorted = keep_sorted
-
-    def keyPressEvent(self, e):
-        """
-        Method using many parts from http://stackoverflow.com/a/23919177
-        :param e:
-        :return:
-        """
-
-        if e.type() == PyQt4.QtCore.QEvent.KeyPress:
-            key = e.key()
-            modifiers = e.modifiers()
-
-            if modifiers & PyQt4.QtCore.Qt.ShiftModifier:
-                key += PyQt4.QtCore.Qt.SHIFT
-            if modifiers & PyQt4.QtCore.Qt.ControlModifier:
-                key += PyQt4.QtCore.Qt.CTRL
-            if modifiers & PyQt4.QtCore.Qt.AltModifier:
-                key += PyQt4.QtCore.Qt.ALT
-            if modifiers & PyQt4.QtCore.Qt.MetaModifier:
-                key += PyQt4.QtCore.Qt.META
-
-            new_sequence = PyQt4.QtGui.QKeySequence(key)
-
-            if new_sequence.matches(PyQt4.QtGui.QKeySequence.Copy):
-                self.copy_data()
-            elif new_sequence.matches(PyQt4.QtGui.QKeySequence.Paste):
-                self.paste_data()
-            elif new_sequence.matches(PyQt4.QtGui.QKeySequence.Delete):
-                self.delete_data()
-            elif new_sequence.matches(PyQt4.QtGui.QKeySequence.Cut):
-                self.cut_data()
-
-    def copy_data(self):
-        self.selectedItems()
-        stringlist = [item.text() for item in self.selectedItems()]
-        PyQt4.QtGui.QApplication.clipboard().setText(u'\n'.join(stringlist))
-
-    def cut_data(self):
-        all_items = [self.item(i).text() for i in xrange(self.count())]
-        items_to_delete = [item.text() for item in self.selectedItems()]
-        PyQt4.QtGui.QApplication.clipboard().setText(u'\n'.join(items_to_delete))
-        keep_items = [item for item in all_items if item not in items_to_delete]
-        self.clear()
-        self.addItems(sorted(keep_items))
-
-    def paste_data(self, paste_list=None):
-        if paste_list is None:
-            paste_list = PyQt4.QtGui.QApplication.clipboard().text().split(u'\n')
-
-        #Use lists to keep the data ordering (the reason set() is not used
-        old_text = self.get_all_data()
-        new_items = []
-        for alist in [old_text, paste_list]:
-            for x in alist:
-                if x not in new_items:
-                    new_items.append(returnunicode(x))
-
-        self.clear()
-        if self.keep_sorted:
-            self.addItems(list(sorted(new_items)))
-        else:
-            self.addItems(list(new_items))
-
-    def delete_data(self):
-        all_items = [self.item(i).text() for i in xrange(self.count())]
-        items_to_delete = [item.text() for item in self.selectedItems()]
-        keep_items = [item for item in all_items if item not in items_to_delete]
-        self.clear()
-        self.addItems(sorted(keep_items))
-
-    def get_all_data(self):
-        return returnunicode([self.item(i).text() for i in xrange(self.count())], keep_containers=True)
 
 
 class MessageBar(qgis.gui.QgsMessageBar):

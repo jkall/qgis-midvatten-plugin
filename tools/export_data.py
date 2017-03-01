@@ -184,10 +184,15 @@ class ExportData():
 
             #If the current table contains obsid, filter only the chosen ones.
             try:
-                sql = u"""insert or ignore into %s (%s) select distinct %s from  %s where obsid in %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix, self.format_obsids(obsids))
+                sql = u"""INSERT INTO %s (%s) select distinct %s from  %s where obsid in %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix, self.format_obsids(obsids))
             except:
-                sql = u"""insert or ignore into %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
-            self.curs.execute(sql)
+                sql = u"""INSERT INTO %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
+            try:
+                self.curs.execute(sql)
+            except Exception, e:
+                sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
+                utils.MessagebarAndLog.info(log_msg=u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: ' %reference_table + str(e))
+                self.curs.execute(sql)
 
         #Make a transformation for column names that are geometries #Transformation doesn't work yet.
         #old_table_column_srid_dict = self.get_table_column_srid(prefix='a')
@@ -196,11 +201,17 @@ class ExportData():
         #    transformed_column_names = self.transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict) #Transformation doesn't work since east, north is not updated.
         transformed_column_names = column_names
 
-        sql = u"""insert into %s (%s) select %s from %s where obsid in %s"""%(tname, ', '.join(column_names), ', '.join(transformed_column_names), tname_with_prefix, self.format_obsids(obsids))
+        sql = u"""INSERT INTO %s (%s) select %s from %s where obsid in %s"""%(tname, ', '.join(column_names), ', '.join(transformed_column_names), tname_with_prefix, self.format_obsids(obsids))
         try:
             self.curs.execute(sql)
         except Exception, e:
-            utils.MessagebarAndLog.critical(bar_msg=u"Export warning: sql failed. See message log.", log_msg=sql + u"\nmsg: " + str(e))
+            utils.MessagebarAndLog.info(log_msg=u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: ' %reference_table + str(e))
+
+            sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
+            try:
+                self.curs.execute(sql)
+            except Exception, e:
+                utils.MessagebarAndLog.critical(bar_msg=u"Export warning: sql failed. See message log.", log_msg=sql + u"\nmsg: " + str(e))
 
     @staticmethod
     def transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict):
@@ -279,11 +290,16 @@ class ExportData():
         ifnull_primary_keys = [''.join(["ifnull(", pk, ",'')"]) for pk in primary_keys]
         concatenated_primary_keys = ' || '.join(ifnull_primary_keys)
 
-        sql = r"""insert or ignore into %s (%s) select %s from %s where %s not in (select %s from %s)"""%(tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
+        sql = u"""INSERT INTO %s (%s) select %s from %s where %s not in (select %s from %s)"""%(tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
         try:
             self.curs.execute(sql)
         except Exception, e:
-            utils.MessagebarAndLog.critical(bar_msg=u"Export warning: sql failed. See message log.", log_msg=sql + u"\nmsg: " + str(e))
+            utils.MessagebarAndLog.info(log_msg=u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: ' %reference_table + str(e))
+            sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
+            try:
+                self.curs.execute(sql)
+            except Exception, e:
+                utils.MessagebarAndLog.critical(bar_msg=u"Export warning: sql failed. See message log.", log_msg=sql + u"\nmsg: " + str(e))
 
     def get_foreign_keys(self, tname):
         result_list = self.curs.execute("""PRAGMA foreign_key_list(%s)"""%(tname)).fetchall()

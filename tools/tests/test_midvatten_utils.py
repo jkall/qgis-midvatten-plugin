@@ -21,6 +21,7 @@
 """
 import midvatten_utils as utils
 import mock
+from mock import call
 from midvatten.midvatten import midvatten
 from import_data_to_db import midv_data_importer
 import utils_for_tests
@@ -41,6 +42,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_ok(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'ok'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
@@ -52,6 +54,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_ignore(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'ignore'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
@@ -63,6 +66,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_cancel(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'cancel'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
@@ -74,6 +78,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_skip(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'skip'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
@@ -85,6 +90,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_none_value_skip(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'skip'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [None, u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
@@ -112,6 +118,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_only_ask_once(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'ok'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h'], [u'1', u'i']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
@@ -125,6 +132,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_skip_only_ask_once(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'skip'
             mock_notfound.return_value.value = 10
+            mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h'], [u'1', u'i']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
             filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
@@ -284,3 +292,52 @@ class TestGetCurrentLocale(object):
         test_string = create_test_string(utils.getcurrentlocale())
         reference_string = u'[a_lang, an_enc]'
         assert test_string == reference_string
+        
+
+class TestGetDelimiter(object):
+    def test_get_delimiter_only_one_column(self):
+        file = [u'obsid',
+                 u'rb1']
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+            @mock.patch('qgis.utils.iface', autospec=True)
+            def _test(filename, mock_iface):
+                delimiter = utils.get_delimiter(filename, u'utf-8')
+                assert call.messageBar().createMessage(u'Warning, only one column found, see log message panel') in mock_iface.mock_calls
+            _test(filename)
+
+    def test_get_delimiter_delimiter_not_found(self):
+        file = [u'obsid;acol,acol2',
+                 u'rb1;1,2']
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+            @mock.patch('qgis.utils.iface', autospec=True)
+            def _test(filename, mock_iface):
+                delimiter = utils.get_delimiter(filename, u'utf-8')
+                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') in mock_iface.mock_calls
+                assert delimiter is None
+            _test(filename)
+
+    def test_get_delimiter_semicolon(self):
+        file = [u'obsid;acol;acol2',
+                 u'rb1;1;2']
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+            @mock.patch('qgis.utils.iface', autospec=True)
+            def _test(filename, mock_iface):
+                delimiter = utils.get_delimiter(filename, u'utf-8')
+                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') not in mock_iface.mock_calls
+                assert delimiter == u';'
+            _test(filename)
+
+    def test_get_delimiter_comma(self):
+        file = [u'obsid,acol,acol2',
+                 u'rb1,1,2']
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+            @mock.patch('qgis.utils.iface', autospec=True)
+            def _test(filename, mock_iface):
+                delimiter = utils.get_delimiter(filename, u'utf-8')
+                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') not in mock_iface.mock_calls
+                assert delimiter == u','
+            _test(filename)

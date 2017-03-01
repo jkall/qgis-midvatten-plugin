@@ -68,8 +68,12 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             return self.connectionObject
         except:
             try:
+                #self.conn = sqlite.connect(':memory:')
                 dbpath = QgsProject.instance().readEntry("Midvatten","database")
                 self.connectionObject=sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+                curs = self.connectionObject.cursor()
+                curs.execute(u"""ATTACH DATABASE ':memory:' AS a""")
+                #self.connectionObject = sqlite.connect(':memory:')
                 return self.connectionObject
             except sqlite.OperationalError, Msg:
                 utils.pop_up_info("Can't connect to DataBase: %s\nError %s"%(self.path,Msg))
@@ -93,12 +97,15 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.development_txt = []
         self.comment_txt = []
         self.temptableName = 'temporary_section_line'
+        self.connection()
         self.sectionlinelayer = SectionLineLayer       
         self.obsids_w_wl = []
         
         #upload vector line layer as temporary table in sqlite db
         self.line_crs = self.sectionlinelayer.crs()
+        #print(str(self.connectionObject.cursor().execute('select * from a.sqlite_master').fetchall()))
         ok = self.upload_qgis_vector_layer(self.sectionlinelayer, self.line_crs.postgisSrid(), True, False)#loads qgis polyline layer into sqlite table
+        #print(str(self.connectionObject.cursor().execute('select * from %s'%self.temptableName).fetchall()))
         # get sorted obsid and distance along section from sqlite db
         nF = len(OBSIDtuplein)#number of Features
         LengthAlongTable = self.get_length_along(OBSIDtuplein)#get_length_along returns a numpy view, values are returned by LengthAlongTable.obs_id or LengthAlongTable.length
@@ -106,18 +113,18 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.LengthAlong = LengthAlongTable.length
 
         # hidden feature, printout to python console
-        print([x for x in self.selected_obsids])
-        print([x for x in self.LengthAlong])
+        #print([x for x in self.selected_obsids])
+        #print([x for x in self.LengthAlong])
         
         self.fill_dem_list()
         
         #drop temporary table
-        sql = r"""DROP TABLE %s"""%self.temptableName
-        ok = utils.sql_alter_db(sql)
-        sql = r"""DELETE FROM geometry_columns WHERE "f_table_name"='%s'"""%self.temptableName
-        ok = utils.sql_alter_db(sql)
-        sql = r"""DELETE FROM spatialite_history WHERE "table_name"='%s'"""%self.temptableName
-        ok = utils.sql_alter_db(sql)
+        #sql = r"""DROP TABLE %s"""%self.temptableName
+        #ok = utils.sql_alter_db(sql)
+        #sql = r"""DELETE FROM geometry_columns WHERE "f_table_name"='%s'"""%self.temptableName
+        #ok = utils.sql_alter_db(sql)
+        #sql = r"""DELETE FROM spatialite_history WHERE "table_name"='%s'"""%self.temptableName
+        #ok = utils.sql_alter_db(sql)
         
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
         
@@ -201,7 +208,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 self.connectionObject.commit()
         except sqlite.OperationalError, Msg:
             self.connectionObject.rollback()
-            utils.pop_up_info("The SQL query\n %s\n seems to be invalid.\n\n%s" %(query,Msg),None)
+            utils.pop_up_info("The SQL query\n %s\n seems to be invalid.\n\n%s" %(query,Msg), 'Error', None)
             self.queryPb=True #Indicates pb with current query
             
         return header,data
@@ -381,9 +388,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #------------First a sql clause that returns a table, but that is not what we need
         sql = r"""SELECT obsid AS "obsid",
         GLength(l.geometry)*ST_Line_Locate_Point(l.geometry, p.geometry) AS "abs_dist"
-        FROM %s AS l, (select * from obs_points where obsid in %s) AS p
+        FROM a.%s AS l, (select * from obs_points where obsid in %s) AS p
         GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptableName,obsidtuple)
-        data = utils.sql_load_fr_db(sql)[1]
+        data = self.connectionObject.cursor().execute(sql).fetchall()
+        #data = utils.sql_load_fr_db(sql)[1]
         My_format = [('obs_id', np.str_, 32),('length', float)] #note that here is a limit of maximum 32 characters in obsid
         npdata = np.array(data, dtype=My_format)  #NDARRAY
         LengthAlongTable=npdata.view(np.recarray)   # RECARRAY   Makes the two columns into callable objects, i.e. write self.LengthAlong.obs_id and self.LengthAlong.length
@@ -635,9 +643,9 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         if self.temptableName in (None,''):
             self.temptableName=layer.name()
         #Verify if self.temptableName already exists in DB
-        ExistingNames=utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""")[1]
+        ExistingNames=self.connectionObject.cursor().execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""").fetchall()
         #ExistingNames=[table.name for table in self.tables]
-            #Propose user to automatically rename DB
+        #Propose user to automatically rename DB
         for existingname in ExistingNames:  #this should only be needed if an earlier import failed
             if str(existingname[0]) == str(self.temptableName): #if so, propose to rename the temporary import-table
                 reponse=PyQt4.QtGui.QMessageBox.question(None, "Table name confusion",'''Note, the plugin needs to store a temporary table in the database and tried '%s'.\nHowever, this is already in use in the database, it might be the result of a failed section plot attempt.\nPlease check your database. Meanwhile, would you like to rename the temporary table '%s' as '%s_2' '''%(self.temptableName,self.temptableName,self.temptableName), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
@@ -714,14 +722,15 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             fields=', %s'%fields
 
         self.connection()
-        query="""CREATE TABLE "%s" ( PKUID INTEGER PRIMARY KEY AUTOINCREMENT %s )"""%(self.temptableName, fields)
+        query="""CREATE TABLE "a"."%s" ( PKUID INTEGER PRIMARY KEY AUTOINCREMENT %s )"""%(self.temptableName, fields)
         header,data=self.execute_query(query)
         if self.queryPb:
             return
+        self.connectionObject.commit()
     
         #Recover Geometry Column:
         if geometry:
-            header,data=self.execute_query("""SELECT RecoverGeometryColumn("%s",'Geometry',%s,'%s',2)"""%(self.temptableName,srid,geometry,))
+            header,data=self.execute_query("""SELECT RecoverGeometryColumn('a.%s','Geometry',%s,'%s',2)"""%(self.temptableName,srid,geometry,))
         
         # Retreive every feature
         for feat in layer.getFeatures():
@@ -746,19 +755,20 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             #MEN VI KAN LIKA GÄRNA STRUNTA I ATTRIBUTEN
             if Attributes == True:
                 if len(fields)>0:
-                    query="""INSERT INTO "%s" VALUES (%s,%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]),','.join('?'*len(values_perso)))
+                    query="""INSERT INTO "a"."%s" VALUES (%s,%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]),','.join('?'*len(values_perso)))
                     header,data=self.execute_query(query,tuple([unicode(value) for value in values_perso]))
                 else: #no attribute Datas
-                    query="""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]))
+                    query="""INSERT INTO "a"."%s" VALUES (%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]))
                     header,data=self.execute_query(query)
             else:
-                query="""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]))
+                query="""INSERT INTO "a"."%s" VALUES (%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]))
                 header,data=self.execute_query(query)
         for date in mapinfoDAte: #mapinfo compatibility: convert date in SQLITE format (2010/02/11 -> 2010-02-11 ) or rollback if any error
-            header,data=self.execute_query("""UPDATE OR ROLLBACK "%s" set '%s'=replace( "%s", '/' , '-' )  """%(self.temptableName,date[1],date[1]))
-    
+            header,data=self.execute_query("""UPDATE OR ROLLBACK "a"."%s" set '%s'=replace( "%s", '/' , '-' )  """%(self.temptableName,date[1],date[1]))
+
         #Commit DB connection:
         self.connectionObject.commit()
+        #utils.MessagebarAndLog.info(log_msg=u'Data in new table:' + utils.returnunicode(self.execute_query(u'select * from "a".%s'%self.temptableName)[1]))
         #self.connectionObject.close()#THIS WAS NOT IN QSPATIALITE CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # reload tables
         return True

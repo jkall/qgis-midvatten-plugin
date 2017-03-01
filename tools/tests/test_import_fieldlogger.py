@@ -52,7 +52,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -98,7 +98,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -170,7 +170,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -242,7 +242,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -314,7 +314,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -388,7 +388,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -465,7 +465,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -561,7 +561,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -659,7 +659,7 @@ class TestFieldLoggerImporterDb(object):
         utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -840,6 +840,13 @@ class TestFieldLoggerImporterNoDb(object):
         reference_string = u'[[obsid, date_time, meas, level_masl, comment], [obs1, 2016-01-01 00:00:00, , 567, ], [obs1, 2016-01-01 00:02:00, 897, , ]]'
         assert test_string == reference_string
 
+    def test_parse_rows_skip_empty_rows(self):
+        f = [u'Br2;12-12-2016;15:33:30;123;w_lvl', u'Br1;12-12-2016;15:34:30;;w_lvl']
+        observations = FieldloggerImport.parse_rows(f)
+        test = create_test_string(observations)
+        reference = u'[{date_time: 2016-12-12 15:33:30, parametername: w_lvl, sublocation: Br2, value: 123}]'
+        assert test == reference
+
     @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
     @mock.patch('import_fieldlogger.utils.get_last_used_flow_instruments')
     def test_prepare_w_flow_data_assert_only_ask_instrument_once(self, mock_flow_instruments,
@@ -884,7 +891,7 @@ class TestFieldLoggerImporterNoDb(object):
     def test_load_file(self):
 
         f = [
-            u"Location;date_time;value;comment\n",
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
             u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
             u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
@@ -914,6 +921,107 @@ class TestFieldLoggerImporterNoDb(object):
             test_string = _test(self, filename)
             reference = u'[{date_time: 2016-03-30 15:29:26, parametername: q.comment, sublocation: Rb1505.quality, value: hej}, {date_time: 2016-03-30 15:30:39, parametername: q.syre.mg/L, sublocation: Rb1512.quality, value: 67}, {date_time: 2016-03-30 15:31:30, parametername: s.turbiditet.FNU, sublocation: Rb1512.sample, value: 899}, {date_time: 2016-03-30 15:29:26, parametername: q.konduktivitet.µS/cm, sublocation: Rb1505.quality, value: 863}, {date_time: 2016-03-30 15:30:09, parametername: f.comment, sublocation: Rb1615.flow, value: gick bra}, {date_time: 2016-03-30 15:30:40, parametername: q.syre.%, sublocation: Rb1512.quality, value: 58}, {date_time: 2016-03-30 15:34:13, parametername: l.meas.m, sublocation: Rb1608.level, value: 555}, {date_time: 2016-03-30 15:30:39, parametername: q.comment, sublocation: Rb1512.quality, value: test}, {date_time: 2016-03-30 15:31:30, parametername: s.comment, sublocation: Rb1202.sample, value: hej2}, {date_time: 2016-03-30 15:34:40, parametername: l.comment, sublocation: Rb1608.level, value: testc}, {date_time: 2016-03-30 15:30:09, parametername: f.Accvol.m3, sublocation: Rb1615.flow, value: 357}, {date_time: 2016-03-30 15:34:13, parametername: l.comment, sublocation: Rb1608.level, value: ergv}, {date_time: 2016-03-30 15:30:39, parametername: q.temperatur.grC, sublocation: Rb1512.quality, value: 8}]'
             assert test_string == reference
+
+    def test_load_file_cp1252(self):
+
+        f = [
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
+            u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
+            u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
+            u"Rb1615.flow;30-03-2016;15:30:09;gick bra;f.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:13;ergv;l.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:13;555;l.meas.m\n",
+            u"Rb1512.sample;30-03-2016;15:31:30;899;s.turbiditet.FNU\n",
+            u"Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
+            u"Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
+            u"Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
+            ]
+
+        with utils.tempinput(''.join(f), charset=u'cp1252') as filename:
+            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
+            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
+                mock_charset.return_value = ('utf-8', True)
+                mock_savefilename.return_value = [filename]
+
+                test_string = create_test_string(FieldloggerImport.select_file_and_parse_rows(FieldloggerImport.parse_rows))
+                return test_string
+
+            test_string = _test(self, filename)
+            reference = u'[{date_time: 2016-03-30 15:29:26, parametername: q.comment, sublocation: Rb1505.quality, value: hej}, {date_time: 2016-03-30 15:30:39, parametername: q.syre.mg/L, sublocation: Rb1512.quality, value: 67}, {date_time: 2016-03-30 15:31:30, parametername: s.turbiditet.FNU, sublocation: Rb1512.sample, value: 899}, {date_time: 2016-03-30 15:29:26, parametername: q.konduktivitet.µS/cm, sublocation: Rb1505.quality, value: 863}, {date_time: 2016-03-30 15:30:09, parametername: f.comment, sublocation: Rb1615.flow, value: gick bra}, {date_time: 2016-03-30 15:30:40, parametername: q.syre.%, sublocation: Rb1512.quality, value: 58}, {date_time: 2016-03-30 15:34:13, parametername: l.meas.m, sublocation: Rb1608.level, value: 555}, {date_time: 2016-03-30 15:30:39, parametername: q.comment, sublocation: Rb1512.quality, value: test}, {date_time: 2016-03-30 15:31:30, parametername: s.comment, sublocation: Rb1202.sample, value: hej2}, {date_time: 2016-03-30 15:34:40, parametername: l.comment, sublocation: Rb1608.level, value: testc}, {date_time: 2016-03-30 15:30:09, parametername: f.Accvol.m3, sublocation: Rb1615.flow, value: 357}, {date_time: 2016-03-30 15:34:13, parametername: l.comment, sublocation: Rb1608.level, value: ergv}, {date_time: 2016-03-30 15:30:39, parametername: q.temperatur.grC, sublocation: Rb1512.quality, value: 8}]'
+            assert test_string == reference
+
+    def test_load_file_comma_separated(self):
+
+        f = [
+            u"LOCATION,DATE,TIME,VALUE,TYPE\n",
+            u"Rb1202.sample,30-03-2016,15:31:30,hej2,s.comment\n",
+            u"Rb1608.level,30-03-2016,15:34:40,testc,l.comment\n",
+            u"Rb1615.flow,30-03-2016,15:30:09,357,f.Accvol.m3\n",
+            u"Rb1615.flow,30-03-2016,15:30:09,gick bra,f.comment\n",
+            u"Rb1608.level,30-03-2016,15:34:13,ergv,l.comment\n",
+            u"Rb1608.level,30-03-2016,15:34:13,555,l.meas.m\n",
+            u"Rb1512.sample,30-03-2016,15:31:30,899,s.turbiditet.FNU\n",
+            u"Rb1505.quality,30-03-2016,15:29:26,hej,q.comment\n",
+            u"Rb1505.quality,30-03-2016,15:29:26,863,q.konduktivitet.µS/cm\n",
+            u"Rb1512.quality,30-03-2016,15:30:39,test,q.comment\n",
+            u"Rb1512.quality,30-03-2016,15:30:39,67,q.syre.mg/L\n",
+            u"Rb1512.quality,30-03-2016,15:30:39,8,q.temperatur.grC\n",
+            u"Rb1512.quality,30-03-2016,15:30:40,58,q.syre.%\n",
+            ]
+
+        with utils.tempinput(''.join(f)) as filename:
+            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
+            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
+                mock_charset.return_value = ('utf-8', True)
+                mock_savefilename.return_value = [filename]
+
+                test_string = create_test_string(FieldloggerImport.select_file_and_parse_rows(FieldloggerImport.parse_rows))
+                return test_string
+
+            test_string = _test(self, filename)
+            reference = u'[{date_time: 2016-03-30 15:29:26, parametername: q.comment, sublocation: Rb1505.quality, value: hej}, {date_time: 2016-03-30 15:30:39, parametername: q.syre.mg/L, sublocation: Rb1512.quality, value: 67}, {date_time: 2016-03-30 15:31:30, parametername: s.turbiditet.FNU, sublocation: Rb1512.sample, value: 899}, {date_time: 2016-03-30 15:29:26, parametername: q.konduktivitet.µS/cm, sublocation: Rb1505.quality, value: 863}, {date_time: 2016-03-30 15:30:09, parametername: f.comment, sublocation: Rb1615.flow, value: gick bra}, {date_time: 2016-03-30 15:30:40, parametername: q.syre.%, sublocation: Rb1512.quality, value: 58}, {date_time: 2016-03-30 15:34:13, parametername: l.meas.m, sublocation: Rb1608.level, value: 555}, {date_time: 2016-03-30 15:30:39, parametername: q.comment, sublocation: Rb1512.quality, value: test}, {date_time: 2016-03-30 15:31:30, parametername: s.comment, sublocation: Rb1202.sample, value: hej2}, {date_time: 2016-03-30 15:34:40, parametername: l.comment, sublocation: Rb1608.level, value: testc}, {date_time: 2016-03-30 15:30:09, parametername: f.Accvol.m3, sublocation: Rb1615.flow, value: 357}, {date_time: 2016-03-30 15:34:13, parametername: l.comment, sublocation: Rb1608.level, value: ergv}, {date_time: 2016-03-30 15:30:39, parametername: q.temperatur.grC, sublocation: Rb1512.quality, value: 8}]'
+            assert test_string == reference
+
+    def test_load_file_delimitor_not_found(self):
+
+        f = [
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
+            u"Rb1202.sample,30-03-2016,15:31:30,hej2,s.comment\n",
+            u"Rb1608.level,30-03-2016,15:34:40,testc,l.comment\n",
+            u"Rb1615.flow,30-03-2016,15:30:09,357,f.Accvol.m3\n",
+            u"Rb1615.flow,30-03-2016,15:30:09,gick bra,f.comment\n",
+            u"Rb1608.level,30-03-2016,15:34:13,ergv,l.comment\n",
+            u"Rb1608.level,30-03-2016,15:34:13,555,l.meas.m\n",
+            u"Rb1512.sample,30-03-2016,15:31:30,899,s.turbiditet.FNU\n",
+            u"Rb1505.quality,30-03-2016,15:29:26,hej,q.comment\n",
+            u"Rb1505.quality,30-03-2016,15:29:26,863,q.konduktivitet.µS/cm\n",
+            u"Rb1512.quality,30-03-2016,15:30:39,test,q.comment\n",
+            u"Rb1512.quality,30-03-2016,15:30:39,67,q.syre.mg/L\n",
+            u"Rb1512.quality,30-03-2016,15:30:39,8,q.temperatur.grC\n",
+            u"Rb1512.quality,30-03-2016,15:30:40,58,q.syre.%\n",
+            ]
+
+        with utils.tempinput(''.join(f)) as filename:
+            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
+            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
+                mock_charset.return_value = ('utf-8', True)
+                mock_savefilename.return_value = [filename]
+
+                test_string = FieldloggerImport.select_file_and_parse_rows(FieldloggerImport.parse_rows)
+                return test_string
+
+            test_string = _test(self, filename)
+            assert test_string is None
 
 
 class TestCommentsImportFields(object):
