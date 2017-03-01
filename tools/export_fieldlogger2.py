@@ -17,22 +17,17 @@
  *                                                                         *
  ***************************************************************************/
 """
-import ast
 import PyQt4
-import os
-import os.path
-import qgis.utils
+import ast
 import copy
-from collections import OrderedDict
-import warnings
+import os.path
 import qgis.gui
+from collections import OrderedDict
 
-import midvatten_utils as utils
 import definitions.midvatten_defs as defs
-from import_data_to_db import midv_data_importer
-import import_fieldlogger
+import midvatten_utils as utils
+from gui_utils import SplitterWithHandel, CopyPasteDeleteableQListWidget
 from midvatten_utils import returnunicode
-from gui_utils import SplitterWithHandel
 
 export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 parameter_browser_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'fieldlogger_parameter_browser.ui'))[0]
@@ -684,88 +679,6 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
             self._input_field_list.paste_data(paste_list=value)
         else:
             self._input_field_list.paste_data(paste_list=value.split(u'\n'))
-
-
-class CopyPasteDeleteableQListWidget(PyQt4.QtGui.QListWidget):
-    """
-
-    """
-    def __init__(self, keep_sorted=False, *args, **kwargs):
-        super(CopyPasteDeleteableQListWidget, self).__init__(*args, **kwargs)
-        self.setSelectionMode(PyQt4.QtGui.QAbstractItemView.ExtendedSelection)
-        self.keep_sorted = keep_sorted
-
-    def keyPressEvent(self, e):
-        """
-        Method using many parts from http://stackoverflow.com/a/23919177
-        :param e:
-        :return:
-        """
-
-        if e.type() == PyQt4.QtCore.QEvent.KeyPress:
-            key = e.key()
-            modifiers = e.modifiers()
-
-            if modifiers & PyQt4.QtCore.Qt.ShiftModifier:
-                key += PyQt4.QtCore.Qt.SHIFT
-            if modifiers & PyQt4.QtCore.Qt.ControlModifier:
-                key += PyQt4.QtCore.Qt.CTRL
-            if modifiers & PyQt4.QtCore.Qt.AltModifier:
-                key += PyQt4.QtCore.Qt.ALT
-            if modifiers & PyQt4.QtCore.Qt.MetaModifier:
-                key += PyQt4.QtCore.Qt.META
-
-            new_sequence = PyQt4.QtGui.QKeySequence(key)
-
-            if new_sequence.matches(PyQt4.QtGui.QKeySequence.Copy):
-                self.copy_data()
-            elif new_sequence.matches(PyQt4.QtGui.QKeySequence.Paste):
-                self.paste_data()
-            elif new_sequence.matches(PyQt4.QtGui.QKeySequence.Delete):
-                self.delete_data()
-            elif new_sequence.matches(PyQt4.QtGui.QKeySequence.Cut):
-                self.cut_data()
-
-    def copy_data(self):
-        self.selectedItems()
-        stringlist = [item.text() for item in self.selectedItems()]
-        PyQt4.QtGui.QApplication.clipboard().setText(u'\n'.join(stringlist))
-
-    def cut_data(self):
-        all_items = [self.item(i).text() for i in xrange(self.count())]
-        items_to_delete = [item.text() for item in self.selectedItems()]
-        PyQt4.QtGui.QApplication.clipboard().setText(u'\n'.join(items_to_delete))
-        keep_items = [item for item in all_items if item not in items_to_delete]
-        self.clear()
-        self.addItems(sorted(keep_items))
-
-    def paste_data(self, paste_list=None):
-        if paste_list is None:
-            paste_list = PyQt4.QtGui.QApplication.clipboard().text().split(u'\n')
-
-        #Use lists to keep the data ordering (the reason set() is not used
-        old_text = self.get_all_data()
-        new_items = []
-        for alist in [old_text, paste_list]:
-            for x in alist:
-                if x not in new_items:
-                    new_items.append(returnunicode(x))
-
-        self.clear()
-        if self.keep_sorted:
-            self.addItems(list(sorted(new_items)))
-        else:
-            self.addItems(list(new_items))
-
-    def delete_data(self):
-        all_items = [self.item(i).text() for i in xrange(self.count())]
-        items_to_delete = [item.text() for item in self.selectedItems()]
-        keep_items = [item for item in all_items if item not in items_to_delete]
-        self.clear()
-        self.addItems(sorted(keep_items))
-
-    def get_all_data(self):
-        return returnunicode([self.item(i).text() for i in xrange(self.count())], keep_containers=True)
 
 
 class MessageBar(qgis.gui.QgsMessageBar):

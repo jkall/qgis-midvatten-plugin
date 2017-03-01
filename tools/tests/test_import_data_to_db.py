@@ -48,7 +48,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestParseDiverofficeFile(object):
+class _TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
                                                            'Failure, parsing failed for file': 'cancel'},
@@ -207,7 +207,7 @@ class TestParseDiverofficeFile(object):
         assert test_string == reference_string
 
 
-class TestWlvllogImportFromDiverofficeFiles(object):
+class _TestWlvllogImportFromDiverofficeFiles(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -494,7 +494,7 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     assert test_string == reference_string
 
 
-class TestGeneralCsvImport(object):
+class _TestGeneralCsvImport(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -804,7 +804,7 @@ class TestGeneralCsvImport(object):
                     assert test_string == reference_string
 
 
-class TestInterlab4Importer():
+class _TestInterlab4Importer():
     def setUp(self):
         self.importinstance = midv_data_importer()
 
@@ -819,7 +819,7 @@ class TestInterlab4Importer():
                     u"Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsn",
                         )
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-16') as testfile:
-            result_string = str(utils_for_tests.dict_to_sorted_list(self.importinstance.interlab4_parse_filesettings(testfile)))
+            result_string = str(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_filesettings(testfile)))
 
         reference_string = "['False', '4.0', 'utf-16', ',', 'False']"
 
@@ -836,7 +836,7 @@ class TestInterlab4Importer():
                     u"Lablittera;Namn;Adress;Postnr;Ort;Kommunkod;Projekt;Laboratorium;Provtyp;Provtagare;Registertyp;ProvplatsID;Provplatsn",
                         )
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            result_string = str(utils_for_tests.dict_to_sorted_list(self.importinstance.interlab4_parse_filesettings(testfile)))
+            result_string = str(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_filesettings(testfile)))
 
         reference_string = "['False', '4.0', 'utf-8', ',', 'False']"
 
@@ -874,8 +874,8 @@ class TestInterlab4Importer():
                         )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-16') as testfile:
-            result = self.importinstance.parse_interlab4([testfile])
-        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_interlab4([testfile])))
+            result = self.importinstance.parse([testfile])
+        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse([testfile])))
         reference_string = 'DM-990908-2773;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.06;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.001;mätvärdetalanm;<;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2773;metodbeteckning;SLV METOD1990-01-01 TA;mätvärdetal;16.8;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2773;metodbeteckning;Saknas;mätvärdetal;14.5;parameter;Temperatur vid provtagning;metadata;adress;PG Vejdes väg 15;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;kommunkod;0780;lablittera;DM-990908-2773;laboratorium;Demo-Laboratoriet;namn;MFR;ort;Växjö;postnr;351 96;projekt;Demoproj;provplatsid;Demo1 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;10:15;provtyp;Utgående;provtypspecifikation;Nej;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010;DM-990908-2774;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2774;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;6.5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.05;mätvärdetalanm;<;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.004;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;17.3;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;14.8;parameter;Temperatur vid provtagning;metadata;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;lablittera;DM-990908-2774;laboratorium;Demo-Laboratoriet;namn;MFR;provplatsid;Demo2 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;11:30;provtyp;Utgående;provtypspecifikation;Nej;registertyp;VV1784;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010'
 
         assert result_string == reference_string
@@ -912,8 +912,8 @@ class TestInterlab4Importer():
                         )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'iso-8859-1') as testfile:
-            result = self.importinstance.parse_interlab4([testfile])
-        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_interlab4([testfile])))
+            result = self.importinstance.parse([testfile])
+        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse([testfile])))
         reference_string = 'DM-990908-2773;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.06;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.001;mätvärdetalanm;<;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2773;metodbeteckning;SLV METOD1990-01-01 TA;mätvärdetal;16.8;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2773;metodbeteckning;Saknas;mätvärdetal;14.5;parameter;Temperatur vid provtagning;metadata;adress;PG Vejdes väg 15;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;kommunkod;0780;lablittera;DM-990908-2773;laboratorium;Demo-Laboratoriet;namn;MFR;ort;Växjö;postnr;351 96;projekt;Demoproj;provplatsid;Demo1 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;10:15;provtyp;Utgående;provtypspecifikation;Nej;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010;DM-990908-2774;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2774;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;6.5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.05;mätvärdetalanm;<;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.004;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;17.3;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;14.8;parameter;Temperatur vid provtagning;metadata;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;lablittera;DM-990908-2774;laboratorium;Demo-Laboratoriet;namn;MFR;provplatsid;Demo2 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;11:30;provtyp;Utgående;provtypspecifikation;Nej;registertyp;VV1784;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010'
 
         assert result_string == reference_string
@@ -949,8 +949,8 @@ class TestInterlab4Importer():
                         )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            result = self.importinstance.parse_interlab4([testfile])
-        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_interlab4([testfile])))
+            result = self.importinstance.parse([testfile])
+        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse([testfile])))
         reference_string = 'DM-990908-2773;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.06;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.001;mätvärdetalanm;<;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2773;metodbeteckning;SLV METOD1990-01-01 TA;mätvärdetal;16.8;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2773;metodbeteckning;Saknas;mätvärdetal;14.5;parameter;Temperatur vid provtagning;metadata;adress;PG Vejdes väg 15;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;kommunkod;0780;lablittera;DM-990908-2773;laboratorium;Demo-Laboratoriet;namn;MFR;ort;Växjö;postnr;351 96;projekt;Demoproj;provplatsid;Demo1 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;10:15;provtyp;Utgående;provtypspecifikation;Nej;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010;DM-990908-2774;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2774;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;6.5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.05;mätvärdetalanm;<;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.004;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;17.3;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;14.8;parameter;Temperatur vid provtagning;metadata;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;lablittera;DM-990908-2774;laboratorium;Demo-Laboratoriet;namn;MFR;provplatsid;Demo2 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;11:30;provtyp;Utgående;provtypspecifikation;Nej;registertyp;VV1784;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010'
 
         assert result_string == reference_string
@@ -987,8 +987,8 @@ class TestInterlab4Importer():
                         )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            result = self.importinstance.parse_interlab4([testfile])
-        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_interlab4([testfile])))
+            result = self.importinstance.parse([testfile])
+        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse([testfile])))
         reference_string = 'DM-990908-2773;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.06;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2773;metodbeteckning;ISO 17294-2;mätvärdetal;0.001;mätvärdetalanm;<;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2773;metodbeteckning;SLV METOD1990-01-01 TA;mätvärdetal;16.8;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2773;metodbeteckning;Saknas;mätvärdetal;14.5;parameter;Temperatur vid provtagning;metadata;adress;PG Vejdes väg 15;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;kommunkod;0780;lablittera;DM-990908-2773;laboratorium;Demo-Laboratoriet;namn;MFR;ort;Växjö;postnr;351 96;projekt;Demoproj;provplatsid;Demo1 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;10:15;provtyp;Utgående;provtypspecifikation;Nej;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010;DM-990908-2774;Färgtal;enhet;mg/l Pt;lablittera;DM-990908-2774;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;6.5;parameter;Färgtal;Järn;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.05;mätvärdetalanm;<;parameter;Järn;Mangan;enhet;mg/l;lablittera;DM-990908-2774;metodbeteckning;ISO 17294-2;mätvärdetal;0.004;parameter;Mangan;Temperatur vid ankomst;enhet;grader C;kommentar;Ej kylt;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;17.3;parameter;Temperatur vid ankomst;Temperatur vid provtagning;enhet;grader C;lablittera;DM-990908-2774;metodbeteckning;Saknas;mätvärdetal;14.8;parameter;Temperatur vid provtagning;metadata;bedömning;Tjänligt;inlämningsdatum;2010-09-07;inlämningstid;14:15;lablittera;DM-990908-2774;laboratorium;Demo-Laboratoriet;namn;MFR;provplatsid;Demo2 vattenverk;provtagare;DV;provtagningsdatum;2010-09-07;provtagningsorsak;Dricksvatten enligt SLVFS 2001:30;provtagningstid;11:30;provtyp;Utgående;provtypspecifikation;Nej;registertyp;VV1784;specifik provplats;Föreskriven regelbunden undersökning enligt SLVFS 2001:30;år;2010'
 
         assert result_string == reference_string
@@ -1010,8 +1010,8 @@ class TestInterlab4Importer():
                         )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            result = self.importinstance.parse_interlab4([testfile])
-        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_interlab4([testfile])))
+            result = self.importinstance.parse([testfile])
+        result_string = ';'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse([testfile])))
         reference_string = 'DM-990908-2773;Färgtal;lablittera;DM-990908-2773;metodbeteckning;SS-EN ISO 7887-1/4;mätvärdetal;5;parameter;Färgtal;metadata;adress;PG Vejdes väg 15;lablittera;DM-990908-2773;namn;MFR;ort;Växjö;postnr;351 96'
         assert result_string == reference_string
 
@@ -1032,8 +1032,8 @@ class TestInterlab4Importer():
                         )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            result = self.importinstance.parse_interlab4([testfile])
-        result_string = '|'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_interlab4([testfile])))
+            result = self.importinstance.parse([testfile])
+        result_string = '|'.join(utils_for_tests.dict_to_sorted_list(self.importinstance.parse([testfile])))
         reference_string = 'DM-990908-2773|Färgtal|lablittera|DM-990908-2773|metodbeteckning|SS-EN ISO 7887-1/4|mätvärdetal|5|parameter|Färgtal|metadata|adress|PG ;Vejdes väg 15|lablittera|DM-990908-2773|namn|MFR|ort|Växjö|postnr|351 96'
 
         assert result_string == reference_string
@@ -1055,9 +1055,9 @@ class TestInterlab4Importer():
                 )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
+            parsed_result = self.importinstance.parse([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+        result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, 5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
@@ -1081,9 +1081,9 @@ class TestInterlab4Importer():
                 )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
+            parsed_result = self.importinstance.parse([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+        result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 4, 4, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
@@ -1107,9 +1107,9 @@ class TestInterlab4Importer():
                 )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
+            parsed_result = self.importinstance.parse([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+        result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.5, 1,5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
@@ -1133,9 +1133,9 @@ class TestInterlab4Importer():
                 )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
+            parsed_result = self.importinstance.parse([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+        result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
@@ -1159,9 +1159,9 @@ class TestInterlab4Importer():
                 )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
+            parsed_result = self.importinstance.parse([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+        result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±0.1. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
@@ -1185,9 +1185,9 @@ class TestInterlab4Importer():
                 )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
+            parsed_result = self.importinstance.parse([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+        result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 10, 10, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±1. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
@@ -1210,9 +1210,9 @@ class TestInterlab4Importer():
                 )
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as testfile:
-            parsed_result = self.importinstance.parse_interlab4([testfile])
+            parsed_result = self.importinstance.parse([testfile])
 
-        result_string = utils_for_tests.create_test_string(self.importinstance.interlab4_to_table(parsed_result))
+        result_string = utils_for_tests.create_test_string(self.importinstance.to_table(parsed_result))
 
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, <5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. mätosäkerhet: ±1. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30]]'
@@ -1223,7 +1223,7 @@ class TestInterlab4Importer():
         pass
 
 
-class TestInterlab4ImporterDB(object):
+class _TestInterlab4ImporterDB(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1303,7 +1303,7 @@ class TestInterlab4ImporterDB(object):
         assert test_string == reference_string
 
 
-class TestDbCalls(object):
+class _TestDbCalls(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -1343,7 +1343,7 @@ class TestDbCalls(object):
         assert exists
 
 
-class TestImportObsPointsObsLines(object):
+class _TestImportObsPointsObsLines(object):
     temp_db_path = TEMP_DB_PATH
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -1576,7 +1576,7 @@ class TestImportObsPointsObsLines(object):
         assert test_string == reference_string
 
 
-class TestWquallabImport(object):
+class _TestWquallabImport(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
@@ -1706,7 +1706,7 @@ class TestWquallabImport(object):
         assert test_string == reference_string
 
 
-class TestWflowImport(object):
+class _TestWflowImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1827,7 +1827,7 @@ class TestWflowImport(object):
         assert test_string == reference_string
 
 
-class TestWqualfieldImport(object):
+class _TestWqualfieldImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2035,7 +2035,7 @@ class TestWqualfieldImport(object):
         assert test_string == reference_string
 
 
-class TestWlevelsImport(object):
+class _TestWlevelsImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2128,7 +2128,7 @@ class TestWlevelsImport(object):
         assert test_string == reference_string
 
 
-class TestWlevelsImportOldWlevels(object):
+class _TestWlevelsImportOldWlevels(object):
     """
     This test is for an older version of w_levels where level_masl was not null
     but had a default value of -999
@@ -2229,7 +2229,7 @@ class TestWlevelsImportOldWlevels(object):
         assert test_string == reference_string
 
 
-class TestSeismicImport(object):
+class _TestSeismicImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2293,7 +2293,7 @@ class TestSeismicImport(object):
         assert test_string == reference_string
 
 
-class TestCommentsImport(object):
+class _TestCommentsImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2357,7 +2357,7 @@ class TestCommentsImport(object):
         assert test_string == reference_string
 
 
-class TestStratImport(object):
+class _TestStratImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2519,7 +2519,7 @@ class TestStratImport(object):
         assert test_string == reference_string
 
 
-class TestMeteoImport(object):
+class _TestMeteoImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2582,7 +2582,7 @@ class TestMeteoImport(object):
         assert test_string == reference_string
 
 
-class TestVlfImport(object):
+class _TestVlfImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2670,7 +2670,7 @@ class TestVlfImport(object):
         assert test_string == reference_string
 
 
-class TestObsLinesImport(object):
+class _TestObsLinesImport(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2732,7 +2732,7 @@ class TestObsLinesImport(object):
         assert test_string == reference_string
 
 
-class TestGetForeignKeys(object):
+class _TestGetForeignKeys(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -2787,7 +2787,7 @@ class TestGetForeignKeys(object):
             assert isinstance(v, (list, tuple))
 
 
-class TestFilterDatesFromFiledata(object):
+class _TestFilterDatesFromFiledata(object):
 
     def setUp(self):
         self.importinstance = midv_data_importer()
@@ -2803,7 +2803,7 @@ class TestFilterDatesFromFiledata(object):
         assert test_file_data == reference_file_data
 
 
-class TestDeleteExistingDateTimesFromTemptable(object):
+class _TestDeleteExistingDateTimesFromTemptable(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])

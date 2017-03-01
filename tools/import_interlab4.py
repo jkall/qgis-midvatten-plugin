@@ -39,7 +39,7 @@ import midvatten_utils as utils
 from date_utils import datestring_to_date, dateshift
 from definitions import midvatten_defs as defs
 from midvatten_utils import Cancel
-from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid
+from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid, VRowEntry, CopyPasteDeleteableQListWidget
 
 
 import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
@@ -58,17 +58,40 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
     def parse_observations_and_populate_gui(self):
         filenames = utils.select_files(only_one_file=False,
                                        extension="lab (*.lab)")
-        if not filenames:
-            return u'cancel'
+        if filenames is None or not filenames:
+            return Cancel()
         
-        self.all_lab_results = self.parse_interlab4(filenames)
+        self.all_lab_results = self.parse(filenames)
         if self.all_lab_results == u'cancel':
             self.status = False
             return Cancel()
+        
+        splitter = SplitterWithHandel(PyQt4.QtCore.Qt.Vertical)
+        self.main_vertical_layout.addWidget(splitter)
+
+        self.specific_meta_filter = SpecificMetaFilter(self.all_lab_results)
+
+        splitter.addWidget(self.specific_meta_filter.widget)
+
+        self.metadata_filter = MetadataFilter(self.all_lab_results)
+        splitter.addWidget(self.metadata_filter.widget)
+
+        self.connect(self.metadata_filter.update_selection_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.metadata_filter.set_selection(self.specific_meta_filter.get_items_dict()))
+
+        self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
+        self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
+        self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras()))
+
+        self.gridLayout_buttons.setRowStretch(1, 1)
+
+        self.show()
+
+    def start_import(self, all_lab_results, lablitteras_to_import):
+
+        all_lab_results = dict([(lablittera, v) for lablittera, v in all_lab_results.iteritems() if lablittera in lablitteras_to_import])
 
 
-    def start_import(self):
-        self.wquallab_data_table = self.interlab4_to_table(self.all_lab_results)
+        self.wquallab_data_table = self.to_table(all_lab_results)
         if self.wquallab_data_table in [u'cancel', u'error']:
             self.status = False
             return Cancel()
@@ -86,7 +109,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             self.wquallab_data_table = answer
 
         importer = import_data_to_db.midv_data_importer()
-        answer = importer.send_file_data_to_importer(self.wquallab_data_table, partial(self.general_csv_import, goal_table=u'w_qual_lab'))
+        answer = importer.send_file_data_to_importer(self.wquallab_data_table, partial(importer.general_csv_import, goal_table=u'w_qual_lab'))
         if isinstance(answer, Cancel):
             self.status = True
             return answer
@@ -94,7 +117,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         importer.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def parse_interlab4(self, filenames):
+    def parse(self, filenames):
         """ Reads the interlab
         :param filenames:
         :return: A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
@@ -102,7 +125,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         all_lab_results = {}
 
         for filename in filenames:
-            file_error, version, encoding, decimalsign, quotechar = self.interlab4_parse_filesettings(filename)
+            file_error, version, encoding, decimalsign, quotechar = self.parse_filesettings(filename)
             if file_error:
                 utils.pop_up_info("Warning: The file information" + filename + " could not be read. Skipping file")
                 continue
@@ -247,7 +270,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         return all_lab_results
 
-    def interlab4_parse_filesettings(self, filename):
+    def parse_filesettings(self, filename):
         """
         :param filename: Parses the file settings of an interlab4 file
         :return: a tuple like (file_error, version, encoding, decimalsign, quotechar)
@@ -295,7 +318,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         return (file_error, version, encoding, decimalsign, quotechar)
 
-    def interlab4_to_table(self, _data_dict):
+    def to_table(self, _data_dict):
         """
         Converts a parsed interlab4 dict into a table for w_qual_lab import
 
@@ -377,3 +400,137 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                   u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments, more_parameter_comments, u'provplatsid_provplatsnamn_specifik provplats: ' + obsid] if comment is not None and comment])]
                                  )
         return file_data
+    
+    def add_row(self, a_widget):
+        """
+        :param: a_widget:
+        """
+        self.main_vertical_layout.addWidget(a_widget)
+
+    def add_line(self, layout=None):
+        """ just adds a line"""
+        #horizontalLineWidget = PyQt4.QtGui.QWidget()
+        #horizontalLineWidget.setFixedHeight(2)
+        #horizontalLineWidget.setSizePolicy(PyQt4.QtGui.QSizePolicy.Expanding, PyQt4.QtGui.QSizePolicy.Fixed)
+        #horizontalLineWidget.setStyleSheet(PyQt4.QtCore.QString("background-color: #c0c0c0;"));
+        line = PyQt4.QtGui.QFrame()
+        #line.setObjectName(QString::fromUtf8("line"));
+        line.setGeometry(PyQt4.QtCore.QRect(320, 150, 118, 3))
+        line.setFrameShape(PyQt4.QtGui.QFrame.HLine);
+        line.setFrameShadow(PyQt4.QtGui.QFrame.Sunken);
+        if layout is None:
+            self.add_row(line)
+        else:
+            layout.addWidget(line)
+
+
+class SpecificMetaFilter(VRowEntry):
+    def __init__(self, all_lab_results):
+        """
+
+        """
+        super(SpecificMetaFilter, self).__init__()
+        self.combobox = PyQt4.QtGui.QComboBox()
+        self.combobox.addItem(u'')
+        self.combobox.addItems(get_metadata_headers(all_lab_results))
+        self.layout.addWidget(self.combobox)
+        self.items = CopyPasteDeleteableQListWidget()
+        self.layout.addWidget(self.items)
+
+    def get_items_dict(self):
+        selected_items = self.items.get_all_data()
+        return {utils.returnunicode(self.combobox.currentText()): selected_items}
+
+
+class MetadataFilter(VRowEntry):
+    def __init__(self, all_lab_results):
+        """
+
+        """
+        super(MetadataFilter, self).__init__()
+
+        self.update_selection_button  = PyQt4.QtGui.QPushButton(u'Update selection')
+        self.layout.addWidget(self.update_selection_button)
+
+        self.table = PyQt4.QtGui.QTableWidget()
+        self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)
+        self.table.sizePolicy().setVerticalPolicy(PyQt4.QtGui.QSizePolicy.MinimumExpanding)
+        self.table.sizePolicy().setVerticalStretch(2)
+        self.table.setSelectionMode(PyQt4.QtGui.QAbstractItemView.ExtendedSelection)
+        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.setSortingEnabled(True)
+
+        self.table_items = {}
+
+        self.update_table(all_lab_results)
+
+        self.layout.addWidget(self.table)
+
+    def set_selection(self, table_header):
+        """
+
+        :param table_header: {u'table_header': [list of values]}
+        :param true_or_false: True/False. Sets selection to this
+        :return:
+        """
+        true_or_false = False
+        for header, selectionlist in table_header.iteritems():
+            try:
+                colnr = self.sorted_table_header.index(header)
+            except:
+                utils.MessagebarAndLog.info(log_msg=u'Interlab4 import: Table header ' + header + u" didn't exist.")
+                continue
+
+            for rownr in xrange(self.table.rowCount()):
+                current_item = self.table.item(rownr, colnr)
+                if current_item.text() in selectionlist:
+                    true_or_false = True
+                else:
+                    true_or_false = False
+                for _colnr in xrange(self.table.columnCount()):
+                    item = self.table.item(rownr, _colnr)
+                    self.table.setItemSelected(item, true_or_false)
+
+
+    def update_table(self, all_lab_results):
+        """
+        all_lab_results: A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
+        """
+        self.table.clear()
+
+        self.sorted_table_header = get_metadata_headers(all_lab_results)
+
+        self.table.setColumnCount(len(self.sorted_table_header))
+        self.table.setHorizontalHeaderLabels(self.sorted_table_header)
+        self.table.setRowCount(len(all_lab_results))
+
+        self.table_items = {}
+        for rownr, lablittera in enumerate(all_lab_results.keys()):
+            metadata = all_lab_results[lablittera][u'metadata']
+            tablewidgetitem = PyQt4.QtGui.QTableWidgetItem(lablittera)
+            self.table.setItem(rownr, 0, tablewidgetitem)
+
+            for colnr, metaheader in enumerate(self.sorted_table_header[1:], 1):
+                tablewidgetitem = PyQt4.QtGui.QTableWidgetItem(metadata.get(metaheader, u''))
+                self.table.setItem(rownr, colnr, tablewidgetitem)
+
+        self.table.resizeColumnsToContents()
+
+        self.table.selectAll()
+
+    def get_selected_lablitteras(self):
+        selected_lablitteras = [utils.returnunicode(self.table.item(rownr, 0).text()) for rownr in xrange(self.table.rowCount()) if self.table.item(rownr, 0).isSelected()]
+        return selected_lablitteras
+
+
+def get_metadata_headers(all_lab_results):
+    table_header = set()
+
+    for k, v in sorted(all_lab_results.iteritems()):
+        metadata = v[u'metadata']
+        table_header.update(metadata.keys())
+
+    sorted_table_header = [u'lablittera']
+    sorted_table_header.extend([head for head in table_header if
+                                     head not in sorted_table_header])
+    return sorted_table_header
