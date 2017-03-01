@@ -540,6 +540,7 @@ class TestInterlab4ImporterDB(object):
             def _test(self, filename, mock_filenames, mock_skippopup, mock_iface, mock_not_found_question):
                 mock_not_found_question.return_value.answer = u'ok'
                 mock_not_found_question.return_value.value = u'Demo1 vattenverk'
+                mock_not_found_question.return_value.reuse_question = u'obsid'
                 mock_filenames.return_value = filename
                 self.mock_iface = mock_iface
                 ms = MagicMock()

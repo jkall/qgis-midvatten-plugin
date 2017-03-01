@@ -247,6 +247,7 @@ class TestGeneralCsvGui(object):
 
                         mock_notfound.return_value.answer = u'ok'
                         mock_notfound.return_value.value = u'rb2'
+                        mock_notfound.return_value.reuse_question = u'obsid'
 
                         def side_effect(*args, **kwargs):
                             mock_result = mock.MagicMock()
@@ -319,6 +320,7 @@ class TestGeneralCsvGui(object):
 
                         mock_notfound.return_value.answer = u'ok'
                         mock_notfound.return_value.value = u'obsid1'
+                        mock_notfound.return_value.reuse_question = u'obsid'
 
                         def side_effect(*args, **kwargs):
                             mock_result = mock.MagicMock()
