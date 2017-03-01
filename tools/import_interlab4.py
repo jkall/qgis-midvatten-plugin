@@ -82,7 +82,20 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras()))
 
-        self.gridLayout_buttons.setRowStretch(1, 1)
+        self.help_label = PyQt4.QtGui.QLabel(u'Instructions')
+        self.help_label.setToolTip(u'Selected rows (lablitteras in the bottom table will be imported when pushing "Start import" button.\n'
+                                   u'The table can be sorted by clicking the column headers.\n\n'
+                                   u'Rows at the bottom table can also be selected using the top list.\n'
+                                   u'Howto:\n'
+                                   u'1. Choose column header to make a selection by in the Column header drop down list.\n'
+                                   u'2. Make a list of entries (one row per entry) in an external program like a text editor.\n'
+                                   u'3. Copy the list and paste it (ctrl+v) into the top window.\n'
+                                   u'4. Click "Update selection".\n'
+                                   u'All rows where values in the chosen column match entries in the pasted list will be selected.')
+
+        self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
+        self.gridLayout_buttons.addWidget(self.help_label, 1, 0)
+        self.gridLayout_buttons.setRowStretch(2, 1)
 
         self.show()
 
@@ -430,6 +443,7 @@ class SpecificMetaFilter(VRowEntry):
 
         """
         super(SpecificMetaFilter, self).__init__()
+        self.layout.addWidget(PyQt4.QtGui.QLabel(u'Column header'))
         self.combobox = PyQt4.QtGui.QComboBox()
         self.combobox.addItem(u'')
         self.combobox.addItems(get_metadata_headers(all_lab_results))
@@ -452,6 +466,7 @@ class MetadataFilter(VRowEntry):
         self.update_selection_button  = PyQt4.QtGui.QPushButton(u'Update selection')
         self.layout.addWidget(self.update_selection_button)
 
+        self.layout.addWidget(PyQt4.QtGui.QLabel(u'Select lablitteras to import'))
         self.table = PyQt4.QtGui.QTableWidget()
         self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)
         self.table.sizePolicy().setVerticalPolicy(PyQt4.QtGui.QSizePolicy.MinimumExpanding)
