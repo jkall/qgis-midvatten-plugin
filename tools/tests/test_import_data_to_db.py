@@ -189,7 +189,7 @@ class TestParseDiverofficeFile(object):
     def test_parse_diveroffice_file_cancel(self, mock_notfoundquestion):
         mock_notfoundquestion.return_value.answer = u'cancel'
         mock_notfoundquestion.return_value.value = u''
-        mock_notfoundquestion.return_value.reuse_question = u'obsid'
+        mock_notfoundquestion.return_value.reuse_column = u'obsid'
 
         f = (u'Location=rb1',
              u'Date/time,Water head[cm],Temperature[°C]',
