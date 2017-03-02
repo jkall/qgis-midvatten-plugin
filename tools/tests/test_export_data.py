@@ -20,6 +20,8 @@
  ***************************************************************************/
 """
 from qgis.core import QgsApplication, QgsProviderRegistry, QgsProject
+
+import db_utils
 from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from PyQt4 import QtCore, QtGui, QtTest
@@ -107,17 +109,17 @@ class TestExport(unittest.TestCase):
     @mock.patch('qgis.utils.iface', autospec=True)
     def test_export_csv(self, mock_iface, mock_savepath):
         mock_savepath.return_value = u'/tmp/'
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(633466, 711659)', 3006))''')
-        utils.sql_alter_db(u'''insert into zz_staff (staff) values ('s1')''')
-        utils.sql_alter_db(u'''insert into comments (obsid, date_time, staff, comment) values ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
-        utils.sql_alter_db(u'''insert into w_qual_lab (obsid, parameter, report, staff) values ('P1', 'labpar1', 'report1', 's1')''')
-        utils.sql_alter_db(u'''insert into w_qual_field (obsid, parameter, staff, date_time) values ('P1', 'labpar1', 's1', '2015-01-01 01:00:00')''')
-        utils.sql_alter_db(u'''insert into w_flow (obsid, instrumentid, flowtype, date_time, unit) values ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
-        utils.sql_alter_db(u'''insert into w_levels (obsid, date_time, meas) values ('P1', '2015-01-02 00:00:01', '2')''')
-        utils.sql_alter_db(u'''insert into stratigraphy (obsid, stratid) values ('P1', 'strat1')''')
-        utils.sql_alter_db(u'''insert into obs_lines (obsid) values ('L1')''')
-        utils.sql_alter_db(u'''insert into seismic_data (obsid, length) values ('L1', '5')''')
-        utils.sql_alter_db(u'''insert into meteo (obsid, instrumentid, parameter, date_time) values ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(633466, 711659)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into zz_staff (staff) values ('s1')''')
+        db_utils.sql_alter_db(u'''insert into comments (obsid, date_time, staff, comment) values ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
+        db_utils.sql_alter_db(u'''insert into w_qual_lab (obsid, parameter, report, staff) values ('P1', 'labpar1', 'report1', 's1')''')
+        db_utils.sql_alter_db(u'''insert into w_qual_field (obsid, parameter, staff, date_time) values ('P1', 'labpar1', 's1', '2015-01-01 01:00:00')''')
+        db_utils.sql_alter_db(u'''insert into w_flow (obsid, instrumentid, flowtype, date_time, unit) values ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
+        db_utils.sql_alter_db(u'''insert into w_levels (obsid, date_time, meas) values ('P1', '2015-01-02 00:00:01', '2')''')
+        db_utils.sql_alter_db(u'''insert into stratigraphy (obsid, stratid) values ('P1', 'strat1')''')
+        db_utils.sql_alter_db(u'''insert into obs_lines (obsid) values ('L1')''')
+        db_utils.sql_alter_db(u'''insert into seismic_data (obsid, length) values ('L1', '5')''')
+        db_utils.sql_alter_db(u'''insert into meteo (obsid, instrumentid, parameter, date_time) values ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''')
 
         self.midvatten.export_csv()
 
@@ -181,17 +183,17 @@ class TestExport(unittest.TestCase):
         mock_newdbpath.return_value = EXPORT_DB_PATH
         mock_verify.return_value = 0
 
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(633466, 711659)', 3006))''')
-        utils.sql_alter_db(u'''insert into zz_staff (staff) values ('s1')''')
-        utils.sql_alter_db(u'''insert into comments (obsid, date_time, staff, comment) values ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
-        utils.sql_alter_db(u'''insert into w_qual_lab (obsid, parameter, report, staff) values ('P1', 'labpar1', 'report1', 's1')''')
-        utils.sql_alter_db(u'''insert into w_qual_field (obsid, parameter, staff, date_time, unit) values ('P1', 'par1', 's1', '2015-01-01 01:00:00', 'unit1')''')
-        utils.sql_alter_db(u'''insert into w_flow (obsid, instrumentid, flowtype, date_time, unit) values ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
-        utils.sql_alter_db(u'''insert into w_levels (obsid, date_time, meas) values ('P1', '2015-01-02 00:00:01', '2')''')
-        utils.sql_alter_db(u'''insert into stratigraphy (obsid, stratid) values ('P1', 'strat1')''')
-        utils.sql_alter_db(u'''insert into obs_lines (obsid) values ('L1')''')
-        utils.sql_alter_db(u'''insert into seismic_data (obsid, length) values ('L1', '5')''')
-        utils.sql_alter_db(u'''insert into meteo (obsid, instrumentid, parameter, date_time) values ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(633466, 711659)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into zz_staff (staff) values ('s1')''')
+        db_utils.sql_alter_db(u'''insert into comments (obsid, date_time, staff, comment) values ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
+        db_utils.sql_alter_db(u'''insert into w_qual_lab (obsid, parameter, report, staff) values ('P1', 'labpar1', 'report1', 's1')''')
+        db_utils.sql_alter_db(u'''insert into w_qual_field (obsid, parameter, staff, date_time, unit) values ('P1', 'par1', 's1', '2015-01-01 01:00:00', 'unit1')''')
+        db_utils.sql_alter_db(u'''insert into w_flow (obsid, instrumentid, flowtype, date_time, unit) values ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
+        db_utils.sql_alter_db(u'''insert into w_levels (obsid, date_time, meas) values ('P1', '2015-01-02 00:00:01', '2')''')
+        db_utils.sql_alter_db(u'''insert into stratigraphy (obsid, stratid) values ('P1', 'strat1')''')
+        db_utils.sql_alter_db(u'''insert into obs_lines (obsid) values ('L1')''')
+        db_utils.sql_alter_db(u'''insert into seismic_data (obsid, length) values ('L1', '5')''')
+        db_utils.sql_alter_db(u'''insert into meteo (obsid, instrumentid, parameter, date_time) values ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''')
 
         mock_locale.return_value.answer = u'ok'
         mock_locale.return_value.value = u'sv_SE'
@@ -264,9 +266,9 @@ class TestExport(unittest.TestCase):
         mock_newdbpath.return_value = EXPORT_DB_PATH
         mock_verify.return_value = 0
 
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("åäö", GeomFromText('POINT(633466, 711659)', 3006))''')
-        utils.sql_alter_db(u'''insert into zz_staff (staff) values ('s1')''')
-        utils.sql_alter_db(u'''insert into comments (obsid, date_time, staff, comment) values ('åäö', '2015-01-01 00:00:00', 's1', 'comment1')''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("åäö", GeomFromText('POINT(633466, 711659)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into zz_staff (staff) values ('s1')''')
+        db_utils.sql_alter_db(u'''insert into comments (obsid, date_time, staff, comment) values ('åäö', '2015-01-01 00:00:00', 's1', 'comment1')''')
 
         mock_locale.return_value.answer = u'ok'
         mock_locale.return_value.value = u'sv_SE'

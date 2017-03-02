@@ -23,6 +23,8 @@ The PlotSQLite application version 0.2.6 was merged into Midvatten plugin at 201
 """
 import sys, os, locale
 from PyQt4 import QtGui, QtCore, uic#, QtSql
+
+import db_utils
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from functools import partial # only to get combobox signals to work
@@ -66,7 +68,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setupUi( self )#due to initialisation of Ui_MainWindow instance
         self.initUI()
-        self.LoadTablesFromDB()
+        self.tables_columns = midvatten_defs.tables_columns()
+        self.LoadTablesFromDB(self.tables_columns)
         self.LastSelections()#fill comboboxes etc with last selected values
         #on close:
         #del self.axes.collections[:]#this should delete all plot objects related to axes and hence not intefere with following tsplots
@@ -169,29 +172,25 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         else:
             self.widgetPlot.setMinimumHeight(height)
             self.widgetPlot.setMaximumHeight(height)
-        
+
+    @db_utils.if_connection_ok
     def drawPlot_all(self):
+
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))#show the user this may take a long time...
 
         self.axes.clear()
         self.axes.legend_ = None
         My_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array
-        
-        myconnection = utils.dbconnection()
-        myconnection.connect2db()
-        curs = myconnection.conn.cursor()
 
         i = 0
         nop=0# nop=number of plots
         self.p=[]
         self.plabels=[]
                 
-        nop, i = self.drawPlot(curs, nop, i, My_format, self.table_ComboBox_1, self.xcol_ComboBox_1, self.ycol_ComboBox_1, self.Filter1_ComboBox_1, self.Filter1_QListWidget_1, self.Filter2_ComboBox_1, self.Filter2_QListWidget_1, self.PlotType_comboBox_1, self.pandas_calc_1, self.checkBox_remove_mean1, self.LineEditFactor1, self.LineEditOffset1)
-        nop, i = self.drawPlot(curs, nop, i, My_format, self.table_ComboBox_2, self.xcol_ComboBox_2, self.ycol_ComboBox_2, self.Filter1_ComboBox_2, self.Filter1_QListWidget_2, self.Filter2_ComboBox_2, self.Filter2_QListWidget_2, self.PlotType_comboBox_2, self.pandas_calc_2, self.checkBox_remove_mean2, self.LineEditFactor2, self.LineEditOffset2)
-        nop, i = self.drawPlot(curs, nop, i, My_format, self.table_ComboBox_3, self.xcol_ComboBox_3, self.ycol_ComboBox_3, self.Filter1_ComboBox_3, self.Filter1_QListWidget_3, self.Filter2_ComboBox_3, self.Filter2_QListWidget_3, self.PlotType_comboBox_3, self.pandas_calc_3, self.checkBox_remove_mean3, self.LineEditFactor3, self.LineEditOffset3)
-        # rs.close() # close the cursor
-        myconnection.closedb()  # close the database
-    
+        nop, i = self.drawPlot(nop, i, My_format, self.table_ComboBox_1, self.xcol_ComboBox_1, self.ycol_ComboBox_1, self.Filter1_ComboBox_1, self.Filter1_QListWidget_1, self.Filter2_ComboBox_1, self.Filter2_QListWidget_1, self.PlotType_comboBox_1, self.pandas_calc_1, self.checkBox_remove_mean1, self.LineEditFactor1, self.LineEditOffset1)
+        nop, i = self.drawPlot(nop, i, My_format, self.table_ComboBox_2, self.xcol_ComboBox_2, self.ycol_ComboBox_2, self.Filter1_ComboBox_2, self.Filter1_QListWidget_2, self.Filter2_ComboBox_2, self.Filter2_QListWidget_2, self.PlotType_comboBox_2, self.pandas_calc_2, self.checkBox_remove_mean2, self.LineEditFactor2, self.LineEditOffset2)
+        nop, i = self.drawPlot(nop, i, My_format, self.table_ComboBox_3, self.xcol_ComboBox_3, self.ycol_ComboBox_3, self.Filter1_ComboBox_3, self.Filter1_QListWidget_3, self.Filter2_ComboBox_3, self.Filter2_QListWidget_3, self.PlotType_comboBox_3, self.pandas_calc_3, self.checkBox_remove_mean3, self.LineEditFactor3, self.LineEditOffset3)
+
         self.xaxis_formatters = (self.axes.xaxis.get_major_formatter(), self.axes.xaxis.get_major_locator())
     
         self.axes.set_title(self.ms.settingsdict['custplot_title'])
@@ -203,8 +202,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.refreshPlot()
     
         QtGui.QApplication.restoreOverrideCursor()  # now this long process is done and the cursor is back as normal
-                
-    def drawPlot(self, curs, nop, i, My_format, table_ComboBox, xcol_ComboBox, ycol_ComboBox, Filter1_ComboBox, Filter1_QListWidget, Filter2_ComboBox, Filter2_QListWidget, PlotType_comboBox, pandas_calc, checkBox_remove_mean, LineEditFactor, LineEditOffset):       
+
+    def drawPlot(self, nop, i, My_format, table_ComboBox, xcol_ComboBox, ycol_ComboBox, Filter1_ComboBox, Filter1_QListWidget, Filter2_ComboBox, Filter2_QListWidget, PlotType_comboBox, pandas_calc, checkBox_remove_mean, LineEditFactor, LineEditOffset):
                 
         if not (table_ComboBox.currentText() == '' or table_ComboBox.currentText()==' ') and not (xcol_ComboBox.currentText()== '' or xcol_ComboBox.currentText()==' ') and not (ycol_ComboBox.currentText()== '' or ycol_ComboBox.currentText()==' '): #if anything is to be plotted from tab 1
             self.ms.settingsdict['custplot_maxtstep'] = self.spnmaxtstep.value()   # if user selected a time step bigger than zero than thre may be discontinuous plots
@@ -236,30 +235,29 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                         for item2 in filter2list:
                             sql = r""" select """ + unicode(xcol_ComboBox.currentText()) + """, """ + unicode(ycol_ComboBox.currentText()) + """ from """ + unicode(table_ComboBox.currentText()) + """ where """ + unicode(xcol_ComboBox.currentText()) + """ is not NULL and """ + unicode(ycol_ComboBox.currentText()) + """ is not NULL and """ + filter1 + """='""" + unicode(item1.text())+ """' and """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(xcol_ComboBox.currentText())
                             self.plabels[i] = unicode(item1.text()) + """, """ + unicode(item2.text())
-                            self.createsingleplotobject(sql,i,My_format,curs,PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
+                            self.createsingleplotobject(sql,i,My_format,PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
                             i += 1
                 elif not (filter1 == '' or filter1==' ' or filter1list==[]):
                     for item1 in filter1list:
                         sql = r""" select """ + unicode(xcol_ComboBox.currentText()) + """, """ + unicode(ycol_ComboBox.currentText()) + """ from """ + unicode(table_ComboBox.currentText()) + """ where """ + unicode(xcol_ComboBox.currentText()) + """ is not NULL and """ + unicode(ycol_ComboBox.currentText()) + """ is not NULL and """ + filter1 + """='""" + unicode(item1.text())+ """' order by """ + unicode(xcol_ComboBox.currentText())
                         self.plabels[i] = unicode(item1.text()) 
-                        self.createsingleplotobject(sql,i,My_format,curs,PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
+                        self.createsingleplotobject(sql,i,My_format,PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
                         i += 1
                 elif not (filter2 == '' or filter2==' ' or filter2list==[]):
                     for item2 in filter2list:
                         sql = r""" select """ + unicode(xcol_ComboBox.currentText()) + """, """ + unicode(ycol_ComboBox.currentText()) + """ from """ + unicode(table_ComboBox.currentText()) + """ where """ + unicode(xcol_ComboBox.currentText()) + """ is not NULL and """ + unicode(ycol_ComboBox.currentText()) + """ is not NULL and """ + filter2 + """='""" + unicode(item2.text())+ """' order by """ + unicode(xcol_ComboBox.currentText())
                         self.plabels[i] = unicode(item2.text())
-                        self.createsingleplotobject(sql,i,My_format,curs,PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
+                        self.createsingleplotobject(sql,i,My_format,PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
                         i += 1            
                 else:
                     sql = r""" select """ + unicode(xcol_ComboBox.currentText()) + """, """ + unicode(ycol_ComboBox.currentText()) + """ from """ + unicode(table_ComboBox.currentText()) + """ where """ + unicode(xcol_ComboBox.currentText()) + """ is not NULL and """ + unicode(ycol_ComboBox.currentText()) + """ is not NULL and """ + """ order by """ + unicode(xcol_ComboBox.currentText())
                     self.plabels[i] = unicode(ycol_ComboBox.currentText())+""", """+unicode(table_ComboBox.currentText())
-                    self.createsingleplotobject(sql,i,My_format,curs,PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
+                    self.createsingleplotobject(sql,i,My_format,PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
                     i += 1
         return nop, i
 
-    def createsingleplotobject(self,sql,i,My_format,curs,plottype='line', factor=1.0, offset=0.0, remove_mean=False, pandas_calc=None):
-        rs = curs.execute(sql) #Send SQL-syntax to cursor
-        recs = rs.fetchall()  # All data are stored in recs
+    def createsingleplotobject(self,sql,i,My_format,plottype='line', factor=1.0, offset=0.0, remove_mean=False, pandas_calc=None):
+        connection_ok, recs = db_utils.sql_load_fr_db(sql)
         # late fix for xy-plots
 
         #Transform data to a numpy.recarray
@@ -427,50 +425,13 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             for item in self.ms.settingsdict[custplot_filter_selection]:
                 if filter_qlistwidget.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
                      filter_qlistwidget.item(index).setSelected(True)
-            
-    def LoadTablesFromDB( self ):    # Open the SpatiaLite file to extract info about tables 
-        self.table_ComboBox_1.clear()  
-        self.table_ComboBox_2.clear()  
-        self.table_ComboBox_3.clear()  
-        for i in range (1,3):
-            self.clearthings(i)
-        myconnection = utils.dbconnection()
-        if myconnection.connect2db() == True:
-            # skapa en cursor
-            curs = myconnection.conn.cursor()
-            rs=curs.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + midvatten_defs.SQLiteInternalTables() + r""")  and not name like 'zz_%' and not (name in""" + midvatten_defs.sqlite_nonplot_tables() + r""") ORDER BY tbl_name""")  #SQL statement to get the relevant tables in the spatialite database
-            #self.dbTables = {} 
-            self.table_ComboBox_1.addItem('')
-            self.table_ComboBox_2.addItem('')
-            self.table_ComboBox_3.addItem('')
-    
-            for row in curs:
-                self.table_ComboBox_1.addItem(row[0])
-                self.table_ComboBox_2.addItem(row[0])
-                self.table_ComboBox_3.addItem(row[0])
-            
-            rs.close()
-            myconnection.closedb()        
 
-    def LoadColumnsFromTable(self, table=''):
-        """ This method returns a list with all the columns in the table"""
-        if len(table)>0:            # Should not be needed since the function never should be called without existing table...
-            myconnection = utils.dbconnection()
-            if myconnection.connect2db() == True:
-                # skapa en cursor
-                curs = myconnection.conn.cursor()
-                sql = r"""SELECT * FROM '"""
-                sql += unicode(table)
-                sql += """'"""     
-                rs=curs.execute(sql)
-                columns = {} 
-                columns = [tuple[0] for tuple in curs.description]
-                rs.close()
-                myconnection.closedb()        
-        else:
-            #QMessageBox.information(None,"info","no table is loaded")    # DEBUGGING
-            columns = {}
-        return columns        # This method returns a list with all the columns in the table
+    def LoadTablesFromDB( self, tables_columns ):    # Open the SpatiaLite file to extract info about tables
+        tables = [table for table in tables_columns.keys() if table not in midvatten_defs.sqlite_nonplot_tables() and not table.startswith(u'zz_')]
+        for i, table_combobox in enumerate([self.table_ComboBox_1, self.table_ComboBox_2, self.table_ComboBox_3]):
+            table_combobox.clear()
+            self.clearthings(i)
+            table_combobox.addItems(sorted(tables))
 
     def clearthings(self,tabno=1):   #clear xcol,ycol,filter1,filter2
         xcolcombobox = 'xcol_ComboBox_' + str(tabno)
@@ -515,11 +476,10 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
     def PopulateComboBox(self, comboboxname='', table=None):
         """This method fills comboboxes with columns for selected tool and table"""
-        columns = self.LoadColumnsFromTable(table)    # Load all columns into a list 'columns'
+        columns = self.tables_columns[table]    # Load all columns into a list 'columns'
         if len(columns)>0:    # Transfer information from list 'columns' to the combobox
             getattr(self, comboboxname).addItem('')
-            for columnName in columns:
-                getattr(self, comboboxname).addItem(columnName)  # getattr is to combine a function and a string to a combined function
+            getattr(self, comboboxname).addItems(columns)
 
     def FilterChanged(self, filterno, tabno):
         TableCombobox = 'table_ComboBox_' + str(tabno)
@@ -549,7 +509,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                         
     def PopulateFilterList(self, table, QListWidgetname='', filtercolumn=None):
         sql = "select distinct " + unicode(filtercolumn) + " from " + table + " order by " + unicode(filtercolumn)
-        ConnectionOK, list_data=utils.sql_load_fr_db(sql)
+        ConnectionOK, list_data= db_utils.sql_load_fr_db(sql)
         for post in list_data:
             item = QtGui.QListWidgetItem(unicode(post[0]))
             getattr(self, QListWidgetname).addItem(item)

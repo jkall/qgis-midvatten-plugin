@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 #
-
+import db_utils
 import utils_for_tests
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
@@ -510,9 +510,9 @@ class TestInterlab4ImporterDB(object):
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     def test_interlab4_full_test_to_db(self):
 
-        utils.sql_alter_db(u'''insert into zz_staff (staff) values ('DV')''')
+        db_utils.sql_alter_db(u'''insert into zz_staff (staff) values ('DV')''')
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("Demo1 vattenverk")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("Demo1 vattenverk")')
 
         interlab4_lines = (
             u'#Interlab',
@@ -551,7 +551,8 @@ class TestInterlab4ImporterDB(object):
 
             _test(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
         reference_string = ur'''(True, [(Demo1 vattenverk, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid_provplatsnamn_specifik provplats: Demo1 vattenverk Föreskriven regelbunden undersökning enligt SLVFS 2001:30)])'''
         assert test_string == reference_string
 

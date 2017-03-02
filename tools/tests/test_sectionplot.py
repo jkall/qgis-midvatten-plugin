@@ -27,7 +27,7 @@
 
 
 """
-
+import db_utils
 import utils_for_tests
 import midvatten_utils as utils
 from utils_for_tests import init_test
@@ -106,10 +106,10 @@ class TestSectionPlot(object):
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
 
         """For now, the test only initiates the plot. Check that it does not crash """
-        utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(633466 711659)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P2", GeomFromText('POINT(6720727 016568)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P3", GeomFromText('POINT(6720728 016569)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(633466 711659)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P2", GeomFromText('POINT(6720727 016568)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P3", GeomFromText('POINT(6720728 016569)', 3006))''')
 
         uri = QgsDataSourceURI()
         uri.setDatabase(TEMP_DB_PATH)
@@ -142,10 +142,10 @@ class TestSectionPlot(object):
     @mock.patch('midvatten_utils.QgsProject.instance')
     def test_plot_section_with_depth(self, mock_qgsproject_instance):
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
-        utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry, length) values ("P1", GeomFromText('POINT(633466 711659)', 3006), 2)''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry, length) values ("P2", GeomFromText('POINT(6720727 016568)', 3006), "1")''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry, length) values ("P3", GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
+        db_utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry, length) values ("P1", GeomFromText('POINT(633466 711659)', 3006), 2)''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry, length) values ("P2", GeomFromText('POINT(6720727 016568)', 3006), "1")''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry, length) values ("P3", GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
 
         uri = QgsDataSourceURI()
         uri.setDatabase(TEMP_DB_PATH)
@@ -171,12 +171,12 @@ class TestSectionPlot(object):
     @mock.patch('midvatten_utils.QgsProject.instance')
     def test_plot_section_with_w_levels(self, mock_qgsproject_instance):
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
-        utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry, length) values ("P1", GeomFromText('POINT(633466 711659)', 3006), 2)''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry, length) values ("P2", GeomFromText('POINT(6720727 016568)', 3006), "1")''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry, length) values ("P3", GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
-        utils.sql_alter_db(u'''insert into w_levels (obsid, date_time, meas, h_toc, level_masl) values ("P1", "2015-01-01 00:00:00", "15", "200", "185")''')
-        utils.sql_alter_db(u'''insert into w_levels (obsid, date_time, meas, h_toc, level_masl) values ("P2", "2015-01-01 00:00:00", "17", "200", "183")''')
+        db_utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry, length) values ("P1", GeomFromText('POINT(633466 711659)', 3006), 2)''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry, length) values ("P2", GeomFromText('POINT(6720727 016568)', 3006), "1")''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry, length) values ("P3", GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
+        db_utils.sql_alter_db(u'''insert into w_levels (obsid, date_time, meas, h_toc, level_masl) values ("P1", "2015-01-01 00:00:00", "15", "200", "185")''')
+        db_utils.sql_alter_db(u'''insert into w_levels (obsid, date_time, meas, h_toc, level_masl) values ("P2", "2015-01-01 00:00:00", "17", "200", "183")''')
 
         uri = QgsDataSourceURI()
         uri.setDatabase(TEMP_DB_PATH)
@@ -252,10 +252,10 @@ class TestSectionPlot2(object):
         mock_qgsproject_instance.return_value.readEntry = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH2]}[(x, y)]
 
         """For now, the test only initiates the plot. Check that it does not crash """
-        utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(2 0, 10 10)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(1 0)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P2", GeomFromText('POINT(3 0)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P3", GeomFromText('POINT(5 0)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(2 0, 10 10)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(1 0)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P2", GeomFromText('POINT(3 0)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P3", GeomFromText('POINT(5 0)', 3006))''')
 
         uri = QgsDataSourceURI()
         uri.setDatabase(TEMP_DB_PATH2)
@@ -338,10 +338,10 @@ class TestSectionPlot3(object):
         mock_qgsproject_instance.return_value.readEntry = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH3]}[(x, y)]
 
         """For now, the test only initiates the plot. Check that it does not crash """
-        utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(0 0, 1 0, 10 0)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(1 0)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P2", GeomFromText('POINT(3 5)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P3", GeomFromText('POINT(5 10)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(0 0, 1 0, 10 0)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(1 0)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P2", GeomFromText('POINT(3 5)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P3", GeomFromText('POINT(5 10)', 3006))''')
 
         uri = QgsDataSourceURI()
         uri.setDatabase(TEMP_DB_PATH3)
@@ -432,10 +432,10 @@ class __TestSectionPlot4(object):
         mock_qgsproject_instance.return_value.readEntry = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH4]}[(x, y)]
 
         """For now, the test only initiates the plot. Check that it does not crash """
-        utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(0 0, 1 0, 10 0)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(1 0)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P2", GeomFromText('POINT(3 5)', 3006))''')
-        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P3", GeomFromText('POINT(5 10)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(0 0, 1 0, 10 0)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(1 0)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P2", GeomFromText('POINT(3 5)', 3006))''')
+        db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P3", GeomFromText('POINT(5 10)', 3006))''')
 
         uri = QgsDataSourceURI()
         uri.setDatabase(TEMP_DB_PATH4)

@@ -23,6 +23,8 @@ __modified_date__ = "Nov 2013"
 from PyQt4 import QtCore, QtGui
 from qgis.core import *
 from qgis.gui import *
+
+import db_utils
 from matplotlib.figure import Figure as figure
 import numpy as np
 import matplotlib.pyplot as plt
@@ -123,7 +125,7 @@ class PiperPlot():
     def get_selected_datetimes(self):
         sql1 = self.big_sql()
         sql2 = r""" select distinct date_time from (""" + sql1 + r""") order by date_time"""
-        ConnOK, self.date_times = utils.sql_load_fr_db(sql2)
+        ConnOK, self.date_times = db_utils.sql_load_fr_db(sql2)
         
     def get_selected_observations(self):
         obsar = utils.getselectedobjectnames(self.activelayer)
@@ -136,17 +138,17 @@ class PiperPlot():
 
     def get_selected_obstypes(self):
         sql = "select obsid, type from obs_points where obsid in " +  str(self.observations).encode('utf-8').replace('[','(').replace(']',')')
-        ConnOK, types = utils.sql_load_fr_db(sql)
+        ConnOK, types = db_utils.sql_load_fr_db(sql)
         self.typedict = dict(types)#make it a dictionary
         sql = "select distinct type from obs_points where obsid in " +  str(self.observations).encode('utf-8').replace('[','(').replace(']',')')
-        ConnOK, self.distincttypes = utils.sql_load_fr_db(sql)
+        ConnOK, self.distincttypes = db_utils.sql_load_fr_db(sql)
         
     def get_piper_data(self):
         #These observations are supposed to be in mg/l and must be stored in a Midvatten database, table w_qual_lab
         sql = self.big_sql()
         print(sql)#debug
         # get data into a list: obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na+K_meqPl, Ca_meqPl, Mg_meqPl
-        obsimport = utils.sql_load_fr_db(sql)[1]
+        obsimport = db_utils.sql_load_fr_db(sql)[1]
         #convert to numpy ndarray W/O format specified
         self.obsnp_nospecformat = np.array(obsimport)
         #define format

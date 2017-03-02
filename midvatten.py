@@ -19,6 +19,7 @@
  ***************************************************************************/
 """
 # Import the PyQt and QGIS libraries
+import db_utils
 from PyQt4.QtCore import *
 from PyQt4.QtCore import QDir
 from PyQt4.QtGui import *
@@ -681,7 +682,9 @@ class midvatten:
         allcritical_layers = ('obs_points')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
-        if (utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[0]==True and len(utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[1])==0) or (utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[0]==False): #verify there actually is a meteo table (introduced in midv plugin version 1.1)
+        if (db_utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[0]==True and len(
+                db_utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[1])==0) or (
+            db_utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[0]==False): #verify there actually is a meteo table (introduced in midv plugin version 1.1)
             err_flag += 1
             self.iface.messageBar().pushMessage("Error","There is no table for meteorological data in your database! Perhaps your database was created with an earlier version of Midvatten plugin?",2,duration=15)
         
@@ -963,7 +966,7 @@ class midvatten:
             if sanity.result == 0:  #IF USER WANT ALL OBJECTS TO BE UPDATED
                 sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor ALL objects in the obs_points table.\nProceed?""")
                 if sanity.result==1:
-                    ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")[1]#a list of unicode strings is returned
+                    ALL_OBS = db_utils.sql_load_fr_db("select distinct obsid from obs_points")[1]#a list of unicode strings is returned
                     observations = [None]*len(ALL_OBS)
                     i = 0
                     for obs in ALL_OBS:
@@ -991,7 +994,7 @@ class midvatten:
             if sanity.result == 0:      #IF USER WANT ALL OBJECTS TO BE UPDATED
                 sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nALL objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")
                 if sanity.result==1:
-                    ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")[1]
+                    ALL_OBS = db_utils.sql_load_fr_db("select distinct obsid from obs_points")[1]
                     observations = [None]*len(ALL_OBS)
                     i = 0
                     for obs in ALL_OBS:
@@ -1013,7 +1016,7 @@ class midvatten:
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
             QApplication.setOverrideCursor(Qt.WaitCursor)
-            utils.sql_alter_db('vacuum')
+            db_utils.sql_alter_db('vacuum')
             QApplication.restoreOverrideCursor()
 
     def waterqualityreport(self):
@@ -1025,7 +1028,7 @@ class midvatten:
         if err_flag == 0:
             fail = 0
             for k in utils.getselectedobjectnames(qgis.utils.iface.activeLayer()):#all selected objects
-                if not utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.ms.settingsdict['wqualtable'],str(k)))[1]:#if there is a selected object without water quality data
+                if not db_utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.ms.settingsdict['wqualtable'], str(k)))[1]:#if there is a selected object without water quality data
                     self.iface.messageBar().pushMessage("Error","No water quality data for %s"%str(k), 2)
                     fail = 1
             if not fail == 1:#only if all objects has data
@@ -1055,7 +1058,7 @@ class midvatten:
     def zip_db(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
-            connection = utils.dbconnection()
+            connection = db_utils.dbconnection()
             connection_ok = connection.connect2db()
             if connection_ok:
                 curs = connection.cursor
@@ -1066,7 +1069,7 @@ class midvatten:
                 zf.close()
                 connection.conn.rollback()
                 connection.closedb()
-                self.iface.messageBar().pushMessage("Information","Database backup was written to " + bkupname, 1,duration=15)
+                utils.MessagebarAndLog.info(bar_msg=u'Information, database backup was written to ' + bkupname)
 
     @utils.waiting_cursor
     def calculate_statistics_for_all_w_logger_data(self):
@@ -1074,7 +1077,7 @@ class midvatten:
 
             Uses GetStatistics from drillreport for the calculations
         """
-        connection_ok, result = utils.sql_load_fr_db("""select distinct obsid from w_levels_logger order by obsid""")
+        connection_ok, result = db_utils.sql_load_fr_db("""select distinct obsid from w_levels_logger order by obsid""")
         if connection_ok:
             obsids = [row[0] for row in result]
 

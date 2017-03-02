@@ -21,6 +21,8 @@
 """
 import os
 from qgis.core import QgsApplication, QgsProviderRegistry
+
+import db_utils
 from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from date_utils import datestring_to_date
@@ -67,32 +69,34 @@ class TestCalclvl(object):
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     def test_calcall(self):
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "h_toc") VALUES ('rb1', 1)''')
-        utils.sql_alter_db(u'''INSERT into w_levels ("obsid", "meas", "date_time") VALUES ('rb1', 222, '2005-01-01 00:00:00')''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "h_toc") VALUES ('rb1', 1)''')
+        db_utils.sql_alter_db(u'''INSERT into w_levels ("obsid", "meas", "date_time") VALUES ('rb1', 222, '2005-01-01 00:00:00')''')
         self.calclvl.FromDateTime = QtGui.QDateTimeEdit()
         self.calclvl.FromDateTime.setDateTime(datestring_to_date(u'2000-01-01 00:00:00'))
         self.calclvl.ToDateTime = QtGui.QDateTimeEdit()
         self.calclvl.ToDateTime.setDateTime(datestring_to_date(u'2010-01-01 00:00:00'))
         self.calclvl.calcall()
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, date_time, meas, h_toc, level_masl from w_levels'))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'select obsid, date_time, meas, h_toc, level_masl from w_levels'))
         reference_string = u'(True, [(rb1, 2005-01-01 00:00:00, 222.0, 1.0, -221.0)])'
         assert test_string == reference_string
 
     @mock.patch('wlevels_calc_calibr.utils.getselectedobjectnames', selected_obsids.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     def test_calcall(self):
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "h_toc") VALUES ('rb1', 1)''')
-        utils.sql_alter_db(u'''INSERT into w_levels ("obsid", "meas", "date_time") VALUES ('rb1', 222, '2005-01-01 00:00:00')''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "h_toc") VALUES ('rb2', 4)''')
-        utils.sql_alter_db(u'''INSERT into w_levels ("obsid", "meas", "date_time") VALUES ('rb2', 444, '2005-01-01 00:00:00')''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "h_toc") VALUES ('rb1', 1)''')
+        db_utils.sql_alter_db(u'''INSERT into w_levels ("obsid", "meas", "date_time") VALUES ('rb1', 222, '2005-01-01 00:00:00')''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "h_toc") VALUES ('rb2', 4)''')
+        db_utils.sql_alter_db(u'''INSERT into w_levels ("obsid", "meas", "date_time") VALUES ('rb2', 444, '2005-01-01 00:00:00')''')
         self.calclvl.FromDateTime = QtGui.QDateTimeEdit()
         self.calclvl.FromDateTime.setDateTime(datestring_to_date(u'2000-01-01 00:00:00'))
         self.calclvl.ToDateTime = QtGui.QDateTimeEdit()
         self.calclvl.ToDateTime.setDateTime(datestring_to_date(u'2010-01-01 00:00:00'))
         self.calclvl.calcselected()
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'select obsid, date_time, meas, h_toc, level_masl from w_levels'))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'select obsid, date_time, meas, h_toc, level_masl from w_levels'))
         reference_string = u'(True, [(rb1, 2005-01-01 00:00:00, 222.0, 1.0, -221.0), (rb2, 2005-01-01 00:00:00, 444.0, None, None)])'
         assert test_string == reference_string
 

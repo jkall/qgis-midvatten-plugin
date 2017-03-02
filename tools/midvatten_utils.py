@@ -25,101 +25,26 @@ import copy
 import csv
 import datetime
 import difflib
-from operator import itemgetter
-import locale
 import io
+import locale
 import math
 import numpy as np
 import os
 import qgis.utils
 import tempfile
 import time
-import ast
-import db_manager.db_plugins.postgis.connector as postgis_connector
-import db_manager.db_plugins.spatialite.connector as spatialite_connector
-
-from PyQt4.QtCore import QSettings
 from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
 from contextlib import contextmanager
-from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialite-specific sql clauses may be sent by sql_alter_db and sql_load_fr_db
-from pyspatialite.dbapi2 import IntegrityError, OperationalError
+from operator import itemgetter
 from qgis.core import *
 from qgis.gui import *
 
+from db_utils import dbconnection, sql_load_fr_db, sql_alter_db, \
+    excecute_sqlfile, check_connection_ok
 from matplotlib.dates import num2date
 
 not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
-
-
-
-class dbconnection():
-    def __init__(self):
-        """
-        Manuals for db connectors:
-        https://github.com/qgis/QGIS/blob/master/python/plugins/db_manager/db_plugins/connector.py
-        https://github.com/qgis/QGIS/blob/master/python/plugins/db_manager/db_plugins/postgis/connector.py
-        https://github.com/qgis/QGIS/blob/master/python/plugins/db_manager/db_plugins/spatialite/connector.py
-        """
-        db_settings = QgsProject.instance().readEntry("Midvatten", "database")[0]
-
-        try:
-            db_settings = ast.literal_eval(db_settings)
-        except SyntaxError:
-            pass
-
-        self.dbtype = db_settings.keys()[0]
-        self.connection_settings = db_settings.values()[0]
-
-        self.uri = QgsDataSourceURI()
-
-        if self.dbtype == u'spatialite':
-            self.dbpath = self.connection_settings[u'dbpath']
-            self.uri.setDatabase(self.dbpath)
-            self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
-        elif self.dbtype == u'postgis':
-            connection_name = self.connection_settings[u'connection'].split(u'/')[0]
-            self.postgis_settings = get_postgis_connections()[connection_name]
-            #MessagebarAndLog.info(log_msg=u'postgis_settings: ' + str(self.postgis_settings))
-            self.uri.setConnection(self.postgis_settings[u'host'], self.postgis_settings[u'port'], self.postgis_settings[u'database'], self.postgis_settings[u'username'], self.postgis_settings[u'password'])
-            self.connector = postgis_connector.PostGisDBConnector(self.uri)
-
-    def connect2db(self):
-        try:#verify this is an existing sqlite database
-            if self.dbtype == u'postgis':
-                self.conn = self.connector.connection
-                #self.conn = psycopg2.connect("host='%s' port='%s' dbname='%s' user='%s' password='%s'"%(self.postgis_settings[u'host'], self.postgis_settings[u'port'], self.postgis_settings[u'database'], self.postgis_settings[u'username'], self.uri.password()))
-                self.cursor = self.conn.cursor()
-            elif self.dbtype == u'spatialite':
-                self.conn = sqlite.connect(self.dbpath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-                self.cursor = self.conn.cursor()
-                self.cursor.execute("select count(*) from sqlite_master")
-            ConnectionOK = True
-        except:
-            MessagebarAndLog.critical(bar_msg=u"Could not connect to database\nYou might have to reset Midvatten settings for this project!")
-            ConnectionOK = False
-        return ConnectionOK
-
-    def closedb(self):
-        try:
-            self.cursor.close()
-            self.conn.close()
-        except:
-            pass
-
-    def schemas(self):
-        """Postgis schemas look like this:
-        Schemas: [(2200, u'public', u'postgres', '{postgres=UC/postgres,=UC/postgres}', u'standard public schema')]
-        This function only returns the first schema.
-        """
-
-        schemas = self.connector.getSchemas()
-        if schemas is None:
-            return ''
-        else:
-            if len(schemas) > 1:
-                MessagebarAndLog.info(bar_msg=u'Found more than one schema. Using the first.')
-            return schemas[0][1]
 
 
 def show_message_log(pop_error=False):
@@ -130,23 +55,6 @@ def show_message_log(pop_error=False):
         qgis.utils.iface.messageBar().popWidget()
 
     qgis.utils.iface.openMessageLog()
-
-
-def get_postgis_connections():
-    qs = QSettings()
-    postgresql_connections = {}
-    for k in sorted(qs.allKeys()):
-        if k.startswith(u'PostgreSQL'):
-            cols = k.split(u'/')
-            conn_name = cols[2]
-            try:
-                setting = cols[3]
-            except IndexError:
-                #MessagebarAndLog.info(log_msg=u'Postgresql connection info: Setting ' + str(k) + u" couldn't be read")
-                continue
-            value = qs.value(k)
-            postgresql_connections.setdefault(conn_name, {})[setting] = value
-    return postgresql_connections
 
 
 class MessagebarAndLog():
@@ -457,7 +365,7 @@ def get_all_obsids(table=u'obs_points'):
     :return: All obsids from obs_points
     """
     obsids = []
-    connection_ok, result = sql_load_fr_db(u'''select distinct obsid from %s order by obsid'''%table)
+    connection_ok, result = sql_load_fr_db(u'''select distinct obsid from %s order by obsid''' % table)
     if connection_ok:
         obsids = [row[0] for row in result]
     return obsids
@@ -611,99 +519,6 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
             text = unicode('data type unknown, check database')
     return text
 
-def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
-
-    connection = dbconnection()
-    connection_ok = connection.connect2db()
-
-    if connection.cursor is None:
-        connection.cursor = connection.conn.cursor()
-
-    if connection_ok:
-        try:
-            connection.cursor.execute(sql) #Send SQL-syntax to cursor #MacOSX fix1
-            result = connection.cursor.fetchall()
-            ConnectionOK = True
-        except Exception, e:
-            #pop_up_info("Could not connect to DB, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
-            textstring = u"""DB error!\n SQL causing this error:%s\n\n%s"""%(returnunicode(sql), returnunicode(str(e)))
-            #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15)
-            MessagebarAndLog.warning(bar_msg='Some sql failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
-            ConnectionOK = False
-            result = ''
-
-    try:
-        connection.closedb()
-    except:
-        pass
-
-    return ConnectionOK, result
-
-def sql_alter_db(sql=''):
-    connection = dbconnection()
-    connection_ok = connection.connect2db
-
-    if connection_ok:
-        curs = connection.cursor
-        sql2 = sql
-        curs.execute("PRAGMA foreign_keys = ON")  # Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
-        if isinstance(sql2, basestring):
-            try:
-                resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
-            except IntegrityError, e:
-                raise IntegrityError("The sql failed:\n" + sql2 + "\nmsg:\n" + str(e))
-        else:
-            try:
-                resultfromsql = curs.executemany(sql2[0], sql2[1])
-            except IntegrityError, e:
-                raise IntegrityError(str(e))
-
-        result = resultfromsql.fetchall()
-        connection.conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
-        connection.closedb()
-
-        return result
-
-def sql_alter_db_by_param_subst(sql='',*subst_params):
-    """
-    sql sent as unicode, result from db returned as list of unicode strings, the subst_paramss is a tuple of parameters to be substituted into the sql
-
-    #please note that the argument, subst_paramss, must be a tuple with the parameters to be substituted with ? inside the sql string
-    #simple example:
-    sql = 'select ?, ? from w_levels where obsid=?)
-    subst_params = ('date_time', 'level_masl', 'well01')
-    #and since it is a tuple, then one single parameter must be given with a tailing comma:
-    sql = 'select * from obs_points where obsid = ?'
-    subst_params = ('well01',)
-    """
-    #TODO: This one is not updated for postgis yet!!!
-    connection = dbconnection()
-    connection_ok = connection.connect2db
-
-    if connection_ok:
-        curs = connection.cursor
-        conn = connection.conn
-
-        try:
-            curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
-            resultfromsql = curs.execute(sql,subst_params[0])#please note, index 0 is pointing to the first optional argument, not index in tuple
-            #det får antagligen inte vara något annat än själva värdena i subst_params, strängen som anger kolumner och obsid-namn osv för select är nog string-concatenation som vanligt, det är alltså bara input värdena som ska använda parameter substs
-        except:#in case it is an sql without parameter substitution
-            resultfromsql = curs.execute(sql)
-            result = resultfromsql.fetchall()
-            conn.commit()
-            connection.closedb()
-            ConnectionOK = True
-        else:
-            conn.commit()
-            connection.closedb()
-            ConnectionOK = True
-    else:
-        MessagebarAndLog.critical(bar_msg=u"Could not connect to the database, please reset Midvatten settings! See log message panel", log_msg=u"DB call causing this error (debug info):\n"+sql)
-        ConnectionOK = False
-        connection.closedb()
-        result = ''
-    return ConnectionOK, result
 
 def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatures=0 is for a check if any features are selected at all, the number is unimportant
     if layer.dataProvider().fieldNameIndex('obsid')  > -1 or layer.dataProvider().fieldNameIndex('OBSID')  > -1: # 'OBSID' to get backwards compatibility
@@ -775,13 +590,8 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
         MessagebarAndLog.critical(bar_msg=u'Error, no database found. Please check your Midvatten Settings. Reset if needed.')
         errorsignal += 1
     else:
-        connection = dbconnection()
-        connection_ok = connection.connect2db()
-        connection.closedb()
-        if not connection_ok:
-            MessagebarAndLog.critical(bar_msg=u"Error, connecting to database failed. Please check your Midvatten Settings and database location. Reset if needed.")
+        if not check_connection_ok():
             errorsignal += 1
-
     return errorsignal
 
 def verify_layer_selection(errorsignal,selectedfeatures=0):
@@ -1249,17 +1059,9 @@ def add_triggers_to_obs_points():
     END;
     :return:
     """
-    excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","insert_obs_points_triggers.sql"), sql_alter_db)
+    excecute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", "insert_obs_points_triggers.sql"),
+                     sql_alter_db)
 
-def excecute_sqlfile(sqlfilename, function=sql_alter_db):
-    with open(sqlfilename, 'r') as f:
-        f.readline()  # first line is encoding info....
-        for line in f:
-            if not line:
-                continue
-            if line.startswith("#"):
-                continue
-            function(line)
 
 def sql_to_parameters_units_tuple(sql):
     parameters_from_table = returnunicode(sql_load_fr_db(sql)[1], True)
@@ -1404,7 +1206,7 @@ def anything_to_string_representation(anything):
     return aunicode
 
 def get_foreign_keys(tname):
-    result_list = sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)"""%(tname))[1]
+    result_list = sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)""" % (tname))[1]
     foreign_keys = {}
     for row in result_list:
         foreign_keys.setdefault(row[2], []).append((row[3], row[4]))

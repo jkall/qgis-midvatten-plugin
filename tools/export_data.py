@@ -18,6 +18,8 @@
  ***************************************************************************/
 """
 import sqlite3 as sqlite, csv, codecs, cStringIO, os, os.path
+
+import db_utils
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 import qgis.utils
@@ -30,9 +32,9 @@ class ExportData():
         self.ID_obs_lines = OBSID_L
 
     def export_2_csv(self,exportfolder):
-        database = utils.dbconnection()
+        database = db_utils.dbconnection()
         database.connect2db() #establish connection to the current midv db
-        self.curs = database.conn.cursor()#get a cursor
+        self.curs = database.cursor#get a cursor
 
         self.exportfolder = exportfolder
         self.write_data(self.to_csv, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='obs_points'), utils.verify_table_exists)

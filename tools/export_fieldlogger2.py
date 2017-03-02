@@ -24,6 +24,7 @@ import os.path
 import qgis.gui
 from collections import OrderedDict
 
+import db_utils
 import definitions.midvatten_defs as defs
 import midvatten_utils as utils
 from gui_utils import SplitterWithHandel, CopyPasteDeleteableQListWidget
@@ -552,7 +553,7 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         if not tablename or not columnname:
             return []
         sql = '''SELECT distinct "%s" from "%s"'''%(columnname, tablename)
-        connection_ok, result = utils.sql_load_fr_db(sql)
+        connection_ok, result = db_utils.sql_load_fr_db(sql)
 
         if not connection_ok:
             textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)

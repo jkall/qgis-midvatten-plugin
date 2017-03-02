@@ -19,6 +19,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+import db_utils
 import midvatten_utils as utils
 import mock
 from mock import call
@@ -208,13 +209,13 @@ class TestGetFunctions(object):
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     def test_get_last_logger_dates(self):
-        utils.sql_alter_db('''insert into obs_points (obsid) values ('rb1')''')
-        utils.sql_alter_db('''insert into obs_points (obsid) values ('rb2')''')
-        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2015-01-01 00:00')''')
-        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2015-01-01 00:00:00')''')
-        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2014-01-01 00:00:00')''')
-        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2013-01-01 00:00:00')''')
-        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2016-01-01 00:00')''')
+        db_utils.sql_alter_db('''insert into obs_points (obsid) values ('rb1')''')
+        db_utils.sql_alter_db('''insert into obs_points (obsid) values ('rb2')''')
+        db_utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2015-01-01 00:00')''')
+        db_utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2015-01-01 00:00:00')''')
+        db_utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2014-01-01 00:00:00')''')
+        db_utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2013-01-01 00:00:00')''')
+        db_utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2016-01-01 00:00')''')
 
         test_string = create_test_string(utils.get_last_logger_dates())
         reference_string = u'''{rb1: [(2015-01-01 00:00:00)], rb2: [(2016-01-01 00:00)]}'''

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import db_utils
 import utils_for_tests
 import midvatten_utils as utils
 from date_utils import datestring_to_date
@@ -49,7 +50,7 @@ class TestFieldLoggerImporterDb(object):
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     def test_staff_not_given(self):
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1")''')
 
         f = [
             u"LOCATION;DATE;TIME;VALUE;TYPE\n",
@@ -88,14 +89,14 @@ class TestFieldLoggerImporterDb(object):
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     def test_full_integration_test_to_db(self):
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
-        utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
+        db_utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
 
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
+        db_utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
             u"LOCATION;DATE;TIME;VALUE;TYPE\n",
@@ -154,20 +155,20 @@ class TestFieldLoggerImporterDb(object):
 
             _test(self, filename)
 
-            test_string = create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
+            test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db(u'select * from %s' % k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
             reference_string = u'{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
             assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     def test_full_integration_test_to_db_w_levels_value_to_level_masl(self):
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
-        utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
+        db_utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
 
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
+        db_utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
             u"LOCATION;DATE;TIME;VALUE;TYPE\n",
@@ -226,20 +227,20 @@ class TestFieldLoggerImporterDb(object):
 
             _test(self, filename)
 
-            test_string = create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
+            test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db(u'select * from %s' % k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
             reference_string = u'{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, None, None, 555.0, ergv)]), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
             assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     def test_full_integration_test_to_db_w_levels_value_to_meas(self):
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
-        utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
+        db_utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
 
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
+        db_utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
             u"LOCATION;DATE;TIME;VALUE;TYPE\n",
@@ -298,20 +299,20 @@ class TestFieldLoggerImporterDb(object):
 
             _test(self, filename)
 
-            test_string = create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
+            test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db(u'select * from %s' % k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
             reference_string = u'{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
             assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     def test_full_integration_test_to_db_w_levels_value_to_both(self):
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
-        utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
+        db_utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
 
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
+        db_utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
             u"LOCATION;DATE;TIME;VALUE;TYPE\n",
@@ -372,20 +373,20 @@ class TestFieldLoggerImporterDb(object):
 
             _test(self, filename)
 
-            test_string = create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
+            test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db(u'select * from %s' % k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
             reference_string = u'{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv), (Rb1608, 2016-03-30 15:34:14, None, None, 777.0, None)]), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
             assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     def test_full_integration_test_to_db_datetimefilter(self):
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
-        utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
+        db_utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
 
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
+        db_utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
             u"LOCATION;DATE;TIME;VALUE;TYPE\n",
@@ -449,20 +450,20 @@ class TestFieldLoggerImporterDb(object):
 
             _test(self, filename)
 
-            test_string = create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
+            test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db(u'select * from %s' % k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
             reference_string = u'{comments: (True, []), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
             assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     def test_full_integration_test_to_db_datetimefilter_still_work_after_update_button(self):
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
-        utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
+        db_utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
 
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
+        db_utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
             u"LOCATION;DATE;TIME;VALUE;TYPE\n",
@@ -537,7 +538,7 @@ class TestFieldLoggerImporterDb(object):
 
             _test(self, filename)
 
-            test_string = create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
+            test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db(u'select * from %s' % k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
             reference_string = u'{comments: (True, []), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
             assert test_string == reference_string
 
@@ -551,14 +552,14 @@ class TestFieldLoggerImporterDb(object):
         #So the test more more or less tests that changing filters many times doesn't
         #break the final result.
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
-        utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
+        db_utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
 
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
+        db_utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
             u"LOCATION;DATE;TIME;VALUE;TYPE\n",
@@ -639,7 +640,7 @@ class TestFieldLoggerImporterDb(object):
 
             _test(self, filename)
 
-            test_string = create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
+            test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db(u'select * from %s' % k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
             reference_string = u'{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, []), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
             assert test_string == reference_string
 
@@ -649,14 +650,14 @@ class TestFieldLoggerImporterDb(object):
         #input fields should yet again be set from stored settings. Thus, the only
         #filter left would be datetime filter.
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
-        utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1608")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1615")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1505")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1512")''')
+        db_utils.sql_alter_db(u'''INSERT INTO zz_staff ("staff") VALUES ("teststaff")''')
 
-        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
+        db_utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
 
         f = [
             u"LOCATION;DATE;TIME;VALUE;TYPE\n",
@@ -740,7 +741,7 @@ class TestFieldLoggerImporterDb(object):
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     def test_full_into_zz_flowtype(self):
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("2")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("2")''')
         #utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("5")''')
         f = [u'LOCATION;DATE;TIME;VALUE;TYPE\n',
             u'5.2892.level;12-12-2016;10:02:49;comment;l.comment\n',
@@ -803,7 +804,7 @@ class TestFieldLoggerImporterDb(object):
 
             _test(self, filename)
 
-            test_string = create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_flow', u'zz_staff', u'comments', u'zz_flowtype')]))
+            test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db(u'select * from %s' % k)) for k in (u'w_flow', u'zz_staff', u'comments', u'zz_flowtype')]))
             reference_string = u'{comments: (True, [(2, 2016-12-12 10:03:15, onlycomment, teststaff)]), w_flow: (True, [(2, testid, Momflow2, 2016-12-12 10:03:07, 123.0, aunit, None)]), zz_flowtype: (True, [(Accvol, Accumulated volume), (Momflow, Momentary flow rate), (Aveflow, Average flow since last reading), (Momflow2, None)]), zz_staff: (True, [(teststaff, None)])}'
             assert test_string == reference_string
 

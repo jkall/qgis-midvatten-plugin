@@ -26,6 +26,7 @@ from collections import OrderedDict
 import warnings
 import qgis.gui
 
+import db_utils
 import midvatten_utils as utils
 import definitions.midvatten_defs as defs
 from import_data_to_db import midv_data_importer
@@ -615,7 +616,7 @@ class ParameterUnitBrowser(object):
         if not tablename or not columnname:
             return []
         sql = '''SELECT distinct "%s" from "%s"'''%(columnname, tablename)
-        connection_ok, result = utils.sql_load_fr_db(sql)
+        connection_ok, result = db_utils.sql_load_fr_db(sql)
 
         if not connection_ok:
             textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)

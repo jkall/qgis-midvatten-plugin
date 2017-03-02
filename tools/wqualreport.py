@@ -17,6 +17,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+import db_utils
 from PyQt4.QtCore import QUrl, Qt, QDir
 from PyQt4.QtGui import QDesktopServices, QApplication, QCursor
 
@@ -73,12 +74,6 @@ class wqualreport():        # extracts water quality data for selected objects, 
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
         
     def GetData(self, dbPath='', obsid = ''):            # GetData method that returns a table with water quality data
-        #conn = sqlite.connect(dbPath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-        myconnection = utils.dbconnection()
-        myconnection.connect2db()
-        # skapa en cursor
-        curs = myconnection.conn.cursor()
-
         # Load all water quality parameters stored in two result columns: parameter, unit
         if not(unicode(self.settingsdict['wqual_unitcolumn']) ==''):          #If there is a a given column for unit 
             sql =r"""select distinct """ + self.settingsdict['wqual_paramcolumn'] + """, """
@@ -90,9 +85,7 @@ class wqualreport():        # extracts water quality data for selected objects, 
         sql += r""" where obsid = '"""
         sql += obsid  
         sql += r"""' ORDER BY """ + self.settingsdict['wqual_paramcolumn']
-        parameters_cursor = curs.execute(sql) #Send SQL-syntax to cursor
-        print(sql)#debug
-        parameters = parameters_cursor.fetchall()
+        connection_ok, parameters = db_utils.sql_load_fr_db(sql)
         if not parameters:
             utils.MessagebarAndLog.warning(bar_msg=u'Debug, something is wrong, no parameters are found in table w_qual_lab for '+ obsid)
             return False
@@ -118,14 +111,8 @@ class wqualreport():        # extracts water quality data for selected objects, 
         else:
             sql += """') ORDER BY date_time"""
         #sql2 = unicode(sql) #To get back to unicode-string
-        try:
-            date_times_cursor = curs.execute(sql) #Send SQL-syntax to cursor,
-        except Exception, e:
-            raise Exception("Error. SQL :" + sql + "\ne:\n" + str(e))
-        date_times = date_times_cursor.fetchall()
-        print(date_times)
+        connection_ok, date_times = db_utils.sql_load_fr_db(sql) #Send SQL-syntax to cursor,
 
-        print (sql)#debug
         print('loaded distinct date_time for the parameters for ' + obsid + ' at time: ' + str(time.time()))#debug
         
         if not date_times:
@@ -201,10 +188,7 @@ class wqualreport():        # extracts water quality data for selected objects, 
                 if self.settingsdict['wqual_sortingcolumn']:
                     sql += """ and "%s" = '%s'"""%(self.settingsdict['wqual_sortingcolumn'], sorting)
 
-                rs = curs.execute(sql) #Send SQL-syntax to cursor, NOTE: here we send sql which was utf-8 already from interpreting it
-                #print (sql)#debug
-                #print('time: ' + str(time.time()))#debug
-                recs = rs.fetchall()  # All data are stored in recs
+                connection_ok, recs = db_utils.sql_load_fr_db(sql)
                 #each value must be in unicode or string to be written as html report
                 if recs:
                     try:
@@ -216,10 +200,6 @@ class wqualreport():        # extracts water quality data for selected objects, 
                     ReportTable[parametercounter][datecounter] =' '
 
         self.htmlcols = datecounter + 1    # to be able to set a relevant width to the table
-        parameters_cursor.close()
-        date_times_cursor.close()
-        #conn.close()
-        myconnection.closedb()
         return ReportTable
         
     def WriteHTMLReport(self, ReportData, f):

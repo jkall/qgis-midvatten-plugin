@@ -32,6 +32,7 @@ from qgis.core import *
 
 import PyQt4.QtCore
 import PyQt4.QtGui
+import db_utils
 
 import midvatten_utils as utils
 from midvatten_utils import Cancel
@@ -82,15 +83,15 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
 
-        recsinfile = utils.sql_load_fr_db(u'select count(*) from "%s"'%self.temptableName)[1][0][0]
+        recsinfile = db_utils.sql_load_fr_db(u'select count(*) from "%s"' % self.temptableName)[1][0][0]
 
-        table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''%goal_table)[1]
+        table_info = db_utils.sql_load_fr_db(u'''PRAGMA table_info("%s")''' % goal_table)[1]
         #POINT and LINESTRING must be cast as BLOB. So change the type to BLOB.
         column_headers_types = dict([(row[1], row[2]) if row[2] not in (u'POINT', u'LINESTRING') else (row[1], u'BLOB') for row in table_info])
         primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
         not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
         #Only use the columns that exists in the goal table.
-        existing_columns = [x[1] for x in utils.sql_load_fr_db("""PRAGMA table_info(%s)"""%self.temptableName)[1] if x[1] in column_headers_types]
+        existing_columns = [x[1] for x in db_utils.sql_load_fr_db("""PRAGMA table_info(%s)""" % self.temptableName)[1] if x[1] in column_headers_types]
         missing_columns = [column for column in not_null_columns if column not in existing_columns]
 
         if missing_columns:
@@ -100,10 +101,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return
 
         #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
-        nr_before = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1][0][0]
+        nr_before = db_utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1][0][0]
         if u'date_time' in primary_keys:
             self.delete_existing_date_times_from_temptable(primary_keys, goal_table)
-        nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1][0][0]
+        nr_after = db_utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1][0][0]
 
         nr_same_date = nr_after - nr_before
         self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_same_date)))
@@ -132,8 +133,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if fk_table in force_import_of_foreign_keys_tables:
                 if not all([_from in existing_columns for _from in from_list]):
                     continue
-                nr_fk_before = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%fk_table)[1][0][0]
-                _table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''% fk_table)[1]
+                nr_fk_before = db_utils.sql_load_fr_db(u'''select count(*) from "%s"''' % fk_table)[1][0][0]
+                _table_info = db_utils.sql_load_fr_db(u'''PRAGMA table_info("%s")''' % fk_table)[1]
                 _column_headers_types = dict([(row[1], row[2]) for row in _table_info])
                 sql = ur"""INSERT INTO %s (%s) select distinct %s from %s as b where %s"""%(fk_table,
                                                                                              u', '.join([u'"{}"'.format(k) for k in to_list]),
@@ -141,21 +142,21 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                              self.temptableName,
                                                                                              u' and '.join([u''' "b"."{}" IS NOT NULL and "b"."{}" != '' and "b"."{}" != ' ' '''.format(k, k, k) for k in from_list]))
                 try:
-                    utils.sql_alter_db(sql)
+                    db_utils.sql_alter_db(sql)
                 except Exception, e:
                     sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
                     detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%fk_table + str(e))
-                    utils.sql_alter_db(sql)
+                    db_utils.sql_alter_db(sql)
 
-                nr_fk_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%fk_table)[1][0][0]
+                nr_fk_after = db_utils.sql_load_fr_db(u'''select count(*) from "%s"''' % fk_table)[1][0][0]
 
                 detailed_msg_list.append(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table + u' while importing to ' + goal_table + u'.')
             else:
                 #Else check if there are foreign keys blocking the import and skip those rows
-                existing_keys = utils.sql_load_fr_db(u'select distinct "%s" from "%s"'%(u', '.join(to_list),
-                                                                                        fk_table))[1]
-                new_keys = utils.sql_load_fr_db(u'select distinct "%s" from "%s"'%(u', '.join(from_list),
-                                                                                   self.temptableName))[1]
+                existing_keys = db_utils.sql_load_fr_db(u'select distinct "%s" from "%s"' % (u', '.join(to_list),
+                                                                                             fk_table))[1]
+                new_keys = db_utils.sql_load_fr_db(u'select distinct "%s" from "%s"' % (u', '.join(from_list),
+                                                                                        self.temptableName))[1]
                 missing_keys = [keys for keys in new_keys if keys not in existing_keys]
 
                 if missing_keys:
@@ -165,11 +166,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                    u' which will not be imported:\n' + u'\n'.join([u', '.join(f) for f in missing_keys]),
                                                    duration=999)
 
-                    utils.sql_alter_db(u'delete from "%s" where %s in (%s)'%(self.temptableName,
+                    db_utils.sql_alter_db(u'delete from "%s" where %s in (%s)' % (self.temptableName,
                                                                              u' || '.join(from_list),
                                                                              u', '.join([u"'{}'".format(u''.join([u'NULL' if k is None else k for k in mk])) for mk in missing_keys])))
 
-        nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1][0][0]
+        nr_after = db_utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1][0][0]
         nr_after_foreign_keys = nr_before - nr_after
         self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
         if not self.status:
@@ -199,15 +200,15 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         sql_list.append(u"""FROM %s"""%(self.temptableName))
         sql = u''.join(sql_list)
 
-        recsbefore = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
+        recsbefore = db_utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
 
         try:
-            utils.sql_alter_db(sql.encode(u'utf-8'))
+            db_utils.sql_alter_db(sql.encode(u'utf-8'))
         except Exception, e:
             detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%goal_table + str(e))
             sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
             try:
-                utils.sql_alter_db(sql.encode(u'utf-8'))
+                db_utils.sql_alter_db(sql.encode(u'utf-8'))
             except Exception, e:
                 utils.MessagebarAndLog.critical(
                     bar_msg=u'Error, import failed, see log message panel',
@@ -217,7 +218,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 self.drop_temptable()
                 return
 
-        recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
+        recsafter = db_utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
 
         nr_imported = recsafter - recsbefore
 
@@ -302,7 +303,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         self.status = 'False'
         #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
-        existing_names= [str(existing_name[0]) for existing_name in utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""")[1]]
+        existing_names= [str(existing_name[0]) for existing_name in db_utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""")[1]]
         while self.temptableName in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
             reponse = PyQt4.QtGui.QMessageBox.question(None, "Warning - Table name confusion!",'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''%(self.temptableName,self.temptableName,self.temptableName), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
             if reponse == PyQt4.QtGui.QMessageBox.Yes:
@@ -335,7 +336,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         #Create the import-table in DB
         fields=','.join(fields)
-        utils.sql_alter_db("""CREATE table "%s" (%s)"""%(self.temptableName, fields)) # Create a temporary table with only text columns (unless a .csvt file was defined by user parallell to the .csv file)
+        db_utils.sql_alter_db("""CREATE table "%s" (%s)""" % (self.temptableName, fields)) # Create a temporary table with only text columns (unless a .csvt file was defined by user parallell to the .csv file)
         #create connection and cursor
         dbpath = QgsProject.instance().readEntry("Midvatten","database")
         conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
@@ -394,7 +395,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                           u' || '.join(pks_and_00),
                                                                                           u' || '.join([u'"{}"'.format(pk) for pk in pks]),
                                                                                           goal_table)
-        utils.sql_alter_db(sql)
+        db_utils.sql_alter_db(sql)
 
         # Delete records from temptable that have date_time yyyy-mm-dd HH:MM:XX when yyyy-mm-dd HH:MM exist.
         #delete from temptable where SUBSTR("obsid" || "date_time", 1, length("obsid" || "date_time") - 3) in (select "obsid" || "date_time" from goaltable)
@@ -403,7 +404,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                           u' || '.join([u'"{}"'.format(pk) for pk in pks]),
                                                                                           u' || '.join([u'"{}"'.format(pk) for pk in pks]),
                                                                                           goal_table)
-        utils.sql_alter_db(sql)
+        db_utils.sql_alter_db(sql)
 
     def check_remaining(self, nr_before, nr_after, bar_msg, log_msg):
         if nr_after == 0:
@@ -415,7 +416,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def calculate_geometry(self, existing_columns, table_name):
         # Calculate the geometry
         sql = r"""SELECT srid FROM geometry_columns where f_table_name = '%s'"""%table_name
-        SRID = str((utils.sql_load_fr_db(sql)[1])[0][0])  # THIS IS DUE TO WKT-import of geometries below
+        SRID = str((db_utils.sql_load_fr_db(sql)[1])[0][0])  # THIS IS DUE TO WKT-import of geometries below
         if u'WKT' in existing_columns:
             geocol = u'WKT'
         elif u'geometry' in existing_columns:
@@ -425,7 +426,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return None
 
         sql = u"""update "%s" set geometry=GeomFromText(%s,%s)"""%(self.temptableName, geocol, SRID)
-        utils.sql_alter_db(sql)
+        db_utils.sql_alter_db(sql)
 
     def check_and_delete_stratigraphy(self, existing_columns):
         if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):
@@ -452,7 +453,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         skip_obsids.append(obsid)
                         break
             if skip_obsids:
-                utils.sql_alter_db(u'delete from "%s" where obsid in (%s)'%(self.temptableName, u', '.join([u'"{}"'.format(obsid) for obsid in skip_obsids]) ))
+                db_utils.sql_alter_db(u'delete from "%s" where obsid in (%s)' % (self.temptableName, u', '.join([u'"{}"'.format(obsid) for obsid in skip_obsids])))
         
     def wlvllogg_import_from_diveroffice_files(self):
         """ Method for importing diveroffice csv files
@@ -673,7 +674,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
     def drop_temptable(self):
         try:
-            utils.sql_alter_db(u"DROP table %s" % self.temptableName)  # finally drop the temporary table
+            db_utils.sql_alter_db(u"DROP table %s" % self.temptableName)  # finally drop the temporary table
         except:
             pass
 
@@ -681,7 +682,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         sanity = utils.askuser("YesNo","""It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""",'Vacuum the database?')
         if sanity.result == 1:
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-            utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            db_utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
 

@@ -18,6 +18,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+import db_utils
 from PyQt4.QtCore import QUrl, QDir
 from PyQt4.QtGui import QDesktopServices
 
@@ -107,9 +108,9 @@ class drillreport():        # general observation point info for the selected ob
         ConnectionOK, GeneralData = self.GetData(obsid, 'obs_points', 'n')#MacOSX fix1
         #utils.pop_up_info(str(ConnectionOK))#debug
         if ConnectionOK==True:
-            result2 = (utils.sql_load_fr_db(r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""")[1])[0][0]
+            result2 = (db_utils.sql_load_fr_db(r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""")[1])[0][0]
             CRS = utils.returnunicode(result2) #1st we need crs
-            result3 = (utils.sql_load_fr_db(r"""SELECT ref_sys_name FROM spatial_ref_sys where srid =""" + CRS)[1])[0][0]
+            result3 = (db_utils.sql_load_fr_db(r"""SELECT ref_sys_name FROM spatial_ref_sys where srid =""" + CRS)[1])[0][0]
             CRSname = utils.returnunicode(result3) # and crs name
             if  utils.getcurrentlocale()[0] == 'sv_SE':
                 reportdata_1 = self.rpt_upper_left_sv(GeneralData, CRS, CRSname)
@@ -377,7 +378,7 @@ class drillreport():        # general observation point info for the selected ob
             sql += r""" order by stratid"""
         if debug == 'y':
             utils.pop_up_info(sql)
-        ConnectionOK, data = utils.sql_load_fr_db(sql)
+        ConnectionOK, data = db_utils.sql_load_fr_db(sql)
         return ConnectionOK, data
 
 
@@ -392,7 +393,7 @@ def GetStatistics(obsid = ''):
         sql = r"""select Count(""" + column + r""") from w_levels where obsid = '"""
         sql += obsid
         sql += r"""'"""
-        ConnectionOK, number_of_values = utils.sql_load_fr_db(sql)
+        ConnectionOK, number_of_values = db_utils.sql_load_fr_db(sql)
         if number_of_values and number_of_values[0][0] > Statistics_list[2]:#this will select meas if meas >= level_masl
             meas_or_level_masl = column
             Statistics_list[2] = number_of_values[0][0]
@@ -404,7 +405,7 @@ def GetStatistics(obsid = ''):
         sql = r"""select max(level_masl) from w_levels where obsid = '"""
     sql += obsid
     sql += r"""'"""
-    ConnectionOK, min_value = utils.sql_load_fr_db(sql)
+    ConnectionOK, min_value = db_utils.sql_load_fr_db(sql)
     if min_value:
         Statistics_list[0] = min_value[0][0]
 
@@ -414,7 +415,7 @@ def GetStatistics(obsid = ''):
     sql += r"""' and (typeof(""" + meas_or_level_masl + r""")=typeof(0.01) or typeof(""" + meas_or_level_masl + r""")=typeof(1))) as x, (select obsid, """ + meas_or_level_masl + r""" FROM w_levels WHERE obsid = '"""
     sql += obsid
     sql += r"""' and (typeof(""" + meas_or_level_masl + r""")=typeof(0.01) or typeof(""" + meas_or_level_masl + r""")=typeof(1))) as y GROUP BY x.""" + meas_or_level_masl + r""" HAVING SUM(CASE WHEN y.""" + meas_or_level_masl + r""" <= x.""" + meas_or_level_masl + r""" THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.""" + meas_or_level_masl + r""" >= x.""" + meas_or_level_masl + r""" THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
-    ConnectionOK, median_value = utils.sql_load_fr_db(sql)
+    ConnectionOK, median_value = db_utils.sql_load_fr_db(sql)
     if median_value:
         Statistics_list[1] = median_value[0][1]
 
@@ -425,7 +426,7 @@ def GetStatistics(obsid = ''):
         sql = r"""select min(level_masl) from w_levels where obsid = '"""
     sql += obsid
     sql += r"""'"""
-    ConnectionOK, max_value = utils.sql_load_fr_db(sql)
+    ConnectionOK, max_value = db_utils.sql_load_fr_db(sql)
     if max_value:
         Statistics_list[3] = max_value[0][0]
 

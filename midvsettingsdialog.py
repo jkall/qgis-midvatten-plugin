@@ -11,7 +11,7 @@
         copyright            : (C) 2011 by joskal
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/"""
-
+import db_utils
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import uic
@@ -194,7 +194,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
     def ChangedLocale(self):    # TODO: remove in version 1.4
         sql = u"select description from about_db where description like 'locale:%'"
-        connection_ok, result = utils.sql_load_fr_db(sql)
+        connection_ok, result = db_utils.sql_load_fr_db(sql)
         if not self.locale_combobox.currentText():
             return
         if connection_ok:
@@ -205,10 +205,10 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             if len(result) == 1:
                 sql = u"update or ignore about_db set description='locale:%s'"%self.locale_combobox.currentText()
                 sql += u" where description like 'locale:%'"
-                utils.sql_alter_db(sql)
+                db_utils.sql_alter_db(sql)
             elif len(result) == 0:
                 sql = u"insert or ignore into about_db (description) values ('locale:%s')"%self.locale_combobox.currentText()
-                utils.sql_alter_db(sql)
+                db_utils.sql_alter_db(sql)
 
     def ClearColumnLists(self):
         self.ListOfColumns.clear()
@@ -255,39 +255,31 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             for columnName in columns:
                 getattr(self, comboboxname).addItem(columnName)  # getattr is to combine a function and a string to a combined function
 
+    @db_utils.if_connection_ok
     def LoadAndSelectLastSettings(self):
         #self.ms.save_settings('database')
-        connection = utils.dbconnection()
-        if connection.connect2db():
-            connection.closedb()
+        self.database_settings.update_settings(self.ms.settingsdict['database'])
 
-            self.database_settings.update_settings(self.ms.settingsdict['database'])
+        self.loadTablesFromDB()        # All ListOfTables are filled with relevant information
+        self.LoadDistinctPiperParams()
 
-            self.loadTablesFromDB()        # All ListOfTables are filled with relevant information
-            self.LoadDistinctPiperParams()
+        #TS plot settings
+        self.load_and_select_last_ts_plot_settings()
 
-            #TS plot settings
-            self.load_and_select_last_ts_plot_settings()
+        #XY plot settings
+        self.load_and_select_last_xyplot_settings()
 
-            #XY plot settings
-            self.load_and_select_last_xyplot_settings()
+        #Stratigraphy settings # TODO: remove in version 1.4
+        #self.load_and_select_last_stratigraphy_settings()
 
-            #Stratigraphy settings # TODO: remove in version 1.4
-            #self.load_and_select_last_stratigraphy_settings()
+        #Water Quality Reports settings
+        self.load_and_select_last_wqual_settings()
 
-            #Water Quality Reports settings
-            self.load_and_select_last_wqual_settings()
+        #piper diagram settings
+        self.load_and_select_last_piper_settings()
 
-            #piper diagram settings
-            self.load_and_select_last_piper_settings()
-
-            # finally, set dockwidget to last choosen tab
-            self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['tabwidget']))
-        else:
-            connection.closedb()
-            utils.MessagebarAndLog.info(
-                log_msg=u"LoadAndSelectLastSettings: connect2db didn't work")
-            utils.MessagebarAndLog.warning(bar_msg=u"Could not recover Midvatten settings. You will have to reset.")
+        # finally, set dockwidget to last choosen tab
+        self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['tabwidget']))
 
     def load_and_select_last_piper_settings(self):
         searchindex = self.paramCl.findText(self.ms.settingsdict['piper_cl'])
@@ -439,7 +431,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def LoadDistinctPiperParams(self):
         self.ClearPiperParams()
 
-        connection_ok, result = utils.sql_load_fr_db(r"""SELECT DISTINCT parameter FROM w_qual_lab ORDER BY parameter""")
+        connection_ok, result = db_utils.sql_load_fr_db(r"""SELECT DISTINCT parameter FROM w_qual_lab ORDER BY parameter""")
         if connection_ok:
             self.paramCl.addItem('')
             self.paramHCO3.addItem('')
@@ -720,7 +712,7 @@ class PostgisSettings(gui_utils.RowEntryGrid):
         super(PostgisSettings, self).__init__()
         self.midvsettingsdialogdock = midvsettingsdialogdock
 
-        postgis_connections = utils.get_postgis_connections()
+        postgis_connections = db_utils.get_postgis_connections()
 
         self.label = PyQt4.QtGui.QLabel(u'Connections')
         self.label.setFixedWidth(label_width)

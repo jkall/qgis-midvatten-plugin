@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 #
-
+import db_utils
 import utils_for_tests
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
@@ -263,9 +263,9 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                 u'2016/05/15 11:00:00,31,301,6')
                  ]
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
 
         self.importinstance.charsetchoosen = u'utf-8'
         with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen) as f1:
@@ -290,7 +290,8 @@ class TestWlvllogImportFromDiverofficeFiles(object):
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
@@ -310,10 +311,10 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                 u'2016/05/15 11:00:00,31,301,6')
                  ]
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
-        utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:30', '5.0')''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
+        db_utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:30', '5.0')''')
 
         self.importinstance.charsetchoosen = u'utf-8'
         with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen) as f1:
@@ -356,7 +357,8 @@ class TestWlvllogImportFromDiverofficeFiles(object):
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
@@ -376,10 +378,10 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                 u'2016/05/15 11:00:00,31,301,6')
                  ]
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
-        utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
+        db_utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
         self.importinstance.charsetchoosen = u'utf-8'
         with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen) as f1:
@@ -423,7 +425,8 @@ class TestWlvllogImportFromDiverofficeFiles(object):
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
@@ -443,10 +446,10 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                 u'2016/05/15 11:00:00,31,301,6')
                  ]
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
-        utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
+        db_utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
         self.importinstance.charsetchoosen = u'utf-8'
         with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen) as f1:
@@ -490,7 +493,8 @@ class TestWlvllogImportFromDiverofficeFiles(object):
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
@@ -537,7 +541,7 @@ class TestGeneralCsvImport(object):
         file = [u'obsid,date_time,head_cm',
                  u'rb1,2016-03-15 10:30:00,1']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         self.importinstance.charsetchoosen = [u'utf-8']
         with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
@@ -559,7 +563,8 @@ class TestGeneralCsvImport(object):
 
                     _test_general_csv_import_wlvllogg(self, filename)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, None)])'''
                     assert test_string == reference_string
 
@@ -568,7 +573,7 @@ class TestGeneralCsvImport(object):
         file = [u'obsids,date_time,test',
                  u'rb1,2016-03-15 10:30:00,1']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         self.importinstance.charsetchoosen = [u'utf-8']
         with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
@@ -590,7 +595,8 @@ class TestGeneralCsvImport(object):
                         mock_iface.messageBar.return_value.createMessage.assert_called_with(u'Error: Import failed, see log message panel')
                     _test_general_csv_import_wlvllogg(self, filename)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [])'''
                     assert test_string == reference_string
 
@@ -599,7 +605,7 @@ class TestGeneralCsvImport(object):
         file = [u'obsid,date_time,head_cm,comment',
                  u'rb1,2016-03-15 10:30:00,1,testcomment']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         self.importinstance.charsetchoosen = [u'utf-8']
         with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
@@ -620,7 +626,8 @@ class TestGeneralCsvImport(object):
 
                     _test_general_csv_import_wlvllogg(self, filename)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, testcomment)])'''
                     assert test_string == reference_string
 
@@ -629,7 +636,7 @@ class TestGeneralCsvImport(object):
         file = [u'obsid,date_time,head_cm,temp_degc',
                  u'rb1,2016-03-15 10:30:00,1, 5']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         self.importinstance.charsetchoosen = [u'utf-8']
         with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
@@ -650,7 +657,8 @@ class TestGeneralCsvImport(object):
 
                     _test_general_csv_import_wlvllogg(self, filename)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
@@ -659,7 +667,7 @@ class TestGeneralCsvImport(object):
         file = [u'obsid,date_time,head_cm,temp_degc,cond_mscm',
                  u'rb1,2016-03-15 10:30:00,1,5,10']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         self.importinstance.charsetchoosen = [u'utf-8']
         with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
@@ -680,7 +688,8 @@ class TestGeneralCsvImport(object):
 
                     _test_general_csv_import_wlvllogg(self, filename)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
                     assert test_string == reference_string
 
@@ -689,7 +698,7 @@ class TestGeneralCsvImport(object):
         file = [u'obsid,cond_mscm,date_time,head_cm,temp_degc',
                  u'rb1,10,2016-03-15 10:30:00,1,5']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         self.importinstance.charsetchoosen = [u'utf-8']
         with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
@@ -710,7 +719,8 @@ class TestGeneralCsvImport(object):
 
                     _test_general_csv_import_wlvllogg(self, filename)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
                     assert test_string == reference_string
 
@@ -719,7 +729,7 @@ class TestGeneralCsvImport(object):
         file = [u'obsid,date_time,level_masl',
                  u'rb1,2016-03-15 10:30:00,1']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         self.importinstance.charsetchoosen = [u'utf-8']
         with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
@@ -740,7 +750,8 @@ class TestGeneralCsvImport(object):
 
                     _test_general_csv_import_wlvllogg(self, filename)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, None, None, 1.0, None)])'''
                     assert test_string == reference_string
 
@@ -749,7 +760,7 @@ class TestGeneralCsvImport(object):
         file = [u'obsid,date_time,temp_degc',
                  u'rb1,2016-03-15 10:30:00,1']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         self.importinstance.charsetchoosen = [u'utf-8']
         with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
@@ -770,7 +781,8 @@ class TestGeneralCsvImport(object):
 
                     _test_general_csv_import_wlvllogg(self, filename)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, 1.0, None, None, None)])'''
                     assert test_string == reference_string
 
@@ -779,7 +791,7 @@ class TestGeneralCsvImport(object):
         file = [u'obsid,date_time,cond_mscm',
                  u'rb1,2016-03-15 10:30:00,1']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         self.importinstance.charsetchoosen = [u'utf-8']
         with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
@@ -800,7 +812,8 @@ class TestGeneralCsvImport(object):
 
                     _test_general_csv_import_wlvllogg(self, filename)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, None, 1.0, None, None)])'''
                     assert test_string == reference_string
 
@@ -883,9 +896,9 @@ class TestImportObsPointsObsLines(object):
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
     def _test_import_obsids_directly(self):
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid2")')
-        result = utils.sql_load_fr_db(u'select * from obs_points')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid2")')
+        result = db_utils.sql_load_fr_db(u'select * from obs_points')
 
         msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
         if msgbar:
@@ -916,7 +929,8 @@ class TestImportObsPointsObsLines(object):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
             _test_import_obs_points_using_obsp_import(self)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
         msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
         if msgbar:
             print str(msgbar)
@@ -929,7 +943,7 @@ class TestImportObsPointsObsLines(object):
     @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
     def _test_import_obs_points_already_exist(self):
 
-        utils.sql_alter_db(u'''insert into obs_points ("obsid") values ('rb1')''')
+        db_utils.sql_alter_db(u'''insert into obs_points ("obsid") values ('rb1')''')
         self.importinstance.charsetchoosen = [u'utf-8']
 
         f = [[u'obsid', u'name', u'place', u'type', u'length', u'drillstop', u'diam', u'material', u'screen', u'capacity', u'drilldate', u'wmeas_yn', u'wlogg_yn', u'east', u'north', u'ne_accur', u'ne_source', u'h_toc', u'h_tocags', u'h_gs', u'h_accur', u'h_syst', u'h_source', u'source', u'com_onerow', u'com_html'],
@@ -950,7 +964,8 @@ class TestImportObsPointsObsLines(object):
 
             _test_import_obs_points_using_obsp_import(self)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
         msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
 
         #if msgbar:
@@ -985,7 +1000,8 @@ class TestImportObsPointsObsLines(object):
                 assert call.messageBar().createMessage(u'1 rows imported and 2 excluded for table obs_points. See log message panel for details') in mock_iface.mock_calls
             _test_import_obs_points_using_obsp_import(self)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
         msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
         #if msgbar:
         #    print str(msgbar)
@@ -1015,7 +1031,8 @@ class TestImportObsPointsObsLines(object):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
             _test_import_obs_points_using_obsp_import(self)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
         msgbar = TestImportObsPointsObsLines.mocked_iface.messagebar.messages
         if msgbar:
             print str(msgbar)
@@ -1045,7 +1062,8 @@ class TestImportObsPointsObsLines(object):
                 self.importinstance.general_csv_import(goal_table=u'obs_points')
             _test(self)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select "obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html", AsText(geometry) from obs_points'''))
 
         reference_string = ur'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, 45.0, 55.0, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, POINT(45 55))])'''
         assert test_string == reference_string
@@ -1072,7 +1090,8 @@ class TestImportObsPointsObsLines(object):
                 self.importinstance.general_csv_import(goal_table=u'obs_lines')
             _test(self)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, AsText(geometry) from obs_lines'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select obsid, AsText(geometry) from obs_lines'''))
 
         reference_string = ur'''(True, [(line1, LINESTRING(1 2, 3 4, 5 6, 7 8))])'''
         assert test_string == reference_string
@@ -1121,9 +1140,9 @@ class TestWquallabImport(object):
     def test_wquallab_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db('''insert into zz_staff (staff) values ('teststaff')''')
+        db_utils.sql_alter_db('''insert into zz_staff (staff) values ('teststaff')''')
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'depth', u'report', u'project', u'staff', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment'],
              [u'obsid1', u'2', u'testreport', u'testproject', u'teststaff', u'2011-10-19 12:30:00', u'testmethod', u'1,2-Dikloretan', u'1.5', u'<1.5', u'µg/l', u'testcomment']]
 
@@ -1142,7 +1161,8 @@ class TestWquallabImport(object):
                 self.importinstance.general_csv_import(goal_table=u'w_qual_lab')
             _wquallab_import_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
 
         reference_string = ur'''(True, [(obsid1, 2.0, testreport, testproject, teststaff, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
         assert test_string == reference_string
@@ -1151,9 +1171,9 @@ class TestWquallabImport(object):
     def test_wquallab_import_from_csvlayer_depth_empty_string(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db('''insert into zz_staff (staff) values ('teststaff')''')
+        db_utils.sql_alter_db('''insert into zz_staff (staff) values ('teststaff')''')
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'depth', u'report', u'project', u'staff', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment'],
              [u'obsid1', u'', u'testreport', u'testproject', u'teststaff', u'2011-10-19 12:30:00', u'testmethod', u'1,2-Dikloretan', u'1.5', u'<1.5', u'µg/l', u'testcomment']]
 
@@ -1172,7 +1192,8 @@ class TestWquallabImport(object):
                 self.importinstance.general_csv_import(goal_table=u'w_qual_lab')
             test_wquallab_import_from_csvlayer_depth_empty_string(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
 
         reference_string = ur'''(True, [(obsid1, None, testreport, testproject, teststaff, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
         assert test_string == reference_string
@@ -1182,9 +1203,9 @@ class TestWquallabImport(object):
     def test_wquallab_import_from_csvlayer_no_staff(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db('''insert into zz_staff (staff) values ('teststaff')''')
+        db_utils.sql_alter_db('''insert into zz_staff (staff) values ('teststaff')''')
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'depth', u'report', u'project', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment'],
              [u'obsid1', u'2', u'testreport', u'testproject', u'2011-10-19 12:30:00', u'testmethod', u'1,2-Dikloretan', u'1.5', u'<1.5', u'µg/l', u'testcomment']]
 
@@ -1203,7 +1224,8 @@ class TestWquallabImport(object):
                 self.importinstance.general_csv_import(goal_table=u'w_qual_lab')
             _wquallab_import_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
         reference_string = ur'''(True, [(obsid1, 2.0, testreport, testproject, None, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
         assert test_string == reference_string
 
@@ -1248,7 +1270,7 @@ class TestWflowImport(object):
     def test_wflow_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'instrumentid', u'flowtype', u'date_time', u'reading', u'unit', u'comment'],
              [u'obsid1', u'testid', u'Momflow', u'2011-10-19 12:30:00', u'2', u'l/s', u'testcomment']]
 
@@ -1267,7 +1289,8 @@ class TestWflowImport(object):
                 self.importinstance.general_csv_import(goal_table=u'w_flow')
             _test_wflow_import_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_flow'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_flow'''))
         reference_string = ur'''(True, [(obsid1, testid, Momflow, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
 
@@ -1275,7 +1298,7 @@ class TestWflowImport(object):
     def test_wflow_import_from_csvlayer_type_missing(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'instrumentid', u'flowtype', u'date_time', u'reading', u'unit', u'comment'],
              [u'obsid1', u'testid', u'Testtype', u'2011-10-19 12:30:00', u'2', u'l/s', u'testcomment']]
 
@@ -1294,7 +1317,8 @@ class TestWflowImport(object):
                 self.importinstance.general_csv_import(goal_table=u'w_flow')
             _test_wflow_import_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_flow'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_flow'''))
         reference_string = ur'''(True, [(obsid1, testid, Testtype, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
 
@@ -1302,7 +1326,7 @@ class TestWflowImport(object):
     def test_wflow_new_param_into_zz_flowtype(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'instrumentid', u'flowtype', u'date_time', u'reading', u'unit', u'comment'],
              [u'obsid1', u'testid', u'Momflow2', u'2011-10-19 12:30:00', u'2', u'l/s', u'testcomment']]
 
@@ -1321,10 +1345,12 @@ class TestWflowImport(object):
                 self.importinstance.general_csv_import(goal_table=u'w_flow')
             _test(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_flow'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_flow'''))
         reference_string = ur'''(True, [(obsid1, testid, Momflow2, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from zz_flowtype'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from zz_flowtype'''))
         reference_string = ur'''(True, [(Accvol, Accumulated volume), (Momflow, Momentary flow rate), (Aveflow, Average flow since last reading), (Momflow2, None)])'''
         assert test_string == reference_string
 
@@ -1369,7 +1395,7 @@ class TestWqualfieldImport(object):
     def test_w_qual_field_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'depth', u'comment'],
              [u'obsid1', u'teststaff', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment']]
 
@@ -1390,7 +1416,8 @@ class TestWqualfieldImport(object):
                 self.importinstance.general_csv_import(goal_table=u'w_qual_field')
             _test_w_qual_field_import_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_field'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))
         reference_string = ur'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
         assert test_string == reference_string
 
@@ -1398,7 +1425,7 @@ class TestWqualfieldImport(object):
     def test_w_qual_field_import_from_csvlayer_no_depth(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'depth', u'comment'],
              [u'obsid1', u'teststaff', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'', u'testcomment']]
 
@@ -1417,7 +1444,8 @@ class TestWqualfieldImport(object):
                 self.importinstance.general_csv_import(goal_table=u'w_qual_field')
             _test_w_qual_field_import_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_qual_field'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))
         reference_string = ur'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, None, testcomment)])'''
         assert test_string == reference_string
 
@@ -1425,7 +1453,7 @@ class TestWqualfieldImport(object):
     def test_w_qual_field_no_parameter(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'staff', u'date_time', u'instrument',
               u'reading_num', u'reading_txt', u'unit', u'depth', u'comment'],
              [u'obsid1', u'teststaff', u'2011-10-19 12:30:00', u'testinstrument',
@@ -1454,7 +1482,7 @@ class TestWqualfieldImport(object):
             _test_w_qual_field_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
-            utils.sql_load_fr_db(u'''select * from w_qual_field'''))
+            db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))
         reference_string = ur'''(True, [])'''
         assert test_string == reference_string
 
@@ -1462,7 +1490,7 @@ class TestWqualfieldImport(object):
     def test_w_qual_field_parameter_empty_string(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'depth', u'comment'],
              [u'obsid1', u'teststaff', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment'],
              [u'obsid2', u'teststaff', u'2011-10-19 12:30:00', u'testinstrument', u'', u'12', u'<12', u'%', u'22', u'testcomment']]
@@ -1490,7 +1518,7 @@ class TestWqualfieldImport(object):
             _test_w_qual_field_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
-            utils.sql_load_fr_db(u'''select * from w_qual_field'''))
+            db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))
         reference_string = ur'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
         assert test_string == reference_string
 
@@ -1498,8 +1526,8 @@ class TestWqualfieldImport(object):
     def test_w_qual_field_staff_null(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid2")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid2")')
         f = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'depth', u'comment'],
              [u'obsid1', u'', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment'],
              [u'obsid2', u'', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment']]
@@ -1527,12 +1555,12 @@ class TestWqualfieldImport(object):
             _test_w_qual_field_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
-            utils.sql_load_fr_db(u'''select * from w_qual_field'''))
+            db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))
         reference_string = ur'''(True, [(obsid1, None, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment), (obsid2, None, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
         assert test_string == reference_string
 
         test_string = utils_for_tests.create_test_string(
-            utils.sql_load_fr_db(u'''select * from zz_staff'''))
+            db_utils.sql_load_fr_db(u'''select * from zz_staff'''))
         reference_string = ur'''(True, [])'''
         assert test_string == reference_string
 
@@ -1577,7 +1605,7 @@ class TestWlevelsImport(object):
     def test_w_level_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'date_time', u'meas', u'comment'],
              [u'obsid1', u'2011-10-19 12:30:00', u'2', u'testcomment']]
 
@@ -1596,7 +1624,8 @@ class TestWlevelsImport(object):
                 self.importinstance.general_csv_import(goal_table=u'w_levels')
             _test_wlvl_import_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_levels'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_levels'''))
         reference_string = ur'''(True, [(obsid1, 2011-10-19 12:30:00, 2.0, None, None, testcomment)])'''
         assert test_string == reference_string
 
@@ -1604,7 +1633,7 @@ class TestWlevelsImport(object):
     def _test_w_level_import_from_csvlayer_missing_columns(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         #f = [[u'obsid', u'date_time', u'meas', u'comment'],
         #     [u'obsid1', u'2011-10-19 12:30:00', u'2', u'testcomment']]
         f = [[u'obsid', u'date_time', u'meas'],
@@ -1625,7 +1654,8 @@ class TestWlevelsImport(object):
                 self.importinstance.general_csv_import(goal_table=u'w_levels')
             _test_wlvl_import_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_levels'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_levels'''))
         reference_string = ur'''(True, [])'''
         assert test_string == reference_string
 
@@ -1665,8 +1695,8 @@ class TestWlevelsImportOldWlevels(object):
         mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
 
-        utils.sql_alter_db(u'drop table w_levels')
-        utils.sql_alter_db(u'CREATE TABLE "w_levels" ("obsid" text not null, "date_time" text not null, "meas" double, "h_toc" double, "level_masl" double not null default -999, "comment" text, primary key (obsid, date_time), foreign key(obsid) references obs_points(obsid))')
+        db_utils.sql_alter_db(u'drop table w_levels')
+        db_utils.sql_alter_db(u'CREATE TABLE "w_levels" ("obsid" text not null, "date_time" text not null, "meas" double, "h_toc" double, "level_masl" double not null default -999, "comment" text, primary key (obsid, date_time), foreign key(obsid) references obs_points(obsid))')
 
         self.importinstance = midv_data_importer()
 
@@ -1678,7 +1708,7 @@ class TestWlevelsImportOldWlevels(object):
     def test_w_level_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'date_time', u'meas', u'comment'],
              [u'obsid1', u'2011-10-19 12:30:00', u'2', u'testcomment']]
 
@@ -1697,7 +1727,8 @@ class TestWlevelsImportOldWlevels(object):
                 self.importinstance.general_csv_import(goal_table=u'w_levels')
             _test_wlvl_import_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_levels'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_levels'''))
         reference_string = ur'''(True, [(obsid1, 2011-10-19 12:30:00, 2.0, None, -999.0, testcomment)])'''
         assert test_string == reference_string
 
@@ -1705,7 +1736,7 @@ class TestWlevelsImportOldWlevels(object):
     def _test_w_level_import_from_csvlayer_missing_columns(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         #f = [[u'obsid', u'date_time', u'meas', u'comment'],
         #     [u'obsid1', u'2011-10-19 12:30:00', u'2', u'testcomment']]
         f = [[u'obsid', u'date_time', u'meas'],
@@ -1726,7 +1757,8 @@ class TestWlevelsImportOldWlevels(object):
                 self.importinstance.general_csv_import(goal_table=u'w_levels')
             _test_wlvl_import_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_levels'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_levels'''))
         reference_string = ur'''(True, [])'''
         assert test_string == reference_string
 
@@ -1771,7 +1803,7 @@ class TestSeismicImport(object):
     def test_seismic_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_lines ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_lines ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'length', u'ground', u'bedrock', u'gw_table', u'comment'],
              [u'obsid1', u'500', u'2', u'4', u'3', u'acomment']]
 
@@ -1790,7 +1822,8 @@ class TestSeismicImport(object):
                 self.importinstance.general_csv_import(goal_table=u'seismic_data')
             _test_import_seismic_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from seismic_data'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from seismic_data'''))
         reference_string = ur'''(True, [(obsid1, 500.0, 2.0, 4.0, 3.0, acomment)])'''
         assert test_string == reference_string
 
@@ -1835,7 +1868,7 @@ class TestCommentsImport(object):
     def test_comments_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'date_time', u'comment', u'staff'],
              [u'obsid1', u'2011-10-19 12:30:00', u'testcomment', u'teststaff']]
 
@@ -1854,7 +1887,8 @@ class TestCommentsImport(object):
                 self.importinstance.general_csv_import(goal_table=u'comments')
             _test_wlvl_import_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from comments'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from comments'''))
         reference_string = ur'''(True, [(obsid1, 2011-10-19 12:30:00, testcomment, teststaff)])'''
         assert test_string == reference_string
 
@@ -1899,7 +1933,7 @@ class TestStratImport(object):
     def test_strat_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'stratid', u'depthtop', u'depthbot', u'geology', u'geoshort', u'capacity', u'development', u'comment'],
              [u'obsid1', u'1', u'0', u'1', u'grusig sand', u'sand', u'5', u'(j)', u'acomment'],
              [u'obsid1', u'2', u'1', u'4', u'siltigt sandigt grus', u'grus', u'4+', u'(j)', u'acomment2']]
@@ -1919,7 +1953,8 @@ class TestStratImport(object):
                 self.importinstance.general_csv_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
             _test(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from stratigraphy'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from stratigraphy'''))
         reference_string = u'''(True, [(obsid1, 1, 0.0, 1.0, grusig sand, sand, 5, (j), acomment), (obsid1, 2, 1.0, 4.0, siltigt sandigt grus, grus, 4+, (j), acomment2)])'''
         assert test_string == reference_string
 
@@ -1927,7 +1962,7 @@ class TestStratImport(object):
     def test_strat_import_from_csvlayer_eleven_layers(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'stratid', u'depthtop', u'depthbot', u'geology', u'geoshort', u'capacity', u'development', u'comment'],
              [u'obsid1', u'1', u'0', u'1', u's', u's', u'1', u'(j)', u'acomment'],
              [u'obsid1', u'2', u'1', u'2', u's', u's', u'1', u'(j)', u'acomment'],
@@ -1956,7 +1991,8 @@ class TestStratImport(object):
                 self.importinstance.general_csv_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
             _test(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from stratigraphy'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from stratigraphy'''))
         reference_string = u'''(True, [(obsid1, 1, 0.0, 1.0, s, s, 1, (j), acomment), (obsid1, 2, 1.0, 2.0, s, s, 1, (j), acomment), (obsid1, 3, 2.0, 3.0, s, s, 1, (j), acomment), (obsid1, 4, 3.0, 4.0, s, s, 1, (j), acomment), (obsid1, 5, 4.0, 5.0, s, s, 1, (j), acomment), (obsid1, 6, 5.0, 6.0, s, s, 1, (j), acomment), (obsid1, 7, 6.0, 7.0, s, s, 1, (j), acomment), (obsid1, 8, 7.0, 8.0, s, s, 1, (j), acomment), (obsid1, 9, 8.0, 9.0, s, s, 1, (j), acomment), (obsid1, 10, 9.0, 12.1, s, s, 1, (j), acomment), (obsid1, 11, 12.1, 13.0, s, s, 1, (j), acomment)])'''
         assert test_string == reference_string
 
@@ -1964,7 +2000,7 @@ class TestStratImport(object):
     def test_strat_import_one_obs_fail_stratid_gaps(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'stratid', u'depthtop', u'depthbot', u'geology', u'geoshort', u'capacity', u'development', u'comment'],
              [u'obsid1', u'1', u'0', u'1', u'grusig sand', u'sand', u'5', u'(j)', u'acomment'],
              [u'obsid1', u'2', u'1', u'4', u'siltigt sandigt grus', u'grus', u'4+', u'(j)', u'acomment2'],
@@ -1986,7 +2022,8 @@ class TestStratImport(object):
                 self.importinstance.general_csv_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
             _test(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from stratigraphy'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from stratigraphy'''))
         reference_string = u'''(True, [(obsid1, 1, 0.0, 1.0, grusig sand, sand, 5, (j), acomment), (obsid1, 2, 1.0, 4.0, siltigt sandigt grus, grus, 4+, (j), acomment2)])'''
         assert test_string == reference_string
 
@@ -1994,7 +2031,7 @@ class TestStratImport(object):
     def test_strat_import_one_obs_fail_depthbot_gaps(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'stratid', u'depthtop', u'depthbot', u'geology', u'geoshort', u'capacity', u'development', u'comment'],
              [u'obsid1', u'1', u'0', u'1', u'grusig sand', u'sand', u'5', u'(j)', u'acomment'],
              [u'obsid1', u'2', u'1', u'4', u'siltigt sandigt grus', u'grus', u'4+', u'(j)', u'acomment2'],
@@ -2016,7 +2053,8 @@ class TestStratImport(object):
                 self.importinstance.general_csv_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
             _test(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from stratigraphy'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from stratigraphy'''))
         reference_string = u'''(True, [(obsid1, 1, 0.0, 1.0, grusig sand, sand, 5, (j), acomment), (obsid1, 2, 1.0, 4.0, siltigt sandigt grus, grus, 4+, (j), acomment2)])'''
         assert test_string == reference_string
 
@@ -2061,7 +2099,7 @@ class TestMeteoImport(object):
     def test_meteo_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'instrumentid', u'parameter', u'date_time', u'reading_num', u'reading_txt', u'unit', u'comment'],
              [u'obsid1', u'ints1', u'pressure', u'2016-01-01 00:00:00', u'1100', u'1100', u'aunit', u'acomment']]
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
@@ -2079,7 +2117,8 @@ class TestMeteoImport(object):
                 self.importinstance.general_csv_import(goal_table=u'meteo')
             _test_import_meteo_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from meteo'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from meteo'''))
         reference_string = u'''(True, [(obsid1, ints1, pressure, 2016-01-01 00:00:00, 1100.0, 1100, aunit, acomment)])'''
         assert test_string == reference_string
 
@@ -2124,7 +2163,7 @@ class TestVlfImport(object):
     def test_vlf_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_lines ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_lines ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'length', u'real_comp', u'imag_comp', u'comment'],
              [u'obsid1', u'500', u'2', u'10', u'acomment']]
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
@@ -2142,7 +2181,8 @@ class TestVlfImport(object):
                 self.importinstance.general_csv_import(goal_table=u'vlf_data')
             _test_import_vlf_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from vlf_data'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from vlf_data'''))
         reference_string = u'''(True, [(obsid1, 500.0, 2.0, 10.0, acomment)])'''
         assert test_string == reference_string
 
@@ -2167,7 +2207,8 @@ class TestVlfImport(object):
                 self.importinstance.general_csv_import(goal_table=u'vlf_data')
             _test_import_vlf_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from vlf_data'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from vlf_data'''))
         reference_string = u'''(True, [])'''
         assert test_string == reference_string
 
@@ -2229,7 +2270,8 @@ class TestObsLinesImport(object):
                 self.importinstance.general_csv_import(goal_table=u'obs_lines')
             _test_obs_lines_import_from_csvlayer(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from obs_lines'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from obs_lines'''))
         reference_string = u'''(True, [(obsid1, aname, aplace, atype, asource, None)])'''
         assert test_string == reference_string
 
@@ -2345,8 +2387,8 @@ class TestDeleteExistingDateTimesFromTemptable(object):
     def test_delete_existing_date_times_from_temptable_00_already_exists(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
-        utils.sql_alter_db(u'INSERT INTO w_levels ("obsid", "date_time", "level_masl") VALUES ("obsid1", "2016-01-01 00:00:00", "123.0")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO w_levels ("obsid", "date_time", "level_masl") VALUES ("obsid1", "2016-01-01 00:00:00", "123.0")')
 
         f = [[u'obsid', u'date_time', u'level_masl'],
              [u'obsid1', u'2016-01-01 00:00', u'345']]
@@ -2366,7 +2408,8 @@ class TestDeleteExistingDateTimesFromTemptable(object):
                 self.importinstance.general_csv_import(goal_table=u'w_levels')
             _test(self, filename)
 
-        test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from w_levels'''))
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from w_levels'''))
         reference_string = ur'''(True, [(obsid1, 2016-01-01 00:00:00, None, None, 123.0, None)])'''
         assert test_string == reference_string
 
@@ -2375,8 +2418,8 @@ class TestDeleteExistingDateTimesFromTemptable(object):
     def test_delete_existing_date_times_from_temptable_00_already_exists(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
-        utils.sql_alter_db(
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(
             u'INSERT INTO w_levels ("obsid", "date_time", "level_masl") VALUES ("obsid1", "2016-01-01 00:00:00", "123.0")')
 
         f = [[u'obsid', u'date_time', u'level_masl'],
@@ -2400,7 +2443,7 @@ class TestDeleteExistingDateTimesFromTemptable(object):
             _test(self, filename)
 
         test_string = utils_for_tests.create_test_string(
-            utils.sql_load_fr_db(u'''select * from w_levels'''))
+            db_utils.sql_load_fr_db(u'''select * from w_levels'''))
         reference_string = ur'''(True, [(obsid1, 2016-01-01 00:00:00, None, None, 123.0, None)])'''
         assert test_string == reference_string
 
@@ -2408,8 +2451,8 @@ class TestDeleteExistingDateTimesFromTemptable(object):
     def test_delete_existing_date_times_from_temptable_minute_already_exists(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
-        utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
-        utils.sql_alter_db(
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(
             u'INSERT INTO w_levels ("obsid", "date_time", "level_masl") VALUES ("obsid1", "2016-01-01 00:00", "123.0")')
 
         f = [[u'obsid', u'date_time', u'level_masl'],
@@ -2435,7 +2478,7 @@ class TestDeleteExistingDateTimesFromTemptable(object):
             _test(self, filename)
 
         test_string = utils_for_tests.create_test_string(
-            utils.sql_load_fr_db(u'''select * from w_levels'''))
+            db_utils.sql_load_fr_db(u'''select * from w_levels'''))
         reference_string = ur'''(True, [(obsid1, 2016-01-01 00:00, None, None, 123.0, None), (obsid1, 2016-01-01 00:02:00, None, None, 789.0, None)])'''
         assert test_string == reference_string
 

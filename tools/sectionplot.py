@@ -10,6 +10,8 @@
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/
 """
+import db_utils
+
 """
 Major parts of the code is re-used from the profiletool plugin:
 # Copyright (C) 2008  Borys Jurgiel
@@ -279,7 +281,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         'geometry_columns',
         'spatialindex',
         'SpatialIndex')) ORDER BY tbl_name""" )  #SQL statement to get the relevant tables in the spatialite database
-        tabeller = utils.sql_load_fr_db(query)[1]
+        tabeller = db_utils.sql_load_fr_db(query)[1]
         #self.dbTables = {} 
         self.wlvltableComboBox.addItem('')         
         for tabell in tabeller:
@@ -434,7 +436,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 if k<=len(self.selected_obsids):#in first Typ-loop, get some basic obs_points data - to be used for plotting obsid, empty bars etc
                     self.x_id.append(float(self.LengthAlong[q]))
                     sql = u'select h_toc, h_gs, length from obs_points where obsid = "' + obs + u'"'
-                    recs = utils.sql_load_fr_db(sql)[1]
+                    recs = db_utils.sql_load_fr_db(sql)[1]
                     if utils.isfloat(str(recs[0][1])) and recs[0][1]>-999:
                         self.z_id.append(recs[0][1])
                     elif utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
@@ -451,8 +453,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                     del recs
                     
                 sql=u'select "depthbot"-"depthtop", stratid, geology, geoshort, capacity, development, comment from stratigraphy where obsid = "' + obs + u'" and lower(geoshort) ' + self.PlotTypes[Typ] + u" order by stratid"
-                if utils.sql_load_fr_db(sql)[1]:
-                    recs = utils.sql_load_fr_db(sql)[1]#[0][0]
+                if db_utils.sql_load_fr_db(sql)[1]:
+                    recs = db_utils.sql_load_fr_db(sql)[1]#[0][0]
                     j=0#counter for unique stratid
                     for rec in recs:#loop cleanup
                         BarLength.append(rec[0])#loop cleanup
@@ -462,13 +464,17 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                         #print('h_gs for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql01)[1])[0][0]))#debug
                         #print('h_toc for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql02)[1])[0][0]))#debug
                         
-                        if utils.isfloat(str((utils.sql_load_fr_db(sql01)[1])[0][0])) and (utils.sql_load_fr_db(sql01)[1])[0][0]>-999:
-                            z_gs.append(float(str((utils.sql_load_fr_db(sql01)[1])[0][0])))
-                        elif utils.isfloat(str((utils.sql_load_fr_db(sql02)[1])[0][0])) and (utils.sql_load_fr_db(sql02)[1])[0][0]>-999:
-                            z_gs.append(float(str((utils.sql_load_fr_db(sql02)[1])[0][0])))
+                        if utils.isfloat(str((
+                                             db_utils.sql_load_fr_db(sql01)[1])[0][0])) and (
+                        db_utils.sql_load_fr_db(sql01)[1])[0][0]>-999:
+                            z_gs.append(float(str((db_utils.sql_load_fr_db(sql01)[1])[0][0])))
+                        elif utils.isfloat(str((db_utils.sql_load_fr_db(sql02)[1])[0][0])) and (
+                        db_utils.sql_load_fr_db(sql02)[1])[0][0]>-999:
+                            z_gs.append(float(str((db_utils.sql_load_fr_db(sql02)[1])[0][0])))
                         else:
                             z_gs.append(0)
-                        Bottom.append(z_gs[i]- float(str((utils.sql_load_fr_db(u'select "depthbot" from stratigraphy where obsid = "' + obs + u'" and stratid = ' + str(recs[j][1])+ u' and lower(geoshort) ' + self.PlotTypes[Typ])[1])[0][0])))
+                        Bottom.append(z_gs[i] - float(str((
+                                                          db_utils.sql_load_fr_db(u'select "depthbot" from stratigraphy where obsid = "' + obs + u'" and stratid = ' + str(recs[j][1]) + u' and lower(geoshort) ' + self.PlotTypes[Typ])[1])[0][0])))
                         #lists for plotting annotation 
                         self.x_txt.append(x[i])#+ self.barwidth/2)#x-coord for text
                         self.z_txt.append(Bottom[i] + recs[j][0]/2)#Z-value for text
@@ -502,7 +508,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         if self.sectionlinelayer.name()=='obs_lines':
             obsline_id = utils.getselectedobjectnames(self.sectionlinelayer)[0]
             sql = r"""select "%s" as x, "%s" as y1, "%s" as y2 from "%s" where obsid='%s'"""%(x, self.y1_column,self.y2_column,table,obsline_id)
-            conn_OK, recs = utils.sql_load_fr_db(sql)
+            conn_OK, recs = db_utils.sql_load_fr_db(sql)
             table = np.array(recs, dtype=My_format)  #NDARRAY
             self.obs_lines_plot_data=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write self.obs_lines_plot_data.values
         #print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id) + str(self.barlengths) + str(self.bottoms))#debug
@@ -519,7 +525,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
         if self.ms.settingsdict['secplotdrillstop']!='':
             query = r"""select obsid from obs_points where lower(drillstop) like '""" +self.ms.settingsdict['secplotdrillstop'] +r"""'"""
-            result = utils.sql_load_fr_db(query)
+            result = db_utils.sql_load_fr_db(query)
             if result[1]:
                 for item in result[1]:
                     self.obs_p_w_drill_stops.append(item[0])
@@ -529,8 +535,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             if obs in self.obsids_w_wl and self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0:
                 query = r"""select avg("level_masl") from """ + self.ms.settingsdict['secplotwlvltab'] + r""" where obsid = '""" + obs + r"""' and ((date_time >= '""" + min(self.ms.settingsdict['secplotdates']) + r"""' and date_time <= '""" + max(self.ms.settingsdict['secplotdates']) + r"""') or (date_time like '""" + min(self.ms.settingsdict['secplotdates']) + r"""%' or date_time like '""" + max(self.ms.settingsdict['secplotdates']) + r"""%'))"""
                 #print(query)#debug
-                recs = utils.sql_load_fr_db(query)[1]
-                if utils.sql_load_fr_db(query)[1]:
+                recs = db_utils.sql_load_fr_db(query)[1]
+                if db_utils.sql_load_fr_db(query)[1]:
                     self.obsid_wlid.append(obs)
                     self.x_id_wwl.append(float(self.LengthAlong[q]))
                     if utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
@@ -606,8 +612,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             k=0
             for obs in self.selected_obsids:
                 query = u'select level_masl from ' + self.ms.settingsdict['secplotwlvltab'] + ' where obsid = "' + obs + '" and date_time like "' + datum  +'%"' 
-                if utils.sql_load_fr_db(query)[1]:
-                    WL.append((utils.sql_load_fr_db(query)[1])[0][0])
+                if db_utils.sql_load_fr_db(query)[1]:
+                    WL.append((db_utils.sql_load_fr_db(query)[1])[0][0])
                     x_wl.append(float(self.LengthAlong[k]))
                     if obs not in self.obsids_w_wl:
                         self.obsids_w_wl.append(obs)

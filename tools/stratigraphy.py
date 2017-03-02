@@ -45,6 +45,8 @@ import PyQt4.QtGui
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import unicodedata  # To normalize some special national characters to regular international characters
 from functools import partial # only to get combobox signals to work
+
+import db_utils
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 import locale
@@ -128,7 +130,11 @@ class SurveyStore:
     def getData(self, featureIds, vectorlayer):  # THIS FUNCTION IS ONLY CALLED FROM ARPATPLUGIN/SHOWSURVEY
         """ get data from databases for array of features specified by their IDs  """
         surveys = self._getDataStep1(featureIds, vectorlayer)
-        DataLoadingStatus, surveys = self._getDataStep2(surveys)
+        try:
+            DataLoadingStatus, surveys = self._getDataStep2(surveys)
+        except:
+            DataLoadingStatus = False
+
         if DataLoadingStatus == True:
             surveys = self.sanityCheck(surveys)
             return surveys  
@@ -173,59 +179,53 @@ class SurveyStore:
             utils.pop_up_info("getDataStep1 failed ")  # _CHANGE_ for debugging
         return surveys
 
+    @db_utils.if_connection_ok
     def _getDataStep2(self, surveys):    
         """ STEP 2: get strata information for every point """
-        myconnection = utils.dbconnection()
-        if myconnection.connect2db() == True:
-            # create a cursor
-            curs = myconnection.conn.cursor()
-            for (obsid, survey) in surveys.iteritems(): 
-                sql =r"""SELECT stratid, depthtop, depthbot, geology, lower(geoshort), capacity, comment, development FROM """
-                sql += self.stratitable #MacOSX fix1
-                sql += r""" WHERE obsid = '"""    
-                sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRATIGRAPHY FOR CHOOSEN obsid
-                sql += """' ORDER BY stratid"""
-                rs = curs.execute(sql) #Send SQL-syntax to cursor
-                recs = rs.fetchall()  # All data are stored in recs            
-                # parse attributes
-                for record in recs:
-                    if utils.isinteger(record[0]) and utils.isfloat(record[1]) and utils.isfloat(record[2]):
-                        stratigaphy_id = record[0]  # Stratigraphy layer no
-                        depthtotop = record[1]  # depth to top of stratrigraphy layer
-                        depthtobot = record[2]  # depth to bottom of stratrigraphy layer
-                    else:
-                        raise DataSanityError(str(obsid), "Something bad with stratid, depthtop or depthbot!")
-                        stratigaphy_id = 1  # when something went wrong, put it into first layer
-                        depthtotop = 0
-                        depthtobot = 999#default value when something went wrong
-                    if record[3]: # Must check since it is not possible to print null values as text in qt widget
-                        geology = record[3]  # Geology full text 
-                    else:
-                        geology = " " 
-                    geo_short_txt = record[4]  # geo_short might contain national special characters
-                    if geo_short_txt:   # Must not try to encode an empty field
-                        geo_short = unicodedata.normalize('NFKD', geo_short_txt).encode('ascii','ignore')  # geo_short normalized for symbols and color
-                    else:  # If the field is empty, then store an empty string
-                        geo_short = ''
-                    hydro = record[5] # waterloss (hydrogeo parameter) for color
-                    if record[6]:  # Must check since it is not possible to print null values as text in qt widget
-                        comment = record[6] # 
-                    else: 
-                        comment = " " 
-                    if record[7]:  # Must check since it is not possible to print null values as text in qt widget
-                        development = record[7] # 
-                    else: 
-                        development = " " 
-                    st = StrataInfo(stratigaphy_id, depthtotop, depthtobot, geology, geo_short, hydro, comment, development)
-                    # add strata information (in right order) 
-                    insertAt = 0
-                    for a in survey.strata:
-                        if a.stratid > stratigaphy_id:
-                            break
-                        insertAt += 1
-                    survey.strata.insert(insertAt, st)
-            """ Close SQLite-connections """
-            myconnection.closedb()# then close the database
+        for (obsid, survey) in surveys.iteritems():
+            sql =r"""SELECT stratid, depthtop, depthbot, geology, lower(geoshort), capacity, comment, development FROM """
+            sql += self.stratitable #MacOSX fix1
+            sql += r""" WHERE obsid = '"""
+            sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRATIGRAPHY FOR CHOOSEN obsid
+            sql += """' ORDER BY stratid"""
+            connection_ok, recs = db_utils.sql_load_fr_db(sql)
+            # parse attributes
+            for record in recs:
+                if utils.isinteger(record[0]) and utils.isfloat(record[1]) and utils.isfloat(record[2]):
+                    stratigaphy_id = record[0]  # Stratigraphy layer no
+                    depthtotop = record[1]  # depth to top of stratrigraphy layer
+                    depthtobot = record[2]  # depth to bottom of stratrigraphy layer
+                else:
+                    raise DataSanityError(str(obsid), "Something bad with stratid, depthtop or depthbot!")
+                    stratigaphy_id = 1  # when something went wrong, put it into first layer
+                    depthtotop = 0
+                    depthtobot = 999#default value when something went wrong
+                if record[3]: # Must check since it is not possible to print null values as text in qt widget
+                    geology = record[3]  # Geology full text
+                else:
+                    geology = " "
+                geo_short_txt = record[4]  # geo_short might contain national special characters
+                if geo_short_txt:   # Must not try to encode an empty field
+                    geo_short = unicodedata.normalize('NFKD', geo_short_txt).encode('ascii','ignore')  # geo_short normalized for symbols and color
+                else:  # If the field is empty, then store an empty string
+                    geo_short = ''
+                hydro = record[5] # waterloss (hydrogeo parameter) for color
+                if record[6]:  # Must check since it is not possible to print null values as text in qt widget
+                    comment = record[6] #
+                else:
+                    comment = " "
+                if record[7]:  # Must check since it is not possible to print null values as text in qt widget
+                    development = record[7] #
+                else:
+                    development = " "
+                st = StrataInfo(stratigaphy_id, depthtotop, depthtobot, geology, geo_short, hydro, comment, development)
+                # add strata information (in right order)
+                insertAt = 0
+                for a in survey.strata:
+                    if a.stratid > stratigaphy_id:
+                        break
+                    insertAt += 1
+                survey.strata.insert(insertAt, st)
             DataLoadingStatus = True
             return DataLoadingStatus, surveys
         else:

@@ -24,6 +24,7 @@ from operator import itemgetter
 import qgis.utils
 import ast
 
+import db_utils
 import midvatten_utils as utils
 
 from midvatten_utils import get_sql_result_as_dict, returnunicode
@@ -362,7 +363,7 @@ def PlotTypesDict(international='no'):
     """
     #success, Dict = utils.create_dict_from_db_2_cols(('strata','geoshort','zz_strat'))
     success, Dict = utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
-    succss_strata, strata_order = utils.sql_load_fr_db('select strata from zz_stratigraphy_plots order by ROWID')
+    succss_strata, strata_order = db_utils.sql_load_fr_db('select strata from zz_stratigraphy_plots order by ROWID')
     if not success:
         print('fallback method using PlotTypesDict from code')
         if international=='no' and  utils.getcurrentlocale() == 'sv_SE':
@@ -540,7 +541,7 @@ def staff_list():
     :return: A list of staff members from the staff table
     """
     sql = 'SELECT distinct staff from zz_staff'
-    sql_result = utils.sql_load_fr_db(sql)
+    sql_result = db_utils.sql_load_fr_db(sql)
     connection_ok, result_list = sql_result
 
     if not connection_ok:
@@ -621,17 +622,23 @@ def w_qual_field_parameter_units():
 
     return utils.returnunicode(result_dict, keep_containers=True)
 
-def tables_columns():
-    tables_sql = (u"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + returnunicode(SQLiteInternalTables()) + u""") ORDER BY tbl_name""")
-    connection_ok, tables = utils.sql_load_fr_db(tables_sql)
-    if not connection_ok:
-        return {}
+def tables_columns(table=None):
+    if table is None:
+        tables_sql = (u"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + returnunicode(SQLiteInternalTables()) + u""") ORDER BY tbl_name""")
+        connection_ok, tables = db_utils.sql_load_fr_db(tables_sql)
+        if not connection_ok:
+            return {}
+        tablenames = [col[0] for col in tables]
+    elif not isinstance(table, (list, tuple)):
+        tablenames = [table]
+    else:
+        tablenames = table
+
     tables_dict = {}
 
-    tablenames = [col[0] for col in tables]
     for tablename in tablenames:
         columns_sql = """PRAGMA table_info (%s)""" % tablename
-        connection_ok, columns = utils.sql_load_fr_db(columns_sql)
+        connection_ok, columns = db_utils.sql_load_fr_db(columns_sql)
         if not connection_ok:
             continue
         tables_dict[tablename] = tuple(sorted(tuple(columns), key=itemgetter(1)))

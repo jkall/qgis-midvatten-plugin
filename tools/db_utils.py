@@ -1,0 +1,207 @@
+import ast
+from pyspatialite import dbapi2 as sqlite
+
+from PyQt4.QtCore import QSettings
+from midvatten_utils import MessagebarAndLog, returnunicode
+from qgis._core import QgsProject, QgsDataSourceURI
+import db_manager.db_plugins.postgis.connector as postgis_connector
+import db_manager.db_plugins.spatialite.connector as spatialite_connector
+
+class dbconnection():
+    def __init__(self):
+        """
+        Manuals for db connectors:
+        https://github.com/qgis/QGIS/blob/master/python/plugins/db_manager/db_plugins/connector.py
+        https://github.com/qgis/QGIS/blob/master/python/plugins/db_manager/db_plugins/postgis/connector.py
+        https://github.com/qgis/QGIS/blob/master/python/plugins/db_manager/db_plugins/spatialite/connector.py
+        """
+        db_settings = QgsProject.instance().readEntry("Midvatten", "database")[0]
+
+        try:
+            db_settings = ast.literal_eval(db_settings)
+        except SyntaxError:
+            pass
+
+        self.dbtype = db_settings.keys()[0]
+        self.connection_settings = db_settings.values()[0]
+
+        self.uri = QgsDataSourceURI()
+
+        if self.dbtype == u'spatialite':
+            self.dbpath = self.connection_settings[u'dbpath']
+            self.uri.setDatabase(self.dbpath)
+            self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
+        elif self.dbtype == u'postgis':
+            connection_name = self.connection_settings[u'connection'].split(u'/')[0]
+            self.postgis_settings = get_postgis_connections()[connection_name]
+            #MessagebarAndLog.info(log_msg=u'postgis_settings: ' + str(self.postgis_settings))
+            self.uri.setConnection(self.postgis_settings[u'host'], self.postgis_settings[u'port'], self.postgis_settings[u'database'], self.postgis_settings[u'username'], self.postgis_settings[u'password'])
+            self.connector = postgis_connector.PostGisDBConnector(self.uri)
+
+    def connect2db(self):
+        ConnectionOK = False
+        try:#verify this is an existing sqlite database
+            if self.dbtype == u'postgis':
+                self.conn = self.connector.connection
+                #self.conn = psycopg2.connect("host='%s' port='%s' dbname='%s' user='%s' password='%s'"%(self.postgis_settings[u'host'], self.postgis_settings[u'port'], self.postgis_settings[u'database'], self.postgis_settings[u'username'], self.uri.password()))
+                self.cursor = self.conn.cursor()
+            elif self.dbtype == u'spatialite':
+                self.conn = sqlite.connect(self.dbpath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+                self.cursor = self.conn.cursor()
+                self.cursor.execute("select count(*) from sqlite_master")
+            ConnectionOK = True
+        except:
+            MessagebarAndLog.critical(bar_msg=u"Could not connect to database\nYou might have to reset Midvatten settings for this project!")
+        return ConnectionOK
+
+    def closedb(self):
+        try:
+            self.cursor.close()
+            self.conn.close()
+        except:
+            pass
+
+    def schemas(self):
+        """Postgis schemas look like this:
+        Schemas: [(2200, u'public', u'postgres', '{postgres=UC/postgres,=UC/postgres}', u'standard public schema')]
+        This function only returns the first schema.
+        """
+
+        schemas = self.connector.getSchemas()
+        if schemas is None:
+            return ''
+        else:
+            if len(schemas) > 1:
+                MessagebarAndLog.info(bar_msg=u'Found more than one schema. Using the first.')
+            return schemas[0][1]
+
+
+def check_connection_ok():
+    connection = dbconnection()
+    connection_ok = connection.connect2db()
+    try:
+        connection.closedb()
+    except:
+        pass
+    return connection_ok
+
+def if_connection_ok(func):
+    def func_wrapper(*args, **kwargs):
+        if check_connection_ok():
+            ret = func(*args, **kwargs)
+        else:
+            ret = None
+        return ret
+    return func_wrapper
+
+def get_postgis_connections():
+    qs = QSettings()
+    postgresql_connections = {}
+    for k in sorted(qs.allKeys()):
+        if k.startswith(u'PostgreSQL'):
+            cols = k.split(u'/')
+            conn_name = cols[2]
+            try:
+                setting = cols[3]
+            except IndexError:
+                #MessagebarAndLog.info(log_msg=u'Postgresql connection info: Setting ' + str(k) + u" couldn't be read")
+                continue
+            value = qs.value(k)
+            postgresql_connections.setdefault(conn_name, {})[setting] = value
+    return postgresql_connections
+
+def sql_load_fr_db(sql=''):
+    ConnectionOK, result = execute_sql(sql)
+    return ConnectionOK, result
+
+def sql_alter_db(sql=''):
+    ConnectionOK, result = execute_sql(sql, foreign_keys=True, commit=True)
+    return result
+
+def sql_alter_db_by_param_subst(sql='', *subst_params):
+    """
+    sql sent as unicode, result from db returned as list of unicode strings, the subst_paramss is a tuple of parameters to be substituted into the sql
+
+    #please note that the argument, subst_paramss, must be a tuple with the parameters to be substituted with ? inside the sql string
+    #simple example:
+    sql = 'select ?, ? from w_levels where obsid=?)
+    subst_params = ('date_time', 'level_masl', 'well01')
+    #and since it is a tuple, then one single parameter must be given with a tailing comma:
+    sql = 'select * from obs_points where obsid = ?'
+    subst_params = ('well01',)
+    """
+    ConnectionOK, result = execute_sql(sql, foreign_keys=True, commit=True, *subst_params)
+    return ConnectionOK, result
+
+def execute_sql(sql='', foreign_keys=False, commit=False, *subst_params):
+    ConnectionOK = False
+    result = ''
+    connection = dbconnection()
+    connection_ok = connection.connect2db()
+
+    wrong_type_msg = u"""DB Error!\n Sql must be string or list/tuple. If string/tuple,\n"""\
+                     u"""then index 1 is assumed to be the sql question, and index 2 a list of\n"""\
+                     u"""lists containing variables for excecutemany.\nSQL causing this error:%s\n""" %(returnunicode(sql))
+
+    if connection_ok:
+        try:
+            if foreign_keys:
+                connection.cursor.execute("PRAGMA foreign_keys = ON")
+
+            if subst_params and isinstance(sql, basestring):
+                try:
+                    resultfromsql = connection.cursor.execute(sql, subst_params[0])
+                except Exception, e:
+                    textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (returnunicode(sql), returnunicode(str(e)))
+                    MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=textstring, duration=4, button=True)
+                else:
+                    ConnectionOK = True
+            elif isinstance(sql, basestring):
+                try:
+                    resultfromsql = connection.cursor.execute(sql)  # Send SQL-syntax to cursor
+                except Exception, e:
+                    textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (returnunicode(sql), returnunicode(str(e)))
+                    MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=textstring, duration=4, button=True)
+                else:
+                    ConnectionOK = True
+            elif isinstance(sql, (tuple, list)):
+                try:
+                    resultfromsql = connection.cursor.executemany(sql[0], sql[1])
+                except KeyError, e:
+                    MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=wrong_type_msg + u'\nMsg:%s'%str(e), duration=4, button=True)
+                except Exception, e:
+                    textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (returnunicode(sql), returnunicode(str(e)))
+                    MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=textstring, duration=4, button=True)
+                else:
+                    ConnectionOK = True
+            else:
+                MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=wrong_type_msg, duration=4, button=True)
+    else:
+        MessagebarAndLog.critical(bar_msg=u"Could not connect to the database, please reset Midvatten settings! See log message panel", log_msg=u"DB call causing this error (debug info):\n"+sql)
+        ConnectionOK = False
+        connection.closedb()
+
+    if ConnectionOK:
+        result = connection.cursor.fetchall()
+
+    if commit:
+        try:
+            connection.conn.commit()
+        except:
+            pass
+
+    try:
+        connection.closedb()
+    except:
+        pass
+    return ConnectionOK, result
+
+def excecute_sqlfile(sqlfilename, function=sql_alter_db):
+    with open(sqlfilename, 'r') as f:
+        f.readline()  # first line is encoding info....
+        for line in f:
+            if not line:
+                continue
+            if line.startswith("#"):
+                continue
+            function(line)

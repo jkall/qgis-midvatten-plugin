@@ -19,8 +19,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-
-from PyQt4.QtCore import *  
+import db_utils
+from PyQt4.QtCore import *
 from PyQt4.QtGui import *  
 from qgis.core import *  
 from qgis.gui import *
@@ -99,16 +99,14 @@ class PrepareForQgis2Threejs():
     def create_db_views(self):
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","add_spatial_views_for_gis2threejs.sql") 
 
-        myconnection = utils.dbconnection()
+        myconnection = db_utils.dbconnection()
         myconnection.connect2db()
-        curs = myconnection.conn.cursor()
-        curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+        curs = myconnection.cursor
 
-        sqliteline = r"""create view strat_obs_p_for_qgsi2threejs as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "stratigraphy" as "b" using ("obsid") where (typeof("a"."h_toc") in ('integer', 'real') or typeof("a"."h_gs") in ('integer', 'real'))"""
-        curs.execute(sqliteline)
-        sqliteline = r"""insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) values ('strat_obs_p_for_qgsi2threejs', 'geometry', 'rowid', 'obs_points', 'geometry',1);"""
-        curs.execute(sqliteline)
-        
+        curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+        curs.execute(r"""create view strat_obs_p_for_qgsi2threejs as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "stratigraphy" as "b" using ("obsid") where (typeof("a"."h_toc") in ('integer', 'real') or typeof("a"."h_gs") in ('integer', 'real'))""")
+        curs.execute(r"""insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) values ('strat_obs_p_for_qgsi2threejs', 'geometry', 'rowid', 'obs_points', 'geometry',1);""")
+
         for key in self.strat_layers_dict:
             f = open(SQLFile, 'r')
             linecounter = 1
@@ -120,19 +118,20 @@ class PrepareForQgis2Threejs():
                 linecounter += 1
 
         curs.execute("PRAGMA foreign_keys = OFF")
+        myconnection.conn.commit()
         myconnection.closedb()
 
     def drop_db_views(self):
         sql1="delete from views_geometry_columns where view_name = 'strat_obs_p_for_qgsi2threejs'"
         sql2="drop view if exists strat_obs_p_for_qgsi2threejs"
-        utils.sql_alter_db(sql1) 
-        utils.sql_alter_db(sql2) 
+        db_utils.sql_alter_db(sql1)
+        db_utils.sql_alter_db(sql2)
         
         sql1="delete from views_geometry_columns where view_name = ?"
         sql2="drop view if exists "
         for key in self.strat_layers_dict:
-            utils.sql_alter_db_by_param_subst(sql1,(key,)) 
-            utils.sql_alter_db(sql2 + key) 
+            db_utils.sql_alter_db_by_param_subst(sql1, (key,))
+            db_utils.sql_alter_db(sql2 + key)
 
     def remove_views(self):
         remove_group = self.root.findGroup("stratigraphy_layers_for_qgis2threejs")

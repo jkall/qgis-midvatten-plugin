@@ -23,6 +23,8 @@
 #
 import timeit
 import datetime
+
+import db_utils
 import utils_for_tests
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
@@ -89,7 +91,7 @@ class TestGeneralCsvGui(object):
         file = [u'obsid,date_time,meas',
                  u'rb1,2016-03-15 10:30:00,5.0']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -148,7 +150,8 @@ class TestGeneralCsvGui(object):
                         importer.start_import()
 
                     _test(self, filename)
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
@@ -217,7 +220,8 @@ class TestGeneralCsvGui(object):
 
                     _test(self, filename)
 
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid from obs_points'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid from obs_points'''))
                     reference_string = ur'''(True, [(rb1)])'''
                     assert test_string == reference_string
 
@@ -226,7 +230,7 @@ class TestGeneralCsvGui(object):
         file = [u'obsid,date_time,meas',
                  u'rb1,2016-03-15 10:30:00,5.0']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
 
         with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -290,7 +294,8 @@ class TestGeneralCsvGui(object):
                         importer.start_import()
 
                     _test(self, filename)
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
                     reference_string = ur'''(True, [(rb2, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
@@ -299,7 +304,7 @@ class TestGeneralCsvGui(object):
         file = [u'obsid,length2,real_comp,imag_comp,comment',
                 u'obsid2,500,2,10,acomment']
 
-        utils.sql_alter_db(u'INSERT INTO obs_lines ("obsid") VALUES ("obsid1")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_lines ("obsid") VALUES ("obsid1")')
 
         with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -363,7 +368,8 @@ class TestGeneralCsvGui(object):
                         importer.start_import()
 
                     _test(self, filename)
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select * from vlf_data'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select * from vlf_data'''))
                     reference_string = u'''(True, [(obsid1, 500.0, 2.0, 10.0, acomment)])'''
                     assert test_string == reference_string
 
@@ -371,7 +377,7 @@ class TestGeneralCsvGui(object):
     def test_import_w_levels_no_header(self):
         file = [u'rb1,2016-03-15 10:30:00,5.0']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -430,7 +436,8 @@ class TestGeneralCsvGui(object):
                         importer.start_import()
 
                     _test(self, filename)
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
@@ -441,7 +448,7 @@ class TestGeneralCsvGui(object):
         date_list = [base + datetime.timedelta(days=x) for x in range(0, 10000)]
         file.extend([u'rb1,' + datetime.datetime.strftime(adate, u'%Y%m%d %H%M') + u',0.5' for adate in date_list])
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -501,7 +508,8 @@ class TestGeneralCsvGui(object):
                         return import_time
 
                     import_time = _test(self, filename)
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select count(*) from w_levels'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select count(*) from w_levels'''))
                     reference_string = ur'''(True, [(10000)])'''
                     assert import_time < 10
                     assert test_string == reference_string
@@ -511,7 +519,7 @@ class TestGeneralCsvGui(object):
         file = [u'obsid,date_time,meas',
                  u'rb1,2016-03-15 10:30:00,5.0']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
 
         with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -575,7 +583,8 @@ class TestGeneralCsvGui(object):
                         importer.start_import()
 
                     _test(self, filename)
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
                     reference_string = ur'''(True, [(rb2, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
@@ -584,7 +593,7 @@ class TestGeneralCsvGui(object):
         file = [u'date_time,meas',
                  u'2016-03-15 10:30:00,5.0']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -648,7 +657,8 @@ class TestGeneralCsvGui(object):
                         importer.start_import()
 
                     _test(self, filename)
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
@@ -657,7 +667,7 @@ class TestGeneralCsvGui(object):
         file = [u'obsid,instrumentid,parameter,date_time,reading_num,reading_num,aunit',
                  u'rb1,inst1,precip,2016-03-15 10:30:00,5.0,6.0,cm(H2O)']
 
-        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
         with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -716,7 +726,8 @@ class TestGeneralCsvGui(object):
                         importer.start_import()
 
                     _test(self, filename)
-                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, instrumentid, parameter, date_time, reading_num, reading_txt, unit, comment from meteo'''))
+                    test_string = utils_for_tests.create_test_string(
+                        db_utils.sql_load_fr_db(u'''select obsid, instrumentid, parameter, date_time, reading_num, reading_txt, unit, comment from meteo'''))
                     reference_string = u'''(True, [(rb1, inst1, precip, 2016-03-15 10:30:00, 5.0, 5.0, cm(H2O), None)])'''
                     assert test_string == reference_string
 
