@@ -19,18 +19,16 @@
  *                                                                         *
  ***************************************************************************/
 """
-import io
-
-from PyQt4 import QtCore
 import PyQt4
-from PyQt4.QtCore import QVariant
-from qgis.core import QgsApplication
-import mock
+import io
 import os
+from PyQt4 import QtCore
+from qgis.core import QgsApplication
 
 import midvatten_utils as utils
-from tools.tests.mocks_for_tests import DummyInterface
+import mock
 from midvatten.midvatten import midvatten
+from tools.tests.mocks_for_tests import DummyInterface
 
 
 class test_qapplication_is_running():
@@ -118,23 +116,41 @@ class ContextualStringIO(io.StringIO):
 class MidvattenTestSpatialiteNotCreated(object):
     def __init__(self):
         self.TEMP_DB_SETTINGS = {u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}
-        self.TEMP_DBPATH_ANSWER = u'/tmp/tmp_midvatten_temp_db.sqlite'
+        self.TEMP_DBPATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
+        self.SETTINGS_DATABASE = (u"{u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}", True)
 
     @mock.patch('midvatten_utils.QgsProject.instance')
     def setUp(self, mocked_instance):
         mocked_instance.return_value = utils.anything_to_string_representation(self.TEMP_DB_SETTINGS)
 
-
-        self.iface = DummyInterface()
+        self.iface = mock.MagicMock()
         self.midvatten = midvatten(self.iface)
         try:
-            os.remove(self.TEMP_DBPATH_ANSWER)
+            os.remove(self.TEMP_DBPATH)
         except OSError:
             pass
 
     def tearDown(self):
         #Delete database
         try:
-            os.remove(self.TEMP_DBPATH_ANSWER)
+            os.remove(self.TEMP_DBPATH)
         except OSError:
             pass
+
+
+class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
+    @mock.patch('qgis.utils.iface')
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.Askuser')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    def setUp(self, mocked_instance, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+        super(MidvattenTestSpatialiteDbSv, self).setUp()
+        mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
+        mock_answer_yes.return_value.result = 1
+        mock_crs_question.return_value.__getitem__.return_value = 3006
+        mock_savefilename.return_value = self.TEMP_DBPATH
+        self.midvatten.new_db()

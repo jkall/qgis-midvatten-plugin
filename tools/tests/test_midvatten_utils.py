@@ -19,25 +19,18 @@
  *                                                                         *
  ***************************************************************************/
 """
+import io
+
 import db_utils
 import midvatten_utils as utils
 import mock
-from mock import call
-from midvatten.midvatten import midvatten
-from import_data_to_db import midv_data_importer
 import utils_for_tests
+from mock import call
+from mocks_for_tests import MockUsingReturnValue
 from utils_for_tests import create_test_string
-from mocks_for_tests import MockNotFoundQuestion, MockUsingReturnValue, MockQgsProjectInstance, MockQgisUtilsIface, MockReturnUsingDictIn, DummyInterface2, mock_answer
-import io
-import os
-
-TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
-MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
-MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
-DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class _TestFilterNonexistingObsidsAndAsk(object):
+class TestFilterNonexistingObsidsAndAsk(object):
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
     def test_filter_nonexisting_obsids_and_ask_ok(self, mock_notfound, mock_iface):
@@ -143,7 +136,7 @@ class _TestFilterNonexistingObsidsAndAsk(object):
             assert len(mock_notfound.mock_calls) == 2
 
 
-class _TestTempinput(object):
+class TestTempinput(object):
     def test_tempinput(self):
         rows = u'543\n21'
         with utils.tempinput(rows) as filename:
@@ -153,7 +146,7 @@ class _TestTempinput(object):
         assert res == reference_list
 
 
-class _TestAskUser(object):
+class TestAskUser(object):
     PyQt4_QtGui_QInputDialog_getText = MockUsingReturnValue([u'-1 hours'])
     cancel = MockUsingReturnValue([u''])
 
@@ -168,47 +161,10 @@ class _TestAskUser(object):
         assert question.result == u'cancel'
 
 
-class _TestGetFunctions(object):
-    answer_yes_obj = MockUsingReturnValue()
-    answer_yes_obj.result = 1
-    answer_no_obj = MockUsingReturnValue()
-    answer_no_obj.result = 0
-    answer_yes = MockUsingReturnValue(answer_yes_obj)
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
-    skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
+class TestGetFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance')
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
-    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
-        mock_crsquestion.return_value = [3006]
-        mock_savefilename.return_value = TEMP_DB_PATH
-        mock_qgsproject_instance.return_value.instance.readEntry.return_value = [u'en_US']
-
-        self.dummy_iface = DummyInterface2()
-        self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten(self.iface)
-
-        try:
-            os.remove(TEMP_DB_PATH)
-        except OSError:
-            pass
-        mock_locale.return_value.answer = u'ok'
-        mock_locale.return_value.value = u'sv_SE'
-        self.midvatten.new_db()
-        self.importinstance = midv_data_importer()
-
-    def tearDown(self):
-        #Delete database
-        os.remove(TEMP_DB_PATH)
-
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    def test_get_last_logger_dates(self):
+    def test_get_last_logger_dates(self, mocked_instance):
+        mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
         db_utils.sql_alter_db('''insert into obs_points (obsid) values ('rb1')''')
         db_utils.sql_alter_db('''insert into obs_points (obsid) values ('rb2')''')
         db_utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2015-01-01 00:00')''')
@@ -222,8 +178,8 @@ class _TestGetFunctions(object):
         assert test_string == reference_string
 
 
-class _TestSqlToParametersUnitsTuple(object):
-    @mock.patch('midvatten_utils.sql_load_fr_db', autospec=True)
+class TestSqlToParametersUnitsTuple(object):
+    @mock.patch('db_utils.sql_load_fr_db', autospec=True)
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
         mock_sqlload.return_value = (True, [(u'par1', u'un1'), (u'par2', u'un2')])
 
@@ -232,58 +188,21 @@ class _TestSqlToParametersUnitsTuple(object):
         assert test_string == reference_string
 
 
-class _TestCalculateDbTableRows(object):
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
+class TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
+    @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QgsProject.instance')
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
-    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
-        mock_crsquestion.return_value = [3006]
-        mock_savefilename.return_value = TEMP_DB_PATH
-        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
-
-        self.dummy_iface = DummyInterface2()
-        self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten(self.iface)
-
-        try:
-            os.remove(TEMP_DB_PATH)
-        except OSError:
-            pass
-        mock_locale.return_value.answer = u'ok'
-        mock_locale.return_value.value = u'sv_SE'
-        self.midvatten.new_db()
-        self.importinstance = midv_data_importer()
-
-    def tearDown(self):
-        #Delete database
-        os.remove(TEMP_DB_PATH)
-
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('qgis.utils.iface', autospec=True)
-    def test_get_db_statistics(self, mock_iface):
+    def test_get_db_statistics(self, mocked_instance, mock_messagebar):
         """
         Test that calculate_db_table_rows can be run without major error
         :param mock_iface:
         :return:
         """
+        mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
         utils.calculate_db_table_rows()
-
-        calls = [str(call) for call in mock_iface.mock_calls]
-
-        assert """call.messageBar().createMessage(u'Some sql failure, see log for additional info.')""" not in calls
-        assert """call.messageBar().createMessage(u'Calculation done, see log for results.')""" in calls
+        assert mock.call.info(bar_msg='Calculation done, see log for results.', button=True, duration=15, log_msg='Tablename                               Nr of rows\n    SpatialIndex                            0              \nabout_db                                147            \ncomments                                0              \ngeometry_columns                        2              \ngeometry_columns_auth                   2              \ngeometry_columns_field_infos            0              \ngeometry_columns_statistics             2              \ngeometry_columns_time                   2              \nmeteo                                   0              \nobs_lines                               0              \nobs_points                              0              \nseismic_data                            0              \nspatial_ref_sys                         2              \nspatialite_history                      14             \nsql_statements_log                      0              \nsqlite_sequence                         1              \nstratigraphy                            0              \nviews_geometry_columns                  8              \nviews_geometry_columns_auth             0              \nviews_geometry_columns_field_infos      0              \nviews_geometry_columns_statistics       0              \nvirts_geometry_columns                  0              \nvirts_geometry_columns_auth             0              \nvirts_geometry_columns_field_infos      0              \nvirts_geometry_columns_statistics       0              \nvlf_data                                0              \nw_flow                                  0              \nw_levels                                0              \nw_levels_logger                         0              \nw_qual_field                            0              \nw_qual_lab                              0              \nzz_capacity                             24             \nzz_capacity_plots                       24             \nzz_flowtype                             3              \nzz_meteoparam                           2              \nzz_staff                                0              \nzz_strat                                55             \nzz_stratigraphy_plots                   14             ') in mock_messagebar.mock_calls
 
 
-class _TestGetCurrentLocale(object):
+class TestGetCurrentLocale(object):
     @mock.patch('locale.getdefaultlocale')
     @mock.patch('midvatten_utils.get_locale_from_db')
     def test_getcurrentlocale(self, mock_get_locale, mock_default_locale):
@@ -295,7 +214,7 @@ class _TestGetCurrentLocale(object):
         assert test_string == reference_string
         
 
-class _TestGetDelimiter(object):
+class TestGetDelimiter(object):
     def test_get_delimiter_only_one_column(self):
         file = [u'obsid',
                  u'rb1']
