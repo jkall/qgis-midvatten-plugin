@@ -116,22 +116,25 @@ class ContextualStringIO(io.StringIO):
 
 
 class MidvattenTestSpatialiteNotCreated(object):
-    TEMP_DB_SETTINGS = {u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}
-    TEMP_DBPATH_ANSWER = u'/tmp/tmp_midvatten_temp_db.sqlite'
+    def __init__(self):
+        self.TEMP_DB_SETTINGS = {u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}
+        self.TEMP_DBPATH_ANSWER = u'/tmp/tmp_midvatten_temp_db.sqlite'
+
     @mock.patch('midvatten_utils.QgsProject.instance')
     def setUp(self, mocked_instance):
-        mocked_instance.return_value = utils.anything_to_string_representation(MidvattenTestSpatialiteNotCreated.TEMP_DB_SETTINGS)
+        mocked_instance.return_value = utils.anything_to_string_representation(self.TEMP_DB_SETTINGS)
+
 
         self.iface = DummyInterface()
         self.midvatten = midvatten(self.iface)
         try:
-            os.remove(MidvattenTestSpatialiteNotCreated.TEMP_DBPATH_ANSWER)
+            os.remove(self.TEMP_DBPATH_ANSWER)
         except OSError:
             pass
 
     def tearDown(self):
         #Delete database
         try:
-            os.remove(MidvattenTestSpatialiteNotCreated.TEMP_DBPATH_ANSWER)
+            os.remove(self.TEMP_DBPATH_ANSWER)
         except OSError:
             pass
