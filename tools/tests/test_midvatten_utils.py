@@ -30,7 +30,7 @@ from mocks_for_tests import MockUsingReturnValue
 from utils_for_tests import create_test_string
 
 
-class TestFilterNonexistingObsidsAndAsk(object):
+class _TestFilterNonexistingObsidsAndAsk(object):
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
     def test_filter_nonexisting_obsids_and_ask_ok(self, mock_notfound, mock_iface):
@@ -136,7 +136,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             assert len(mock_notfound.mock_calls) == 2
 
 
-class TestTempinput(object):
+class _TestTempinput(object):
     def test_tempinput(self):
         rows = u'543\n21'
         with utils.tempinput(rows) as filename:
@@ -146,7 +146,7 @@ class TestTempinput(object):
         assert res == reference_list
 
 
-class TestAskUser(object):
+class _TestAskUser(object):
     PyQt4_QtGui_QInputDialog_getText = MockUsingReturnValue([u'-1 hours'])
     cancel = MockUsingReturnValue([u''])
 
@@ -161,7 +161,7 @@ class TestAskUser(object):
         assert question.result == u'cancel'
 
 
-class TestGetFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
+class _TestGetFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance')
     def test_get_last_logger_dates(self, mocked_instance):
         mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
@@ -178,7 +178,7 @@ class TestGetFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert test_string == reference_string
 
 
-class TestSqlToParametersUnitsTuple(object):
+class _TestSqlToParametersUnitsTuple(object):
     @mock.patch('db_utils.sql_load_fr_db', autospec=True)
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
         mock_sqlload.return_value = (True, [(u'par1', u'un1'), (u'par2', u'un2')])
@@ -188,7 +188,7 @@ class TestSqlToParametersUnitsTuple(object):
         assert test_string == reference_string
 
 
-class TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
+class _TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QgsProject.instance')
     def test_get_db_statistics(self, mocked_instance, mock_messagebar):
@@ -202,7 +202,7 @@ class TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert mock.call.info(bar_msg='Calculation done, see log for results.', button=True, duration=15, log_msg='Tablename                               Nr of rows\n    SpatialIndex                            0              \nabout_db                                147            \ncomments                                0              \ngeometry_columns                        2              \ngeometry_columns_auth                   2              \ngeometry_columns_field_infos            0              \ngeometry_columns_statistics             2              \ngeometry_columns_time                   2              \nmeteo                                   0              \nobs_lines                               0              \nobs_points                              0              \nseismic_data                            0              \nspatial_ref_sys                         2              \nspatialite_history                      14             \nsql_statements_log                      0              \nsqlite_sequence                         1              \nstratigraphy                            0              \nviews_geometry_columns                  8              \nviews_geometry_columns_auth             0              \nviews_geometry_columns_field_infos      0              \nviews_geometry_columns_statistics       0              \nvirts_geometry_columns                  0              \nvirts_geometry_columns_auth             0              \nvirts_geometry_columns_field_infos      0              \nvirts_geometry_columns_statistics       0              \nvlf_data                                0              \nw_flow                                  0              \nw_levels                                0              \nw_levels_logger                         0              \nw_qual_field                            0              \nw_qual_lab                              0              \nzz_capacity                             24             \nzz_capacity_plots                       24             \nzz_flowtype                             3              \nzz_meteoparam                           2              \nzz_staff                                0              \nzz_strat                                55             \nzz_stratigraphy_plots                   14             ') in mock_messagebar.mock_calls
 
 
-class TestGetCurrentLocale(object):
+class _TestGetCurrentLocale(object):
     @mock.patch('locale.getdefaultlocale')
     @mock.patch('midvatten_utils.get_locale_from_db')
     def test_getcurrentlocale(self, mock_get_locale, mock_default_locale):
@@ -214,7 +214,7 @@ class TestGetCurrentLocale(object):
         assert test_string == reference_string
         
 
-class TestGetDelimiter(object):
+class _TestGetDelimiter(object):
     def test_get_delimiter_only_one_column(self):
         file = [u'obsid',
                  u'rb1']

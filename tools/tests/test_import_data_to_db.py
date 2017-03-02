@@ -48,7 +48,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class _TestParseDiverofficeFile(object):
+class TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
                                                            'Failure, parsing failed for file': 'cancel'},
@@ -208,47 +208,18 @@ class _TestParseDiverofficeFile(object):
         assert test_string == reference_string
 
 
-class _TestWlvllogImportFromDiverofficeFiles(object):
+class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    dbpath_question = MockUsingReturnValue(TEMP_DB_PATH)
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
-    skip_popup = MockUsingReturnValue('')
-
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
-    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
-        mock_crsquestion.return_value = [3006]
-        mock_savefilename.return_value = TEMP_DB_PATH
-        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
-
-        self.dummy_iface = DummyInterface2()
-        self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten(self.iface)
-
-        try:
-            os.remove(TEMP_DB_PATH)
-        except OSError:
-            pass
-        mock_locale.return_value.answer = u'ok'
-        mock_locale.return_value.value = u'sv_SE'
-        self.midvatten.new_db()
+    def setUp(self, mocked_instance):
+        super(TestWlvllogImportFromDiverofficeFiles, self).setUp()
+        mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
         self.importinstance = midv_data_importer()
 
-    def tearDown(self):
-        #Delete database
-        os.remove(TEMP_DB_PATH)
-
-    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    def test_wlvllogg_import_from_diveroffice_files(self):
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    def test_wlvllogg_import_from_diveroffice_files(self, mocked_instance):
+        mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
         files = [(u'Location=rb1',
                 u'Date/time,Water head[cm],Temperature[°C]',
                 u'2016/03/15 10:30:00,1,10',
@@ -277,13 +248,14 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', TestWlvllogImportFromDiverofficeFiles.mock_dbpath.get_v)
+                    @mock.patch('midvatten_utils.QgsProject.instance')
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
-                    def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+                    def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mocked_instance):
+                        mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
                         mock_filenames.return_value = filenames
                         mock_encoding.return_value = [u'utf-8']
                         self.importinstance.wlvllogg_import_from_diveroffice_files()
@@ -293,10 +265,12 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     test_string = utils_for_tests.create_test_string(
                         db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
+                    print(test_string)
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    def test_wlvllogg_import_from_diveroffice_files_skip_duplicate_datetimes(self):
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    def _test_wlvllogg_import_from_diveroffice_files_skip_duplicate_datetimes(self, mocked_instance):
+        mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
         files = [(u'Location=rb1',
                 u'Date/time,Water head[cm],Temperature[°C]',
                 u'2016/03/15 10:30:00,1,10',
@@ -362,8 +336,9 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    def test_wlvllogg_import_from_diveroffice_files_filter_dates(self):
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    def _test_wlvllogg_import_from_diveroffice_files_filter_dates(self, mocked_instance):
+        mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
         files = [(u'Location=rb1',
                 u'Date/time,Water head[cm],Temperature[°C]',
                 u'2016/03/15 10:30:00,1,10',
@@ -430,8 +405,9 @@ class _TestWlvllogImportFromDiverofficeFiles(object):
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    def test_wlvllogg_import_from_diveroffice_files_all_dates(self):
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    def _test_wlvllogg_import_from_diveroffice_files_all_dates(self, mocked_instance):
+        mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
         files = [(u'Location=rb1',
                 u'Date/time,Water head[cm],Temperature[°C]',
                 u'2016/03/15 10:30:00,1,10',

@@ -23,7 +23,7 @@ import mock
 import utils_for_tests
 from definitions import midvatten_defs
 
-class TestDefsFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
+class _TestDefsFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance')
     def test_tables_columns(self, mock_instance):
         mock_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE

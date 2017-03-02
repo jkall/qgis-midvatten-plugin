@@ -337,11 +337,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         #Create the import-table in DB
         fields=','.join(fields)
         db_utils.sql_alter_db("""CREATE table "%s" (%s)""" % (self.temptableName, fields)) # Create a temporary table with only text columns (unless a .csvt file was defined by user parallell to the .csv file)
-        #create connection and cursor
-        dbpath = QgsProject.instance().readEntry("Midvatten","database")
-        conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-        curs = conn.cursor()
-        curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+
+        db_utils.sql_alter_db("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
 
         # Retreive every feature from temporary .csv qgis csvlayer and write it to the temporary table in sqlite (still only text fields unless user specified a .csvt file)
         for feature in self.csvlayer.getFeatures():
@@ -355,17 +352,18 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if len(fields)>0:   # NOTE CANNOT USE utils.sql_alter_db() SINCE THE OPTION OF SENDING 2 ARGUMENTS TO .execute IS USED BELOW
                 #please note the usage of ? for parameter substitution - highly recommended
                 #curs.execute("""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso]))
+                connection = db_utils.DbConnectionManager()
+                connection.connect2db()
+                curs = connection.cursor
                 try:
                     curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([value for value in values_perso])) # Assuming value is unicode, send it as such to sqlite
                 except:
                     curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso])) #in case of errors, the value must be a byte string, then try to convert to unicode
+                connection.closedb()
                 self.status = 'True'
             else: #no attribute Datas
                 utils.MessagebarAndLog.critical(bar_msg=u'No data found!! No data will be imported!!')
                 self.status = 'False'
-        conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
-        curs.close()
-        conn.close()
 
     def delete_existing_date_times_from_temptable(self, primary_keys, goal_table):
         """
