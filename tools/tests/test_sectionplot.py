@@ -54,7 +54,7 @@ TEMP_DB_PATH4 = u'/tmp/tmp_midvatten_temp_db4.sqlite'
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 
 
-class TestSectionPlot(object):
+class _TestSectionPlot(object):
     """ The test doesn't go through the whole section plot unfortunately
     """
     answer_yes = mock_answer('yes')
@@ -65,7 +65,7 @@ class TestSectionPlot(object):
     skip_popup = MockUsingReturnValue('')
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -200,7 +200,7 @@ class TestSectionPlot(object):
         _test_plot_section_with_depth(self)
 
         
-class TestSectionPlot2(object):
+class _TestSectionPlot2(object):
     """ The test doesn't go through the whole section plot unfortunately
     """
     answer_yes = mock_answer('yes')
@@ -211,7 +211,7 @@ class TestSectionPlot2(object):
     skip_popup = MockUsingReturnValue('')
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -286,7 +286,7 @@ class TestSectionPlot2(object):
         assert test_string == u"[ 0.          0.62469505  1.87408514]"
 
 
-class TestSectionPlot3(object):
+class _TestSectionPlot3(object):
     """ The test doesn't go through the whole section plot unfortunately
     """
     answer_yes = mock_answer('yes')
@@ -297,7 +297,7 @@ class TestSectionPlot3(object):
     skip_popup = MockUsingReturnValue('')
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -383,7 +383,7 @@ class __TestSectionPlot4(object):
     skip_popup = MockUsingReturnValue('')
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')

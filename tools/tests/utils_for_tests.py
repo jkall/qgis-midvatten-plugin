@@ -25,9 +25,12 @@ from PyQt4 import QtCore
 import PyQt4
 from PyQt4.QtCore import QVariant
 from qgis.core import QgsApplication
+import mock
+import os
 
 import midvatten_utils as utils
 from tools.tests.mocks_for_tests import DummyInterface
+from midvatten.midvatten import midvatten
 
 
 class test_qapplication_is_running():
@@ -111,3 +114,24 @@ class ContextualStringIO(io.StringIO):
         self.close() # icecrime does it, so I guess I should, too
         return False # Indicate that we haven't handled the exception, if received
 
+
+class MidvattenTestSpatialiteNotCreated(object):
+    TEMP_DB_SETTINGS = {u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}
+    TEMP_DBPATH_ANSWER = u'/tmp/tmp_midvatten_temp_db.sqlite'
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    def setUp(self, mocked_instance):
+        mocked_instance.return_value = utils.anything_to_string_representation(MidvattenTestSpatialiteNotCreated.TEMP_DB_SETTINGS)
+
+        self.iface = DummyInterface()
+        self.midvatten = midvatten(self.iface)
+        try:
+            os.remove(MidvattenTestSpatialiteNotCreated.TEMP_DBPATH_ANSWER)
+        except OSError:
+            pass
+
+    def tearDown(self):
+        #Delete database
+        try:
+            os.remove(MidvattenTestSpatialiteNotCreated.TEMP_DBPATH_ANSWER)
+        except OSError:
+            pass

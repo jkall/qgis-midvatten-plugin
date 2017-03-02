@@ -32,6 +32,8 @@ import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgisUtilsIface, MockQgsProjectInstance
 from tools.tests.mocks_for_tests import DummyInterface
 
+TEMP_DBPATH_ANSWER = u'/tmp/tmp_midvatten_temp_db.sqlite'
+TEMP_DB_SETTINGS = {u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}
 
 class TestCreateMemoryDb():
     answer_yes_obj = MockUsingReturnValue()
@@ -45,7 +47,7 @@ class TestCreateMemoryDb():
         self.midvatten = midvatten(self.iface)
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
     def test_new_db(self, mock_locale):
@@ -58,49 +60,30 @@ class TestCreateMemoryDb():
         self.midvatten = None
 
 
-class TestCreateDb(object):
-    temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
-    #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
-    answer_yes_obj = MockUsingReturnValue()
-    answer_yes_obj.result = 1
-    answer_no_obj = MockUsingReturnValue()
-    answer_no_obj.result = 0
-    answer_yes = MockUsingReturnValue(answer_yes_obj)
-    crs_question = MockUsingReturnValue([3006])
-    dbpath_question = MockUsingReturnValue(temp_db_path)
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([temp_db_path]))
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
-    skip_popup = MockUsingReturnValue('')
-
-    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     def setUp(self):
-
-        self.iface = DummyInterface()
-        self.midvatten = midvatten(self.iface)
-        try:
-            os.remove(TestCreateDb.temp_db_path)
-        except OSError:
-            pass
-
+        super(TestCreateDb, self).setUp()
     def tearDown(self):
-        #Delete database
+        super(TestCreateDb, self).tearDown()
+
+    @mock.patch('qgis.utils.iface')
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.Askuser')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    def test_create_db_locale_sv(self, mocked_instance, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+        mocked_instance.return_value = utils.anything_to_string_representation(TEMP_DB_SETTINGS)
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
+        mock_answer_yes.return_value.result = 1
+        mock_crs_question.return_value.__getitem__.return_value = 3006
+        mock_savefilename.return_value.__getitem__.return_value = TEMP_DBPATH_ANSWER
         try:
-            os.remove(TestCreateDb.temp_db_path)
-        except OSError:
-            pass
-
-    @mock.patch('qgis.utils.iface')
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', crs_question.get_v)
-    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    def test_create_db_se(self, mock_locale, mock_iface):
-        mock_locale.return_value.answer = u'ok'
-        mock_locale.return_value.value = u'sv_SE'
-        self.midvatten.new_db()
+            self.midvatten.new_db()
+        except:
+            print(str(mocked_instance.mock_calls))
+        print(str(mocked_instance.mock_calls))
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'select * from zz_strat'))
         reference_string = ur"""(True, [(berg, berg), (b, berg), (rock, berg), (ro, berg), (grovgrus, grovgrus), (grg, grovgrus), (coarse gravel, grovgrus), (cgr, grovgrus), (grus, grus), (gr, grus), (gravel, grus), (mellangrus, mellangrus), (grm, mellangrus), (medium gravel, mellangrus), (mgr, mellangrus), (fingrus, fingrus), (grf, fingrus), (fine gravel, fingrus), (fgr, fingrus), (grovsand, grovsand), (sag, grovsand), (coarse sand, grovsand), (csa, grovsand), (sand, sand), (sa, sand), (mellansand, mellansand), (sam, mellansand), (medium sand, mellansand), (msa, mellansand), (finsand, finsand), (saf, finsand), (fine sand, finsand), (fsa, finsand), (silt, silt), (si, silt), (lera, lera), (ler, lera), (le, lera), (clay, lera), (cl, lera), (morän, morän), (moran, morän), (mn, morän), (till, morän), (ti, morän), (torv, torv), (t, torv), (peat, torv), (pt, torv), (fyll, fyll), (fyllning, fyll), (f, fyll), (made ground, fyll), (mg, fyll), (land fill, fyll)])"""
@@ -109,32 +92,19 @@ class TestCreateDb(object):
         assert current_locale == u'sv_SE'
 
     @mock.patch('qgis.utils.iface')
-    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', crs_question.get_v)
-    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
     @mock.patch('create_db.utils.NotFoundQuestion')
-    def test_create_db_locale_se(self, mock_locale, mock_iface):
-        mock_locale.return_value.answer = u'ok'
-        mock_locale.return_value.value = u'sv_SE'
-        self.midvatten.new_db()
-        test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db(u'select * from zz_strat'))
-        reference_string = ur"""(True, [(berg, berg), (b, berg), (rock, berg), (ro, berg), (grovgrus, grovgrus), (grg, grovgrus), (coarse gravel, grovgrus), (cgr, grovgrus), (grus, grus), (gr, grus), (gravel, grus), (mellangrus, mellangrus), (grm, mellangrus), (medium gravel, mellangrus), (mgr, mellangrus), (fingrus, fingrus), (grf, fingrus), (fine gravel, fingrus), (fgr, fingrus), (grovsand, grovsand), (sag, grovsand), (coarse sand, grovsand), (csa, grovsand), (sand, sand), (sa, sand), (mellansand, mellansand), (sam, mellansand), (medium sand, mellansand), (msa, mellansand), (finsand, finsand), (saf, finsand), (fine sand, finsand), (fsa, finsand), (silt, silt), (si, silt), (lera, lera), (ler, lera), (le, lera), (clay, lera), (cl, lera), (morän, morän), (moran, morän), (mn, morän), (till, morän), (ti, morän), (torv, torv), (t, torv), (peat, torv), (pt, torv), (fyll, fyll), (fyllning, fyll), (f, fyll), (made ground, fyll), (mg, fyll), (land fill, fyll)])"""
-        assert test_string == reference_string
-        current_locale = utils.getcurrentlocale()[0]
-        assert current_locale == u'sv_SE'
-
-    @mock.patch('qgis.utils.iface')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', crs_question.get_v)
-    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    def test_create_db_locale_en(self, mock_locale, mock_iface):
+    @mock.patch('midvatten_utils.Askuser')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten_utils.QgsProject.instance')
+    def _test_create_db_locale_en(self, mocked_instance, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+        mocked_instance.return_value = utils.anything_to_string_representation(TEMP_DB_SETTINGS)
         mock_locale.return_value.answer = u'ok'
         mock_locale.return_value.value = u'en_US'
+        mock_answer_yes.return_value.result = 1
+        mock_crs_question.return_value.__getitem__.return_value = 3006
+        mock_savefilename.return_value.__getitem__.return_value = TEMP_DBPATH_ANSWER
+
         self.midvatten.new_db()
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'select * from zz_strat'))
@@ -143,9 +113,8 @@ class TestCreateDb(object):
         current_locale = utils.getcurrentlocale()[0]
         assert current_locale == u'en_US'
 
-
-class TestObsPointsTriggers(object):
-    temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
+class _TestObsPointsTriggers(object):
+    temp_db_path = {u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
@@ -153,22 +122,24 @@ class TestObsPointsTriggers(object):
     answer_no_obj.result = 0
     answer_yes = MockUsingReturnValue(answer_yes_obj)
     crs_question = MockUsingReturnValue([3006])
-    dbpath_question = MockUsingReturnValue(temp_db_path)
+    dbpath_question = MockUsingReturnValue(temp_db_path[u'spatialite'][u'dbpath'])
     mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
     mock_dbpath = MockUsingReturnValue(MockQgsProjectInstance([temp_db_path]))
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
     skip_popup = MockUsingReturnValue('')
 
+    @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', crs_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
-    def setUp(self, mock_locale):
+    def setUp(self, mock_locale, mocked_instance):
+        mocked_instance.return_value = utils.anything_to_string_representation(TestObsPointsTriggers.temp_db_path)
+
         self.iface = DummyInterface()
         self.midvatten = midvatten(self.iface)
         try:
-            os.remove(TestObsPointsTriggers.temp_db_path)
+            os.remove(TestObsPointsTriggers.temp_db_path[u'spatialite'][u'dbpath'])
         except OSError:
             pass
         mock_locale.return_value.answer = u'ok'
@@ -454,5 +425,5 @@ class TestObsPointsTriggers(object):
 
     def tearDown(self):
         #Delete database
-        os.remove(TestObsPointsTriggers.temp_db_path)
+        os.remove(TestObsPointsTriggers.temp_db_path[u'spatialite'][u'dbpath'])
 

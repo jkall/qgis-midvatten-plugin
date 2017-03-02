@@ -59,7 +59,7 @@ class LoadLayers():
         except:#qgis < 2.4
             MyGroup = self.legend.addGroup (self.group_name,1,-1)
 
-        dbconnection = db_utils.dbconnection()
+        dbconnection = db_utils.DbConnectionManager()
         connection_ok = dbconnection.connect2db()
         uri = dbconnection.uri
         dbtype = dbconnection.dbtype
@@ -233,14 +233,15 @@ class LoadLayers():
                 group_index = self.legend.groups().index(self.group_name) 
                 self.legend.removeGroup(group_index)
 
+    @db_utils.if_connection_ok
     def selection_layer_in_db_or_not(self): #this is not used, it might be if using layer_styles stored in the db
         sql = r"""select name from sqlite_master where name = 'layer_styles'"""
         result = db_utils.sql_load_fr_db(sql)[1]
         if len(result)==0:#if it is an old database w/o styles
-            update_db = utils.askuser("YesNo","""Your database was created with plugin version < 1.1 when layer styles were not stored in the database. You can update this database to the new standard with layer styles (symbols, colors, labels, input forms etc) stored in the database. This will increase plugin stability and multi-user experience but it will also change the layout of all your forms for entering data into the database. Anyway, an update of the database is recommended. Do you want to add these layer styles now?""",'Update database with layer styles?')
+            update_db = utils.Askuser("YesNo", """Your database was created with plugin version < 1.1 when layer styles were not stored in the database. You can update this database to the new standard with layer styles (symbols, colors, labels, input forms etc) stored in the database. This will increase plugin stability and multi-user experience but it will also change the layout of all your forms for entering data into the database. Anyway, an update of the database is recommended. Do you want to add these layer styles now?""", 'Update database with layer styles?')
             if update_db.result == 1:
                 from create_db import AddLayerStyles
-                AddLayerStyles(self.settingsdict['database'])
+                AddLayerStyles()
                 self.add_layers_new_method()
             else:
                 self.add_layers_old_method()

@@ -37,7 +37,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestFilterNonexistingObsidsAndAsk(object):
+class _TestFilterNonexistingObsidsAndAsk(object):
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
     def test_filter_nonexisting_obsids_and_ask_ok(self, mock_notfound, mock_iface):
@@ -143,7 +143,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             assert len(mock_notfound.mock_calls) == 2
 
 
-class TestTempinput(object):
+class _TestTempinput(object):
     def test_tempinput(self):
         rows = u'543\n21'
         with utils.tempinput(rows) as filename:
@@ -153,22 +153,22 @@ class TestTempinput(object):
         assert res == reference_list
 
 
-class TestAskUser(object):
+class _TestAskUser(object):
     PyQt4_QtGui_QInputDialog_getText = MockUsingReturnValue([u'-1 hours'])
     cancel = MockUsingReturnValue([u''])
 
     @mock.patch('PyQt4.QtGui.QInputDialog.getText', PyQt4_QtGui_QInputDialog_getText.get_v)
     def test_askuser_dateshift(self):
-        question = utils.askuser('DateShift')
+        question = utils.Askuser('DateShift')
         assert question.result == ['-1', 'hours']
 
     @mock.patch('PyQt4.QtGui.QInputDialog.getText', cancel.get_v)
     def test_askuser_dateshift_cancel(self):
-        question = utils.askuser('DateShift')
+        question = utils.Askuser('DateShift')
         assert question.result == u'cancel'
 
 
-class TestGetFunctions(object):
+class _TestGetFunctions(object):
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_no_obj = MockUsingReturnValue()
@@ -181,7 +181,7 @@ class TestGetFunctions(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -222,7 +222,7 @@ class TestGetFunctions(object):
         assert test_string == reference_string
 
 
-class TestSqlToParametersUnitsTuple(object):
+class _TestSqlToParametersUnitsTuple(object):
     @mock.patch('midvatten_utils.sql_load_fr_db', autospec=True)
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
         mock_sqlload.return_value = (True, [(u'par1', u'un1'), (u'par2', u'un2')])
@@ -232,7 +232,7 @@ class TestSqlToParametersUnitsTuple(object):
         assert test_string == reference_string
 
 
-class TestCalculateDbTableRows(object):
+class _TestCalculateDbTableRows(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -241,7 +241,7 @@ class TestCalculateDbTableRows(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -283,7 +283,7 @@ class TestCalculateDbTableRows(object):
         assert """call.messageBar().createMessage(u'Calculation done, see log for results.')""" in calls
 
 
-class TestGetCurrentLocale(object):
+class _TestGetCurrentLocale(object):
     @mock.patch('locale.getdefaultlocale')
     @mock.patch('midvatten_utils.get_locale_from_db')
     def test_getcurrentlocale(self, mock_get_locale, mock_default_locale):
@@ -295,7 +295,7 @@ class TestGetCurrentLocale(object):
         assert test_string == reference_string
         
 
-class TestGetDelimiter(object):
+class _TestGetDelimiter(object):
     def test_get_delimiter_only_one_column(self):
         file = [u'obsid',
                  u'rb1']

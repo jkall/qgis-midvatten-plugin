@@ -118,7 +118,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
 
         if self.foreign_keys_import_question is None:
-            stop_question = utils.askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?"""%(u', '.join(force_import_of_foreign_keys_tables)), u"Info!")
+            stop_question = utils.Askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""" % (u', '.join(force_import_of_foreign_keys_tables)), u"Info!")
             if stop_question.result == 0:      # if the user wants to abort
                 self.status = 'False'
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -186,7 +186,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         #Finally import data:
         nr_failed_import = recsinfile - nr_after
         if nr_failed_import > 0:
-            stop_question = utils.askuser(u"YesNo", u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?"""%(str(nr_failed_import)),"Warning!")
+            stop_question = utils.Askuser(u"YesNo", u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?""" % (str(nr_failed_import)), "Warning!")
             if stop_question.result == 0:      # if the user wants to abort
                 self.status = 'False'
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -463,9 +463,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         existing_obsids = utils.get_all_obsids()
 
-        confirm_names = utils.askuser("YesNo", "Do you want to confirm each logger import name before import?")
+        confirm_names = utils.Askuser("YesNo", "Do you want to confirm each logger import name before import?")
 
-        import_all_data = utils.askuser("YesNo", "Do you want to import all data?\n\n" +
+        import_all_data = utils.Askuser("YesNo", "Do you want to import all data?\n\n" +
                                         "'No' = only new data after the latest date in the database,\n" +
                                         "for each observation point, will be imported.\n\n" +
                                         "'Yes' = any data not matching an exact datetime in the database\n" +
@@ -679,7 +679,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             pass
 
     def SanityCheckVacuumDB(self):
-        sanity = utils.askuser("YesNo","""It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""",'Vacuum the database?')
+        sanity = utils.Askuser("YesNo", """It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""", 'Vacuum the database?')
         if sanity.result == 1:
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
             db_utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming

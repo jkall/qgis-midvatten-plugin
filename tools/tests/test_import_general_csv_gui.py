@@ -50,7 +50,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class TestGeneralCsvGui(object):
+class _TestGeneralCsvGui(object):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -61,7 +61,7 @@ class TestGeneralCsvGui(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -99,7 +99,7 @@ class TestGeneralCsvGui(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -168,7 +168,7 @@ class TestGeneralCsvGui(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -239,7 +239,7 @@ class TestGeneralCsvGui(object):
 
                     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -313,7 +313,7 @@ class TestGeneralCsvGui(object):
 
                     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -385,7 +385,7 @@ class TestGeneralCsvGui(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -456,7 +456,7 @@ class TestGeneralCsvGui(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -528,7 +528,7 @@ class TestGeneralCsvGui(object):
 
                     @mock.patch('midvatten_utils.get_selected_features_as_tuple')
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -602,7 +602,7 @@ class TestGeneralCsvGui(object):
 
                     @mock.patch('midvatten_utils.get_selected_features_as_tuple')
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -675,7 +675,7 @@ class TestGeneralCsvGui(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -732,7 +732,7 @@ class TestGeneralCsvGui(object):
                     assert test_string == reference_string
 
 
-class TestStaticMethods(object):
+class _TestStaticMethods(object):
 
     def test_translate_and_reorder_file_data(self):
         file_data = [[u'obsid', u'acol', u'acol2'],

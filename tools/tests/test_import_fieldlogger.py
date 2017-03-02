@@ -21,7 +21,7 @@ MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
-class TestFieldLoggerImporterDb(object):
+class _TestFieldLoggerImporterDb(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -30,7 +30,7 @@ class TestFieldLoggerImporterDb(object):
     skip_popup = MockUsingReturnValue('')
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', DBPATH_QUESTION.get_v)
     def setUp(self, mock_locale):
@@ -117,7 +117,7 @@ class TestFieldLoggerImporterDb(object):
 
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
@@ -189,7 +189,7 @@ class TestFieldLoggerImporterDb(object):
 
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
@@ -261,7 +261,7 @@ class TestFieldLoggerImporterDb(object):
 
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
@@ -334,7 +334,7 @@ class TestFieldLoggerImporterDb(object):
 
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
@@ -407,7 +407,7 @@ class TestFieldLoggerImporterDb(object):
 
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
@@ -484,7 +484,7 @@ class TestFieldLoggerImporterDb(object):
 
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
@@ -580,7 +580,7 @@ class TestFieldLoggerImporterDb(object):
 
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
@@ -678,7 +678,7 @@ class TestFieldLoggerImporterDb(object):
 
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
@@ -753,7 +753,7 @@ class TestFieldLoggerImporterDb(object):
 
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
@@ -809,7 +809,7 @@ class TestFieldLoggerImporterDb(object):
             assert test_string == reference_string
 
 
-class TestFieldLoggerImporterNoDb(object):
+class _TestFieldLoggerImporterNoDb(object):
 
     @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
     @mock.patch('import_fieldlogger.utils.get_last_used_flow_instruments')
@@ -1025,7 +1025,7 @@ class TestFieldLoggerImporterNoDb(object):
             assert test_string is None
 
 
-class TestCommentsImportFields(object):
+class _TestCommentsImportFields(object):
     def setUp(self):
         mock_import_method_chooser = MagicMock()
         mock_import_method_chooser.parameter_name = u'comment'
@@ -1060,7 +1060,7 @@ class TestCommentsImportFields(object):
         assert test_string == reference_string
 
 
-class TestStaffQuestion(object):
+class _TestStaffQuestion(object):
 
     @mock.patch('import_fieldlogger.defs.staff_list')
     def setUp(self, mock_stafflist):
@@ -1076,7 +1076,7 @@ class TestStaffQuestion(object):
         assert test_string == reference_string
 
 
-class TestObsidFilter(object):
+class _TestObsidFilter(object):
     def setUp(self):
         self.obsid_filter = import_fieldlogger.ObsidFilter()
 
@@ -1092,7 +1092,7 @@ class TestObsidFilter(object):
 
 @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
 @mock.patch('import_fieldlogger.defs.w_qual_field_parameter_units')
-def test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units, mock_mock_message_bar):
+def _test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units, mock_mock_message_bar):
     mock_w_qual_field_parameter_units.retun_value = {}
 
     stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
@@ -1125,7 +1125,7 @@ def test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units,
     assert test_string == reference_string
 
 
-def test_SublocationFilter():
+def _test_SublocationFilter():
     sublocation_filter = import_fieldlogger.SublocationFilter([u'a.1', u'a.2'])
 
     assert u'{sublocation: a.1}' == create_test_string(sublocation_filter.alter_data({u'sublocation': u'a.1'}))
@@ -1139,7 +1139,7 @@ def test_SublocationFilter():
     assert u'{sublocation: a.2}' == create_test_string(sublocation_filter.alter_data({u'sublocation': u'a.2'}))
 
 
-class TestDateTimeFilter(object):
+class _TestDateTimeFilter(object):
     def test_date_time_filter_observation_should_be_none(self):
         datetimefilter = DateTimeFilter()
         datetimefilter.from_date = u'2016-01-01'

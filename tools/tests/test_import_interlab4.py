@@ -49,7 +49,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestInterlab4Importer():
+class _TestInterlab4Importer():
     def setUp(self):
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
@@ -472,7 +472,7 @@ class TestInterlab4Importer():
         pass
 
 
-class TestInterlab4ImporterDB(object):
+class _TestInterlab4ImporterDB(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -482,7 +482,7 @@ class TestInterlab4ImporterDB(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -533,7 +533,7 @@ class TestInterlab4ImporterDB(object):
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten_utils.NotFoundQuestion')
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestInterlab4ImporterDB.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.Askuser', TestInterlab4ImporterDB.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileNames')

@@ -577,7 +577,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return 0 #only to stop function
         else:    #If correct number of columns, remove empty records
             if len(self.columns) > NoCols:#Here is where the user may interrupt if there are more columns than needed for w_levels
-                ManyColsQuestion = utils.askuser("YesNo", """Please note!\nThere are %s columns in your csv file which may be perfectly fine if the first %s corresponds to those needed.\n\nDo you want to proceed with the import?"""%(str(len(self.columns)),str(NoCols)),"Warning!")
+                ManyColsQuestion = utils.Askuser("YesNo", """Please note!\nThere are %s columns in your csv file which may be perfectly fine if the first %s corresponds to those needed.\n\nDo you want to proceed with the import?""" % (str(len(self.columns)), str(NoCols)), "Warning!")
                 if ManyColsQuestion.result == 0:      # if the user wants to abort
                     self.status = 'False'
                     PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -593,7 +593,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 #qgis.utils.iface.messageBar().pushMessage("Info","The csv file had " + str(self.recsinfile) + " non-empty posts \n" + "and among these were found " + str(self.recsinfile - self.recstoimport) + " duplicates.", 0)
                 #Then check wether there are duplicates in the imported file and if so, ask user what to do
                 if self.recsinfile > self.recstoimport: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
-                    duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?"""%(self.recsinfile - self.recstoimport),"Warning!")
+                    duplicatequestion = utils.Askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?""" % (self.recsinfile - self.recstoimport), "Warning!")
                     if duplicatequestion.result == 0:      # if the user wants to abort
                         self.status = 'False'
                         PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -621,7 +621,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             #qgis.utils.iface.messageBar().pushMessage("Info","The csv file had " + str(self.recsinfile) + " non-empty posts \n" + "and among these were found " + str(self.recsinfile - self.recstoimport) + " duplicates.", 0)
             #Then check wether there are duplicates in the imported file and if so, ask user what to do
             if self.recsinfile > self.recstoimport: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
-                duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?"""%(self.recsinfile - self.recstoimport),"Warning!")
+                duplicatequestion = utils.Askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?""" % (self.recsinfile - self.recstoimport), "Warning!")
                 if duplicatequestion.result == 0:      # if the user wants to abort
                     self.status = 'False'
                     PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -929,7 +929,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             #Then check wether there are duplicates in the imported file and if so, ask user what to do
             if self.RecordsInFile[0][0] > self.RecordsToImport[0][0]: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
-                duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\n(More than one measurement at the same date_time.)\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicate measurements.\n\nProceed?"""%(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]),"Warning!")
+                duplicatequestion = utils.Askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\n(More than one measurement at the same date_time.)\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicate measurements.\n\nProceed?""" % (self.RecordsInFile[0][0] - self.RecordsToImport[0][0]), "Warning!")
                 #utils.pop_up_info(duplicatequestion.result)    #debug
                 if duplicatequestion.result == 0:      # if the user wants to abort
                     return 0    # return 0 and then nothing will be imported
@@ -940,7 +940,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return 0
 
     def SanityCheckVacuumDB(self):
-        sanity = utils.askuser("YesNo","""It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""",'Vacuum the database?')
+        sanity = utils.Askuser("YesNo", """It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""", 'Vacuum the database?')
         if sanity.result == 1:
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
             db_utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
@@ -1002,7 +1002,7 @@ class wlvlloggimportclass():
 
             db_utils.sql_alter_db("DROP table %s" % self.temptableName) # finally drop the temporary table
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            sanity = utils.askuser("YesNo","""It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""",'Vacuum the database?')
+            sanity = utils.Askuser("YesNo", """It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""", 'Vacuum the database?')
             if sanity.result == 1:
                 PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
                 db_utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
@@ -1127,7 +1127,7 @@ class wlvlloggimportclass():
 
             #Then check wether there are duplicates in the imported file and if so, ask user what to do
             if self.RecordsInFile[0][0] > self.RecordsToImport[0][0]: # If there are duplicates in the import file, let user choose whether to abort or import only last of duplicates
-                duplicatequestion = utils.askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\n(More than one measurement at the same date_time.)\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicate measurements.\n\nProceed?"""%(self.RecordsInFile[0][0] - self.RecordsToImport[0][0]),"Warning!")
+                duplicatequestion = utils.Askuser("YesNo", """Please note!\nThere are %s duplicates in your data!\n(More than one measurement at the same date_time.)\nDo you really want to import these data?\nAnswering yes will start, from top of the imported file and only import the first of the duplicate measurements.\n\nProceed?""" % (self.RecordsInFile[0][0] - self.RecordsToImport[0][0]), "Warning!")
                 #utils.pop_up_info(duplicatequestion.result)    #debug
                 if duplicatequestion.result == 0:      # if the user wants to abort
                     return 0    # return 0 and then nothing will be imported

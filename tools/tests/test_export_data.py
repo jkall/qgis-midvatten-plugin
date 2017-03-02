@@ -46,7 +46,7 @@ MOCK_EXPORT_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([EXPORT_DB_PATH
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 TEMP_DIR = u'/tmp/'
 
-class TestExport(unittest.TestCase):
+class _TestExport(unittest.TestCase):
     """
     """
     answer_yes_obj = MockUsingReturnValue()
@@ -62,7 +62,7 @@ class TestExport(unittest.TestCase):
     exported_csv_files_no_zz = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv']]
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -170,7 +170,7 @@ class TestExport(unittest.TestCase):
 
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
     @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -252,7 +252,7 @@ class TestExport(unittest.TestCase):
 
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.get_selected_features_as_tuple')
     @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')

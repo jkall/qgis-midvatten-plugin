@@ -99,7 +99,7 @@ class PrepareForQgis2Threejs():
     def create_db_views(self):
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","add_spatial_views_for_gis2threejs.sql") 
 
-        myconnection = db_utils.dbconnection()
+        myconnection = db_utils.DbConnectionManager()
         myconnection.connect2db()
         curs = myconnection.cursor
 

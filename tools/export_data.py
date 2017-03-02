@@ -32,7 +32,7 @@ class ExportData():
         self.ID_obs_lines = OBSID_L
 
     def export_2_csv(self,exportfolder):
-        database = db_utils.dbconnection()
+        database = db_utils.DbConnectionManager()
         database.connect2db() #establish connection to the current midv db
         self.curs = database.cursor#get a cursor
 

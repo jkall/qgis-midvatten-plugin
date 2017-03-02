@@ -40,21 +40,10 @@ from operator import itemgetter
 from qgis.core import *
 from qgis.gui import *
 
-from db_utils import dbconnection, sql_load_fr_db, sql_alter_db, \
-    excecute_sqlfile, check_connection_ok
+import db_utils
 from matplotlib.dates import num2date
 
 not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
-
-
-def show_message_log(pop_error=False):
-    """
-    Source: qgis code
-     """
-    if pop_error:
-        qgis.utils.iface.messageBar().popWidget()
-
-    qgis.utils.iface.openMessageLog()
 
 
 class MessagebarAndLog():
@@ -122,13 +111,7 @@ class MessagebarAndLog():
         MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.CRITICAL, QgsMessageLog.CRITICAL, button)
 
 
-def write_qgs_log_to_file(message, tag, level):
-    logfile = QgsLogger.logFile()
-    if logfile is not None:
-        QgsLogger.logMessageToFile(u'{}: {}({}): {} '.format(u'%s'%(returnunicode(get_date_time())), returnunicode(tag), returnunicode(level), u'%s'%(returnunicode(message))))
-
-
-class askuser(QtGui.QDialog):
+class Askuser(QtGui.QDialog):
     def __init__(self, question="YesNo", msg = '', dialogtitle='User input needed', parent=None):
         self.result = ''
         if question == 'YesNo':         #  Yes/No dialog
@@ -330,13 +313,35 @@ class UnicodeWriter:
             self.writerow(row)
 
 
+def show_message_log(pop_error=False):
+    """
+    Source: qgis code
+     """
+    if pop_error:
+        qgis.utils.iface.messageBar().popWidget()
+
+    qgis.utils.iface.openMessageLog()
+
+
+
+
+
+def write_qgs_log_to_file(message, tag, level):
+    logfile = QgsLogger.logFile()
+    if logfile is not None:
+        QgsLogger.logMessageToFile(u'{}: {}({}): {} '.format(u'%s'%(returnunicode(get_date_time())), returnunicode(tag), returnunicode(level), u'%s'%(returnunicode(message))))
+
+
+
+
+
 def ask_user_about_stopping(question):
     """
     Asks the user a question and returns 'failed' or 'continue' as yes or no
     :param question: A string to write at the dialog box.
     :return: The string 'failed' or 'continue' as yes/no
     """
-    answer = askuser("YesNo", question)
+    answer = Askuser("YesNo", question)
     if answer.result:
         return 'cancel'
     else:
@@ -344,7 +349,7 @@ def ask_user_about_stopping(question):
 
 def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-table)
     sqlstring = r"""select %s, %s from %s"""%(params)
-    connection_ok, list_of_tuples= sql_load_fr_db(sqlstring)
+    connection_ok, list_of_tuples= db_utils.sql_load_fr_db(sqlstring)
 
     if not connection_ok:
         textstring = """Cannot create dictionary from columns %s and %s in table %s!"""%(params)#col1,col2,table)
@@ -365,7 +370,7 @@ def get_all_obsids(table=u'obs_points'):
     :return: All obsids from obs_points
     """
     obsids = []
-    connection_ok, result = sql_load_fr_db(u'''select distinct obsid from %s order by obsid''' % table)
+    connection_ok, result = db_utils.sql_load_fr_db(u'''select distinct obsid from %s order by obsid''' % table)
     if connection_ok:
         obsids = [row[0] for row in result]
     return obsids
@@ -590,7 +595,7 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
         MessagebarAndLog.critical(bar_msg=u'Error, no database found. Please check your Midvatten Settings. Reset if needed.')
         errorsignal += 1
     else:
-        if not check_connection_ok():
+        if not db_utils.check_connection_ok():
             errorsignal += 1
     return errorsignal
 
@@ -631,7 +636,7 @@ def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
 def verify_table_exists(tablename):
     tablename = returnunicode(tablename)
     sql = u"""SELECT name FROM sqlite_master WHERE type='table' AND name='%s'"""%(tablename)
-    sql_result = sql_load_fr_db(sql.encode('utf-8'))
+    sql_result = db_utils.sql_load_fr_db(sql.encode('utf-8'))
     connection_ok, result_list = sql_result
 
     if not connection_ok:
@@ -739,7 +744,7 @@ def get_quality_instruments():
     :return: A tuple with instrument ids from w_qual_field
     """
     sql = 'SELECT distinct instrument from w_qual_field'
-    sql_result = sql_load_fr_db(sql)
+    sql_result = db_utils.sql_load_fr_db(sql)
     connection_ok, result_list = sql_result
 
     if not connection_ok:
@@ -755,7 +760,7 @@ def get_sql_result_as_dict(sql):
     :param sql: The sql command to run
     :return: A dict with the first column as key and the rest in a tuple as value
     """
-    sql_result = sql_load_fr_db(sql)
+    sql_result = db_utils.sql_load_fr_db(sql)
     connection_ok, result_list = sql_result
 
     if not connection_ok:
@@ -1059,12 +1064,12 @@ def add_triggers_to_obs_points():
     END;
     :return:
     """
-    excecute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", "insert_obs_points_triggers.sql"),
-                     sql_alter_db)
+    db_utils.execute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", "insert_obs_points_triggers.sql"),
+                     db_utils.sql_alter_db)
 
 
 def sql_to_parameters_units_tuple(sql):
-    parameters_from_table = returnunicode(sql_load_fr_db(sql)[1], True)
+    parameters_from_table = returnunicode(db_utils.sql_load_fr_db(sql)[1], True)
     parameters_dict = {}
     for parameter, unit in parameters_from_table:
         parameters_dict.setdefault(parameter, []).append(unit)
@@ -1116,7 +1121,7 @@ def getcurrentlocale():
         return locale.getdefaultlocale()[:2]
 
 def get_locale_from_db():
-    connection_ok, locale_row = sql_load_fr_db(u"SELECT description FROM about_db WHERE description LIKE 'locale:%'")
+    connection_ok, locale_row = db_utils.sql_load_fr_db(u"SELECT description FROM about_db WHERE description LIKE 'locale:%'")
     if connection_ok:
         try:
             locale_setting = returnunicode(locale_row, keep_containers=True)[0][0].split(u':')
@@ -1137,7 +1142,7 @@ def calculate_db_table_rows():
     results = {}
 
     sql = u"""SELECT name FROM sqlite_master WHERE type='table'"""
-    sql_result = sql_load_fr_db(sql)
+    sql_result = db_utils.sql_load_fr_db(sql)
     connection_ok, tablenames = sql_result
 
     if not connection_ok:
@@ -1152,7 +1157,7 @@ def calculate_db_table_rows():
         tablename = tablename[0]
         sql = u"""SELECT count(*) FROM %s""" % (tablename)
 
-        sql_result = sql_load_fr_db(sql)
+        sql_result = db_utils.sql_load_fr_db(sql)
         connection_ok, nr_of_rows = sql_result
 
         if not connection_ok:
@@ -1206,7 +1211,7 @@ def anything_to_string_representation(anything):
     return aunicode
 
 def get_foreign_keys(tname):
-    result_list = sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)""" % (tname))[1]
+    result_list = db_utils.sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)""" % (tname))[1]
     foreign_keys = {}
     for row in result_list:
         foreign_keys.setdefault(row[2], []).append((row[3], row[4]))

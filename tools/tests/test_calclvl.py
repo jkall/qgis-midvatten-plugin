@@ -38,7 +38,7 @@ from midvatten.midvatten import midvatten
 import utils_for_tests
 
 
-class TestCalclvl(object):
+class _TestCalclvl(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
@@ -49,7 +49,7 @@ class TestCalclvl(object):
     selected_obsids = MockUsingReturnValue([u'rb1'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
     def setUp(self, mock_locale):

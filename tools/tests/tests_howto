@@ -13,9 +13,9 @@ class ATestClass():
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
 
 
-#Mock answers from import_data_to_db.utils.askuser:
+#Mock answers from import_data_to_db.utils.Askuser:
 #----------------------------
-@mock.patch('import_data_to_db.utils.askuser')
+@mock.patch('import_data_to_db.utils.Askuser')
 def x(mock_askuser):
     def side_effect(*args, **kwargs):
         mock_result = mock.MagicMock()
