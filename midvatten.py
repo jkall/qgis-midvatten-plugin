@@ -26,6 +26,7 @@ from PyQt4.QtGui import *
 from qgis.core import *
 import qgis.utils
 import shutil
+import timeit
 import resources  # Initialize Qt resources from file resources.py
 
 # Import some general python modules

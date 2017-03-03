@@ -27,7 +27,7 @@ import utils_for_tests
 from import_data_to_db import midv_data_importer
 
 
-class _TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
+class TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
@@ -53,7 +53,6 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_create_db_locale_sv(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface, mock_messagebar):
-        
         mock_locale.return_value.answer = u'ok'
         mock_locale.return_value.value = u'sv_SE'
         mock_answer_yes.return_value.result = 1
@@ -68,7 +67,6 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         current_locale = utils.getcurrentlocale()[0]
         assert current_locale == u'sv_SE'
 
-
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
@@ -76,7 +74,6 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_create_db_locale_en(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
-        
         mock_locale.return_value.answer = u'ok'
         mock_locale.return_value.value = u'en_US'
         mock_answer_yes.return_value.result = 1
@@ -106,7 +103,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
     def test_add_triggers_not_change_existing(self):
         """ Adding triggers should not automatically change the db """
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
         reference_string = u'(True, [(rb1, 1.0, 1.0, None)])'
@@ -117,7 +114,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         """ Updating coordinates from NULL should create geometry. """
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', NULL, NULL)''')
 
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
 
         db_utils.sql_alter_db(u"""update obs_points set east='1.0', north='2.0'""")
         test_string = utils_for_tests.create_test_string(
@@ -132,7 +129,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
         #After the first: u'(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
@@ -145,7 +142,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         """ Adding triggers should not automatically delete geometry when east OR north is NULL """
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
 
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
 
         db_utils.sql_alter_db(u"""update obs_points set east=X(geometry) where east is null and geometry is not null""")
         test_string = utils_for_tests.create_test_string(
@@ -196,7 +193,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         :return:
         """
         
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
 
         test_string = utils_for_tests.create_test_string(
@@ -210,7 +207,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         :return:
         """
         
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
 
         test_string = utils_for_tests.create_test_string(
@@ -227,7 +224,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
         #After the first: u'(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb2', GeomFromText('POINT(2.0 2.0)', 3006))""")
         #After the second: u'(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
 
@@ -245,7 +242,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, east, north) VALUES ('rb1', 1, 1)""")
         #After the first: u'(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb2', GeomFromText('POINT(2.0 2.0)', 3006))""")
         #After the second: u'(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
 
@@ -262,7 +259,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, east, north) VALUES ('rb1', 1, 1)""")
 
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, east, north) VALUES ('rb2', 2, 2)""")
 
         test_string = utils_for_tests.create_test_string(
@@ -276,7 +273,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         :return:
         """
         
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', 1, 1)''')
         db_utils.sql_alter_db(u'''UPDATE obs_points SET east = 2, north = 2 WHERE (obsid = 'rb1')''')
 
@@ -291,7 +288,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         :return:
         """
         
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
         db_utils.sql_alter_db(u'''UPDATE obs_points SET geometry = GeomFromText('POINT(2.0 2.0)', 3006) WHERE (obsid = 'rb1')''')
 
@@ -310,7 +307,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb2', GeomFromText('POINT(2.0 2.0)', 3006))""")
         #After the first: u'(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db(u'''UPDATE obs_points SET geometry = GeomFromText('POINT(3.0 3.0)', 3006) WHERE (obsid = 'rb1')''')
         #After the second: u'(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
 
@@ -329,7 +326,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb2', 2, 2, GeomFromText('POINT(2.0 2.0)', 3006))""")
         #After the first: u'(True, [(rb1, None, None, POINT(1 1))])
 
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db(u'''UPDATE obs_points SET geometry = GeomFromText('POINT(3.0 3.0)', 3006) WHERE (obsid = 'rb1')''')
         #After the second: u'(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])
 
@@ -347,7 +344,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb1', 1, 1, GeomFromText('POINT(1.0 1.0)', 3006))""")
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, east, north, geometry) VALUES ('rb2', 2, 2, GeomFromText('POINT(2.0 2.0)', 3006))""")
 
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
 
         db_utils.sql_alter_db(u'''UPDATE obs_points SET east = 3, north = 3 WHERE (obsid = 'rb1')''')
 
@@ -362,7 +359,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         :return:
         """
         
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('rb1')""")
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('rb2')""")
 
@@ -377,7 +374,7 @@ class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
         :return:
         """
         
-        utils.add_triggers_to_obs_points()
+        utils.add_triggers_to_obs_points('insert_obs_points_triggers.sql')
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('rb2')""")
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('rb3')""")

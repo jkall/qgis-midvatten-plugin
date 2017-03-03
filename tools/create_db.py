@@ -21,6 +21,7 @@ import PyQt4.QtCore
 import PyQt4.QtGui
 from qgis.core import QGis
 import qgis.utils
+import timeit
 
 import os
 import locale
@@ -108,6 +109,7 @@ class newdb():
                 if all([line, not line.startswith("#")]):
                     try:
                         self.cur.execute(self.replace_words(line, replace_word_replace_with))
+                        #self.cur.execute(self.replace_words(line, replace_word_replace_with))
                     except Exception as e:
                         # utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
                         utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n' % (line, str(e)), duration=5)
@@ -116,13 +118,15 @@ class newdb():
         #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
         delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
         try:
+
             self.cur.execute(delete_srid_sql)
         except:
             utils.MessagebarAndLog.info(log_msg=u'Removing srids failed using: ' + str(delete_srid_sql))
 
+
         self.insert_datadomains(set_locale, self.cur)
 
-        self.add_triggers_to_obs_points()
+        self.add_triggers_to_obs_points("insert_obs_points_triggers.sql", self.cur)
 
         self.cur.execute('vacuum')
 
@@ -189,7 +193,7 @@ class newdb():
 
         self.insert_datadomains(set_locale)
 
-        self.add_triggers_to_obs_points()
+        self.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
 
         db_utils.sql_alter_db(u'vacuum')
 
@@ -240,19 +244,18 @@ class newdb():
             filenamestring += ".sql"
         self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring), cursor)
 
-    def add_triggers_to_obs_points(self):
-        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", "insert_obs_points_triggers.sql"))
+    def add_triggers_to_obs_points(self, filename, cursor=None):
+        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename), cursor)
 
     def excecute_sqlfile(self, sqlfilename, cursor=None):
         with open(sqlfilename, 'r') as f:
             f.readline()  # first line is encoding info....
             for line in f:
-                if all([line, not line.startswith("#")]):
+                if all([line,not line.startswith("#")]):
                     if cursor is not None:
                         try:
                             cursor.execute(line)
                         except Exception as e:
-                            # utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
                             utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n' % (line, str(e)), duration=5)
                     else:
                         db_utils.sql_alter_db(line)

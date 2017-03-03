@@ -322,18 +322,10 @@ def show_message_log(pop_error=False):
 
     qgis.utils.iface.openMessageLog()
 
-
-
-
-
 def write_qgs_log_to_file(message, tag, level):
     logfile = QgsLogger.logFile()
     if logfile is not None:
         QgsLogger.logMessageToFile(u'{}: {}({}): {} '.format(u'%s'%(returnunicode(get_date_time())), returnunicode(tag), returnunicode(level), u'%s'%(returnunicode(message))))
-
-
-
-
 
 def ask_user_about_stopping(question):
     """
@@ -523,7 +515,6 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
         except:
             text = unicode('data type unknown, check database')
     return text
-
 
 def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatures=0 is for a check if any features are selected at all, the number is unimportant
     if layer.dataProvider().fieldNameIndex('obsid')  > -1 or layer.dataProvider().fieldNameIndex('OBSID')  > -1: # 'OBSID' to get backwards compatibility
@@ -1019,7 +1010,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
 
     return filtered_data
 
-def add_triggers_to_obs_points():
+def add_triggers_to_obs_points(filename):
     """
     /*
     * These are quick-fixes for updating coords from geometry and the other way around
@@ -1064,9 +1055,8 @@ def add_triggers_to_obs_points():
     END;
     :return:
     """
-    db_utils.execute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", "insert_obs_points_triggers.sql"),
+    db_utils.execute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", filename),
                      db_utils.sql_alter_db)
-
 
 def sql_to_parameters_units_tuple(sql):
     parameters_from_table = returnunicode(db_utils.sql_load_fr_db(sql)[1], True)
@@ -1288,4 +1278,3 @@ def get_delimiter(filename=None, charset=u'utf-8', delimiters=None, num_fields=N
             delimiter = None
 
     return delimiter
-
