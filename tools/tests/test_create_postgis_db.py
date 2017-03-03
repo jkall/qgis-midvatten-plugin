@@ -69,7 +69,7 @@ class _TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
         assert current_locale == u'en_US'
 
 
-class _TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
+class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def setUp(self, mock_messagebar):

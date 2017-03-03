@@ -121,4 +121,3 @@ insert into zz_capacity_plots (capacity,color_qt) values('6-', 'blue');
 insert into zz_capacity_plots (capacity,color_qt) values('6', 'blue');
 insert into zz_capacity_plots (capacity,color_qt) values('6 ', 'blue');
 insert into zz_capacity_plots (capacity,color_qt) values('6+', 'darkBlue');
-

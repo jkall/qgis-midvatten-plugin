@@ -165,7 +165,6 @@ class newdb():
         connection = db_utils.DbConnectionManager()
         connection_ok = connection.connect2db()
         self.cur = connection.cursor
-
         db_utils.sql_alter_db(u'CREATE EXTENSION IF NOT EXISTS postgis;')
         connection_ok, result = db_utils.sql_load_fr_db(u'''select version(), PostGIS_full_version();''')
 
