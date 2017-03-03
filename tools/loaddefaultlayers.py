@@ -49,7 +49,6 @@ class LoadLayers():
         self.add_layers_new_method()
 
     def add_layers_new_method(self):
-        utils.MessagebarAndLog.info(log_msg=u'In add_layers_new_method')
         try:#qgis>=2.4
             if self.group_name == 'Midvatten_OBS_DB':
                 position_index = 0
@@ -128,7 +127,7 @@ class LoadLayers():
             layer = self.create_layer(uri, schema, tablename, dbtype, geometrycolumn)
             if not layer.isValid():
                 #Try to add it as a view by adding key column
-                layer = self.create_layer(uri, schema, tablename, dbtype, geometrycolumn, 'obsid')
+                layer = self.create_layer(uri, schema, tablename, dbtype, geometrycolumn, None, 'obsid')
                 if not layer.isValid():
                     utils.MessagebarAndLog.critical(bar_msg=layer.name() + u' is not valid layer')
                 else:
@@ -136,8 +135,8 @@ class LoadLayers():
             else:
                 resultlist.append(layer)
 
-    def create_layer(self, uri, schema, tablename, dbtype, geometrycolumn=None, keycolumn=None):
-        uri.setDataSource(schema, tablename, geometrycolumn, keycolumn)
+    def create_layer(self, uri, schema, tablename, dbtype, geometrycolumn=None, sql=None, keycolumn=None):
+        uri.setDataSource(schema, tablename, geometrycolumn, sql, keycolumn)
         layer = QgsVectorLayer(uri.uri(), tablename, dbtype.encode('utf-8'))
         return layer
                 
