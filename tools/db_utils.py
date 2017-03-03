@@ -21,6 +21,7 @@
 """
 import ast
 from pyspatialite import dbapi2 as sqlite
+from pyspatialite.dbapi2 import OperationalError, IntegrityError
 
 from PyQt4.QtCore import QSettings
 import midvatten_utils as utils
@@ -189,7 +190,11 @@ def execute_sql(sql='', foreign_keys=False, commit=False, fetchall=True, *subst_
         elif isinstance(sql, basestring):
             try:
                 resultfromsql = connection.cursor.execute(sql)  # Send SQL-syntax to cursor
+            except IntegrityError as e:
+                raise IntegrityError(e)
             except Exception as e:
+                print(str(e))
+                print(str(type(e)))
                 textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (utils.returnunicode(sql), utils.returnunicode(str(e)))
                 utils.MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=textstring, duration=4)
             else:
