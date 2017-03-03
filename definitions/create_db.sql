@@ -148,10 +148,19 @@ insert into about_db values('zz_capacity', '*', '', '', '', '', '', 'data domain
 insert into about_db values('zz_capacity', 'capacity', 'text', '1', 'Default: 1, 2, 3, 4, 5, 6', '1', '', 'water capacity classes, typically used for stratigraphy layers', '', '');
 insert into about_db values('zz_capacity', 'explanation', 'text', '1', '', '', '', 'description of water capacity classes', '', '');
 insert into about_db values('zz_capacity', 'color_qt', 'text', '1', '', '', '', 'hatchcolor codes for Qt plots', '', '');
+CREATE TABLE "zz_staff" ("staff" text, "name" text, primary key("staff"));
+create table "zz_flowtype" (type text not null, explanation text, primary key(type));
+CREATE TABLE "zz_meteoparam" (parameter text not null,explanation text, primary key(parameter));
+CREATE TABLE "zz_strat" (geoshort text not null, strata text not null, primary key(geoshort));
+CREATE TABLE "zz_stratigraphy_plots" (strata text not null, color_mplot text not null, hatch_mplot text not null, color_qt text not null, brush_qt text not null, primary key(strata));
+CREATE TABLE "zz_capacity" (capacity text not null, explanation text not null, primary key(capacity));
+CREATE TABLE "zz_capacity_plots" (capacity text not null, color_qt text not null, primary key(capacity), foreign key(capacity) references zz_capacity(capacity));
 create table "obs_points" ( "obsid" text not null, "name" text, "place" text, "type" text, "length" double, "drillstop" text, "diam" double, "material" text, "screen" text, "capacity" text, "drilldate" text, "wmeas_yn" integer, "wlogg_yn" integer, "east" double, "north" double, "ne_accur" double, "ne_source" text,  "h_toc" double, "h_tocags" double, "h_gs" double, "h_accur" double, "h_syst" text, "h_source" text, "source" text, "com_onerow" text, "com_html" text, primary key (obsid));
-SELECT AddGeometryColumn("obs_points", "geometry", CHANGETORELEVANTEPSGID, "POINT", "XY", 0);
+SPATIALITE SELECT AddGeometryColumn("obs_points", "geometry", CHANGETORELEVANTEPSGID, "POINT", "XY", 0);
+POSTGIS ALTER TABLE obs_points ADD COLUMN geometry geometry(Point,CHANGETORELEVANTEPSGID)
 create table "obs_lines" ("obsid" text  not null, name text, place text, type text, source text, primary key (obsid));
-SELECT AddGeometryColumn("obs_lines", "geometry", CHANGETORELEVANTEPSGID, "LINESTRING", "XY", 0);
+SPATIALITE SELECT AddGeometryColumn("obs_lines", "geometry", CHANGETORELEVANTEPSGID, "LINESTRING", "XY", 0);
+POSTGIS ALTER TABLE obs_lines ADD COLUMN geometry geometry(Linestring,CHANGETORELEVANTEPSGID)
 create table "w_levels" ("obsid" text not null, "date_time" text not null, "meas" double, "h_toc" double, "level_masl" double, "comment" text, primary key (obsid, date_time),  foreign key(obsid) references obs_points(obsid));
 create table "w_levels_logger" ("obsid" text not null, "date_time" text not null, "head_cm" double, "temp_degc" double, "cond_mscm" double, "level_masl" double, "comment" text, primary key (obsid, date_time),  foreign key(obsid) references obs_points(obsid));
 create table "stratigraphy" (obsid text not null, stratid integer not null, depthtop double, depthbot double, geology text, geoshort text, capacity text, development text,  comment text, primary key (obsid, stratid), foreign key(obsid) references obs_points(obsid));
@@ -162,13 +171,6 @@ CREATE TABLE "meteo" (obsid text not null, instrumentid text not null, parameter
 create table "seismic_data" (obsid text not null, length double not null, ground double, bedrock double, gw_table double, comment text, primary key (obsid, Length), foreign key (obsid) references obs_lines(obsid));
 create table "vlf_data" (obsid text not null, length double not null, real_comp double, imag_comp double, comment text, primary key (obsid, Length), foreign key (obsid) references obs_lines(obsid));
 CREATE TABLE "comments" ("obsid" text not null, "date_time" text not null, "comment" text not null, "staff" text not null, primary key("obsid", "date_time"), foreign key(obsid) references obs_points(obsid), foreign key(staff) references zz_staff(staff));
-CREATE TABLE "zz_staff" ("staff" text, "name" text, primary key("staff"));
-create table "zz_flowtype" (type text not null, explanation text, primary key(type));
-CREATE TABLE "zz_meteoparam" (parameter text not null,explanation text, primary key(parameter));
-CREATE TABLE "zz_strat" (geoshort text not null, strata text not null, primary key(geoshort));
-CREATE TABLE "zz_stratigraphy_plots" (strata text not null, color_mplot text not null, hatch_mplot text not null, color_qt text not null, brush_qt text not null, primary key(strata));
-CREATE TABLE "zz_capacity" (capacity text not null, explanation text not null, primary key(capacity));
-CREATE TABLE "zz_capacity_plots" (capacity text not null, color_qt text not null, primary key(capacity), foreign key(capacity) references zz_capacity(capacity));
 create view obs_p_w_qual_field as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "w_qual_field" as "b" using ("obsid");
 insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) values ('obs_p_w_qual_field', 'geometry', 'rowid', 'obs_points', 'geometry',1);
 create view obs_p_w_qual_lab as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "w_qual_lab" as "b" using ("obsid");

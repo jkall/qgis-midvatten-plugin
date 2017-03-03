@@ -101,12 +101,13 @@ class newdb():
                                     ('CHANGETOPLUGINVERSION', str(verno)),
                                     ('CHANGETOQGISVERSION', qgisverno),
                                     ('CHANGETOSPLITEVERSION', str(versionstext[0][0])),
-                                    ('CHANGETOLOCALE', str(set_locale))]
+                                    ('CHANGETOLOCALE', str(set_locale)),
+                                    (('SPATIALITE ', ''))]
 
         with open(SQLFile, 'r') as f:
             f.readline()  # first line is encoding info....
             for line in f:
-                if all([line, not line.startswith("#")]):
+                if all([line, not line.startswith("#"), not line.startswith("POSTGIS")]):
                     try:
                         self.cur.execute(self.replace_words(line, replace_word_replace_with))
                         #self.cur.execute(self.replace_words(line, replace_word_replace_with))
@@ -161,8 +162,13 @@ class newdb():
         if EPSGID=='0' or not EPSGID:
             return utils.Cancel()
 
+        connection = db_utils.DbConnectionManager()
+        connection_ok = connection.connect2db()
+        self.cur = connection.cursor
+
         db_utils.sql_alter_db(u'CREATE EXTENSION IF NOT EXISTS postgis;')
         connection_ok, result = db_utils.sql_load_fr_db(u'''select version(), PostGIS_full_version();''')
+
         versionstext = u', '.join(result[0])
 
         filenamestring = "create_db.sql"
@@ -179,21 +185,21 @@ class newdb():
             ('double', 'double precision'),
             ('"', ''),
             ('rowid as rowid', 'CTID as rowid'),
-            (', XY,', ', 2,')]
+            ('POSTGIS ', '')]
 
         with open(SQLFile, 'r') as f:
             f.readline()  # first line is encoding info....
             for line in f:
-                if all([line,not line.startswith("#"), u'InitSpatialMetadata' not in line]):
+                if all([line,not line.startswith("#"), u'InitSpatialMetadata' not in line, not line.startswith("SPATIALITE")]):
                     line = self.replace_words(line, replace_word_replace_with)
                     db_utils.sql_alter_db(line)
 
             #lines = [self.replace_words(line.decode('utf-8').rstrip('\n').rstrip('\r'), replace_word_replace_with) for line in f if all([line,not line.startswith("#"), u'InitSpatialMetadata' not in line])]
         #db_utils.sql_alter_db(lines)
 
-        self.insert_datadomains(set_locale)
+        self.insert_datadomains(set_locale, self.cur)
 
-        self.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql')
+        self.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql', self.cur)
 
         db_utils.sql_alter_db(u'vacuum')
 

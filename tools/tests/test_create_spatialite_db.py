@@ -89,11 +89,10 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert current_locale == u'en_US'
 
 
-class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
+class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self):
         super(TestObsPointsTriggers, self).setUp()
-        self.importinstance = midv_data_importer()
         db_utils.sql_alter_db(u"""DROP TRIGGER IF EXISTS after_insert_obs_points_geom_fr_coords""")
         db_utils.sql_alter_db(u"""DROP TRIGGER IF EXISTS after_update_obs_points_geom_fr_coords""")
         db_utils.sql_alter_db(u"""DROP TRIGGER IF EXISTS after_insert_obs_points_coords_fr_geom""")

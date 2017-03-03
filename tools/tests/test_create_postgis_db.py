@@ -26,7 +26,7 @@ import mock
 import utils_for_tests
 from import_data_to_db import midv_data_importer
 
-class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
+class _TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
@@ -34,7 +34,7 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_create_db_locale_sv(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface, mocked_messagebar):
+    def _test_create_db_locale_sv(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface, mocked_messagebar):
         mock_locale.return_value.answer = u'ok'
         mock_locale.return_value.value = u'sv_SE'
         mock_answer_yes.return_value.result = 1
@@ -54,7 +54,7 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_create_db_locale_en(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+    def _test_create_db_locale_en(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         mock_locale.return_value.answer = u'ok'
         mock_locale.return_value.value = u'en_US'
         mock_answer_yes.return_value.result = 1
@@ -69,11 +69,11 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
         assert current_locale == u'en_US'
 
 
-class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
+class _TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
+    @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def setUp(self):
+    def setUp(self, mock_messagebar):
         super(TestObsPointsTriggers, self).setUp()
-        self.importinstance = midv_data_importer()
         db_utils.sql_alter_db(u"""DROP TRIGGER IF EXISTtrigger_S after_insert_obs_points_geom_fr_coords""")
         db_utils.sql_alter_db(u"""DROP TRIGGER IF EXISTtrigger_S after_update_obs_points_geom_fr_coords""")
         db_utils.sql_alter_db(u"""DROP TRIGGER IF EXISTtrigger_S after_insert_obs_points_coords_fr_geom""")
@@ -81,7 +81,8 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db(u"""DROP FUNCTION IF EXISTS after_insert_obs_points_geom_fr_coords""")
         db_utils.sql_alter_db(u"""DROP FUNCTION IF EXISTS after_update_obs_points_geom_fr_coords""")
         db_utils.sql_alter_db(u"""DROP FUNCTION IF EXISTS after_insert_obs_points_coords_fr_geom""")
-        db_utils.sql_alter_db(u"""DROP FUNCTRION IF EXISTS after_update_obs_points_coords_fr_geom""") 
+        db_utils.sql_alter_db(u"""DROP FUNCTRION IF EXISTS after_update_obs_points_coords_fr_geom""")
+        print(str(mock_messagebar.mock_calls))
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_add_triggers_not_change_existing(self):
@@ -91,10 +92,11 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
         reference_string = u'(True, [(rb1, 1.0, 1.0, None)])'
+        print("\nRef\n" + reference_string + "\ntest\n" + test_string)
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_add_triggers_add_east_north(self):
+    def _test_add_triggers_add_east_north(self):
         """ Updating coordinates from NULL should create geometry. """
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid", "east", "north") VALUES ('rb1', NULL, NULL)''')
 
@@ -107,7 +109,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_add_triggers_not_deleting_geom_when_east_north_null(self):
+    def _test_add_triggers_not_deleting_geom_when_east_north_null(self):
         """ Adding triggers should not automatically delete geometry when east AND north is NULL """
         
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
@@ -121,7 +123,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_add_triggers_not_deleting_geom_when_one_east_north_null(self):
+    def _test_add_triggers_not_deleting_geom_when_one_east_north_null(self):
         
         """ Adding triggers should not automatically delete geometry when east OR north is NULL """
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid, geometry) VALUES ('rb1', GeomFromText('POINT(1.0 1.0)', 3006))""")
@@ -172,7 +174,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_add_geometry_from_east_north(self):
+    def _test_add_geometry_from_east_north(self):
         """ Test that adding triggers and adding obsid with east, north also adds geometry
         :return:
         """
@@ -186,7 +188,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_add_east_north_from_geometry(self):
+    def _test_add_east_north_from_geometry(self):
         """ Test that adding triggers and adding obsid with geometry also adds east, north
         :return:
         """
@@ -200,7 +202,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_add_trigger_add_geometry_not_nulling_geometry(self):
+    def _test_add_trigger_add_geometry_not_nulling_geometry(self):
         """ Test that adding triggers and adding obsid don't set null values for previous obsid.
         :return:
         """
@@ -218,7 +220,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_add_trigger_add_geometry_not_nulling_east_north(self):
+    def _test_add_trigger_add_geometry_not_nulling_east_north(self):
         """ Test that adding triggers and adding obsid from geometry don't set null values for previous obsid.
         :return:
         """
@@ -236,7 +238,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_add_trigger_add_east_north_not_nulling_east_north(self):
+    def _test_add_trigger_add_east_north_not_nulling_east_north(self):
         """ Test that adding triggers and adding obsid from east, north don't set null values for previous obsid.
         :return:
         """
@@ -252,7 +254,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_update_geometry_from_east_north(self):
+    def _test_update_geometry_from_east_north(self):
         """ Test that adding triggers and updating obsid with east, north also updates geometry
         :return:
         """
@@ -267,7 +269,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_update_east_north_from_geometry(self):
+    def _test_update_east_north_from_geometry(self):
         """ Test that adding triggers and updating obsid with geometry also updates east, north
         :return:
         """
@@ -282,7 +284,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_add_trigger_update_geometry_not_nulling_geometry(self):
+    def _test_add_trigger_update_geometry_not_nulling_geometry(self):
         """ Test that adding triggers and updating obsid don't set null values for previous obsid.
         :return:
         """
@@ -301,7 +303,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_update_trigger_add_geometry_not_nulling_east_north(self):
+    def _test_update_trigger_add_geometry_not_nulling_east_north(self):
         """ Test that adding triggers and updating obsid from geometry don't set null values for previous obsid.
         :return:
         """
@@ -320,7 +322,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_update_trigger_add_east_north_not_nulling_east_north(self):
+    def _test_update_trigger_add_east_north_not_nulling_east_north(self):
         """ Test that adding triggers and updating obsid from east, north don't set null values for previous obsid.
         :return:
         """
@@ -338,7 +340,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_add_trigger_add_obsid_without_anything(self):
+    def _test_add_trigger_add_obsid_without_anything(self):
         """
         :return:
         """
@@ -353,7 +355,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_add_trigger_add_obsid_without_anything_not_changing_existing(self):
+    def _test_add_trigger_add_obsid_without_anything_not_changing_existing(self):
         """ Test that adding triggers and updating obsid from east, north don't set null values for previous obsid.
         :return:
         """
