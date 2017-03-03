@@ -30,6 +30,7 @@ import mock
 from midvatten.midvatten import midvatten
 from tools.tests.mocks_for_tests import DummyInterface
 import db_utils
+from import_data_to_db import midv_data_importer
 
 
 class test_qapplication_is_running():
@@ -156,6 +157,11 @@ class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
         mock_savefilename.return_value = self.TEMP_DBPATH
         self.midvatten.new_db()
 
+class MidvattenTestSpatialiteDbSvImportInstance(MidvattenTestSpatialiteDbSv):
+    @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def setUp(self):
+        super(MidvattenTestSpatialiteDbSvImportInstance, self).setUp()
+        self.importinstance = midv_data_importer()
 
 class MidvattenTestPostgisNotCreated(object):
     mock_postgis_connections = mock.MagicMock()
@@ -210,3 +216,4 @@ class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         self.midvatten.new_postgis_db()
+

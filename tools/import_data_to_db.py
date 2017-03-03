@@ -359,6 +359,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([value for value in values_perso])) # Assuming value is unicode, send it as such to sqlite
                 except:
                     curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso])) #in case of errors, the value must be a byte string, then try to convert to unicode
+                connection.conn.commit()
                 connection.closedb()
                 self.status = 'True'
             else: #no attribute Datas
