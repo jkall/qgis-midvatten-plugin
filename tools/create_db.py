@@ -96,18 +96,18 @@ class newdb():
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
         qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
 
-        replace_word_replace_with = [(u'CHANGETORELEVANTEPSGID', str(EPSGID)),
-                                    (u'CHANGETOPLUGINVERSION', str(verno)),
-                                    (u'CHANGETOQGISVERSION', qgisverno),
-                                    (u'CHANGETOSPLITEVERSION', str(versionstext[0][0])),
-                                    (u'CHANGETOLOCALE', str(set_locale))]
+        replace_word_replace_with = [('CHANGETORELEVANTEPSGID', str(EPSGID)),
+                                    ('CHANGETOPLUGINVERSION', str(verno)),
+                                    ('CHANGETOQGISVERSION', qgisverno),
+                                    ('CHANGETOSPLITEVERSION', str(versionstext[0][0])),
+                                    ('CHANGETOLOCALE', str(set_locale))]
 
         with open(SQLFile, 'r') as f:
             f.readline()  # first line is encoding info....
             for line in f:
                 if all([line, not line.startswith("#")]):
                     try:
-                        self.cur.execute(line)
+                        self.cur.execute(self.replace_words(line, replace_word_replace_with))
                     except Exception as e:
                         # utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
                         utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n' % (line, str(e)), duration=5)
@@ -174,13 +174,14 @@ class newdb():
             ('CHANGETOLOCALE', str(set_locale)),
             ('double', 'double precision'),
             ('"', ''),
-            ('rowid as rowid', 'CTID as rowid')]
+            ('rowid as rowid', 'CTID as rowid'),
+            (', XY,', ', 2,')]
 
         with open(SQLFile, 'r') as f:
             f.readline()  # first line is encoding info....
             for line in f:
                 if all([line,not line.startswith("#"), u'InitSpatialMetadata' not in line]):
-                    line = self.replace_words(line.rstrip('\n').rstrip('\r'), replace_word_replace_with)
+                    line = self.replace_words(line, replace_word_replace_with)
                     db_utils.sql_alter_db(line)
 
             #lines = [self.replace_words(line.decode('utf-8').rstrip('\n').rstrip('\r'), replace_word_replace_with) for line in f if all([line,not line.startswith("#"), u'InitSpatialMetadata' not in line])]

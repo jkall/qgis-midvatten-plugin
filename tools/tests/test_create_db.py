@@ -27,7 +27,7 @@ import utils_for_tests
 from import_data_to_db import midv_data_importer
 
 
-class TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
+class _TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
@@ -45,13 +45,14 @@ class TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
 
 class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
+    @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-    def test_create_db_locale_sv(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+    def test_create_db_locale_sv(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface, mock_messagebar):
         
         mock_locale.return_value.answer = u'ok'
         mock_locale.return_value.value = u'sv_SE'
