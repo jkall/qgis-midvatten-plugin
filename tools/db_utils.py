@@ -75,8 +75,8 @@ class DbConnectionManager(object):
                 self.cursor.execute("select count(*) from sqlite_master")
                 self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
             ConnectionOK = True
-        except:
-            utils.MessagebarAndLog.critical(bar_msg=u"Could not connect to database\nYou might have to reset Midvatten settings for this project!")
+        except Exception as e:
+            utils.MessagebarAndLog.critical(bar_msg=u"Could not connect to database, see log message panel.", log_msg=u'DB connection error, msg:\n' + str(e))
         return ConnectionOK
 
     def closedb(self):

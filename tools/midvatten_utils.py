@@ -499,6 +499,10 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
                 text = unicode(text, charset)
             elif isinstance(text, unicode):
                 pass
+            elif isinstance(text, PyQt4.QtCore.QVariant):
+                text = returnunicode(text.toString())
+            elif isinstance(text, PyQt4.QtCore.QString):
+                text = returnunicode(text.toUtf8())
             else:
                 text = unicode(text)
 

@@ -423,7 +423,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             utils.MessagebarAndLog.warning(bar_msg=u'%s without geometry imported'%table_name)
             return None
 
-        sql = u"""update "%s" set geometry=GeomFromText(%s,%s)"""%(self.temptableName, geocol, SRID)
+        sql = u"""update "%s" set geometry=ST_GeomFromText(%s,%s)"""%(self.temptableName, geocol, SRID)
         db_utils.sql_alter_db(sql)
 
     def check_and_delete_stratigraphy(self, existing_columns):

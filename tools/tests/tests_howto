@@ -57,3 +57,6 @@ self.assertEqual(expected, mock.mock_calls)
 
 assert call.messageBar().createMessage(u'Warning, In total 2 posts were not imported.') in mock_iface.mock_calls
 assert call.messageBar().createMessage(u'In total 1 measurements were imported to "obs_points".') in mock_iface.mock_calls
+
+
+#print("\nRef\n" + reference_string + "\ntest\n" + test_string)

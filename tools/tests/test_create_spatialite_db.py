@@ -27,7 +27,7 @@ import utils_for_tests
 from import_data_to_db import midv_data_importer
 
 
-class _TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
+class TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
@@ -44,7 +44,7 @@ class _TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert True
 
 
-class _TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
+class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
@@ -89,7 +89,7 @@ class _TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert current_locale == u'en_US'
 
 
-class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
+class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self):
         super(TestObsPointsTriggers, self).setUp()
