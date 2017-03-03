@@ -73,6 +73,9 @@ class midvatten:
         # Create actions that will start plugin configuration
         self.actionNewDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), "Create a new Midvatten project DB", self.iface.mainWindow())
         QObject.connect(self.actionNewDB, SIGNAL("triggered()"), self.new_db)
+
+        self.actionNewPostgisDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), "Populate a postgis database to a new Midvatten project DB", self.iface.mainWindow())
+        QObject.connect(self.actionNewPostgisDB, SIGNAL("triggered()"), self.new_postgis_db)
         
         self.actionloadthelayers = QAction(QIcon(":/plugins/midvatten/icons/loaddefaultlayers.png"), "Load default db-layers to qgis", self.iface.mainWindow())
         self.actionloadthelayers.setWhatsThis("Load default layers from the selected database")
@@ -314,6 +317,7 @@ class midvatten:
         self.menu.db_manage_menu = QMenu(QCoreApplication.translate("Midvatten", "&Database management"))
         self.menu.addMenu(self.menu.db_manage_menu)
         self.menu.db_manage_menu.addAction(self.actionNewDB)
+        self.menu.db_manage_menu.addAction(self.actionNewPostgisDB)
         self.menu.db_manage_menu.addAction(self.actionVacuumDB)
         self.menu.db_manage_menu.addAction(self.actionZipDB)
 
