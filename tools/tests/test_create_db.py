@@ -91,7 +91,7 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert current_locale == u'en_US'
 
 
-class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
+class _TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self):
         super(TestObsPointsTriggers, self).setUp()

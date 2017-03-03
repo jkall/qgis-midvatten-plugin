@@ -194,14 +194,16 @@ def execute_sql(sql='', foreign_keys=False, commit=False, fetchall=True, *subst_
                 utils.MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=textstring, duration=4)
             else:
                 ConnectionOK = True
+
+        #Assume the user whats to execute many sqls in a row
         elif isinstance(sql, (tuple, list)):
-            try:
-                resultfromsql = connection.cursor.executemany(sql[0], sql[1])
-            except KeyError as e:
-                utils.MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=wrong_type_msg + u'\nMsg:%s'%str(e), duration=4)
-            except Exception as e:
-                textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" %(utils.returnunicode(sql), utils.returnunicode(str(e)))
-                utils.MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=textstring, duration=4)
+            for line in sql:
+                try:
+                    resultfromsql = connection.cursor.execute(line)
+                except Exception as e:
+                    textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" %(utils.returnunicode(sql), utils.returnunicode(str(e)))
+                    utils.MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=textstring, duration=4)
+                    break
             else:
                 ConnectionOK = True
         else:

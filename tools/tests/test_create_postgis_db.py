@@ -26,7 +26,7 @@ import mock
 import utils_for_tests
 from import_data_to_db import midv_data_importer
 
-class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
+class _TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
