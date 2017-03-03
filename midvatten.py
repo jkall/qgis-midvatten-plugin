@@ -460,7 +460,8 @@ class midvatten:
                 iniText = QSettings(filenamepath , QSettings.IniFormat)
                 verno = str(iniText.value('version'))
                 from create_db import newdb
-                newdbinstance = newdb(verno,'n',user_chosen_EPSG_code)#flag 'n' to avoid user selection of EPSG'
+                newdbinstance = newdb()
+                newdbinstance.create_new_spatialite_db(verno,'n',user_chosen_EPSG_code)
                 if not newdbinstance.db_settings=='':
                     newdb = newdbinstance.db_settings[u'spatialite'][u'dbpath']
                     exportinstance = ExportData(OBSID_P, OBSID_L)
@@ -826,7 +827,22 @@ class midvatten:
             iniText = QSettings(filenamepath , QSettings.IniFormat)
             verno = str(iniText.value('version')) 
             from create_db import newdb
-            newdbinstance = newdb(verno)
+            newdbinstance = newdb()
+            newdbinstance.create_new_spatialite_db(verno)
+            if not newdbinstance.db_settings=='':
+                self.ms.settingsdict['database'] = utils.anything_to_string_representation(newdbinstance.db_settings)
+                self.ms.save_settings()
+
+    @db_utils.if_connection_ok
+    def new_postgis_db(self):
+        sanity = utils.Askuser("YesNo", """This will create a new empty\nMidvatten Postgis DB with predefined design.\n\nContinue?""", 'Are you sure?')
+        if sanity.result == 1:
+            filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
+            iniText = QSettings(filenamepath , QSettings.IniFormat)
+            verno = str(iniText.value('version'))
+            from create_db import newdb
+            newdbinstance = newdb()
+            newdbinstance.create_new_postgis_db(verno)
             if not newdbinstance.db_settings=='':
                 self.ms.settingsdict['database'] = utils.anything_to_string_representation(newdbinstance.db_settings)
                 self.ms.save_settings()

@@ -31,12 +31,10 @@ import datetime
 import midvatten_utils as utils
 
 class newdb():
-
-    def __init__(self, verno, user_select_CRS='y', EPSG_code=u'4326'):
+    def __init__(self):
         self.db_settings = u''
-        self.create_new_db(verno,user_select_CRS,EPSG_code)  #CreateNewDB(verno)
 
-    def create_new_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):  #CreateNewDB(self, verno):
+    def create_new_spatialite_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
 
         set_locale = self.ask_for_locale()
@@ -123,7 +121,7 @@ class newdb():
                 except:
                     utils.MessagebarAndLog.info(log_msg=u'Removing srids failed using: ' + str(delete_srid_sql))
 
-                self.insert_datadomains(set_locale)
+                self.insert_datadomains(set_locale, self.cur)
 
                 self.add_triggers_to_obs_points()
 
@@ -144,6 +142,78 @@ class newdb():
                 #Finally add the layer styles info into the data base
                 AddLayerStyles(dbpath)
                 """
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+
+    def create_new_postgis_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):
+        set_locale = self.ask_for_locale()
+        if set_locale == u'cancel':
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            return u'cancel'
+
+        if user_select_CRS=='y':
+            EPSGID=str(self.ask_for_CRS(set_locale)[0])
+        else:
+            EPSGID=EPSG_code
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+        if EPSGID=='0' or not EPSGID:
+            return utils.Cancel()
+        else:
+            db_utils.sql_alter_db(u'CREATE EXTENSION IF NOT EXISTS postgis;')
+            connection_ok, result = db_utils.sql_load_fr_db(u'''select version(), PostGIS_full_version();''')
+            versionstext = u', '.join(result[0])
+
+            filenamestring = "create_db.sql"
+
+            SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
+            qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
+            with open(SQLFile, 'r') as f:
+                f.readline()  # first line is encoding info....
+                try:
+                    for line in f:
+                        line = utils.returnunicode(line)
+                        if not line:
+                            continue
+                        if line.startswith("#"):
+                            continue
+                        if u'InitSpatialMetadata' in line:
+                            continue
+
+                        line = line.replace(u'double', u'double precision')
+                        line = line.replace(u'"', u'')
+                        line = line.replace(u'rowid as rowid', u'CTID as rowid')
+
+                        for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
+                                                           ('CHANGETOPLUGINVERSION', str(verno)),
+                                                           ('CHANGETOQGISVERSION',qgisverno),
+                                                           ('CHANGETOSPLITEVERSION', str(versionstext)),
+                                                           ('CHANGETOLOCALE', str(set_locale))]:
+                            line = line.replace(replace_word, replace_with)
+                        db_utils.sql_alter_db(line)
+                except Exception, e:
+                    #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
+                    utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n'%(line ,str(e)), duration=5)
+                    print("Create postgis exeption: " + str(e))
+
+            #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
+            #delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
+            #try:
+            #    self.cur.execute(delete_srid_sql)
+            #except:
+            #    utils.MessagebarAndLog.info(log_msg=u'Removing srids failed using: ' + str(delete_srid_sql))
+
+            self.insert_datadomains(set_locale)
+
+            self.add_triggers_to_obs_points()
+
+            db_utils.sql_alter_db(u'vacuum')
+
+
+            """
+            #The intention is to keep layer styles in the database by using the class AddLayerStyles but due to limitations in how layer styles are stored in the database, I will put this class on hold for a while.
+
+            #Finally add the layer styles info into the data base
+            AddLayerStyles(dbpath)
+            """
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def ask_for_locale(self):
@@ -172,32 +242,37 @@ class newdb():
         EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, "Select CRS", "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:",default_crs)
         return EPSGID
 
-    def insert_datadomains(self, set_locale=False):
+    def insert_datadomains(self, set_locale=False, cursor=None):
         filenamestring = 'insert_datadomain'
         if set_locale == u'sv_SE':
             filenamestring += "_sv.sql"
         else:
             filenamestring += ".sql"
-        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring))
+        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring), cursor)
 
     def add_triggers_to_obs_points(self):
         self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", "insert_obs_points_triggers.sql"))
 
-    def excecute_sqlfile(self, sqlfilename):
+    def excecute_sqlfile(self, sqlfilename, cursor=None):
         with open(sqlfilename, 'r') as f:
             f.readline()  # first line is encoding info....
             for line in f:
+                line = utils.returnunicode(line)
                 if not line:
                     continue
                 if line.startswith("#"):
                     continue
-                try:
-                    self.cur.execute(line)  # use tags to find and replace SRID and versioning info
-                except Exception, e:
-                    #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
-                    #This print out is for debug, and it only prints during a fail so it can stay:
-                    print("Sql line failed:\n" + str(line))
-                    utils.MessagebarAndLog.critical("Error: sql failed, see qgis Log Message Panel", 'sql failed:\n%s\nerror msg:\n%s\n'%(line ,str(e)), duration=5)
+                if cursor is not None:
+                    try:
+                        cursor.execute(line)  # use tags to find and replace SRID and versioning info
+                    except Exception, e:
+
+                        #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
+                        #This print out is for debug, and it only prints during a fail so it can stay:
+                        utils.MessagebarAndLog.critical("Error: sql failed, see qgis Log Message Panel", 'sql failed:\n%s\nerror msg:\n%s\n'%(line ,str(e)), duration=5)
+                else:
+
+                    db_utils.sql_alter_db(line)
 
 
 class AddLayerStyles():
@@ -209,7 +284,10 @@ class AddLayerStyles():
         self.dbpath = connection.dbpath
         self.cur = connection.cursor
 
-        self.cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+        try:
+            self.cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+        except:
+            pass
 
         #add layer styles
         self.add_layer_styles_2_db()
@@ -224,7 +302,10 @@ class AddLayerStyles():
         self.style_from_file_into_db('obs_points', 'obs_points_tablayout.qml','obs_points_tablayout.sld')
         self.style_from_file_into_db('stratigraphy', 'stratigraphy_tablayout.qml','stratigraphy_tablayout.sld')
 
-        self.cur.execute("PRAGMA foreign_keys = OFF")
+        try:
+            self.cur.execute("PRAGMA foreign_keys = OFF")
+        except:
+            pass
         connection.closedb()
 
     def add_layer_styles_2_db(self):

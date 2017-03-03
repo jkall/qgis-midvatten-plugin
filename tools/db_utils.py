@@ -39,11 +39,12 @@ class DbConnectionManager(object):
         if db_settings is None:
             db_settings = QgsProject.instance().readEntry("Midvatten", "database")[0]
 
-        if not isinstance(db_settings, (basestring, dict)):
-            raise Exception(u"DbConnectionManager error: db_settings must be either a dict like {u'spatialite': {u'dbpath': u'x'} or a string representation of it. Was: "+ str(db_settings))
-
         if isinstance(db_settings, basestring):
             db_settings = ast.literal_eval(db_settings)
+        elif isinstance(db_settings, dict):
+            pass
+        else:
+            raise Exception(u"DbConnectionManager error: db_settings must be either a dict like {u'spatialite': {u'dbpath': u'x'} or a string representation of it. Was: "+ str(db_settings))
 
         utils.returnunicode(db_settings, keep_containers=True)
 
@@ -122,6 +123,7 @@ def get_postgis_connections():
     qs = QSettings()
     postgresql_connections = {}
     for k in sorted(qs.allKeys()):
+        k = utils.returnunicode(k)
         if k.startswith(u'PostgreSQL'):
             cols = k.split(u'/')
             conn_name = cols[2]
@@ -132,6 +134,8 @@ def get_postgis_connections():
                 continue
             value = qs.value(k)
             postgresql_connections.setdefault(conn_name, {})[setting] = value
+
+    postgresql_connections= utils.returnunicode(postgresql_connections, keep_containers=True)
     return postgresql_connections
 
 def sql_load_fr_db(sql=''):
@@ -139,7 +143,7 @@ def sql_load_fr_db(sql=''):
     return ConnectionOK, result
 
 def sql_alter_db(sql=''):
-    ConnectionOK, result = execute_sql(sql, foreign_keys=True, commit=True)
+    ConnectionOK, result = execute_sql(sql, foreign_keys=True, commit=True, fetchall=False)
     return result
 
 def sql_alter_db_by_param_subst(sql='', *subst_params):
@@ -154,10 +158,10 @@ def sql_alter_db_by_param_subst(sql='', *subst_params):
     sql = 'select * from obs_points where obsid = ?'
     subst_params = ('well01',)
     """
-    ConnectionOK, result = execute_sql(sql, foreign_keys=True, commit=True, *subst_params)
+    ConnectionOK, result = execute_sql(sql, foreign_keys=True, commit=True, fetchall=True, *subst_params)
     return ConnectionOK, result
 
-def execute_sql(sql='', foreign_keys=False, commit=False, *subst_params):
+def execute_sql(sql='', foreign_keys=False, commit=False, fetchall=True, *subst_params):
     ConnectionOK = False
     result = ''
     connection = DbConnectionManager()
@@ -169,7 +173,10 @@ def execute_sql(sql='', foreign_keys=False, commit=False, *subst_params):
 
     if connection_ok:
         if foreign_keys:
-            connection.cursor.execute("PRAGMA foreign_keys = ON")
+            try:
+                connection.cursor.execute("PRAGMA foreign_keys = ON")
+            except:
+                pass
 
         if subst_params and isinstance(sql, basestring):
             try:
@@ -203,8 +210,10 @@ def execute_sql(sql='', foreign_keys=False, commit=False, *subst_params):
         ConnectionOK = False
         connection.closedb()
 
-    if ConnectionOK:
+    if ConnectionOK and fetchall:
         result = connection.cursor.fetchall()
+    else:
+        result = None
 
     if commit:
         try:

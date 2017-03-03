@@ -48,7 +48,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestParseDiverofficeFile(object):
+class _TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
                                                            'Failure, parsing failed for file': 'cancel'},
@@ -208,7 +208,7 @@ class TestParseDiverofficeFile(object):
         assert test_string == reference_string
 
 
-class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatialiteDbSv):
+class _TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     @mock.patch('midvatten_utils.QgsProject.instance')

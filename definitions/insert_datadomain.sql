@@ -1,6 +1,5 @@
 ﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
-insert into zz_flowtype(type, explanation) values('Accvol', 'Accumulated volume');
-insert into zz_flowtype(type, explanation) values('Momflow', 'Momentary flow rate');
+INSERT INTO zz_flowtype (type, explanation) VALUES ('Momflow', 'Momentary flow rate');
 insert into zz_flowtype(type, explanation) values('Aveflow', 'Average flow since last reading');
 insert into zz_meteoparam(parameter, explanation) values('precip', 'Precipitation');
 insert into zz_meteoparam(parameter, explanation) values('temp', 'Air temperature');

@@ -29,6 +29,7 @@ import midvatten_utils as utils
 import mock
 from midvatten.midvatten import midvatten
 from tools.tests.mocks_for_tests import DummyInterface
+import db_utils
 
 
 class test_qapplication_is_running():
@@ -114,14 +115,15 @@ class ContextualStringIO(io.StringIO):
 
 
 class MidvattenTestSpatialiteNotCreated(object):
+    mock_instance_settings_database = mock.MagicMock()
+    mock_instance_settings_database.return_value.readEntry.return_value = (u"{u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}", True)
+
     def __init__(self):
         self.TEMP_DB_SETTINGS = {u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}
         self.TEMP_DBPATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
-        self.SETTINGS_DATABASE = (u"{u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}", True)
 
-    @mock.patch('midvatten_utils.QgsProject.instance')
-    def setUp(self, mocked_instance):
-        mocked_instance.return_value = utils.anything_to_string_representation(self.TEMP_DB_SETTINGS)
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_instance_settings_database)
+    def setUp(self):
 
         self.iface = mock.MagicMock()
         self.midvatten = midvatten(self.iface)
@@ -144,13 +146,67 @@ class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
     @mock.patch('midvatten_utils.Askuser')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    @mock.patch('midvatten_utils.QgsProject.instance')
-    def setUp(self, mocked_instance, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+    @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         super(MidvattenTestSpatialiteDbSv, self).setUp()
-        mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
         mock_locale.return_value.answer = u'ok'
         mock_locale.return_value.value = u'sv_SE'
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         mock_savefilename.return_value = self.TEMP_DBPATH
         self.midvatten.new_db()
+
+
+class MidvattenTestPostgisNotCreated(object):
+    mock_postgis_connections = mock.MagicMock()
+    mock_postgis_connections.return_value.__getitem__.return_value = {u'estimatedMetadata': u'false', u'username': u'henrik3', u'publicOnly': u'false', u'service': u'', u'database': u'nosetests', u'dontResolveType': u'false', u'saveUsername': u'true', u'sslmode': u'1', u'host': u'127.0.0.1', u'authcfg': u'', u'geometryColumnsOnly': u'false', u'allowGeometrylessTables': u'false', u'password': u'0000', u'savePassword': u'false', u'port': u'5432'}
+
+    mock_instance_settings_database = mock.MagicMock()
+    mock_instance_settings_database.return_value.readEntry.return_value = (u"{u'postgis': {u'connection': u'nosetests/127.0.0.1:5432/nosetests'}}", True)
+
+    def __init__(self):
+        self.TEMP_DB_SETTINGS = {u'postgis': {u'connection': u'nosetests/127.0.0.1:5432/nosetests'}}
+        self.SETTINGS_DATABASE = (u"{u'postgis': {u'connection': u'nosetests/127.0.0.1:5432/nosetests'}}", True)
+        pass
+
+    @mock.patch('db_utils.get_postgis_connections', mock_postgis_connections)
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_instance_settings_database)
+    def setUp(self):
+        self.iface = mock.MagicMock()
+        self.midvatten = midvatten(self.iface)
+
+        #Clear the database
+        try:
+            db_utils.sql_alter_db(u'DROP SCHEMA public CASCADE;')
+            db_utils.sql_alter_db(u'CREATE SCHEMA public;')
+        except Exception as e:
+            print("Failure resetting db: " + str(e))
+
+    @mock.patch('db_utils.get_postgis_connections', mock_postgis_connections)
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_instance_settings_database)
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    def tearDown(self, mock_messagebar):
+        #mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
+        #Clear the database
+        try:
+            db_utils.sql_alter_db(u'DROP SCHEMA public CASCADE;')
+            db_utils.sql_alter_db(u'CREATE SCHEMA public;')
+        except Exception as e:
+            print("Failure resetting db: " + str(e))
+            print("MidvattenTestPostgisNotCreated tearDownproblem: " + str(mock_messagebar.mock_calls))
+
+
+class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):
+    @mock.patch('db_utils.get_postgis_connections', MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('qgis.utils.iface')
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.Askuser')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    def setUp(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+        super(MidvattenTestPostgisDbSv, self).setUp()
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
+        mock_answer_yes.return_value.result = 1
+        mock_crs_question.return_value.__getitem__.return_value = 3006
+        self.midvatten.new_postgis_db()
