@@ -29,6 +29,8 @@ from functools import partial
 from operator import itemgetter
 from pyspatialite import dbapi2 as sqlite #could perhaps have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 from qgis.core import *
+from pyspatialite.dbapi2 import OperationalError, IntegrityError
+from psycopg2 import IntegrityError as PostGisIntegrityError
 
 import PyQt4.QtCore
 import PyQt4.QtGui
@@ -68,30 +70,31 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.status = 'False' #True if upload to sqlite and cleaning of data succeeds
         self.temptableName = goal_table + u'_temp'
 
+
         if goal_table is None:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error: No goal table given!')
             self.status = 'False'
-            self.drop_temptable()
             return
 
         if not self.csvlayer:
             self.csvlayer = self.get_csvlayer()  # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
         if self.csvlayer == u'cancel' or not self.csvlayer:
             self.status = 'True'
-            self.drop_temptable()
             return
 
-        self.qgiscsv2sqlitetable() #loads qgis csvlayer into sqlite table
+        connection = db_utils.DbConnectionManager()
 
-        recsinfile = db_utils.sql_load_fr_db(u'select count(*) from "%s"' % self.temptableName)[1][0][0]
+        self.qgiscsv2sqlitetable(connection) #loads qgis csvlayer into sqlite table
 
-        table_info = db_utils.sql_load_fr_db(u'''PRAGMA table_info("%s")''' % goal_table)[1]
+        recsinfile = connection.execute_and_fetchall(sql=u'select count(*) from "%s"' % self.temptableName, fetchall=True, db_connection_manager_connection=connection)[0][0]
+
+        table_info = connection.execute_and_fetchall(u'''PRAGMA table_info("%s")''' % goal_table)
         #POINT and LINESTRING must be cast as BLOB. So change the type to BLOB.
         column_headers_types = dict([(row[1], row[2]) if row[2] not in (u'POINT', u'LINESTRING') else (row[1], u'BLOB') for row in table_info])
         primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
         not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
         #Only use the columns that exists in the goal table.
-        existing_columns = [x[1] for x in db_utils.sql_load_fr_db("""PRAGMA table_info(%s)""" % self.temptableName)[1] if x[1] in column_headers_types]
+        existing_columns = [x[1] for x in connection.execute_and_fetchall(u"""PRAGMA table_info(%s)""" % self.temptableName)[1] if x[1] in column_headers_types]
         missing_columns = [column for column in not_null_columns if column not in existing_columns]
 
         if missing_columns:
@@ -101,10 +104,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return
 
         #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
-        nr_before = db_utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1][0][0]
+        nr_before = connection.execute_and_fetchall(u'''select count(*) from "%s"''' % (self.temptableName))[1][0][0]
         if u'date_time' in primary_keys:
-            self.delete_existing_date_times_from_temptable(primary_keys, goal_table)
-        nr_after = db_utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1][0][0]
+            self.delete_existing_date_times_from_temptable(primary_keys, goal_table, connection)
+        nr_after = connection.execute_and_fetchall(u'''select count(*) from "%s"''' % (self.temptableName))[0][0]
 
         nr_same_date = nr_after - nr_before
         self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_same_date)))
@@ -114,7 +117,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         # Import foreign keys in some special cases
         nr_before = nr_after
-        foreign_keys = utils.get_foreign_keys(goal_table)
+        foreign_keys = utils.get_foreign_keys(goal_table, connection)
         force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
 
         if self.foreign_keys_import_question is None:
@@ -142,21 +145,21 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                              self.temptableName,
                                                                                              u' and '.join([u''' "b"."{}" IS NOT NULL and "b"."{}" != '' and "b"."{}" != ' ' '''.format(k, k, k) for k in from_list]))
                 try:
-                    db_utils.sql_alter_db(sql)
+                    connection.execute(sql)
                 except Exception, e:
                     sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
                     detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%fk_table + str(e))
-                    db_utils.sql_alter_db(sql)
+                    connection.execute(sql)
 
-                nr_fk_after = db_utils.sql_load_fr_db(u'''select count(*) from "%s"''' % fk_table)[1][0][0]
+                nr_fk_after = connection.execute_and_fetchall(u'''select count(*) from "%s"''' % fk_table)[0][0]
 
                 detailed_msg_list.append(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table + u' while importing to ' + goal_table + u'.')
             else:
                 #Else check if there are foreign keys blocking the import and skip those rows
-                existing_keys = db_utils.sql_load_fr_db(u'select distinct "%s" from "%s"' % (u', '.join(to_list),
-                                                                                             fk_table))[1]
-                new_keys = db_utils.sql_load_fr_db(u'select distinct "%s" from "%s"' % (u', '.join(from_list),
-                                                                                        self.temptableName))[1]
+                existing_keys = connection.execute_and_fetchall(u'select distinct "%s" from "%s"' % (u', '.join(to_list),
+                                                                                             fk_table))
+                new_keys = connection.execute_and_fetchall(u'select distinct "%s" from "%s"' % (u', '.join(from_list),
+                                                                                        self.temptableName))
                 missing_keys = [keys for keys in new_keys if keys not in existing_keys]
 
                 if missing_keys:
@@ -166,22 +169,22 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                    u' which will not be imported:\n' + u'\n'.join([u', '.join(f) for f in missing_keys]),
                                                    duration=999)
 
-                    db_utils.sql_alter_db(u'delete from "%s" where %s in (%s)' % (self.temptableName,
+                    connection.execute(u'delete from "%s" where %s in (%s)' % (self.temptableName,
                                                                              u' || '.join(from_list),
                                                                              u', '.join([u"'{}'".format(u''.join([u'NULL' if k is None else k for k in mk])) for mk in missing_keys])))
 
-        nr_after = db_utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1][0][0]
+        nr_after = connection.execute_and_fetchall(u'''select count(*) from "%s"''' % (self.temptableName))[0][0]
         nr_after_foreign_keys = nr_before - nr_after
         self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
         if not self.status:
-            self.drop_temptable()
+            self.drop_temptable(connection)
             return
 
         #Special cases for some tables
         if goal_table == u'stratigraphy':
-            self.check_and_delete_stratigraphy(existing_columns)
+            self.check_and_delete_stratigraphy(existing_columns, connection)
         if goal_table in (u'obs_lines', u'obs_points'):
-            self.calculate_geometry(existing_columns, goal_table)
+            self.calculate_geometry(existing_columns, goal_table, connection)
 
         #Finally import data:
         nr_failed_import = recsinfile - nr_after
@@ -200,25 +203,25 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         sql_list.append(u"""FROM %s"""%(self.temptableName))
         sql = u''.join(sql_list)
 
-        recsbefore = db_utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
+        recsbefore = connection.execute_and_fetchall(u'select count(*) from "%s"' % (goal_table))[0][0]
 
         try:
-            db_utils.sql_alter_db(sql.encode(u'utf-8'))
+            connection.execute(sql.encode(u'utf-8'))
         except Exception, e:
             detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%goal_table + str(e))
             sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
             try:
-                db_utils.sql_alter_db(sql.encode(u'utf-8'))
+                connection.execute(sql.encode(u'utf-8'))
             except Exception, e:
                 utils.MessagebarAndLog.critical(
                     bar_msg=u'Error, import failed, see log message panel',
                     log_msg=u'Sql\n' + sql + u' failed.\nMsg:\n' + str(e),
                     duration=999)
                 self.status = 'False'
-                self.drop_temptable()
+                self.drop_temptable(connection)
                 return
 
-        recsafter = db_utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
+        recsafter = connection.execute_and_fetchall(u'select count(*) from "%s"' % (goal_table))[0][0]
 
         nr_imported = recsafter - recsbefore
 
@@ -239,7 +242,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         utils.MessagebarAndLog.info(bar_msg=u'%s rows imported and %s excluded for table %s. See log message panel for details'%(nr_imported, NoExcluded, goal_table), log_msg=detailed_msg)
 
         self.status = 'True'
-        self.drop_temptable() # finally drop the temporary table
+        self.drop_temptable(connection) # finally drop the temporary table
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def send_file_data_to_importer(self, file_data, importer, cleaning_function=None):
@@ -294,7 +297,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         csvlayer.setProviderEncoding(str(self.charsetchoosen))
         return csvlayer
 
-    def qgiscsv2sqlitetable(self): # general importer
+    def qgiscsv2sqlitetable(self, connection): # general importer
         """Upload qgis csv-csvlayer (QgsMapLayer) as temporary table (temptableName) in current DB. status='True' if succesfull, else 'false'.
 
         :param column_header_translation_dict: a dict like {u'column_name_in_csv: column_name_in_db}
@@ -336,9 +339,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         #Create the import-table in DB
         fields=','.join(fields)
-        db_utils.sql_alter_db("""CREATE table "%s" (%s)""" % (self.temptableName, fields)) # Create a temporary table with only text columns (unless a .csvt file was defined by user parallell to the .csv file)
+        connection.execute("""CREATE table "%s" (%s)""" % (self.temptableName, fields)) # Create a temporary table with only text columns (unless a .csvt file was defined by user parallell to the .csv file)
 
-        db_utils.sql_alter_db("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+        connection.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
 
         # Retreive every feature from temporary .csv qgis csvlayer and write it to the temporary table in sqlite (still only text fields unless user specified a .csvt file)
         for feature in self.csvlayer.getFeatures():
@@ -352,9 +355,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if len(fields)>0:   # NOTE CANNOT USE utils.sql_alter_db() SINCE THE OPTION OF SENDING 2 ARGUMENTS TO .execute IS USED BELOW
                 #please note the usage of ? for parameter substitution - highly recommended
                 #curs.execute("""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso]))
-                connection = db_utils.DbConnectionManager()
-                connection.connect2db()
-                curs = connection.cursor
+
+                curs = connection.connector._get_cursor()
                 try:
                     curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([value for value in values_perso])) # Assuming value is unicode, send it as such to sqlite
                 except:
@@ -427,10 +429,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         sql = u"""update "%s" set geometry=ST_GeomFromText(%s,%s)"""%(self.temptableName, geocol, SRID)
         db_utils.sql_alter_db(sql)
 
-    def check_and_delete_stratigraphy(self, existing_columns):
+    def check_and_delete_stratigraphy(self, existing_columns, connection):
         if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):
             skip_obsids = []
-            obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from "%s"'%self.temptableName)[1]
+            obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from "%s"'%self.temptableName, connection)[1]
             for obsid, stratid_depthbot_depthtop  in obsid_strat.iteritems():
                 #Turn everything to float
                 strats = [[float(x) for x in y] for y in stratid_depthbot_depthtop]
@@ -452,7 +454,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         skip_obsids.append(obsid)
                         break
             if skip_obsids:
-                db_utils.sql_alter_db(u'delete from "%s" where obsid in (%s)' % (self.temptableName, u', '.join([u'"{}"'.format(obsid) for obsid in skip_obsids])))
+                connection.execute(u'delete from "%s" where obsid in (%s)' % (self.temptableName, u', '.join([u'"{}"'.format(obsid) for obsid in skip_obsids])))
         
     def wlvllogg_import_from_diveroffice_files(self):
         """ Method for importing diveroffice csv files

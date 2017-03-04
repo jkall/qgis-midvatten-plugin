@@ -22,6 +22,7 @@
 import ast
 from pyspatialite import dbapi2 as sqlite
 from pyspatialite.dbapi2 import OperationalError, IntegrityError
+from psycopg2 import IntegrityError as PostGisIntegrityError
 
 from PyQt4.QtCore import QSettings
 import midvatten_utils as utils
@@ -37,6 +38,9 @@ class DbConnectionManager(object):
         https://github.com/qgis/QGIS/blob/master/python/plugins/db_manager/db_plugins/postgis/connector.py
         https://github.com/qgis/QGIS/blob/master/python/plugins/db_manager/db_plugins/spatialite/connector.py
         """
+        self.conn = None
+        self.cursor = None
+
         if db_settings is None:
             db_settings = QgsProject.instance().readEntry("Midvatten", "database")[0]
 
@@ -57,35 +61,32 @@ class DbConnectionManager(object):
         if self.dbtype == u'spatialite':
             self.dbpath = self.connection_settings[u'dbpath']
             self.uri.setDatabase(self.dbpath)
+            self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
         elif self.dbtype == u'postgis':
             connection_name = self.connection_settings[u'connection'].split(u'/')[0]
             self.postgis_settings = get_postgis_connections()[connection_name]
             self.uri.setConnection(self.postgis_settings[u'host'], self.postgis_settings[u'port'], self.postgis_settings[u'database'], self.postgis_settings[u'username'], self.postgis_settings[u'password'])
+            self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
 
     def connect2db(self):
-        ConnectionOK = False
-        try:#verify this is an existing sqlite database
-            if self.dbtype == u'postgis':
-                self.connector = postgis_connector.PostGisDBConnector(self.uri)
-                self.conn = self.connector.connection
-                #self.conn = psycopg2.connect("host='%s' port='%s' dbname='%s' user='%s' password='%s'"%(self.postgis_settings[u'host'], self.postgis_settings[u'port'], self.postgis_settings[u'database'], self.postgis_settings[u'username'], self.uri.password()))
-                self.cursor = self.conn.cursor()
-            elif self.dbtype == u'spatialite':
-                self.conn = sqlite.connect(self.dbpath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-                self.cursor = self.conn.cursor()
-                self.cursor.execute("select count(*) from sqlite_master")
-                self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
-            ConnectionOK = True
-        except Exception as e:
-            utils.MessagebarAndLog.critical(bar_msg=u"Could not connect to database, see log message panel.", log_msg=u'DB connection error, msg:\n' + str(e))
-        return ConnectionOK
+        if self.connector:
+            return True
+
+    def execute(self, sql):
+        if isinstance(sql, (list, tuple)):
+            sql = [sql]
+        for line in sql:
+            self.connector._execute(None, line)
+
+    def execute_and_fetchall(self, sql):
+        return self.connector._fetchall(self.connector._execute(None, sql))
+
+    def execute_and_commit(self, sql):
+        self.execute(sql)
+        self.connector._commit()
 
     def closedb(self):
-        try:
-            self.cursor.close()
-            self.conn.close()
-        except:
-            pass
+        self.connector.__del__()
 
     def schemas(self):
         """Postgis schemas look like this:
@@ -105,10 +106,7 @@ class DbConnectionManager(object):
 def check_connection_ok():
     connection = DbConnectionManager()
     connection_ok = connection.connect2db()
-    try:
-        connection.closedb()
-    except:
-        pass
+    connection.closedb()
     return connection_ok
 
 def if_connection_ok(func):
@@ -139,13 +137,35 @@ def get_postgis_connections():
     postgresql_connections= utils.returnunicode(postgresql_connections, keep_containers=True)
     return postgresql_connections
 
-def sql_load_fr_db(sql=''):
-    ConnectionOK, result = execute_sql(sql)
-    return ConnectionOK, result
+def sql_load_fr_db(sql):
+    connection = DbConnectionManager()
+    connection.execute_and_fetchall(sql)
+    try:
+        result = execute_sql(sql)
+    except Exception as e:
+        textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (
+        utils.returnunicode(sql), utils.returnunicode(str(e)))
+        utils.MessagebarAndLog.warning(
+            bar_msg=u'Some sql failure, see log for additional info.',
+            log_msg=textstring, duration=4)
+        return False, []
+    else:
+        return True, result
 
-def sql_alter_db(sql=''):
-    ConnectionOK, result = execute_sql(sql, foreign_keys=True, commit=True, fetchall=False)
-    return result
+def sql_alter_db(sql):
+    connection = DbConnectionManager()
+    try:
+        connection.execute(u'PRAGMA foreign_keys = ON')
+    except:
+        pass
+    try:
+        connection.execute_and_commit(sql)
+    except Exception as e:
+        textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (
+        utils.returnunicode(sql), utils.returnunicode(str(e)))
+        utils.MessagebarAndLog.warning(
+            bar_msg=u'Some sql failure, see log for additional info.',
+            log_msg=textstring, duration=4)
 
 def sql_alter_db_by_param_subst(sql='', *subst_params):
     """
@@ -159,80 +179,9 @@ def sql_alter_db_by_param_subst(sql='', *subst_params):
     sql = 'select * from obs_points where obsid = ?'
     subst_params = ('well01',)
     """
-    ConnectionOK, result = execute_sql(sql, foreign_keys=True, commit=True, fetchall=True, *subst_params)
+    ConnectionOK, result = execute_sql(sql=sql, foreign_keys_on=True, commit=True, fetchall=True, db_connection_manager_connection=None, *subst_params)
     return ConnectionOK, result
 
-def execute_sql(sql='', foreign_keys=False, commit=False, fetchall=True, *subst_params):
-    ConnectionOK = False
-    result = ''
-    connection = DbConnectionManager()
-    connection_ok = connection.connect2db()
-
-    wrong_type_msg = u"""DB Error!\n Sql must be string or list/tuple. If string/tuple,\n"""\
-                     u"""then index 1 is assumed to be the sql question, and index 2 a list of\n"""\
-                     u"""lists containing variables for excecutemany.\nSQL causing this error:%s\n""" %utils.returnunicode(sql)
-
-    if connection_ok:
-        if foreign_keys:
-            try:
-                connection.cursor.execute("PRAGMA foreign_keys = ON")
-            except:
-                pass
-
-        if subst_params and isinstance(sql, basestring):
-            try:
-                resultfromsql = connection.cursor.execute(sql, subst_params[0])
-            except Exception as e:
-                textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (utils.returnunicode(sql), utils.returnunicode(str(e)))
-                utils.MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=textstring, duration=4)
-            else:
-                ConnectionOK = True
-        elif isinstance(sql, basestring):
-            try:
-                resultfromsql = connection.cursor.execute(sql)  # Send SQL-syntax to cursor
-            except IntegrityError as e:
-                raise IntegrityError(e)
-            except Exception as e:
-                print(str(e))
-                print(str(type(e)))
-                textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (utils.returnunicode(sql), utils.returnunicode(str(e)))
-                utils.MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=textstring, duration=4)
-            else:
-                ConnectionOK = True
-
-        #Assume the user whats to execute many sqls in a row
-        elif isinstance(sql, (tuple, list)):
-            for line in sql:
-                try:
-                    resultfromsql = connection.cursor.execute(line)
-                except Exception as e:
-                    textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" %(utils.returnunicode(sql), utils.returnunicode(str(e)))
-                    utils.MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=textstring, duration=4)
-                    break
-            else:
-                ConnectionOK = True
-        else:
-            utils.MessagebarAndLog.warning(bar_msg=u'Some sql failure, see log for additional info.', log_msg=wrong_type_msg, duration=4)
-    else:
-        ConnectionOK = False
-        connection.closedb()
-
-    if ConnectionOK and fetchall:
-        result = connection.cursor.fetchall()
-    else:
-        result = None
-
-    if commit:
-        try:
-            connection.conn.commit()
-        except:
-            pass
-
-    try:
-        connection.closedb()
-    except:
-        pass
-    return ConnectionOK, result
 
 def execute_sqlfile(sqlfilename, function=sql_alter_db):
     with open(sqlfilename, 'r') as f:

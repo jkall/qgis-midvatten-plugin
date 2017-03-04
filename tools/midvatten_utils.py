@@ -1204,8 +1204,12 @@ def anything_to_string_representation(anything):
         aunicode = returnunicode(str(anything))
     return aunicode
 
-def get_foreign_keys(tname):
-    result_list = db_utils.sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)""" % (tname))[1]
+def get_foreign_keys(tname, curs=None):
+    if curs is not None:
+        curs.execute(u"""PRAGMA foreign_key_list(%s)""" % (tname))
+        result_list = curs.fetchall()
+    else:
+        result_list = db_utils.sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)""" % (tname))[1]
     foreign_keys = {}
     for row in result_list:
         foreign_keys.setdefault(row[2], []).append((row[3], row[4]))

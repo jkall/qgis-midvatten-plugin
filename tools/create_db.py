@@ -108,18 +108,11 @@ class newdb():
             f.readline()  # first line is encoding info....
             for line in f:
                 if all([line, not line.startswith("#"), not line.startswith("POSTGIS")]):
-                    try:
-                        self.cur.execute(self.replace_words(line, replace_word_replace_with))
-                        #self.cur.execute(self.replace_words(line, replace_word_replace_with))
-                    except Exception as e:
-                        # utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
-                        utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n' % (line, str(e)), duration=5)
-                        return ''
+                    self.cur.execute(self.replace_words(line, replace_word_replace_with))
 
         #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
         delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
         try:
-
             self.cur.execute(delete_srid_sql)
         except:
             utils.MessagebarAndLog.info(log_msg=u'Removing srids failed using: ' + str(delete_srid_sql))
@@ -148,7 +141,7 @@ class newdb():
         """
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def create_new_postgis_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):
+    def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):
         set_locale = self.ask_for_locale()
         if set_locale == u'cancel':
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -165,8 +158,9 @@ class newdb():
         connection = db_utils.DbConnectionManager()
         connection_ok = connection.connect2db()
         self.cur = connection.cursor
-        db_utils.sql_alter_db(u'CREATE EXTENSION IF NOT EXISTS postgis;')
-        connection_ok, result = db_utils.sql_load_fr_db(u'''select version(), PostGIS_full_version();''')
+        self.cur.execute(u'CREATE EXTENSION IF NOT EXISTS postgis;')
+        self.cur.execute(u'select version(), PostGIS_full_version();')
+        result = self.cur.fetchall()
 
         versionstext = u', '.join(result[0])
 
@@ -191,7 +185,7 @@ class newdb():
             for line in f:
                 if all([line,not line.startswith("#"), u'InitSpatialMetadata' not in line, not line.startswith("SPATIALITE")]):
                     line = self.replace_words(line, replace_word_replace_with)
-                    db_utils.sql_alter_db(line)
+                    self.cur.execute(line)
 
             #lines = [self.replace_words(line.decode('utf-8').rstrip('\n').rstrip('\r'), replace_word_replace_with) for line in f if all([line,not line.startswith("#"), u'InitSpatialMetadata' not in line])]
         #db_utils.sql_alter_db(lines)
@@ -200,7 +194,10 @@ class newdb():
 
         self.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql', self.cur)
 
-        db_utils.sql_alter_db(u'vacuum')
+        self.cur.execute(u'vacuum')
+
+        connection.conn.commit()
+        connection.closedb()
 
         """
         #The intention is to keep layer styles in the database by using the class AddLayerStyles but due to limitations in how layer styles are stored in the database, I will put this class on hold for a while.
@@ -249,21 +246,15 @@ class newdb():
             filenamestring += ".sql"
         self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring), cursor)
 
-    def add_triggers_to_obs_points(self, filename, cursor=None):
+    def add_triggers_to_obs_points(self, filename, cursor):
         self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename), cursor)
 
-    def excecute_sqlfile(self, sqlfilename, cursor=None):
+    def excecute_sqlfile(self, sqlfilename, cursor):
         with open(sqlfilename, 'r') as f:
             f.readline()  # first line is encoding info....
             for line in f:
                 if all([line,not line.startswith("#")]):
-                    if cursor is not None:
-                        try:
-                            cursor.execute(line)
-                        except Exception as e:
-                            utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n' % (line, str(e)), duration=5)
-                    else:
-                        db_utils.sql_alter_db(line)
+                    cursor.execute(line)
 
 
 class AddLayerStyles():

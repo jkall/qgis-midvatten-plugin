@@ -847,7 +847,7 @@ class midvatten:
             verno = str(iniText.value('version'))
             from create_db import newdb
             newdbinstance = newdb()
-            newdbinstance.create_new_postgis_db(verno)
+            newdbinstance.populate_postgis_db(verno)
             if not newdbinstance.db_settings=='':
                 self.ms.settingsdict['database'] = utils.anything_to_string_representation(newdbinstance.db_settings)
                 self.ms.save_settings()
