@@ -100,7 +100,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if missing_columns:
             utils.MessagebarAndLog.critical(bar_msg=u'Error: Import failed, see log message panel', log_msg=u'Required columns ' + u', '.join(missing_columns) + u' are missing for table ' + goal_table, duration=999)
             self.status = False
-            self.drop_temptable()
+            self.drop_temptable(connection)
             return
 
         #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
@@ -112,7 +112,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         nr_same_date = nr_after - nr_before
         self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_same_date)))
         if not self.status:
-            self.drop_temptable()
+            self.drop_temptable(connection)
             return
 
         # Import foreign keys in some special cases
@@ -193,7 +193,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if stop_question.result == 0:      # if the user wants to abort
                 self.status = 'False'
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                self.drop_temptable()
+                self.drop_temptable(connection)
                 return Cancel()   # return simply to stop this function
 
         sql_list = [u"""INSERT INTO "%s" ("""%goal_table]
@@ -243,6 +243,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         self.status = 'True'
         self.drop_temptable(connection) # finally drop the temporary table
+        connection.commit_and_closedb()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def send_file_data_to_importer(self, file_data, importer, cleaning_function=None):
@@ -356,19 +357,17 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 #please note the usage of ? for parameter substitution - highly recommended
                 #curs.execute("""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso]))
 
-                curs = connection.connector._get_cursor()
                 try:
-                    curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([value for value in values_perso])) # Assuming value is unicode, send it as such to sqlite
+                    connection.cursor.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([value for value in values_perso])) # Assuming value is unicode, send it as such to sqlite
                 except:
-                    curs.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso])) #in case of errors, the value must be a byte string, then try to convert to unicode
-                connection.conn.commit()
-                connection.closedb()
+                    connection.cursor.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso])) #in case of errors, the value must be a byte string, then try to convert to unicode
+                connection.commit()
                 self.status = 'True'
             else: #no attribute Datas
                 utils.MessagebarAndLog.critical(bar_msg=u'No data found!! No data will be imported!!')
                 self.status = 'False'
 
-    def delete_existing_date_times_from_temptable(self, primary_keys, goal_table):
+    def delete_existing_date_times_from_temptable(self, primary_keys, goal_table, connection):
         """
         Deletes duplicate times
         :param primary_keys: a table like ['obsid', 'date_time', ...]
@@ -396,7 +395,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                           u' || '.join(pks_and_00),
                                                                                           u' || '.join([u'"{}"'.format(pk) for pk in pks]),
                                                                                           goal_table)
-        db_utils.sql_alter_db(sql)
+        connection.execute(sql)
 
         # Delete records from temptable that have date_time yyyy-mm-dd HH:MM:XX when yyyy-mm-dd HH:MM exist.
         #delete from temptable where SUBSTR("obsid" || "date_time", 1, length("obsid" || "date_time") - 3) in (select "obsid" || "date_time" from goaltable)
@@ -405,7 +404,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                           u' || '.join([u'"{}"'.format(pk) for pk in pks]),
                                                                                           u' || '.join([u'"{}"'.format(pk) for pk in pks]),
                                                                                           goal_table)
-        db_utils.sql_alter_db(sql)
+        connection.execute(sql)
 
     def check_remaining(self, nr_before, nr_after, bar_msg, log_msg):
         if nr_after == 0:
@@ -414,10 +413,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         elif nr_before > nr_after:
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
 
-    def calculate_geometry(self, existing_columns, table_name):
+    def calculate_geometry(self, existing_columns, table_name, connection):
         # Calculate the geometry
-        sql = r"""SELECT srid FROM geometry_columns where f_table_name = '%s'"""%table_name
-        SRID = str((db_utils.sql_load_fr_db(sql)[1])[0][0])  # THIS IS DUE TO WKT-import of geometries below
+        SRID = str(connection.execute_and_fetchall(r"""SELECT srid FROM geometry_columns where f_table_name = '%s'"""%table_name)[0][0])  # THIS IS DUE TO WKT-import of geometries below
         if u'WKT' in existing_columns:
             geocol = u'WKT'
         elif u'geometry' in existing_columns:
@@ -427,7 +425,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return None
 
         sql = u"""update "%s" set geometry=ST_GeomFromText(%s,%s)"""%(self.temptableName, geocol, SRID)
-        db_utils.sql_alter_db(sql)
+        connection.execute(sql)
 
     def check_and_delete_stratigraphy(self, existing_columns, connection):
         if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):
@@ -673,17 +671,20 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         filtered_file_data.reverse()
         return filtered_file_data
 
-    def drop_temptable(self):
+    def drop_temptable(self, connection):
         try:
-            db_utils.sql_alter_db(u"DROP table %s" % self.temptableName)  # finally drop the temporary table
+            connection.execute(u"DROP table %s" % self.temptableName)  # finally drop the temporary table
         except:
             pass
 
-    def SanityCheckVacuumDB(self):
+    def SanityCheckVacuumDB(self, connection=None):
         sanity = utils.Askuser("YesNo", """It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""", 'Vacuum the database?')
         if sanity.result == 1:
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-            db_utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            if connection is not None:
+                connection.execute(u'vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            else:
+                db_utils.sql_alter_db(u'vacuum')
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
 

@@ -20,6 +20,7 @@
  ***************************************************************************/
 """
 import ast
+import os
 from pyspatialite import dbapi2 as sqlite
 from pyspatialite.dbapi2 import OperationalError, IntegrityError
 from psycopg2 import IntegrityError as PostGisIntegrityError
@@ -59,14 +60,20 @@ class DbConnectionManager(object):
         self.uri = QgsDataSourceURI()
 
         if self.dbtype == u'spatialite':
-            self.dbpath = self.connection_settings[u'dbpath']
+            self.dbpath = utils.returnunicode(self.connection_settings[u'dbpath'])
+            #Create the database if it's not existing
+            if not os.path.isfile(self.dbpath):
+                conn = sqlite.connect(self.dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
+                conn.close()
             self.uri.setDatabase(self.dbpath)
             self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
+            self.cursor = self.connector._get_cursor()
         elif self.dbtype == u'postgis':
             connection_name = self.connection_settings[u'connection'].split(u'/')[0]
             self.postgis_settings = get_postgis_connections()[connection_name]
             self.uri.setConnection(self.postgis_settings[u'host'], self.postgis_settings[u'port'], self.postgis_settings[u'database'], self.postgis_settings[u'username'], self.postgis_settings[u'password'])
             self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
+            self.cursor = self.connector._get_cursor()
 
     def connect2db(self):
         if self.connector:
@@ -76,10 +83,10 @@ class DbConnectionManager(object):
         if isinstance(sql, (list, tuple)):
             sql = [sql]
         for line in sql:
-            self.connector._execute(None, line)
+            self.connector._execute(self.cursor, line)
 
     def execute_and_fetchall(self, sql):
-        return self.connector._fetchall(self.connector._execute(None, sql))
+        return self.connector._fetchall(self.connector._execute(self.cursor, sql))
 
     def execute_and_commit(self, sql):
         self.execute(sql)
@@ -87,6 +94,10 @@ class DbConnectionManager(object):
 
     def closedb(self):
         self.connector.__del__()
+
+    def commit_and_closedb(self):
+        self.connector._commit()
+        self.closedb()
 
     def schemas(self):
         """Postgis schemas look like this:
@@ -101,6 +112,10 @@ class DbConnectionManager(object):
             if len(schemas) > 1:
                 utils.MessagebarAndLog.info(bar_msg=u'Found more than one schema. Using the first.')
             return schemas[0][1]
+
+    def commit(self):
+        self.connector._commit()
+
 
 
 def check_connection_ok():

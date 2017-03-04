@@ -54,7 +54,7 @@ class newdb():
         # If a CRS is selectd, go on and create the database
 
         #path and name of new db
-        dbpath = PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)")
+        dbpath = utils.returnunicode(PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)"))
         if not dbpath:
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return ''
@@ -69,26 +69,24 @@ class newdb():
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
                 return ''
 
-        self.db_settings = {u'spatialite': {u'dbpath': dbpath}}
-
+        self.db_settings = utils.returnunicode(utils.anything_to_string_representation({u'spatialite': {u'dbpath': dbpath}}))
+        connection = db_utils.DbConnectionManager(self.db_settings)
         try:
             # creating/connecting the test_db
-            connection = db_utils.DbConnectionManager({u'spatialite': {u'dbpath': dbpath}})
-            connection_ok = connection.connect2db()
-            self.conn = connection.conn
-            self.cur = connection.cursor
-            self.cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+            connection = db_utils.DbConnectionManager(self.db_settings)
+            connection.execute(u"PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
         except Exception as e:
+            print("Creation of db failed")
             utils.MessagebarAndLog.critical(bar_msg=u"Impossible to connect to selected DataBase, see log message panel", log_msg=u'Msg:\n' + str(e))
             #utils.pop_up_info("Impossible to connect to selected DataBase")
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return ''
 
         #First, find spatialite version
-        versionstext = self.cur.execute('select spatialite_version()').fetchall()
+        versionstext = connection.execute_and_fetchall('select spatialite_version()')
         # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
         # then the syntax defines a Midvatten project db according to the loaded .sql-file
-        if not int(versionstext[0][0][0]) > 3: # which file to use depends on spatialite version installed
+        if not int(versionstext[0][0]) > 3: # which file to use depends on spatialite version installed
             utils.pop_up_info("Midvatten plugin needs spatialite4.\nDatabase can not be created")
             return ''
 
@@ -108,25 +106,24 @@ class newdb():
             f.readline()  # first line is encoding info....
             for line in f:
                 if all([line, not line.startswith("#"), not line.startswith("POSTGIS")]):
-                    self.cur.execute(self.replace_words(line, replace_word_replace_with))
+                    connection.execute(self.replace_words(line, replace_word_replace_with))
 
         #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
         delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
         try:
-            self.cur.execute(delete_srid_sql)
+            connection.execute(delete_srid_sql)
         except:
             utils.MessagebarAndLog.info(log_msg=u'Removing srids failed using: ' + str(delete_srid_sql))
 
 
-        self.insert_datadomains(set_locale, self.cur)
+        self.insert_datadomains(set_locale, connection)
 
-        self.add_triggers_to_obs_points("insert_obs_points_triggers.sql", self.cur)
+        self.add_triggers_to_obs_points("insert_obs_points_triggers.sql", connection)
 
-        self.cur.execute('vacuum')
+        connection.execute('vacuum')
 
         #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
-        self.conn.commit()
-        connection.closedb()
+        connection.commit_and_closedb()
         #create SpatiaLite Connection in QGIS QSettings
         settings=PyQt4.QtCore.QSettings()
         settings.beginGroup('/SpatiaLite/connections')
@@ -156,12 +153,8 @@ class newdb():
             return utils.Cancel()
 
         connection = db_utils.DbConnectionManager()
-        connection_ok = connection.connect2db()
-        self.cur = connection.cursor
-        self.cur.execute(u'CREATE EXTENSION IF NOT EXISTS postgis;')
-        self.cur.execute(u'select version(), PostGIS_full_version();')
-        result = self.cur.fetchall()
-
+        connection.execute(u'CREATE EXTENSION IF NOT EXISTS postgis;')
+        result = connection.execute_and_fetchall(u'select version(), PostGIS_full_version();')
         versionstext = u', '.join(result[0])
 
         filenamestring = "create_db.sql"
@@ -185,19 +178,18 @@ class newdb():
             for line in f:
                 if all([line,not line.startswith("#"), u'InitSpatialMetadata' not in line, not line.startswith("SPATIALITE")]):
                     line = self.replace_words(line, replace_word_replace_with)
-                    self.cur.execute(line)
+                    connection.execute(line)
 
             #lines = [self.replace_words(line.decode('utf-8').rstrip('\n').rstrip('\r'), replace_word_replace_with) for line in f if all([line,not line.startswith("#"), u'InitSpatialMetadata' not in line])]
         #db_utils.sql_alter_db(lines)
 
-        self.insert_datadomains(set_locale, self.cur)
+        self.insert_datadomains(set_locale, connection)
 
-        self.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql', self.cur)
+        self.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql', connection)
 
-        self.cur.execute(u'vacuum')
+        connection.execute(u'vacuum')
 
-        connection.conn.commit()
-        connection.closedb()
+        connection.commit_and_closedb()
 
         """
         #The intention is to keep layer styles in the database by using the class AddLayerStyles but due to limitations in how layer styles are stored in the database, I will put this class on hold for a while.
@@ -238,23 +230,23 @@ class newdb():
         EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, "Select CRS", "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:",default_crs)
         return EPSGID
 
-    def insert_datadomains(self, set_locale=False, cursor=None):
+    def insert_datadomains(self, set_locale=False, connection=None):
         filenamestring = 'insert_datadomain'
         if set_locale == u'sv_SE':
             filenamestring += "_sv.sql"
         else:
             filenamestring += ".sql"
-        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring), cursor)
+        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring), connection)
 
-    def add_triggers_to_obs_points(self, filename, cursor):
-        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename), cursor)
+    def add_triggers_to_obs_points(self, filename, connection):
+        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename), connection)
 
-    def excecute_sqlfile(self, sqlfilename, cursor):
+    def excecute_sqlfile(self, sqlfilename, connection):
         with open(sqlfilename, 'r') as f:
             f.readline()  # first line is encoding info....
             for line in f:
                 if all([line,not line.startswith("#")]):
-                    cursor.execute(line)
+                    connection.execute(line)
 
 
 class AddLayerStyles():
@@ -262,17 +254,15 @@ class AddLayerStyles():
     def __init__(self):
 
         connection = db_utils.DbConnectionManager()
-        connection_ok = connection.connect2db()
         self.dbpath = connection.dbpath
-        self.cur = connection.cursor
 
         try:
-            self.cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+            connection.execute(u"PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
         except:
             pass
 
         #add layer styles
-        self.add_layer_styles_2_db()
+        self.add_layer_styles_2_db(connection)
 
         #load style from file and set it as value into the layer styles table
         """
@@ -281,30 +271,28 @@ class AddLayerStyles():
         self.style_from_file_into_db('obs_p_w_lvl', 'obs_p_w_lvl.qml','obs_p_w_lvl.sld')
         #osv
         """
-        self.style_from_file_into_db('obs_points', 'obs_points_tablayout.qml','obs_points_tablayout.sld')
-        self.style_from_file_into_db('stratigraphy', 'stratigraphy_tablayout.qml','stratigraphy_tablayout.sld')
+        self.style_from_file_into_db('obs_points', 'obs_points_tablayout.qml','obs_points_tablayout.sld', connection)
+        self.style_from_file_into_db('stratigraphy', 'stratigraphy_tablayout.qml','stratigraphy_tablayout.sld', connection)
 
         try:
-            self.cur.execute("PRAGMA foreign_keys = OFF")
+            connection.execute(u"PRAGMA foreign_keys = OFF")
         except:
             pass
-        connection.closedb()
+        connection.commit_and_closedb()
 
-    def add_layer_styles_2_db(self):
+    def add_layer_styles_2_db(self, connection):
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","add_layer_styles_2_db.sql")
         datetimestring = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         f = open(SQLFile, 'r')
-        linecounter = 1
-        for line in f:
+        for linecounter, line in enumerate(f):
             if linecounter > 1:    # first line is encoding info....
-                self.rs = self.cur.execute(line.replace('CHANGETOCURRENTDATETIME',datetimestring).replace('CHANGETODBPATH',self.dbpath)) # use tags to find and replace SRID and versioning info
-            linecounter += 1
+                connection.execute(line.replace('CHANGETOCURRENTDATETIME',datetimestring).replace('CHANGETODBPATH',self.dbpath)) # use tags to find and replace SRID and versioning info
 
-    def style_from_file_into_db(self,layer,qml_file, sld_file):
+    def style_from_file_into_db(self,layer,qml_file, sld_file, connection):
         with open(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",qml_file), 'r') as content_file:
             content = content_file.read()
-        self.cur.execute("update layer_styles set styleQML=? where f_table_name=?",(content,layer))#Use parameterized arguments to allow sqlite3 to escape the quotes for you. (It also helps prevent SQL injection.
+        connection.execute("update layer_styles set styleQML=? where f_table_name=?",(content,layer))#Use parameterized arguments to allow sqlite3 to escape the quotes for you. (It also helps prevent SQL injection.
         #"UPDATE posts SET html = ? WHERE id = ?", (html ,temp[i][1])
         with open(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",sld_file), 'r') as content_file:
             content = content_file.read()
-        self.cur.execute("update layer_styles set styleSLD=? where f_table_name=?",(content,layer))#Use parameterized arguments to allow sqlite3 to escape the quotes for you. (It also helps prevent SQL injection.
+        connection.execute("update layer_styles set styleSLD=? where f_table_name=?",(content,layer))#Use parameterized arguments to allow sqlite3 to escape the quotes for you. (It also helps prevent SQL injection.

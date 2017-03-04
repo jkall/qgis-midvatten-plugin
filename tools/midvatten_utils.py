@@ -749,20 +749,17 @@ def get_quality_instruments():
 
     return True, returnunicode([x[0] for x in result_list], True)
 
-def get_sql_result_as_dict(sql):
+def get_sql_result_as_dict(sql, connection=None):
     """
     Runs sql and returns result as dict
     :param sql: The sql command to run
     :return: A dict with the first column as key and the rest in a tuple as value
     """
-    sql_result = db_utils.sql_load_fr_db(sql)
-    connection_ok, result_list = sql_result
+    if connection is None:
+        connection_ok, result_list = db_utils.sql_load_fr_db(sql)
+    else:
+        result_list = connection.execute_and_fetchall(sql)
 
-    if not connection_ok:
-        textstring = """Cannot create dictionary from sql """ + sql
-        #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
-        MessagebarAndLog.warning(bar_msg='Some sql failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
-        return False, {}
 
     result_dict = {}
     for res in result_list:
