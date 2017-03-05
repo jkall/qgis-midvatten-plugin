@@ -62,41 +62,46 @@ class DbConnectionManager(object):
         if self.dbtype == u'spatialite':
             self.dbpath = utils.returnunicode(self.connection_settings[u'dbpath'])
             #Create the database if it's not existing
-            if not os.path.isfile(self.dbpath):
-                conn = sqlite.connect(self.dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
-                conn.close()
             self.uri.setDatabase(self.dbpath)
-            self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
-            self.cursor = self.connector._get_cursor()
+            self.conn = sqlite.connect(self.dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
+            try:
+                self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
+            except:
+                pass
+            self.cursor = self.conn.cursor()
         elif self.dbtype == u'postgis':
             connection_name = self.connection_settings[u'connection'].split(u'/')[0]
             self.postgis_settings = get_postgis_connections()[connection_name]
             self.uri.setConnection(self.postgis_settings[u'host'], self.postgis_settings[u'port'], self.postgis_settings[u'database'], self.postgis_settings[u'username'], self.postgis_settings[u'password'])
-            self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
+            self.connector = postgis_connector.PostGisDBConnector(self.uri)
+            self.conn = self.connector.connection
             self.cursor = self.connector._get_cursor()
 
     def connect2db(self):
-        if self.connector:
+        if self.cursor:
             return True
 
     def execute(self, sql):
-        if isinstance(sql, (list, tuple)):
+        if isinstance(sql, basestring):
             sql = [sql]
+        elif not isinstance(sql, (list, tuple)):
+            raise TypeError(u'DbConnectionManager.execute: sql must be type string or a list/tuple of strings')
         for line in sql:
-            self.connector._execute(self.cursor, line)
+            self.cursor.execute(line)
 
     def execute_and_fetchall(self, sql):
-        return self.connector._fetchall(self.connector._execute(self.cursor, sql))
+        self.cursor.execute(sql)
+        return self.cursor.fetchall()
 
     def execute_and_commit(self, sql):
         self.execute(sql)
-        self.connector._commit()
+        self.commit()
 
-    def closedb(self):
-        self.connector.__del__()
+    def commit(self):
+        self.conn.commit()
 
     def commit_and_closedb(self):
-        self.connector._commit()
+        self.commit()
         self.closedb()
 
     def schemas(self):
@@ -113,9 +118,8 @@ class DbConnectionManager(object):
                 utils.MessagebarAndLog.info(bar_msg=u'Found more than one schema. Using the first.')
             return schemas[0][1]
 
-    def commit(self):
-        self.connector._commit()
-
+    def closedb(self):
+        self.conn.close()
 
 
 def check_connection_ok():
@@ -153,16 +157,18 @@ def get_postgis_connections():
     return postgresql_connections
 
 def sql_load_fr_db(sql):
-    connection = DbConnectionManager()
-    connection.execute_and_fetchall(sql)
+
     try:
-        result = execute_sql(sql)
+        connection = DbConnectionManager()
+        result = connection.execute_and_fetchall(sql)
     except Exception as e:
         textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (
         utils.returnunicode(sql), utils.returnunicode(str(e)))
         utils.MessagebarAndLog.warning(
             bar_msg=u'Some sql failure, see log for additional info.',
             log_msg=textstring, duration=4)
+        print(str(textstring))
+        print(str(e))
         return False, []
     else:
         return True, result

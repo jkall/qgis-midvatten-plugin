@@ -1201,10 +1201,9 @@ def anything_to_string_representation(anything):
         aunicode = returnunicode(str(anything))
     return aunicode
 
-def get_foreign_keys(tname, curs=None):
-    if curs is not None:
-        curs.execute(u"""PRAGMA foreign_key_list(%s)""" % (tname))
-        result_list = curs.fetchall()
+def get_foreign_keys(tname, connection=None):
+    if connection is not None:
+        result_list = connection.execute_and_fetchall(u"""PRAGMA foreign_key_list(%s)""" % (tname))
     else:
         result_list = db_utils.sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)""" % (tname))[1]
     foreign_keys = {}

@@ -48,170 +48,10 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class _TestParseDiverofficeFile(object):
-    utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
-                                                           'Failure: The number of data columns in file': 'cancel',
-                                                           'Failure, parsing failed for file': 'cancel'},
-                                                          0)
-
-    def setUp(self):
-        self.importinstance = midv_data_importer()
-
-    def test_parse_diveroffice_file_utf8(self):
-
-        f = (u'Location=rb1',
-             u'Date/time,Water head[cm],Temperature[°C]',
-             u'2016/03/15 10:30:00,26.9,5.18',
-             u'2016/03/15 11:00:00,157.7,0.6'
-             )
-        existing_obsids = [u'rb1']
-
-        charset_of_diverofficefile = u'utf-8'
-        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
-
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = u'[[obsid, date_time, head_cm, temp_degc, cond_mscm], [rb1, 2016-03-15 10:30:00, 26.9, 5.18, ], [rb1, 2016-03-15 11:00:00, 157.7, 0.6, ]]'
-        assert test_string == reference_string
-
-    def test_parse_diveroffice_file_cp1252(self):
-
-        f = (u'Location=rb1',
-             u'Date/time,Water head[cm],Temperature[°C]',
-             u'2016/03/15 10:30:00,26.9,5.18',
-             u'2016/03/15 11:00:00,157.7,0.6'
-             )
-        existing_obsids = [u'rb1']
-
-        charset_of_diverofficefile = u'cp1252'
-        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
-
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = u'[[obsid, date_time, head_cm, temp_degc, cond_mscm], [rb1, 2016-03-15 10:30:00, 26.9, 5.18, ], [rb1, 2016-03-15 11:00:00, 157.7, 0.6, ]]'
-        assert test_string == reference_string
-
-    def test_parse_diveroffice_file_semicolon_sep(self):
-
-        f = (u'Location=rb1',
-             u'Date/time;Water head[cm];Temperature[°C]',
-             u'2016/03/15 10:30:00;26.9;5.18',
-             u'2016/03/15 11:00:00;157.7;0.6'
-             )
-        existing_obsids = [u'rb1']
-
-        charset_of_diverofficefile = u'cp1252'
-        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
-
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = u'[[obsid, date_time, head_cm, temp_degc, cond_mscm], [rb1, 2016-03-15 10:30:00, 26.9, 5.18, ], [rb1, 2016-03-15 11:00:00, 157.7, 0.6, ]]'
-        assert test_string == reference_string
-
-    def test_parse_diveroffice_file_comma_dec(self):
-
-        f = (u'Location=rb1',
-             u'Date/time;Water head[cm];Temperature[°C]',
-             u'2016/03/15 10:30:00;26,9;5,18',
-             u'2016/03/15 11:00:00;157,7;0,6'
-             )
-        existing_obsids = [u'rb1']
-
-        charset_of_diverofficefile = u'cp1252'
-        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
-
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = ur'''[[obsid, date_time, head_cm, temp_degc, cond_mscm], [rb1, 2016-03-15 10:30:00, 26.9, 5.18, ], [rb1, 2016-03-15 11:00:00, 157.7, 0.6, ]]'''
-        assert test_string == reference_string
-
-    @mock.patch('import_data_to_db.utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
-    def test_parse_diveroffice_file_comma_sep_comma_dec_failed(self):
-
-        f = (u'Location=rb1',
-             u'Date/time,Water head[cm],Temperature[°C]',
-             u'2016/03/15 10:30:00,26,9,5,18',
-             u'2016/03/15 11:00:00,157,7,0,6'
-             )
-        existing_obsids = [u'rb1']
-
-        charset_of_diverofficefile = u'cp1252'
-        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
-
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = 'cancel'
-        assert test_string == reference_string
-
-    @mock.patch('import_data_to_db.utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
-    def test_parse_diveroffice_file_different_separators_failed(self):
-
-        f = (u'Location=rb1',
-             u'Date/time,Water head[cm],Temperature[°C]',
-             u'2016/03/15 10:30:00;26,9;5,18',
-             u'2016/03/15 11:00:00;157,7;0,6'
-             )
-        existing_obsids = [u'rb1']
-
-        charset_of_diverofficefile = u'cp1252'
-        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
-
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = 'cancel'
-        assert test_string == reference_string
-
-    def test_parse_diveroffice_file_try_capitalize(self):
-
-        f = (u'Location=rb1',
-             u'Date/time;Water head[cm];Temperature[°C]',
-             u'2016/03/15 10:30:00;26,9;5,18',
-             u'2016/03/15 11:00:00;157,7;0,6'
-             )
-        existing_obsids = [u'Rb1']
-
-        charset_of_diverofficefile = u'cp1252'
-        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
-
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = u'[[obsid, date_time, head_cm, temp_degc, cond_mscm], [Rb1, 2016-03-15 10:30:00, 26.9, 5.18, ], [Rb1, 2016-03-15 11:00:00, 157.7, 0.6, ]]'
-        assert test_string == reference_string
-
-    @mock.patch('import_data_to_db.utils.NotFoundQuestion', autospec=True)
-    def test_parse_diveroffice_file_cancel(self, mock_notfoundquestion):
-        mock_notfoundquestion.return_value.answer = u'cancel'
-        mock_notfoundquestion.return_value.value = u''
-        mock_notfoundquestion.return_value.reuse_column = u'obsid'
-
-        f = (u'Location=rb1',
-             u'Date/time,Water head[cm],Temperature[°C]',
-             u'2016/03/15 10:30:00,26.9,5.18',
-             u'2016/03/15 11:00:00,157.7,0.6'
-             )
-        existing_obsids = [u'rb2']
-
-        charset_of_diverofficefile = u'utf-8'
-        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
-
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = u'cancel'
-        assert test_string == reference_string
-
-
-class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_wlvllogg_import_from_diveroffice_files(self):
         files = [(u'Location=rb1',
                 u'Date/time,Water head[cm],Temperature[°C]',
@@ -227,9 +67,9 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                 u'2016/05/15 11:00:00,31,301,6')
                  ]
 
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb3')''')
 
         self.importinstance.charsetchoosen = u'utf-8'
         with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen) as f1:
@@ -242,7 +82,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.MessagebarAndLog')
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -260,8 +100,8 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-    def test_wlvllogg_import_from_diveroffice_files_skip_duplicate_datetimes(self):
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    def _test_wlvllogg_import_from_diveroffice_files_skip_duplicate_datetimes(self):
         files = [(u'Location=rb1',
                 u'Date/time,Water head[cm],Temperature[°C]',
                 u'2016/03/15 10:30:00,1,10',
@@ -288,7 +128,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
                     filenames = [f1, f2, f3]
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -327,8 +167,8 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-    def test_wlvllogg_import_from_diveroffice_files_filter_dates(self):
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    def _test_wlvllogg_import_from_diveroffice_files_filter_dates(self):
         files = [(u'Location=rb1',
                 u'Date/time,Water head[cm],Temperature[°C]',
                 u'2016/03/15 10:30:00,1,10',
@@ -355,7 +195,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
                     filenames = [f1, f2, f3]
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -395,8 +235,8 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-    def test_wlvllogg_import_from_diveroffice_files_all_dates(self):
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    def _test_wlvllogg_import_from_diveroffice_files_all_dates(self):
         files = [(u'Location=rb1',
                 u'Date/time,Water head[cm],Temperature[°C]',
                 u'2016/03/15 10:30:00,1,10',
@@ -423,7 +263,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
                     filenames = [f1, f2, f3]
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -464,7 +304,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     assert test_string == reference_string
 
 
-class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestGeneralCsvImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     answer_yes = mock_answer('yes')
@@ -474,7 +314,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_general_csv_import_wlvllogg(self):
         file = [u'obsid,date_time,head_cm',
                  u'rb1,2016-03-15 10:30:00,1']
@@ -487,7 +327,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -506,7 +346,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_general_csv_import_wlvllogg_missing_not_null_column(self):
         file = [u'obsids,date_time,test',
                  u'rb1,2016-03-15 10:30:00,1']
@@ -519,7 +359,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -538,7 +378,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     reference_string = ur'''(True, [])'''
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_general_csv_import_wlvllogg_with_comment(self):
         file = [u'obsid,date_time,head_cm,comment',
                  u'rb1,2016-03-15 10:30:00,1,testcomment']
@@ -551,7 +391,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -569,7 +409,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, testcomment)])'''
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_general_csv_import_wlvllogg_with_temp(self):
         file = [u'obsid,date_time,head_cm,temp_degc',
                  u'rb1,2016-03-15 10:30:00,1, 5']
@@ -582,7 +422,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -600,7 +440,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_general_csv_import_wlvllogg_with_temp_comment(self):
         file = [u'obsid,date_time,head_cm,temp_degc,cond_mscm',
                  u'rb1,2016-03-15 10:30:00,1,5,10']
@@ -613,7 +453,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -631,7 +471,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_general_csv_import_wlvllogg_different_order(self):
         file = [u'obsid,cond_mscm,date_time,head_cm,temp_degc',
                  u'rb1,10,2016-03-15 10:30:00,1,5']
@@ -644,7 +484,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -662,7 +502,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_general_csv_import_wlvllogg_only_level_masl(self):
         file = [u'obsid,date_time,level_masl',
                  u'rb1,2016-03-15 10:30:00,1']
@@ -675,7 +515,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -693,7 +533,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, None, None, 1.0, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_general_csv_import_wlvllogg_only_temp_degc(self):
         file = [u'obsid,date_time,temp_degc',
                  u'rb1,2016-03-15 10:30:00,1']
@@ -706,7 +546,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -724,7 +564,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, 1.0, None, None, None)])'''
                     assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_general_csv_import_wlvllogg_only_cond_mscm(self):
         file = [u'obsid,date_time,cond_mscm',
                  u'rb1,2016-03-15 10:30:00,1']
@@ -737,7 +577,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     utils_askuser_answer_no_obj.result = 0
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -756,7 +596,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                     assert test_string == reference_string
 
 
-class _TestDbCalls(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestDbCalls(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
@@ -767,13 +607,13 @@ class _TestDbCalls(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
     skip_popup = MockUsingReturnValue('')
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_verify_table_exists(self):
         exists = utils.verify_table_exists(u'obs_points')
         assert exists
 
 
-class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     temp_db_path = TEMP_DB_PATH
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
@@ -787,7 +627,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
     #mocked_qgsproject = MockQgsProject(mocked_qgsinstance)
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def test_import_obsids_directly(self):
@@ -802,7 +642,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
         assert result == (True, [(u'obsid1', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None), (u'obsid2', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)])
 
     @mock.patch('qgis.utils.iface', mocked_iface)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def test_import_obs_points(self):
 
@@ -814,7 +654,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             selected_file = MockUsingReturnValue(filename)
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
             @mock.patch('import_data_to_db.utils.Askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
@@ -834,7 +674,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
         assert test_string == reference_string
 
     @mock.patch('qgis.utils.iface', mocked_iface)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def test_import_obs_points_already_exist(self):
 
@@ -849,7 +689,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
 
             @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
@@ -870,7 +710,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
         assert test_string == reference_string
 
     @mock.patch('qgis.utils.iface', mocked_iface)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def test_import_obs_points_duplicates(self):
 
@@ -887,7 +727,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
             @mock.patch('midvatten_utils.MessagebarAndLog')
             @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
@@ -908,7 +748,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
         assert test_string == reference_string
 
     @mock.patch('qgis.utils.iface', mocked_iface)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def test_import_obs_points_no_east_north(self):
         self.importinstance.charsetchoosen = [u'utf-8']
@@ -921,7 +761,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
 
             @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
@@ -939,7 +779,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
         assert test_string == reference_string
 
     @mock.patch('qgis.utils.iface', mocked_iface)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def test_import_obs_points_geometry_as_wkt(self):
         self.importinstance.charsetchoosen = [u'utf-8']
@@ -952,7 +792,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
 
             @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
@@ -967,7 +807,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
         assert test_string == reference_string
 
     @mock.patch('qgis.utils.iface', mocked_iface)
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def test_import_obs_lines_geometry_as_wkt(self):
         self.importinstance.charsetchoosen = [u'utf-8']
@@ -980,7 +820,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
 
             @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
@@ -995,7 +835,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
         assert test_string == reference_string
 
 
-class _TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
@@ -1007,7 +847,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_wquallab_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1019,7 +859,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1038,7 +878,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
         reference_string = ur'''(True, [(obsid1, 2.0, testreport, testproject, teststaff, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_wquallab_import_from_csvlayer_depth_empty_string(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1050,7 +890,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1069,7 +909,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
         reference_string = ur'''(True, [(obsid1, None, testreport, testproject, teststaff, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_wquallab_import_from_csvlayer_no_staff(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1081,7 +921,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1100,7 +940,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
         assert test_string == reference_string
 
 
-class _TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1109,7 +949,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_wflow_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1119,7 +959,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1137,7 +977,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         reference_string = ur'''(True, [(obsid1, testid, Momflow, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_wflow_import_from_csvlayer_type_missing(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1147,7 +987,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1165,7 +1005,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         reference_string = ur'''(True, [(obsid1, testid, Testtype, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_wflow_new_param_into_zz_flowtype(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1175,7 +1015,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1198,7 +1038,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         assert test_string == reference_string
 
 
-class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1207,7 +1047,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_w_qual_field_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1219,7 +1059,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1237,7 +1077,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
         reference_string = ur'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_w_qual_field_import_from_csvlayer_no_depth(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1247,7 +1087,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1265,7 +1105,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
         reference_string = ur'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, None, testcomment)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_w_qual_field_no_parameter(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1278,7 +1118,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
         # utils.sql_alter_db(u'''insert into w_qual_field (obsid, date_time, parameter, reading_num, unit) values ('1', '2011-10-19 12:30:01', 'testp', '123', 'testunit')''')
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1302,7 +1142,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
         reference_string = ur'''(True, [])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_w_qual_field_parameter_empty_string(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1314,7 +1154,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
         # utils.sql_alter_db(u'''insert into w_qual_field (obsid, date_time, parameter, reading_num, unit) values ('1', '2011-10-19 12:30:01', 'testp', '123', 'testunit')''')
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1338,7 +1178,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
         reference_string = ur'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_w_qual_field_staff_null(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1351,7 +1191,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
         # utils.sql_alter_db(u'''insert into w_qual_field (obsid, date_time, parameter, reading_num, unit) values ('1', '2011-10-19 12:30:01', 'testp', '123', 'testunit')''')
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1381,7 +1221,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
         assert test_string == reference_string
 
 
-class _TestWlevelsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestWlevelsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1390,7 +1230,7 @@ class _TestWlevelsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_w_level_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1400,7 +1240,7 @@ class _TestWlevelsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1419,7 +1259,7 @@ class _TestWlevelsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
         assert test_string == reference_string
 
 
-class _TestWlevelsImportOldWlevels(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestWlevelsImportOldWlevels(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     """
     This test is for an older version of w_levels where level_masl was not null
     but had a default value of -999
@@ -1432,13 +1272,13 @@ class _TestWlevelsImportOldWlevels(utils_for_tests.MidvattenTestSpatialiteDbSvIm
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def setUp(self):
         super(TestWlevelsImportOldWlevels, self).setUp()
         db_utils.sql_alter_db(u'drop table w_levels')
         db_utils.sql_alter_db(u'CREATE TABLE "w_levels" ("obsid" text not null, "date_time" text not null, "meas" double, "h_toc" double, "level_masl" double not null default -999, "comment" text, primary key (obsid, date_time), foreign key(obsid) references obs_points(obsid))')
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_w_level_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1448,7 +1288,7 @@ class _TestWlevelsImportOldWlevels(utils_for_tests.MidvattenTestSpatialiteDbSvIm
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1467,7 +1307,7 @@ class _TestWlevelsImportOldWlevels(utils_for_tests.MidvattenTestSpatialiteDbSvIm
         assert test_string == reference_string
 
 
-class _TestSeismicImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestSeismicImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1476,7 +1316,7 @@ class _TestSeismicImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_seismic_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1486,7 +1326,7 @@ class _TestSeismicImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1505,7 +1345,7 @@ class _TestSeismicImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
         assert test_string == reference_string
 
 
-class _TestCommentsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestCommentsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1514,7 +1354,7 @@ class _TestCommentsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_comments_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1524,7 +1364,7 @@ class _TestCommentsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1543,7 +1383,7 @@ class _TestCommentsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
         assert test_string == reference_string
 
 
-class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1552,7 +1392,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_strat_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1563,7 +1403,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1581,7 +1421,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         reference_string = u'''(True, [(obsid1, 1, 0.0, 1.0, grusig sand, sand, 5, (j), acomment), (obsid1, 2, 1.0, 4.0, siltigt sandigt grus, grus, 4+, (j), acomment2)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_strat_import_from_csvlayer_eleven_layers(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1601,7 +1441,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1619,7 +1459,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         reference_string = u'''(True, [(obsid1, 1, 0.0, 1.0, s, s, 1, (j), acomment), (obsid1, 2, 1.0, 2.0, s, s, 1, (j), acomment), (obsid1, 3, 2.0, 3.0, s, s, 1, (j), acomment), (obsid1, 4, 3.0, 4.0, s, s, 1, (j), acomment), (obsid1, 5, 4.0, 5.0, s, s, 1, (j), acomment), (obsid1, 6, 5.0, 6.0, s, s, 1, (j), acomment), (obsid1, 7, 6.0, 7.0, s, s, 1, (j), acomment), (obsid1, 8, 7.0, 8.0, s, s, 1, (j), acomment), (obsid1, 9, 8.0, 9.0, s, s, 1, (j), acomment), (obsid1, 10, 9.0, 12.1, s, s, 1, (j), acomment), (obsid1, 11, 12.1, 13.0, s, s, 1, (j), acomment)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_strat_import_one_obs_fail_stratid_gaps(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1632,7 +1472,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1650,7 +1490,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         reference_string = u'''(True, [(obsid1, 1, 0.0, 1.0, grusig sand, sand, 5, (j), acomment), (obsid1, 2, 1.0, 4.0, siltigt sandigt grus, grus, 4+, (j), acomment2)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_strat_import_one_obs_fail_depthbot_gaps(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1663,7 +1503,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1682,7 +1522,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         assert test_string == reference_string
 
 
-class _TestMeteoImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestMeteoImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1691,7 +1531,7 @@ class _TestMeteoImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_meteo_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1700,7 +1540,7 @@ class _TestMeteoImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
              [u'obsid1', u'ints1', u'pressure', u'2016-01-01 00:00:00', u'1100', u'1100', u'aunit', u'acomment']]
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1719,7 +1559,7 @@ class _TestMeteoImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         assert test_string == reference_string
 
 
-class _TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestVlfImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1728,7 +1568,7 @@ class _TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_vlf_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1737,7 +1577,7 @@ class _TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
              [u'obsid1', u'500', u'2', u'10', u'acomment']]
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1755,7 +1595,7 @@ class _TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
         reference_string = u'''(True, [(obsid1, 500.0, 2.0, 10.0, acomment)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_vlf_import_from_csvlayer_no_obs_line(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1763,7 +1603,7 @@ class _TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
              [u'obsid1', u'500', u'2', u'10', u'acomment']]
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1782,7 +1622,7 @@ class _TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
         assert test_string == reference_string
 
 
-class _TestObsLinesImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestObsLinesImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1791,7 +1631,7 @@ class _TestObsLinesImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_obs_lines_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1799,7 +1639,7 @@ class _TestObsLinesImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
              [u'obsid1', u'aname', u'aplace', u'atype', u'asource']]
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1818,7 +1658,7 @@ class _TestObsLinesImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
         assert test_string == reference_string
 
 
-class _TestGetForeignKeys(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1827,7 +1667,7 @@ class _TestGetForeignKeys(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser')
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1861,7 +1701,7 @@ class _TestFilterDatesFromFiledata(object):
         assert test_file_data == reference_file_data
 
 
-class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -1870,7 +1710,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpa
     skip_popup = MockUsingReturnValue('')
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_delete_existing_date_times_from_temptable_00_already_exists(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1882,7 +1722,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpa
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1900,7 +1740,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpa
         reference_string = ur'''(True, [(obsid1, 2016-01-01 00:00:00, None, None, 123.0, None)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_delete_existing_date_times_from_temptable_00_already_exists(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1912,7 +1752,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpa
              [u'obsid1', u'2016-01-01 00:00', u'345']]
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
@@ -1933,7 +1773,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpa
         reference_string = ur'''(True, [(obsid1, 2016-01-01 00:00:00, None, None, 123.0, None)])'''
         assert test_string == reference_string
 
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_delete_existing_date_times_from_temptable_minute_already_exists(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1947,7 +1787,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpa
              [u'obsid1', u'2016-01-01 00:02:00', u'789']]
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')

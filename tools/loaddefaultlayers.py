@@ -59,7 +59,6 @@ class LoadLayers():
             MyGroup = self.legend.addGroup (self.group_name,1,-1)
 
         dbconnection = db_utils.DbConnectionManager()
-        connection_ok = dbconnection.connect2db()
         uri = dbconnection.uri
         dbtype = dbconnection.dbtype
         schema = dbconnection.schemas()
@@ -154,7 +153,7 @@ class LoadLayers():
             firststring= 'dbname="' + self.settingsdict['database'] + '" table="' + tablename + '"'#MacOSX fix1  #earlier sent byte string, now unicode
             layer = QgsVectorLayer(firststring,self.dbtype)   # Adding the layer as 'spatialite' and not ogr vector layer is preferred
             if not layer.isValid():
-                qgis.utils.iface.messageBar().pushMessage("Error","""Failed to load layer %s!"""%tablename,2)
+                utils.MessagebarAndLog.critical(bar_msg=u'Error, Failed to load layer %s!'%tablename)
             else:
                 QgsMapLayerRegistry.instance().addMapLayers([layer])
                 group_index = self.legend.groups().index('Midvatten_OBS_DB') 
@@ -179,7 +178,7 @@ class LoadLayers():
             uri.setDataSource('',tablename, 'Geometry')
             layer = QgsVectorLayer(uri.uri(), self.dbtype) # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
             if not layer.isValid():
-                qgis.utils.iface.messageBar().pushMessage("Error","""Failed to load layer %s!"""%tablename,2)                
+                utils.MessagebarAndLog.critical(bar_msg=u'Error, Failed to load layer %s!' % tablename)
             else:
                 filename = tablename + ".qml"
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filename)
@@ -232,7 +231,6 @@ class LoadLayers():
                 group_index = self.legend.groups().index(self.group_name) 
                 self.legend.removeGroup(group_index)
 
-    @db_utils.if_connection_ok
     def selection_layer_in_db_or_not(self): #this is not used, it might be if using layer_styles stored in the db
         sql = r"""select name from sqlite_master where name = 'layer_styles'"""
         result = db_utils.sql_load_fr_db(sql)[1]

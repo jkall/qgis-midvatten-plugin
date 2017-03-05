@@ -46,7 +46,7 @@ class _TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert True
 
 
-class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
+class _TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')

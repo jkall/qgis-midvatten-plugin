@@ -70,7 +70,7 @@ class newdb():
                 return ''
 
         self.db_settings = utils.returnunicode(utils.anything_to_string_representation({u'spatialite': {u'dbpath': dbpath}}))
-        connection = db_utils.DbConnectionManager(self.db_settings)
+        #connection = db_utils.DbConnectionManager(self.db_settings)
         try:
             # creating/connecting the test_db
             connection = db_utils.DbConnectionManager(self.db_settings)
@@ -83,7 +83,7 @@ class newdb():
             return ''
 
         #First, find spatialite version
-        versionstext = connection.execute_and_fetchall('select spatialite_version()')
+        versionstext = connection.execute_and_fetchall('select spatialite_version()')[0]
         # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
         # then the syntax defines a Midvatten project db according to the loaded .sql-file
         if not int(versionstext[0][0]) > 3: # which file to use depends on spatialite version installed
