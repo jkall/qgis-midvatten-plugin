@@ -390,7 +390,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 cleaningok = self.multiple_field_duplicates(NoCols, 'w_qual_lab', sqlremove, 'obs_points', sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
 
-                if utils.verify_table_exists('zz_staff'):
+                if db_utils.verify_table_exists('zz_staff'):
                     #Add staffs that does not exist in db
                     staffs = set([x[0] for x in db_utils.sql_load_fr_db("""select distinct staff from %s""" % self.temptableName)[1]])
                     self.staff_import(staffs)
@@ -456,7 +456,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 cleaningok = self.multiple_field_duplicates(NoCols, 'w_qual_field', sqlremove, 'obs_points', sqlNoOfdistinct)
             if cleaningok == 1: # If cleaning was OK, then copy data from the temporary table to the original table in the db
 
-                if utils.verify_table_exists('zz_staff'):
+                if db_utils.verify_table_exists('zz_staff'):
                     #Add staffs that does not exist in db
                     staffs = set([x[0] for x in db_utils.sql_load_fr_db("""select distinct staff from %s""" % self.temptableName)[1]])
                     self.staff_import(staffs)

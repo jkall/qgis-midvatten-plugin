@@ -21,6 +21,7 @@
 """
 import ast
 import os
+from collections import OrderedDict
 from operator import itemgetter
 from pyspatialite import dbapi2 as sqlite
 from pyspatialite.dbapi2 import OperationalError, IntegrityError
@@ -28,6 +29,7 @@ from psycopg2 import IntegrityError as PostGisIntegrityError
 
 from PyQt4.QtCore import QSettings
 import midvatten_utils as utils
+from midvatten_utils import returnunicode
 from qgis._core import QgsProject, QgsDataSourceURI
 import db_manager.db_plugins.postgis.connector as postgis_connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
@@ -86,7 +88,7 @@ class DbConnectionManager(object):
         if isinstance(sql, basestring):
             sql = [sql]
         elif not isinstance(sql, (list, tuple)):
-            raise TypeError(u'DbConnectionManager.execute: sql must be type string or a list/tuple of strings')
+            raise TypeError(u'DbConnectionManager.execute: sql must be type string or a list/tuple of strings. Was ' + str(type(sql)))
         for line in sql:
             self.cursor.execute(line)
 
@@ -223,12 +225,7 @@ def db_tables_columns_info(table=None, dbconnection=None):
         dbconnection = DbConnectionManager()
 
     if table is None:
-        if dbconnection.dbtype == u'spatialite':
-            tables_sql = (u"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') AND tbl_name NOT IN %s ORDER BY tbl_name"""%sqlite_internal_tables())
-        else:
-            tables_sql = u"SELECT table_name FROM information_schema.tables WHERE table_schema='%s' AND table_name NOT IN %s ORDER BY table_name"%(dbconnection.schemas(), postgis_internal_tables())
-        tables = dbconnection.execute_and_fetchall(tables_sql)
-        tablenames = [col[0] for col in tables]
+        tablenames = get_tables(dbconnection=dbconnection)
     elif not isinstance(table, (list, tuple)):
         tablenames = [table]
     else:
@@ -237,28 +234,68 @@ def db_tables_columns_info(table=None, dbconnection=None):
     tables_dict = {}
 
     for tablename in tablenames:
-        if dbconnection.dbtype == u'spatialite':
-            columns_sql = """PRAGMA table_info (%s)""" % tablename
-            columns = dbconnection.execute_and_fetchall(columns_sql)
-        else:
-            columns_sql = u"SELECT ordinal_position, column_name, data_type, CASE WHEN is_nullable = 'NO' THEN 1 ELSE 0 END AS notnull, column_default, 0 AS primary_key FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s'"%(dbconnection.schemas(), tablename)
-            columns = [list(x) for x in dbconnection.execute_and_fetchall(columns_sql)]
-            primary_keys = [x[0] for x in dbconnection.execute_and_fetchall(u"SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type FROM pg_index i JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) WHERE i.indrelid = '%s'::regclass AND i.indisprimary;"%tablename)]
-            for column in columns:
-                if column[1] in primary_keys:
-                    column[5] = 1
-
+        columns = get_table_info(tablename)
         tables_dict[tablename] = columns
     return tables_dict
 
-def get_foreign_keys(tname, dbconnection=None):
-    if dbconnection is not None:
-        result_list = dbconnection.execute_and_fetchall(u"""PRAGMA foreign_key_list(%s)""" % (tname))
+def get_tables(dbconnection=None):
+    if dbconnection is None:
+        dbconnection = DbConnectionManager()
+
+    if dbconnection.dbtype == u'spatialite':
+        tables_sql = (
+        u"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') AND tbl_name NOT IN %s ORDER BY tbl_name""" % sqlite_internal_tables())
     else:
-        result_list = sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)""" % (tname))[1]
+        tables_sql = u"SELECT table_name FROM information_schema.tables WHERE table_schema='%s' AND table_name NOT IN %s ORDER BY table_name" % (
+        dbconnection.schemas(), postgis_internal_tables())
+    tables = dbconnection.execute_and_fetchall(tables_sql)
+    tablenames = [col[0] for col in tables]
+    return tablenames
+
+def get_table_info(tablename, dbconnection=None):
+    if dbconnection is None:
+        dbconnection = DbConnectionManager()
+
+    if dbconnection.dbtype == u'spatialite':
+        columns_sql = """PRAGMA table_info (%s)""" % tablename
+        columns = dbconnection.execute_and_fetchall(columns_sql)
+    else:
+        columns_sql = u"SELECT ordinal_position, column_name, data_type, CASE WHEN is_nullable = 'NO' THEN 1 ELSE 0 END AS notnull, column_default, 0 AS primary_key FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s'"%(dbconnection.schemas(), tablename)
+        columns = [list(x) for x in dbconnection.execute_and_fetchall(columns_sql)]
+        primary_keys = [x[0] for x in dbconnection.execute_and_fetchall(u"SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type FROM pg_index i JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) WHERE i.indrelid = '%s'::regclass AND i.indisprimary;"%tablename)]
+        for column in columns:
+            if column[1] in primary_keys:
+                column[5] = 1
+    return columns
+
+def get_foreign_keys(table, dbconnection=None):
+    """Get foreign keys for table.
+       Returns a dict like {foreign_key_table: (colname in table, colname in foreign_key_table)}
+    code from http://stackoverflow.com/questions/1152260/postgres-sql-to-list-table-foreign-keys"""
+    if dbconnection is None:
+        dbconnection = DbConnectionManager()
     foreign_keys = {}
-    for row in result_list:
-        foreign_keys.setdefault(row[2], []).append((row[3], row[4]))
+    if dbconnection.dbtype == u'spatialite':
+        result_list = dbconnection.execute_and_fetchall(u"""PRAGMA foreign_key_list(%s)""" % (table))
+        for row in result_list:
+            foreign_keys.setdefault(row[2], []).append((row[3], row[4]))
+    else:
+        sql = u"""
+                SELECT
+                    tc.constraint_name, tc.table_name, kcu.column_name,
+                    ccu.table_name AS foreign_table_name,
+                    ccu.column_name AS foreign_column_name
+                FROM
+                    information_schema.table_constraints AS tc
+                JOIN information_schema.key_column_usage AS kcu
+                  ON tc.constraint_name = kcu.constraint_name
+                JOIN information_schema.constraint_column_usage AS ccu
+                  ON ccu.constraint_name = tc.constraint_name
+                WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name='%s';""" % table
+        result_list = dbconnection.execute_and_fetchall(sql)
+        for row in result_list:
+            foreign_keys.setdefault(row[3], []).append((row[2], row[4]))
+
     return foreign_keys
 
 def sqlite_internal_tables(as_tuple=False):
@@ -308,4 +345,24 @@ def postgis_internal_tables(as_tuple=False):
         return ast.literal_eval(astring)
     else:
         return astring
-    
+
+def get_sql_result_as_dict(sql, dbconnection=None):
+    """
+    Runs sql and returns result as dict
+    :param sql: The sql command to run
+    :return: A dict with the first column as key and the rest in a tuple as value
+    """
+    if dbconnection is None:
+        connection_ok, result_list = sql_load_fr_db(sql)
+    else:
+        print("Used connection")
+        result_list = dbconnection.execute_and_fetchall(sql)
+
+
+    result_dict = {}
+    for res in result_list:
+        result_dict.setdefault(res[0], []).append(tuple(res[1:]))
+    return True, OrderedDict(result_dict)
+
+def verify_table_exists(tablename):
+    return tablename in get_tables()

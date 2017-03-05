@@ -628,20 +628,6 @@ def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
         qgis.utils.iface.messageBar().pushMessage("Error","You have to select/activate %s layer!"%layername, 2,duration=10)
     return errorsignal
 
-def verify_table_exists(tablename):
-    tablename = returnunicode(tablename)
-    sql = u"""SELECT name FROM sqlite_master WHERE type='table' AND name='%s'"""%(tablename)
-    sql_result = db_utils.sql_load_fr_db(sql.encode('utf-8'))
-    connection_ok, result_list = sql_result
-
-    if not connection_ok:
-        return False
-
-    if result_list:
-        return True
-    else:
-        return False
-
 @contextmanager
 def tempinput(data, charset=u'UTF-8'):
     """ Creates and yields a temporary file from data
@@ -719,7 +705,7 @@ def get_latlon_for_all_obsids():
     Returns lat, lon for all obsids
     :return: A dict of tuples with like {'obsid': (lat, lon)} for all obsids in obs_points
     """
-    latlon_dict = get_sql_result_as_dict('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')[1]
+    latlon_dict = db_utils.get_sql_result_as_dict('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')[1]
     latlon_dict = dict([(obsid, lat_lon[0]) for obsid, lat_lon in latlon_dict.iteritems()])
     return latlon_dict
 
@@ -727,10 +713,10 @@ def get_last_used_flow_instruments():
     """ Returns flow instrumentids
     :return: A dict like {obsid: (flowtype, instrumentid, last date used for obsid)
     """
-    return get_sql_result_as_dict('SELECT obsid, flowtype, instrumentid, max(date_time) FROM w_flow GROUP BY obsid, flowtype, instrumentid')
+    return db_utils.get_sql_result_as_dict('SELECT obsid, flowtype, instrumentid, max(date_time) FROM w_flow GROUP BY obsid, flowtype, instrumentid')
 
 def get_last_logger_dates():
-    ok_or_not, obsid_last_imported_dates = get_sql_result_as_dict('select obsid, max(date_time) from w_levels_logger group by obsid')
+    ok_or_not, obsid_last_imported_dates = db_utils.get_sql_result_as_dict('select obsid, max(date_time) from w_levels_logger group by obsid')
     return returnunicode(obsid_last_imported_dates, True)
 
 def get_quality_instruments():
@@ -749,22 +735,6 @@ def get_quality_instruments():
 
     return True, returnunicode([x[0] for x in result_list], True)
 
-def get_sql_result_as_dict(sql, connection=None):
-    """
-    Runs sql and returns result as dict
-    :param sql: The sql command to run
-    :return: A dict with the first column as key and the rest in a tuple as value
-    """
-    if connection is None:
-        connection_ok, result_list = db_utils.sql_load_fr_db(sql)
-    else:
-        result_list = connection.execute_and_fetchall(sql)
-
-
-    result_dict = {}
-    for res in result_list:
-        result_dict.setdefault(res[0], []).append(tuple(res[1:]))
-    return True, OrderedDict(result_dict)
 
 def lstrip(word, from_string):
     """

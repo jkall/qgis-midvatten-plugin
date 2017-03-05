@@ -37,9 +37,12 @@ class ExportData():
         self.curs = database.cursor#get a cursor
 
         self.exportfolder = exportfolder
-        self.write_data(self.to_csv, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='obs_points'), utils.verify_table_exists)
-        self.write_data(self.to_csv, self.ID_obs_lines, defs.get_subset_of_tables_fr_db(category='obs_lines'), utils.verify_table_exists)
-        self.write_data(self.zz_to_csv, u'no_obsids', defs.get_subset_of_tables_fr_db(category='data_domains'), utils.verify_table_exists)
+        self.write_data(self.to_csv, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='obs_points'),
+                        db_utils.verify_table_exists)
+        self.write_data(self.to_csv, self.ID_obs_lines, defs.get_subset_of_tables_fr_db(category='obs_lines'),
+                        db_utils.verify_table_exists)
+        self.write_data(self.zz_to_csv, u'no_obsids', defs.get_subset_of_tables_fr_db(category='data_domains'),
+                        db_utils.verify_table_exists)
         database.closedb()
 
     def export_2_splite(self,target_db,source_db, EPSG_code):

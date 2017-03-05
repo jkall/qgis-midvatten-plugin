@@ -28,7 +28,7 @@ from definitions import midvatten_defs as defs
 from import_data_to_db import midv_data_importer
 import os
 
-class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestSpatialiteDbSv):
+class _TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_tables_columns_info_all_tables(self):
         """  """
@@ -83,4 +83,30 @@ class _TestTablesColumns(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         for tablename in [u'geometry_columns', u'spatial_ref_sys']:
             assert tablename not in tables_columns
+
+
+class _TestGetForeignKeys(utils_for_tests.MidvattenTestSpatialiteDbSv):
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_get_foreign_keys(self):
+        """  """
+        foreign_keys = db_utils.get_foreign_keys(u'w_levels')
+        test_string = utils_for_tests.create_test_string(foreign_keys)
+        reference = u'{obs_points: [(obsid, obsid)]}'
+        assert test_string == reference
+
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_get_foreign_keys_no_keys(self):
+        """  """
+        foreign_keys = db_utils.get_foreign_keys(u'obs_points')
+        test_string = utils_for_tests.create_test_string(foreign_keys)
+        reference = u'{}'
+        assert test_string == reference
+
+
+class TestVerifyTableExist(utils_for_tests.MidvattenTestSpatialiteDbSv):
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_verify_table_exists(self):
+        exists = db_utils.verify_table_exists(u'obs_points')
+        assert exists
+
 

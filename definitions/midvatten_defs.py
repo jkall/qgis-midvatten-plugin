@@ -111,8 +111,8 @@ def geocolorsymbols():
     Predefined Qt colors are allowed (http://doc.qt.io/qt-4.8/qcolor.html#predefined-colors) and so is also svg 1.0 names (https://www.w3.org/TR/SVG/types.html#ColorKeywords)
     Fallback methods use color codes and brush styles found in code below
     """
-    res1, dict_qt = utils.get_sql_result_as_dict('select strata, brush_qt, color_qt from zz_stratigraphy_plots')
-    res2, dict_geo1 = utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
+    res1, dict_qt = db_utils.get_sql_result_as_dict('select strata, brush_qt, color_qt from zz_stratigraphy_plots')
+    res2, dict_geo1 = db_utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
     # fallback method to maintain backwards compatibility
     if not (res1 and res2):
         # Fallback method - if using old databases where zz_strat is missing, then you may change the code below to reflect your own GEOLOGIC CODES, SYMBOLS AND COLORS
@@ -315,7 +315,7 @@ def hydrocolors():
     Default method is to read the database table zz_capacity, the user may change zz_capacity table to change the stratigraphy plots
     Fallback methods use color codes found in code below
     """
-    res, dict_qt1 = utils.get_sql_result_as_dict('select a.capacity, a.explanation, b.color_qt from zz_capacity a, zz_capacity_plots b where a.capacity = b.capacity')
+    res, dict_qt1 = db_utils.get_sql_result_as_dict('select a.capacity, a.explanation, b.color_qt from zz_capacity a, zz_capacity_plots b where a.capacity = b.capacity')
     dict_qt = utils.unicode_2_utf8(dict_qt1)
     for k,v in dict_qt.iteritems():
         dict_qt[k] = v[0]
@@ -358,7 +358,7 @@ def PlotTypesDict(international='no'):
     Fallback method use dictionary defined in the code below
     """
     #success, Dict = utils.create_dict_from_db_2_cols(('strata','geoshort','zz_strat'))
-    success, Dict = utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
+    success, Dict = db_utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
     succss_strata, strata_order = db_utils.sql_load_fr_db('select strata from zz_stratigraphy_plots order by ROWID')
     if not success:
         print('fallback method using PlotTypesDict from code')
@@ -560,7 +560,7 @@ def sqlite_nonplot_tables():
 
 def w_flow_flowtypes_units():
     sql = 'select distinct flowtype, unit from w_flow'
-    connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
+    connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
 
     if not connection_ok:
         textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
@@ -571,7 +571,7 @@ def w_flow_flowtypes_units():
 
 def w_qual_field_parameter_units():
     sql = 'select distinct parameter, unit from w_qual_field'
-    connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
+    connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
 
     if not connection_ok:
         textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
@@ -587,7 +587,7 @@ def get_last_used_quality_instruments():
     :return: A tuple with instrument ids from w_qual_field
     """
     sql = 'select parameter, unit, instrument, staff, max(date_time) from w_qual_field group by parameter, unit, instrument, staff'
-    connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
+    connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
     return returnunicode(result_dict, True)
 
 specific_table_info = {u'obs_lines': u'The geometry column supports WKT ("well known text") of type LINESTRING and\nthe geometries must correspond to SRID in the database.',

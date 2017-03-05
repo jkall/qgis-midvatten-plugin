@@ -106,7 +106,11 @@ class newdb():
             f.readline()  # first line is encoding info....
             for line in f:
                 if all([line, not line.startswith("#"), not line.startswith("POSTGIS")]):
-                    connection.execute(self.replace_words(line, replace_word_replace_with))
+                    try:
+                        connection.execute(self.replace_words(line, replace_word_replace_with))
+                    except Exception as e:
+                        print(str(line))
+                        raise Exception(e)
 
         #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
         delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
