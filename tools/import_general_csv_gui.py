@@ -166,8 +166,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             return file_data
 
         importer = import_data_to_db.midv_data_importer()
-        importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import,
-                                                               goal_table=goal_table))
+        importer.send_file_data_to_importer(file_data=file_data, goal_table=goal_table)
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.close()

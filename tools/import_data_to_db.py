@@ -55,7 +55,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.csvlayer = None
         self.foreign_keys_import_question = None
 
-    def general_csv_import(self, goal_table=None):
+    def general_csv_import(self, goal_table=None, file_data=None):
         """General method for importing an sqlite table into a goal_table
 
             self.temptableName must be the name of the table containing the new data to import.
@@ -63,6 +63,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :param goal_table:
         :return:
         """
+        if file_data is None or not file_data:
+            self.status = 'True'
+            return
+
         utils.MessagebarAndLog.info(log_msg=u'\nImport to %s starting\n--------------------'%goal_table)
         detailed_msg_list = []
 
@@ -70,21 +74,15 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.status = 'False' #True if upload to sqlite and cleaning of data succeeds
         self.temptableName = goal_table + u'_temp'
 
-
         if goal_table is None:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error: No goal table given!')
             self.status = 'False'
             return
 
-        if not self.csvlayer:
-            self.csvlayer = self.get_csvlayer()  # loads csv file as qgis csvlayer (qgsmaplayer, ordinary vector layer provider)
-        if self.csvlayer == u'cancel' or not self.csvlayer:
-            self.status = 'True'
-            return
-
         connection = db_utils.DbConnectionManager()
 
-        self.qgiscsv2sqlitetable(connection) #loads qgis csvlayer into sqlite table
+        self.list_to_table(connection, file_data)
+        #self.qgiscsv2sqlitetable(connection) #loads qgis csvlayer into sqlite table
 
         recsinfile = connection.execute_and_fetchall(sql=u'select count(*) from %s'%self.temptableName)[0][0]
 
@@ -246,8 +244,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         connection.commit_and_closedb()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def send_file_data_to_importer(self, file_data, importer, cleaning_function=None):
-        self.csvlayer = None
+    def send_file_data_to_importer(self, file_data=None, goal_table=None, cleaning_function=None):
+        if file_data is None:
+            utils.MessagebarAndLog.info(bar_msg=u'Import error, see log message panel', log_msg=u'send_file_data_to_importer: No filedata supplied.')
+            return
+
+        if goal_table is None:
+            raise AttributeError(u'send_file_data_to_importer: Parameter goal_table must be supplied')
+
         if len(file_data) < 2:
             utils.MessagebarAndLog.info(bar_msg=u'Import error, see log message panel', log_msg=u'Import failed only a header was sent to importer')
             return
@@ -255,56 +259,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if cleaning_function is not None:
             file_data = cleaning_function(file_data)
 
-        #QgsVectorLayer(path, "temporary_csv_layer", "ogr") doesn't work if the file only has one column, so an empty column has to be added
         if len(file_data[0]) == 1:
             [row.append(u'') for row in file_data]
 
-        file_string = utils.lists_to_string(file_data)
+        answer = self.general_csv_import(goal_table=goal_table, file_data=file_data)
+        return answer
 
-        with utils.tempinput(file_string, charset=u'utf_8') as csvpath:
-            self.charsetchoosen = u'UTF-8'
-            csvlayer = self.csv2qgsvectorlayer(csvpath)
-            if not csvlayer:
-                utils.MessagebarAndLog.critical("Import error: Creating csvlayer failed!")
-                return
-            self.csvlayer = csvlayer
-            answer = importer()
-            return answer
-
-    def get_csvlayer(self): # general importer
-        """Select the csv file, user must also tell what charset to use"""
-        self.charsetchoosen = utils.ask_for_charset()
-        if not self.charsetchoosen:
-            return u'cancel'
-
-        csvpath = utils.select_files(only_one_file=True, extension="csv (*.csv)")
-        if not csvpath:
-            return u'cancel'
-
-        return self.csv2qgsvectorlayer(csvpath[0])
-
-    def csv2qgsvectorlayer(self, path):
-        """ Creates QgsVectorLayer from a csv file """
-        if not path:
-            utils.MessagebarAndLog.critical(bar_msg=u'Failure, no csv file was selected.')
-            return False
-
-        csvlayer = QgsVectorLayer(path, "temporary_csv_layer", "ogr")
-
-        if not csvlayer.isValid():
-            utils.MessagebarAndLog.critical(bar_msg=u'Failure, Impossible to Load File in QGis:\n' + str(path))
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            return False
-        csvlayer.setProviderEncoding(str(self.charsetchoosen))
-        return csvlayer
-
-    def qgiscsv2sqlitetable(self, connection): # general importer
-        """Upload qgis csv-csvlayer (QgsMapLayer) as temporary table (temptableName) in current DB. status='True' if succesfull, else 'false'.
-
-        :param column_header_translation_dict: a dict like {u'column_name_in_csv: column_name_in_db}
-
-        """
-
+    def list_to_table(self, connection, file_data):
         self.status = 'False'
         #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
         if connection.dbtype == u'spatialite':
@@ -318,57 +279,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:
                 return None
 
-        #Get all fields with corresponding types for the csv-csvlayer in qgis
-        fields=[]
-        fieldsNames=[]
-        provider=self.csvlayer.dataProvider()
-        for name in provider.fields(): #fix field names and types in temporary table
-            fldName = unicode(name.name()).replace("'"," ").replace('"'," ")  #Fixing field names
-            #Avoid two cols with same name:
-            while fldName.upper() in fieldsNames:
-                fldName = '%s_2'%fldName
-            fldType=name.type()
-            fldTypeName=unicode(name.typeName()).upper()
-            if fldType in (PyQt4.QtCore.QVariant.Char,PyQt4.QtCore.QVariant.String): # field type is text  - this will be the case for all columns if not a .csvt file is defined beside the imported file.
-                fldLength=name.length()
-                fldType='text(%s)'%fldLength  #Add field Length Information
-            elif fldType in (PyQt4.QtCore.QVariant.Bool, PyQt4.QtCore.QVariant.Int, PyQt4.QtCore.QVariant.LongLong, PyQt4.QtCore.QVariant.UInt, PyQt4.QtCore.QVariant.ULongLong):  # field type is integer
-                fldType='integer'
-            elif fldType==PyQt4.QtCore.QVariant.Double: # field type is double
-                fldType='real'
-            else: # if field type is not recognized by qgis
-                fldType=fldTypeName
-            fields.append(""" "%s" %s """%(fldName,fldType))
-            fieldsNames.append(fldName.upper())
+        fieldnames_types = [u'{} TEXT'.format(field_name) for field_name in file_data[0]]
+        connection.execute("""CREATE table %s (%s)""" % (self.temptableName, u', '.join(fieldnames_types)))
 
-        #Create the import-table in DB
-        fields=','.join(fields)
-        connection.execute("""CREATE table %s (%s)""" % (self.temptableName, fields)) # Create a temporary table with only text columns (unless a .csvt file was defined by user parallell to the .csv file)
-
-        connection.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
-
-        # Retreive every feature from temporary .csv qgis csvlayer and write it to the temporary table in sqlite (still only text fields unless user specified a .csvt file)
-        for feature in self.csvlayer.getFeatures():
-            values_perso=[]
-            for attr in feature.attributes():
-                #If automatic convertion from PyQt4.QtCore.QVariant did not work, it must be done manually
-                if isinstance(attr, PyQt4.QtCore.QVariant):
-                    attr = attr.toPyObject()
-                values_perso.append(attr) # attr is supposed to be unicode and should be kept like that, sometimes though it ends up being a byte string, do not know why....
-            #Create line in DB table
-            if len(fields)>0:   # NOTE CANNOT USE utils.sql_alter_db() SINCE THE OPTION OF SENDING 2 ARGUMENTS TO .execute IS USED BELOW
-                #please note the usage of ? for parameter substitution - highly recommended
-                #curs.execute("""INSERT INTO "%s" VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso]))
-
-                try:
-                    connection.cursor.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([value for value in values_perso])) # Assuming value is unicode, send it as such to sqlite
-                except:
-                    connection.cursor.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(values_perso))),tuple([unicode(value) for value in values_perso])) #in case of errors, the value must be a byte string, then try to convert to unicode
-                connection.commit()
-                self.status = 'True'
-            else: #no attribute Datas
-                utils.MessagebarAndLog.critical(bar_msg=u'No data found!! No data will be imported!!')
-                self.status = 'False'
+        for row in file_data[1:]:
+            connection.cursor.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(row))),tuple(row))
 
     def delete_existing_date_times_from_temptable(self, primary_keys, goal_table, connection):
         """
@@ -433,7 +348,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def check_and_delete_stratigraphy(self, existing_columns, connection):
         if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):
             skip_obsids = []
-            obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from "%s"'%self.temptableName, connection)[1]
+            obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from %s'%self.temptableName, connection)[1]
             for obsid, stratid_depthbot_depthtop  in obsid_strat.iteritems():
                 #Turn everything to float
                 strats = [[float(x) for x in y] for y in stratid_depthbot_depthtop]
@@ -455,7 +370,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         skip_obsids.append(obsid)
                         break
             if skip_obsids:
-                connection.execute(u'delete from "%s" where obsid in (%s)' % (self.temptableName, u', '.join([u'"{}"'.format(obsid) for obsid in skip_obsids])))
+                connection.execute(u'delete from %s where obsid in (%s)' % (self.temptableName, u', '.join([u'"{}"'.format(obsid) for obsid in skip_obsids])))
         
     def wlvllogg_import_from_diveroffice_files(self):
         """ Method for importing diveroffice csv files
@@ -511,7 +426,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if not import_all_data.result:
             file_to_import_to_db = self.filter_dates_from_filedata(file_to_import_to_db, utils.get_last_logger_dates())
 
-        answer = self.send_file_data_to_importer(file_to_import_to_db, partial(self.general_csv_import, goal_table=u'w_levels_logger'))
+        answer = self.send_file_data_to_importer(file_data=file_to_import_to_db, goal_table=u'w_levels_logger')
         if isinstance(answer, Cancel):
             self.status = True
             return answer

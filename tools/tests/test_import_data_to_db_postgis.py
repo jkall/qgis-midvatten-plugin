@@ -48,11 +48,11 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class _TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_wlvllogg_import_from_diveroffice_files(self):
+    def _test_wlvllogg_import_from_diveroffice_files(self):
         files = [(u'Location=rb1',
                 u'Date/time,Water head[cm],Temperature[°C]',
                 u'2016/03/15 10:30:00,1,10',
@@ -304,296 +304,134 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgis
                     assert test_string == reference_string
 
 
-class _TestGeneralCsvImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    @mock.patch('qgis.utils.iface', mock.MagicMock())
     def test_general_csv_import_wlvllogg(self):
-        file = [u'obsid,date_time,head_cm',
-                 u'rb1,2016-03-15 10:30:00,1']
+        file = [(u'obsid',u'date_time',u'head_cm'),
+                (u'rb1',u'2016-03-15 10:30:00',u'1')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
-                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
-                    utils_askuser_answer_no_obj.result = 0
-                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
 
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-                    @mock.patch('import_data_to_db.utils.Askuser')
-                    @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
-                    def _test_general_csv_import_wlvllogg(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-
-                        mock_filename.return_value = filename
-                        mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
-
-                    _test_general_csv_import_wlvllogg(self, filename)
-
-                    test_string = utils_for_tests.create_test_string(
-                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, None)])'''
-                    assert test_string == reference_string
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, None)])'''
+        assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_general_csv_import_wlvllogg_missing_not_null_column(self):
-        file = [u'obsids,date_time,test',
-                 u'rb1,2016-03-15 10:30:00,1']
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    @mock.patch('qgis.utils.iface', autospec=True)
+    def _test_general_csv_import_wlvllogg_missing_not_null_column(self, mock_iface):
+        file = [(u'obsids',u'date_time',u'test'),
+                (u'rb1',u'2016-03-15 10:30:00',u'1')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
-                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
-                    utils_askuser_answer_no_obj.result = 0
-                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-                    @mock.patch('import_data_to_db.utils.Askuser')
-                    @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
-                    def _test_general_csv_import_wlvllogg(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                        mock_filename.return_value = filename
-                        mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
-
-                        mock_iface.messageBar.return_value.createMessage.assert_called_with(u'Error: Import failed, see log message panel')
-                    _test_general_csv_import_wlvllogg(self, filename)
-
-                    test_string = utils_for_tests.create_test_string(
-                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [])'''
-                    assert test_string == reference_string
+        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
+        mock_iface.messageBar.return_value.createMessage.assert_called_with(u'Error: Import failed, see log message panel')
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+        reference_string = ur'''(True, [])'''
+        assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_general_csv_import_wlvllogg_with_comment(self):
-        file = [u'obsid,date_time,head_cm,comment',
-                 u'rb1,2016-03-15 10:30:00,1,testcomment']
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    def _test_general_csv_import_wlvllogg_with_comment(self):
+        file = [(u'obsid', u'date_time' ,u'head_cm',u'comment'),
+                (u'rb1', u'2016-03-15 10:30:00', u'1', u'testcomment')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
-                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
-                    utils_askuser_answer_no_obj.result = 0
-                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-                    @mock.patch('import_data_to_db.utils.Askuser')
-                    @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
-                    def _test_general_csv_import_wlvllogg(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                        mock_filename.return_value = filename
-                        mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
-
-                    _test_general_csv_import_wlvllogg(self, filename)
-
-                    test_string = utils_for_tests.create_test_string(
-                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, testcomment)])'''
-                    assert test_string == reference_string
+        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, testcomment)])'''
+        assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_general_csv_import_wlvllogg_with_temp(self):
-        file = [u'obsid,date_time,head_cm,temp_degc',
-                 u'rb1,2016-03-15 10:30:00,1, 5']
-
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    def _test_general_csv_import_wlvllogg_with_temp(self):
+        file = [(u'obsid', u'date_time', u'head_cm', u'temp_degc'),
+                (u'rb1', u'2016-03-15 10:30:00', u'1', u'5')]
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
 
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
-                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
-                    utils_askuser_answer_no_obj.result = 0
-                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-                    @mock.patch('import_data_to_db.utils.Askuser')
-                    @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
-                    def _test_general_csv_import_wlvllogg(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                        mock_filename.return_value = filename
-                        mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
-
-                    _test_general_csv_import_wlvllogg(self, filename)
-
-                    test_string = utils_for_tests.create_test_string(
-                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, None, None, None)])'''
-                    assert test_string == reference_string
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, None, None, None)])'''
+        assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_general_csv_import_wlvllogg_with_temp_comment(self):
-        file = [u'obsid,date_time,head_cm,temp_degc,cond_mscm',
-                 u'rb1,2016-03-15 10:30:00,1,5,10']
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    def _test_general_csv_import_wlvllogg_with_temp_comment(self):
+        file = [(u'obsid', u'date_time', u'head_cm', u'temp_degc', u'cond_mscm'),
+                (u'rb1', u'2016-03-15 10:30:00', u'1', u'5', u'10')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
-                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
-                    utils_askuser_answer_no_obj.result = 0
-                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-                    @mock.patch('import_data_to_db.utils.Askuser')
-                    @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
-                    def _test_general_csv_import_wlvllogg(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                        mock_filename.return_value = filename
-                        mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
-
-                    _test_general_csv_import_wlvllogg(self, filename)
-
-                    test_string = utils_for_tests.create_test_string(
-                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
-                    assert test_string == reference_string
+        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
+        assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_general_csv_import_wlvllogg_different_order(self):
-        file = [u'obsid,cond_mscm,date_time,head_cm,temp_degc',
-                 u'rb1,10,2016-03-15 10:30:00,1,5']
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    def _test_general_csv_import_wlvllogg_different_order(self):
+        file = [(u'obsid', u'cond_mscm', u'date_time', u'head_cm', u'temp_degc'),
+                 (u'rb1', u'10', u'2016-03-15 10:30:00', u'1', u'5')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
 
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
-                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
-                    utils_askuser_answer_no_obj.result = 0
-                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-                    @mock.patch('import_data_to_db.utils.Askuser')
-                    @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
-                    def _test_general_csv_import_wlvllogg(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                        mock_filename.return_value = filename
-                        mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
-
-                    _test_general_csv_import_wlvllogg(self, filename)
-
-                    test_string = utils_for_tests.create_test_string(
-                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
-                    assert test_string == reference_string
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
+        assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_general_csv_import_wlvllogg_only_level_masl(self):
-        file = [u'obsid,date_time,level_masl',
-                 u'rb1,2016-03-15 10:30:00,1']
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    def _test_general_csv_import_wlvllogg_only_level_masl(self):
+        file = [(u'obsid', u'date_time', u'level_masl'),
+                (u'rb1', u'2016-03-15 10:30:00', u'1')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
 
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
-                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
-                    utils_askuser_answer_no_obj.result = 0
-                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-                    @mock.patch('import_data_to_db.utils.Askuser')
-                    @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
-                    def _test_general_csv_import_wlvllogg(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                        mock_filename.return_value = filename
-                        mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
-
-                    _test_general_csv_import_wlvllogg(self, filename)
-
-                    test_string = utils_for_tests.create_test_string(
-                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, None, None, 1.0, None)])'''
-                    assert test_string == reference_string
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, None, None, 1.0, None)])'''
+        assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_general_csv_import_wlvllogg_only_temp_degc(self):
-        file = [u'obsid,date_time,temp_degc',
-                 u'rb1,2016-03-15 10:30:00,1']
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    def _test_general_csv_import_wlvllogg_only_temp_degc(self):
+        file = [(u'obsid', u'date_time', u'temp_degc'),
+                 (u'rb1', u'2016-03-15 10:30:00', u'1')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
 
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
-                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
-                    utils_askuser_answer_no_obj.result = 0
-                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-                    @mock.patch('import_data_to_db.utils.Askuser')
-                    @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
-                    def _test_general_csv_import_wlvllogg(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                        mock_filename.return_value = filename
-                        mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
-
-                    _test_general_csv_import_wlvllogg(self, filename)
-
-                    test_string = utils_for_tests.create_test_string(
-                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, 1.0, None, None, None)])'''
-                    assert test_string == reference_string
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, 1.0, None, None, None)])'''
+        assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_general_csv_import_wlvllogg_only_cond_mscm(self):
-        file = [u'obsid,date_time,cond_mscm',
-                 u'rb1,2016-03-15 10:30:00,1']
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    def _test_general_csv_import_wlvllogg_only_cond_mscm(self):
+        file = [(u'obsid', u'date_time', u'cond_mscm'),
+                 (u'rb1', u'2016-03-15 10:30:00', u'1')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
 
-        self.importinstance.charsetchoosen = [u'utf-8']
-        with utils.tempinput(u'\n'.join(file), self.importinstance.charsetchoosen[0]) as filename:
-                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
-                    utils_askuser_answer_no_obj.result = 0
-                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
-
-                    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-                    @mock.patch('import_data_to_db.utils.Askuser')
-                    @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
-                    def _test_general_csv_import_wlvllogg(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                        mock_filename.return_value = filename
-                        mock_encoding.return_value = [True, u'utf-8']
-                        self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
-
-                    _test_general_csv_import_wlvllogg(self, filename)
-
-                    test_string = utils_for_tests.create_test_string(
-                        db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, None, 1.0, None, None)])'''
-                    assert test_string == reference_string
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, None, 1.0, None, None)])'''
+        assert test_string == reference_string
 
 
 class _TestDbCalls(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
@@ -608,7 +446,7 @@ class _TestDbCalls(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     skip_popup = MockUsingReturnValue('')
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_verify_table_exists(self):
+    def _test_verify_table_exists(self):
         exists = utils.verify_table_exists(u'obs_points')
         assert exists
 
@@ -630,7 +468,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImpor
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
-    def test_import_obsids_directly(self):
+    def _test_import_obsids_directly(self):
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid2")')
         result = db_utils.sql_load_fr_db(u'select * from obs_points')
@@ -644,7 +482,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImpor
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
-    def test_import_obs_points(self):
+    def _test_import_obs_points(self):
 
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -676,7 +514,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImpor
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
-    def test_import_obs_points_already_exist(self):
+    def _test_import_obs_points_already_exist(self):
 
         db_utils.sql_alter_db(u'''insert into obs_points ("obsid") values ('rb1')''')
         self.importinstance.charsetchoosen = [u'utf-8']
@@ -712,7 +550,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImpor
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
-    def test_import_obs_points_duplicates(self):
+    def _test_import_obs_points_duplicates(self):
 
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -750,7 +588,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImpor
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
-    def test_import_obs_points_no_east_north(self):
+    def _test_import_obs_points_no_east_north(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         f = [[u'obsid', u'name', u'place', u'type', u'length', u'drillstop', u'diam', u'material', u'screen', u'capacity', u'drilldate', u'wmeas_yn', u'wlogg_yn', u'east', u'north', u'ne_accur', u'ne_source', u'h_toc', u'h_tocags', u'h_gs', u'h_accur', u'h_syst', u'h_source', u'source', u'com_onerow', u'com_html'],
@@ -781,7 +619,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImpor
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
-    def test_import_obs_points_geometry_as_wkt(self):
+    def _test_import_obs_points_geometry_as_wkt(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         f = [[u'obsid', u'name', u'place', u'type', u'length', u'drillstop', u'diam', u'material', u'screen', u'capacity', u'drilldate', u'wmeas_yn', u'wlogg_yn', u'east', u'north', u'ne_accur', u'ne_source', u'h_toc', u'h_tocags', u'h_gs', u'h_accur', u'h_syst', u'h_source', u'source', u'com_onerow', u'com_html', u'geometry'],
@@ -809,7 +647,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImpor
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
-    def test_import_obs_lines_geometry_as_wkt(self):
+    def _test_import_obs_lines_geometry_as_wkt(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         f = [[u'obsid', u'geometry'],
@@ -848,7 +686,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_wquallab_import_from_csvlayer(self):
+    def _test_wquallab_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db('''insert into zz_staff (staff) values ('teststaff')''')
@@ -879,7 +717,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_wquallab_import_from_csvlayer_depth_empty_string(self):
+    def _test_wquallab_import_from_csvlayer_depth_empty_string(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db('''insert into zz_staff (staff) values ('teststaff')''')
@@ -896,7 +734,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def test_wquallab_import_from_csvlayer_depth_empty_string(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+            def _test_wquallab_import_from_csvlayer_depth_empty_string(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
@@ -910,7 +748,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_wquallab_import_from_csvlayer_no_staff(self):
+    def _test_wquallab_import_from_csvlayer_no_staff(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db('''insert into zz_staff (staff) values ('teststaff')''')
@@ -950,7 +788,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_wflow_import_from_csvlayer(self):
+    def _test_wflow_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -978,7 +816,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_wflow_import_from_csvlayer_type_missing(self):
+    def _test_wflow_import_from_csvlayer_type_missing(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1006,7 +844,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_wflow_new_param_into_zz_flowtype(self):
+    def _test_wflow_new_param_into_zz_flowtype(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1048,7 +886,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstan
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_w_qual_field_import_from_csvlayer(self):
+    def _test_w_qual_field_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1078,7 +916,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstan
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_w_qual_field_import_from_csvlayer_no_depth(self):
+    def _test_w_qual_field_import_from_csvlayer_no_depth(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1106,7 +944,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstan
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_w_qual_field_no_parameter(self):
+    def _test_w_qual_field_no_parameter(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1143,7 +981,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstan
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_w_qual_field_parameter_empty_string(self):
+    def _test_w_qual_field_parameter_empty_string(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1179,7 +1017,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstan
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_w_qual_field_staff_null(self):
+    def _test_w_qual_field_staff_null(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1231,7 +1069,7 @@ class _TestWlevelsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_w_level_import_from_csvlayer(self):
+    def _test_w_level_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1279,7 +1117,7 @@ class _TestWlevelsImportOldWlevels(utils_for_tests.MidvattenTestPostgisDbSvImpor
         db_utils.sql_alter_db(u'CREATE TABLE "w_levels" ("obsid" text not null, "date_time" text not null, "meas" double, "h_toc" double, "level_masl" double not null default -999, "comment" text, primary key (obsid, date_time), foreign key(obsid) references obs_points(obsid))')
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_w_level_import_from_csvlayer(self):
+    def _test_w_level_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1317,7 +1155,7 @@ class _TestSeismicImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_seismic_import_from_csvlayer(self):
+    def _test_seismic_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_lines ("obsid") VALUES ("obsid1")')
@@ -1355,7 +1193,7 @@ class _TestCommentsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_comments_import_from_csvlayer(self):
+    def _test_comments_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1393,7 +1231,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_strat_import_from_csvlayer(self):
+    def _test_strat_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1422,7 +1260,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_strat_import_from_csvlayer_eleven_layers(self):
+    def _test_strat_import_from_csvlayer_eleven_layers(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1460,7 +1298,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_strat_import_one_obs_fail_stratid_gaps(self):
+    def _test_strat_import_one_obs_fail_stratid_gaps(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1491,7 +1329,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_strat_import_one_obs_fail_depthbot_gaps(self):
+    def _test_strat_import_one_obs_fail_depthbot_gaps(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1532,7 +1370,7 @@ class _TestMeteoImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_meteo_import_from_csvlayer(self):
+    def _test_meteo_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1569,7 +1407,7 @@ class _TestVlfImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_vlf_import_from_csvlayer(self):
+    def _test_vlf_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_lines ("obsid") VALUES ("obsid1")')
@@ -1596,7 +1434,7 @@ class _TestVlfImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_vlf_import_from_csvlayer_no_obs_line(self):
+    def _test_vlf_import_from_csvlayer_no_obs_line(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         f = [[u'obsid', u'length', u'real_comp', u'imag_comp', u'comment'],
@@ -1632,7 +1470,7 @@ class _TestObsLinesImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_obs_lines_import_from_csvlayer(self):
+    def _test_obs_lines_import_from_csvlayer(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         f = [[u'obsid', u'name', u'place', u'type', u'source'],
@@ -1673,7 +1511,7 @@ class _TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
     @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-    def test_get_foreign_columns(self, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+    def _test_get_foreign_columns(self, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
         mock_encoding.return_value = [True, u'utf-8']
         self.mock_iface = mock_iface
         self.importinstance.charsetchoosen = [u'utf-8']
@@ -1690,7 +1528,7 @@ class _TestFilterDatesFromFiledata(object):
     def setUp(self):
         self.importinstance = midv_data_importer()
 
-    def test_filter_dates_from_filedata(self):
+    def _test_filter_dates_from_filedata(self):
 
         file_data = [[u'obsid', u'date_time'], [u'rb1', u'2015-05-01 00:00:00'], [u'rb1', u'2016-05-01 00:00'], [u'rb2', u'2015-05-01 00:00:00'], [u'rb2', u'2016-05-01 00:00'], [u'rb3', u'2015-05-01 00:00:00'], [u'rb3', u'2016-05-01 00:00']]
         obsid_last_imported_dates = {u'rb1': [(datestring_to_date(u'2016-01-01 00:00:00'),)], u'rb2': [(datestring_to_date(u'2017-01-01 00:00:00'),)]}
@@ -1711,7 +1549,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestPos
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_delete_existing_date_times_from_temptable_00_already_exists(self):
+    def _test_delete_existing_date_times_from_temptable_00_already_exists(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1741,7 +1579,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestPos
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_delete_existing_date_times_from_temptable_00_already_exists(self):
+    def _test_delete_existing_date_times_from_temptable_00_already_exists(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
@@ -1774,7 +1612,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestPos
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    def test_delete_existing_date_times_from_temptable_minute_already_exists(self):
+    def _test_delete_existing_date_times_from_temptable_minute_already_exists(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')

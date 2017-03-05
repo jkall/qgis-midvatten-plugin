@@ -489,7 +489,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 if isinstance(file_data, Cancel):
                     return file_data
 
-                answer = importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import, goal_table=import_method))
+                answer = importer.send_file_data_to_importer(file_data=file_data, goal_table=import_method)
                 if isinstance(answer, Cancel):
                     self.status = True
                     return answer

@@ -122,7 +122,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             self.wquallab_data_table = answer
 
         importer = import_data_to_db.midv_data_importer()
-        answer = importer.send_file_data_to_importer(self.wquallab_data_table, partial(importer.general_csv_import, goal_table=u'w_qual_lab'))
+        answer = importer.send_file_data_to_importer(file_data=self.wquallab_data_table, goal_table=u'w_qual_lab')
         if isinstance(answer, Cancel):
             self.status = True
             return answer
