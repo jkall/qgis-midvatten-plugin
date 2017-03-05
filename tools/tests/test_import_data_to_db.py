@@ -27,7 +27,7 @@ import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 from date_utils import datestring_to_date
 import utils_for_tests as test_utils
-from tools.midvatten_utils import get_foreign_keys
+from db_utils import get_foreign_keys
 from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from nose.tools import raises
@@ -475,7 +475,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
 
-        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
+        self.importinstance.general_import(goal_table=u'w_levels_logger', file_data=file)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
@@ -490,7 +490,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                 (u'rb1',u'2016-03-15 10:30:00',u'1')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
+        self.importinstance.general_import(goal_table=u'w_levels_logger', file_data=file)
         mock_iface.messageBar.return_value.createMessage.assert_called_with(u'Error: Import failed, see log message panel')
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
@@ -504,7 +504,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                 (u'rb1', u'2016-03-15 10:30:00', u'1', u'testcomment')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
+        self.importinstance.general_import(goal_table=u'w_levels_logger', file_data=file)
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
         reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, testcomment)])'''
@@ -516,7 +516,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
         file = [(u'obsid', u'date_time', u'head_cm', u'temp_degc'),
                 (u'rb1', u'2016-03-15 10:30:00', u'1', u'5')]
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
+        self.importinstance.general_import(goal_table=u'w_levels_logger', file_data=file)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
@@ -530,7 +530,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                 (u'rb1', u'2016-03-15 10:30:00', u'1', u'5', u'10')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
+        self.importinstance.general_import(goal_table=u'w_levels_logger', file_data=file)
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
         reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
@@ -543,7 +543,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                  (u'rb1', u'10', u'2016-03-15 10:30:00', u'1', u'5')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
+        self.importinstance.general_import(goal_table=u'w_levels_logger', file_data=file)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
@@ -557,7 +557,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                 (u'rb1', u'2016-03-15 10:30:00', u'1')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
+        self.importinstance.general_import(goal_table=u'w_levels_logger', file_data=file)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
@@ -571,7 +571,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                  (u'rb1', u'2016-03-15 10:30:00', u'1')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
+        self.importinstance.general_import(goal_table=u'w_levels_logger', file_data=file)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
@@ -585,7 +585,7 @@ class _TestGeneralCsvImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                  (u'rb1', u'2016-03-15 10:30:00', u'1')]
 
         db_utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
-        self.importinstance.general_csv_import(goal_table=u'w_levels_logger', file_data=file)
+        self.importinstance.general_import(goal_table=u'w_levels_logger', file_data=file)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
@@ -658,7 +658,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
-                self.importinstance.general_csv_import(goal_table=u'obs_points')
+                self.importinstance.general_import(goal_table=u'obs_points')
             _test_import_obs_points_using_obsp_import(self)
 
         test_string = utils_for_tests.create_test_string(
@@ -691,7 +691,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
-                self.importinstance.general_csv_import(goal_table=u'obs_points')
+                self.importinstance.general_import(goal_table=u'obs_points')
                 assert call.messageBar().createMessage(u'0 rows imported and 1 excluded for table obs_points. See log message panel for details') in mock_iface.mock_calls
 
             _test_import_obs_points_using_obsp_import(self)
@@ -729,7 +729,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(self, mock_iface, mock_messagebar):
-                self.importinstance.general_csv_import(goal_table=u'obs_points')
+                self.importinstance.general_import(goal_table=u'obs_points')
                 #print(str(mock_messagebar.mock_calls))
                 #print(str(mock_iface.mock_calls))
                 assert call.info(bar_msg=u'1 rows imported and 2 excluded for table obs_points. See log message panel for details', log_msg=u'INSERT failed while importing to obs_points. Using INSERT OR IGNORE instead.\nMsg: UNIQUE constraint failed: obs_points.obsid\nIn total 2 rows were not imported to obs_points. Probably due to a primary key combination already existing in the database.\n--------------------') in mock_messagebar.mock_calls
@@ -763,7 +763,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
-                self.importinstance.general_csv_import(goal_table=u'obs_points')
+                self.importinstance.general_import(goal_table=u'obs_points')
             _test_import_obs_points_using_obsp_import(self)
 
         test_string = utils_for_tests.create_test_string(
@@ -794,7 +794,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(self, mock_iface):
-                self.importinstance.general_csv_import(goal_table=u'obs_points')
+                self.importinstance.general_import(goal_table=u'obs_points')
             _test(self)
 
         test_string = utils_for_tests.create_test_string(
@@ -822,7 +822,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvIm
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(self, mock_iface):
-                self.importinstance.general_csv_import(goal_table=u'obs_lines')
+                self.importinstance.general_import(goal_table=u'obs_lines')
             _test(self)
 
         test_string = utils_for_tests.create_test_string(
@@ -866,7 +866,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_qual_lab')
+                self.importinstance.general_import(goal_table=u'w_qual_lab')
             _wquallab_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -897,7 +897,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_qual_lab')
+                self.importinstance.general_import(goal_table=u'w_qual_lab')
             test_wquallab_import_from_csvlayer_depth_empty_string(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -928,7 +928,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_qual_lab')
+                self.importinstance.general_import(goal_table=u'w_qual_lab')
             _wquallab_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -966,7 +966,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_flow')
+                self.importinstance.general_import(goal_table=u'w_flow')
             _test_wflow_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -994,7 +994,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_flow')
+                self.importinstance.general_import(goal_table=u'w_flow')
             _test_wflow_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1022,7 +1022,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_flow')
+                self.importinstance.general_import(goal_table=u'w_flow')
             _test(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1066,7 +1066,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_qual_field')
+                self.importinstance.general_import(goal_table=u'w_qual_field')
             _test_w_qual_field_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1094,7 +1094,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_qual_field')
+                self.importinstance.general_import(goal_table=u'w_qual_field')
             _test_w_qual_field_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1129,7 +1129,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_qual_field')
+                self.importinstance.general_import(goal_table=u'w_qual_field')
                 mock_iface.messageBar.return_value.createMessage.assert_called_with(u'Error: Import failed, see log message panel')
 
             _test_w_qual_field_import_from_csvlayer(self, filename)
@@ -1165,7 +1165,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_qual_field')
+                self.importinstance.general_import(goal_table=u'w_qual_field')
                 mock_iface.messageBar.return_value.createMessage.assert_called_with(u'1 rows imported and 1 excluded for table w_qual_field. See log message panel for details')
 
             _test_w_qual_field_import_from_csvlayer(self, filename)
@@ -1202,7 +1202,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_qual_field')
+                self.importinstance.general_import(goal_table=u'w_qual_field')
                 mock_iface.messageBar.return_value.createMessage.assert_called_with(u'2 rows imported and 0 excluded for table w_qual_field. See log message panel for details')
 
             _test_w_qual_field_import_from_csvlayer(self, filename)
@@ -1247,7 +1247,7 @@ class _TestWlevelsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_levels')
+                self.importinstance.general_import(goal_table=u'w_levels')
             _test_wlvl_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1295,7 +1295,7 @@ class _TestWlevelsImportOldWlevels(utils_for_tests.MidvattenTestSpatialiteDbSvIm
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_levels')
+                self.importinstance.general_import(goal_table=u'w_levels')
             _test_wlvl_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1333,7 +1333,7 @@ class _TestSeismicImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'seismic_data')
+                self.importinstance.general_import(goal_table=u'seismic_data')
             _test_import_seismic_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1371,7 +1371,7 @@ class _TestCommentsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'comments')
+                self.importinstance.general_import(goal_table=u'comments')
             _test_wlvl_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1410,7 +1410,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
+                self.importinstance.general_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
             _test(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1448,7 +1448,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
+                self.importinstance.general_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
             _test(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1479,7 +1479,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
+                self.importinstance.general_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
             _test(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1510,7 +1510,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
+                self.importinstance.general_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
             _test(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1547,7 +1547,7 @@ class _TestMeteoImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'meteo')
+                self.importinstance.general_import(goal_table=u'meteo')
             _test_import_meteo_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1584,7 +1584,7 @@ class _TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'vlf_data')
+                self.importinstance.general_import(goal_table=u'vlf_data')
             _test_import_vlf_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1610,7 +1610,7 @@ class _TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'vlf_data')
+                self.importinstance.general_import(goal_table=u'vlf_data')
             _test_import_vlf_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1646,7 +1646,7 @@ class _TestObsLinesImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'obs_lines')
+                self.importinstance.general_import(goal_table=u'obs_lines')
             _test_obs_lines_import_from_csvlayer(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1729,7 +1729,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpa
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_levels')
+                self.importinstance.general_import(goal_table=u'w_levels')
             _test(self, filename)
 
         test_string = utils_for_tests.create_test_string(
@@ -1761,7 +1761,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpa
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_levels')
+                self.importinstance.general_import(goal_table=u'w_levels')
 
             _test(self, filename)
 
@@ -1796,7 +1796,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpa
                 mock_filename.return_value = filename
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
-                self.importinstance.general_csv_import(goal_table=u'w_levels')
+                self.importinstance.general_import(goal_table=u'w_levels')
 
             _test(self, filename)
 

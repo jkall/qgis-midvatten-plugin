@@ -55,7 +55,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.csvlayer = None
         self.foreign_keys_import_question = None
 
-    def general_csv_import(self, goal_table=None, file_data=None):
+    def general_import(self, goal_table=None, file_data=None):
         """General method for importing an sqlite table into a goal_table
 
             self.temptableName must be the name of the table containing the new data to import.
@@ -115,7 +115,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         # Import foreign keys in some special cases
         nr_before = nr_after
-        foreign_keys = utils.get_foreign_keys(goal_table, connection)
+        foreign_keys = db_utils.get_foreign_keys(goal_table, connection)
         force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
         print("Here2")
         if self.foreign_keys_import_question is None:
@@ -405,7 +405,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if not import_all_data.result:
             file_to_import_to_db = self.filter_dates_from_filedata(file_to_import_to_db, utils.get_last_logger_dates())
 
-        answer = self.general_csv_import(file_data=file_to_import_to_db, goal_table=u'w_levels_logger')
+        answer = self.general_import(file_data=file_to_import_to_db, goal_table=u'w_levels_logger')
         if isinstance(answer, Cancel):
             self.status = True
             return answer

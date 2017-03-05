@@ -127,7 +127,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         goal_table = self.table_chooser.import_method
 
-        foreign_keys = utils.get_foreign_keys(goal_table)
+        foreign_keys = db_utils.get_foreign_keys(goal_table)
 
         foreign_key_obsid_tables = [tname for tname, colnames in foreign_keys.iteritems() for colname in colnames if colname[0] == u'obsid']
         if len(foreign_key_obsid_tables) == 1:
@@ -167,7 +167,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             return file_data
 
         importer = import_data_to_db.midv_data_importer()
-        importer.general_csv_import(file_data=file_data, goal_table=goal_table)
+        importer.general_import(file_data=file_data, goal_table=goal_table)
 
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()

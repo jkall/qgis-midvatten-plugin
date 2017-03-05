@@ -18,7 +18,6 @@
  ***************************************************************************/
 """
 
-import ast
 import qgis.utils
 from collections import OrderedDict
 
@@ -550,44 +549,6 @@ def staff_list():
 
 def stratigraphy_table():
     return 'stratigraphy'
-    
-def SQLiteInternalTables(as_tuple=False):
-    astring = r"""('geom_cols_ref_sys',
-                'geometry_columns',
-                'geometry_columns_time',
-                'spatial_ref_sys',
-                'spatialite_history',
-                'vector_layers',
-                'views_geometry_columns',
-                'virts_geometry_columns',
-                'geometry_columns_auth',
-                'geometry_columns_fields_infos',
-                'geometry_columns_field_infos',
-                'geometry_columns_statistics',
-                'sql_statements_log',
-                'layer_statistics',
-                'sqlite_sequence',
-                'sqlite_stat1',
-                'sqlite_stat3',
-                'views_layer_statistics',
-                'virts_layer_statistics',
-                'vector_layers_auth',
-                'vector_layers_field_infos',
-                'vector_layers_statistics',
-                'views_geometry_columns_auth',
-                'views_geometry_columns_field_infos',
-                'views_geometry_columns_statistics',
-                'virts_geometry_columns_auth',
-                'virts_geometry_columns_field_infos',
-                'virts_geometry_columns_statistics' ,
-                'geometry_columns',
-                'spatialindex',
-                'SpatialIndex')"""
-    if as_tuple:
-        return ast.literal_eval(astring)
-    else:
-        return astring
-
 
 def sqlite_nonplot_tables():
     return r"""('about_db',

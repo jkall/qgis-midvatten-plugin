@@ -1201,16 +1201,6 @@ def anything_to_string_representation(anything):
         aunicode = returnunicode(str(anything))
     return aunicode
 
-def get_foreign_keys(tname, connection=None):
-    if connection is not None:
-        result_list = connection.execute_and_fetchall(u"""PRAGMA foreign_key_list(%s)""" % (tname))
-    else:
-        result_list = db_utils.sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)""" % (tname))[1]
-    foreign_keys = {}
-    for row in result_list:
-        foreign_keys.setdefault(row[2], []).append((row[3], row[4]))
-    return foreign_keys
-
 def waiting_cursor(func):
     def func_wrapper(*args, **kwargs):
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))

@@ -27,7 +27,7 @@ import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 from date_utils import datestring_to_date
 import utils_for_tests as test_utils
-from tools.midvatten_utils import get_foreign_keys
+from db_utils import get_foreign_keys
 from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from nose.tools import raises

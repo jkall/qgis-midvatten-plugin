@@ -28,7 +28,6 @@ from psycopg2 import IntegrityError as PostGisIntegrityError
 
 from PyQt4.QtCore import QSettings
 import midvatten_utils as utils
-from definitions.midvatten_defs import SQLiteInternalTables
 from qgis._core import QgsProject, QgsDataSourceURI
 import db_manager.db_plugins.postgis.connector as postgis_connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
@@ -125,9 +124,9 @@ class DbConnectionManager(object):
 
 
 def check_connection_ok():
-    connection = DbConnectionManager()
-    connection_ok = connection.connect2db()
-    connection.closedb()
+    dbconnection = DbConnectionManager()
+    connection_ok = dbconnection.connect2db()
+    dbconnection.closedb()
     return connection_ok
 
 def if_connection_ok(func):
@@ -161,8 +160,8 @@ def get_postgis_connections():
 def sql_load_fr_db(sql):
 
     try:
-        connection = DbConnectionManager()
-        result = connection.execute_and_fetchall(sql)
+        dbconnection = DbConnectionManager()
+        result = dbconnection.execute_and_fetchall(sql)
     except Exception as e:
         textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (
         utils.returnunicode(sql), utils.returnunicode(str(e)))
@@ -176,13 +175,13 @@ def sql_load_fr_db(sql):
         return True, result
 
 def sql_alter_db(sql):
-    connection = DbConnectionManager()
+    dbconnection = DbConnectionManager()
     try:
-        connection.execute(u'PRAGMA foreign_keys = ON')
+        dbconnection.execute(u'PRAGMA foreign_keys = ON')
     except:
         pass
     try:
-        connection.execute_and_commit(sql)
+        dbconnection.execute_and_commit(sql)
     except Exception as e:
         textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (
         utils.returnunicode(sql), utils.returnunicode(str(e)))
@@ -216,14 +215,18 @@ def execute_sqlfile(sqlfilename, function=sql_alter_db):
             function(line)
 
 def tables_columns(table=None, dbconnection=None):
+    return dict([(k, [col[1] for col in v]) for k, v in db_tables_columns_info(table=table, dbconnection=dbconnection).iteritems()])
+
+def db_tables_columns_info(table=None, dbconnection=None):
+    """Returns a dict like {u'tablename': (ordernumber, name, type, notnull, defaultvalue, primarykey)}"""
     if dbconnection is None:
         dbconnection = DbConnectionManager()
 
     if table is None:
         if dbconnection.dbtype == u'spatialite':
-            tables_sql = (u"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + utils.returnunicode(SQLiteInternalTables()) + u""") ORDER BY tbl_name""")
+            tables_sql = (u"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') AND tbl_name NOT IN %s ORDER BY tbl_name"""%sqlite_internal_tables())
         else:
-            tables_sql = u"SELECT table_name FROM information_schema.tables WHERE table_schema='%s'"%dbconnection.schemas()
+            tables_sql = u"SELECT table_name FROM information_schema.tables WHERE table_schema='%s' AND table_name NOT IN %s ORDER BY table_name"%(dbconnection.schemas(), postgis_internal_tables())
         tables = dbconnection.execute_and_fetchall(tables_sql)
         tablenames = [col[0] for col in tables]
     elif not isinstance(table, (list, tuple)):
@@ -236,9 +239,73 @@ def tables_columns(table=None, dbconnection=None):
     for tablename in tablenames:
         if dbconnection.dbtype == u'spatialite':
             columns_sql = """PRAGMA table_info (%s)""" % tablename
+            columns = dbconnection.execute_and_fetchall(columns_sql)
         else:
-            columns_sql = u"SELECT * FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s'"%(dbconnection.schemas(), tablename)
-        columns = dbconnection.execute_and_fetchall(columns_sql)
-        tables_dict[tablename] = tuple(sorted(tuple(columns), key=itemgetter(1)))
+            columns_sql = u"SELECT ordinal_position, column_name, data_type, CASE WHEN is_nullable = 'NO' THEN 1 ELSE 0 END AS notnull, column_default, 0 AS primary_key FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s'"%(dbconnection.schemas(), tablename)
+            columns = [list(x) for x in dbconnection.execute_and_fetchall(columns_sql)]
+            primary_keys = [x[0] for x in dbconnection.execute_and_fetchall(u"SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type FROM pg_index i JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) WHERE i.indrelid = '%s'::regclass AND i.indisprimary;"%tablename)]
+            for column in columns:
+                if column[1] in primary_keys:
+                    column[5] = 1
 
+        tables_dict[tablename] = columns
     return tables_dict
+
+def get_foreign_keys(tname, dbconnection=None):
+    if dbconnection is not None:
+        result_list = dbconnection.execute_and_fetchall(u"""PRAGMA foreign_key_list(%s)""" % (tname))
+    else:
+        result_list = sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)""" % (tname))[1]
+    foreign_keys = {}
+    for row in result_list:
+        foreign_keys.setdefault(row[2], []).append((row[3], row[4]))
+    return foreign_keys
+
+def sqlite_internal_tables(as_tuple=False):
+    astring = u"""('geom_cols_ref_sys',
+                'geometry_columns',
+                'geometry_columns_time',
+                'spatial_ref_sys',
+                'spatialite_history',
+                'vector_layers',
+                'views_geometry_columns',
+                'virts_geometry_columns',
+                'geometry_columns_auth',
+                'geometry_columns_fields_infos',
+                'geometry_columns_field_infos',
+                'geometry_columns_statistics',
+                'sql_statements_log',
+                'layer_statistics',
+                'sqlite_sequence',
+                'sqlite_stat1',
+                'sqlite_stat3',
+                'views_layer_statistics',
+                'virts_layer_statistics',
+                'vector_layers_auth',
+                'vector_layers_field_infos',
+                'vector_layers_statistics',
+                'views_geometry_columns_auth',
+                'views_geometry_columns_field_infos',
+                'views_geometry_columns_statistics',
+                'virts_geometry_columns_auth',
+                'virts_geometry_columns_field_infos',
+                'virts_geometry_columns_statistics' ,
+                'geometry_columns',
+                'spatialindex',
+                'SpatialIndex')"""
+    if as_tuple:
+        return ast.literal_eval(astring)
+    else:
+        return astring
+
+def postgis_internal_tables(as_tuple=False):
+    astring = u"""('geography_columns',
+               'geometry_columns',
+               'spatial_ref_sys',
+               'raster_columns',
+               'raster_overviews')"""
+    if as_tuple:
+        return ast.literal_eval(astring)
+    else:
+        return astring
+    
