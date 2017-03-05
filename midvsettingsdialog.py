@@ -410,12 +410,12 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 pass
 
     def LoadColumnsFromTable(self, table=''):
-        return midvatten_defs.tables_columns.get(table, {})
+        return db_utils.tables_columns.get(table, {})
 
     def loadTablesFromDB(self): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
         # start with cleaning comboboxes before filling with new entries
-        tables = midvatten_defs.tables_columns().keys()
+        tables = db_utils.tables_columns().keys()
 
         self.ListOfTables.addItem('')
         self.ListOfTables_2.addItem('')

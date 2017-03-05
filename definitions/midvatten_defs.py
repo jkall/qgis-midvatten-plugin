@@ -18,16 +18,13 @@
  ***************************************************************************/
 """
 
-import locale
-from collections import OrderedDict
-from operator import itemgetter
-import qgis.utils
 import ast
+import qgis.utils
+from collections import OrderedDict
 
 import db_utils
 import midvatten_utils as utils
-
-from midvatten_utils import get_sql_result_as_dict, returnunicode
+from midvatten_utils import returnunicode
 
 
 def settingsdict():    #These are the default settings, they shall not be changed!!!
@@ -622,30 +619,6 @@ def w_qual_field_parameter_units():
 
     return utils.returnunicode(result_dict, keep_containers=True)
 
-def tables_columns(table=None):
-    if table is None:
-        tables_sql = (u"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + returnunicode(SQLiteInternalTables()) + u""") ORDER BY tbl_name""")
-        connection_ok, tables = db_utils.sql_load_fr_db(tables_sql)
-        if not connection_ok:
-            return {}
-        tablenames = [col[0] for col in tables]
-    elif not isinstance(table, (list, tuple)):
-        tablenames = [table]
-    else:
-        tablenames = table
-
-    tables_dict = {}
-
-    for tablename in tablenames:
-        columns_sql = """PRAGMA table_info (%s)""" % tablename
-        connection_ok, columns = db_utils.sql_load_fr_db(columns_sql)
-        if not connection_ok:
-            continue
-        tables_dict[tablename] = tuple(sorted(tuple(columns), key=itemgetter(1)))
-
-    utils.MessagebarAndLog.info(log_msg=u'tables_columns worked')
-
-    return tables_dict
 
 def get_last_used_quality_instruments():
     """

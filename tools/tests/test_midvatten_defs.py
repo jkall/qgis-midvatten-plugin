@@ -19,6 +19,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+import db_utils
 import mock
 import utils_for_tests
 from definitions import midvatten_defs
@@ -27,7 +28,7 @@ class _TestDefsFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance')
     def test_tables_columns(self, mock_instance):
         mock_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
-        res = midvatten_defs.tables_columns()
+        res = db_utils.tables_columns()
         assert res
         assert isinstance(res, dict)
         for k, v in res.iteritems():

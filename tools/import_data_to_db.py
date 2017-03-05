@@ -66,26 +66,26 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if file_data is None or not file_data:
             self.status = 'True'
             return
-
+        print("Here0")
         utils.MessagebarAndLog.info(log_msg=u'\nImport to %s starting\n--------------------'%goal_table)
         detailed_msg_list = []
 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.status = 'False' #True if upload to sqlite and cleaning of data succeeds
         self.temptableName = goal_table + u'_temp'
-
+        print("Her0.11")
         if goal_table is None:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error: No goal table given!')
             self.status = 'False'
             return
-
+        print("Here0.2")
         connection = db_utils.DbConnectionManager()
-
+        print("Here0.3")
         self.list_to_table(connection, file_data)
         #self.qgiscsv2sqlitetable(connection) #loads qgis csvlayer into sqlite table
-
+        print("Here0.4")
         recsinfile = connection.execute_and_fetchall(sql=u'select count(*) from %s'%self.temptableName)[0][0]
-
+        print("Here1")
         table_info = connection.execute_and_fetchall(u'''PRAGMA table_info(%s)''' % goal_table)
         #POINT and LINESTRING must be cast as BLOB. So change the type to BLOB.
         column_headers_types = dict([(row[1], row[2]) if row[2] not in (u'POINT', u'LINESTRING') else (row[1], u'BLOB') for row in table_info])
@@ -117,7 +117,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         nr_before = nr_after
         foreign_keys = utils.get_foreign_keys(goal_table, connection)
         force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
-
+        print("Here2")
         if self.foreign_keys_import_question is None:
             stop_question = utils.Askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""" % (u', '.join(force_import_of_foreign_keys_tables)), u"Info!")
             if stop_question.result == 0:      # if the user wants to abort
@@ -183,7 +183,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.check_and_delete_stratigraphy(existing_columns, connection)
         if goal_table in (u'obs_lines', u'obs_points'):
             self.calculate_geometry(existing_columns, goal_table, connection)
-
+        print("Here3")
         #Finally import data:
         nr_failed_import = recsinfile - nr_after
         if nr_failed_import > 0:
@@ -244,44 +244,23 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         connection.commit_and_closedb()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def send_file_data_to_importer(self, file_data=None, goal_table=None, cleaning_function=None):
-        if file_data is None:
-            utils.MessagebarAndLog.info(bar_msg=u'Import error, see log message panel', log_msg=u'send_file_data_to_importer: No filedata supplied.')
-            return
-
-        if goal_table is None:
-            raise AttributeError(u'send_file_data_to_importer: Parameter goal_table must be supplied')
-
-        if len(file_data) < 2:
-            utils.MessagebarAndLog.info(bar_msg=u'Import error, see log message panel', log_msg=u'Import failed only a header was sent to importer')
-            return
-
-        if cleaning_function is not None:
-            file_data = cleaning_function(file_data)
-
-        if len(file_data[0]) == 1:
-            [row.append(u'') for row in file_data]
-
-        answer = self.general_csv_import(goal_table=goal_table, file_data=file_data)
-        return answer
-
     def list_to_table(self, connection, file_data):
         self.status = 'False'
         #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
-        if connection.dbtype == u'spatialite':
-            existing_names= [str(existing_name[0]) for existing_name in connection.execute_and_fetchall(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""")]
-        else:
-            existing_names = [str(existing_name[0]) for existing_name in connection.execute_and_fetchall(u"SELECT table_name FROM information_schema.tables WHERE table_schema='public'")]
+        print("Here2")
+        existing_names = db_utils.tables_columns(connection).keys()
+        print(str(existing_names))
+        print("Here2.1")
         while self.temptableName in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
             reponse = PyQt4.QtGui.QMessageBox.question(None, "Warning - Table name confusion!",'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''%(self.temptableName,self.temptableName,self.temptableName), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
             if reponse == PyQt4.QtGui.QMessageBox.Yes:
                 self.temptableName = '%s_2'%self.temptableName
             else:
                 return None
-
+        print("Here2.2")
         fieldnames_types = [u'{} TEXT'.format(field_name) for field_name in file_data[0]]
         connection.execute("""CREATE table %s (%s)""" % (self.temptableName, u', '.join(fieldnames_types)))
-
+        print("Here2.3")
         for row in file_data[1:]:
             connection.cursor.execute("""INSERT INTO %s VALUES (%s)"""%(self.temptableName,','.join('?'*len(row))),tuple(row))
 
@@ -426,7 +405,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if not import_all_data.result:
             file_to_import_to_db = self.filter_dates_from_filedata(file_to_import_to_db, utils.get_last_logger_dates())
 
-        answer = self.send_file_data_to_importer(file_data=file_to_import_to_db, goal_table=u'w_levels_logger')
+        answer = self.general_csv_import(file_data=file_to_import_to_db, goal_table=u'w_levels_logger')
         if isinstance(answer, Cancel):
             self.status = True
             return answer

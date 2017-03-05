@@ -21,12 +21,14 @@
 """
 import ast
 import os
+from operator import itemgetter
 from pyspatialite import dbapi2 as sqlite
 from pyspatialite.dbapi2 import OperationalError, IntegrityError
 from psycopg2 import IntegrityError as PostGisIntegrityError
 
 from PyQt4.QtCore import QSettings
 import midvatten_utils as utils
+from definitions.midvatten_defs import SQLiteInternalTables
 from qgis._core import QgsProject, QgsDataSourceURI
 import db_manager.db_plugins.postgis.connector as postgis_connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
@@ -203,7 +205,6 @@ def sql_alter_db_by_param_subst(sql='', *subst_params):
     ConnectionOK, result = execute_sql(sql=sql, foreign_keys_on=True, commit=True, fetchall=True, db_connection_manager_connection=None, *subst_params)
     return ConnectionOK, result
 
-
 def execute_sqlfile(sqlfilename, function=sql_alter_db):
     with open(sqlfilename, 'r') as f:
         f.readline()  # first line is encoding info....
@@ -213,3 +214,31 @@ def execute_sqlfile(sqlfilename, function=sql_alter_db):
             if line.startswith("#"):
                 continue
             function(line)
+
+def tables_columns(table=None, dbconnection=None):
+    if dbconnection is None:
+        dbconnection = DbConnectionManager()
+
+    if table is None:
+        if dbconnection.dbtype == u'spatialite':
+            tables_sql = (u"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + utils.returnunicode(SQLiteInternalTables()) + u""") ORDER BY tbl_name""")
+        else:
+            tables_sql = u"SELECT table_name FROM information_schema.tables WHERE table_schema='%s'"%dbconnection.schemas()
+        tables = dbconnection.execute_and_fetchall(tables_sql)
+        tablenames = [col[0] for col in tables]
+    elif not isinstance(table, (list, tuple)):
+        tablenames = [table]
+    else:
+        tablenames = table
+
+    tables_dict = {}
+
+    for tablename in tablenames:
+        if dbconnection.dbtype == u'spatialite':
+            columns_sql = """PRAGMA table_info (%s)""" % tablename
+        else:
+            columns_sql = u"SELECT * FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s'"%(dbconnection.schemas(), tablename)
+        columns = dbconnection.execute_and_fetchall(columns_sql)
+        tables_dict[tablename] = tuple(sorted(tuple(columns), key=itemgetter(1)))
+
+    return tables_dict

@@ -74,7 +74,7 @@ class LoadLayers():
             self.add_layers_to_list(layer_list, uri, schema, self.default_layers, dbtype, 'geometry')
 
         elif self.group_name == 'Midvatten_data_domains': #if self.group_name == 'Midvatten_data_domains':
-            tables_columns = defs.tables_columns()
+            tables_columns = db_utils.tables_columns()
             d_domain_tables = [x for x in tables_columns.keys() if x.startswith(u'zz_')]
             self.add_layers_to_list(layer_list, uri, schema, d_domain_tables, dbtype)
 

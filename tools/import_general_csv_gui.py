@@ -29,6 +29,7 @@ from operator import itemgetter
 
 import PyQt4.QtCore
 import PyQt4.QtGui
+import db_utils
 
 import import_data_to_db
 import midvatten_utils as utils
@@ -55,7 +56,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.status = True
 
     def load_gui(self):
-        tables_columns = {k: v for (k, v) in defs.tables_columns().iteritems() if not k.endswith(u'_geom')}
+        tables_columns = {k: v for (k, v) in db_utils.tables_columns().iteritems() if not k.endswith(u'_geom')}
         self.table_chooser = ImportTableChooser(tables_columns, self.connect, file_header=None)
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.add_line(self.main_vertical_layout)
@@ -166,7 +167,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             return file_data
 
         importer = import_data_to_db.midv_data_importer()
-        importer.send_file_data_to_importer(file_data=file_data, goal_table=goal_table)
+        importer.general_csv_import(file_data=file_data, goal_table=goal_table)
+
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.close()

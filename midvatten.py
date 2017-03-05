@@ -809,7 +809,7 @@ class midvatten:
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
         utils.MessagebarAndLog.info(log_msg=u'load_data_domains err_flag: ' + str(err_flag))
         if err_flag == 0:
-            d_domain_tables = [str(x) for x in defs.tables_columns.keys() if x.startswith(u'zz_')]
+            d_domain_tables = [str(x) for x in db_utils.tables_columns.keys() if x.startswith(u'zz_')]
             err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms, d_domain_tables)#verify none of the tables are already loaded and in edit mode
             if err_flag == 0:
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict,'Midvatten_data_domains')

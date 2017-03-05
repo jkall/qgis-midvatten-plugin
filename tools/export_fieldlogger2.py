@@ -45,7 +45,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         self.widget.setMinimumWidth(180)
 
-        tables_columns = defs.tables_columns()
+        tables_columns = db_utils.tables_columns()
 
         self.parameter_groups = None
 

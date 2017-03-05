@@ -46,7 +46,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle("Export to FieldLogger") # Set the title for the dialog
 
-        tables_columns = defs.tables_columns()
+        tables_columns = db_utils.tables_columns()
 
         self.export_objects = None
         self.stored_settingskey = u'fieldlogger_export'

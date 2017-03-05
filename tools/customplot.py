@@ -68,7 +68,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setupUi( self )#due to initialisation of Ui_MainWindow instance
         self.initUI()
-        self.tables_columns = midvatten_defs.tables_columns()
+        self.tables_columns = db_utils.tables_columns()
         self.LoadTablesFromDB(self.tables_columns)
         self.LastSelections()#fill comboboxes etc with last selected values
         #on close:
