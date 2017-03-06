@@ -366,3 +366,19 @@ def get_sql_result_as_dict(sql, dbconnection=None):
 
 def verify_table_exists(tablename):
     return tablename in get_tables()
+
+def convert_some_types_to_byte(dbconnection, table_info):
+    if dbconnection.dbtype == u'spatialite':
+        newtype = u'BLOB'
+    else:
+        newtype = u'BYTEA'
+    column_headers_types = dict([(row[1], row[2]) if row[2].lower() not in (u'point', u'linestring') else (row[1], newtype) for row in table_info])
+    return column_headers_types
+
+def replace_insert_sql_on_conflict(dbconnection, sql):
+    if dbconnection.dbtype == u'spatialite':
+        sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
+    else:
+        pass
+        #sql = sql.replace(u'INSERT', u'INSERT ON CONFLICT DO NOTHING')
+    return sql

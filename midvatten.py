@@ -464,8 +464,8 @@ class midvatten:
                 filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
                 iniText = QSettings(filenamepath , QSettings.IniFormat)
                 verno = str(iniText.value('version'))
-                from create_db import newdb
-                newdbinstance = newdb()
+                from create_db import NewDb
+                newdbinstance = NewDb()
                 newdbinstance.create_new_spatialite_db(verno,'n',user_chosen_EPSG_code)
                 if not newdbinstance.db_settings=='':
                     newdb = newdbinstance.db_settings[u'spatialite'][u'dbpath']
@@ -831,8 +831,8 @@ class midvatten:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
             verno = str(iniText.value('version')) 
-            from create_db import newdb
-            newdbinstance = newdb()
+            from create_db import NewDb
+            newdbinstance = NewDb()
             newdbinstance.create_new_spatialite_db(verno)
             if not newdbinstance.db_settings=='':
                 self.ms.settingsdict['database'] = utils.anything_to_string_representation(newdbinstance.db_settings)
@@ -845,8 +845,8 @@ class midvatten:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
             verno = str(iniText.value('version'))
-            from create_db import newdb
-            newdbinstance = newdb()
+            from create_db import NewDb
+            newdbinstance = NewDb()
             newdbinstance.populate_postgis_db(verno)
             if not newdbinstance.db_settings=='':
                 self.ms.settingsdict['database'] = utils.anything_to_string_representation(newdbinstance.db_settings)

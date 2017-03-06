@@ -81,7 +81,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         recsinfile = dbconnection.execute_and_fetchall(sql=u'select count(*) from %s'%self.temptable_name)[0][0]
         table_info = db_utils.db_tables_columns_info(table=goal_table, dbconnection=dbconnection)[goal_table]
         #POINT and LINESTRING must be cast as BLOB. So change the type to BLOB.
-        column_headers_types = dict([(row[1], row[2]) if row[2].lower() not in (u'point', u'linestring') else (row[1], u'BLOB') for row in table_info])
+        column_headers_types = db_utils.convert_some_types_to_byte(dbconnection, table_info)
         primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
         not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
         #Only use the columns that exists in the goal table.
@@ -135,7 +135,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 try:
                     dbconnection.execute(sql)
                 except Exception, e:
-                    sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
+                    sql = db_utils.replace_insert_sql_on_conflict(dbconnection, sql)
                     detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%fk_table + str(e))
                     dbconnection.execute(sql)
 
@@ -192,7 +192,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             dbconnection.execute(sql) #.encode(u'utf-8'))
         except Exception, e:
             detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%goal_table + str(e))
-            sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
+            sql = db_utils.replace_insert_sql_on_conflict(dbconnection, sql)
             try:
                 dbconnection.execute(sql) #.encode(u'utf-8'))
             except Exception, e:

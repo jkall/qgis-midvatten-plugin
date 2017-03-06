@@ -31,7 +31,7 @@ import datetime
 #plugin modules
 import midvatten_utils as utils
 
-class newdb():
+class NewDb():
     def __init__(self):
         self.db_settings = u''
 
