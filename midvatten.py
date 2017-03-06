@@ -19,7 +19,6 @@
  ***************************************************************************/
 """
 # Import the PyQt and QGIS libraries
-import db_utils
 from PyQt4.QtCore import *
 from PyQt4.QtCore import QDir
 from PyQt4.QtGui import *
@@ -52,7 +51,7 @@ from xyplot import XYPlot
 from wqualreport import wqualreport
 from loaddefaultlayers import LoadLayers
 from prepareforqgis2threejs import PrepareForQgis2Threejs
-import midvatten_utils as utils 
+import midvatten_utils as utils
 from definitions import midvatten_defs
 from sectionplot import SectionPlot
 import customplot
@@ -60,6 +59,8 @@ from midvsettings import midvsettings
 import midvsettingsdialog
 from piper import PiperPlot
 from export_data import ExportData
+#import tools.db_utils as db_utils
+import db_utils
 from definitions import midvatten_defs as defs
 #import profilefromdem
 

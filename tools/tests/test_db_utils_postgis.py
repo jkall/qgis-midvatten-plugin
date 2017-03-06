@@ -29,7 +29,7 @@ from import_data_to_db import midv_data_importer
 import os
 
 
-class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestPostgisDbSv):
+class _TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_tables_columns_info_all_tables(self):
         """  """
@@ -61,7 +61,7 @@ class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestPostgisDbSv):
         assert int(col_obsid[5]) == 1
 
 
-class TestTablesColumns(utils_for_tests.MidvattenTestPostgisDbSv):
+class _TestTablesColumns(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_tables_columns_no_dbconnection_supplied(self):
         """  """
@@ -86,7 +86,7 @@ class TestTablesColumns(utils_for_tests.MidvattenTestPostgisDbSv):
             assert tablename not in tables_columns
 
 
-class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSv):
+class _TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_get_foreign_keys(self):
         """  """
@@ -104,7 +104,7 @@ class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference
 
 
-class TestVerifyTableExist(utils_for_tests.MidvattenTestPostgisDbSv):
+class _TestVerifyTableExist(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_verify_table_exists(self):
         exists = db_utils.verify_table_exists(u'obs_points')

@@ -55,7 +55,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.csvlayer = None
         self.foreign_keys_import_question = None
 
-    def general_import(self, goal_table=None, file_data=None):
+    def general_import(self, goal_table=None, file_data=None, add_table_to_foreign_key_import=None):
         """General method for importing an sqlite table into a goal_table
 
             self.temptableName must be the name of the table containing the new data to import.
@@ -68,6 +68,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return
         utils.MessagebarAndLog.info(log_msg=u'\nImport to %s starting\n--------------------'%goal_table)
         detailed_msg_list = []
+        if add_table_to_foreign_key_import is None:
+            add_table_to_foreign_key_import = []
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.status = 'False' #True if upload to sqlite and cleaning of data succeeds
         self.temptable_name = goal_table + u'_temp'
@@ -110,6 +112,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         nr_before = nr_after
         foreign_keys = db_utils.get_foreign_keys(goal_table, dbconnection=dbconnection)
         force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
+        force_import_of_foreign_keys_tables.extend(add_table_to_foreign_key_import)
         if self.foreign_keys_import_question is None:
             stop_question = utils.Askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""" % (u', '.join(force_import_of_foreign_keys_tables)), u"Info!")
             if stop_question.result == 0:      # if the user wants to abort
@@ -121,14 +124,16 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 self.foreign_keys_import_question = 1
 
         for fk_table, from_to_fields in foreign_keys.iteritems():
+            column_type_format_string = u'{}'
             from_list = [x[0] for x in from_to_fields]
             to_list = [x[1] for x in from_to_fields]
+            to_list = [column_type_format_string.format(x) if x == u'type' else x for x in to_list]
             if fk_table in force_import_of_foreign_keys_tables:
                 if not all([_from in existing_columns for _from in from_list]):
                     continue
                 nr_fk_before = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]
-                _table_info = db_utils.db_tables_columns_info(table=fk_table, dbconnection=dbconnection)
-                _column_headers_types = dict([(row[1], row[2]) for row in _table_info])
+                _table_info = db_utils.db_tables_columns_info(table=fk_table, dbconnection=dbconnection)[fk_table]
+                _column_headers_types = dict([(column_type_format_string.format(row[1]) if row[1] == u'type' else row[1], row[2]) for row in _table_info])
                 _not_null_columns = [row[1] for row in _table_info if int(row[3]) and row[4] is None]
                 _missing_columns = [column for column in _not_null_columns if column not in file_data[0]]
                 if missing_columns:
@@ -136,20 +141,25 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     self.status = False
                     return
 
-                sql = ur"""INSERT INTO %s (%s) select distinct %s from %s as b where %s"""%(fk_table,
+                sql = ur"""INSERT INTO %s (%s) select distinct %s from %s as b WHERE %s"""%(fk_table,
                                                                                              u', '.join(to_list),
-                                                                                             u', '.join([u'''CAST(b.%s as %s)'''%(k, _column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
+                                                                                             u', '.join([u'''CAST(b.%s AS %s)'''%(k, _column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
                                                                                              self.temptable_name,
                                                                                              u' and '.join([u''' b.{} IS NOT NULL and b.{} != '' and b.{} != ' ' '''.format(k, k, k) for k in from_list]))
                 try:
                     dbconnection.execute(sql)
                 except Exception, e:
+                    print(str(e))
+                    print(sql)
                     _primary_keys = [row[1] for row in _table_info if int(row[5])]
-                    _primary_keys_for_concat = [pk for pk in primary_keys if pk in file_data[0]]
+                    _primary_keys_for_concat = [column_type_format_string.format(pk) if pk == u'type' else pk for pk in _primary_keys if pk in file_data[0]]
+                    print("_primary_keys_for_concat" + str(_primary_keys_for_concat))
                     _concatted_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in _primary_keys_for_concat])
-                    sql += u""" WHERE %s NOT IN (SELECT DISTINCT %s FROM %s)"""%(_concatted_string, _concatted_string, goal_table)
+                    print("_concatted_string" + str(_concatted_string))
+                    sql += u""" AND %s NOT IN (SELECT DISTINCT %s FROM %s WHERE %s)"""%(_concatted_string, _concatted_string, goal_table, u' AND '.join([u'%s IS NOT NULL'%x for x in _primary_keys_for_concat]))
                     sql += u""" AND %s"""%u' AND '.join([u"%s IS NOT NULL"%x for x in _not_null_columns])
                     detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%fk_table + str(e))
+                    print(str(sql))
                     dbconnection.execute(sql)
 
                 nr_fk_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]

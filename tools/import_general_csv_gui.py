@@ -56,7 +56,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.status = True
 
     def load_gui(self):
-        tables_columns = {k: v for (k, v) in db_utils.tables_columns().iteritems() if not k.endswith(u'_geom')}
+        tables_columns = {k: v for (k, v) in db_utils.db_tables_columns_info().iteritems() if not k.endswith(u'_geom')}
         self.table_chooser = ImportTableChooser(tables_columns, self.connect, file_header=None)
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.add_line(self.main_vertical_layout)
@@ -76,11 +76,14 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         self.show()
 
+    @utils.waiting_cursor
     def load_files(self):
         self.charset = utils.ask_for_charset()
         if not self.charset:
             return None
+
         filename = utils.select_files(only_one_file=True, extension="Comma or semicolon separated csv file (*.csv);;Comma or semicolon separated csv text file (*.txt);;Comma or semicolon separated file (*.*)")
+
         if not filename:
             return None
         if isinstance(filename, (list, tuple)):
@@ -90,7 +93,6 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.filename = returnunicode(filename)
         delimiter = utils.get_delimiter(filename=self.filename, charset=self.charset, delimiters=[u',', u';'])
         self.file_data = self.file_to_list(self.filename, self.charset, delimiter)
-
         header_question = utils.Askuser(question=u"YesNo", msg=u"""Does the file contain a header?""")
         if header_question.result:
             # Remove duplicate header entries
@@ -99,7 +101,6 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             seen_add = seen.add
             remove_cols = [idx for idx, x in enumerate(header) if x and (x in seen or seen_add(x))]
             self.file_data = [[col for idx, col in enumerate(row) if idx not in remove_cols] for row in self.file_data]
-
             self.table_chooser.file_header = self.file_data[0]
         else:
             header = [u'Column ' + str(colnr) for colnr in xrange(len(self.file_data[0]))]
@@ -167,7 +168,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             return file_data
 
         importer = import_data_to_db.midv_data_importer()
-        importer.general_import(file_data=file_data, goal_table=goal_table)
+        importer.general_import(file_data=file_data, goal_table=goal_table, add_table_to_foreign_key_import=[u'obs_points'])
 
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
