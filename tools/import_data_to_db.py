@@ -124,16 +124,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 self.foreign_keys_import_question = 1
 
         for fk_table, from_to_fields in foreign_keys.iteritems():
-            column_type_format_string = u'{}'
             from_list = [x[0] for x in from_to_fields]
             to_list = [x[1] for x in from_to_fields]
-            to_list = [column_type_format_string.format(x) if x == u'type' else x for x in to_list]
             if fk_table in force_import_of_foreign_keys_tables:
                 if not all([_from in existing_columns for _from in from_list]):
                     continue
                 nr_fk_before = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]
                 _table_info = db_utils.db_tables_columns_info(table=fk_table, dbconnection=dbconnection)[fk_table]
-                _column_headers_types = dict([(column_type_format_string.format(row[1]) if row[1] == u'type' else row[1], row[2]) for row in _table_info])
+                _column_headers_types = dict([(row[1], row[2]) for row in _table_info])
                 _not_null_columns = [row[1] for row in _table_info if int(row[3]) and row[4] is None]
                 _missing_columns = [column for column in _not_null_columns if column not in file_data[0]]
                 if missing_columns:
@@ -141,25 +139,23 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     self.status = False
                     return
 
-                sql = ur"""INSERT INTO %s (%s) select distinct %s from %s as b WHERE %s"""%(fk_table,
+                sql = ur"""INSERT INTO %s (%s) SELECT DISTINCT %s FROM %s AS b WHERE %s"""%(fk_table,
                                                                                              u', '.join(to_list),
                                                                                              u', '.join([u'''CAST(b.%s AS %s)'''%(k, _column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
                                                                                              self.temptable_name,
-                                                                                             u' and '.join([u''' b.{} IS NOT NULL and b.{} != '' and b.{} != ' ' '''.format(k, k, k) for k in from_list]))
+                                                                                             u' AND '.join([u''' b.{} IS NOT NULL AND b.{} != '' AND b.{} != ' ' '''.format(k, k, k) for k in from_list]))
                 try:
                     dbconnection.execute(sql)
                 except Exception, e:
-                    print(str(e))
-                    print(sql)
                     _primary_keys = [row[1] for row in _table_info if int(row[5])]
-                    _primary_keys_for_concat = [column_type_format_string.format(pk) if pk == u'type' else pk for pk in _primary_keys if pk in file_data[0]]
-                    print("_primary_keys_for_concat" + str(_primary_keys_for_concat))
-                    _concatted_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in _primary_keys_for_concat])
-                    print("_concatted_string" + str(_concatted_string))
-                    sql += u""" AND %s NOT IN (SELECT DISTINCT %s FROM %s WHERE %s)"""%(_concatted_string, _concatted_string, goal_table, u' AND '.join([u'%s IS NOT NULL'%x for x in _primary_keys_for_concat]))
-                    sql += u""" AND %s"""%u' AND '.join([u"%s IS NOT NULL"%x for x in _not_null_columns])
+
+                    _primary_keys_from_for_concat = [from_list[to_list.index(pk)] for pk in _primary_keys if from_list[to_list.index(pk)] in file_data[0]]
+                    _primary_keys_to_for_concat = [pk for pk in _primary_keys if from_list[to_list.index(pk)] in file_data[0]]
+                    _concatted_from_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in _primary_keys_from_for_concat])
+                    _concatted_to_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in _primary_keys_to_for_concat])
+                    sql += u""" AND %s NOT IN (SELECT DISTINCT %s FROM %s WHERE %s)"""%(_concatted_from_string, _concatted_to_string, fk_table, u' AND '.join([u'%s IS NOT NULL'%x for x in _primary_keys_to_for_concat]))
+                    sql += u""" AND %s"""%u' AND '.join([u"%s IS NOT NULL"%from_list[to_list.index(x)] for x in _not_null_columns])
                     detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%fk_table + str(e))
-                    print(str(sql))
                     dbconnection.execute(sql)
 
                 nr_fk_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]
