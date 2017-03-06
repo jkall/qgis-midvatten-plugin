@@ -29,7 +29,6 @@ from psycopg2 import IntegrityError as PostGisIntegrityError
 
 from PyQt4.QtCore import QSettings
 import midvatten_utils as utils
-from midvatten_utils import returnunicode
 from qgis._core import QgsProject, QgsDataSourceURI
 import db_manager.db_plugins.postgis.connector as postgis_connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
@@ -355,9 +354,7 @@ def get_sql_result_as_dict(sql, dbconnection=None):
     if dbconnection is None:
         connection_ok, result_list = sql_load_fr_db(sql)
     else:
-        print("Used connection")
         result_list = dbconnection.execute_and_fetchall(sql)
-
 
     result_dict = {}
     for res in result_list:
@@ -367,18 +364,24 @@ def get_sql_result_as_dict(sql, dbconnection=None):
 def verify_table_exists(tablename):
     return tablename in get_tables()
 
-def convert_some_types_to_byte(dbconnection, table_info):
+def convert_some_types_to_byte(dbconnection, table_info, tablename):
     if dbconnection.dbtype == u'spatialite':
         newtype = u'BLOB'
+        column_headers_types = dict([(row[1], row[2]) if row[1].lower() != u'geometry' else (row[1], newtype if newtype is not None else row[2]) for row in table_info])
     else:
-        newtype = u'BYTEA'
-    column_headers_types = dict([(row[1], row[2]) if row[2].lower() not in (u'point', u'linestring') else (row[1], newtype) for row in table_info])
+        #tables_types = get_geometry_types(dbconnection, tablename)
+        #print(str(tables_types))
+        #column_headers_types = dict([(row[1], row[2]) if row[1] not in tables_types else (row[1], tables_types[row[1]][0][0]) for row in table_info])
+        newtype = u'geometry'
+        column_headers_types = dict([(row[1], row[2]) if row[1].lower() != u'geometry' else (row[1], newtype if newtype is not None else row[2]) for row in table_info])
+
     return column_headers_types
 
-def replace_insert_sql_on_conflict(dbconnection, sql):
-    if dbconnection.dbtype == u'spatialite':
-        sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
-    else:
-        pass
-        #sql = sql.replace(u'INSERT', u'INSERT ON CONFLICT DO NOTHING')
-    return sql
+def get_geometry_types(dbconnection, tablename):
+    """Postgis"""
+    sql = u"""SELECT f_geometry_column, type
+            FROM geometry_columns
+            WHERE f_table_schema = '%s'
+            AND f_table_name = '%s';"""%(dbconnection.schemas(), tablename)
+    result = get_sql_result_as_dict(sql, dbconnection=dbconnection)[1]
+    return result

@@ -76,12 +76,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = 'False'
             return
         dbconnection = db_utils.DbConnectionManager()
-        self.list_to_table(dbconnection, file_data)
-        #self.qgiscsv2sqlitetable(dbconnection) #loads qgis csvlayer into sqlite table
-        recsinfile = dbconnection.execute_and_fetchall(sql=u'select count(*) from %s'%self.temptable_name)[0][0]
+        recsinfile = len(file_data[1:])
         table_info = db_utils.db_tables_columns_info(table=goal_table, dbconnection=dbconnection)[goal_table]
         #POINT and LINESTRING must be cast as BLOB. So change the type to BLOB.
-        column_headers_types = db_utils.convert_some_types_to_byte(dbconnection, table_info)
+        column_headers_types = db_utils.convert_some_types_to_byte(dbconnection, table_info, goal_table)
         primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
         not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
         #Only use the columns that exists in the goal table.
@@ -92,6 +90,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             utils.MessagebarAndLog.critical(bar_msg=u'Error: Import failed, see log message panel', log_msg=u'Required columns ' + u', '.join(missing_columns) + u' are missing for table ' + goal_table, duration=999)
             self.status = False
             return
+
+        primary_keys_for_concat = [pk for pk in primary_keys if pk in file_data[0]]
+
+        self.list_to_table(dbconnection, file_data, primary_keys_for_concat, detailed_msg_list)
 
         #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
         nr_before = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
@@ -127,6 +129,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 nr_fk_before = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]
                 _table_info = db_utils.db_tables_columns_info(table=fk_table, dbconnection=dbconnection)
                 _column_headers_types = dict([(row[1], row[2]) for row in _table_info])
+                _not_null_columns = [row[1] for row in _table_info if int(row[3]) and row[4] is None]
+                _missing_columns = [column for column in _not_null_columns if column not in file_data[0]]
+                if missing_columns:
+                    utils.MessagebarAndLog.critical(bar_msg=u'Error: Import failed, see log message panel', log_msg=u'Required columns ' + u', '.join(_missing_columns) + u' are missing for table ' + fk_table, duration=999)
+                    self.status = False
+                    return
+
                 sql = ur"""INSERT INTO %s (%s) select distinct %s from %s as b where %s"""%(fk_table,
                                                                                              u', '.join(to_list),
                                                                                              u', '.join([u'''CAST(b.%s as %s)'''%(k, _column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
@@ -135,7 +144,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 try:
                     dbconnection.execute(sql)
                 except Exception, e:
-                    sql = db_utils.replace_insert_sql_on_conflict(dbconnection, sql)
+                    _primary_keys = [row[1] for row in _table_info if int(row[5])]
+                    _primary_keys_for_concat = [pk for pk in primary_keys if pk in file_data[0]]
+                    _concatted_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in _primary_keys_for_concat])
+                    sql += u""" WHERE %s NOT IN (SELECT DISTINCT %s FROM %s)"""%(_concatted_string, _concatted_string, goal_table)
+                    sql += u""" AND %s"""%u' AND '.join([u"%s IS NOT NULL"%x for x in _not_null_columns])
                     detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%fk_table + str(e))
                     dbconnection.execute(sql)
 
@@ -192,7 +205,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             dbconnection.execute(sql) #.encode(u'utf-8'))
         except Exception, e:
             detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%goal_table + str(e))
-            sql = db_utils.replace_insert_sql_on_conflict(dbconnection, sql)
+            concatted_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in primary_keys_for_concat])
+            sql += u""" WHERE %s NOT IN (SELECT DISTINCT %s FROM %s)"""%(concatted_string, concatted_string, goal_table)
+            sql += u""" AND %s"""%u' AND '.join([u"%s IS NOT NULL"%x for x in not_null_columns])
             try:
                 dbconnection.execute(sql) #.encode(u'utf-8'))
             except Exception, e:
@@ -225,7 +240,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         dbconnection.commit_and_closedb()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def list_to_table(self, dbconnection, file_data):
+    def list_to_table(self, dbconnection, file_data, primary_keys_for_concat, detailed_msg_list):
         self.status = 'False'
         #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
         existing_names = db_utils.tables_columns(dbconnection=dbconnection).keys()
@@ -243,12 +258,24 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         else:
             dbconnection.execute(u"""CREATE TEMPORARY table %s (%s)"""%(self.temptable_name, u', '.join(fieldnames_types)))
 
+        concat_cols = [file_data[0].index(pk) for pk in primary_keys_for_concat]
+        added_rows = set()
+        numskipped = 0
         for row in file_data[1:]:
+            concatted = u'|'.join([row[idx] for idx in concat_cols])
+            if concatted in added_rows:
+                numskipped += 1
+                continue
+            else:
+                added_rows.add(concatted)
+
             if dbconnection.dbtype == u'spatialite':
                 dbconnection.cursor.execute(u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join(u'?' * len(row))), tuple(row))
             else:
                 dbconnection.cursor.execute(u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join([u'%s' for x in xrange(len(row))])), tuple(row))
         dbconnection.commit()
+        if numskipped:
+            detailed_msg_list.append(u"%s nr of duplicate rows in file was skipped while importing."%str(numskipped))
 
     def delete_existing_date_times_from_temptable(self, primary_keys, goal_table, dbconnection):
         """
@@ -299,7 +326,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def calculate_geometry(self, existing_columns, table_name, dbconnection):
         # Calculate the geometry
         # THIS IS DUE TO WKT-import of geometries below
-        SRID = dbconnection.execute_and_fetchall(u"""SELECT srid FROM geometry_columns where f_table_name = '%s'""" % table_name)[0][0]
+        srid = dbconnection.execute_and_fetchall(u"""SELECT srid FROM geometry_columns where f_table_name = '%s'""" % table_name)[0][0]
         if u'WKT' in existing_columns:
             geocol = u'WKT'
         elif u'geometry' in existing_columns:
@@ -308,7 +335,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             utils.MessagebarAndLog.warning(bar_msg=u'%s without geometry imported'%table_name)
             return None
 
-        sql = u"""update %s set geometry=ST_GeomFromText(%s,%s)"""%(self.temptable_name, geocol, SRID)
+        sql = u"""update %s set geometry = ST_GeomFromText(%s, %s)"""%(self.temptable_name, geocol, srid)
         dbconnection.execute(sql)
 
     def check_and_delete_stratigraphy(self, existing_columns, dbconnection):

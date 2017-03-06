@@ -468,9 +468,7 @@ class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImport
 
         self.importinstance.general_import(file_data=f, goal_table=u'obs_points')
 
-        print(str(mock_messagebar.mock_calls))
-        assert call.info(bar_msg=u'1 rows imported and 2 excluded for table obs_points. See log message panel for details', log_msg=u'INSERT failed while importing to obs_points. Using INSERT OR IGNORE instead.\nMsg: UNIQUE constraint failed: obs_points.obsid\nIn total 2 rows were not imported to obs_points. Probably due to a primary key combination already existing in the database.\n--------------------') in mock_messagebar.mock_calls
-
+        call.info(bar_msg=u'1 rows imported and 2 excluded for table obs_points. See log message panel for details', log_msg=u'2 nr of duplicate rows in file was skipped while importing.\nIn total 2 rows were not imported to obs_points. Probably due to a primary key combination already existing in the database.\n--------------------') in mock_messagebar.mock_calls
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html, ST_AsText(geometry) from obs_points'''))
 
@@ -492,23 +490,25 @@ class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImport
         reference_string = ur'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, None, None, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, None)])'''
         assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    def test_import_obs_points_geometry_as_wkt(self):
+    def test_import_obs_points_geometry_as_wkt(self, mock_messagebar):
         f = [[u'obsid', u'name', u'place', u'type', u'length', u'drillstop', u'diam', u'material', u'screen', u'capacity', u'drilldate', u'wmeas_yn', u'wlogg_yn', u'east', u'north', u'ne_accur', u'ne_source', u'h_toc', u'h_tocags', u'h_gs', u'h_accur', u'h_syst', u'h_source', u'source', u'com_onerow', u'com_html', u'geometry'],
              [u'rb1', u'rb1', u'a', u'pipe', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'', u'', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'POINT(45 55)']]
 
         self.importinstance.general_import(file_data=f, goal_table=u'obs_points')
-
+        print(str(mock_messagebar.mock_calls))
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html, ST_AsText(geometry) from obs_points'''))
 
         reference_string = ur'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, 45.0, 55.0, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, POINT(45 55))])'''
+        print(test_string)
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    def test_import_obs_lines_geometry_as_wkt(self):
+    def _test_import_obs_lines_geometry_as_wkt(self):
         f = [[u'obsid', u'geometry'],
              [u'line1', u'LINESTRING(1 2, 3 4, 5 6, 7 8)']]
 
