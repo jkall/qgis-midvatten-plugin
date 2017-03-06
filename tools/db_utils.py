@@ -364,24 +364,24 @@ def get_sql_result_as_dict(sql, dbconnection=None):
 def verify_table_exists(tablename):
     return tablename in get_tables()
 
-def convert_some_types_to_byte(dbconnection, table_info, tablename):
+def change_cast_type_for_geometry_columns(dbconnection, table_info, tablename):
     if dbconnection.dbtype == u'spatialite':
         newtype = u'BLOB'
-        column_headers_types = dict([(row[1], row[2]) if row[1].lower() != u'geometry' else (row[1], newtype if newtype is not None else row[2]) for row in table_info])
+        geometry_columns_types = get_geometry_types(dbconnection, tablename)
     else:
-        #tables_types = get_geometry_types(dbconnection, tablename)
-        #print(str(tables_types))
-        #column_headers_types = dict([(row[1], row[2]) if row[1] not in tables_types else (row[1], tables_types[row[1]][0][0]) for row in table_info])
         newtype = u'geometry'
-        column_headers_types = dict([(row[1], row[2]) if row[1].lower() != u'geometry' else (row[1], newtype if newtype is not None else row[2]) for row in table_info])
+        geometry_columns_types = get_geometry_types(dbconnection, tablename)
 
+    column_headers_types = dict([(row[1], row[2]) if row[1] not in geometry_columns_types else (row[1], newtype) for row in table_info])
     return column_headers_types
 
 def get_geometry_types(dbconnection, tablename):
-    """Postgis"""
-    sql = u"""SELECT f_geometry_column, type
-            FROM geometry_columns
-            WHERE f_table_schema = '%s'
-            AND f_table_name = '%s';"""%(dbconnection.schemas(), tablename)
+    if dbconnection.dbtype == u'spatialite':
+        sql = u"""SELECT f_geometry_column, geometry_type FROM geometry_columns WHERE f_table_name = '%s'"""%tablename
+    else:
+        sql = u"""SELECT f_geometry_column, type
+                FROM geometry_columns
+                WHERE f_table_schema = '%s'
+                AND f_table_name = '%s';"""%(dbconnection.schemas(), tablename)
     result = get_sql_result_as_dict(sql, dbconnection=dbconnection)[1]
     return result

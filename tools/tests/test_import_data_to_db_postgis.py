@@ -29,7 +29,7 @@ from mock import call
 from mocks_for_tests import MockUsingReturnValue
 
 
-class _TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -79,7 +79,6 @@ class _TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgi
                     test_string = utils_for_tests.create_test_string(
                         db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                     reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
-                    print("\nRef\n" + reference_string + "\ntest\n" + test_string)
                     assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -286,7 +285,7 @@ class _TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgi
                     assert test_string == reference_string
 
 
-class _TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -498,23 +497,22 @@ class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImport
              [u'rb1', u'rb1', u'a', u'pipe', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'', u'', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'1', u'POINT(45 55)']]
 
         self.importinstance.general_import(file_data=f, goal_table=u'obs_points')
-        print(str(mock_messagebar.mock_calls))
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html, ST_AsText(geometry) from obs_points'''))
 
         reference_string = ur'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, 45.0, 55.0, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, POINT(45 55))])'''
-        print(test_string)
         assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    def _test_import_obs_lines_geometry_as_wkt(self):
+    def test_import_obs_lines_geometry_as_wkt(self, mock_messagebar):
         f = [[u'obsid', u'geometry'],
              [u'line1', u'LINESTRING(1 2, 3 4, 5 6, 7 8)']]
 
         self.importinstance.general_import(file_data=f, goal_table=u'obs_lines')
         test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''select obsid, ST_AsText(geometry) from obs_lines'''))
 
-        reference_string = ur'''(True, [(line1, LINESTRING(1 2, 3 4, 5 6, 7 8))])'''
+        reference_string = ur'''(True, [(line1, LINESTRING(1 2,3 4,5 6,7 8))])'''
         assert test_string == reference_string
 

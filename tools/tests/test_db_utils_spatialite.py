@@ -28,7 +28,7 @@ from definitions import midvatten_defs as defs
 from import_data_to_db import midv_data_importer
 import os
 
-class _TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestSpatialiteDbSv):
+class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_tables_columns_info_all_tables(self):
         """  """
@@ -60,7 +60,7 @@ class _TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert int(col_obsid[5]) == 1
 
 
-class _TestTablesColumns(utils_for_tests.MidvattenTestSpatialiteDbSv):
+class TestTablesColumns(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_tables_columns_no_dbconnection_supplied(self):
         """  """
@@ -85,7 +85,7 @@ class _TestTablesColumns(utils_for_tests.MidvattenTestSpatialiteDbSv):
             assert tablename not in tables_columns
 
 
-class _TestGetForeignKeys(utils_for_tests.MidvattenTestSpatialiteDbSv):
+class TestGetForeignKeys(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_get_foreign_keys(self):
         """  """

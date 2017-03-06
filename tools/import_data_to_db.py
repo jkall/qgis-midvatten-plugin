@@ -79,7 +79,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         recsinfile = len(file_data[1:])
         table_info = db_utils.db_tables_columns_info(table=goal_table, dbconnection=dbconnection)[goal_table]
         #POINT and LINESTRING must be cast as BLOB. So change the type to BLOB.
-        column_headers_types = db_utils.convert_some_types_to_byte(dbconnection, table_info, goal_table)
+        column_headers_types = db_utils.change_cast_type_for_geometry_columns(dbconnection, table_info, goal_table)
         primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
         not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
         #Only use the columns that exists in the goal table.

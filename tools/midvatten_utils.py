@@ -735,7 +735,6 @@ def get_quality_instruments():
 
     return True, returnunicode([x[0] for x in result_list], True)
 
-
 def lstrip(word, from_string):
     """
     Strips word from the start of from_string
