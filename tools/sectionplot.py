@@ -190,6 +190,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #labels, grid, legend etc.
         self.finish_plot()
         self.save_settings()
+        self.connectionObject.execute(u'DROP TABLE %s'%self.temptableName)
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def execute_query(self,query,params=(),commit=False):#from qspatialite, it is only used by self.uploadQgisVectorLayer
