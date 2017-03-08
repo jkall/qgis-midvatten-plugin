@@ -190,7 +190,6 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #labels, grid, legend etc.
         self.finish_plot()
         self.save_settings()
-        self.connectionObject.execute(u'DROP TABLE %s'%self.temptableName)
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def execute_query(self,query,params=(),commit=False):#from qspatialite, it is only used by self.uploadQgisVectorLayer
@@ -645,15 +644,17 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.temptableName=layer.name()
         #Verify if self.temptableName already exists in DB
         ExistingNames=self.connectionObject.cursor().execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""").fetchall()
+        ExistingNames_attached = self.connectionObject.cursor().execute(r"""SELECT tbl_name FROM a.sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""").fetchall()
         #ExistingNames=[table.name for table in self.tables]
         #Propose user to automatically rename DB
-        for existingname in ExistingNames:  #this should only be needed if an earlier import failed
-            if str(existingname[0]) == str(self.temptableName): #if so, propose to rename the temporary import-table
-                reponse=PyQt4.QtGui.QMessageBox.question(None, "Table name confusion",'''Note, the plugin needs to store a temporary table in the database and tried '%s'.\nHowever, this is already in use in the database, it might be the result of a failed section plot attempt.\nPlease check your database. Meanwhile, would you like to rename the temporary table '%s' as '%s_2' '''%(self.temptableName,self.temptableName,self.temptableName), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
-                if reponse==PyQt4.QtGui.QMessageBox.Yes:
-                    self.temptableName='%s_2'%self.temptableName
-                else:
-                    return False
+        for _ExistingNames in [ExistingNames, ExistingNames_attached]:
+            for existingname in _ExistingNames:  #this should only be needed if an earlier import failed
+                if str(existingname[0]) == str(self.temptableName): #if so, propose to rename the temporary import-table
+                    reponse=PyQt4.QtGui.QMessageBox.question(None, "Table name confusion",'''Note, the plugin needs to store a temporary table in the database and tried '%s'.\nHowever, this is already in use in the database, it might be the result of a failed section plot attempt.\nPlease check your database. Meanwhile, would you like to rename the temporary table '%s' as '%s_2' '''%(self.temptableName,self.temptableName,self.temptableName), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
+                    if reponse==PyQt4.QtGui.QMessageBox.Yes:
+                        self.temptableName='%s_2'%self.temptableName
+                    else:
+                        return False
         #Get data charset
         provider=layer.dataProvider()
         #charset=provider.encoding()
