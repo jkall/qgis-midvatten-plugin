@@ -48,7 +48,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class _TestParseDiverofficeFile(object):
+class TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
                                                            'Failure, parsing failed for file': 'cancel'},
@@ -208,7 +208,7 @@ class _TestParseDiverofficeFile(object):
         assert test_string == reference_string
 
 
-class _TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -464,7 +464,7 @@ class _TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatia
                     assert test_string == reference_string
 
 
-class _TestGeneralImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class TestGeneralImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -593,7 +593,7 @@ class _TestGeneralImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
         assert test_string == reference_string
 
 
-class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_import_obsids_directly(self):
@@ -747,7 +747,7 @@ class TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
         assert test_string == reference_string
 
 
-class _TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_wflow_import_from_csvlayer(self):
@@ -795,7 +795,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         assert test_string == reference_string
 
 
-class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_w_qual_field_import_from_csvlayer(self):
@@ -835,8 +835,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
               u'12', u'<12', u'%', u'22', u'testcomment']]
 
         self.importinstance.general_import(goal_table=u'w_qual_field', file_data=f)
-
-        assert call.info(bar_msg=u'Error: Import failed, see log message panel') in mock_messagebar.mock_calls
+        assert call.critical(bar_msg=u'Error: Import failed, see log message panel', duration=999, log_msg=u'Required columns parameter are missing for table w_qual_field') in mock_messagebar.mock_calls
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))
@@ -853,8 +852,9 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
              [u'obsid2', u'teststaff', u'2011-10-19 12:30:00', u'testinstrument', u'', u'12', u'<12', u'%', u'22', u'testcomment']]
 
         self.importinstance.general_import(goal_table=u'w_qual_field', file_data=f)
-
-        assert call.info(bar_msg=u'1 rows imported and 1 excluded for table w_qual_field. See log message panel for details') in mock_messagebar.mock_calls
+        print("test_w_qual_field_parameter_empty_string")
+        print(str(mock_messagebar.mock_calls))
+        assert call.info(bar_msg=u'1 rows imported and 1 excluded for table w_qual_field. See log message panel for details', log_msg=u'In total 1 rows were imported to foreign key table zz_staff while importing to w_qual_field.\nINSERT failed while importing to w_qual_field. Skipping duplicate values and required values that are NULL.\nMsg: NOT NULL constraint failed: w_qual_field.parameter\nIn total 1 rows were not imported to w_qual_field. Probably due to a primary key combination already existing in the database.\n--------------------') in mock_messagebar.mock_calls
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))
@@ -874,7 +874,9 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
              [u'obsid2', u'', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment']]
 
         self.importinstance.general_import(goal_table=u'w_qual_field', file_data=f)
-        assert call.info(bar_msg=u'2 rows imported and 0 excluded for table w_qual_field. See log message panel for details') in mock_messagebar.mock_calls
+        print("test_w_qual_field_staff_null")
+        print(str(mock_messagebar.mock_calls))
+        assert call.info(bar_msg=u'2 rows imported and 0 excluded for table w_qual_field. See log message panel for details', log_msg=u'In total 1 rows were imported to foreign key table zz_staff while importing to w_qual_field.\n--------------------') in mock_messagebar.mock_calls
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))
@@ -883,11 +885,12 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportIns
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from zz_staff'''))
+        #TODO: The error is probably that a ''-staff has been imported!!! Check that.
         reference_string = ur'''(True, [])'''
         assert test_string == reference_string
 
 
-class _TestWlevelsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class TestWlevelsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_w_level_import_from_csvlayer(self):
@@ -904,7 +907,7 @@ class _TestWlevelsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
         assert test_string == reference_string
 
 
-class _TestWlevelsImportOldWlevels(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class TestWlevelsImportOldWlevels(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     """
     This test is for an older version of w_levels where level_masl was not null
     but had a default value of -999
@@ -932,37 +935,15 @@ class _TestWlevelsImportOldWlevels(utils_for_tests.MidvattenTestSpatialiteDbSvIm
         assert test_string == reference_string
 
 
-class _TestSeismicImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
-    skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
+class TestSeismicImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_seismic_import_from_csvlayer(self):
-        self.importinstance.charsetchoosen = [u'utf-8']
-
         db_utils.sql_alter_db(u'INSERT INTO obs_lines ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'length', u'ground', u'bedrock', u'gw_table', u'comment'],
              [u'obsid1', u'500', u'2', u'4', u'3', u'acomment']]
 
-        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-            @mock.patch('import_data_to_db.utils.Askuser')
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test_import_seismic_from_csvlayer(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                mock_filename.return_value = filename
-                mock_encoding.return_value = [True, u'utf-8']
-                self.mock_iface = mock_iface
-                self.importinstance.general_import(goal_table=u'seismic_data')
-            _test_import_seismic_from_csvlayer(self, filename)
+        self.importinstance.general_import(goal_table=u'seismic_data', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from seismic_data'''))
@@ -970,37 +951,15 @@ class _TestSeismicImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
         assert test_string == reference_string
 
 
-class _TestCommentsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
-    skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
+class TestCommentsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_comments_import_from_csvlayer(self):
-        self.importinstance.charsetchoosen = [u'utf-8']
-
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'date_time', u'comment', u'staff'],
              [u'obsid1', u'2011-10-19 12:30:00', u'testcomment', u'teststaff']]
 
-        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-            @mock.patch('import_data_to_db.utils.Askuser')
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test_wlvl_import_from_csvlayer(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                mock_filename.return_value = filename
-                mock_encoding.return_value = [True, u'utf-8']
-                self.mock_iface = mock_iface
-                self.importinstance.general_import(goal_table=u'comments')
-            _test_wlvl_import_from_csvlayer(self, filename)
+        self.importinstance.general_import(goal_table=u'comments', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from comments'''))
@@ -1008,38 +967,16 @@ class _TestCommentsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
         assert test_string == reference_string
 
 
-class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
-    skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
+class TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_strat_import_from_csvlayer(self):
-        self.importinstance.charsetchoosen = [u'utf-8']
-
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'stratid', u'depthtop', u'depthbot', u'geology', u'geoshort', u'capacity', u'development', u'comment'],
              [u'obsid1', u'1', u'0', u'1', u'grusig sand', u'sand', u'5', u'(j)', u'acomment'],
              [u'obsid1', u'2', u'1', u'4', u'siltigt sandigt grus', u'grus', u'4+', u'(j)', u'acomment2']]
 
-        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-            @mock.patch('import_data_to_db.utils.Askuser')
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                mock_filename.return_value = filename
-                mock_encoding.return_value = [True, u'utf-8']
-                self.mock_iface = mock_iface
-                self.importinstance.general_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
-            _test(self, filename)
+        self.importinstance.general_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from stratigraphy'''))
@@ -1047,9 +984,8 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_strat_import_from_csvlayer_eleven_layers(self):
-        self.importinstance.charsetchoosen = [u'utf-8']
-
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'stratid', u'depthtop', u'depthbot', u'geology', u'geoshort', u'capacity', u'development', u'comment'],
              [u'obsid1', u'1', u'0', u'1', u's', u's', u'1', u'(j)', u'acomment'],
@@ -1064,20 +1000,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
              [u'obsid1', u'10', u'9', u'12.1', u's', u's', u'1', u'(j)', u'acomment'],
              [u'obsid1', u'11', u'12.1', u'13', u's', u's', u'1', u'(j)', u'acomment']]
 
-        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-            @mock.patch('import_data_to_db.utils.Askuser')
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                mock_filename.return_value = filename
-                mock_encoding.return_value = [True, u'utf-8']
-                self.mock_iface = mock_iface
-                self.importinstance.general_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
-            _test(self, filename)
+        self.importinstance.general_import(goal_table=u'stratigraphy', file_data=f) #goal_table=u'stratigraphy')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from stratigraphy'''))
@@ -1085,9 +1008,8 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_strat_import_one_obs_fail_stratid_gaps(self):
-        self.importinstance.charsetchoosen = [u'utf-8']
-
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'stratid', u'depthtop', u'depthbot', u'geology', u'geoshort', u'capacity', u'development', u'comment'],
              [u'obsid1', u'1', u'0', u'1', u'grusig sand', u'sand', u'5', u'(j)', u'acomment'],
@@ -1095,20 +1017,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
              [u'obsid2', u'1', u'0', u'1', u'grusig sand', u'sand', u'5', u'(j)', u'acomment'],
              [u'obsid2', u'3', u'1', u'4', u'siltigt sandigt grus', u'grus', u'4+', u'(j)', u'acomment2']]
 
-        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-            @mock.patch('import_data_to_db.utils.Askuser')
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                mock_filename.return_value = filename
-                mock_encoding.return_value = [True, u'utf-8']
-                self.mock_iface = mock_iface
-                self.importinstance.general_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
-            _test(self, filename)
+        self.importinstance.general_import(goal_table=u'stratigraphy', file_data=f) #goal_table=u'stratigraphy')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from stratigraphy'''))
@@ -1116,9 +1025,8 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_strat_import_one_obs_fail_depthbot_gaps(self):
-        self.importinstance.charsetchoosen = [u'utf-8']
-
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'stratid', u'depthtop', u'depthbot', u'geology', u'geoshort', u'capacity', u'development', u'comment'],
              [u'obsid1', u'1', u'0', u'1', u'grusig sand', u'sand', u'5', u'(j)', u'acomment'],
@@ -1126,20 +1034,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
              [u'obsid2', u'1', u'0', u'1', u'grusig sand', u'sand', u'5', u'(j)', u'acomment'],
              [u'obsid2', u'2', u'3', u'4', u'siltigt sandigt grus', u'grus', u'4+', u'(j)', u'acomment2']]
 
-        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-            @mock.patch('import_data_to_db.utils.Askuser')
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                mock_filename.return_value = filename
-                mock_encoding.return_value = [True, u'utf-8']
-                self.mock_iface = mock_iface
-                self.importinstance.general_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
-            _test(self, filename)
+        self.importinstance.general_import(goal_table=u'stratigraphy', file_data=f) #goal_table=u'stratigraphy')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from stratigraphy'''))
@@ -1147,36 +1042,15 @@ class _TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         assert test_string == reference_string
 
 
-class _TestMeteoImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
-    skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
+class TestMeteoImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_meteo_import_from_csvlayer(self):
-        self.importinstance.charsetchoosen = [u'utf-8']
-
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'instrumentid', u'parameter', u'date_time', u'reading_num', u'reading_txt', u'unit', u'comment'],
              [u'obsid1', u'ints1', u'pressure', u'2016-01-01 00:00:00', u'1100', u'1100', u'aunit', u'acomment']]
-        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-            @mock.patch('import_data_to_db.utils.Askuser')
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test_import_meteo_from_csvlayer(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                mock_filename.return_value = filename
-                mock_encoding.return_value = [True, u'utf-8']
-                self.mock_iface = mock_iface
-                self.importinstance.general_import(goal_table=u'meteo')
-            _test_import_meteo_from_csvlayer(self, filename)
+        self.importinstance.general_import(goal_table=u'meteo', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from meteo'''))
@@ -1184,36 +1058,15 @@ class _TestMeteoImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance
         assert test_string == reference_string
 
 
-class _TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
-    skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
+class TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_vlf_import_from_csvlayer(self):
-        self.importinstance.charsetchoosen = [u'utf-8']
-
         db_utils.sql_alter_db(u'INSERT INTO obs_lines ("obsid") VALUES ("obsid1")')
         f = [[u'obsid', u'length', u'real_comp', u'imag_comp', u'comment'],
              [u'obsid1', u'500', u'2', u'10', u'acomment']]
-        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-            @mock.patch('import_data_to_db.utils.Askuser')
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test_import_vlf_from_csvlayer(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                mock_filename.return_value = filename
-                mock_encoding.return_value = [True, u'utf-8']
-                self.mock_iface = mock_iface
-                self.importinstance.general_import(goal_table=u'vlf_data')
-            _test_import_vlf_from_csvlayer(self, filename)
+        self.importinstance.general_import(goal_table=u'vlf_data', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from vlf_data'''))
@@ -1221,25 +1074,12 @@ class _TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_vlf_import_from_csvlayer_no_obs_line(self):
-        self.importinstance.charsetchoosen = [u'utf-8']
-
         f = [[u'obsid', u'length', u'real_comp', u'imag_comp', u'comment'],
              [u'obsid1', u'500', u'2', u'10', u'acomment']]
-        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-            @mock.patch('import_data_to_db.utils.Askuser')
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test_import_vlf_from_csvlayer(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                mock_filename.return_value = filename
-                mock_encoding.return_value = [True, u'utf-8']
-                self.mock_iface = mock_iface
-                self.importinstance.general_import(goal_table=u'vlf_data')
-            _test_import_vlf_from_csvlayer(self, filename)
+        self.importinstance.general_import(goal_table=u'vlf_data')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from vlf_data'''))
@@ -1247,35 +1087,14 @@ class _TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
         assert test_string == reference_string
 
 
-class _TestObsLinesImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
-    skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
+class TestObsLinesImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_obs_lines_import_from_csvlayer(self):
-        self.importinstance.charsetchoosen = [u'utf-8']
-
         f = [[u'obsid', u'name', u'place', u'type', u'source'],
              [u'obsid1', u'aname', u'aplace', u'atype', u'asource']]
-        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-            @mock.patch('import_data_to_db.utils.Askuser')
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test_obs_lines_import_from_csvlayer(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                mock_filename.return_value = filename
-                mock_encoding.return_value = [True, u'utf-8']
-                self.mock_iface = mock_iface
-                self.importinstance.general_import(goal_table=u'obs_lines')
-            _test_obs_lines_import_from_csvlayer(self, filename)
+        self.importinstance.general_import(goal_table=u'obs_lines')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from obs_lines'''))
@@ -1283,26 +1102,10 @@ class _TestObsLinesImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
         assert test_string == reference_string
 
 
-class _TestGetForeignKeys(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
-    skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
+class TestGetForeignKeys(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-    @mock.patch('import_data_to_db.utils.Askuser')
-    @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-    @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-    def test_get_foreign_columns(self, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-        mock_encoding.return_value = [True, u'utf-8']
-        self.mock_iface = mock_iface
-        self.importinstance.charsetchoosen = [u'utf-8']
-
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    def test_get_foreign_columns(self):
         test = get_foreign_keys(u'w_levels')
         assert len(test) > 0
         assert isinstance(test, (dict, OrderedDict))
@@ -1310,13 +1113,9 @@ class _TestGetForeignKeys(utils_for_tests.MidvattenTestSpatialiteDbSvImportInsta
             assert isinstance(v, (list, tuple))
 
 
-class _TestFilterDatesFromFiledata(object):
-
-    def setUp(self):
-        self.importinstance = midv_data_importer()
-
+class TestFilterDatesFromFiledata(object):
     def test_filter_dates_from_filedata(self):
-
+        self.importinstance = midv_data_importer()
         file_data = [[u'obsid', u'date_time'], [u'rb1', u'2015-05-01 00:00:00'], [u'rb1', u'2016-05-01 00:00'], [u'rb2', u'2015-05-01 00:00:00'], [u'rb2', u'2016-05-01 00:00'], [u'rb3', u'2015-05-01 00:00:00'], [u'rb3', u'2016-05-01 00:00']]
         obsid_last_imported_dates = {u'rb1': [(datestring_to_date(u'2016-01-01 00:00:00'),)], u'rb2': [(datestring_to_date(u'2017-01-01 00:00:00'),)]}
         test_file_data = utils_for_tests.create_test_string(self.importinstance.filter_dates_from_filedata(file_data, obsid_last_imported_dates))
@@ -1326,39 +1125,17 @@ class _TestFilterDatesFromFiledata(object):
         assert test_file_data == reference_file_data
 
 
-class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
-    skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
+class TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_delete_existing_date_times_from_temptable_00_already_exists(self):
-        self.importinstance.charsetchoosen = [u'utf-8']
-
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         db_utils.sql_alter_db(u'INSERT INTO w_levels ("obsid", "date_time", "level_masl") VALUES ("obsid1", "2016-01-01 00:00:00", "123.0")')
 
         f = [[u'obsid', u'date_time', u'level_masl'],
              [u'obsid1', u'2016-01-01 00:00', u'345']]
 
-        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-            @mock.patch('import_data_to_db.utils.Askuser')
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
-                mock_filename.return_value = filename
-                mock_encoding.return_value = [True, u'utf-8']
-                self.mock_iface = mock_iface
-                self.importinstance.general_import(goal_table=u'w_levels')
-            _test(self, filename)
+        self.importinstance.general_import(goal_table=u'w_levels', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_levels'''))
@@ -1366,9 +1143,8 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpa
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_delete_existing_date_times_from_temptable_00_already_exists(self):
-        self.importinstance.charsetchoosen = [u'utf-8']
-
         db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         db_utils.sql_alter_db(
             u'INSERT INTO w_levels ("obsid", "date_time", "level_masl") VALUES ("obsid1", "2016-01-01 00:00:00", "123.0")')
@@ -1376,22 +1152,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpa
         f = [[u'obsid', u'date_time', u'level_masl'],
              [u'obsid1', u'2016-01-01 00:00', u'345']]
 
-        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-            @mock.patch('import_data_to_db.utils.Askuser')
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch(
-                'import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding,
-                      mock_iface, mock_askuser):
-                mock_filename.return_value = filename
-                mock_encoding.return_value = [True, u'utf-8']
-                self.mock_iface = mock_iface
-                self.importinstance.general_import(goal_table=u'w_levels')
-
-            _test(self, filename)
+        self.importinstance.general_import(goal_table=u'w_levels', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_levels'''))
@@ -1399,6 +1160,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpa
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_delete_existing_date_times_from_temptable_minute_already_exists(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -1411,22 +1173,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpa
              [u'obsid1', u'2016-01-01 00:00:01', u'456'],
              [u'obsid1', u'2016-01-01 00:02:00', u'789']]
 
-        with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
-            @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-            @mock.patch('import_data_to_db.utils.Askuser')
-            @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
-            @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch(
-                'import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName')
-            def _test(self, filename, mock_filename, mock_skippopup, mock_encoding,
-                      mock_iface, mock_askuser):
-                mock_filename.return_value = filename
-                mock_encoding.return_value = [True, u'utf-8']
-                self.mock_iface = mock_iface
-                self.importinstance.general_import(goal_table=u'w_levels')
-
-            _test(self, filename)
+        self.importinstance.general_import(goal_table=u'w_levels', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_levels'''))

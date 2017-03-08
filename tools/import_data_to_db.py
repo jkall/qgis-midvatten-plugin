@@ -50,12 +50,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.recsafter = 0
         self.recstoimport = 0
         self.recsinfile = 0
-        self.temptablename = ''
+        self.temptable_name = ''
         self.charsetchoosen = ''
         self.csvlayer = None
         self.foreign_keys_import_question = None
 
-    def general_import(self, goal_table=None, file_data=None, add_table_to_foreign_key_import=None):
+    def general_import(self, goal_table=None, file_data=None, allow_obs_fk_import=False):
         """General method for importing an sqlite table into a goal_table
 
             self.temptableName must be the name of the table containing the new data to import.
@@ -68,8 +68,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return
         utils.MessagebarAndLog.info(log_msg=u'\nImport to %s starting\n--------------------'%goal_table)
         detailed_msg_list = []
-        if add_table_to_foreign_key_import is None:
-            add_table_to_foreign_key_import = []
+
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.status = 'False' #True if upload to sqlite and cleaning of data succeeds
         self.temptable_name = goal_table + u'_temp'
@@ -85,15 +84,16 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
         not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
         #Only use the columns that exists in the goal table.
-        existing_columns = [col for col in file_data[0] if col in column_headers_types]
-        missing_columns = [column for column in not_null_columns if column not in existing_columns]
+        existing_columns_in_goal_table = [col for col in file_data[0] if col in column_headers_types]
+        existing_columns_in_temptable = file_data[0]
+        missing_columns = [column for column in not_null_columns if column not in existing_columns_in_goal_table]
 
         if missing_columns:
             utils.MessagebarAndLog.critical(bar_msg=u'Error: Import failed, see log message panel', log_msg=u'Required columns ' + u', '.join(missing_columns) + u' are missing for table ' + goal_table, duration=999)
             self.status = False
             return
 
-        primary_keys_for_concat = [pk for pk in primary_keys if pk in file_data[0]]
+        primary_keys_for_concat = [pk for pk in primary_keys if pk in existing_columns_in_temptable]
 
         self.list_to_table(dbconnection, file_data, primary_keys_for_concat, detailed_msg_list)
 
@@ -109,86 +109,35 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return
 
         # Import foreign keys in some special cases
-        nr_before = nr_after
         foreign_keys = db_utils.get_foreign_keys(goal_table, dbconnection=dbconnection)
-        force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
-        force_import_of_foreign_keys_tables.extend(add_table_to_foreign_key_import)
-        if self.foreign_keys_import_question is None:
-            stop_question = utils.Askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""" % (u', '.join(force_import_of_foreign_keys_tables)), u"Info!")
-            if stop_question.result == 0:      # if the user wants to abort
-                self.status = 'False'
-                PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                dbconnection.closedb()
-                return Cancel()   # return simply to stop this function
-            else:
-                self.foreign_keys_import_question = 1
+        if foreign_keys:
+            if not allow_obs_fk_import:
+                for table in [u'obs_points', u'obs_lines']:
+                    if table in foreign_keys:
+                        del foreign_keys[table]
 
-        for fk_table, from_to_fields in foreign_keys.iteritems():
-            from_list = [x[0] for x in from_to_fields]
-            to_list = [x[1] for x in from_to_fields]
-            if fk_table in force_import_of_foreign_keys_tables:
-                if not all([_from in existing_columns for _from in from_list]):
-                    continue
-                nr_fk_before = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]
-                _table_info = db_utils.db_tables_columns_info(table=fk_table, dbconnection=dbconnection)[fk_table]
-                _column_headers_types = dict([(row[1], row[2]) for row in _table_info])
-                _not_null_columns = [row[1] for row in _table_info if int(row[3]) and row[4] is None]
-                _missing_columns = [column for column in _not_null_columns if column not in file_data[0]]
-                if missing_columns:
-                    utils.MessagebarAndLog.critical(bar_msg=u'Error: Import failed, see log message panel', log_msg=u'Required columns ' + u', '.join(_missing_columns) + u' are missing for table ' + fk_table, duration=999)
-                    self.status = False
-                    return
-
-                sql = ur"""INSERT INTO %s (%s) SELECT DISTINCT %s FROM %s AS b WHERE %s"""%(fk_table,
-                                                                                             u', '.join(to_list),
-                                                                                             u', '.join([u'''CAST(b.%s AS %s)'''%(k, _column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
-                                                                                             self.temptable_name,
-                                                                                             u' AND '.join([u''' b.{} IS NOT NULL AND b.{} != '' AND b.{} != ' ' '''.format(k, k, k) for k in from_list]))
-                try:
-                    dbconnection.execute(sql)
-                except Exception, e:
-                    _primary_keys = [row[1] for row in _table_info if int(row[5])]
-
-                    _primary_keys_from_for_concat = [from_list[to_list.index(pk)] for pk in _primary_keys if from_list[to_list.index(pk)] in file_data[0]]
-                    _primary_keys_to_for_concat = [pk for pk in _primary_keys if from_list[to_list.index(pk)] in file_data[0]]
-                    _concatted_from_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in _primary_keys_from_for_concat])
-                    _concatted_to_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in _primary_keys_to_for_concat])
-                    sql += u""" AND %s NOT IN (SELECT DISTINCT %s FROM %s WHERE %s)"""%(_concatted_from_string, _concatted_to_string, fk_table, u' AND '.join([u'%s IS NOT NULL'%x for x in _primary_keys_to_for_concat]))
-                    sql += u""" AND %s"""%u' AND '.join([u"%s IS NOT NULL"%from_list[to_list.index(x)] for x in _not_null_columns])
-                    detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%fk_table + str(e))
-                    dbconnection.execute(sql)
-
-                nr_fk_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]
-
-                detailed_msg_list.append(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table + u' while importing to ' + goal_table + u'.')
-            else:
-                #Else check if there are foreign keys blocking the import and skip those rows
-                existing_keys = dbconnection.execute_and_fetchall(u'select distinct %s from %s' % (u', '.join(to_list), fk_table))
-                new_keys = dbconnection.execute_and_fetchall(u'select distinct "%s" from %s' % (u', '.join(from_list), self.temptable_name))
-                missing_keys = [keys for keys in new_keys if keys not in existing_keys]
-
-                if missing_keys:
-                    utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel',
-                                                   log_msg=u'There was ' + str(len(missing_keys)) +
-                                                   u'entries where foreign keys were missing from ' + fk_table +
-                                                   u' which will not be imported:\n' + u'\n'.join([u', '.join(f) for f in missing_keys]),
-                                                   duration=999)
-
-                    dbconnection.execute(u'delete from %s where %s in (%s)' % (self.temptable_name,
-                                                                             u' || '.join(from_list),
-                                                                             u', '.join([u"'{}'".format(u''.join([u'NULL' if k is None else k for k in mk])) for mk in missing_keys])))
-
-        nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
-        nr_after_foreign_keys = nr_before - nr_after
-        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
+            if self.foreign_keys_import_question is None:
+                stop_question = utils.Askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""" % (u', '.join(foreign_keys.keys())), u"Info!")
+                if stop_question.result == 0:      # if the user wants to abort
+                    self.status = 'False'
+                    PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                    dbconnection.closedb()
+                    return Cancel()   # return simply to stop this function
+                else:
+                    self.foreign_keys_import_question = 1
+                    nr_before = nr_after
+                    self.import_foreign_keys(goal_table, foreign_keys, dbconnection, existing_columns_in_temptable, detailed_msg_list)
+                    nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
+                    nr_after_foreign_keys = nr_before - nr_after
+                    self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
         if not self.status:
             return
 
         #Special cases for some tables
         if goal_table == u'stratigraphy':
-            self.check_and_delete_stratigraphy(existing_columns, dbconnection)
+            self.check_and_delete_stratigraphy(existing_columns_in_goal_table, dbconnection)
         if goal_table in (u'obs_lines', u'obs_points'):
-            self.calculate_geometry(existing_columns, goal_table, dbconnection)
+            self.calculate_geometry(existing_columns_in_goal_table, goal_table, dbconnection)
 
         #Finally import data:
         nr_failed_import = recsinfile - nr_after
@@ -200,20 +149,20 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 return Cancel()   # return simply to stop this function
 
         sql_list = [u"""INSERT INTO %s ("""%goal_table]
-        sql_list.append(u', '.join(sorted(existing_columns)))
+        sql_list.append(u', '.join(sorted(existing_columns_in_goal_table)))
         sql_list.append(u""") SELECT """)
-        sql_list.append(u', '.join([u"""(CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE NULL END)"""%(colname, colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns)]))
+        sql_list.append(u', '.join([u"""(CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE NULL END)"""%(colname, colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns_in_goal_table)]))
         sql_list.append(u"""FROM %s""" % (self.temptable_name))
         sql = u''.join(sql_list)
         recsbefore = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
 
         try:
-            dbconnection.execute(sql) #.encode(u'utf-8'))
+            dbconnection.execute(sql)
         except Exception, e:
-            detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%goal_table + str(e))
+            detailed_msg_list.append(u'INSERT failed while importing to %s. Skipping duplicate values and required values that are NULL.\nMsg: '%goal_table + str(e))
             concatted_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in primary_keys_for_concat])
             sql += u""" WHERE %s NOT IN (SELECT DISTINCT %s FROM %s)"""%(concatted_string, concatted_string, goal_table)
-            sql += u""" AND %s"""%u' AND '.join([u"%s IS NOT NULL"%x for x in not_null_columns])
+            sql += u""" AND %s"""%u' AND '.join([u"CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE NULL END IS NOT NULL"%(x, x, x, x, x) for x in not_null_columns])
             try:
                 dbconnection.execute(sql) #.encode(u'utf-8'))
             except Exception, e:
@@ -579,6 +528,65 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         filtered_file_data.append(file_data[0])
         filtered_file_data.reverse()
         return filtered_file_data
+
+    def import_foreign_keys(self, goal_table, foreign_keys, dbconnection, existing_columns_in_temptable, detailed_msg_list):
+        #TODO: Empty foreign keys are probably imported now. Must add "case when...NULL" to a couple of sql questions here
+
+        for fk_table, from_to_fields in foreign_keys.iteritems():
+            from_list = [x[0] for x in from_to_fields]
+            to_list = [x[1] for x in from_to_fields]
+            if not all([_from in existing_columns_in_temptable for _from in from_list]):
+                detailed_msg_list.append(u'There were keys missing for importing to fk_table %s, so no import was done.'%fk_table)
+                continue
+
+            nr_fk_before = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]
+            table_info = db_utils.db_tables_columns_info(table=fk_table, dbconnection=dbconnection)[fk_table]
+            column_headers_types = dict([(row[1], row[2]) for row in table_info])
+
+            #Check and delete not null columns
+            not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
+            if not_null_columns:
+                sql = ur"""SELECT * from %s WHERE %s"""%(self.temptable_name, u' AND '.join([u'%s IS NULL'%from_list[to_list.index(nn)] for nn in not_null_columns]))
+                null_values_in_temptable = dbconnection.execute_and_fetchall(sql)
+                if null_values_in_temptable:
+                    detailed_msg_list.append(u'Import to %s warning! There was NULL-values in one of the columns %s. Rows with NULL for those columns will be skipped.'%(fk_table, u', '.join(from_list)))
+                    sql = ur'''DELETE from %s WHERE %s'''%(self.temptable_name, u' AND '.join([u'%s IS NULL'%from_list[to_list.index(nn)] for nn in not_null_columns]))
+                    dbconnection.execute(sql)
+
+            primary_keys = [row[1] for row in table_info if int(row[5])]
+            primary_keys_from_for_concat = [from_list[to_list.index(pk)] for pk in primary_keys if from_list[to_list.index(pk)] in existing_columns_in_temptable]
+            primary_keys_to_for_concat = [pk for pk in primary_keys if from_list[to_list.index(pk)] in existing_columns_in_temptable]
+            concatted_from_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in primary_keys_from_for_concat])
+            concatted_to_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in primary_keys_to_for_concat])
+
+            #This part of the sql starts after ####
+            #INSERT INTO zz_flowtype(type) SELECT DISTINCT from[to.index(type) FROM temptable AS b ##### WHERE concatted_from NOT IN (SELECT DISTINCT concatted_to from zz_flowtype)
+            sql = ur"""INSERT INTO %s (%s) SELECT DISTINCT %s FROM %s"""%(fk_table,
+                                                                          u', '.join(to_list),
+                                                                          u', '.join([u'''CAST(%s AS %s)'''%(k, column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
+                                                                          self.temptable_name)
+            sql += u""" WHERE %s NOT IN (SELECT DISTINCT %s FROM %s)"""%(concatted_from_string, concatted_to_string, fk_table,)
+            dbconnection.execute(sql)
+
+            nr_fk_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]
+
+            detailed_msg_list.append(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table + u' while importing to ' + goal_table + u'.')
+
+            #Check if there are foreign keys blocking the import and skip those rows
+            existing_keys = dbconnection.execute_and_fetchall(u'select distinct %s from %s' % (u', '.join(to_list), fk_table))
+            new_keys = dbconnection.execute_and_fetchall(u'select distinct "%s" from %s' % (u', '.join(from_list), self.temptable_name))
+            missing_keys = [keys for keys in new_keys if keys not in existing_keys]
+
+            if missing_keys:
+                utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel',
+                                               log_msg=u'There was ' + str(len(missing_keys)) +
+                                               u'entries where foreign keys were missing from ' + fk_table +
+                                               u' which will not be imported:\n' + u'\n'.join([u', '.join(f) for f in missing_keys]),
+                                               duration=999)
+
+                dbconnection.execute(u'delete from %s where %s in (%s)' % (self.temptable_name,
+                                                                         u' || '.join(from_list),
+                                                                         u', '.join([u"'{}'".format(u''.join([u'NULL' if k is None else k for k in mk])) for mk in missing_keys])))
 
     def SanityCheckVacuumDB(self, dbconnection=None):
         if dbconnection is None:
