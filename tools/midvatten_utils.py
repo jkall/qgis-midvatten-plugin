@@ -1038,7 +1038,7 @@ def find_similar(word, wordlist, hits=5):
 
     return matches
 
-def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=None, try_capitalize=False):
+def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=None, try_capitalize=False, vertical_msg_list=False):
     """
 
     The class NotFoundQuestion is used with 4 buttons; u'Ignore', u'Cancel', u'Ok', u'Skip'.
@@ -1060,17 +1060,22 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
     header_value = returnunicode(header_value)
     filtered_data = []
     data_to_ask_for = []
+    add_column = False
     for rownr, row in enumerate(file_data):
         if rownr == 0:
             try:
                 index = row.index(header_value)
             except ValueError:
-                MessagebarAndLog.warning(bar_msg=u'Warning, see log message panel', log_msg=u"filter_nonexisting_values_and_ask error: The header_value " + header_value + u" did not exist, returning file_data as it is.")
-                return file_data
+                # The header and all answers will be added as a new column.
+                row.append(header_value)
+                index = row.index(header_value)
+                add_column = True
+                pass
             else:
                 filtered_data.append(row)
             continue
-
+        if add_column:
+            row.append(None)
         value = row[index]
         if value not in existing_values:
             data_to_ask_for.append(row)
@@ -1120,8 +1125,12 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
                     not_tried_capitalize = False
                     continue
 
+            if not vertical_msg_list:
+                msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'" on row:\n"' + u', '.join(returnunicode(row, keep_containers=True)) + u'".\ndid not exist in db.\n\nPlease submit it again!\n'
+            else:
+                msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'''" on current row didn't exist in database. Please select an existing ''' + header_value + u'\n' + u'\n'.join([u': '.join((file_data[0][_colnr], word)) for _colnr, word in enumerate(row)])
             question = NotFoundQuestion(dialogtitle=u'WARNING',
-                                        msg=u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'" on row:\n"' + u', '.join(returnunicode(row, keep_containers=True)) + u'".\ndid not exist in db.\n\nPlease submit it again!\nIt will be used for all occurences of the same ' + header_value + u'\n',
+                                        msg=msg,
                                         existing_list=similar_values,
                                         default_value=similar_values[0],
                                         button_names=[u'Ignore', u'Cancel', u'Ok', u'Skip'],

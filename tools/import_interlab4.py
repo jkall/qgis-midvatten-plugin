@@ -69,7 +69,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         splitter = SplitterWithHandel(PyQt4.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(splitter)
 
-        self.specific_meta_filter = SpecificMetaFilter(self.all_lab_results)
+        self.specific_meta_filter = MetaFilterSelection(self.all_lab_results)
 
         splitter.addWidget(self.specific_meta_filter.widget)
 
@@ -104,13 +104,15 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         all_lab_results = dict([(lablittera, v) for lablittera, v in all_lab_results.iteritems() if lablittera in lablitteras_to_import])
 
 
-        self.wquallab_data_table = self.to_table(all_lab_results)
-        if self.wquallab_data_table in [u'cancel', u'error']:
-            self.status = False
-            return Cancel()
-
+        #Allow the user to connect the metadata rows to obsids.
+        meta_headers = get_metadata_headers(all_lab_results)
+        ask_obsid_table = [meta_headers]
+        for lablittera, v in sorted(all_lab_results.iteritems()):
+            metarow = [lablittera]
+            metarow.extend([v[u'metadata'][meta_header] for meta_header in meta_headers])
+            ask_obsid_table.append(metarow)
         existing_obsids = utils.get_all_obsids()
-        answer = utils.filter_nonexisting_values_and_ask(self.wquallab_data_table, u'obsid', existing_values=existing_obsids, try_capitalize=False)
+        answer = utils.filter_nonexisting_values_and_ask(ask_obsid_table, u'obsid', existing_values=existing_obsids, try_capitalize=False, vertical_msg_list=True)
         if answer == u'cancel':
             self.status = True
             return Cancel()
@@ -119,7 +121,21 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             utils.MessagebarAndLog.critical(bar_msg=u'Error, no observations remain. No import done.')
             return Cancel()
         else:
-            self.wquallab_data_table = answer
+            remaining_lablitteras_obsids = dict([(x[0], x[-1]) for x in answer[1:]])
+        #Filter the remaining lablitteras and add an obsid field
+        _all_lab_results = {}
+        for lablittera, v in all_lab_results.iteritems():
+            if lablittera not in remaining_lablitteras_obsids:
+                continue
+            else:
+                v[u'metadata'][u'obsid'] = remaining_lablitteras_obsids[lablittera]
+                _all_lab_results[lablittera] = v
+        all_lab_results = _all_lab_results
+
+        self.wquallab_data_table = self.to_table(all_lab_results)
+        if self.wquallab_data_table in [u'cancel', u'error']:
+            self.status = False
+            return Cancel()
 
         importer = import_data_to_db.midv_data_importer()
         answer = importer.send_file_data_to_importer(self.wquallab_data_table, partial(importer.general_csv_import, goal_table=u'w_qual_lab'))
@@ -348,7 +364,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         for lablittera, lab_results in data_dict.iteritems():
             metadata = lab_results.pop(u'metadata')
 
-            obsid = u' '.join([x for x in [metadata.get(u'provplatsid', u''), metadata.get(u'provplatsnamn', u''), metadata.get(u'specifik provplats', u'')] if x])
+            obsid = metadata[u'obsid']
             depth = None
             report = lablittera
             project = metadata.get(u'projekt', None)
@@ -437,12 +453,12 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             layout.addWidget(line)
 
 
-class SpecificMetaFilter(VRowEntry):
+class MetaFilterSelection(VRowEntry):
     def __init__(self, all_lab_results):
         """
 
         """
-        super(SpecificMetaFilter, self).__init__()
+        super(MetaFilterSelection, self).__init__()
         self.layout.addWidget(PyQt4.QtGui.QLabel(u'Column header'))
         self.combobox = PyQt4.QtGui.QComboBox()
         self.combobox.addItem(u'')
