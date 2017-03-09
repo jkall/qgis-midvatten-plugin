@@ -589,7 +589,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         lineplot, = self.secax.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y2, marker = 'None', linestyle = '-')# PLOT!!
         self.p.append(lineplot)
         self.Labels.append(self.y2_column)
-        
+
     def plot_water_level(self):   # Adding a plot for each water level date identified
         self.obsids_w_wl = []
         for datum in self.ms.settingsdict['secplotdates']:
