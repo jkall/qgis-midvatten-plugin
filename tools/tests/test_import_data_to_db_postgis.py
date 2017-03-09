@@ -29,7 +29,7 @@ from mock import call
 from mocks_for_tests import MockUsingReturnValue
 
 
-class _TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -285,7 +285,7 @@ class _TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgi
                     assert test_string == reference_string
 
 
-class _TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -414,7 +414,7 @@ class _TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         assert test_string == reference_string
 
 
-class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_import_obsids_directly(self):

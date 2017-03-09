@@ -852,8 +852,6 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
              [u'obsid2', u'teststaff', u'2011-10-19 12:30:00', u'testinstrument', u'', u'12', u'<12', u'%', u'22', u'testcomment']]
 
         self.importinstance.general_import(goal_table=u'w_qual_field', file_data=f)
-        print("test_w_qual_field_parameter_empty_string")
-        print(str(mock_messagebar.mock_calls))
         assert call.info(bar_msg=u'1 rows imported and 1 excluded for table w_qual_field. See log message panel for details', log_msg=u'In total 1 rows were imported to foreign key table zz_staff while importing to w_qual_field.\nINSERT failed while importing to w_qual_field. Skipping duplicate values and required values that are NULL.\nMsg: NOT NULL constraint failed: w_qual_field.parameter\nIn total 1 rows were not imported to w_qual_field. Probably due to a primary key combination already existing in the database.\n--------------------') in mock_messagebar.mock_calls
 
         test_string = utils_for_tests.create_test_string(
@@ -874,8 +872,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
              [u'obsid2', u'', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment']]
 
         self.importinstance.general_import(goal_table=u'w_qual_field', file_data=f)
-        print("test_w_qual_field_staff_null")
-        print(str(mock_messagebar.mock_calls))
+
         assert call.info(bar_msg=u'2 rows imported and 0 excluded for table w_qual_field. See log message panel for details', log_msg=u'In total 1 rows were imported to foreign key table zz_staff while importing to w_qual_field.\n--------------------') in mock_messagebar.mock_calls
 
         test_string = utils_for_tests.create_test_string(
@@ -885,8 +882,17 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from zz_staff'''))
-        #TODO: The error is probably that a ''-staff has been imported!!! Check that.
-        reference_string = ur'''(True, [])'''
+        reference_string = ur'''(True, [(None, None)])'''
+        assert test_string == reference_string
+
+        #Import another null and check that there is not two nulls now.
+        f = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'depth', u'comment'],
+             [u'obsid3', u'', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment'],
+             [u'obsid4', u'', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment']]
+        self.importinstance.general_import(goal_table=u'w_qual_field', file_data=f)
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select * from zz_staff'''))
+        reference_string = ur'''(True, [(None, None)])'''
         assert test_string == reference_string
 
 
@@ -976,7 +982,7 @@ class TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance)
              [u'obsid1', u'1', u'0', u'1', u'grusig sand', u'sand', u'5', u'(j)', u'acomment'],
              [u'obsid1', u'2', u'1', u'4', u'siltigt sandigt grus', u'grus', u'4+', u'(j)', u'acomment2']]
 
-        self.importinstance.general_import(goal_table=u'stratigraphy') #goal_table=u'stratigraphy')
+        self.importinstance.general_import(goal_table=u'stratigraphy', file_data=f) #goal_table=u'stratigraphy')
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from stratigraphy'''))
@@ -1090,11 +1096,12 @@ class TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
 class TestObsLinesImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    def test_obs_lines_import_from_csvlayer(self):
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    def test_obs_lines_import_from_csvlayer(self, mock_messagebar):
         f = [[u'obsid', u'name', u'place', u'type', u'source'],
              [u'obsid1', u'aname', u'aplace', u'atype', u'asource']]
 
-        self.importinstance.general_import(goal_table=u'obs_lines')
+        self.importinstance.general_import(goal_table=u'obs_lines', file_data=f)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from obs_lines'''))
