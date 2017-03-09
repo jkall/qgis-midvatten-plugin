@@ -91,7 +91,8 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                    u'2. Make a list of entries (one row per entry) in an external program like a text editor.\n'
                                    u'3. Copy the list and paste it (ctrl+v) into the top window.\n'
                                    u'4. Click "Update selection".\n'
-                                   u'All rows where values in the chosen column match entries in the pasted list will be selected.')
+                                   u'All rows where values in the chosen column match entries in the pasted list will be selected.\n\n'
+                                   u'Hover over a column header to see which database column it will go to.')
 
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
         self.gridLayout_buttons.addWidget(self.help_label, 1, 0)
@@ -358,6 +359,8 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         """
         data_dict = copy.deepcopy(_data_dict)
 
+        #### !!!! If a metadata-dbcolumn connection is changed, MetadataFilter.update_table.metaheader_dbcolumn_tooltips MUST be updated as well.
+
         file_data = [[u'obsid', u'depth', u'report', u'project', u'staff', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment']]
         for lablittera, lab_results in data_dict.iteritems():
             metadata = lab_results.pop(u'metadata')
@@ -525,12 +528,22 @@ class MetadataFilter(VRowEntry):
         """
         all_lab_results: A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
         """
+        #Contains only the metadata headers that are hard coded to be put into something else than comment column.
+        metaheader_dbcolumn_tooltips = {u'lablittera': u'report',
+                                        u'projekt': u'project',
+                                        u'provtagare': u'staff',
+                                        u'provtagningsdatum': u'date_time',
+                                        u'provtagningstid': u'date_time'}
+
         self.table.clear()
 
         self.sorted_table_header = get_metadata_headers(all_lab_results)
 
         self.table.setColumnCount(len(self.sorted_table_header))
         self.table.setHorizontalHeaderLabels(self.sorted_table_header)
+        for head_index, head_text in enumerate(self.sorted_table_header):
+            self.table.horizontalHeaderItem[head_index].setToolTip(u'%s will be put into database column %s'%(head_text, metaheader_dbcolumn_tooltips.get(head_text, u'comment')))
+
         self.table.setRowCount(len(all_lab_results))
 
         self.table_items = {}
