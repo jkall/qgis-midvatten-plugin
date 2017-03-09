@@ -1038,7 +1038,7 @@ def find_similar(word, wordlist, hits=5):
 
     return matches
 
-def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=None, try_capitalize=False, vertical_msg_list=False, always_confirm=False):
+def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=None, try_capitalize=False, vertical_msg_list=True, always_confirm=False):
     """
 
     The class NotFoundQuestion is used with 4 buttons; u'Ignore', u'Cancel', u'Ok', u'Skip'.
