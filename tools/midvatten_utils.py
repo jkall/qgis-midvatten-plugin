@@ -1068,8 +1068,9 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
             except ValueError:
                 # The header and all answers will be added as a new column.
                 row.append(header_value)
-                index = row.index(header_value)
+                index = -1
                 add_column = True
+                filtered_data.append(row)
                 pass
             else:
                 filtered_data.append(row)
@@ -1128,7 +1129,7 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
             if not vertical_msg_list:
                 msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'" on row:\n"' + u', '.join(returnunicode(row, keep_containers=True)) + u'".\ndid not exist in db.\n\nPlease submit it again!\n'
             else:
-                msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'''" on current row didn't exist in database. Please select an existing ''' + header_value + u'\n' + u'\n'.join([u': '.join((file_data[0][_colnr], word)) for _colnr, word in enumerate(row)])
+                msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'''" on current row didn't exist in database. Please select an existing ''' + header_value + u'\n' + u'\n'.join([u': '.join((file_data[0][_colnr], word if word is not None else u'')) for _colnr, word in enumerate(row)])
             question = NotFoundQuestion(dialogtitle=u'WARNING',
                                         msg=msg,
                                         existing_list=similar_values,

@@ -109,8 +109,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         meta_headers = get_metadata_headers(all_lab_results)
         ask_obsid_table = [meta_headers]
         for lablittera, v in sorted(all_lab_results.iteritems()):
-            metarow = [lablittera]
-            metarow.extend([v[u'metadata'][meta_header] for meta_header in meta_headers])
+            metarow = [v[u'metadata'][meta_header] for meta_header in meta_headers]
             ask_obsid_table.append(metarow)
         existing_obsids = utils.get_all_obsids()
         answer = utils.filter_nonexisting_values_and_ask(ask_obsid_table, u'obsid', existing_values=existing_obsids, try_capitalize=False, vertical_msg_list=True)
@@ -389,7 +388,10 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                         u'provtypspecifikation',
                                         u'bedömning',
                                         u'kemisk bedömning',
-                                        u'mikrobiologisk bedömning']
+                                        u'mikrobiologisk bedömning',
+                                        u'provplatsid',
+                                        u'provplatsnamn',
+                                        u'specifik provplats']
 
             #Only keep the comments that really has a value.
             more_meta_comments = u'. '.join([u': '.join([_x, metadata[_x]]) for _x in [_y for _y in additional_meta_comments if _y in metadata]  if all([metadata[_x], metadata[_x] is not None, metadata[_x].lower() != u'ej bedömt', metadata[_x] != u'-'])])
@@ -427,7 +429,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                   reading_num,
                                   reading_txt,
                                   unit,
-                                  u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments, more_parameter_comments, u'provplatsid_provplatsnamn_specifik provplats: ' + obsid] if comment is not None and comment])]
+                                  u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments, more_parameter_comments] if comment is not None and comment])]
                                  )
         return file_data
     
@@ -523,7 +525,6 @@ class MetadataFilter(VRowEntry):
                     item = self.table.item(rownr, _colnr)
                     self.table.setItemSelected(item, true_or_false)
 
-
     def update_table(self, all_lab_results):
         """
         all_lab_results: A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
@@ -542,7 +543,7 @@ class MetadataFilter(VRowEntry):
         self.table.setColumnCount(len(self.sorted_table_header))
         self.table.setHorizontalHeaderLabels(self.sorted_table_header)
         for head_index, head_text in enumerate(self.sorted_table_header):
-            self.table.horizontalHeaderItem[head_index].setToolTip(u'%s will be put into database column %s'%(head_text, metaheader_dbcolumn_tooltips.get(head_text, u'comment')))
+            self.table.horizontalHeaderItem(head_index).setToolTip(u'%s will be put into database column %s'%(head_text, metaheader_dbcolumn_tooltips.get(head_text, u'comment')))
 
         self.table.setRowCount(len(all_lab_results))
 
