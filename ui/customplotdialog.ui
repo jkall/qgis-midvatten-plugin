@@ -7,14 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>1062</width>
-    <height>714</height>
+    <height>793</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Custom plot generator for Midvatten plugin</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout_14">
+   <layout class="QGridLayout" name="gridLayout_21">
     <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0,1,50">
       <item>
@@ -557,9 +557,9 @@
                 </layout>
                </item>
                <item row="3" column="0">
-                <widget class="QGroupBox" name="plot_items_settings_1">
+                <widget class="QGroupBox" name="plot_settings_1">
                  <property name="title">
-                  <string>Plot items settings</string>
+                  <string>Plot settings</string>
                  </property>
                  <property name="flat">
                   <bool>false</bool>
@@ -668,162 +668,153 @@
                <string>Tab 2</string>
               </attribute>
               <layout class="QGridLayout" name="gridLayout_10">
-               <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_8">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="table_QLabel_2">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>92</width>
-                     <height>0</height>
-                    </size>
-                   </property>
+               <item row="2" column="0">
+                <layout class="QHBoxLayout" name="horizontalLayout_5">
+                 <item>
+                  <widget class="QLabel" name="label_8">
                    <property name="font">
                     <font>
                      <pointsize>9</pointsize>
                     </font>
                    </property>
                    <property name="text">
-                    <string>Table:</string>
+                    <string>Plot type</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="xcol_QLabel_2">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>92</width>
-                     <height>0</height>
-                    </size>
-                   </property>
+                 <item>
+                  <widget class="QComboBox" name="PlotType_comboBox_2">
                    <property name="font">
                     <font>
                      <pointsize>9</pointsize>
                     </font>
                    </property>
-                   <property name="text">
-                    <string>x-axis:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QComboBox" name="xcol_ComboBox_2">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>87</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>20000</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <pointsize>9</pointsize>
-                    </font>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="ycol_QLabel_2">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>92</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <pointsize>9</pointsize>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>y-axis:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QComboBox" name="ycol_ComboBox_2">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>87</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>2000</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <pointsize>9</pointsize>
-                    </font>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QComboBox" name="table_ComboBox_2">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>87</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>20000</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <pointsize>9</pointsize>
-                    </font>
-                   </property>
+                   <item>
+                    <property name="text">
+                     <string>line</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>line and marker</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>line and cross</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>marker</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>step-pre</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>step-post</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>frequency</string>
+                    </property>
+                   </item>
                   </widget>
                  </item>
                 </layout>
+               </item>
+               <item row="3" column="0">
+                <widget class="QGroupBox" name="plot_settings_2">
+                 <property name="title">
+                  <string>Plot settings</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_18">
+                  <item row="0" column="0">
+                   <layout class="QGridLayout" name="gridLayout_14">
+                    <item row="0" column="0">
+                     <widget class="QCheckBox" name="checkBox_remove_mean2">
+                      <property name="text">
+                       <string>Remove mean</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QLabel" name="label_12">
+                      <property name="minimumSize">
+                       <size>
+                        <width>131</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="toolTip">
+                       <string>a in y=ax+b</string>
+                      </property>
+                      <property name="text">
+                       <string>y scaling factor (gain)</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QLineEdit" name="LineEditFactor2">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="toolTip">
+                       <string>a in y=ax+b</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QLabel" name="label_15">
+                      <property name="minimumSize">
+                       <size>
+                        <width>131</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="toolTip">
+                       <string>b in y=ax+b</string>
+                      </property>
+                      <property name="text">
+                       <string>y offset</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="QLineEdit" name="LineEditOffset2">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="toolTip">
+                       <string>b in y=ax+b</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                 <zorder></zorder>
+                </widget>
                </item>
                <item row="1" column="0">
                 <layout class="QGridLayout" name="gridLayout_9">
@@ -997,138 +988,162 @@
                  </item>
                 </layout>
                </item>
-               <item row="2" column="0">
-                <layout class="QHBoxLayout" name="horizontalLayout_5">
-                 <item>
-                  <widget class="QLabel" name="label_8">
-                   <property name="font">
-                    <font>
-                     <pointsize>9</pointsize>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>Plot type</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QComboBox" name="PlotType_comboBox_2">
-                   <property name="font">
-                    <font>
-                     <pointsize>9</pointsize>
-                    </font>
-                   </property>
-                   <item>
-                    <property name="text">
-                     <string>line</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>line and marker</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>line and cross</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>marker</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>step-pre</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>step-post</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>frequency</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item row="4" column="0">
-                <layout class="QHBoxLayout" name="horizontalLayout_9">
-                 <item>
-                  <widget class="QLabel" name="label_12">
-                   <property name="toolTip">
-                    <string>a in y=ax+b</string>
-                   </property>
-                   <property name="text">
-                    <string>y scaling factor (gain)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="LineEditFactor2">
+               <item row="0" column="0">
+                <layout class="QGridLayout" name="gridLayout_8">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="table_QLabel_2">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="toolTip">
-                    <string>a in y=ax+b</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item row="5" column="0">
-                <layout class="QHBoxLayout" name="horizontalLayout_12">
-                 <item>
-                  <widget class="QLabel" name="label_15">
                    <property name="minimumSize">
                     <size>
-                     <width>121</width>
+                     <width>92</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="toolTip">
-                    <string>b in y=ax+b</string>
+                   <property name="font">
+                    <font>
+                     <pointsize>9</pointsize>
+                    </font>
                    </property>
                    <property name="text">
-                    <string>y offset</string>
+                    <string>Table:</string>
                    </property>
                   </widget>
                  </item>
-                 <item>
-                  <widget class="QLineEdit" name="LineEditOffset2">
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="xcol_QLabel_2">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="toolTip">
-                    <string>b in y=ax+b</string>
+                   <property name="minimumSize">
+                    <size>
+                     <width>92</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <pointsize>9</pointsize>
+                    </font>
                    </property>
                    <property name="text">
-                    <string/>
+                    <string>x-axis:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QComboBox" name="xcol_ComboBox_2">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>87</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>20000</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <pointsize>9</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="ycol_QLabel_2">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>92</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <pointsize>9</pointsize>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>y-axis:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QComboBox" name="ycol_ComboBox_2">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>87</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>2000</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <pointsize>9</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QComboBox" name="table_ComboBox_2">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>87</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>20000</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <pointsize>9</pointsize>
+                    </font>
                    </property>
                   </widget>
                  </item>
                 </layout>
-               </item>
-               <item row="3" column="0">
-                <widget class="QCheckBox" name="checkBox_remove_mean2">
-                 <property name="text">
-                  <string>Remove mean</string>
-                 </property>
-                </widget>
                </item>
               </layout>
              </widget>
@@ -1526,77 +1541,92 @@
                  </item>
                 </layout>
                </item>
-               <item row="4" column="0">
-                <layout class="QHBoxLayout" name="horizontalLayout_10">
-                 <item>
-                  <widget class="QLabel" name="label_13">
-                   <property name="toolTip">
-                    <string>a in y=ax+b</string>
-                   </property>
-                   <property name="text">
-                    <string>y scaling factor (gain)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="LineEditFactor3">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="toolTip">
-                    <string>a in y=ax+b</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item row="5" column="0">
-                <layout class="QHBoxLayout" name="horizontalLayout_13">
-                 <item>
-                  <widget class="QLabel" name="label_16">
-                   <property name="minimumSize">
-                    <size>
-                     <width>121</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="toolTip">
-                    <string>b in y=ax+b</string>
-                   </property>
-                   <property name="text">
-                    <string>y offset</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="LineEditOffset3">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="toolTip">
-                    <string>b in y=ax+b</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
                <item row="3" column="0">
-                <widget class="QCheckBox" name="checkBox_remove_mean3">
-                 <property name="text">
-                  <string>Remove mean</string>
+                <widget class="QGroupBox" name="plot_settings_3">
+                 <property name="title">
+                  <string>Plot settings</string>
                  </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_20">
+                  <item row="0" column="0">
+                   <layout class="QGridLayout" name="gridLayout_19">
+                    <item row="0" column="0">
+                     <widget class="QCheckBox" name="checkBox_remove_mean3">
+                      <property name="text">
+                       <string>Remove mean</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QLabel" name="label_13">
+                      <property name="minimumSize">
+                       <size>
+                        <width>131</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="toolTip">
+                       <string>a in y=ax+b</string>
+                      </property>
+                      <property name="text">
+                       <string>y scaling factor (gain)</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QLineEdit" name="LineEditFactor3">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="toolTip">
+                       <string>a in y=ax+b</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QLabel" name="label_16">
+                      <property name="minimumSize">
+                       <size>
+                        <width>131</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="toolTip">
+                       <string>b in y=ax+b</string>
+                      </property>
+                      <property name="text">
+                       <string>y offset</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="QLineEdit" name="LineEditOffset3">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="toolTip">
+                       <string>b in y=ax+b</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                 <zorder></zorder>
                 </widget>
                </item>
               </layout>
@@ -1673,9 +1703,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="plot_settings">
+         <widget class="QGroupBox" name="chart_settings">
           <property name="title">
-           <string>Plot settings</string>
+           <string>Chart settings</string>
           </property>
           <property name="flat">
            <bool>false</bool>
