@@ -125,9 +125,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         #Filter the remaining lablitteras and add an obsid field
         _all_lab_results = {}
         for lablittera, v in all_lab_results.iteritems():
-            if lablittera not in remaining_lablitteras_obsids:
-                continue
-            else:
+            if lablittera in remaining_lablitteras_obsids:
                 v[u'metadata'][u'obsid'] = remaining_lablitteras_obsids[lablittera]
                 _all_lab_results[lablittera] = v
         all_lab_results = _all_lab_results
