@@ -649,12 +649,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #Propose user to automatically rename DB
         for _ExistingNames in [ExistingNames, ExistingNames_attached]:
             for existingname in _ExistingNames:  #this should only be needed if an earlier import failed
-                if str(existingname[0]) == str(self.temptableName): #if so, propose to rename the temporary import-table
-                    reponse=PyQt4.QtGui.QMessageBox.question(None, "Table name confusion",'''Note, the plugin needs to store a temporary table in the database and tried '%s'.\nHowever, this is already in use in the database, it might be the result of a failed section plot attempt.\nPlease check your database. Meanwhile, would you like to rename the temporary table '%s' as '%s_2' '''%(self.temptableName,self.temptableName,self.temptableName), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
-                    if reponse==PyQt4.QtGui.QMessageBox.Yes:
-                        self.temptableName='%s_2'%self.temptableName
-                    else:
-                        return False
+                if str(existingname[0]) == str(self.temptableName):
+                    self.temptableName = '%s_2' % self.temptableName
         #Get data charset
         provider=layer.dataProvider()
         #charset=provider.encoding()
@@ -732,7 +728,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
     
         #Recover Geometry Column:
         if geometry:
-            header,data=self.execute_query("""SELECT RecoverGeometryColumn('a.%s','Geometry',%s,'%s',2)"""%(self.temptableName,srid,geometry,))
+            header,data=self.execute_query("""SELECT RecoverGeometryColumn('a.%s','Geometry',%s,'%s',2) from %s AS a"""%(self.temptableName,srid,geometry, self.temptableName))
         
         # Retreive every feature
         for feat in layer.getFeatures():

@@ -39,7 +39,7 @@ import midvatten_utils as utils
 from date_utils import datestring_to_date, dateshift
 from definitions import midvatten_defs as defs
 from midvatten_utils import Cancel
-from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid, VRowEntry, CopyPasteDeleteableQListWidget
+from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid, VRowEntry, ExtendedQPlainTextEdit
 
 
 import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
@@ -52,6 +52,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.ms.loadSettings()
         PyQt4.QtGui.QDialog.__init__(self, parent)
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+        self.setWindowTitle("Import interlab4 data to w_qual_lab table") # Set the title for the dialog
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.status = True
 
@@ -65,6 +66,8 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         if self.all_lab_results == u'cancel':
             self.status = False
             return Cancel()
+        elif isinstance(self.all_lab_results, Cancel):
+            return self.all_lab_results
         
         splitter = SplitterWithHandel(PyQt4.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(splitter)
@@ -88,9 +91,8 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                    u'Rows at the bottom table can also be selected using the top list.\n'
                                    u'Howto:\n'
                                    u'1. Choose column header to make a selection by in the Column header drop down list.\n'
-                                   u'2. Make a list of entries (one row per entry) in an external program like a text editor.\n'
-                                   u'3. Copy the list and paste it (ctrl+v) into the top window.\n'
-                                   u'4. Click "Update selection".\n'
+                                   u'2. Make a list of entries (one row per entry).\n'
+                                   u'3. Click "Update selection".\n'
                                    u'All rows where values in the chosen column match entries in the pasted list will be selected.\n\n'
                                    u'Hover over a column header to see which database column it will go to.')
 
@@ -104,15 +106,14 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         all_lab_results = dict([(lablittera, v) for lablittera, v in all_lab_results.iteritems() if lablittera in lablitteras_to_import])
 
-
         #Allow the user to connect the metadata rows to obsids.
         meta_headers = get_metadata_headers(all_lab_results)
         ask_obsid_table = [meta_headers]
         for lablittera, v in sorted(all_lab_results.iteritems()):
-            metarow = [v[u'metadata'][meta_header] for meta_header in meta_headers]
+            metarow = [v[u'metadata'].get(meta_header, u'') for meta_header in meta_headers]
             ask_obsid_table.append(metarow)
         existing_obsids = utils.get_all_obsids()
-        answer = utils.filter_nonexisting_values_and_ask(ask_obsid_table, u'obsid', existing_values=existing_obsids, try_capitalize=False, vertical_msg_list=True)
+        answer = utils.filter_nonexisting_values_and_ask(ask_obsid_table, u'obsid', existing_values=existing_obsids, try_capitalize=False, vertical_msg_list=True, always_confirm=True)
         if answer == u'cancel':
             self.status = True
             return Cancel()
@@ -152,7 +153,10 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         all_lab_results = {}
 
         for filename in filenames:
-            file_error, version, encoding, decimalsign, quotechar = self.parse_filesettings(filename)
+            file_settings = self.parse_filesettings(filename)
+            if isinstance(file_settings, Cancel):
+                return file_settings
+            file_error, version, encoding, decimalsign, quotechar = file_settings
             if file_error:
                 utils.pop_up_info("Warning: The file information" + filename + " could not be read. Skipping file")
                 continue
@@ -179,6 +183,8 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
                     if cols[0].lower().startswith(u'#slut'):
                         break
+
+                    #cols = utils.returnunicode(cols, keep_containers=True)
 
                     if cols[0].lower().startswith(u'#provadm'):
                         parse_data_values = False
@@ -324,6 +330,8 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         if encoding is None:
             encoding = utils.ask_for_charset('utf-16')
+        if encoding is None or not encoding:
+            return Cancel()
 
         #Parse the filedescriptor
         with io.open(filename, 'r', encoding=encoding) as f:
@@ -467,7 +475,7 @@ class MetaFilterSelection(VRowEntry):
         self.combobox.addItem(u'')
         self.combobox.addItems(get_metadata_headers(all_lab_results))
         self.layout.addWidget(self.combobox)
-        self.items = CopyPasteDeleteableQListWidget()
+        self.items = ExtendedQPlainTextEdit()
         self.layout.addWidget(self.items)
 
     def get_items_dict(self):
@@ -543,7 +551,7 @@ class MetadataFilter(VRowEntry):
         self.table.setColumnCount(len(self.sorted_table_header))
         self.table.setHorizontalHeaderLabels(self.sorted_table_header)
         for head_index, head_text in enumerate(self.sorted_table_header):
-            self.table.horizontalHeaderItem(head_index).setToolTip(u'%s will be put into database column %s'%(head_text, metaheader_dbcolumn_tooltips.get(head_text, u'comment')))
+            self.table.horizontalHeaderItem(head_index).setToolTip(u'%s will be put into database column "%s"'%(head_text, metaheader_dbcolumn_tooltips.get(head_text, u'comment')))
 
         self.table.setRowCount(len(all_lab_results))
 

@@ -570,8 +570,8 @@
                  <property name="checked">
                   <bool>true</bool>
                  </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_2">
-                  <item>
+                 <layout class="QGridLayout" name="gridLayout_17">
+                  <item row="0" column="0">
                    <layout class="QGridLayout" name="gridLayout_16">
                     <item row="0" column="0">
                      <widget class="QCheckBox" name="checkBox_remove_mean1">
@@ -1749,6 +1749,18 @@
                </property>
               </widget>
              </item>
+             <item row="0" column="1">
+              <widget class="QDateTimeEdit" name="spnMinX">
+               <property name="font">
+                <font>
+                 <pointsize>9</pointsize>
+                 <weight>50</weight>
+                 <italic>false</italic>
+                 <bold>false</bold>
+                </font>
+               </property>
+              </widget>
+             </item>
              <item row="1" column="5">
               <widget class="QDoubleSpinBox" name="spnLegY">
                <property name="maximum">
@@ -1981,15 +1993,48 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="1">
-              <widget class="QDateTimeEdit" name="spnMinX">
+             <item row="3" column="0" colspan="6">
+              <widget class="QLabel" name="label_10">
                <property name="font">
                 <font>
-                 <pointsize>9</pointsize>
+                 <pointsize>8</pointsize>
                  <weight>50</weight>
                  <italic>false</italic>
                  <bold>false</bold>
                 </font>
+               </property>
+               <property name="text">
+                <string>Please note! Although xmin and xmax are dates, both time series plots and xy scatter series can be plotted.</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="6">
+              <widget class="QPushButton" name="Redraw_pushButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>50</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>9</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Redraw</string>
                </property>
               </widget>
              </item>
@@ -1999,66 +2044,7 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QLabel" name="label_10">
-            <property name="font">
-             <font>
-              <pointsize>8</pointsize>
-              <weight>50</weight>
-              <italic>false</italic>
-              <bold>false</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Please note! Although xmin and xmax are dates, both time series plots and xy scatter series can be plotted.</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>368</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="Redraw_pushButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>50</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>9</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Redraw</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <layout class="QHBoxLayout" name="horizontalLayout_2"/>
         </item>
        </layout>
       </item>
@@ -2114,7 +2100,6 @@
   <tabstop>spnLegY</tabstop>
   <tabstop>Legend_checkBox</tabstop>
   <tabstop>Grid_checkBox</tabstop>
-  <tabstop>Redraw_pushButton</tabstop>
  </tabstops>
  <resources/>
  <connections/>
