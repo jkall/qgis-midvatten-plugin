@@ -190,20 +190,20 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
                         def side_effect(*args, **kwargs):
                             mock_result = mock.MagicMock()
-                            if args[1].startswith(u'Do you want to confirm'):
+                            if str(args[1]).startswith(u'Do you want to confirm'):
                                 mock_result.result = 0
                                 return mock_result
                                 #mock_askuser.return_value.result.return_value = 0
-                            elif args[1].startswith(u'Do you want to import all'):
+                            elif str(args[1]).startswith(u'Do you want to import all'):
                                 mock_result.result = 0
                                 return mock_result
-                            elif args[1].startswith(u'Please note!\nForeign keys'):
+                            elif str(args[1]).startswith(u'Please note!\nForeign keys'):
                                 mock_result.result = 1
                                 return mock_result
-                            elif args[1].startswith(u'Please note!\nThere are'):
+                            elif str(args[1]).startswith(u'Please note!\nThere are'):
                                 mock_result.result = 1
                                 return mock_result
-                            elif args[1].startswith(u'It is a strong recommendation'):
+                            elif str(args[1]).startswith(u'It is a strong recommendation'):
                                 mock_result.result = 0
                                 return mock_result
 

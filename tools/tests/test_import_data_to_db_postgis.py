@@ -735,34 +735,6 @@ class TestWlevelsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
 
-class TestWlevelsImportOldWlevels(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
-    """
-    This test is for an older version of w_levels where level_masl was not null
-    but had a default value of -999
-    """
-
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    def setUp(self):
-        super(TestWlevelsImportOldWlevels, self).setUp()
-        db_utils.sql_alter_db(u'drop table w_levels')
-        db_utils.sql_alter_db(u'CREATE TABLE w_levels (obsid text not null, date_time text not null, meas double, h_toc double, level_masl double not null default -999, comment text, primary key (obsid, date_time), foreign key(obsid) references obs_points(obsid))')
-
-    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
-    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    def test_w_level_import_from_csvlayer(self):
-        db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('obsid1')""")
-        f = [[u'obsid', u'date_time', u'meas', u'comment'],
-             [u'obsid1', u'2011-10-19 12:30:00', u'2', u'testcomment']]
-
-        self.importinstance.general_import(goal_table=u'w_levels', file_data=f)
-
-        test_string = utils_for_tests.create_test_string(
-            db_utils.sql_load_fr_db(u'''select * from w_levels'''))
-        reference_string = ur'''(True, [(obsid1, 2011-10-19 12:30:00, 2.0, None, -999.0, testcomment)])'''
-        assert test_string == reference_string
-
-
 class TestSeismicImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
