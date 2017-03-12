@@ -20,26 +20,17 @@
  ***************************************************************************/
 """
 import PyQt4
-import copy
 import io
-import qgis.utils
 from collections import OrderedDict
 from datetime import datetime
-from functools import partial
 from operator import itemgetter
-from pyspatialite import dbapi2 as sqlite #could perhaps have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
-from qgis.core import *
-from pyspatialite.dbapi2 import OperationalError, IntegrityError
-from psycopg2 import IntegrityError as PostGisIntegrityError
 
 import PyQt4.QtCore
 import PyQt4.QtGui
 import db_utils
-
 import midvatten_utils as utils
-from midvatten_utils import Cancel
 from date_utils import find_date_format, datestring_to_date
-
+from midvatten_utils import Cancel
 
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
 
