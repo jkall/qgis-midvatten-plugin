@@ -936,7 +936,7 @@ class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_get_foreign_columns(self):
-        test = get_foreign_keys(u'w_levels')
+        test = db_utils.get_foreign_keys(u'w_levels')
         assert len(test) > 0
         assert isinstance(test, (dict, OrderedDict))
         for k, v in test.iteritems():

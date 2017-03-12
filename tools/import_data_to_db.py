@@ -32,6 +32,8 @@ import midvatten_utils as utils
 from date_utils import find_date_format, datestring_to_date
 from midvatten_utils import Cancel
 
+tr = PyQt4.QtCore.CoreApplication.translate
+
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
 
     def __init__(self):
@@ -57,14 +59,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if file_data is None or not file_data:
             self.status = 'True'
             return
-        utils.MessagebarAndLog.info(log_msg=u'\nImport to %s starting\n--------------------'%goal_table)
+        utils.MessagebarAndLog.info(log_msg=tr(u'midv_data_importer', u'\nImport to %s starting\n--------------------'%goal_table))
         detailed_msg_list = []
 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.status = 'False' #True if upload to sqlite and cleaning of data succeeds
         self.temptable_name = goal_table + u'_temp'
         if goal_table is None:
-            utils.MessagebarAndLog.critical(bar_msg=u'Import error: No goal table given!')
+            utils.MessagebarAndLog.critical(bar_msg=tr(u'midv_data_importer', u'Import error: No goal table given!'))
             self.status = 'False'
             return
         dbconnection = db_utils.DbConnectionManager()
@@ -82,7 +84,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         missing_columns = [column for column in not_null_columns if column not in existing_columns_in_goal_table]
 
         if missing_columns:
-            utils.MessagebarAndLog.critical(bar_msg=u'Error: Import failed, see log message panel', log_msg=u'Required columns ' + u', '.join(missing_columns) + u' are missing for table ' + goal_table, duration=999)
+            utils.MessagebarAndLog.critical(bar_msg=tr(u'midv_data_importer', u'Error: Import failed, see log message panel', log_msg=tr(u'midv_data_importer', u'Required columns ') + u', '.join(missing_columns) + tr(u'midv_data_importer', u' are missing for table ') + goal_table, duration=999))
             self.status = False
             return
 
@@ -96,7 +98,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.delete_existing_date_times_from_temptable(primary_keys, goal_table, dbconnection)
         nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
         nr_same_date = nr_after - nr_before
-        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_same_date)))
+        self.check_remaining(nr_before, nr_after, tr(u'midv_data_importer', u"Import warning, see log message panel"), tr(u'midv_data_importer', u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_same_date))))
         if not self.status:
             return
 
@@ -106,7 +108,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         temptablerows_after = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
         removed_rows = int(temptablerows_before) - int(temptablerows_after)
         if removed_rows:
-            detailed_msg_list.append(u'Removed %s duplicate rows from rows to import.'%str(removed_rows))
+            detailed_msg_list.append(tr(u'midv_data_importer', u'Removed %s duplicate rows from rows to import.')%str(removed_rows))
 
         #Delete rows which null values where null-values is not allowed
         if not_null_columns:
@@ -116,7 +118,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             temptablerows_after = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
             removed_rows = int(temptablerows_before) - int(temptablerows_after)
             if removed_rows:
-                detailed_msg_list.append(u"""Removed %s rows with non-allowed NULL-values, ' '-values or ''-values from rows to import."""%str(removed_rows))
+                detailed_msg_list.append(tr(u'midv_data_importer', u"""Removed %s rows with non-allowed NULL-values, ' '-values or ''-values from rows to import."""%str(removed_rows)))
 
         #Delete rows already existing in goal table
         temptablerows_before = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
@@ -125,7 +127,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         temptablerows_after = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
         removed_rows = int(temptablerows_before) - int(temptablerows_after)
         if removed_rows:
-            detailed_msg_list.append(u"""Removed %s rows that already existed in %s from rows to import."""%(str(removed_rows), goal_table))
+            detailed_msg_list.append(tr(u'midv_data_importer', u"""Removed %s rows that already existed in %s from rows to import."""%(str(removed_rows), goal_table)))
 
         #Special cases for some tables
         if goal_table == u'stratigraphy':
@@ -143,7 +145,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             if foreign_keys:
                 if self.foreign_keys_import_question is None:
-                    stop_question = utils.Askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""" % (u', '.join(foreign_keys.keys())), u"Info!")
+                    stop_question = utils.Askuser(u"YesNo", tr(u'midv_data_importer', u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""" % (u', '.join(foreign_keys.keys()))), tr(u'midv_data_importer', u"Info!"))
                     if stop_question.result == 0:      # if the user wants to abort
                         self.status = 'False'
                         PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -155,7 +157,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         self.import_foreign_keys(goal_table, foreign_keys, dbconnection, existing_columns_in_temptable, detailed_msg_list)
                         nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
                         nr_after_foreign_keys = nr_before - nr_after
-                        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
+                        self.check_remaining(nr_before, nr_after, tr(u'midv_data_importer', u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after))))
         if not self.status:
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return
@@ -163,7 +165,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         #Finally import data:
         nr_failed_import = recsinfile - temptablerows_after
         if nr_failed_import > 0:
-            stop_question = utils.Askuser(u"YesNo", u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?""" % (str(nr_failed_import)), "Warning!")
+            stop_question = utils.Askuser(tr(u'midv_data_importer', u'midv_data_importer'), tr(u'midv_data_importer', u"YesNo"), tr(u'midv_data_importer', u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?""" % (str(nr_failed_import))), tr(u'midv_data_importer', u"Warning!"))
             if stop_question.result == 0:      # if the user wants to abort
                 self.status = 'False'
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -180,8 +182,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             dbconnection.execute(sql) #.encode(u'utf-8'))
         except Exception, e:
             utils.MessagebarAndLog.critical(
-                bar_msg=u'Error, import failed, see log message panel',
-                log_msg=u'Sql\n' + sql + u' failed.\nMsg:\n' + str(e),
+                bar_msg=tr(u'midv_data_importer', u'Error, import failed, see log message panel'),
+                log_msg=tr(u'midv_data_importer', u'Sql\n') + sql + tr(u'midv_data_importer', u' failed.\nMsg:\n') + str(e),
                 duration=999)
             self.status = 'False'
             return
@@ -200,7 +202,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         detailed_msg_list.append(u'--------------------')
         detailed_msg = u'\n'.join(detailed_msg_list)
-        utils.MessagebarAndLog.info(bar_msg=u'%s rows imported and %s excluded for table %s. See log message panel for details'%(nr_imported, NoExcluded, goal_table), log_msg=detailed_msg)
+        utils.MessagebarAndLog.info(bar_msg=tr(u'midv_data_importer', u'%s rows imported and %s excluded for table %s. See log message panel for details'%(nr_imported, NoExcluded, goal_table)), log_msg=detailed_msg)
         self.status = 'True'
         dbconnection.commit_and_closedb()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -210,7 +212,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
         existing_names = db_utils.tables_columns(dbconnection=dbconnection).keys()
         while self.temptable_name in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
-            reponse = PyQt4.QtGui.QMessageBox.question(None, "Warning - Table name confusion!",'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?''' % (self.temptable_name, self.temptable_name, self.temptable_name), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
+            reponse = PyQt4.QtGui.QMessageBox.question(None, tr(u'midv_data_importer', u"Warning - Table name confusion!"),tr(u'midv_data_importer', u'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?''' % (self.temptable_name, self.temptable_name, self.temptable_name)), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
             if reponse == PyQt4.QtGui.QMessageBox.Yes:
                 self.temptable_name = '%s_2' % self.temptable_name
             else:
@@ -283,7 +285,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
     def check_remaining(self, nr_before, nr_after, bar_msg, log_msg):
         if nr_after == 0:
-            utils.MessagebarAndLog.critical(bar_msg=u'Import error, nothing imported.')
+            utils.MessagebarAndLog.critical(bar_msg=tr(u'midv_data_importer', u'Import error, nothing imported.'))
             self.status = False
         elif nr_before > nr_after:
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
@@ -319,12 +321,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         continue
                     #Check that there is no gap in the stratid:
                     if float(sorted_strats[index][stratid_idx]) - float(sorted_strats[index - 1][stratid_idx]) != 1:
-                        utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'The obsid ' + obsid + u' will not be imported due to gaps in stratid')
+                        utils.MessagebarAndLog.warning(bar_msg=tr(u'midv_data_importer', u'Import error, see log message panel'), log_msg=tr(u'midv_data_importer', u'The obsid %s will not be imported due to gaps in stratid'%obsid))
                         skip_obsids.append(obsid)
                         break
                     #Check that the current depthtop is equal to the previous depthbot
                     elif sorted_strats[index][depthtop_idx] != sorted_strats[index - 1][depthbot_idx]:
-                        utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'The obsid ' + obsid + u' will not be imported due to gaps in depthtop/depthbot')
+                        utils.MessagebarAndLog.warning(bar_msg=tr(u'midv_data_importer', u'Import error, see log message panel'), log_msg=tr(u'midv_data_importer', u'The obsid %s will not be imported due to gaps in depthtop/depthbot'%obsid))
                         skip_obsids.append(obsid)
                         break
             if skip_obsids:
@@ -336,12 +338,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         """
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
         existing_obsids = utils.get_all_obsids()
-        confirm_names = utils.Askuser("YesNo", "Do you want to confirm each logger import name before import?")
-        import_all_data = utils.Askuser("YesNo", "Do you want to import all data?\n\n" +
-                                        "'No' = only new data after the latest date in the database,\n" +
-                                        "for each observation point, will be imported.\n\n" +
-                                        "'Yes' = any data not matching an exact datetime in the database\n" +
-                                        " for the corresponding obs_point will be imported.")
+        confirm_names = utils.Askuser(tr(u'midv_data_importer', "YesNo"), tr(u'midv_data_importer', "Do you want to confirm each logger import name before import?"))
+        import_all_data = utils.Askuser(tr(u'midv_data_importer', "YesNo"), tr(u'midv_data_importer', "Do you want to import all data?\n\n") +
+                                        tr(u'midv_data_importer', "'No' = only new data after the latest date in the database,\n") +
+                                        tr(u'midv_data_importer', "for each observation point, will be imported.\n\n") +
+                                        tr(u'midv_data_importer', "'Yes' = any data not matching an exact datetime in the database\n") +
+                                        tr(u'midv_data_importer', " for the corresponding obs_point will be imported."))
         self.charsetchoosen = utils.ask_for_charset(default_charset='cp1252')
         if not self.charsetchoosen:
             self.status = 'True'
@@ -361,14 +363,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             elif file_data == u'skip':
                 continue
             elif not isinstance(file_data, list):
-                utils.MessagebarAndLog.critical(bar_msg="Import Failure: Something went wrong with file " + str(selected_file))
+                utils.MessagebarAndLog.critical(bar_msg=tr(u'midv_data_importer', "Import Failure: Something went wrong with file ") + str(selected_file))
                 continue
             elif len(file_data) == 0:
-                utils.MessagebarAndLog.warning(bar_msg="Import warning: No rows could be parsed from " + str(selected_file))
+                utils.MessagebarAndLog.warning(bar_msg=tr(u'midv_data_importer', "Import warning: No rows could be parsed from ") + str(selected_file))
 
             parsed_files.append(file_data)
         if len(parsed_files) == 0:
-            utils.MessagebarAndLog.critical(bar_msg="Import Failure: No files imported""")
+            utils.MessagebarAndLog.critical(bar_msg=tr(u'midv_data_importer', "Import Failure: No files imported"""))
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return
         #Header
@@ -428,7 +430,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         if 3 <= len(row.split(u',')) <= 4:
                             delimiter = u','
                         else:
-                            return utils.ask_user_about_stopping("Failure, delimiter did not match ';' or ',' or there was less than 3 or more than 4 columns in the file " + path + "\nDo you want to stop the import? (else it will continue with the next file)")
+                            return utils.ask_user_about_stopping(tr(u'midv_data_importer', "Failure, delimiter did not match ';' or ',' or there was less than 3 or more than 4 columns in the file %s\nDo you want to stop the import? (else it will continue with the next file)"%path))
 
                     cols = row.split(delimiter)
                     num_cols = len(cols)
@@ -445,7 +447,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     dateformat = find_date_format(cols[0])
                     if dateformat is not None:
                         if len(cols) != num_cols:
-                            return utils.ask_user_about_stopping("Failure: The number of data columns in file " + path + " was not equal to the header.\nIs the decimal separator the same as the delimiter?\nDo you want to stop the import? (else it will continue with the next file)")
+                            return utils.ask_user_about_stopping(tr(u'midv_data_importer', "Failure: The number of data columns in file %s was not equal to the header.\nIs the decimal separator the same as the delimiter?\nDo you want to stop the import? (else it will continue with the next file)"%path))
 
                         #Skip rows without flow value
                         try:
@@ -468,7 +470,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         filedata.append(printrow)
 
         if len(filedata) == 0:
-            return utils.ask_user_about_stopping("Failure, parsing failed for file " + path + "\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)")
+            return utils.ask_user_about_stopping(tr(u'midv_data_importer', "Failure, parsing failed for file %s\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)"%path))
 
         answer = None
         if ask_for_names:
@@ -504,7 +506,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         try:
             translated_header = [translation_dict_in_order[headername] for headername in header]
         except KeyError:
-            utils.MessagebarAndLog.critical(bar_msg=u"Failure during import. See log for more information", log_msg=u"Failure, the file " + utils.returnunicode(path) + u"\ndid not have the correct headers and will not be imported.\nMake sure its barocompensated!\nSupported headers are obsid, Date/time, Water head[cm], Temperature[°C] and optionally Conductivity[mS/cm].")
+            utils.MessagebarAndLog.critical(bar_msg=tr(u'midv_data_importer', u"Failure during import. See log for more information"), log_msg=tr(u'midv_data_importer', u"Failure, the file %s\ndid not have the correct headers and will not be imported.\nMake sure its barocompensated!\nSupported headers are obsid, Date/time, Water head[cm], Temperature[°C] and optionally Conductivity[mS/cm]."%utils.returnunicode(path)))
             return u'skip'
 
         filedata.reverse()
@@ -569,13 +571,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             nr_fk_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]
             if nr_fk_after > 0:
-                detailed_msg_list.append(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table + u' while importing to ' + goal_table + u'.')
+                detailed_msg_list.append(tr(u'midv_data_importer', u'In total %s rows were imported to foreign key table %s while importing to %s.'%(str(nr_fk_after - nr_fk_before), fk_table, goal_table)))
 
 
     def SanityCheckVacuumDB(self, dbconnection=None):
         if dbconnection is None:
             dbconnection = db_utils.DbConnectionManager()
-        sanity = utils.Askuser("YesNo", """It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""", 'Vacuum the database?')
+        sanity = utils.Askuser(tr(u'midv_data_importer', "YesNo"), tr(u'midv_data_importer', """It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)"""), tr(u'midv_data_importer', 'Vacuum the database?'))
         if sanity.result == 1:
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
             dbconnection.execute(u'vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming

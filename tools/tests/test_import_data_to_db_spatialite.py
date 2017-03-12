@@ -27,7 +27,6 @@ import db_utils
 import midvatten_utils as utils
 import mock
 import utils_for_tests
-from db_utils import get_foreign_keys
 from mock import call
 from mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance
 
@@ -938,7 +937,7 @@ class TestGetForeignKeys(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_get_foreign_columns(self):
-        test = get_foreign_keys(u'w_levels')
+        test = db_utils.get_foreign_keys(u'w_levels')
         assert len(test) > 0
         assert isinstance(test, (dict, OrderedDict))
         for k, v in test.iteritems():
