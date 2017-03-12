@@ -27,7 +27,7 @@ from collections import OrderedDict
 import db_utils
 import definitions.midvatten_defs as defs
 import midvatten_utils as utils
-from gui_utils import SplitterWithHandel, CopyPasteDeleteableQListWidget
+from gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit
 from midvatten_utils import returnunicode
 
 export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
@@ -414,8 +414,8 @@ class ParameterGroup(object):
 
         self._location_suffix = PyQt4.QtGui.QLineEdit()
         self._sublocation_suffix = PyQt4.QtGui.QLineEdit()
-        self._input_field_group_list = CopyPasteDeleteableQListWidget(keep_sorted=False)
-        self._obsid_list = CopyPasteDeleteableQListWidget(keep_sorted=True)
+        self._input_field_group_list = ExtendedQPlainTextEdit(keep_sorted=False)
+        self._obsid_list = ExtendedQPlainTextEdit(keep_sorted=True)
         self.paste_from_selection_button = PyQt4.QtGui.QPushButton(u'Paste obs_points selection')
         #------------------------------------------------------------------------
         self._location_suffix.setToolTip(u"""(optional)\n""" +
@@ -498,7 +498,7 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         #Widgets:
         # ------------------------------------------------------------------------------------
         #Other widgets in the ui-file
-        self._input_field_list = CopyPasteDeleteableQListWidget(keep_sorted=True)
+        self._input_field_list = ExtendedQPlainTextEdit(keep_sorted=True)
         # ------------------------------------------------------------------------------------
 
         tables_columns = {}
@@ -530,12 +530,10 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
 
         # ------------------------------------------------------------------------------------
         self._input_type.addItem(u'')
-        self._input_type.addItems([u'numberDecimal|numberSigned', u'numberDecimal', u'numberSigned', u'text'])
+        self._input_type.addItems([u'numberDecimal|numberSigned', u'text'])
         self._input_type.setToolTip(u'(mandatory)\n' +
                                     u'Decides the keyboard layout in the Fieldlogger app.\n' +
-                                    u'numberDecimal: Decimal number\n' +
-                                    u'numberSigned: Integers\n' +
-                                    u'numberDecimal|numberSigned: Both integers and decimal numbers\n' +
+                                    u'numberDecimal|numberSigned: Decimals with allowed "-" sign\n' +
                                     u'text: Text')
         self._hint.setToolTip(u'(optional)\nHint given to the Fieldlogger user for the parameter. Ex: "depth to water"')
         #------------------------------------------------------------------------------------

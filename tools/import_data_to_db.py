@@ -453,10 +453,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         answer = None
         if ask_for_names:
-            answer = utils.filter_nonexisting_values_and_ask([[u'obsid'], [obsid]], u'obsid', existing_obsids, try_capitalize=False)
+            answer = utils.filter_nonexisting_values_and_ask([[u'obsid'], [obsid]], u'obsid', existing_obsids, try_capitalize=False, always_confirm=True)
         else:
-            if obsid not in existing_obsids:
-                answer = utils.filter_nonexisting_values_and_ask([[u'obsid'], [obsid]], u'obsid', existing_obsids, try_capitalize=True)
+            answer = utils.filter_nonexisting_values_and_ask([[u'obsid'], [obsid]], u'obsid', existing_obsids, try_capitalize=True, always_confirm=False)
 
         if answer == u'cancel':
             return answer

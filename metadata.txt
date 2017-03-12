@@ -26,6 +26,8 @@ changelog=
         - Fieldlogger import less sensitive to column delimiters and encoding.
         - Fixed bug where importing geometries to obs_points and obs_lines using WKT didn't work.
         - Reduced the size of the often shared ui (Fieldlogger import/export, csv import, interlab4 import)
+        - Customplot: Hidden settings behind checkboxes.
+        - Diveroffice import: Answering yes to confirm each row now works correctly.
         Version 1.3.20
         - Bug correction in custom plot.
         - Fix for fieldlogger import.

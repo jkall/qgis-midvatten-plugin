@@ -213,7 +213,7 @@ class _TestExportFieldloggerNoDb():
         mock_connect = MagicMock()
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
-        parameter_groups[0]._obsid_list.addItems([u'1'])
+        parameter_groups[0]._obsid_list.paste_data([u'1'])
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
@@ -230,7 +230,7 @@ class _TestExportFieldloggerNoDb():
         mock_connect = MagicMock()
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
-        parameter_groups[0]._obsid_list.addItems([u'1'])
+        parameter_groups[0]._obsid_list.paste_data([u'1'])
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
@@ -248,8 +248,8 @@ class _TestExportFieldloggerNoDb():
         mock_connect = MagicMock()
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
-        parameter_groups[0]._obsid_list.addItems([u'1', u'4'])
-        parameter_groups[1]._obsid_list.addItems([u'2', u'3', u'4'])
+        parameter_groups[0]._obsid_list.paste_data([u'1', u'4'])
+        parameter_groups[1]._obsid_list.paste_data([u'2', u'3', u'4'])
         
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
@@ -268,8 +268,8 @@ class _TestExportFieldloggerNoDb():
         mock_connect = MagicMock()
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
-        parameter_groups[0]._obsid_list.addItems([u'1'])
-        parameter_groups[1]._obsid_list.addItems([u'1'])
+        parameter_groups[0]._obsid_list.paste_data([u'1'])
+        parameter_groups[1]._obsid_list.paste_data([u'1'])
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
@@ -288,8 +288,8 @@ class _TestExportFieldloggerNoDb():
         mock_connect = MagicMock()
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
-        parameter_groups[0]._obsid_list.addItems([u'1'])
-        parameter_groups[1]._obsid_list.addItems([u'1'])
+        parameter_groups[0]._obsid_list.paste_data([u'1'])
+        parameter_groups[1]._obsid_list.paste_data([u'1'])
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = printlist
@@ -308,8 +308,8 @@ class _TestExportFieldloggerNoDb():
         mock_connect = MagicMock()
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
-        parameter_groups[0]._obsid_list.addItems([u'1', u'2', u'3'])
-        parameter_groups[1]._obsid_list.addItems([u'1', u'2', u'3'])
+        parameter_groups[0]._obsid_list.paste_data([u'1', u'2', u'3'])
+        parameter_groups[1]._obsid_list.paste_data([u'1', u'2', u'3'])
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
@@ -329,8 +329,8 @@ class _TestExportFieldloggerNoDb():
         mock_connect = MagicMock()
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
-        parameter_groups[0]._obsid_list.addItems([u'1', u'4'])
-        parameter_groups[1]._obsid_list.addItems([u'2', u'3', u'4'])
+        parameter_groups[0]._obsid_list.paste_data([u'1', u'4'])
+        parameter_groups[1]._obsid_list.paste_data([u'2', u'3', u'4'])
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
@@ -350,9 +350,9 @@ class _TestExportFieldloggerNoDb():
         mock_connect = MagicMock()
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
-        parameter_groups[0]._obsid_list.addItems([u'1', u'4'])
-        parameter_groups[1]._obsid_list.addItems([u'2', u'3', u'4'])
-        parameter_groups[2]._obsid_list.addItems([u'2', u'4'])
+        parameter_groups[0]._obsid_list.paste_data([u'1', u'4'])
+        parameter_groups[1]._obsid_list.paste_data([u'2', u'3', u'4'])
+        parameter_groups[2]._obsid_list.paste_data([u'2', u'4'])
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
@@ -372,8 +372,8 @@ class _TestExportFieldloggerNoDb():
         mock_connect = MagicMock()
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
-        parameter_groups[0]._obsid_list.addItems([u'1', u'2', u'4'])
-        parameter_groups[1]._obsid_list.addItems([u'1', u'2', u'4'])
+        parameter_groups[0]._obsid_list.paste_data([u'1', u'2', u'4'])
+        parameter_groups[1]._obsid_list.paste_data([u'1', u'2', u'4'])
 
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
@@ -413,8 +413,8 @@ class _TestExportFieldloggerNoDb():
         mock_connect = MagicMock()
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
-        parameter_groups[0]._obsid_list.addItems([u'1', u'4'])
-        parameter_groups[1]._obsid_list.addItems([u'2', u'3', u'4'])
+        parameter_groups[0]._obsid_list.paste_data([u'1', u'4'])
+        parameter_groups[1]._obsid_list.paste_data([u'2', u'3', u'4'])
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)

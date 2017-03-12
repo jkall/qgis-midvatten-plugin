@@ -79,8 +79,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.table_ComboBox_1.clear()  
         self.table_ComboBox_2.clear()  
         self.table_ComboBox_3.clear()  
-        for i in range (1,3):
-            self.clearthings(1)
+        for i in range(1,3):
+            self.clearthings(i)
         # function partial due to problems with currentindexChanged and Combobox
         #self.connect(self.table_ComboBox_1, QtCore.SIGNAL("currentIndexChanged(int)"), partial(self.Table1Changed))#currentIndexChanged caused unnecessary signals when scrolling in combobox
         self.connect(self.table_ComboBox_1, QtCore.SIGNAL("activated(int)"), partial(self.Table1Changed))  
@@ -95,9 +95,13 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.connect(self.Filter2_ComboBox_3, QtCore.SIGNAL("activated(int)"), partial(self.Filter2_3Changed))
         self.connect(self.plot_width, QtCore.SIGNAL("editingFinished()"), partial(self.change_plot_size))
         self.connect(self.plot_height, QtCore.SIGNAL("editingFinished()"), partial(self.change_plot_size))
+        self.connect(self.plot_settings_1, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.plot_settings_1))
+        self.connect(self.plot_settings_2, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.plot_settings_2))
+        self.connect(self.plot_settings_3, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.plot_settings_3))
+        self.connect(self.chart_settings, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.chart_settings))
         self.PlotChart_QPushButton.clicked.connect(self.drawPlot_all)
         self.Redraw_pushButton.clicked.connect( self.refreshPlot )
-        
+
         # Create a plot window with one single subplot
         self.custplotfigure = plt.figure() 
         self.axes = self.custplotfigure.add_subplot( 111 )
@@ -122,11 +126,17 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.pandas_calc_2 = None
         self.pandas_calc_3 = None
         if pandas_on:
-            self.pandas_calc_1 = PandasCalculations(self.gridLayout_7)
-            self.pandas_calc_2 = PandasCalculations(self.gridLayout_10)
-            self.pandas_calc_3 = PandasCalculations(self.gridLayout_13)
+            self.pandas_calc_1 = PandasCalculations(self.gridLayout_16)
+            self.pandas_calc_2 = PandasCalculations(self.gridLayout_14)
+            self.pandas_calc_3 = PandasCalculations(self.gridLayout_19)
 
         #self.custplotfigure.tight_layout()
+
+        self.chart_settings.setChecked(False)
+        self.set_groupbox_children_visibility(self.chart_settings)
+        for plot_item_settings in [self.plot_settings_1, self.plot_settings_2, self.plot_settings_3]:
+            plot_item_settings.setChecked(False)
+            self.set_groupbox_children_visibility(plot_item_settings)
 
         self.show()
 
@@ -619,6 +629,11 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.ms.settingsdict['custplot_tabwidget'] = self.tabWidget.currentIndex()
         self.ms.save_settings()
 
+    def set_groupbox_children_visibility(self, groupbox_widget):
+        children = groupbox_widget.findChildren(PyQt4.QtGui.QWidget)
+        for child in children:
+            child.setVisible(groupbox_widget.isChecked())
+
 
 class PandasCalculations(object):
     def __init__(self, gridlayout):
@@ -684,23 +699,8 @@ class PandasCalculations(object):
             except:
                 pass
 
-
-            layout = PyQt4.QtGui.QHBoxLayout()
-
-            try:
-                layout.addWidget(col1)
-                layout.addStretch()
-                layout.addWidget(col2)
-            except TypeError:
-                pass
-
-            #If col2 is not given, make col1 span both columns
-            gridlayout.addLayout(layout, current_row, 0)
-            #if not col2:
-            #    gridlayout.addWidget(col1, current_row, 0, 1, 2)
-            #else:
-            #    gridlayout.addWidget(col1, current_row, 0)
-            #    gridlayout.addWidget(col2, current_row, 1)
+            gridlayout.addWidget(col1, current_row, 0)
+            gridlayout.addWidget(col2, current_row, 1)
 
     def use_pandas(self):
         if self.rule.text() or self.window.text():

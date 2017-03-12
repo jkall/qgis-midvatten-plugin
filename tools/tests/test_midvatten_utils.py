@@ -92,12 +92,17 @@ class _TestFilterNonexistingObsidsAndAsk(object):
             assert filtered_file_data == reference_list
 
     @mock.patch('qgis.utils.iface', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_header_not_found(self, mock_iface):
-            file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
-            existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
-            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'header_that_should_not_exist', existing_obsids)
-            reference_list = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
-            assert filtered_file_data == reference_list
+    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
+    def test_filter_nonexisting_obsids_and_ask_header_not_found(self, mock_notfound, mock_iface):
+        """If a asked for header column is not found, it's added to the end of the rows."""
+        mock_notfound.return_value.answer = u'ok'
+        mock_notfound.return_value.value = 10
+        mock_notfound.return_value.reuse_column = u'obsid'
+        file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
+        existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
+        filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'header_that_should_not_exist', existing_obsids)
+        reference_list = [[u'obsid', u'ae', u'header_that_should_not_exist'], [u'1', u'b', u'10'], [u'2', u'c', u'10'], [u'3', u'd', u'10'], [u'10', u'e', u'10'], [u'1_g', u'f', u'10'], [u'1 a', u'g', u'10'], [u'21', u'h', u'10']]
+        assert filtered_file_data == reference_list
 
     @mock.patch('qgis.utils.iface', autospec=True)
     def test_filter_nonexisting_obsids_and_ask_header_capitalize(self, mock_iface):

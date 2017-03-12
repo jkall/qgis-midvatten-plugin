@@ -920,6 +920,7 @@ class TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from vlf_data'''))
         reference_string = u'''(True, [])'''
+        print("\ntest\n" + test_string + "\nref\n" + reference_string)
         assert test_string == reference_string
 
 
