@@ -501,8 +501,8 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
                 pass
             elif isinstance(text, PyQt4.QtCore.QVariant):
                 text = returnunicode(text.toString())
-            #elif isinstance(text, QString):
-            #    text = returnunicode(text.toUtf8())
+            elif isinstance(text, PyQt4.QtCore.QString):
+                text = returnunicode(text.toUtf8())
             else:
                 text = unicode(text)
 

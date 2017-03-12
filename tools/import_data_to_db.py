@@ -70,8 +70,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = 'False'
             return
         dbconnection = db_utils.DbConnectionManager()
-        if dbconnection.dbtype == u'spatialite':
-            dbconnection.execute('PRAGMA foreign_keys=ON')
+        db_utils.activate_foreign_keys(activated=True, dbconnection=dbconnection)
+
         recsinfile = len(file_data[1:])
         table_info = db_utils.db_tables_columns_info(table=goal_table, dbconnection=dbconnection)[goal_table]
         #POINT and LINESTRING must be cast as BLOB. So change the type to BLOB.
@@ -201,7 +201,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         NoExcluded = recsinfile - (recsafter - recsbefore)
 
         detailed_msg_list.append(u'--------------------')
-        detailed_msg = u'\n'.join(detailed_msg_list)
+        detailed_msg = u'\n'.join([utils.returnunicode(msg) for msg in detailed_msg_list])
         utils.MessagebarAndLog.info(bar_msg=tr(u'midv_data_importer', u'%s rows imported and %s excluded for table %s. See log message panel for details'%(nr_imported, NoExcluded, goal_table)), log_msg=detailed_msg)
         self.status = 'True'
         dbconnection.commit_and_closedb()

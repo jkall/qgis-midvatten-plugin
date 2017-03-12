@@ -392,3 +392,14 @@ def delete_duplicate_values(dbconnection, tablename, primary_keys):
     else:
         rowid = u'ctid'
     dbconnection.execute(u"""DELETE FROM %s WHERE %s NOT IN (SELECT MIN(%s) FROM %s GROUP BY %s);"""%(tablename, rowid, rowid, tablename, u', '.join(primary_keys)))
+
+def activate_foreign_keys(activated=True, dbconnection=None):
+    if dbconnection is None:
+        dbconnection = DbConnectionManager()
+    if dbconnection.dbtype == u'spatialite':
+        if activated:
+            _activated = u'ON'
+        else:
+            _activated = u'OFF'
+        dbconnection.execute('PRAGMA foreign_keys=%s'%_activated)
+

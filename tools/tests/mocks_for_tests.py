@@ -65,11 +65,11 @@ class MockReturnUsingDictIn(object):
         return_value = None
         if isinstance(self.args_idx, int):
             for k, v in self.adict.iteritems():
-                if args[self.args_idx].startswith(k):
+                if str(args[self.args_idx]).startswith(k):
                    return_value = v
         elif isinstance(self.args_idx, basestring):
             for k, v in self.adict.iteritems():
-                if kwargs[self.args_idx].startswith(k):
+                if str(kwargs[self.args_idx]).startswith(k):
                    return_value = v
         if return_value == None:
             raise Exception("MockReturnUsingDictIn: return_value could not be set for: " + str(args) + ' ' + str(kwargs))
