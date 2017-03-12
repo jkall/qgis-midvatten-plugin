@@ -120,7 +120,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         #Delete rows already existing in goal table
         temptablerows_before = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
-        concatted_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in primary_keys_for_concat])
+        concatted_string = u'||'.join([u"CASE WHEN %s is NULL then '0' ELSE %s END"%(x, x) for x in primary_keys_for_concat])
         dbconnection.execute(u'DELETE FROM %s WHERE %s IN (SELECT %s FROM %s)'%(self.temptable_name, concatted_string, concatted_string, goal_table))
         temptablerows_after = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
         removed_rows = int(temptablerows_before) - int(temptablerows_after)
@@ -556,8 +556,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             table_info = db_utils.db_tables_columns_info(table=fk_table, dbconnection=dbconnection)[fk_table]
             column_headers_types = dict([(row[1], row[2]) for row in table_info])
 
-            concatted_from_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in from_list])
-            concatted_to_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in to_list])
+            concatted_from_string = u'||'.join([u"CASE WHEN %s is NULL then '0' ELSE %s END"%(x, x) for x in from_list])
+            concatted_to_string = u'||'.join([u"CASE WHEN %s is NULL then '0' ELSE %s END"%(x, x) for x in to_list])
             sql = u'INSERT INTO %s (%s) SELECT DISTINCT %s FROM %s WHERE %s NOT IN (SELECT %s FROM %s)'%(fk_table,
                                                                                                          u', '.join(to_list),
                                                                                                          u', '.join([u"""(CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE NULL END)"""%(from_col, from_col, from_col, from_col, column_headers_types[to_list[idx]]) for idx, from_col in enumerate(from_list)]),
