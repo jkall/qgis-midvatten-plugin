@@ -676,7 +676,6 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
 
         self.importinstance.general_import(goal_table=u'w_qual_field', file_data=f)
         assert call.info(bar_msg=u'1 rows imported and 1 excluded for table w_qual_field. See log message panel for details', log_msg=u"Removed 1 rows with non-allowed NULL-values, ' '-values or ''-values from rows to import.\nIn total 1 rows were imported to foreign key table zz_staff while importing to w_qual_field.\n--------------------") in mock_messagebar.mock_calls
-        assert call.info(bar_msg=u'1 rows imported and 1 excluded for table w_qual_field. See log message panel for details', log_msg=u'In total 1 rows were imported to foreign key table zz_staff while importing to w_qual_field.\nINSERT failed while importing to w_qual_field. Skipping duplicate values and required values that are NULL.\nMsg: NOT NULL constraint failed: w_qual_field.parameter\n--------------------') in mock_messagebar.mock_calls
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))

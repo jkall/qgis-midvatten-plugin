@@ -44,7 +44,7 @@ from collections import OrderedDict
 from import_data_to_db import midv_data_importer
 
 
-class _TestParseDiverofficeFile(object):
+class TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
                                                            'Failure, parsing failed for file': 'cancel'},
@@ -204,7 +204,7 @@ class _TestParseDiverofficeFile(object):
         assert test_string == reference_string
 
 
-class _TestFilterDatesFromFiledata(object):
+class TestFilterDatesFromFiledata(object):
     def test_filter_dates_from_filedata(self):
         self.importinstance = midv_data_importer()
         file_data = [[u'obsid', u'date_time'], [u'rb1', u'2015-05-01 00:00:00'], [u'rb1', u'2016-05-01 00:00'], [u'rb2', u'2015-05-01 00:00:00'], [u'rb2', u'2016-05-01 00:00'], [u'rb3', u'2015-05-01 00:00:00'], [u'rb3', u'2016-05-01 00:00']]

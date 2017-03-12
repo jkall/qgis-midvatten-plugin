@@ -695,7 +695,6 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
              [u'obsid2', u'', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment']]
 
         self.importinstance.general_import(goal_table=u'w_qual_field', file_data=f)
-        print(str(mock_messagebar.mock_calls))
         assert call.info(bar_msg=u'2 rows imported and 0 excluded for table w_qual_field. See log message panel for details', log_msg=u'In total 1 rows were imported to foreign key table zz_staff while importing to w_qual_field.\n--------------------') in mock_messagebar.mock_calls
 
         test_string = utils_for_tests.create_test_string(

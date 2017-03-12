@@ -32,7 +32,7 @@ import midvatten_utils as utils
 from date_utils import find_date_format, datestring_to_date
 from midvatten_utils import Cancel
 
-tr = PyQt4.QtCore.CoreApplication.translate
+tr = PyQt4.QtCore.QCoreApplication.translate
 
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
 
