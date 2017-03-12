@@ -27,7 +27,7 @@ import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 from date_utils import datestring_to_date
 import utils_for_tests as test_utils
-from tools.midvatten_utils import get_foreign_keys
+from tools.db_utils import get_foreign_keys
 from utils_for_tests import init_test
 from tools.tests.mocks_for_tests import DummyInterface
 from nose.tools import raises
@@ -49,7 +49,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestInterlab4Importer():
+class _TestInterlab4Importer():
     def setUp(self):
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
@@ -472,7 +472,7 @@ class TestInterlab4Importer():
         pass
 
 
-class TestInterlab4ImporterDB(object):
+class _TestInterlab4ImporterDB(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])
@@ -510,9 +510,9 @@ class TestInterlab4ImporterDB(object):
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     def test_interlab4_full_test_to_db(self):
 
-        dbutils.sql_alter_db(u'''insert into zz_staff (staff) values ('DV')''')
+        db_utils.sql_alter_db(u'''insert into zz_staff (staff) values ('DV')''')
 
-        dbutils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("anobsid")')
+        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("anobsid")')
 
         interlab4_lines = (
             u'#Interlab',
@@ -551,7 +551,7 @@ class TestInterlab4ImporterDB(object):
 
             _test(self, filename)
 
-        test_string = utils_for_tests.create_test_string(dbutils.sql_load_fr_db(u'''select * from w_qual_lab'''))
+        test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
         reference_string = ur'''(True, [(anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30)])'''
         assert test_string == reference_string
 

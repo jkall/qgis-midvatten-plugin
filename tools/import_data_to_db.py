@@ -68,6 +68,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = 'False'
             return
         dbconnection = db_utils.DbConnectionManager()
+        if dbconnection.dbtype == u'spatialite':
+            dbconnection.execute('PRAGMA foreign_keys=ON')
         recsinfile = len(file_data[1:])
         table_info = db_utils.db_tables_columns_info(table=goal_table, dbconnection=dbconnection)[goal_table]
         #POINT and LINESTRING must be cast as BLOB. So change the type to BLOB.
@@ -107,20 +109,21 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     if table in foreign_keys:
                         del foreign_keys[table]
 
-            if self.foreign_keys_import_question is None:
-                stop_question = utils.Askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""" % (u', '.join(foreign_keys.keys())), u"Info!")
-                if stop_question.result == 0:      # if the user wants to abort
-                    self.status = 'False'
-                    PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                    dbconnection.closedb()
-                    return Cancel()   # return simply to stop this function
-                else:
-                    self.foreign_keys_import_question = 1
-                    nr_before = nr_after
-                    self.import_foreign_keys(goal_table, foreign_keys, dbconnection, existing_columns_in_temptable, detailed_msg_list)
-                    nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
-                    nr_after_foreign_keys = nr_before - nr_after
-                    self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
+            if foreign_keys:
+                if self.foreign_keys_import_question is None:
+                    stop_question = utils.Askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""" % (u', '.join(foreign_keys.keys())), u"Info!")
+                    if stop_question.result == 0:      # if the user wants to abort
+                        self.status = 'False'
+                        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                        dbconnection.closedb()
+                        return Cancel()   # return simply to stop this function
+                    else:
+                        self.foreign_keys_import_question = 1
+                        nr_before = nr_after
+                        self.import_foreign_keys(goal_table, foreign_keys, dbconnection, existing_columns_in_temptable, detailed_msg_list)
+                        nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
+                        nr_after_foreign_keys = nr_before - nr_after
+                        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
         if not self.status:
             return
 
@@ -146,12 +149,16 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         sql_list.append(u"""FROM %s""" % (self.temptable_name))
         sql = u''.join(sql_list)
         recsbefore = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
-
         try:
             dbconnection.execute(sql)
         except Exception, e:
             detailed_msg_list.append(u'INSERT failed while importing to %s. Skipping duplicate values and required values that are NULL.\nMsg: '%goal_table + str(e))
+
+            # Delete duplicate values first:
             concatted_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in primary_keys_for_concat])
+            db_utils.delete_duplicate_values(dbconnection, self.temptable_name, primary_keys_for_concat)
+
+            #Then add WHERE to not include rows that already exist in the goal_table
             sql += u""" WHERE %s NOT IN (SELECT DISTINCT %s FROM %s)"""%(concatted_string, concatted_string, goal_table)
             sql += u""" AND %s"""%u' AND '.join([u"CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE NULL END IS NOT NULL"%(x, x, x, x, x) for x in not_null_columns])
             try:

@@ -522,9 +522,9 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_wquallab_import_from_csvlayer(self):
-        db_utils.sql_alter_db('''insert into zz_staff (staff) values ('teststaff')''')
+        db_utils.sql_alter_db(u'''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
 
-        db_utils.sql_alter_db(u'INSERT INTO obs_points (obsid) VALUES (obsid1)')
+        db_utils.sql_alter_db(u"INSERT INTO obs_points (obsid) VALUES ('obsid1')")
         f = [[u'obsid', u'depth', u'report', u'project', u'staff', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment'],
              [u'obsid1', u'2', u'testreport', u'testproject', u'teststaff', u'2011-10-19 12:30:00', u'testmethod', u'1,2-Dikloretan', u'1.5', u'<1.5', u'µg/l', u'testcomment']]
 
@@ -539,9 +539,9 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_wquallab_import_from_csvlayer_depth_empty_string(self):
-        db_utils.sql_alter_db('''insert into zz_staff (staff) values ('teststaff')''')
+        db_utils.sql_alter_db(u'''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
 
-        db_utils.sql_alter_db(u'INSERT INTO obs_points (obsid) VALUES (obsid1)')
+        db_utils.sql_alter_db(u"INSERT INTO obs_points (obsid) VALUES ('obsid1')")
         f = [[u'obsid', u'depth', u'report', u'project', u'staff', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment'],
              [u'obsid1', u'', u'testreport', u'testproject', u'teststaff', u'2011-10-19 12:30:00', u'testmethod', u'1,2-Dikloretan', u'1.5', u'<1.5', u'µg/l', u'testcomment']]
 
@@ -556,9 +556,9 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_wquallab_import_from_csvlayer_no_staff(self):
-        db_utils.sql_alter_db('''insert into zz_staff (staff) values ('teststaff')''')
+        db_utils.sql_alter_db(u'''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
+        db_utils.sql_alter_db(u"INSERT INTO obs_points (obsid) VALUES ('obsid1')")
 
-        db_utils.sql_alter_db(u'INSERT INTO obs_points (obsid) VALUES (obsid1)')
         f = [[u'obsid', u'depth', u'report', u'project', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment'],
              [u'obsid1', u'2', u'testreport', u'testproject', u'2011-10-19 12:30:00', u'testmethod', u'1,2-Dikloretan', u'1.5', u'<1.5', u'µg/l', u'testcomment']]
 
@@ -618,10 +618,10 @@ class _TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
 
-class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    def test_w_qual_field_import_from_csvlayer(self):
+    def _test_w_qual_field_import_from_csvlayer(self):
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('obsid1')""")
         f = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'depth', u'comment'],
              [u'obsid1', u'teststaff', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment']]
@@ -635,7 +635,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstan
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    def test_w_qual_field_import_from_csvlayer_no_depth(self):
+    def _test_w_qual_field_import_from_csvlayer_no_depth(self):
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('obsid1')""")
         f = [[u'obsid', u'staff', u'date_time', u'instrument', u'parameter', u'reading_num', u'reading_txt', u'unit', u'depth', u'comment'],
              [u'obsid1', u'teststaff', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'', u'testcomment']]
@@ -650,7 +650,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstan
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    def test_w_qual_field_no_parameter(self, mock_messagebar):
+    def _test_w_qual_field_no_parameter(self, mock_messagebar):
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('obsid1')""")
         f = [[u'obsid', u'staff', u'date_time', u'instrument',
               u'reading_num', u'reading_txt', u'unit', u'depth', u'comment'],
@@ -675,6 +675,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstan
              [u'obsid2', u'teststaff', u'2011-10-19 12:30:00', u'testinstrument', u'', u'12', u'<12', u'%', u'22', u'testcomment']]
 
         self.importinstance.general_import(goal_table=u'w_qual_field', file_data=f)
+        print(str(mock_messagebar.mock_calls))
         assert call.info(bar_msg=u'1 rows imported and 1 excluded for table w_qual_field. See log message panel for details', log_msg=u'In total 1 rows were imported to foreign key table zz_staff while importing to w_qual_field.\nINSERT failed while importing to w_qual_field. Skipping duplicate values and required values that are NULL.\nMsg: NOT NULL constraint failed: w_qual_field.parameter\nIn total 1 rows were not imported to w_qual_field. Probably due to a primary key combination already existing in the database.\n--------------------') in mock_messagebar.mock_calls
 
         test_string = utils_for_tests.create_test_string(
@@ -685,7 +686,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstan
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    def test_w_qual_field_staff_null(self, mock_messagebar):
+    def _test_w_qual_field_staff_null(self, mock_messagebar):
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('obsid1')""")
@@ -695,7 +696,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstan
              [u'obsid2', u'', u'2011-10-19 12:30:00', u'testinstrument', u'DO', u'12', u'<12', u'%', u'22', u'testcomment']]
 
         self.importinstance.general_import(goal_table=u'w_qual_field', file_data=f)
-
+        print(str(mock_messagebar.mock_calls))
         assert call.info(bar_msg=u'2 rows imported and 0 excluded for table w_qual_field. See log message panel for details', log_msg=u'In total 1 rows were imported to foreign key table zz_staff while importing to w_qual_field.\n--------------------') in mock_messagebar.mock_calls
 
         test_string = utils_for_tests.create_test_string(
@@ -768,7 +769,7 @@ class _TestSeismicImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_seismic_import_from_csvlayer(self):
-        db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('obsid1')""")
+        db_utils.sql_alter_db(u"""INSERT INTO obs_lines (obsid) VALUES ('obsid1')""")
         f = [[u'obsid', u'length', u'ground', u'bedrock', u'gw_table', u'comment'],
              [u'obsid1', u'500', u'2', u'4', u'3', u'acomment']]
 
@@ -902,14 +903,14 @@ class _TestVlfImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         reference_string = u'''(True, [(obsid1, 500.0, 2.0, 10.0, acomment)])'''
         assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    def test_vlf_import_from_csvlayer_no_obs_line(self):
+    def test_vlf_import_from_csvlayer_no_obs_line(self, mock_messagebar):
         f = [[u'obsid', u'length', u'real_comp', u'imag_comp', u'comment'],
              [u'obsid1', u'500', u'2', u'10', u'acomment']]
 
         self.importinstance.general_import(goal_table=u'vlf_data', file_data=f)
-
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from vlf_data'''))
         reference_string = u'''(True, [])'''
@@ -948,7 +949,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestPos
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_delete_existing_date_times_from_temptable_00_already_exists(self):
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('obsid1')""")
-        db_utils.sql_alter_db(u'INSERT INTO w_levels (obsid, date_time, level_masl) VALUES (obsid1, 2016-01-01 00:00:00, 123.0)')
+        db_utils.sql_alter_db(u"""INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('obsid1', '2016-01-01 00:00:00', '123.0')""")
 
         f = [[u'obsid', u'date_time', u'level_masl'],
              [u'obsid1', u'2016-01-01 00:00', u'345']]
@@ -964,8 +965,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestPos
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_delete_existing_date_times_from_temptable_00_already_exists(self):
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('obsid1')""")
-        db_utils.sql_alter_db(
-            u'INSERT INTO w_levels (obsid, date_time, level_masl) VALUES (obsid1, 2016-01-01 00:00:00, 123.0)')
+        db_utils.sql_alter_db(u"""INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('obsid1', '2016-01-01 00:00:00', '123.0')""")
 
         f = [[u'obsid', u'date_time', u'level_masl'],
              [u'obsid1', u'2016-01-01 00:00', u'345']]
@@ -983,8 +983,7 @@ class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestPos
         self.importinstance.charsetchoosen = [u'utf-8']
 
         db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('obsid1')""")
-        db_utils.sql_alter_db(
-            u'INSERT INTO w_levels (obsid, date_time, level_masl) VALUES (obsid1, 2016-01-01 00:00, 123.0)')
+        db_utils.sql_alter_db(u"""INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('obsid1', '2016-01-01 00:00', '123.0')""")
 
         f = [[u'obsid', u'date_time', u'level_masl'],
              [u'obsid1', u'2016-01-01 00:00:00', u'345'],

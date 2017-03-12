@@ -385,3 +385,10 @@ def get_geometry_types(dbconnection, tablename):
                 AND f_table_name = '%s';"""%(dbconnection.schemas(), tablename)
     result = get_sql_result_as_dict(sql, dbconnection=dbconnection)[1]
     return result
+
+def delete_duplicate_values(dbconnection, tablename, primary_keys):
+    if dbconnection.dbtype == u'spatialite':
+        rowid = u'rowid'
+    else:
+        rowid = u'ctid'
+    dbconnection.execute(u"""DELETE FROM %s WHERE %s NOT IN (SELECT MIN(%s) FROM %s GROUP BY %s);"""%(tablename, u', '.join(primary_keys), rowid, tablename, u', '.join(primary_keys)))
