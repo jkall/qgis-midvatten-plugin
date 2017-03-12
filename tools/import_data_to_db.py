@@ -84,7 +84,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         missing_columns = [column for column in not_null_columns if column not in existing_columns_in_goal_table]
 
         if missing_columns:
-            utils.MessagebarAndLog.critical(bar_msg=tr(u'midv_data_importer', u'Error: Import failed, see log message panel', log_msg=tr(u'midv_data_importer', u'Required columns ') + u', '.join(missing_columns) + tr(u'midv_data_importer', u' are missing for table ') + goal_table, duration=999))
+            utils.MessagebarAndLog.critical(bar_msg=tr(u'midv_data_importer', u'Error: Import failed, see log message panel'), log_msg=tr(u'midv_data_importer', u'Required columns %s are missing for table %s'%(u', '.join(missing_columns), goal_table)), duration=999)
             self.status = False
             return
 
@@ -157,7 +157,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         self.import_foreign_keys(goal_table, foreign_keys, dbconnection, existing_columns_in_temptable, detailed_msg_list)
                         nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
                         nr_after_foreign_keys = nr_before - nr_after
-                        self.check_remaining(nr_before, nr_after, tr(u'midv_data_importer', u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after))))
+                        self.check_remaining(nr_before, nr_after, tr(u'midv_data_importer', u"Import warning, see log message panel"), tr(u'midv_data_importer', u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after))))
         if not self.status:
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return
