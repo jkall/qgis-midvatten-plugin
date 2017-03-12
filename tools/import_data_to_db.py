@@ -95,11 +95,43 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if u'date_time' in primary_keys:
             self.delete_existing_date_times_from_temptable(primary_keys, goal_table, dbconnection)
         nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
-
         nr_same_date = nr_after - nr_before
         self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_same_date)))
         if not self.status:
             return
+
+        # Delete duplicate rows in temptable:
+        temptablerows_before = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
+        db_utils.delete_duplicate_values(dbconnection, self.temptable_name, primary_keys_for_concat)
+        temptablerows_after = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
+        removed_rows = int(temptablerows_before) - int(temptablerows_after)
+        if removed_rows:
+            detailed_msg_list.append(u'Removed %s duplicate rows from rows to import.'%str(removed_rows))
+
+        #Delete rows which null values where null-values is not allowed
+        if not_null_columns:
+            temptablerows_before = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
+            sql = u'DELETE FROM %s WHERE %s'%(self.temptable_name,  u' OR '.join([u"(CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN %s else NULL END) IS NULL"%(x, x, x, x) for x in not_null_columns]))
+            dbconnection.execute(sql)
+            temptablerows_after = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
+            removed_rows = int(temptablerows_before) - int(temptablerows_after)
+            if removed_rows:
+                detailed_msg_list.append(u"""Removed %s rows with non-allowed NULL-values, ' '-values or ''-values from rows to import."""%str(removed_rows))
+
+        #Delete rows already existing in goal table
+        temptablerows_before = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
+        concatted_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in primary_keys_for_concat])
+        dbconnection.execute(u'DELETE FROM %s WHERE %s IN (SELECT %s FROM %s)'%(self.temptable_name, concatted_string, concatted_string, goal_table))
+        temptablerows_after = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
+        removed_rows = int(temptablerows_before) - int(temptablerows_after)
+        if removed_rows:
+            detailed_msg_list.append(u"""Removed %s rows that already existed in %s from rows to import."""%(str(removed_rows), goal_table))
+
+        #Special cases for some tables
+        if goal_table == u'stratigraphy':
+            self.check_and_delete_stratigraphy(existing_columns_in_goal_table, dbconnection)
+        if goal_table in (u'obs_lines', u'obs_points'):
+            self.calculate_geometry(existing_columns_in_goal_table, goal_table, dbconnection)
 
         # Import foreign keys in some special cases
         foreign_keys = db_utils.get_foreign_keys(goal_table, dbconnection=dbconnection)
@@ -125,16 +157,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         nr_after_foreign_keys = nr_before - nr_after
                         self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
         if not self.status:
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return
 
-        #Special cases for some tables
-        if goal_table == u'stratigraphy':
-            self.check_and_delete_stratigraphy(existing_columns_in_goal_table, dbconnection)
-        if goal_table in (u'obs_lines', u'obs_points'):
-            self.calculate_geometry(existing_columns_in_goal_table, goal_table, dbconnection)
-
         #Finally import data:
-        nr_failed_import = recsinfile - nr_after
+        nr_failed_import = recsinfile - temptablerows_after
         if nr_failed_import > 0:
             stop_question = utils.Askuser(u"YesNo", u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?""" % (str(nr_failed_import)), "Warning!")
             if stop_question.result == 0:      # if the user wants to abort
@@ -142,34 +169,22 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
                 return Cancel()   # return simply to stop this function
 
-        sql_list = [u"""INSERT INTO %s ("""%goal_table]
-        sql_list.append(u', '.join(sorted(existing_columns_in_goal_table)))
-        sql_list.append(u""") SELECT """)
-        sql_list.append(u', '.join([u"""(CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE NULL END)"""%(colname, colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns_in_goal_table)]))
-        sql_list.append(u"""FROM %s""" % (self.temptable_name))
-        sql = u''.join(sql_list)
+        sql = u"""INSERT INTO %s ("""%goal_table
+        sql += u', '.join(sorted(existing_columns_in_goal_table))
+        sql += u""") SELECT """
+        sql += u', '.join([u"""(CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE NULL END)"""%(colname, colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns_in_goal_table)])
+        sql += u"""FROM %s""" % (self.temptable_name)
+
         recsbefore = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
         try:
-            dbconnection.execute(sql)
+            dbconnection.execute(sql) #.encode(u'utf-8'))
         except Exception, e:
-            detailed_msg_list.append(u'INSERT failed while importing to %s. Skipping duplicate values and required values that are NULL.\nMsg: '%goal_table + str(e))
-
-            # Delete duplicate values first:
-            concatted_string = u'||'.join([u"CASE WHEN %s is NULL then 'NULL' ELSE %s END"%(x, x) for x in primary_keys_for_concat])
-            db_utils.delete_duplicate_values(dbconnection, self.temptable_name, primary_keys_for_concat)
-
-            #Then add WHERE to not include rows that already exist in the goal_table
-            sql += u""" WHERE %s NOT IN (SELECT DISTINCT %s FROM %s)"""%(concatted_string, concatted_string, goal_table)
-            sql += u""" AND %s"""%u' AND '.join([u"CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE NULL END IS NOT NULL"%(x, x, x, x, x) for x in not_null_columns])
-            try:
-                dbconnection.execute(sql) #.encode(u'utf-8'))
-            except Exception, e:
-                utils.MessagebarAndLog.critical(
-                    bar_msg=u'Error, import failed, see log message panel',
-                    log_msg=u'Sql\n' + sql + u' failed.\nMsg:\n' + str(e),
-                    duration=999)
-                self.status = 'False'
-                return
+            utils.MessagebarAndLog.critical(
+                bar_msg=u'Error, import failed, see log message panel',
+                log_msg=u'Sql\n' + sql + u' failed.\nMsg:\n' + str(e),
+                duration=999)
+            self.status = 'False'
+            return
         recsafter = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
 
         nr_imported = recsafter - recsbefore
@@ -182,9 +197,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if recsbefore is None:
             recsbefore = self.recsbefore
         NoExcluded = recsinfile - (recsafter - recsbefore)
-
-        if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-            detailed_msg_list.append(u'In total %s rows were not imported to %s. Probably due to a primary key combination already existing in the database.'%(str(NoExcluded), goal_table))
 
         detailed_msg_list.append(u'--------------------')
         detailed_msg = u'\n'.join(detailed_msg_list)

@@ -391,4 +391,4 @@ def delete_duplicate_values(dbconnection, tablename, primary_keys):
         rowid = u'rowid'
     else:
         rowid = u'ctid'
-    dbconnection.execute(u"""DELETE FROM %s WHERE %s NOT IN (SELECT MIN(%s) FROM %s GROUP BY %s);"""%(tablename, u', '.join(primary_keys), rowid, tablename, u', '.join(primary_keys)))
+    dbconnection.execute(u"""DELETE FROM %s WHERE %s NOT IN (SELECT MIN(%s) FROM %s GROUP BY %s);"""%(tablename, rowid, rowid, tablename, u', '.join(primary_keys)))
