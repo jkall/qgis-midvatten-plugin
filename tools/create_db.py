@@ -37,7 +37,7 @@ class newdb():
 
     def create_new_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
-
+        print("In create_new_db")
         set_locale = self.ask_for_locale()
         if set_locale == u'cancel':
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -90,27 +90,31 @@ class newdb():
 
                 SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
                 qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
+                sql_lines = []
                 with open(SQLFile, 'r') as f:
                     f.readline()  # first line is encoding info....
-                    try:
-                        for line in f:
-                            if not line:
-                                continue
-                            if line.startswith("#"):
-                                continue
-                            for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
-                                                               ('CHANGETOPLUGINVERSION', str(verno)),
-                                                               ('CHANGETOQGISVERSION',qgisverno),
-                                                               ('CHANGETOSPLITEVERSION', str(versionstext[0][0])),
-                                                               ('CHANGETOLOCALE', str(set_locale))]:
-                                line = line.replace(replace_word, replace_with)
+                    lines = [line for line in f]
+                sql_lines = u' '.join(lines).split(u';')
+                for line in sql_lines:
+                    if not line:
+                        continue
+                    if line.startswith("#"):
+                        continue
+                    for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
+                                                       ('CHANGETOPLUGINVERSION', str(verno)),
+                                                       ('CHANGETOQGISVERSION',qgisverno),
+                                                       ('CHANGETOSPLITEVERSION', str(versionstext[0][0])),
+                                                       ('CHANGETOLOCALE', str(set_locale))]:
+                        line = line.replace(replace_word, replace_with)
+                        try:
                             self.cur.execute(line)  # use tags to find and replace SRID and versioning info
-                    except Exception, e:
-                        #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
-                        utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n'%(line ,str(e)), duration=5)
-                    except:
-                        qgis.utils.iface.messageBar().pushMessage("Failed to create database", 2,duration=3)
-                        #utils.pop_up_info('Failed to create DB!')
+                        except Exception, e:
+                            #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
+                            utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n'%(line ,str(e)), duration=5)
+                        except Exception as e:
+                            print("SQL Failed: %s msg: %"%(line, str(e)))
+                            qgis.utils.iface.messageBar().pushMessage("Failed to create database", 2,duration=3)
+                            #utils.pop_up_info('Failed to create DB!')
 
                 #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
                 delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
@@ -140,6 +144,7 @@ class newdb():
                 #Finally add the layer styles info into the data base
                 AddLayerStyles(self.dbpath)
                 """
+        print("Out create_new_db")
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def ask_for_locale(self):
@@ -192,7 +197,7 @@ class newdb():
                 except Exception, e:
                     #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
                     #This print out is for debug, and it only prints during a fail so it can stay:
-                    print("Sql line failed:\n" + str(line))
+                    print("Sql line failed:\n%s\nmsg:%s"%(str(line), str(e)))
                     utils.MessagebarAndLog.critical("Error: sql failed, see qgis Log Message Panel", 'sql failed:\n%s\nerror msg:\n%s\n'%(line ,str(e)), duration=5)
 
 

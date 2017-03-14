@@ -48,16 +48,18 @@ class TestCreateMemoryDb():
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
     def test_new_db(self, mock_locale):
+        print("Test test_new_db")
         mock_locale.return_value.answer = u'ok'
         mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
+        print("Test done")
 
     def tearDown(self):
         self.iface = None
         self.midvatten = None
 
 
-class TestCreateDb(object):
+class _TestCreateDb(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
@@ -140,7 +142,7 @@ class TestCreateDb(object):
         assert current_locale == u'en_US'
 
 
-class TestObsPointsTriggers(object):
+class _TestObsPointsTriggers(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()
