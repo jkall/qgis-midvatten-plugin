@@ -160,7 +160,7 @@
               <string notr="true"/>
              </property>
              <property name="currentIndex">
-              <number>0</number>
+              <number>2</number>
              </property>
              <widget class="QWidget" name="tab_1">
               <attribute name="title">
@@ -559,7 +559,7 @@
                <item row="3" column="0">
                 <widget class="QGroupBox" name="plot_settings_1">
                  <property name="title">
-                  <string>Plot settings</string>
+                  <string>Show plot settings</string>
                  </property>
                  <property name="flat">
                   <bool>false</bool>
@@ -731,7 +731,7 @@
                <item row="3" column="0">
                 <widget class="QGroupBox" name="plot_settings_2">
                  <property name="title">
-                  <string>Plot settings</string>
+                  <string>Show plot settings</string>
                  </property>
                  <property name="checkable">
                   <bool>true</bool>
@@ -1544,7 +1544,7 @@
                <item row="3" column="0">
                 <widget class="QGroupBox" name="plot_settings_3">
                  <property name="title">
-                  <string>Plot settings</string>
+                  <string>Show plot settings</string>
                  </property>
                  <property name="checkable">
                   <bool>true</bool>
@@ -1705,7 +1705,7 @@
         <item>
          <widget class="QGroupBox" name="chart_settings">
           <property name="title">
-           <string>Chart settings</string>
+           <string>Show chart settings</string>
           </property>
           <property name="flat">
            <bool>false</bool>
