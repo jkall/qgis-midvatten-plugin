@@ -28,6 +28,7 @@ from pyspatialite import dbapi2 as sqlite# pyspatialite is absolutely necessary 
 import datetime
 #plugin modules
 import midvatten_utils as utils
+from definitions import midvatten_defs as defs
 
 class newdb():
 
@@ -37,7 +38,6 @@ class newdb():
 
     def create_new_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
-        print("In create_new_db")
         set_locale = self.ask_for_locale()
         if set_locale == u'cancel':
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -90,7 +90,6 @@ class newdb():
 
                 SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
                 qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
-                sql_lines = []
                 with open(SQLFile, 'r') as f:
                     f.readline()  # first line is encoding info....
                     lines = [line for line in f]
@@ -106,15 +105,12 @@ class newdb():
                                                        ('CHANGETOSPLITEVERSION', str(versionstext[0][0])),
                                                        ('CHANGETOLOCALE', str(set_locale))]:
                         line = line.replace(replace_word, replace_with)
-                        try:
-                            self.cur.execute(line)  # use tags to find and replace SRID and versioning info
-                        except Exception, e:
-                            #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
-                            utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n'%(line ,str(e)), duration=5)
-                        except Exception as e:
-                            print("SQL Failed: %s msg: %"%(line, str(e)))
-                            qgis.utils.iface.messageBar().pushMessage("Failed to create database", 2,duration=3)
-                            #utils.pop_up_info('Failed to create DB!')
+                    try:
+                        self.cur.execute(line)  # use tags to find and replace SRID and versioning info
+                    except Exception, e:
+                        print("SQL Failed: %s msg: %s"%(line, str(e)))
+                        #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
+                        utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n'%(line ,str(e)), duration=5)
 
                 #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
                 delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
@@ -126,6 +122,8 @@ class newdb():
                 self.insert_datadomains(set_locale)
 
                 self.add_triggers_to_obs_points()
+
+                self.add_metadata_to_about_db()
 
                 self.cur.execute('vacuum')
 
@@ -144,7 +142,6 @@ class newdb():
                 #Finally add the layer styles info into the data base
                 AddLayerStyles(self.dbpath)
                 """
-        print("Out create_new_db")
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def ask_for_locale(self):
@@ -183,6 +180,84 @@ class newdb():
 
     def add_triggers_to_obs_points(self):
         self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", "insert_obs_points_triggers.sql"))
+
+    def add_metadata_to_about_db(self):
+        self.cur.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")
+        tables = self.cur.fetchall()
+
+        for table in tables:
+            table = table[0]
+            table_descr_sql = (u"""SELECT name,
+                                ltrim(rtrim(	substr("sql",1,instr("sql",CHAR(10))-1),
+                                        '1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM!@#$%^&()_+-=`~[]/\{}|;,.<>?" '
+                                          ),
+                                    '1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM!@#$%^&()_+-=`~[]/\{}|;,.<>?" '
+                                      ) as description
+                                FROM sqlite_master
+                                WHERE name = '""" + table + u"';")
+
+
+            self.cur.execute(table_descr_sql)
+            table_descr = self.cur.fetchall()[0][1].split(u'*')[1]
+
+            self.cur.execute(u'''PRAGMA table_info(%s)''' % table)
+            table_info = self.cur.fetchall()
+
+            self.cur.execute(u"""PRAGMA foreign_key_list(%s)""" %(table))
+            #table = idx 2, from = idx 3, to = idx 4
+            foreign_keys = self.cur.fetchall()
+            foreign_keys_dict = {}
+            #dict like {from: (table, to)}
+            for _row in foreign_keys:
+                _from = _row[3]
+                _to = _row[4]
+                _table = _row[2]
+                foreign_keys_dict[_from] = (_table, _to)
+
+            for column in table_info:
+                colname = column[1]
+                data_type = column[2]
+                notnull = column[3]
+                defaultvalue = column[4]
+                primary_key = column[5]
+                _foreign_keys = None
+                if colname in foreign_keys_dict:
+                    _foreign_keys = u'%s(%s)'%(foreign_keys_dict[colname])
+
+                #TODO: The sql doesn't work perfectly, or its my create_db that faulty.
+                column_descr_sql = (u"""SELECT 	name,
+                                                '%s' as col_name,
+                                                substr("sql",instr("sql",'%s')+instr(substr("sql",instr("sql",'%s')),'--')+1,instr(substr("sql",instr("sql",'%s')),CHAR(10))-instr(substr("sql",instr("sql",'%s')),'--')-2) as description
+                                        FROM sqlite_master
+                                        WHERE name = '%s'"""%(colname, colname, colname, colname, colname, table))
+                self.cur.execute(column_descr_sql)
+                column_descr = self.cur.fetchall()
+
+                print(str(column_descr))
+                """
+                tablename text --Name of a table in the db
+                , columnname text --Name of column
+                , data_type text --Name of column
+                , not_null text --1 if the column can not contain NULL
+                , default_value text --The default value of the column
+                , primary_key text --1 if column is a primary key
+                , foreign_key text --table(column) of foreign keys
+                , description text --Comment for column or table
+                """
+
+
+            #print(str(table_info))
+            column_headers_types = [(row[1], row[2]) for row in table_info]
+            primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
+            not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
+
+
+
+            #for
+            # column, data_type in column_headers_types:
+
+            #print("column_headers_types: %s\nprimary_keys: %s\nnot_null_columns: %s\n"%(str(column_headers_types), str(primary_keys), str(not_null_columns)))
+
 
     def excecute_sqlfile(self, sqlfilename):
         with open(sqlfilename, 'r') as f:

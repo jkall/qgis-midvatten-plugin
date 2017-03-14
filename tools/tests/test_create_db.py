@@ -48,11 +48,9 @@ class TestCreateMemoryDb():
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
     def test_new_db(self, mock_locale):
-        print("Test test_new_db")
         mock_locale.return_value.answer = u'ok'
         mock_locale.return_value.value = u'sv_SE'
         self.midvatten.new_db()
-        print("Test done")
 
     def tearDown(self):
         self.iface = None
