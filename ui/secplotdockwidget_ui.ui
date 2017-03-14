@@ -224,6 +224,9 @@ p, li { white-space: pre-wrap; }
          <property name="text">
           <string>Stratigraphy</string>
          </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
         </widget>
        </item>
        <item row="7" column="0" colspan="2">
