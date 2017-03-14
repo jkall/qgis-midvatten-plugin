@@ -248,6 +248,7 @@ class newdb():
                 self.cur.execute(column_descr_sql)
                 column_descr = self.cur.fetchall()
 
+                #TODO: Use a regext something like (group1 for column name)[ ]+(group2 everything else)(group-3-comment --[something to find the comment])
 
                 """
                 tablename text --Name of a table in the db
