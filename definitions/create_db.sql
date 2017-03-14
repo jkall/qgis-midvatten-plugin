@@ -6,9 +6,14 @@ INSERT INTO about_db VALUES('*', '*', '', '', '', '', '', 'locale:CHANGETOLOCALE
 INSERT INTO about_db VALUES('about_db', '*', '', '', '', '', '', 'A status log for the tables in the db', '', '');
 INSERT INTO about_db VALUES('about_db', 'table', 'text', '', '', '', '', 'Name of a table in the db', '', '');
 INSERT INTO about_db VALUES('about_db', 'column', 'text', '', '', '', '', 'Name of column', '', '');
+INSERT INTO about_db VALUES('about_db', 'data_type', 'text', '', '', '', '', 'Name of column', '', '');
+INSERT INTO about_db VALUES('about_db', 'not_null', 'text', '', '', '', '', '1 if the column can not contain NULL', '', '');
+INSERT INTO about_db VALUES('about_db', 'default_value', 'text', '', '', '', '', 'The default value of the column', '', '');
+INSERT INTO about_db VALUES('about_db', 'primary_key', 'text', '', '', '', '', '1 if column is a primary key', '', '');
+INSERT INTO about_db VALUES('about_db', 'foreign_key', 'text', '', '', '', '', 'table(column) of foreign keys', '', '');
+INSERT INTO about_db VALUES('about_db', 'description', 'text', '', '', '', '', 'Comment for column or table', '', '');
 INSERT INTO about_db VALUES('about_db', 'upd_date', 'text', '', '', '', '', 'Date for last update', '', '');
 INSERT INTO about_db VALUES('about_db', 'upd_sign', 'text', '', '', '', '', 'Person responsible for update', '', '');
-INSERT INTO about_db VALUES('about_db', 'contents', 'text', '', '', '', '', 'Contents', '', '');
 INSERT INTO about_db VALUES('comments', '*', '', '', '', '', '', 'comments connected to obsids', '', '');
 INSERT INTO about_db VALUES('comments', 'obsid', 'text', '1', '', '1', 'obs_points(obsid)', 'ID for the observation point, eg Well01, Br1201, Rb1201', '', '');
 INSERT INTO about_db VALUES('comments', 'date_time', 'text', '1', '', '1', '', 'Date and Time for the comment, on format yyyy-mm-dd hh:mm:ss', '', '');
