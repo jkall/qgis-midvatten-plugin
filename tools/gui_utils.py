@@ -21,6 +21,8 @@
 """
 import PyQt4
 
+from midvatten_utils import returnunicode
+
 
 class SplitterWithHandel(PyQt4.QtGui.QSplitter):
     """
@@ -60,3 +62,36 @@ class RowEntryGrid(object):
         self.widget = PyQt4.QtGui.QWidget()
         self.layout = PyQt4.QtGui.QGridLayout()
         self.widget.setLayout(self.layout)
+
+
+class ExtendedQPlainTextEdit(PyQt4.QtGui.QPlainTextEdit):
+    """
+
+    """
+    def __init__(self, keep_sorted=False, *args, **kwargs):
+        super(ExtendedQPlainTextEdit, self).__init__(*args, **kwargs)
+        self.keep_sorted = keep_sorted
+
+    def paste_data(self, paste_list):
+        #Use lists to keep the data ordering (the reason set() is not used
+        old_text = self.get_all_data()
+        new_items = []
+        for alist in [old_text, paste_list]:
+            for x in alist:
+                if x:
+                    if x not in new_items:
+                        new_items.append(returnunicode(x))
+
+        self.clear()
+        if self.keep_sorted:
+            self.setPlainText(u'\n'.join(sorted(new_items)))
+        else:
+            self.setPlainText(u'\n'.join(new_items))
+
+    def get_all_data(self):
+        if self.toPlainText():
+            return returnunicode(self.toPlainText()).replace(u'\r', u'').split(u'\n')
+        else:
+            return []
+
+

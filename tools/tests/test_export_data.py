@@ -105,7 +105,7 @@ class TestExport(unittest.TestCase):
     @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
     @mock.patch('PyQt4.QtGui.QFileDialog.getExistingDirectory')
     @mock.patch('qgis.utils.iface', autospec=True)
-    def _test_export_csv(self, mock_iface, mock_savepath):
+    def test_export_csv(self, mock_iface, mock_savepath):
         mock_savepath.return_value = u'/tmp/'
         utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P1", GeomFromText('POINT(633466, 711659)', 3006))''')
         utils.sql_alter_db(u'''insert into zz_staff (staff) values ('s1')''')
@@ -176,7 +176,6 @@ class TestExport(unittest.TestCase):
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('export_data.utils.pop_up_info', autospec=True)
     def test_export_spatialite(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify, mock_locale):
-
         mock_find_layer.return_value.crs.return_value.authid.return_value = u'EPSG:3006'
 
         mock_newdbpath.return_value = EXPORT_DB_PATH
@@ -246,6 +245,56 @@ class TestExport(unittest.TestCase):
                             u''', [(L1, 5.0)], ''',
                             u'''select obsid, instrumentid, parameter, date_time from meteo''',
                             u''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)]]''']
+        reference_string = u'\n'.join(reference_string)
+        assert test_string == reference_string
+
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.get_selected_features_as_tuple')
+    @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten_utils.find_layer', autospec=True)
+    @mock.patch('qgis.utils.iface', autospec=True)
+    @mock.patch('export_data.utils.pop_up_info', autospec=True)
+    def test_export_spatialite_with_umlauts(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify, mock_selection, mock_locale):
+        mock_selection.return_value = (u'åäö', )
+        mock_find_layer.return_value.crs.return_value.authid.return_value = u'EPSG:3006'
+
+        mock_newdbpath.return_value = EXPORT_DB_PATH
+        mock_verify.return_value = 0
+
+        utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("åäö", GeomFromText('POINT(633466, 711659)', 3006))''')
+        utils.sql_alter_db(u'''insert into zz_staff (staff) values ('s1')''')
+        utils.sql_alter_db(u'''insert into comments (obsid, date_time, staff, comment) values ('åäö', '2015-01-01 00:00:00', 's1', 'comment1')''')
+
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
+        self.midvatten.export_spatialite()
+
+        sql_list = [u'''select obsid from obs_points''',
+                    u'''select staff from zz_staff''',
+                    u'''select obsid, date_time, staff, comment from comments''']
+
+        conn = sqlite.connect(EXPORT_DB_PATH, detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        curs = conn.cursor()
+
+        test_list = []
+        for sql in sql_list:
+            test_list.append('\n' + sql + '\n')
+            test_list.append(curs.execute(sql).fetchall())
+
+        conn.commit()
+        conn.close()
+
+        test_string = utils_for_tests.create_test_string(test_list)
+        reference_string = [u'''[''',
+                            u'''select obsid from obs_points''',
+                            u''', [(åäö)], ''',
+                            u'''select staff from zz_staff''',
+                            u''', [(s1)], ''',
+                            u'''select obsid, date_time, staff, comment from comments''',
+                            u''', [(åäö, 2015-01-01 00:00:00, s1, comment1)]]''']
         reference_string = u'\n'.join(reference_string)
         assert test_string == reference_string
 

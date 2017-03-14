@@ -25,7 +25,9 @@ import copy
 import csv
 import datetime
 import difflib
+from operator import itemgetter
 import locale
+import io
 import math
 import numpy as np
 import os
@@ -36,7 +38,7 @@ from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
 from contextlib import contextmanager
 from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialite-specific sql clauses may be sent by sql_alter_db and sql_load_fr_db
-from pyspatialite.dbapi2 import IntegrityError
+from pyspatialite.dbapi2 import IntegrityError, OperationalError
 from qgis.core import *
 from qgis.gui import *
 
@@ -192,7 +194,7 @@ class askuser(QtGui.QDialog):
 
 
 class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
-    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None, button_names=[u'Ignore', u'Cancel', u'Ok'], combobox_label=u'Similar values found in db (choose or edit):'):
+    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None, button_names=[u'Ignore', u'Cancel', u'Ok'], combobox_label=u'Similar values found in db (choose or edit):', reuse_header_list=None, reuse_column=u''):
         QtGui.QDialog.__init__(self, parent)
         self.answer = None
         self.setupUi(self)
@@ -210,7 +212,29 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
             self.buttonBox.addButton(button, QtGui.QDialogButtonBox.ActionRole)
             self.connect(button, PyQt4.QtCore.SIGNAL("clicked()"), self.button_clicked)
 
+        self.reuse_label = PyQt4.QtGui.QLabel(u'Reuse answer for all identical')
+        self._reuse_column = PyQt4.QtGui.QComboBox()
+        self._reuse_column.addItem(u'')
+        if isinstance(reuse_header_list, (list, tuple)):
+            self.reuse_layout.addWidget(self.reuse_label)
+            self.reuse_layout.addWidget(self._reuse_column)
+            self.reuse_layout.addStretch()
+            self._reuse_column.addItems(reuse_header_list)
+            self.reuse_column_temp = reuse_column
+
         self.exec_()
+
+    @property
+    def reuse_column_temp(self, value):
+        index = self._reuse_column.findText(returnunicode(value))
+        if index != -1:
+            self._reuse_column.setCurrentIndex(index)
+
+    @reuse_column_temp.setter
+    def reuse_column_temp(self, value):
+        index = self._reuse_column.findText(returnunicode(value))
+        if index != -1:
+            self._reuse_column.setCurrentIndex(index)
 
     def button_clicked(self):
         button = self.sender()
@@ -220,7 +244,8 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
 
     def set_answer_and_value(self, answer):
         self.answer = answer
-        self.value = self.comboBox.currentText()
+        self.value = returnunicode(self.comboBox.currentText())
+        self.reuse_column = self._reuse_column.currentText()
 
     def closeEvent(self, event):
         if self.answer == None:
@@ -541,6 +566,10 @@ def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list
             MessagebarAndLog.warning(bar_msg='Some sql failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
             ConnectionOK = False
             result = ''
+            try:
+                conn.close()
+            except:
+                pass
     else:
         #pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
         textstring = """Could not connect to db %s!\nDB call causing this error:%s\n"""%(dbpath[0],sql)
@@ -561,7 +590,17 @@ def sql_alter_db(sql=''):
         try:
             resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
         except IntegrityError, e:
+            try:
+                conn.close()
+            except:
+                pass
             raise IntegrityError("The sql failed:\n" + sql2 + "\nmsg:\n" + str(e))
+        except OperationalError, e:
+            try:
+                conn.close()
+            except:
+                pass
+            raise OperationalError("The sql failed:\n" + sql2 + "\nmsg:\n" + str(e))
     else:
         try:
             resultfromsql = curs.executemany(sql2[0], sql2[1])
@@ -572,7 +611,6 @@ def sql_alter_db(sql=''):
     conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
     resultfromsql.close()
     conn.close()
-
     return result
 
 def sql_alter_db_by_param_subst(sql='',*subst_params):
@@ -1000,7 +1038,7 @@ def find_similar(word, wordlist, hits=5):
 
     return matches
 
-def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=None, try_capitalize=False):
+def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=None, try_capitalize=False, vertical_msg_list=True, always_confirm=False):
     """
 
     The class NotFoundQuestion is used with 4 buttons; u'Ignore', u'Cancel', u'Ok', u'Skip'.
@@ -1022,36 +1060,56 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
     header_value = returnunicode(header_value)
     filtered_data = []
     data_to_ask_for = []
+    add_column = False
     for rownr, row in enumerate(file_data):
         if rownr == 0:
             try:
                 index = row.index(header_value)
             except ValueError:
-                MessagebarAndLog.warning(bar_msg=u'Warning, see log message panel', log_msg=u"filter_nonexisting_values_and_ask error: The header_value " + header_value + u" did not exist, returning file_data as it is.")
-                return file_data
+                # The header and all answers will be added as a new column.
+                row.append(header_value)
+                index = -1
+                add_column = True
+                filtered_data.append(row)
+                pass
             else:
                 filtered_data.append(row)
             continue
-
+        if add_column:
+            row.append(None)
         value = row[index]
-        if value not in existing_values:
+        if always_confirm:
             data_to_ask_for.append(row)
         else:
-            filtered_data.append(row)
+            if value not in existing_values:
+                data_to_ask_for.append(row)
+            else:
+                filtered_data.append(row)
 
-    already_asked_values = {}
+    headers_colnr = dict([(header, colnr) for colnr, header in enumerate(file_data[0])])
 
+    already_asked_values = {} # {u'obsid': {u'asked_for': u'answer'}, u'report': {u'asked_for_report': u'answer'}}
+    reuse_column = u''
     for rownr, row in enumerate(data_to_ask_for):
-
+        current_value = row[index]
+        found = False
         #First check if the current value already has been asked for and if so
         # use the same answer again.
-        try:
-            row[index] = already_asked_values[row[index]]
-        except KeyError:
-            current_value = row[index]
-        else:
-            if row[index] is not None:
-                filtered_data.append(row)
+        for asked_header, asked_answers in already_asked_values.iteritems():
+            colnr = headers_colnr[asked_header]
+            try:
+                row[index] = asked_answers[row[colnr]]
+            except KeyError:
+                current_value = row[index]
+            else:
+                if row[index] is not None:
+                    filtered_data.append(row)
+                    found = True
+                    break
+                else:
+                    found = True
+                    break
+        if found:
             continue
 
         #Put the found similar values on top, but include all values in the database as well
@@ -1071,13 +1129,21 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
                     not_tried_capitalize = False
                     continue
 
+            if not vertical_msg_list:
+                msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'" on row:\n"' + u', '.join(returnunicode(row, keep_containers=True)) + u'".\ndid not exist in db.\n\nPlease submit it again!\n'
+            else:
+                msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'''" on current row didn't exist in database. Please select an existing ''' + header_value + u'\n' + u'\n'.join([u': '.join((file_data[0][_colnr], word if word is not None else u'')) for _colnr, word in enumerate(row)])
             question = NotFoundQuestion(dialogtitle=u'WARNING',
-                                        msg=u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'" on row:\n"' + u', '.join(returnunicode(row, keep_containers=True)) + u'".\ndid not exist in db.\n\nPlease submit it again!\nIt will be used for all occurences of the same ' + header_value + u'\n',
+                                        msg=msg,
                                         existing_list=similar_values,
                                         default_value=similar_values[0],
-                                        button_names=[u'Ignore', u'Cancel', u'Ok', u'Skip'])
+                                        button_names=[u'Ignore', u'Cancel', u'Ok', u'Skip'],
+                                        reuse_header_list=sorted(headers_colnr.keys()),
+                                        reuse_column=reuse_column
+                                        )
             answer = question.answer
             submitted_value = returnunicode(question.value)
+            reuse_column = returnunicode(question.reuse_column)
             if answer == u'cancel':
                 return answer
             elif answer == u'ignore':
@@ -1090,11 +1156,12 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
                 break
 
         if answer == u'skip':
-            if row[index] not in already_asked_values:
-                already_asked_values[row[index]] = None
+            if reuse_column:
+                already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = None
         else:
-            if row[index] not in already_asked_values:
-                already_asked_values[row[index]] = current_value
+            if reuse_column:
+                already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = current_value
+
             row[index] = current_value
             filtered_data.append(row)
 
@@ -1329,3 +1396,51 @@ class Cancel(object):
     """
     def __init__(self):
         pass
+
+
+def get_delimiter(filename=None, charset=u'utf-8', delimiters=None, num_fields=None):
+    delimiter = None
+    if filename is None:
+        MessagebarAndLog.critical(u'Must give filename')
+        return None
+    if delimiters is None:
+        delimiters = [u',', u';']
+    with io.open(filename, 'r', encoding=charset) as f:
+        rows = f.readlines()
+
+    tested_delim = []
+    for _delimiter in delimiters:
+        cols_on_all_rows = set()
+        cols_on_all_rows.update([len(row.split(_delimiter)) for row in rows])
+        if len(cols_on_all_rows) == 1:
+            nr_of_cols = cols_on_all_rows.pop()
+            if num_fields is not None and nr_of_cols == num_fields:
+                delimiter = _delimiter
+                break
+            tested_delim.append((_delimiter, nr_of_cols))
+
+    if delimiter is None:
+        if num_fields is not None:
+            MessagebarAndLog.critical(u'Delimiter not found for ' + filename + u'. The file must contain ' + str(num_fields) + u' fields, but none of ' + u' or '.join(delimiters) + u' worked as delimiter.')
+            return None
+
+        lenght = max(tested_delim, key=itemgetter(1))[1]
+
+        more_than_one_delimiter = [x[0] for x in tested_delim if x[1] == lenght]
+
+        delimiter = max(tested_delim, key=itemgetter(1))[0]
+
+        if lenght == 1:
+            MessagebarAndLog.warning(
+                bar_msg=u'Warning, only one column found, see log message panel',
+                log_msg=u'If the file only contains one column, ignore this message:\nThe delimiter might not have been found automatically.\nIt must be ' + u' or '.join(
+                    delimiters) + u'\n')
+        elif len(more_than_one_delimiter) > 1:
+            MessagebarAndLog.warning(
+                bar_msg=u'File error, delimiter not found, see log message panel',
+                log_msg=u'The delimiter might not have been found automatically.\nIt must be ' + u' or '.join(
+                    delimiters) + u'\n')
+            delimiter = None
+
+    return delimiter
+
