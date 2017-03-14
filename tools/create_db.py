@@ -21,6 +21,7 @@ import PyQt4.QtCore
 import PyQt4.QtGui
 from qgis.core import QGis
 import qgis.utils
+import re
 
 import os
 import locale
@@ -196,9 +197,23 @@ class newdb():
                                 FROM sqlite_master
                                 WHERE name = '""" + table + u"';")
 
-
+            table_descr_sql = (u"SELECT name, sql from sqlite_master WHERE name = '%s';"%table)
             self.cur.execute(table_descr_sql)
-            table_descr = self.cur.fetchall()[0][1].split(u'*')[1]
+            table_descr = self.cur.fetchall()[0][0]
+
+            matches = re.findall(u'''/*([A-Öa-ö0-9\-\_])*/''', table_descr)
+            print(str(matches))
+
+
+            try:
+                table_desc_start_idx = table_descr.index(u'/*')
+                table_desc_stop_idx = table_descr.index(u'*/')
+            except:
+                table_descr = None
+            else:
+                table_descr = table_descr
+
+
 
             self.cur.execute(u'''PRAGMA table_info(%s)''' % table)
             table_info = self.cur.fetchall()
@@ -233,7 +248,7 @@ class newdb():
                 self.cur.execute(column_descr_sql)
                 column_descr = self.cur.fetchall()
 
-                print(str(column_descr))
+
                 """
                 tablename text --Name of a table in the db
                 , columnname text --Name of column
