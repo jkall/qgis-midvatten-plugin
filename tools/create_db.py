@@ -186,6 +186,11 @@ class newdb():
         self.cur.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")
         tables = self.cur.fetchall()
 
+        table_descr_reg = re.compile(ur'/\*([A-Za-z0-9ÅÄÖåäö_() -]+)\*/', re.MULTILINE)
+        # strata text NOT NULL --clay etc
+        #, color_mplot text NOT NULL --color codes for matplotlib plots
+        column_descr_reg = re.compile(ur'([A-Za-z_]+)[ ]+[A-Za-z ]*--([A-Za-z0-9ÅÄÖåäö_() -]+)', re.MULTILINE)
+
         for table in tables:
             table = table[0]
             table_descr_sql = (u"""SELECT name,
@@ -199,19 +204,22 @@ class newdb():
 
             table_descr_sql = (u"SELECT name, sql from sqlite_master WHERE name = '%s';"%table)
             self.cur.execute(table_descr_sql)
-            table_descr = self.cur.fetchall()[0][0]
+            create_table_sql = self.cur.fetchall()[0][1]
+            print("create_table_sql %s"%create_table_sql)
+            table_descr = table_descr_reg.findall(create_table_sql)
 
-            matches = re.findall(u'''/*([A-Öa-ö0-9\-\_])*/''', table_descr)
-            print(str(matches))
+            print("Table matches: " + str(table_descr))
+            columns_descr = column_descr_reg.findall(create_table_sql)
+            print("Column matches: " + str(columns_descr))
 
 
-            try:
-                table_desc_start_idx = table_descr.index(u'/*')
-                table_desc_stop_idx = table_descr.index(u'*/')
-            except:
-                table_descr = None
-            else:
-                table_descr = table_descr
+            #try:
+            #    table_desc_start_idx = table_descr.index(u'/*')
+            #    table_desc_stop_idx = table_descr.index(u'*/')
+            #except:
+            #    table_descr = None
+            #else:
+            #    table_descr = table_descr
 
 
 
@@ -238,15 +246,6 @@ class newdb():
                 _foreign_keys = None
                 if colname in foreign_keys_dict:
                     _foreign_keys = u'%s(%s)'%(foreign_keys_dict[colname])
-
-                #TODO: The sql doesn't work perfectly, or its my create_db that faulty.
-                column_descr_sql = (u"""SELECT 	name,
-                                                '%s' as col_name,
-                                                substr("sql",instr("sql",'%s')+instr(substr("sql",instr("sql",'%s')),'--')+1,instr(substr("sql",instr("sql",'%s')),CHAR(10))-instr(substr("sql",instr("sql",'%s')),'--')-2) as description
-                                        FROM sqlite_master
-                                        WHERE name = '%s'"""%(colname, colname, colname, colname, colname, table))
-                self.cur.execute(column_descr_sql)
-                column_descr = self.cur.fetchall()
 
                 #TODO: Use a regext something like (group1 for column name)[ ]+(group2 everything else)(group-3-comment --[something to find the comment])
 
