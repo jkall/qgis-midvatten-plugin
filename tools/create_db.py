@@ -186,42 +186,23 @@ class newdb():
         self.cur.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")
         tables = self.cur.fetchall()
 
+        #Matches comment inside /* */
+        #create_table_sql CREATE TABLE meteo /*meteorological observations*/(
         table_descr_reg = re.compile(ur'/\*([A-Za-z0-9ÅÄÖåäö_() -]+)\*/', re.MULTILINE)
+        #Matches comment after --:
         # strata text NOT NULL --clay etc
         #, color_mplot text NOT NULL --color codes for matplotlib plots
         column_descr_reg = re.compile(ur'([A-Za-z_]+)[ ]+[A-Za-z ]*--([A-Za-z0-9ÅÄÖåäö_() -]+)', re.MULTILINE)
 
         for table in tables:
             table = table[0]
-            table_descr_sql = (u"""SELECT name,
-                                ltrim(rtrim(	substr("sql",1,instr("sql",CHAR(10))-1),
-                                        '1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM!@#$%^&()_+-=`~[]/\{}|;,.<>?" '
-                                          ),
-                                    '1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM!@#$%^&()_+-=`~[]/\{}|;,.<>?" '
-                                      ) as description
-                                FROM sqlite_master
-                                WHERE name = '""" + table + u"';")
 
+            #Get table and column comments
             table_descr_sql = (u"SELECT name, sql from sqlite_master WHERE name = '%s';"%table)
             self.cur.execute(table_descr_sql)
             create_table_sql = self.cur.fetchall()[0][1]
-            print("create_table_sql %s"%create_table_sql)
             table_descr = table_descr_reg.findall(create_table_sql)
-
-            print("Table matches: " + str(table_descr))
-            columns_descr = column_descr_reg.findall(create_table_sql)
-            print("Column matches: " + str(columns_descr))
-
-
-            #try:
-            #    table_desc_start_idx = table_descr.index(u'/*')
-            #    table_desc_stop_idx = table_descr.index(u'*/')
-            #except:
-            #    table_descr = None
-            #else:
-            #    table_descr = table_descr
-
-
+            columns_descr = dict(column_descr_reg.findall(create_table_sql))
 
             self.cur.execute(u'''PRAGMA table_info(%s)''' % table)
             table_info = self.cur.fetchall()
@@ -237,42 +218,22 @@ class newdb():
                 _table = _row[2]
                 foreign_keys_dict[_from] = (_table, _to)
 
+            #TODO: Insert the table info into about_db
+            self.cur.execute(u"""INSERT INTO about_db (tablename, columnname, description) VALUES ('%s', '%s', '%s')"""%(table, u'*', table_descr))
+
             for column in table_info:
                 colname = column[1]
                 data_type = column[2]
-                notnull = column[3]
-                defaultvalue = column[4]
+                not_null = column[3]
+                default_value = column[4]
                 primary_key = column[5]
                 _foreign_keys = None
                 if colname in foreign_keys_dict:
                     _foreign_keys = u'%s(%s)'%(foreign_keys_dict[colname])
-
-                #TODO: Use a regext something like (group1 for column name)[ ]+(group2 everything else)(group-3-comment --[something to find the comment])
-
-                """
-                tablename text --Name of a table in the db
-                , columnname text --Name of column
-                , data_type text --Name of column
-                , not_null text --1 if the column can not contain NULL
-                , default_value text --The default value of the column
-                , primary_key text --1 if column is a primary key
-                , foreign_key text --table(column) of foreign keys
-                , description text --Comment for column or table
-                """
-
-
-            #print(str(table_info))
-            column_headers_types = [(row[1], row[2]) for row in table_info]
-            primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
-            not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
-
-
-
-            #for
-            # column, data_type in column_headers_types:
-
-            #print("column_headers_types: %s\nprimary_keys: %s\nnot_null_columns: %s\n"%(str(column_headers_types), str(primary_keys), str(not_null_columns)))
-
+                column_descr = columns_descr.get(colname, None)
+                sql = u'INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description) VALUES '
+                sql += u'({})'.format(u', '.join([u"""CASE WHEN %s != '' or %s != ' ' or %s IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, colname, data_type, not_null, default_value, primary_key, _foreign_keys, column_descr]]))
+                self.cur.execute(sql)
 
     def excecute_sqlfile(self, sqlfilename):
         with open(sqlfilename, 'r') as f:
