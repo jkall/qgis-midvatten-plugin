@@ -14,27 +14,27 @@ tablename text --Name of a table in the db
 );
 INSERT INTO about_db VALUES('*', '*', '', '', '', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION, running QGIS version CHANGETOQGISVERSION on top of SpatiaLite version CHANGETOSPLITEVERSION', '', '');
 INSERT INTO about_db VALUES('*', '*', '', '', '', '', '', 'locale:CHANGETOLOCALE', '', '');
-CREATE TABLE zz_staff /*data domain for field staff used when importing data*/(
+CREATE TABLE zz_staff /*Data domain for field staff used when importing data*/(
 staff text --Initials of the field staff
 , name text --Name of the field staff
 , PRIMARY KEY(staff)
 );
-CREATE TABLE zz_flowtype /*data domain for flowtypes in table w_flow*/(
+CREATE TABLE zz_flowtype /*Data domain for flowtypes in table w_flow*/(
 type text NOT NULL --Allowed flowtypes
 , explanation text --Explanation of the flowtypes
 , PRIMARY KEY(type)
 );
-CREATE TABLE zz_meteoparam /*data domain for meteorological parameters in meteo*/(
+CREATE TABLE zz_meteoparam /*Data domain for meteorological parameters in meteo*/(
 parameter text NOT NULL --Allowed meteorological parameters
 , explanation text --Explanation of the parameters
 , PRIMARY KEY(parameter)
 );
-CREATE TABLE zz_strat /*data domain for stratigraphy classes*/(
+CREATE TABLE zz_strat /*Data domain for stratigraphy classes*/(
 geoshort text NOT NULL --Abbreviation for the strata (stratigraphy class)
 , strata text NOT NULL --clay etc
 , PRIMARY KEY(geoshort)
 );
-CREATE TABLE zz_stratigraphy_plots /*data domain for stratigraphy plot colors and symbols used by the plugin*/(
+CREATE TABLE zz_stratigraphy_plots /*Data domain for stratigraphy plot colors and symbols used by the plugin*/(
 strata text NOT NULL --clay etc
 , color_mplot text NOT NULL --Color codes for matplotlib plots
 , hatch_mplot text NOT NULL --Hatch codes for matplotlib plots
@@ -42,12 +42,12 @@ strata text NOT NULL --clay etc
 , brush_qt text NOT NULL --Brush types for Qt plots
 , PRIMARY KEY(strata)
 );
-CREATE TABLE zz_capacity /*data domain for stratigraphy classes and geological short names used by the plugin*/(
+CREATE TABLE zz_capacity /*Data domain for capacity classes used by the plugin*/(
 capacity text NOT NULL --Water capacity (ex. in the range 1-6)
 , explanation text NOT NULL --Description of water capacity classes
 , PRIMARY KEY(capacity)
 );
-CREATE TABLE zz_capacity_plots /*data domain for capacity plot colors used by the plugin*/(
+CREATE TABLE zz_capacity_plots /*Data domain for capacity plot colors used by the plugin*/(
 capacity text NOT NULL --Water capacity (ex. in the range 1-6)
 , color_qt text NOT NULL --Hatchcolor codes for Qt plots
 , PRIMARY KEY(capacity)
@@ -102,7 +102,7 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , PRIMARY KEY (obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
-CREATE TABLE w_levels_logger /*Automatic Water Level Readings*/(
+CREATE TABLE w_levels_logger /*Automatic water level readings*/(
 obsid text NOT NULL --Obsid linked to obs_points.obsid
 , date_time text NOT NULL --Date and Time for the observation
 , head_cm double --Pressure (cm water column) on pressure transducer
@@ -113,7 +113,7 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , PRIMARY KEY (obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
-CREATE TABLE stratigraphy /*stratigraphy information from drillings*/(
+CREATE TABLE stratigraphy /*Stratigraphy information from drillings*/(
 obsid text NOT NULL --Obsid linked to obs_points.obsid
 , stratid integer NOT NULL --Stratigraphy layer ID for the OBSID
 , depthtop double --Top of the layer in m from ground surface
@@ -198,7 +198,7 @@ obsid text NOT NULL --Obsid linked to obs_lines.obsid
 , PRIMARY KEY (obsid, length)
 , FOREIGN KEY (obsid) REFERENCES obs_lines(obsid)
 );
-CREATE TABLE comments /*comments connected to obsids*/(
+CREATE TABLE comments /*Comments connected to obsids*/(
 obsid text NOT NULL --Obsid linked to obs_points.obsid
 , date_time text NOT NULL --Date and Time for the comment
 , comment text NOT NULL --Comment
