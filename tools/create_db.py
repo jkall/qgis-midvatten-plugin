@@ -219,7 +219,9 @@ class newdb():
                 foreign_keys_dict[_from] = (_table, _to)
 
             #TODO: Insert the table info into about_db
-            self.cur.execute(u"""INSERT INTO about_db (tablename, columnname, description) VALUES ('%s', '%s', '%s')"""%(table, u'*', table_descr))
+            sql = ur"""INSERT INTO about_db (tablename, columnname, description) VALUES """
+            sql +=  ur'({});'.format(u', '.join([u"""CASE WHEN %s != '' or %s != ' ' or %s IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, ur'', table_descr]]))
+            self.cur.execute(sql)
 
             for column in table_info:
                 colname = column[1]
@@ -232,7 +234,7 @@ class newdb():
                     _foreign_keys = u'%s(%s)'%(foreign_keys_dict[colname])
                 column_descr = columns_descr.get(colname, None)
                 sql = u'INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description) VALUES '
-                sql += u'({})'.format(u', '.join([u"""CASE WHEN %s != '' or %s != ' ' or %s IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, colname, data_type, not_null, default_value, primary_key, _foreign_keys, column_descr]]))
+                sql += u'({});'.format(u', '.join([u"""CASE WHEN %s != '' or %s != ' ' or %s IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, colname, data_type, not_null, default_value, primary_key, _foreign_keys, column_descr]]))
                 self.cur.execute(sql)
 
     def excecute_sqlfile(self, sqlfilename):
