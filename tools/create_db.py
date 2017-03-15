@@ -113,6 +113,10 @@ class newdb():
                         #utils.pop_up_info('Failed to create DB!')
 
                 #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
+                try:#spatial_ref_sys_aux not implemented until spatialite 4.3
+                    self.cur.execute(r"""delete from spatial_ref_sys_aux where srid NOT IN ('%s', '4326')""" % EPSGID)
+                except:
+                    pass
                 delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
                 try:
                     self.cur.execute(delete_srid_sql)

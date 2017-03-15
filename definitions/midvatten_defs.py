@@ -556,6 +556,8 @@ def SQLiteInternalTables():
                 'geometry_columns',
                 'geometry_columns_time',
                 'spatial_ref_sys',
+                'spatial_ref_sys_aux',
+                'spatial_ref_sys_all',
                 'spatialite_history',
                 'vector_layers',
                 'views_geometry_columns',
