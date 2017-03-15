@@ -1471,33 +1471,22 @@ def create_markdown_table_from_table(tablename, transposed=False, only_descripti
     column_names = table[0]
     table_contents = table[1:]
 
-
     printlist = [u'|{}|'.format(u' | '.join(column_names))]
-    printlist.append(u'|{}|'.format(u' | '.join([u':---' if not idx else u'---:' for idx, x in enumerate(column_names)])))
+    printlist.append(u'|{}|'.format(u' | '.join([u':---' for idx, x in enumerate(column_names)])))
     printlist.extend([u'|{}|'.format(u' | '.join([item if item is not None else u'' for item in row])) for row in table_contents])
     return u'\n'.join(printlist)
 
 def list_of_lists_from_table(tablename):
     list_of_lists = []
     table_info = sql_load_fr_db(u'''PRAGMA table_info(%s)''' % tablename)[1]
-
     table_info = returnunicode(table_info, keep_containers=True)
-
     column_names = [x[1] for x in table_info]
     list_of_lists.append(column_names)
     table_contents = sql_load_fr_db(u'SELECT * FROM %s'%tablename)[1]
-    #print("Before: %s"%str(table_contents))
     table_contents = returnunicode(table_contents, keep_containers=True)
-    #print("After: %s"%str(table_contents))
     list_of_lists.extend(table_contents)
-
     return list_of_lists
 
 def transpose_lists_of_lists(list_of_lists):
     outlist_of_lists = [[row[colnr] for row in list_of_lists] for colnr in xrange(len(list_of_lists[0]))]
     return outlist_of_lists
-
-def about_db_csv():
-    table_contents = list_of_lists_from_table(u'about_db')
-    return u'\n'.join([u';'.join([item if item is not None else u'' for item in row]) for row in table_contents])
-

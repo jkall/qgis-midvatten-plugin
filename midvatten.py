@@ -58,6 +58,7 @@ from midvsettings import midvsettings
 import midvsettingsdialog
 from piper import PiperPlot
 from export_data import ExportData
+import PyQt4
 #import profilefromdem
 
 class midvatten:
@@ -823,17 +824,21 @@ class midvatten:
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
-            verno = iniText.value('version').toString()
+            _verno = iniText.value('version')
+            if isinstance(_verno, PyQt4.QtCore.QVariant):
+                verno = _verno.toString()
+            else:
+                verno = str(_verno)
             from create_db import newdb
             newdbinstance = newdb(verno)
             if not newdbinstance.dbpath=='':
                 db = newdbinstance.dbpath
                 self.ms.settingsdict['database'] = db
                 self.ms.save_settings()
-            markdowntable = utils.create_markdown_table_from_table(u'about_db', transposed=False, only_description=True)
-            print(markdowntable)
-            #print(utils.about_db_csv())
-            #utils.MessagebarAndLog.info(log_msg=u'Markdown table for about_db:\n\n%s'%markdowntable)
+
+            #The markdown table is for gitlab. Run the rows below when there is a change in create_db
+            #markdowntable = utils.create_markdown_table_from_table(u'about_db', transposed=False, only_description=True)
+            #print(markdowntable)
 
     def plot_piper(self):
         allcritical_layers = ('w_qual_lab', 'w_qual_field')#none of these layers must be in editing mode
