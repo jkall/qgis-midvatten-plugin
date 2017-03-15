@@ -202,6 +202,11 @@ class newdb():
             self.cur.execute(table_descr_sql)
             create_table_sql = self.cur.fetchall()[0][1]
             table_descr = table_descr_reg.findall(create_table_sql)
+            try:
+                table_descr = table_descr[0]
+            except IndexError:
+                table_descr = None
+
             columns_descr = dict(column_descr_reg.findall(create_table_sql))
 
             self.cur.execute(u'''PRAGMA table_info(%s)''' % table)
@@ -218,9 +223,8 @@ class newdb():
                 _table = _row[2]
                 foreign_keys_dict[_from] = (_table, _to)
 
-            #TODO: Insert the table info into about_db
             sql = ur"""INSERT INTO about_db (tablename, columnname, description) VALUES """
-            sql +=  ur'({});'.format(u', '.join([u"""CASE WHEN %s != '' or %s != ' ' or %s IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, ur'', table_descr]]))
+            sql +=  ur'({});'.format(u', '.join([u"""(CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END)"""%(col, col, col, col) for col in [table, ur'', table_descr]]))
             self.cur.execute(sql)
 
             for column in table_info:
@@ -234,7 +238,7 @@ class newdb():
                     _foreign_keys = u'%s(%s)'%(foreign_keys_dict[colname])
                 column_descr = columns_descr.get(colname, None)
                 sql = u'INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description) VALUES '
-                sql += u'({});'.format(u', '.join([u"""CASE WHEN %s != '' or %s != ' ' or %s IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, colname, data_type, not_null, default_value, primary_key, _foreign_keys, column_descr]]))
+                sql += u'({});'.format(u', '.join([u"""CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, colname, data_type, not_null, default_value, primary_key, _foreign_keys, column_descr]]))
                 self.cur.execute(sql)
 
     def excecute_sqlfile(self, sqlfilename):
