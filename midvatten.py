@@ -823,13 +823,17 @@ class midvatten:
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
-            verno = str(iniText.value('version')) 
+            verno = iniText.value('version').toString()
             from create_db import newdb
             newdbinstance = newdb(verno)
             if not newdbinstance.dbpath=='':
                 db = newdbinstance.dbpath
                 self.ms.settingsdict['database'] = db
                 self.ms.save_settings()
+            markdowntable = utils.create_markdown_table_from_table(u'about_db', transposed=False, only_description=True)
+            print(markdowntable)
+            #print(utils.about_db_csv())
+            #utils.MessagebarAndLog.info(log_msg=u'Markdown table for about_db:\n\n%s'%markdowntable)
 
     def plot_piper(self):
         allcritical_layers = ('w_qual_lab', 'w_qual_field')#none of these layers must be in editing mode

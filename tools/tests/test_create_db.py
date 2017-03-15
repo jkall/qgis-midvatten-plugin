@@ -32,7 +32,7 @@ from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgi
 from tools.tests.mocks_for_tests import DummyInterface
 
 
-class TestCreateMemoryDb():
+class _TestCreateMemoryDb():
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
     answer_yes = MockUsingReturnValue(answer_yes_obj)
@@ -57,7 +57,7 @@ class TestCreateMemoryDb():
         self.midvatten = None
 
 
-class _TestCreateDb(object):
+class TestCreateDb(object):
     temp_db_path = u'/tmp/tmp_midvatten_temp_db.sqlite'
     #temp_db_path = '/home/henrik/temp/tmp_midvatten_temp_db.sqlite'
     answer_yes_obj = MockUsingReturnValue()

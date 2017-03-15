@@ -34,6 +34,7 @@ import os
 import qgis.utils
 import tempfile
 import time
+import matplotlib.pyplot as plt
 from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -41,6 +42,13 @@ from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialit
 from pyspatialite.dbapi2 import IntegrityError, OperationalError
 from qgis.core import *
 from qgis.gui import *
+
+try:
+    import pandas as pd
+except:
+    pandas_on = False
+else:
+    pandas_on = True
 
 from matplotlib.dates import num2date
 
@@ -521,6 +529,8 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
                 text = dict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
             elif isinstance(anything, OrderedDict):
                 text = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
+            elif isinstance(anything, PyQt4.QtCore.QVariant):
+                text = returnunicode(anything.toString())
             else:
                 text = anything
 
@@ -1443,4 +1453,51 @@ def get_delimiter(filename=None, charset=u'utf-8', delimiters=None, num_fields=N
             delimiter = None
 
     return delimiter
+
+def create_markdown_table_from_table(tablename, transposed=False, only_description=False):
+    table = list_of_lists_from_table(tablename)
+    if only_description:
+        descr_idx = table[0].index(u'description')
+        tablename_idx = table[0].index(u'tablename')
+        columnname_idx = table[0].index(u'columnname')
+
+        table = [[row[tablename_idx], row[columnname_idx], row[descr_idx]] for row in table]
+
+    if transposed:
+        table = transpose_lists_of_lists(table)
+        for row in table:
+            row[0] = u'**{}**'.format(row[0])
+
+    column_names = table[0]
+    table_contents = table[1:]
+
+
+    printlist = [u'|{}|'.format(u' | '.join(column_names))]
+    printlist.append(u'|{}|'.format(u' | '.join([u':---' if not idx else u'---:' for idx, x in enumerate(column_names)])))
+    printlist.extend([u'|{}|'.format(u' | '.join([item if item is not None else u'' for item in row])) for row in table_contents])
+    return u'\n'.join(printlist)
+
+def list_of_lists_from_table(tablename):
+    list_of_lists = []
+    table_info = sql_load_fr_db(u'''PRAGMA table_info(%s)''' % tablename)[1]
+
+    table_info = returnunicode(table_info, keep_containers=True)
+
+    column_names = [x[1] for x in table_info]
+    list_of_lists.append(column_names)
+    table_contents = sql_load_fr_db(u'SELECT * FROM %s'%tablename)[1]
+    #print("Before: %s"%str(table_contents))
+    table_contents = returnunicode(table_contents, keep_containers=True)
+    #print("After: %s"%str(table_contents))
+    list_of_lists.extend(table_contents)
+
+    return list_of_lists
+
+def transpose_lists_of_lists(list_of_lists):
+    outlist_of_lists = [[row[colnr] for row in list_of_lists] for colnr in xrange(len(list_of_lists[0]))]
+    return outlist_of_lists
+
+def about_db_csv():
+    table_contents = list_of_lists_from_table(u'about_db')
+    return u'\n'.join([u';'.join([item if item is not None else u'' for item in row]) for row in table_contents])
 

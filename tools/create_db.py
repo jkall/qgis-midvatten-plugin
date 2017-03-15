@@ -100,9 +100,14 @@ class newdb():
                         continue
                     if line.startswith("#"):
                         continue
+                    try:
+                        verno.toString().data()
+                    except:
+                        pass
+
                     for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
                                                        ('CHANGETOPLUGINVERSION', str(verno)),
-                                                       ('CHANGETOQGISVERSION',qgisverno),
+                                                       ('CHANGETOQGISVERSION',str(qgisverno)),
                                                        ('CHANGETOSPLITEVERSION', str(versionstext[0][0])),
                                                        ('CHANGETOLOCALE', str(set_locale))]:
                         line = line.replace(replace_word, replace_with)
@@ -188,11 +193,11 @@ class newdb():
 
         #Matches comment inside /* */
         #create_table_sql CREATE TABLE meteo /*meteorological observations*/(
-        table_descr_reg = re.compile(ur'/\*([A-Za-z0-9ÅÄÖåäö_() -]+)\*/', re.MULTILINE)
+        table_descr_reg = re.compile(ur'/\*(.+)\*/', re.MULTILINE)
         #Matches comment after --:
         # strata text NOT NULL --clay etc
         #, color_mplot text NOT NULL --color codes for matplotlib plots
-        column_descr_reg = re.compile(ur'([A-Za-z_]+)[ ]+[A-Za-z ]*--([A-Za-z0-9ÅÄÖåäö_() -]+)', re.MULTILINE)
+        column_descr_reg = re.compile(ur'([A-Za-z_]+)[ ]+[A-Za-z ]*--(.+)', re.MULTILINE)
 
         for table in tables:
             table = table[0]
@@ -206,6 +211,8 @@ class newdb():
                 table_descr = table_descr[0]
             except IndexError:
                 table_descr = None
+            else:
+                table_descr = table_descr.replace(u"'", u"''")
 
             columns_descr = dict(column_descr_reg.findall(create_table_sql))
 
@@ -230,16 +237,22 @@ class newdb():
             for column in table_info:
                 colname = column[1]
                 data_type = column[2]
-                not_null = column[3]
-                default_value = column[4]
-                primary_key = column[5]
-                _foreign_keys = None
+                not_null = column[3] if column[3] == u'1' else u''
+                default_value = column[4] if column[4] else u''
+                primary_key = column[5] if column[5] == u'1' else u''
+                _foreign_keys = u''
                 if colname in foreign_keys_dict:
                     _foreign_keys = u'%s(%s)'%(foreign_keys_dict[colname])
                 column_descr = columns_descr.get(colname, None)
+                if column_descr:
+                    column_descr = column_descr.replace(u"'", u"''")
                 sql = u'INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description) VALUES '
                 sql += u'({});'.format(u', '.join([u"""CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, colname, data_type, not_null, default_value, primary_key, _foreign_keys, column_descr]]))
-                self.cur.execute(sql)
+                try:
+                    self.cur.execute(sql)
+                except:
+                    print(sql)
+                    raise Exception()
 
     def excecute_sqlfile(self, sqlfilename):
         with open(sqlfilename, 'r') as f:
