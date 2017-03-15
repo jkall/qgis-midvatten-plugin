@@ -183,7 +183,7 @@ class newdb():
         self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", "insert_obs_points_triggers.sql"))
 
     def add_metadata_to_about_db(self):
-        self.cur.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")
+        self.cur.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table') and not (name in""" + defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")
         tables = self.cur.fetchall()
 
         #Matches comment inside /* */
@@ -224,7 +224,7 @@ class newdb():
                 foreign_keys_dict[_from] = (_table, _to)
 
             sql = ur"""INSERT INTO about_db (tablename, columnname, description) VALUES """
-            sql +=  ur'({});'.format(u', '.join([u"""(CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END)"""%(col, col, col, col) for col in [table, ur'', table_descr]]))
+            sql +=  ur'({});'.format(u', '.join([u"""(CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END)"""%(col, col, col, col) for col in [table, ur'*', table_descr]]))
             self.cur.execute(sql)
 
             for column in table_info:

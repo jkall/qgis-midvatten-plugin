@@ -116,8 +116,8 @@ obsid text NOT NULL --obsid linked to obs_points.obsid
 CREATE TABLE stratigraphy /*stratigraphy information from drillings*/(
 obsid text NOT NULL --obsid linked to obs_points.obsid
 , stratid integer NOT NULL --Stratigraphy layer ID for the OBSID
-, depthtop double --Depth
-, depthbot double --Depth
+, depthtop double --Layer top depth
+, depthbot double --Layer bottom depth
 , geology text --Full description of geology
 , geoshort text --Short description of geology
 , capacity text --Well development at the layer
