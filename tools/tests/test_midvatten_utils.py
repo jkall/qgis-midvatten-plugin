@@ -51,18 +51,6 @@ class TestFilterNonexistingObsidsAndAsk(object):
 
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
-    def test_filter_nonexisting_obsids_and_ask_ignore(self, mock_notfound, mock_iface):
-            mock_notfound.return_value.answer = u'ignore'
-            mock_notfound.return_value.value = 10
-            mock_notfound.return_value.reuse_column = u'obsid'
-            file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
-            existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
-            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
-            reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'10', u'b'], [u'10', u'h']]
-            assert filtered_file_data == reference_list
-
-    @mock.patch('qgis.utils.iface', autospec=True)
-    @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
     def test_filter_nonexisting_obsids_and_ask_cancel(self, mock_notfound, mock_iface):
             mock_notfound.return_value.answer = u'cancel'
             mock_notfound.return_value.value = 10
@@ -114,8 +102,8 @@ class TestFilterNonexistingObsidsAndAsk(object):
     def test_filter_nonexisting_obsids_and_ask_header_capitalize(self, mock_iface):
             file_data = [[u'obsid', u'ae'], [u'a', u'b'], [u'2', u'c']]
             existing_obsids = [u'A', u'2']
-            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids, True)
-            reference_list = [[u'obsid', u'ae'], [u'2', u'c'], [u'A', u'b']]
+            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data=file_data, header_value=u'obsid', existing_values=existing_obsids, try_capitalize=True, always_ask_user=False)
+            reference_list = [[u'obsid', u'ae'], [u'A', u'b'], [u'2', u'c']]
             assert filtered_file_data == reference_list
 
     @mock.patch('qgis.utils.iface', autospec=True)

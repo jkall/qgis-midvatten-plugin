@@ -1048,7 +1048,7 @@ def find_similar(word, wordlist, hits=5):
 
     return matches
 
-def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=None, try_capitalize=False, vertical_msg_list=True, always_confirm=False):
+def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existing_values=None, try_capitalize=False, always_ask_user=False):
     """
 
     The class NotFoundQuestion is used with 4 buttons; u'Ignore', u'Cancel', u'Ok', u'Skip'.
@@ -1060,41 +1060,52 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
     :param file_data:
     :param header_value:
     :param existing_values:
-    :param try_capitalize:
+    :param try_capitalize: If True, the header_value will be matched against existing_values both original value and as capitalized value. This parameter only has an effect if always_ask_user is False.
+    :param always_ask_user: The used will be requested for every distinct header_value
     :return:
 
-
     """
+    if file_data is None or header_value is None:
+        return []
     if existing_values is None:
         existing_values = []
     header_value = returnunicode(header_value)
     filtered_data = []
     data_to_ask_for = []
     add_column = False
-    for rownr, row in enumerate(file_data):
-        if rownr == 0:
-            try:
-                index = row.index(header_value)
-            except ValueError:
-                # The header and all answers will be added as a new column.
-                row.append(header_value)
-                index = -1
-                add_column = True
-                filtered_data.append(row)
-                pass
-            else:
-                filtered_data.append(row)
-            continue
+
+    try:
+        index = file_data[0].index(header_value)
+    except ValueError:
+        # The header and all answers will be added as a new column.
+        file_data[0].append(header_value)
+        index = -1
+        add_column = True
+        filtered_data.append(file_data[0])
+        pass
+    else:
+        filtered_data.append(file_data[0])
+
+    for row in file_data[1:]:
         if add_column:
             row.append(None)
-        value = row[index]
-        if always_confirm:
+        if always_ask_user:
             data_to_ask_for.append(row)
         else:
-            if value not in existing_values:
-                data_to_ask_for.append(row)
+            values = [row[index]]
+            if try_capitalize:
+                try:
+                    values.append(row[index].capitalize())
+                except AttributeError:
+                    pass
+
+            for _value in values:
+                if _value in existing_values:
+                    row[index] = _value
+                    filtered_data.append(row)
+                    break
             else:
-                filtered_data.append(row)
+                data_to_ask_for.append(row)
 
     headers_colnr = dict([(header, colnr) for colnr, header in enumerate(file_data[0])])
 
@@ -1126,52 +1137,29 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
         similar_values = find_similar(current_value, existing_values, hits=5)
         similar_values.extend(sorted(existing_values))
 
-        not_tried_capitalize = True
+        msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nGive the ' + header_value + u' for:\n' + u'\n'.join([u': '.join((file_data[0][_colnr], word if word is not None else u'')) for _colnr, word in enumerate(row)])
+        question = NotFoundQuestion(dialogtitle=u'WARNING',
+                                    msg=msg,
+                                    existing_list=similar_values,
+                                    default_value=similar_values[0],
+                                    button_names=[u'Cancel', u'Ok', u'Skip'],
+                                    reuse_header_list=sorted(headers_colnr.keys()),
+                                    reuse_column=reuse_column
+                                    )
+        answer = question.answer
+        submitted_value = returnunicode(question.value)
+        reuse_column = returnunicode(question.reuse_column)
+        if answer == u'cancel':
+            return answer
+        elif answer == u'ok':
+            current_value = submitted_value
+        elif answer == u'skip':
+            current_value = None
 
-        answer = None
-        while current_value not in existing_values:
-            if try_capitalize and not_tried_capitalize:
-                try:
-                    current_value = current_value.capitalize()
-                except AttributeError:
-                    not_tried_capitalize = False
-                else:
-                    not_tried_capitalize = False
-                    continue
+        if reuse_column:
+            already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = current_value
 
-            if not vertical_msg_list:
-                msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'" on row:\n"' + u', '.join(returnunicode(row, keep_containers=True)) + u'".\ndid not exist in db.\n\nPlease submit it again!\n'
-            else:
-                msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'''" on current row didn't exist in database. Please select an existing ''' + header_value + u'\n' + u'\n'.join([u': '.join((file_data[0][_colnr], word if word is not None else u'')) for _colnr, word in enumerate(row)])
-            question = NotFoundQuestion(dialogtitle=u'WARNING',
-                                        msg=msg,
-                                        existing_list=similar_values,
-                                        default_value=similar_values[0],
-                                        button_names=[u'Ignore', u'Cancel', u'Ok', u'Skip'],
-                                        reuse_header_list=sorted(headers_colnr.keys()),
-                                        reuse_column=reuse_column
-                                        )
-            answer = question.answer
-            submitted_value = returnunicode(question.value)
-            reuse_column = returnunicode(question.reuse_column)
-            if answer == u'cancel':
-                return answer
-            elif answer == u'ignore':
-                current_value = submitted_value
-                break
-            elif answer == u'ok':
-                current_value = submitted_value
-            elif answer == u'skip':
-                current_value = None
-                break
-
-        if answer == u'skip':
-            if reuse_column:
-                already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = None
-        else:
-            if reuse_column:
-                already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = current_value
-
+        if current_value is not None:
             row[index] = current_value
             filtered_data.append(row)
 
