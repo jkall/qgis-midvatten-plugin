@@ -756,3 +756,14 @@ def export_fieldlogger_defaults():
     input_field_browser = utils.anything_to_string_representation(input_field_browser)
     input_fields_groups = utils.anything_to_string_representation(input_fields_groups)
     return input_field_browser, input_fields_groups
+
+def db_setup_as_string():
+    tables = utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + SQLiteInternalTables() + r""") ORDER BY tbl_name""")[1]
+    res = []
+    for table in tables:
+        if table == u'about_db':
+            continue
+        res.append(table)
+        table_info = utils.sql_load_fr_db(u'''PRAGMA table_info(%s)''' % table)[1]
+        res.append(table_info)
+    return utils.anything_to_string_representation(res)
