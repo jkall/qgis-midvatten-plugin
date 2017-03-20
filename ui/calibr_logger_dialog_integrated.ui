@@ -191,7 +191,8 @@
             <property name="font">
              <font>
               <family>Arial</family>
-              <pointsize>9</pointsize>
+              <pointsize>8</pointsize>
+              <italic>false</italic>
              </font>
             </property>
             <property name="wrapping">
@@ -227,14 +228,14 @@
           <item row="0" column="2">
            <widget class="QPushButton" name="pushButtonFrom">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="minimumSize">
              <size>
-              <width>70</width>
+              <width>20</width>
               <height>20</height>
              </size>
             </property>
@@ -244,12 +245,15 @@
               <pointsize>8</pointsize>
              </font>
             </property>
+            <property name="toolTip">
+             <string>Select from-date in plot</string>
+            </property>
             <property name="text">
              <string>select in plot</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
+          <item row="2" column="0">
            <widget class="QLabel" name="label_4">
             <property name="minimumSize">
              <size>
@@ -262,7 +266,7 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="2" column="1">
            <widget class="QDateTimeEdit" name="ToDateTime">
             <property name="sizePolicy">
              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -279,7 +283,7 @@
             <property name="font">
              <font>
               <family>Arial</family>
-              <pointsize>9</pointsize>
+              <pointsize>8</pointsize>
               <italic>false</italic>
              </font>
             </property>
@@ -313,17 +317,17 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
+          <item row="2" column="2">
            <widget class="QPushButton" name="pushButtonTo">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="minimumSize">
              <size>
-              <width>70</width>
+              <width>20</width>
               <height>20</height>
              </size>
             </property>
@@ -333,8 +337,61 @@
               <pointsize>8</pointsize>
              </font>
             </property>
+            <property name="toolTip">
+             <string>Select to-date in plot</string>
+            </property>
             <property name="text">
              <string>select in plot</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QPushButton" name="pushButton_from_extent">
+            <property name="minimumSize">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Arial</family>
+              <pointsize>8</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Set from-date to current view extent</string>
+            </property>
+            <property name="text">
+             <string>from current extent</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QPushButton" name="pushButton_to_extent">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Arial</family>
+              <pointsize>8</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Set to-date to current view extent</string>
+            </property>
+            <property name="text">
+             <string>from current extent</string>
             </property>
            </widget>
           </item>
@@ -917,7 +974,7 @@
                  </size>
                 </property>
                 <property name="text">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In this tab you may remove erroneous data from the database. &lt;/p&gt;&lt;p&gt;Deletion is done of water level logger data (database table w_levels_logger). &lt;/p&gt;&lt;p&gt;Set interval for deletion above and then select to delete logger data below. (You will be asked to confirm the deletion.)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In this tab you may remove erroneous data from the database. &lt;/p&gt;&lt;p&gt;Deletion is done of water level logger data (database table w_levels_logger). &lt;/p&gt;&lt;p&gt;Set interval for deletion above (from/to) and then select to delete logger data below. (You will be asked to confirm the deletion.)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="wordWrap">
                  <bool>true</bool>
