@@ -88,6 +88,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             filename = filename
         self.filename = returnunicode(filename)
         delimiter = utils.get_delimiter(filename=self.filename, charset=self.charset, delimiters=[u',', u';'])
+        if isinstance(delimiter, Cancel):
+            return delimiter
         self.file_data = self.file_to_list(self.filename, self.charset, delimiter)
 
         header_question = utils.askuser(question=u"YesNo", msg=u"""Does the file contain a header?""")

@@ -34,6 +34,7 @@ import os
 import qgis.utils
 import tempfile
 import time
+import matplotlib.pyplot as plt
 from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -41,6 +42,13 @@ from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialit
 from pyspatialite.dbapi2 import IntegrityError, OperationalError
 from qgis.core import *
 from qgis.gui import *
+
+try:
+    import pandas as pd
+except:
+    pandas_on = False
+else:
+    pandas_on = True
 
 from matplotlib.dates import num2date
 
@@ -521,6 +529,8 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
                 text = dict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
             elif isinstance(anything, OrderedDict):
                 text = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
+            elif isinstance(anything, PyQt4.QtCore.QVariant):
+                text = returnunicode(anything.toString())
             else:
                 text = anything
 
@@ -1038,7 +1048,7 @@ def find_similar(word, wordlist, hits=5):
 
     return matches
 
-def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=None, try_capitalize=False, vertical_msg_list=True, always_confirm=False):
+def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existing_values=None, try_capitalize=False, always_ask_user=False):
     """
 
     The class NotFoundQuestion is used with 4 buttons; u'Ignore', u'Cancel', u'Ok', u'Skip'.
@@ -1050,41 +1060,52 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
     :param file_data:
     :param header_value:
     :param existing_values:
-    :param try_capitalize:
+    :param try_capitalize: If True, the header_value will be matched against existing_values both original value and as capitalized value. This parameter only has an effect if always_ask_user is False.
+    :param always_ask_user: The used will be requested for every distinct header_value
     :return:
 
-
     """
+    if file_data is None or header_value is None:
+        return []
     if existing_values is None:
         existing_values = []
     header_value = returnunicode(header_value)
     filtered_data = []
     data_to_ask_for = []
     add_column = False
-    for rownr, row in enumerate(file_data):
-        if rownr == 0:
-            try:
-                index = row.index(header_value)
-            except ValueError:
-                # The header and all answers will be added as a new column.
-                row.append(header_value)
-                index = -1
-                add_column = True
-                filtered_data.append(row)
-                pass
-            else:
-                filtered_data.append(row)
-            continue
+
+    try:
+        index = file_data[0].index(header_value)
+    except ValueError:
+        # The header and all answers will be added as a new column.
+        file_data[0].append(header_value)
+        index = -1
+        add_column = True
+        filtered_data.append(file_data[0])
+        pass
+    else:
+        filtered_data.append(file_data[0])
+
+    for row in file_data[1:]:
         if add_column:
             row.append(None)
-        value = row[index]
-        if always_confirm:
+        if always_ask_user:
             data_to_ask_for.append(row)
         else:
-            if value not in existing_values:
-                data_to_ask_for.append(row)
+            values = [row[index]]
+            if try_capitalize:
+                try:
+                    values.append(row[index].capitalize())
+                except AttributeError:
+                    pass
+
+            for _value in values:
+                if _value in existing_values:
+                    row[index] = _value
+                    filtered_data.append(row)
+                    break
             else:
-                filtered_data.append(row)
+                data_to_ask_for.append(row)
 
     headers_colnr = dict([(header, colnr) for colnr, header in enumerate(file_data[0])])
 
@@ -1116,52 +1137,29 @@ def filter_nonexisting_values_and_ask(file_data, header_value, existing_values=N
         similar_values = find_similar(current_value, existing_values, hits=5)
         similar_values.extend(sorted(existing_values))
 
-        not_tried_capitalize = True
+        msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nGive the ' + header_value + u' for:\n' + u'\n'.join([u': '.join((file_data[0][_colnr], word if word is not None else u'')) for _colnr, word in enumerate(row)])
+        question = NotFoundQuestion(dialogtitle=u'WARNING',
+                                    msg=msg,
+                                    existing_list=similar_values,
+                                    default_value=similar_values[0],
+                                    button_names=[u'Cancel', u'Ok', u'Skip'],
+                                    reuse_header_list=sorted(headers_colnr.keys()),
+                                    reuse_column=reuse_column
+                                    )
+        answer = question.answer
+        submitted_value = returnunicode(question.value)
+        reuse_column = returnunicode(question.reuse_column)
+        if answer == u'cancel':
+            return answer
+        elif answer == u'ok':
+            current_value = submitted_value
+        elif answer == u'skip':
+            current_value = None
 
-        answer = None
-        while current_value not in existing_values:
-            if try_capitalize and not_tried_capitalize:
-                try:
-                    current_value = current_value.capitalize()
-                except AttributeError:
-                    not_tried_capitalize = False
-                else:
-                    not_tried_capitalize = False
-                    continue
+        if reuse_column:
+            already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = current_value
 
-            if not vertical_msg_list:
-                msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'" on row:\n"' + u', '.join(returnunicode(row, keep_containers=True)) + u'".\ndid not exist in db.\n\nPlease submit it again!\n'
-            else:
-                msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nThe supplied ' + header_value + u' "' + returnunicode(current_value) + u'''" on current row didn't exist in database. Please select an existing ''' + header_value + u'\n' + u'\n'.join([u': '.join((file_data[0][_colnr], word if word is not None else u'')) for _colnr, word in enumerate(row)])
-            question = NotFoundQuestion(dialogtitle=u'WARNING',
-                                        msg=msg,
-                                        existing_list=similar_values,
-                                        default_value=similar_values[0],
-                                        button_names=[u'Ignore', u'Cancel', u'Ok', u'Skip'],
-                                        reuse_header_list=sorted(headers_colnr.keys()),
-                                        reuse_column=reuse_column
-                                        )
-            answer = question.answer
-            submitted_value = returnunicode(question.value)
-            reuse_column = returnunicode(question.reuse_column)
-            if answer == u'cancel':
-                return answer
-            elif answer == u'ignore':
-                current_value = submitted_value
-                break
-            elif answer == u'ok':
-                current_value = submitted_value
-            elif answer == u'skip':
-                current_value = None
-                break
-
-        if answer == u'skip':
-            if reuse_column:
-                already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = None
-        else:
-            if reuse_column:
-                already_asked_values.setdefault(reuse_column, {})[row[headers_colnr[reuse_column]]] = current_value
-
+        if current_value is not None:
             row[index] = current_value
             filtered_data.append(row)
 
@@ -1419,28 +1417,78 @@ def get_delimiter(filename=None, charset=u'utf-8', delimiters=None, num_fields=N
                 break
             tested_delim.append((_delimiter, nr_of_cols))
 
-    if delimiter is None:
-        if num_fields is not None:
-            MessagebarAndLog.critical(u'Delimiter not found for ' + filename + u'. The file must contain ' + str(num_fields) + u' fields, but none of ' + u' or '.join(delimiters) + u' worked as delimiter.')
-            return None
+    if not delimiter:
+        # No delimiter worked
+        if not tested_delim:
+            _delimiter = ask_for_delimiter(question=u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):" % filename)
+            if isinstance(_delimiter, Cancel):
+                return _delimiter
+            delimiter = _delimiter[0]
+        else:
+            if delimiter is None:
+                if num_fields is not None:
+                    MessagebarAndLog.critical(u'Delimiter not found for ' + filename + u'. The file must contain ' + str(num_fields) + u' fields, but none of ' + u' or '.join(delimiters) + u' worked as delimiter.')
+                    return None
 
-        lenght = max(tested_delim, key=itemgetter(1))[1]
+                lenght = max(tested_delim, key=itemgetter(1))[1]
 
-        more_than_one_delimiter = [x[0] for x in tested_delim if x[1] == lenght]
+                more_than_one_delimiter = [x[0] for x in tested_delim if x[1] == lenght]
 
-        delimiter = max(tested_delim, key=itemgetter(1))[0]
+                delimiter = max(tested_delim, key=itemgetter(1))[0]
 
-        if lenght == 1:
-            MessagebarAndLog.warning(
-                bar_msg=u'Warning, only one column found, see log message panel',
-                log_msg=u'If the file only contains one column, ignore this message:\nThe delimiter might not have been found automatically.\nIt must be ' + u' or '.join(
-                    delimiters) + u'\n')
-        elif len(more_than_one_delimiter) > 1:
-            MessagebarAndLog.warning(
-                bar_msg=u'File error, delimiter not found, see log message panel',
-                log_msg=u'The delimiter might not have been found automatically.\nIt must be ' + u' or '.join(
-                    delimiters) + u'\n')
-            delimiter = None
-
+                if lenght == 1 or len(more_than_one_delimiter) > 1:
+                    _delimiter = ask_for_delimiter(question=u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):" % filename)
+                    if isinstance(_delimiter, Cancel):
+                        return _delimiter
+                    delimiter = _delimiter[0]
     return delimiter
 
+def ask_for_delimiter(header=u'Give delimiter', question=u'', default=u';'):
+    _delimiter = PyQt4.QtGui.QInputDialog.getText(None,
+                                                  u"Give delimiter",
+                                                  question,
+                                                  PyQt4.QtGui.QLineEdit.Normal,
+                                                  default)
+    if not _delimiter[1]:
+        return Cancel()
+    else:
+        delimiter = _delimiter[0]
+    return delimiter
+
+
+def create_markdown_table_from_table(tablename, transposed=False, only_description=False):
+    table = list_of_lists_from_table(tablename)
+    if only_description:
+        descr_idx = table[0].index(u'description')
+        tablename_idx = table[0].index(u'tablename')
+        columnname_idx = table[0].index(u'columnname')
+
+        table = [[row[tablename_idx], row[columnname_idx], row[descr_idx]] for row in table]
+
+    if transposed:
+        table = transpose_lists_of_lists(table)
+        for row in table:
+            row[0] = u'**{}**'.format(row[0])
+
+    column_names = table[0]
+    table_contents = table[1:]
+
+    printlist = [u'|{}|'.format(u' | '.join(column_names))]
+    printlist.append(u'|{}|'.format(u' | '.join([u':---' for idx, x in enumerate(column_names)])))
+    printlist.extend([u'|{}|'.format(u' | '.join([item if item is not None else u'' for item in row])) for row in table_contents])
+    return u'\n'.join(printlist)
+
+def list_of_lists_from_table(tablename):
+    list_of_lists = []
+    table_info = sql_load_fr_db(u'''PRAGMA table_info(%s)''' % tablename)[1]
+    table_info = returnunicode(table_info, keep_containers=True)
+    column_names = [x[1] for x in table_info]
+    list_of_lists.append(column_names)
+    table_contents = sql_load_fr_db(u'SELECT * FROM %s'%tablename)[1]
+    table_contents = returnunicode(table_contents, keep_containers=True)
+    list_of_lists.extend(table_contents)
+    return list_of_lists
+
+def transpose_lists_of_lists(list_of_lists):
+    outlist_of_lists = [[row[colnr] for row in list_of_lists] for colnr in xrange(len(list_of_lists[0]))]
+    return outlist_of_lists

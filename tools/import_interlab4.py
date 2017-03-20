@@ -113,7 +113,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             metarow = [v[u'metadata'].get(meta_header, u'') for meta_header in meta_headers]
             ask_obsid_table.append(metarow)
         existing_obsids = utils.get_all_obsids()
-        answer = utils.filter_nonexisting_values_and_ask(ask_obsid_table, u'obsid', existing_values=existing_obsids, try_capitalize=False, vertical_msg_list=True, always_confirm=True)
+        answer = utils.filter_nonexisting_values_and_ask(ask_obsid_table, u'obsid', existing_values=existing_obsids, try_capitalize=False, always_ask_user=True)
         if answer == u'cancel':
             self.status = True
             return Cancel()

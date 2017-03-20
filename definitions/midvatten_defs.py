@@ -656,7 +656,6 @@ def get_last_used_quality_instruments():
 specific_table_info = {u'obs_lines': u'The geometry column supports WKT ("well known text") of type LINESTRING and\nthe geometries must correspond to SRID in the database.',
                        u'obs_points': u'The geometry column supports WKT ("well known text") of type POINT and\nthe geometries must correspond to SRID in the database.'}
 
-
 def export_fieldlogger_defaults():
     current_locale = utils.getcurrentlocale()[0]
 
@@ -666,6 +665,7 @@ def export_fieldlogger_defaults():
             u"Accvol.m3;numberDecimal|numberSigned; ",
             u"DO.mg/L;numberDecimal|numberSigned; ",
             u"Momflow.l/s;numberDecimal|numberSigned; ",
+            u"Momflow.m3/h;numberDecimal|numberSigned; ",
             u"comment;text;Obsid related comment",
             u"cond.µS/cm;numberDecimal|numberSigned; ",
             u"f.comment;text;Measurement related comment",
@@ -703,6 +703,7 @@ def export_fieldlogger_defaults():
             [4, ((u"input_field_group_list",
                   [u"Accvol.m3;numberDecimal|numberSigned; ",
                    u"Momflow.l/s;numberDecimal|numberSigned; ",
+                   u"Momflow.m3/h;numberDecimal|numberSigned; ",
                    u"f.comment;text;Measurement related comment"]),
                  (u"sublocation_suffix", u"flow"))]]
     else:
@@ -710,6 +711,7 @@ def export_fieldlogger_defaults():
             u"Accvol.m3;numberDecimal|numberSigned; ",
             u"DO.mg/L;numberDecimal|numberSigned; ",
             u"Momflow.l/s;numberDecimal|numberSigned; ",
+            u"Momflow.m3/h;numberDecimal|numberSigned; ",
             u"f.kommentar;text;mätrelaterad kommentar",
             u"k.kommentar;text;mätrelaterad kommentar",
             u"kommentar;text;obsidrelaterad kommentar",
@@ -747,9 +749,21 @@ def export_fieldlogger_defaults():
             [4, ((u"input_field_group_list",
                   [u"Accvol.m3;numberDecimal|numberSigned; ",
                    u"Momflow.l/s;numberDecimal|numberSigned; ",
+                   u"Momflow.m3/h;numberDecimal|numberSigned; ",
                    u"f.kommentar;text;mätrelaterad kommentar"],),
                  (u"sublocation_suffix", u"flöde"))]]
 
     input_field_browser = utils.anything_to_string_representation(input_field_browser)
     input_fields_groups = utils.anything_to_string_representation(input_fields_groups)
     return input_field_browser, input_fields_groups
+
+def db_setup_as_string():
+    tables = utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + SQLiteInternalTables() + r""") ORDER BY tbl_name""")[1]
+    res = []
+    for table in tables:
+        if table == u'about_db':
+            continue
+        res.append(table)
+        table_info = utils.sql_load_fr_db(u'''PRAGMA table_info(%s)''' % table)[1]
+        res.append(table_info)
+    return utils.anything_to_string_representation(res)

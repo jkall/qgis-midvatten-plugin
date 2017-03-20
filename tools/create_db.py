@@ -21,6 +21,7 @@ import PyQt4.QtCore
 import PyQt4.QtGui
 from qgis.core import QGis
 import qgis.utils
+import re
 
 import os
 import locale
@@ -28,6 +29,7 @@ from pyspatialite import dbapi2 as sqlite# pyspatialite is absolutely necessary 
 import datetime
 #plugin modules
 import midvatten_utils as utils
+from definitions import midvatten_defs as defs
 
 class newdb():
 
@@ -37,7 +39,6 @@ class newdb():
 
     def create_new_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
-
         set_locale = self.ask_for_locale()
         if set_locale == u'cancel':
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -92,25 +93,30 @@ class newdb():
                 qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
                 with open(SQLFile, 'r') as f:
                     f.readline()  # first line is encoding info....
+                    lines = [line for line in f]
+                sql_lines = u' '.join(lines).split(u';')
+                for line in sql_lines:
+                    if not line:
+                        continue
+                    if line.startswith("#"):
+                        continue
                     try:
-                        for line in f:
-                            if not line:
-                                continue
-                            if line.startswith("#"):
-                                continue
-                            for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
-                                                               ('CHANGETOPLUGINVERSION', str(verno)),
-                                                               ('CHANGETOQGISVERSION',qgisverno),
-                                                               ('CHANGETOSPLITEVERSION', str(versionstext[0][0])),
-                                                               ('CHANGETOLOCALE', str(set_locale))]:
-                                line = line.replace(replace_word, replace_with)
-                            self.cur.execute(line)  # use tags to find and replace SRID and versioning info
+                        verno.toString().data()
+                    except:
+                        pass
+
+                    for replace_word, replace_with in [('CHANGETORELEVANTEPSGID', str(EPSGID)),
+                                                       ('CHANGETOPLUGINVERSION', str(verno)),
+                                                       ('CHANGETOQGISVERSION',str(qgisverno)),
+                                                       ('CHANGETOSPLITEVERSION', str(versionstext[0][0])),
+                                                       ('CHANGETOLOCALE', str(set_locale))]:
+                        line = line.replace(replace_word, replace_with)
+                    try:
+                        self.cur.execute(line)  # use tags to find and replace SRID and versioning info
                     except Exception, e:
+                        print("SQL Failed: %s msg: %s"%(line, str(e)))
                         #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
                         utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n'%(line ,str(e)), duration=5)
-                    except:
-                        qgis.utils.iface.messageBar().pushMessage("Failed to create database", 2,duration=3)
-                        #utils.pop_up_info('Failed to create DB!')
 
                 #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
                 try:#spatial_ref_sys_aux not implemented until spatialite 4.3
@@ -126,6 +132,8 @@ class newdb():
                 self.insert_datadomains(set_locale)
 
                 self.add_triggers_to_obs_points()
+
+                self.add_metadata_to_about_db()
 
                 self.cur.execute('vacuum')
 
@@ -183,6 +191,73 @@ class newdb():
     def add_triggers_to_obs_points(self):
         self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", "insert_obs_points_triggers.sql"))
 
+    def add_metadata_to_about_db(self):
+        self.cur.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table') and not (name in""" + defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")
+        tables = self.cur.fetchall()
+
+        #Matches comment inside /* */
+        #create_table_sql CREATE TABLE meteo /*meteorological observations*/(
+        table_descr_reg = re.compile(ur'/\*(.+)\*/', re.MULTILINE)
+        #Matches comment after --:
+        # strata text NOT NULL --clay etc
+        #, color_mplot text NOT NULL --color codes for matplotlib plots
+        column_descr_reg = re.compile(ur'([A-Za-z_]+)[ ]+[A-Za-z ]*--(.+)', re.MULTILINE)
+
+        for table in tables:
+            table = table[0]
+
+            #Get table and column comments
+            table_descr_sql = (u"SELECT name, sql from sqlite_master WHERE name = '%s';"%table)
+            self.cur.execute(table_descr_sql)
+            create_table_sql = self.cur.fetchall()[0][1]
+            table_descr = table_descr_reg.findall(create_table_sql)
+            try:
+                table_descr = table_descr[0]
+            except IndexError:
+                table_descr = None
+            else:
+                table_descr = table_descr.replace(u"'", u"''")
+
+            columns_descr = dict(column_descr_reg.findall(create_table_sql))
+
+            self.cur.execute(u'''PRAGMA table_info(%s)''' % table)
+            table_info = self.cur.fetchall()
+
+            self.cur.execute(u"""PRAGMA foreign_key_list(%s)""" %(table))
+            #table = idx 2, from = idx 3, to = idx 4
+            foreign_keys = self.cur.fetchall()
+            foreign_keys_dict = {}
+            #dict like {from: (table, to)}
+            for _row in foreign_keys:
+                _from = _row[3]
+                _to = _row[4]
+                _table = _row[2]
+                foreign_keys_dict[_from] = (_table, _to)
+
+            sql = ur"""INSERT INTO about_db (tablename, columnname, description) VALUES """
+            sql +=  ur'({});'.format(u', '.join([u"""(CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END)"""%(col, col, col, col) for col in [table, ur'*', table_descr]]))
+            self.cur.execute(sql)
+
+            for column in table_info:
+                colname = column[1]
+                data_type = column[2]
+                not_null = column[3] if column[3] == u'1' else u''
+                default_value = column[4] if column[4] else u''
+                primary_key = column[5] if column[5] == u'1' else u''
+                _foreign_keys = u''
+                if colname in foreign_keys_dict:
+                    _foreign_keys = u'%s(%s)'%(foreign_keys_dict[colname])
+                column_descr = columns_descr.get(colname, None)
+                if column_descr:
+                    column_descr = column_descr.replace(u"'", u"''")
+                sql = u'INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description) VALUES '
+                sql += u'({});'.format(u', '.join([u"""CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, colname, data_type, not_null, default_value, primary_key, _foreign_keys, column_descr]]))
+                try:
+                    self.cur.execute(sql)
+                except:
+                    print(sql)
+                    raise Exception()
+
     def excecute_sqlfile(self, sqlfilename):
         with open(sqlfilename, 'r') as f:
             f.readline()  # first line is encoding info....
@@ -196,7 +271,7 @@ class newdb():
                 except Exception, e:
                     #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
                     #This print out is for debug, and it only prints during a fail so it can stay:
-                    print("Sql line failed:\n" + str(line))
+                    print("Sql line failed:\n%s\nmsg:%s"%(str(line), str(e)))
                     utils.MessagebarAndLog.critical("Error: sql failed, see qgis Log Message Panel", 'sql failed:\n%s\nerror msg:\n%s\n'%(line ,str(e)), duration=5)
 
 
