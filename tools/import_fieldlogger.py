@@ -153,9 +153,10 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             for encoding in supported_encodings:
                 try:
                     delimiter = utils.get_delimiter(filename=filename, charset=encoding, delimiters=[u';', u','], num_fields=5)
-
                     if delimiter is None:
                         return None
+                    elif isinstance(delimiter, Cancel):
+                        return delimiter
 
                     with io.open(filename, 'rt', encoding=encoding) as f:
                         #Skip header

@@ -889,7 +889,6 @@ class TestFieldLoggerImporterNoDb(object):
         assert test_string == reference_string
 
     def test_load_file(self):
-
         f = [
             u"LOCATION;DATE;TIME;VALUE;TYPE\n",
             u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
@@ -1010,18 +1009,21 @@ class TestFieldLoggerImporterNoDb(object):
             ]
 
         with utils.tempinput(''.join(f)) as filename:
+            @mock.patch('import_fieldlogger.utils.ask_for_delimiter')
             @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
-            def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
-                mock_charset.return_value = ('utf-8', True)
+            def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_delimiter_question):
+                mock_delimiter_question.return_value = (u',', True)
+                mock_charset.return_value = (u'utf-8', True)
                 mock_savefilename.return_value = [filename]
 
                 test_string = FieldloggerImport.select_file_and_parse_rows(FieldloggerImport.parse_rows)
                 return test_string
 
-            test_string = _test(self, filename)
-            assert test_string is None
+            test_string = utils_for_tests.create_test_string(_test(self, filename))
+            reference = u'[{date_time: 2016-03-30 15:29:26, parametername: q.comment, sublocation: Rb1505.quality, value: hej}, {date_time: 2016-03-30 15:30:39, parametername: q.syre.mg/L, sublocation: Rb1512.quality, value: 67}, {date_time: 2016-03-30 15:31:30, parametername: s.turbiditet.FNU, sublocation: Rb1512.sample, value: 899}, {date_time: 2016-03-30 15:29:26, parametername: q.konduktivitet.µS/cm, sublocation: Rb1505.quality, value: 863}, {date_time: 2016-03-30 15:30:09, parametername: f.comment, sublocation: Rb1615.flow, value: gick bra}, {date_time: 2016-03-30 15:30:40, parametername: q.syre.%, sublocation: Rb1512.quality, value: 58}, {date_time: 2016-03-30 15:34:13, parametername: l.meas.m, sublocation: Rb1608.level, value: 555}, {date_time: 2016-03-30 15:30:39, parametername: q.comment, sublocation: Rb1512.quality, value: test}, {date_time: 2016-03-30 15:31:30, parametername: s.comment, sublocation: Rb1202.sample, value: hej2}, {date_time: 2016-03-30 15:34:40, parametername: l.comment, sublocation: Rb1608.level, value: testc}, {date_time: 2016-03-30 15:30:09, parametername: f.Accvol.m3, sublocation: Rb1615.flow, value: 357}, {date_time: 2016-03-30 15:34:13, parametername: l.comment, sublocation: Rb1608.level, value: ergv}, {date_time: 2016-03-30 15:30:39, parametername: q.temperatur.grC, sublocation: Rb1512.quality, value: 8}]'
+            assert test_string == reference
 
 
 class TestCommentsImportFields(object):

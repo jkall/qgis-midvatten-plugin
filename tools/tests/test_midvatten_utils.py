@@ -293,10 +293,12 @@ class TestGetDelimiter(object):
                  u'rb1']
 
         with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+            @mock.patch('midvatten_utils.ask_for_delimiter')
             @mock.patch('qgis.utils.iface', autospec=True)
-            def _test(filename, mock_iface):
+            def _test(filename, mock_iface, mock_delimiter_question):
+                mock_delimiter_question.return_value = (u';', True)
                 delimiter = utils.get_delimiter(filename, u'utf-8')
-                assert call.messageBar().createMessage(u'Warning, only one column found, see log message panel') in mock_iface.mock_calls
+                assert delimiter == u';'
             _test(filename)
 
     def test_get_delimiter_delimiter_not_found(self):
@@ -304,11 +306,12 @@ class TestGetDelimiter(object):
                  u'rb1;1,2']
 
         with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+            @mock.patch('midvatten_utils.ask_for_delimiter')
             @mock.patch('qgis.utils.iface', autospec=True)
-            def _test(filename, mock_iface):
+            def _test(filename, mock_iface, mock_delimiter_question):
+                mock_delimiter_question.return_value = (u',', True)
                 delimiter = utils.get_delimiter(filename, u'utf-8')
-                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') in mock_iface.mock_calls
-                assert delimiter is None
+                assert delimiter == u','
             _test(filename)
 
     def test_get_delimiter_semicolon(self):
@@ -316,10 +319,11 @@ class TestGetDelimiter(object):
                  u'rb1;1;2']
 
         with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+            @mock.patch('midvatten_utils.ask_for_delimiter')
             @mock.patch('qgis.utils.iface', autospec=True)
-            def _test(filename, mock_iface):
+            def _test(filename, mock_iface, mock_delimiter_question):
+                mock_delimiter_question.return_value = (u';', True)
                 delimiter = utils.get_delimiter(filename, u'utf-8')
-                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') not in mock_iface.mock_calls
                 assert delimiter == u';'
             _test(filename)
 
@@ -328,9 +332,10 @@ class TestGetDelimiter(object):
                  u'rb1,1,2']
 
         with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+            @mock.patch('midvatten_utils.ask_for_delimiter')
             @mock.patch('qgis.utils.iface', autospec=True)
-            def _test(filename, mock_iface):
+            def _test(filename, mock_iface, mock_delimiter_question):
+                mock_delimiter_question.return_value = (u',', True)
                 delimiter = utils.get_delimiter(filename, u'utf-8')
-                assert call.messageBar().createMessage(u'File error, delimiter not found, see log message panel') not in mock_iface.mock_calls
                 assert delimiter == u','
             _test(filename)

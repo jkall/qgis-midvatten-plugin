@@ -1417,30 +1417,44 @@ def get_delimiter(filename=None, charset=u'utf-8', delimiters=None, num_fields=N
                 break
             tested_delim.append((_delimiter, nr_of_cols))
 
-    if delimiter is None:
-        if num_fields is not None:
-            MessagebarAndLog.critical(u'Delimiter not found for ' + filename + u'. The file must contain ' + str(num_fields) + u' fields, but none of ' + u' or '.join(delimiters) + u' worked as delimiter.')
-            return None
+    if not delimiter:
+        # No delimiter worked
+        if not tested_delim:
+            _delimiter = ask_for_delimiter(question=u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):" % filename)
+            if isinstance(_delimiter, Cancel):
+                return _delimiter
+            delimiter = _delimiter[0]
+        else:
+            if delimiter is None:
+                if num_fields is not None:
+                    MessagebarAndLog.critical(u'Delimiter not found for ' + filename + u'. The file must contain ' + str(num_fields) + u' fields, but none of ' + u' or '.join(delimiters) + u' worked as delimiter.')
+                    return None
 
-        lenght = max(tested_delim, key=itemgetter(1))[1]
+                lenght = max(tested_delim, key=itemgetter(1))[1]
 
-        more_than_one_delimiter = [x[0] for x in tested_delim if x[1] == lenght]
+                more_than_one_delimiter = [x[0] for x in tested_delim if x[1] == lenght]
 
-        delimiter = max(tested_delim, key=itemgetter(1))[0]
+                delimiter = max(tested_delim, key=itemgetter(1))[0]
 
-        if lenght == 1:
-            MessagebarAndLog.warning(
-                bar_msg=u'Warning, only one column found, see log message panel',
-                log_msg=u'If the file only contains one column, ignore this message:\nThe delimiter might not have been found automatically.\nIt must be ' + u' or '.join(
-                    delimiters) + u'\n')
-        elif len(more_than_one_delimiter) > 1:
-            MessagebarAndLog.warning(
-                bar_msg=u'File error, delimiter not found, see log message panel',
-                log_msg=u'The delimiter might not have been found automatically.\nIt must be ' + u' or '.join(
-                    delimiters) + u'\n')
-            delimiter = None
-
+                if lenght == 1 or len(more_than_one_delimiter) > 1:
+                    _delimiter = ask_for_delimiter(question=u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):" % filename)
+                    if isinstance(_delimiter, Cancel):
+                        return _delimiter
+                    delimiter = _delimiter[0]
     return delimiter
+
+def ask_for_delimiter(header=u'Give delimiter', question=u'', default=u';'):
+    _delimiter = PyQt4.QtGui.QInputDialog.getText(None,
+                                                  u"Give delimiter",
+                                                  question,
+                                                  PyQt4.QtGui.QLineEdit.Normal,
+                                                  default)
+    if not _delimiter[1]:
+        return Cancel()
+    else:
+        delimiter = _delimiter[0]
+    return delimiter
+
 
 def create_markdown_table_from_table(tablename, transposed=False, only_description=False):
     table = list_of_lists_from_table(tablename)
