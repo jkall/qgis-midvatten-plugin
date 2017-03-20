@@ -398,6 +398,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.calib_help.setText("")
 
         self.getlastcalibration(obsid)
+        self.mpltoolbar.forward()
 
     def plot_recarray(self, axes, a_recarray, lable, line_style, picker=5):
         """ Plots a recarray to the supplied axes object """
