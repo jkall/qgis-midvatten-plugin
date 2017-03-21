@@ -392,10 +392,11 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
     @staticmethod
     def write_printlist_to_file(printlist):
-        filename = PyQt4.QtGui.QFileDialog.getSaveFileName(None, 'Choose a file name', '', 'csv (*.csv)')
-
+        filename = PyQt4.QtGui.QFileDialog.getSaveFileName(parent=None, caption='Choose a file name', directory='', filter='csv (*.csv)')
         if not filename:
             return
+        if os.path.splitext(filename)[1] != u'.csv':
+            filename += u'.csv'
         try:
             with open(filename, 'w') as f:
                 f.write(u'\n'.join(printlist).encode('utf-8'))
