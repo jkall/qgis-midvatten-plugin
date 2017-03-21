@@ -76,7 +76,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         splitter.addWidget(self.specific_meta_filter.widget)
 
-        self.metadata_filter = MetadataFilter(self.all_lab_results)
+        self.metadata_filter = MetadataFilter(self.all_lab_results, self.connect)
         splitter.addWidget(self.metadata_filter.widget)
 
         self.connect(self.metadata_filter.update_selection_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.metadata_filter.set_selection(self.specific_meta_filter.get_items_dict()))
@@ -329,7 +329,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 continue
 
         if encoding is None:
-            encoding = utils.ask_for_charset('utf-16')
+            encoding = utils.ask_for_charset(default_charset='utf-16', msg=u'Give charset used in the file %s'%filename)
         if encoding is None or not encoding:
             return Cancel()
 
@@ -484,16 +484,18 @@ class MetaFilterSelection(VRowEntry):
 
 
 class MetadataFilter(VRowEntry):
-    def __init__(self, all_lab_results):
+    def __init__(self, all_lab_results, connect):
         """
 
         """
         super(MetadataFilter, self).__init__()
+        self.connect = connect
 
         self.update_selection_button  = PyQt4.QtGui.QPushButton(u'Update selection')
         self.layout.addWidget(self.update_selection_button)
 
-        self.layout.addWidget(PyQt4.QtGui.QLabel(u'Select lablitteras to import'))
+        self.label = PyQt4.QtGui.QLabel()
+        self.layout.addWidget(self.label)
         self.table = PyQt4.QtGui.QTableWidget()
         self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)
         self.table.sizePolicy().setVerticalPolicy(PyQt4.QtGui.QSizePolicy.MinimumExpanding)
@@ -502,11 +504,14 @@ class MetadataFilter(VRowEntry):
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setSortingEnabled(True)
 
+        self.connect(self.table, PyQt4.QtCore.SIGNAL("itemSelectionChanged()"), self.update_nr_of_selected)
+
         self.table_items = {}
 
         self.update_table(all_lab_results)
-
+        self.update_nr_of_selected()
         self.layout.addWidget(self.table)
+
 
     def set_selection(self, table_header):
         """
@@ -559,10 +564,13 @@ class MetadataFilter(VRowEntry):
         for rownr, lablittera in enumerate(all_lab_results.keys()):
             metadata = all_lab_results[lablittera][u'metadata']
             tablewidgetitem = PyQt4.QtGui.QTableWidgetItem(lablittera)
+            utils.MessagebarAndLog.info(log_msg="Flags: %s"%str(tablewidgetitem.flags()))
+            tablewidgetitem.setFlags(PyQt4.QtCore.Qt.ItemIsSelectable)
             self.table.setItem(rownr, 0, tablewidgetitem)
 
             for colnr, metaheader in enumerate(self.sorted_table_header[1:], 1):
                 tablewidgetitem = PyQt4.QtGui.QTableWidgetItem(metadata.get(metaheader, u''))
+                tablewidgetitem.setFlags(PyQt4.QtCore.Qt.ItemIsSelectable)
                 self.table.setItem(rownr, colnr, tablewidgetitem)
 
         self.table.resizeColumnsToContents()
@@ -572,6 +580,26 @@ class MetadataFilter(VRowEntry):
     def get_selected_lablitteras(self):
         selected_lablitteras = [utils.returnunicode(self.table.item(rownr, 0).text()) for rownr in xrange(self.table.rowCount()) if self.table.item(rownr, 0).isSelected()]
         return selected_lablitteras
+
+    def get_all_data(self):
+        """
+        all_lab_results: A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
+        :return:
+        """
+        all_lab_results = {}
+
+        headers = [self.table.horizontalHeaderItem(colnr) for colnr in xrange(self.table.columnCount())]
+        lablittera_colnr = headers.index(u'lablittera')
+
+        for rownr in xrange(self.table.rowCount()):
+            lablittera = self.table.item(rownr, lablittera_colnr)
+            all_lab_results.setdefault(lablittera, {})[u'metadata'] = dict([(headers[colnr], self.table.item(rownr, colnr)) for colnr in xrange(self.table.columnCount())])
+        return all_lab_results
+
+    def update_nr_of_selected(self):
+        labeltext = u'Select lablitteras to import'
+        nr_of_selected = str(len(self.table.selectedItems()) / self.table.columnCount())
+        self.label.setText(u' '.join([labeltext, u'({} rows selected)'.format(nr_of_selected)]))
 
 
 def get_metadata_headers(all_lab_results):
