@@ -208,6 +208,7 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
         self.setupUi(self)
         self.setWindowTitle(dialogtitle)
         self.label.setText(msg)
+        self.label.setTextInteractionFlags(PyQt4.QtCore.Qt.TextSelectableByMouse)
         self.comboBox.addItem(default_value)
         self.label_2.setText(combobox_label)
         if existing_list is not None:

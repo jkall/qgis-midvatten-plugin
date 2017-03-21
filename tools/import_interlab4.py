@@ -29,6 +29,7 @@ from collections import OrderedDict
 from datetime import datetime
 from functools import partial
 from Queue import Queue
+import re
 
 import PyQt4.QtCore
 import PyQt4.QtGui
@@ -103,7 +104,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.show()
 
     def start_import(self, all_lab_results, lablitteras_to_import):
-
+        all_lab_results = copy.deepcopy(all_lab_results)
         all_lab_results = dict([(lablittera, v) for lablittera, v in all_lab_results.iteritems() if lablittera in lablitteras_to_import])
 
         #Allow the user to connect the metadata rows to obsids.
@@ -380,7 +381,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
             sampledate = metadata.get(u'provtagningsdatum', None)
             if sampledate is None:
-                utils.MessagebarAndLog.warning(bar_msg=u'Interlab4 import warning: There was no sample date found (column "provtagningsdatum") for lablittera ' + lablittera + u'. Importing without it.')
+                utils.MessagebarAndLog.info(log_msg=u'Interlab4 import warning: There was no sample date found (column "provtagningsdatum") for lablittera ' + lablittera + u'. Importing without it.')
                 date_time = None
             else:
                 sampletime = metadata.get(u'provtagningstid', None)
@@ -529,20 +530,33 @@ class MetadataFilter(VRowEntry):
         :return:
         """
         self.table.clearSelection()
+        table_header = {k: v for k, v in table_header.iteritems() if k}
         if not table_header:
             return None
         nr_of_cols = self.table.columnCount()
         nr_of_rows = self.table.rowCount()
         table_header_colnr = dict([(self.table.horizontalHeaderItem(colnr).text(), colnr) for colnr in xrange(nr_of_cols)])
 
+        """
+        [[self.table.setItemSelected(self.table.item(rownr, colnr), True) for colnr in xrange(nr_of_cols)]
+         for header, selectionlist in table_header.iteritems()
+         for rownr in xrange(nr_of_rows)
+         for rexp in selectionlist
+         if re.search(rexp, self.table.item(rownr, table_header_colnr[header]).text())]
+        """
+
         #Select all items for chosen rows.
+
         [[self.table.setItemSelected(self.table.item(rownr, colnr), True) for colnr in xrange(nr_of_cols)]
          for header, selectionlist in table_header.iteritems()
          for rownr in xrange(nr_of_rows)
          if self.table.item(rownr, table_header_colnr[header]).text() in selectionlist]
 
         #Hide all rows that aren't selected
-        [self.table.hideRow(rownr) if all([not self.table.item(rownr, 0).isSelected(), self.show_only_selected_checkbox.isChecked()]) else self.table.showRow(rownr) for rownr in xrange(nr_of_rows)]
+        [(self.table.hideRow(rownr), self.table.item(rownr, 0).setFlags(PyQt4.QtCore.Qt.NoItemFlags))
+         if all([not self.table.item(rownr, 0).isSelected(), self.show_only_selected_checkbox.isChecked()])
+         else (self.table.showRow(rownr), self.table.item(rownr, 0).setFlags(PyQt4.QtCore.Qt.ItemIsSelectable))
+         for rownr in xrange(nr_of_rows)]
 
     @utils.waiting_cursor
     def update_table(self, all_lab_results):
