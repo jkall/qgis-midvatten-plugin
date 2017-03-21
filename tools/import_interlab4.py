@@ -488,19 +488,28 @@ class MetadataFilter(VRowEntry):
         """
 
         """
+        self.all_lab_results = all_lab_results
         super(MetadataFilter, self).__init__()
         self.connect = connect
 
         self.update_selection_button  = PyQt4.QtGui.QPushButton(u'Update selection')
-        self.layout.addWidget(self.update_selection_button)
+        self.button_layout = RowEntry()
+        self.button_layout.layout.addWidget(self.update_selection_button)
+
+        self.show_only_selected_checkbox = PyQt4.QtGui.QCheckBox(u'Show only selected rows')
+        self.button_layout.layout.addWidget(self.show_only_selected_checkbox)
+
+        self.layout.addWidget(self.button_layout.widget)
 
         self.label = PyQt4.QtGui.QLabel()
         self.layout.addWidget(self.label)
+
         self.table = PyQt4.QtGui.QTableWidget()
         self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)
         self.table.sizePolicy().setVerticalPolicy(PyQt4.QtGui.QSizePolicy.MinimumExpanding)
         self.table.sizePolicy().setVerticalStretch(2)
         self.table.setSelectionMode(PyQt4.QtGui.QAbstractItemView.ExtendedSelection)
+        self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setSortingEnabled(True)
 
@@ -513,31 +522,29 @@ class MetadataFilter(VRowEntry):
         self.layout.addWidget(self.table)
 
 
+    @utils.waiting_cursor
     def set_selection(self, table_header):
         """
-
         :param table_header: {u'table_header': [list of values]}
-        :param true_or_false: True/False. Sets selection to this
         :return:
         """
-        true_or_false = False
-        for header, selectionlist in table_header.iteritems():
-            try:
-                colnr = self.sorted_table_header.index(header)
-            except:
-                utils.MessagebarAndLog.info(log_msg=u'Interlab4 import: Table header ' + header + u" didn't exist.")
-                continue
+        self.table.clearSelection()
+        if not table_header:
+            return None
+        nr_of_cols = self.table.columnCount()
+        nr_of_rows = self.table.rowCount()
+        table_header_colnr = dict([(self.table.horizontalHeaderItem(colnr).text(), colnr) for colnr in xrange(nr_of_cols)])
 
-            for rownr in xrange(self.table.rowCount()):
-                current_item = self.table.item(rownr, colnr)
-                if current_item.text() in selectionlist:
-                    true_or_false = True
-                else:
-                    true_or_false = False
-                for _colnr in xrange(self.table.columnCount()):
-                    item = self.table.item(rownr, _colnr)
-                    self.table.setItemSelected(item, true_or_false)
+        #Select all items for chosen rows.
+        [[self.table.setItemSelected(self.table.item(rownr, colnr), True) for colnr in xrange(nr_of_cols)]
+         for header, selectionlist in table_header.iteritems()
+         for rownr in xrange(nr_of_rows)
+         if self.table.item(rownr, table_header_colnr[header]).text() in selectionlist]
 
+        #Hide all rows that aren't selected
+        [self.table.hideRow(rownr) if all([not self.table.item(rownr, 0).isSelected(), self.show_only_selected_checkbox.isChecked()]) else self.table.showRow(rownr) for rownr in xrange(nr_of_rows)]
+
+    @utils.waiting_cursor
     def update_table(self, all_lab_results):
         """
         all_lab_results: A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
@@ -564,7 +571,6 @@ class MetadataFilter(VRowEntry):
         for rownr, lablittera in enumerate(all_lab_results.keys()):
             metadata = all_lab_results[lablittera][u'metadata']
             tablewidgetitem = PyQt4.QtGui.QTableWidgetItem(lablittera)
-            utils.MessagebarAndLog.info(log_msg="Flags: %s"%str(tablewidgetitem.flags()))
             tablewidgetitem.setFlags(PyQt4.QtCore.Qt.ItemIsSelectable)
             self.table.setItem(rownr, 0, tablewidgetitem)
 
