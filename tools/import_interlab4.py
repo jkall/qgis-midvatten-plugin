@@ -598,7 +598,7 @@ class MetadataFilter(VRowEntry):
 
     def update_nr_of_selected(self):
         labeltext = u'Select lablitteras to import'
-        nr_of_selected = str(len(self.table.selectedItems()) / self.table.columnCount())
+        nr_of_selected = str(len(self.get_selected_lablitteras()))
         self.label.setText(u' '.join([labeltext, u'({} rows selected)'.format(nr_of_selected)]))
 
 
