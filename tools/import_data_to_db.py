@@ -62,7 +62,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :return:
         """
         utils.MessagebarAndLog.info(log_msg=u'\nImport to %s starting\n--------------------'%goal_table)
-        detailed_msg_list = []
 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.status = 'False' #True if upload to sqlite and cleaning of data succeeds
@@ -107,8 +106,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptableName))[1][0][0]
 
         nr_same_date = nr_after - nr_before
-        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_same_date)))
-        if not self.status:
+        utils.MessagebarAndLog.info(log_msg=u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported. %s rows remain.'%(str(nr_same_date), str(nr_after)))
+        if not nr_after > 0:
+            utils.MessagebarAndLog.warning(bar_msg=u'Nothing imported, see log message panel')
+            self.status = 'False'
             self.drop_temptable()
             return
 
@@ -117,17 +118,21 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         foreign_keys = utils.get_foreign_keys(goal_table)
         force_import_of_foreign_keys_tables = [u'zz_flowtype', u'zz_staff', u'zz_meteoparam']
 
-        if self.foreign_keys_import_question is None:
-            stop_question = utils.askuser(u"YesNo", u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?"""%(u', '.join(force_import_of_foreign_keys_tables)), u"Info!")
-            if stop_question.result == 0:      # if the user wants to abort
-                self.status = 'False'
-                PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                self.drop_temptable()
-                return Cancel()   # return simply to stop this function
-            else:
-                self.foreign_keys_import_question = 1
-
         for fk_table, from_to_fields in foreign_keys.iteritems():
+            if self.foreign_keys_import_question is None:
+                stop_question = utils.askuser(u"YesNo",
+                                              u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""" % (
+                                              u', '.join(
+                                                  force_import_of_foreign_keys_tables)),
+                                              u"Info!")
+                if stop_question.result == 0:  # if the user wants to abort
+                    self.status = 'False'
+                    PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                    self.drop_temptable()
+                    return Cancel()
+                else:
+                    self.foreign_keys_import_question = 1
+
             from_list = [x[0] for x in from_to_fields]
             to_list = [x[1] for x in from_to_fields]
             if fk_table in force_import_of_foreign_keys_tables:
@@ -136,21 +141,17 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 nr_fk_before = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%fk_table)[1][0][0]
                 _table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''% fk_table)[1]
                 _column_headers_types = dict([(row[1], row[2]) for row in _table_info])
-                sql = ur"""INSERT INTO %s (%s) select distinct %s from %s as b where %s"""%(fk_table,
+                sql = ur"""INSERT OR IGNORE INTO %s (%s) select distinct %s from %s as b where %s"""%(fk_table,
                                                                                              u', '.join([u'"{}"'.format(k) for k in to_list]),
                                                                                              u', '.join([u'''CAST("b"."%s" as "%s")'''%(k, _column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
                                                                                              self.temptableName,
                                                                                              u' and '.join([u''' "b"."{}" IS NOT NULL and "b"."{}" != '' and "b"."{}" != ' ' '''.format(k, k, k) for k in from_list]))
-                try:
-                    utils.sql_alter_db(sql)
-                except Exception, e:
-                    sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
-                    detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%fk_table + str(e))
-                    utils.sql_alter_db(sql)
+
+                utils.sql_alter_db(sql)
 
                 nr_fk_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%fk_table)[1][0][0]
 
-                detailed_msg_list.append(u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table + u' while importing to ' + goal_table + u'.')
+                utils.MessagebarAndLog.info(log_msg=u'In total ' + str(nr_fk_after - nr_fk_before) + u' rows were imported to foreign key table ' + fk_table + u' while importing to ' + goal_table + u'.')
             else:
                 #Else check if there are foreign keys blocking the import and skip those rows
                 existing_keys = utils.sql_load_fr_db(u'select distinct "%s" from "%s"'%(u', '.join(to_list),
@@ -172,8 +173,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"''' % (self.temptableName))[1][0][0]
         nr_after_foreign_keys = nr_before - nr_after
-        self.check_remaining(nr_before, nr_after, u"Import warning, see log message panel", u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
-        if not self.status:
+        if nr_after_foreign_keys > 0:
+            utils.MessagebarAndLog.info(log_msg=u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after)))
+            
+        if not nr_after > 0:
+            utils.MessagebarAndLog.warning(bar_msg=u'Nothing imported, see log message panel')
+            self.status = 'False'
             self.drop_temptable()
             return
 
@@ -205,7 +210,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         try:
             utils.sql_alter_db(sql.encode(u'utf-8'))
         except Exception, e:
-            detailed_msg_list.append(u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: '%goal_table + str(e))
+            utils.MessagebarAndLog.info(log_msg=u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:\n'%goal_table + str(e))
             sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
             try:
                 utils.sql_alter_db(sql.encode(u'utf-8'))
@@ -219,25 +224,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 return
 
         recsafter = utils.sql_load_fr_db(u'select count(*) from "%s"' % (goal_table))[1][0][0]
-
         nr_imported = recsafter - recsbefore
+        nr_excluded = recsinfile - nr_imported
 
-        #Stats and messages after import
-        if recsinfile is None:
-            recsinfile = self.recstoimport
-        if recsafter is None:
-            recsafter = self.recsafter
-        if recsbefore is None:
-            recsbefore = self.recsbefore
-        NoExcluded = recsinfile - (recsafter - recsbefore)
-
-        if NoExcluded > 0:  # If some of the imported data already existed in the database, let the user know
-            detailed_msg_list.append(u'In total %s rows were not imported to %s. Probably due to a primary key combination already existing in the database.'%(str(NoExcluded), goal_table))
-
-        detailed_msg_list.append(u'--------------------')
-        detailed_msg = u'\n'.join(detailed_msg_list)
-        utils.MessagebarAndLog.info(bar_msg=u'%s rows imported and %s excluded for table %s. See log message panel for details'%(nr_imported, NoExcluded, goal_table), log_msg=detailed_msg)
-
+        utils.MessagebarAndLog.info(bar_msg=u'%s rows imported and %s excluded for table %s. See log message panel for details'%(nr_imported, nr_excluded, goal_table))
+        utils.MessagebarAndLog.info(log_msg=u'--------------------')
         self.status = 'True'
         self.drop_temptable() # finally drop the temporary table
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -405,13 +396,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                           u' || '.join([u'"{}"'.format(pk) for pk in pks]),
                                                                                           goal_table)
         utils.sql_alter_db(sql)
-
-    def check_remaining(self, nr_before, nr_after, bar_msg, log_msg):
-        if nr_after == 0:
-            utils.MessagebarAndLog.critical(bar_msg=u'Import error, nothing imported.')
-            self.status = False
-        elif nr_before > nr_after:
-            utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
 
     def calculate_geometry(self, existing_columns, table_name):
         # Calculate the geometry
