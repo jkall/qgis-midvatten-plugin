@@ -46,7 +46,7 @@ import definitions.midvatten_defs as defs
 from sampledem import qchain, create_points_at, points_along_line, sampling 
 
 class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
-    def __init__(self, parent1, iface1):#Please note, self.selected_obsids must be a tuple
+    def __init__(self, parent1, iface1):
         #super(sectionplot, self).save_settings()
         PyQt4.QtGui.QDockWidget.__init__(self, parent1) #, PyQt4.QtCore.Qt.WindowFlags(PyQt4.QtCore.Qt.WA_DeleteOnClose))
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
@@ -386,13 +386,15 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 
     def get_length_along(self,obsidtuple):#returns a numpy recarray with attributes obs_id and length 
         #------------First a sql clause that returns a table, but that is not what we need
-        sql = r"""SELECT obsid AS "obsid",
+        sql = u"""SELECT obsid AS "obsid",
         GLength(l.geometry)*ST_Line_Locate_Point(l.geometry, p.geometry) AS "abs_dist"
         FROM a.%s AS l, (select * from obs_points where obsid in %s) AS p
-        GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptableName,obsidtuple)
+        GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptableName,u'({})'.format(u', '.join([u"'{}'".format(o) for o in obsidtuple])))
         data = self.connectionObject.cursor().execute(sql).fetchall()
+        data = utils.returnunicode(data, keep_containers=True)
+        #data = [[col.encode('utf-8') for col in row] for row in utils.returnunicode(data, keep_containers=True)]
         #data = utils.sql_load_fr_db(sql)[1]
-        My_format = [('obs_id', np.str_, 32),('length', float)] #note that here is a limit of maximum 32 characters in obsid
+        My_format = [('obs_id', np.unicode_, 32),('length', float)] #note that here is a limit of maximum 32 characters in obsid
         npdata = np.array(data, dtype=My_format)  #NDARRAY
         LengthAlongTable=npdata.view(np.recarray)   # RECARRAY   Makes the two columns into callable objects, i.e. write self.LengthAlong.obs_id and self.LengthAlong.length
         del data, npdata
