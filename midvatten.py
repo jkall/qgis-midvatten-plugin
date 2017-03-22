@@ -897,12 +897,12 @@ class midvatten:
         if len(selectedobspoints)>1:
             # We cannot send unicode as string to sql because it would include the u'
             # Made into tuple because module sectionplot depends on obsid being a tuple
-            OBSID = tuple([str(id) for id in selectedobspoints])
+            OBSID = utils.returnunicode(selectedobspoints, keep_containers=True)
         else:
             msg = 'You must select at least two objects in the obs_points layer'
         
         if msg:#if something went wrong
-            self.iface.messageBar().pushMessage("Error",msg, 2,duration =15)
+            utils.MessagebarAndLog.critical(bar_msg=u'Error, %s'%msg)
         else:#otherwise go
             try:
                 self.myplot.do_it(self.ms,OBSID,SectionLineLayer)
