@@ -137,7 +137,7 @@ class _TestSectionPlot(object):
         _test_plot_section(self)
 
         assert self.myplot.drillstoplineEdit.text() == u'%berg%'
-        assert utils_for_tests.create_test_string(self.myplot.selected_obsids) == "['P1' 'P2' 'P3']"
+        assert utils_for_tests.create_test_string(self.myplot.selected_obsids) == "[u'P1' u'P2' u'P3']"
 
     @mock.patch('midvatten_utils.QgsProject.instance')
     def test_plot_section_with_depth(self, mock_qgsproject_instance):

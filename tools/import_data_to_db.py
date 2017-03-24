@@ -21,6 +21,8 @@
 """
 import PyQt4
 import io
+import os
+import qgis.utils
 from collections import OrderedDict
 from datetime import datetime
 from operator import itemgetter
@@ -60,7 +62,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = 'True'
             return
         utils.MessagebarAndLog.info(log_msg=tr(u'midv_data_importer', u'\nImport to %s starting\n--------------------'%goal_table))
-        detailed_msg_list = []
 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         self.status = 'False' #True if upload to sqlite and cleaning of data succeeds
@@ -90,16 +91,19 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         primary_keys_for_concat = [pk for pk in primary_keys if pk in existing_columns_in_temptable]
 
-        self.list_to_table(dbconnection, file_data, primary_keys_for_concat, detailed_msg_list)
+        self.list_to_table(dbconnection, file_data, primary_keys_for_concat)
 
         #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
         nr_before = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
         if u'date_time' in primary_keys:
             self.delete_existing_date_times_from_temptable(primary_keys, goal_table, dbconnection)
         nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
+
         nr_same_date = nr_after - nr_before
-        self.check_remaining(nr_before, nr_after, tr(u'midv_data_importer', u"Import warning, see log message panel"), tr(u'midv_data_importer', u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.'%(str(nr_same_date))))
-        if not self.status:
+        utils.MessagebarAndLog.info(log_msg=tr(u'midv_data_importer', u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported. %s rows remain.'%(str(nr_same_date), str(nr_after))))
+        if not nr_after > 0:
+            utils.MessagebarAndLog.warning(bar_msg=tr(u'midv_data_importer', u'Nothing imported, see log message panel'))
+            self.status = 'False'
             return
 
         # Delete duplicate rows in temptable:
@@ -108,8 +112,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         temptablerows_after = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
         removed_rows = int(temptablerows_before) - int(temptablerows_after)
         if removed_rows:
-            detailed_msg_list.append(tr(u'midv_data_importer', u'Removed %s duplicate rows from rows to import.')%str(removed_rows))
-
+            utils.MessagebarAndLog.info(log_msg=tr(u'midv_data_importer', u'Removed %s duplicate rows from rows to import.'%str(removed_rows)))
         #Delete rows which null values where null-values is not allowed
         if not_null_columns:
             temptablerows_before = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
@@ -118,7 +121,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             temptablerows_after = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
             removed_rows = int(temptablerows_before) - int(temptablerows_after)
             if removed_rows:
-                detailed_msg_list.append(tr(u'midv_data_importer', u"""Removed %s rows with non-allowed NULL-values, ' '-values or ''-values from rows to import."""%str(removed_rows)))
+                utils.MessagebarAndLog.info(log_msg=tr(u'midv_data_importer', u"""Removed %s rows with non-allowed NULL-values, ' '-values or ''-values from rows to import."""%str(removed_rows)))
 
         #Delete rows already existing in goal table
         temptablerows_before = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
@@ -127,7 +130,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         temptablerows_after = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
         removed_rows = int(temptablerows_before) - int(temptablerows_after)
         if removed_rows:
-            detailed_msg_list.append(tr(u'midv_data_importer', u"""Removed %s rows that already existed in %s from rows to import."""%(str(removed_rows), goal_table)))
+            utils.MessagebarAndLog.info(log_msg=tr(u'midv_data_importer', u"""Removed %s rows that already existed in %s from rows to import."""%(str(removed_rows), goal_table)))
 
         #Special cases for some tables
         if goal_table == u'stratigraphy':
@@ -154,12 +157,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     else:
                         self.foreign_keys_import_question = 1
                         nr_before = nr_after
-                        self.import_foreign_keys(goal_table, foreign_keys, dbconnection, existing_columns_in_temptable, detailed_msg_list)
+                        self.import_foreign_keys(goal_table, foreign_keys, dbconnection, existing_columns_in_temptable)
                         nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
                         nr_after_foreign_keys = nr_before - nr_after
-                        self.check_remaining(nr_before, nr_after, tr(u'midv_data_importer', u"Import warning, see log message panel"), tr(u'midv_data_importer', u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after))))
-        if not self.status:
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                        utils.MessagebarAndLog.info(log_msg=tr(u'midv_data_importer', u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'%(str(nr_after_foreign_keys), str(nr_after))))
+
+        if not nr_after > 0:
+            utils.MessagebarAndLog.warning(bar_msg=tr(u'midv_data_importer', u'Nothing imported, see log message panel'))
+            self.status = 'False'
             return
 
         #Finally import data:
@@ -190,19 +195,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         recsafter = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
 
         nr_imported = recsafter - recsbefore
+        nr_excluded = recsinfile - nr_imported
 
-        #Stats and messages after import
-        if recsinfile is None:
-            recsinfile = self.recstoimport
-        if recsafter is None:
-            recsafter = self.recsafter
-        if recsbefore is None:
-            recsbefore = self.recsbefore
-        NoExcluded = recsinfile - (recsafter - recsbefore)
-
-        detailed_msg_list.append(u'--------------------')
-        detailed_msg = u'\n'.join([utils.returnunicode(msg) for msg in detailed_msg_list])
-        utils.MessagebarAndLog.info(bar_msg=tr(u'midv_data_importer', u'%s rows imported and %s excluded for table %s. See log message panel for details'%(nr_imported, NoExcluded, goal_table)), log_msg=detailed_msg)
+        utils.MessagebarAndLog.info(bar_msg=tr(u'midv_data_importer', u'%s rows imported and %s excluded for table %s. See log message panel for details'%(nr_imported, nr_excluded, goal_table)))
+        utils.MessagebarAndLog.info(log_msg=u'--------------------')
         self.status = 'True'
         dbconnection.commit_and_closedb()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -283,13 +279,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                           goal_table)
         dbconnection.execute(sql)
 
-    def check_remaining(self, nr_before, nr_after, bar_msg, log_msg):
-        if nr_after == 0:
-            utils.MessagebarAndLog.critical(bar_msg=tr(u'midv_data_importer', u'Import error, nothing imported.'))
-            self.status = False
-        elif nr_before > nr_after:
-            utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
-
     def calculate_geometry(self, existing_columns, table_name, dbconnection):
         # Calculate the geometry
         # THIS IS DUE TO WKT-import of geometries below
@@ -337,13 +326,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :return: None
         """
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
-        existing_obsids = utils.get_all_obsids()
-        confirm_names = utils.Askuser(tr(u'midv_data_importer', "YesNo"), tr(u'midv_data_importer', "Do you want to confirm each logger import name before import?"))
-        import_all_data = utils.Askuser(tr(u'midv_data_importer', "YesNo"), tr(u'midv_data_importer', "Do you want to import all data?\n\n") +
-                                        tr(u'midv_data_importer', "'No' = only new data after the latest date in the database,\n") +
-                                        tr(u'midv_data_importer', "for each observation point, will be imported.\n\n") +
-                                        tr(u'midv_data_importer', "'Yes' = any data not matching an exact datetime in the database\n") +
-                                        tr(u'midv_data_importer', " for the corresponding obs_point will be imported."))
+
         self.charsetchoosen = utils.ask_for_charset(default_charset='cp1252')
         if not self.charsetchoosen:
             self.status = 'True'
@@ -353,9 +336,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if not files:
             self.status = 'True'
             return u'cancel'
+
         parsed_files = []
         for selected_file in files:
-            file_data = self.parse_diveroffice_file(selected_file, self.charsetchoosen, existing_obsids, confirm_names.result)
+            file_data, filename, location = self.parse_diveroffice_file(path=selected_file, charset=self.charsetchoosen)
             if file_data == u'cancel':
                 self.status = True
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -363,25 +347,66 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             elif file_data == u'skip':
                 continue
             elif not isinstance(file_data, list):
-                utils.MessagebarAndLog.critical(bar_msg=tr(u'midv_data_importer', "Import Failure: Something went wrong with file ") + str(selected_file))
+                utils.MessagebarAndLog.critical(bar_msg="Import Failure: Something went wrong with file " + str(selected_file))
                 continue
             elif len(file_data) == 0:
-                utils.MessagebarAndLog.warning(bar_msg=tr(u'midv_data_importer', "Import warning: No rows could be parsed from ") + str(selected_file))
+                utils.MessagebarAndLog.warning(bar_msg="Import warning: No rows could be parsed from " + str(selected_file))
 
-            parsed_files.append(file_data)
+            parsed_files.append((file_data, filename, location))
+
         if len(parsed_files) == 0:
-            utils.MessagebarAndLog.critical(bar_msg=tr(u'midv_data_importer', "Import Failure: No files imported"""))
+            utils.MessagebarAndLog.critical(bar_msg="Import Failure: No files imported""")
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return
+
+        #Add obsid to all parsed filedatas by asking the user for it.
+        filename_location_obsid = [[u'filename', u'location', u'obsid']]
+        filename_location_obsid.extend([[parsed_file[1], parsed_file[2], parsed_file[2]] for parsed_file in parsed_files])
+
+        confirm_names = utils.askuser("YesNo", "Do you want to confirm each logger obsid before import?\n\nOtherwise the location attribute in the file will be matched (both\noriginal location and capitalized location) against obsids in the database.\nObsid will be requested of the user if no match is found.")
+        try_capitalize = True
+        if confirm_names.result:
+            try_capitalize = False
+
+        existing_obsids = utils.get_all_obsids()
+        filename_location_obsid = utils.filter_nonexisting_values_and_ask(file_data=filename_location_obsid, header_value=u'obsid', existing_values=existing_obsids, try_capitalize=try_capitalize, always_ask_user=confirm_names.result)
+
+        if filename_location_obsid == u'cancel':
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.status = 'True'
+            return Cancel()
+        elif len(filename_location_obsid) < 2:
+            utils.MessagebarAndLog.warning(bar_msg=u'Warning. All files were skipped, nothing imported!')
+            return False
+
+        filenames_obsid = dict([(x[0], x[2]) for x in filename_location_obsid[1:]])
+
+        for file_data, filename, location in parsed_files:
+            if filename in filenames_obsid:
+                obsid = filenames_obsid[filename]
+                file_data[0].append(u'obsid')
+                [row.append(obsid) for row in file_data[1:]]
+
         #Header
-        file_to_import_to_db =  [parsed_files[0][0]]
-        file_to_import_to_db.extend([row for parsed_file in parsed_files for row in parsed_file[1:]])
+        file_to_import_to_db =  [parsed_files[0][0][0]]
+        file_to_import_to_db.extend([row for parsed_file in parsed_files for row in parsed_file[0][1:]])
+
+        import_all_data = utils.askuser("YesNo", "Do you want to import all data?\n\n" +
+                                        "'No' = only new data after the latest date in the database,\n" +
+                                        "for each observation point, will be imported.\n\n" +
+                                        "'Yes' = any data not matching an exact datetime in the database\n" +
+                                        " for the corresponding obsid will be imported.")
 
         if not import_all_data.result:
             file_to_import_to_db = self.filter_dates_from_filedata(file_to_import_to_db, utils.get_last_logger_dates())
-        answer = self.general_import(file_data=file_to_import_to_db, goal_table=u'w_levels_logger')
+        if len(file_to_import_to_db) < 2:
+            utils.MessagebarAndLog.info(bar_msg=u'No new data existed in the files. Nothing imported.')
+            self.status = 'True'
+            return True
+            answer = self.general_import(file_data=file_to_import_to_db,
+                                         goal_table=u'w_levels_logger')
         if isinstance(answer, Cancel):
-            self.status = True
+            self.status = 'True'
             return answer
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -389,16 +414,16 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     @staticmethod
-    def parse_diveroffice_file(path, charset, existing_obsids=None, ask_for_names=True, begindate=None, enddate=None):
+    def parse_diveroffice_file(path, charset, begindate=None, enddate=None):
         """ Parses a diveroffice csv file into a string
 
         :param path: The file name
         :param existing_obsids: A list or tuple with the obsids that exist in the db.
-        :param ask_for_names: (True/False) True to ask for obsid name for every obsid. False to only ask if the obsid is not found in existing_obsids.
+        :param ask_for_names: (True/False) True to ask for location name for every location. False to only ask if the location is not found in existing_obsids.
         :return: A string representing a table file. Including '\n' for newlines.
 
         Assumptions and limitations:
-        * The Location attribute is used as obsid and added as a column.
+        * The Location attribute is used as location and added as a column.
         * Values containing ',' is replaced with '.'
         * Rows with missing "Water head[cm]"-data is skipped.
 
@@ -406,19 +431,20 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         #These can be set to paritally import files.
         #begindate = datetime.strptime(u'2016-06-08 20:00:00',u'%Y-%m-%d %H:%M:%S')
         #enddate = datetime.strptime(u'2016-06-08 19:00:00',u'%Y-%m-%d %H:%M:%S')
+
         filedata = []
         begin_extraction = False
         delimiter = u';'
         num_cols = None
         with io.open(path, u'rt', encoding=str(charset)) as f:
-            obsid = None
+            location = None
             for rawrow in f:
                 rawrow = utils.returnunicode(rawrow)
                 row = rawrow.rstrip(u'\n').rstrip(u'\r').lstrip()
 
-                #Try to get obsid
+                #Try to get location
                 if row.startswith(u'Location'):
-                    obsid = row.split(u'=')[1].strip()
+                    location = row.split(u'=')[1].strip()
                     continue
 
                 cols = row.split(delimiter)
@@ -472,33 +498,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if len(filedata) == 0:
             return utils.ask_user_about_stopping(tr(u'midv_data_importer', "Failure, parsing failed for file %s\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)"%path))
 
-        answer = None
-        if ask_for_names:
-            answer = utils.filter_nonexisting_values_and_ask([[u'obsid'], [obsid]], u'obsid', existing_obsids, try_capitalize=False, always_confirm=True)
-        else:
-            answer = utils.filter_nonexisting_values_and_ask([[u'obsid'], [obsid]], u'obsid', existing_obsids, try_capitalize=True, always_confirm=False)
-
-        if answer == u'cancel':
-            return answer
-
-        if answer is not None:
-            if isinstance(answer, (list, tuple)):
-                if len(answer) > 1:
-                    obsid = answer[1][0]
-                else:
-                    return u'skip'
-
-        header.append(u'obsid')
-        for row in filedata:
-            row.append(obsid)
+        filename = os.path.basename(path)
 
         if u'Conductivity[mS/cm]' not in header:
             header.append(u'Conductivity[mS/cm]')
             for row in filedata:
                 row.append(u'')
 
-        translation_dict_in_order = OrderedDict([(u'obsid', u'obsid'),
-                                                 (u'Date/time', u'date_time'),
+        translation_dict_in_order = OrderedDict([(u'Date/time', u'date_time'),
                                                  (u'Water head[cm]', u'head_cm'),
                                                  (u'Temperature[°C]', u'temp_degc'),
                                                  (u'Conductivity[mS/cm]', u'cond_mscm')])
@@ -515,7 +522,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         sorted_filedata = [[row[translated_header.index(v)] for v in translation_dict_in_order.values()] for row in filedata]
 
-        return sorted_filedata
+        return sorted_filedata, filename, location
 
     @staticmethod
     def filter_dates_from_filedata(file_data, obsid_last_imported_dates, obsid_header_name=u'obsid', date_time_header_name=u'date_time'):

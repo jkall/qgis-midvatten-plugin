@@ -1,53 +1,55 @@
 ﻿﻿﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
 SPATIALITE SELECT InitSpatialMetadata(1);
 CREATE TABLE about_db /*A status log for the tables in the db*/(
-table text --Name of a table in the db
-, column text --Name of column
-, data_type text --Name of column
-, not_null text --1 if the column can not contain NULL
+tablename text --Name of a table in the db
+, columnname text --Name of column
+, data_type text --Data type of the column
+, not_null text --1 if NULL-values isn't allowed
 , default_value text --The default value of the column
 , primary_key text --1 if column is a primary key
-, foreign_key text --table(column) of foreign keys
-, description text --Comment for column or table
+, foreign_key text --"foreign key table(foreign key column)"
+, description text --Description for column or table
 , upd_date text --Date for last update
 , upd_sign text --Person responsible for update
 );
-CREATE TABLE zz_staff /*data domain for field staff used when importing data*/(
-staff text --initials of the field staff
-, name text --name of the field staff
+INSERT INTO about_db VALUES('*', '*', '', '', '', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION, running QGIS version CHANGETOQGISVERSION on top of SpatiaLite version CHANGETOSPLITEVERSION', '', '');
+INSERT INTO about_db VALUES('*', '*', '', '', '', '', '', 'locale:CHANGETOLOCALE', '', '');
+CREATE TABLE zz_staff /*Data domain for field staff used when importing data*/(
+staff text --Initials of the field staff
+, name text --Name of the field staff
 , PRIMARY KEY(staff)
 );
-CREATE TABLE zz_flowtype /*data domain for flowtypes in table w_flow*/(
-type text NOT NULL --
+CREATE TABLE zz_flowtype /*Data domain for flowtypes in table w_flow*/(
+type text NOT NULL --Allowed flowtypes
 , explanation text --Explanation of the flowtypes
 , PRIMARY KEY(type)
 );
-CREATE TABLE zz_meteoparam /*data domain for meteorological parameters in meteo*/(
-parameter text NOT NULL --
+CREATE TABLE zz_meteoparam /*Data domain for meteorological parameters in meteo*/(
+parameter text NOT NULL --Allowed meteorological parameters
 , explanation text --Explanation of the parameters
 , PRIMARY KEY(parameter)
 );
-CREATE TABLE zz_strat /*data domain for stratigraphy classes*/(
-geoshort text NOT NULL --abbreviation for the strata (stratigraphy class)
+CREATE TABLE zz_strat /*Data domain for stratigraphy classes*/(
+geoshort text NOT NULL --Abbreviation for the strata (stratigraphy class)
 , strata text NOT NULL --clay etc
 , PRIMARY KEY(geoshort)
 );
-CREATE TABLE zz_stratigraphy_plots /*data domain for stratigraphy plot colors and symbols used by the plugin*/(
+CREATE TABLE zz_stratigraphy_plots /*Data domain for stratigraphy plot colors and symbols used by the plugin*/(
 strata text NOT NULL --clay etc
-, color_mplot text NOT NULL --color codes for matplotlib plots
-, hatch_mplot text NOT NULL --hatch codes for matplotlib plots
-, color_qt text NOT NULL --color codes for Qt plots
-, brush_qt text NOT NULL --brush types for Qt plots
+, color_mplot text NOT NULL --Color codes for matplotlib plots
+, hatch_mplot text NOT NULL --Hatch codes for matplotlib plots
+, color_qt text NOT NULL --Color codes for Qt plots
+, brush_qt text NOT NULL --Brush types for Qt plots
 , PRIMARY KEY(strata)
 );
-CREATE TABLE zz_capacity /*data domain for stratigraphy classes and geological short names used by the plugin*/(
-capacity text NOT NULL --4
-, explanation text NOT NULL --description of water capacity classes
+CREATE TABLE zz_capacity /*Data domain for capacity classes used by the plugin*/(
+capacity text NOT NULL --Water capacity (ex. in the range 1-6)
+, explanation text NOT NULL --Description of water capacity classes
 , PRIMARY KEY(capacity)
 );
-CREATE TABLE zz_capacity_plots /*data domain for capacity plot colors used by the plugin*/(
-capacity text NOT NULL --4
-, color_qt text NOT NULL --hatchcolor codes for Qt plots
+CREATE TABLE zz_capacity_plots /*Data domain for capacity plot colors used by the plugin*/(
+capacity text NOT NULL --Water capacity (ex. in the range 1-6)
+, color_qt text NOT NULL --Hatchcolor codes for Qt plots
 , PRIMARY KEY(capacity)
 , FOREIGN KEY(capacity) REFERENCES zz_capacity(capacity)
 );
@@ -57,8 +59,8 @@ obsid text NOT NULL --ID for the observation point
 , place text --Place for the observation. E.g. estate
 , type text --Type of observation
 , length double --Borehole length from ground surface to bottom (equals to depth if vertical)
-, drillstop text --Drill stop
-, diam double --Inner diameter for casing or upper part of borehol
+, drillstop text --Drill stop (ex "Driven to bedrock")
+, diam double --Inner diameter for casing or upper part of borehole
 , material text --Well material
 , screen text --Type of well screen
 , capacity text --Well capacity
@@ -76,8 +78,8 @@ obsid text NOT NULL --ID for the observation point
 , h_syst text --Reference system for elevation
 , h_source text --Source for the measuring point elevation (consultancy report or similar)
 , source text --The source for the observation point
-, com_onerow text --onerow comment
-, com_html text --multiline formatted comment in html format
+, com_onerow text --Onerow comment
+, com_html text --Multiline formatted comment in html format
 , PRIMARY KEY (obsid)
 );
 SPATIALITE SELECT AddGeometryColumn('obs_points', 'geometry', CHANGETORELEVANTEPSGID, 'POINT', 'XY', 0);
@@ -93,31 +95,31 @@ obsid text  NOT NULL --ID for observation line
 SPATIALITE SELECT AddGeometryColumn('obs_lines', 'geometry', CHANGETORELEVANTEPSGID, 'LINESTRING', 'XY', 0);
 POSTGIS ALTER TABLE obs_lines ADD COLUMN geometry geometry(Linestring,CHANGETORELEVANTEPSGID)
 CREATE TABLE w_levels /*Manual water level measurements*/(
-obsid text NOT NULL --obsid linked to obs_points.obsid
+obsid text NOT NULL --Obsid linked to obs_points.obsid
 , date_time text NOT NULL --Date and Time for the observation
-, meas double --distance from measuring point to water level
+, meas double --Distance from measuring point to water level
 , h_toc double --Elevation (masl) for the measuring point at the particular date_time (measuring point elevation may vary by time)
 , level_masl double --Water level elevation (masl) calculated from measuring point and distance from measuring point to water level
 , comment text --Comment
 , PRIMARY KEY (obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
-CREATE TABLE w_levels_logger /*Automatic Water Level Readings*/(
-obsid text NOT NULL --obsid linked to obs_points.obsid
+CREATE TABLE w_levels_logger /*Automatic water level readings*/(
+obsid text NOT NULL --Obsid linked to obs_points.obsid
 , date_time text NOT NULL --Date and Time for the observation
-, head_cm double --pressure (cm water column) on pressure transducer
-, temp_degc double --temperature degrees C
-, cond_mscm double --electrical conductivity mS/cm
+, head_cm double --Pressure (cm water column) on pressure transducer
+, temp_degc double --Temperature degrees C
+, cond_mscm double --Electrical conductivity mS/cm
 , level_masl double --Corresponding Water level elevation (masl)
 , comment text --Comment
 , PRIMARY KEY (obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
-CREATE TABLE stratigraphy /*stratigraphy information from drillings*/(
-obsid text NOT NULL --obsid linked to obs_points.obsid
+CREATE TABLE stratigraphy /*Stratigraphy information from drillings*/(
+obsid text NOT NULL --Obsid linked to obs_points.obsid
 , stratid integer NOT NULL --Stratigraphy layer ID for the OBSID
-, depthtop double --Depth
-, depthbot double --Depth
+, depthtop double --Top of the layer in m from ground surface
+, depthbot double --Bottom of the layer in m from ground surface
 , geology text --Full description of geology
 , geoshort text --Short description of geology
 , capacity text --Well development at the layer
@@ -127,13 +129,13 @@ obsid text NOT NULL --obsid linked to obs_points.obsid
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid)
 );
 CREATE TABLE w_qual_field /*Water quality from field measurements*/(
-obsid text NOT NULL --obsid linked to obs_points.obsid
+obsid text NOT NULL --Obsid linked to obs_points.obsid
 , staff text --Field staff
 , date_time text NOT NULL --Date and Time for the observation
 , instrument text --Instrument ID
 , parameter text NOT NULL --Measured parameter
-, reading_num double --Value AS real number
-, reading_txt text --Value AS text
+, reading_num double --Value as real number
+, reading_txt text --Value as text (ex. can contain '>' and '<')
 , unit text --Unit
 , depth double --The depth at which the measurement was done
 , comment text --Comment
@@ -141,7 +143,7 @@ obsid text NOT NULL --obsid linked to obs_points.obsid
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY(staff) REFERENCES zz_staff(staff)
 );
 CREATE TABLE w_qual_lab /*Water quality from laboratory analysis*/(
-obsid text NOT NULL --obsid linked to obs_points.obsid
+obsid text NOT NULL --Obsid linked to obs_points.obsid
 , depth double --Depth (m below h_gs) from where sample is taken
 , report text NOT NULL --Report no from laboratory
 , project text --Project number
@@ -149,17 +151,17 @@ obsid text NOT NULL --obsid linked to obs_points.obsid
 , date_time text --Date and Time for the observation
 , anameth text --Analysis method
 , parameter text NOT NULL --Measured parameter
-, reading_num double --Value AS real number
-, reading_txt text --Value AS text
+, reading_num double --Value as real number
+, reading_txt text --Value as text (ex. can contain '>' and '<')
 , unit text --Unit
-, comment text --Comments
+, comment text --Comment
 , PRIMARY KEY(report, parameter)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY(staff) REFERENCES zz_staff(staff)
 );
 CREATE TABLE w_flow /*Water flow*/(
-obsid text NOT NULL --obsid linked to obs_points.obsid
+obsid text NOT NULL --Obsid linked to obs_points.obsid
 , instrumentid text NOT NULL --Instrument Id
-, flowtype text NOT NULL --Flowtype must correspond to type in flowtypes - Accumulated volume
+, flowtype text NOT NULL --Flowtype must correspond to type in flowtypes
 , date_time text NOT NULL --Date and Time for the observation
 , reading double --Value (real number) reading for the flow rate
 , unit text --Unit corresponding to the value reading
@@ -168,19 +170,19 @@ obsid text NOT NULL --obsid linked to obs_points.obsid
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY (flowtype) REFERENCES zz_flowtype(type)
 );
 CREATE TABLE meteo /*meteorological observations*/(
-obsid text NOT NULL --obsid linked to obs_points.obsid
-, instrumentid text NOT NULL --Instrument Id
+obsid text NOT NULL --Obsid linked to obs_points.obsid
+, instrumentid text NOT NULL --Instrument ID
 , parameter text NOT NULL --The meteorological parameter
 , date_time text NOT NULL --Date and Time for the observation
 , reading_num double --Value (real number) reading for the parameter
-, reading_txt text --Value (text string) reading for the parameter
+, reading_txt text --Value as text (ex. can contain '>' and '<')
 , unit text --Unit corresponding to the value reading
 , comment text --Comment
 , PRIMARY KEY (obsid, instrumentid, parameter, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY (parameter) REFERENCES zz_meteoparam(parameter)
 );
 CREATE TABLE seismic_data /*Interpreted data from seismic measurements*/(
-obsid text NOT NULL --obsid linked to obs_lines.obsid
+obsid text NOT NULL --Obsid linked to obs_lines.obsid
 , length double NOT NULL --Length along line
 , ground double --Ground surface level
 , bedrock double --Interpreted level for bedrock surface
@@ -190,7 +192,7 @@ obsid text NOT NULL --obsid linked to obs_lines.obsid
 , FOREIGN KEY (obsid) REFERENCES obs_lines(obsid)
 );
 CREATE TABLE vlf_data /*Raw data from VLF measurements*/(
-obsid text NOT NULL --obsid linked to obs_lines.obsid
+obsid text NOT NULL --Obsid linked to obs_lines.obsid
 , length double NOT NULL --Length along line
 , real_comp double --Raw data real component (in-phase(%))
 , imag_comp double --Raw data imaginary component
@@ -198,11 +200,11 @@ obsid text NOT NULL --obsid linked to obs_lines.obsid
 , PRIMARY KEY (obsid, length)
 , FOREIGN KEY (obsid) REFERENCES obs_lines(obsid)
 );
-CREATE TABLE comments /*comments connected to obsids*/(
-obsid text NOT NULL --ID for the observation point
+CREATE TABLE comments /*Comments connected to obsids*/(
+obsid text NOT NULL --Obsid linked to obs_points.obsid
 , date_time text NOT NULL --Date and Time for the comment
-, comment text NOT NULL --comments connected to obsids
-, staff text NOT NULL --comments connected to obsids
+, comment text NOT NULL --Comment
+, staff text NOT NULL --Staff who made the comment
 , PRIMARY KEY(obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY(staff) REFERENCES zz_staff(staff)
 );

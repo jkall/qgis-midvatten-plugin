@@ -59,6 +59,7 @@ from midvsettings import midvsettings
 import midvsettingsdialog
 from piper import PiperPlot
 from export_data import ExportData
+import PyQt4
 #import tools.db_utils as db_utils
 import db_utils
 from definitions import midvatten_defs as defs
@@ -77,7 +78,7 @@ class midvatten:
 
         self.actionNewPostgisDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), "Populate a postgis database to a new Midvatten project DB", self.iface.mainWindow())
         QObject.connect(self.actionNewPostgisDB, SIGNAL("triggered()"), self.new_postgis_db)
-        
+
         self.actionloadthelayers = QAction(QIcon(":/plugins/midvatten/icons/loaddefaultlayers.png"), "Load default db-layers to qgis", self.iface.mainWindow())
         self.actionloadthelayers.setWhatsThis("Load default layers from the selected database")
         self.iface.registerMainWindowAction(self.actionloadthelayers, "F7")   # The function should also be triggered by the F7 key
@@ -100,7 +101,7 @@ class midvatten:
         #self.actionupdateposition = QAction(QIcon(":/plugins/midvatten/icons/updateposfrcoord.png"), "Update map position from coordinates", self.iface.mainWindow())
         #QObject.connect(self.actionupdateposition , SIGNAL("triggered()"), self.updateposition)
 
-        
+
         self.action_wlvlcalculate = QAction(QIcon(":/plugins/midvatten/icons/calc_level_masl.png"), "Calculate w level from manual measurements", self.iface.mainWindow())
         QObject.connect(self.action_wlvlcalculate , SIGNAL("triggered()"), self.wlvlcalculate)
         
@@ -567,13 +568,21 @@ class midvatten:
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
-            verno = str(iniText.value('version')) 
+            _verno = iniText.value('version')
+            if isinstance(_verno, PyQt4.QtCore.QVariant):
+                verno = _verno.toString()
+            else:
+                verno = str(_verno)
             from create_db import NewDb
             newdbinstance = NewDb()
             newdbinstance.create_new_spatialite_db(verno)
             if not newdbinstance.db_settings=='':
                 self.ms.settingsdict['database'] = utils.anything_to_string_representation(newdbinstance.db_settings)
                 self.ms.save_settings()
+
+            #The markdown table is for gitlab. Run the rows below when there is a change in create_db
+            #markdowntable = utils.create_markdown_table_from_table(u'about_db', transposed=False, only_description=True)
+            #print(markdowntable)
 
     @db_utils.if_connection_ok
     def new_postgis_db(self):
@@ -588,6 +597,10 @@ class midvatten:
             if not newdbinstance.db_settings=='':
                 self.ms.settingsdict['database'] = utils.anything_to_string_representation(newdbinstance.db_settings)
                 self.ms.save_settings()
+
+            #The markdown table is for gitlab. Run the rows below when there is a change in create_db
+            #markdowntable = utils.create_markdown_table_from_table(u'about_db', transposed=False, only_description=True)
+            #print(markdowntable)
 
     def plot_piper(self):
         allcritical_layers = ('w_qual_lab', 'w_qual_field')#none of these layers must be in editing mode
@@ -646,12 +659,12 @@ class midvatten:
         if len(selectedobspoints)>1:
             # We cannot send unicode as string to sql because it would include the u'
             # Made into tuple because module sectionplot depends on obsid being a tuple
-            OBSID = tuple([str(id) for id in selectedobspoints])
+            OBSID = utils.returnunicode(selectedobspoints, keep_containers=True)
         else:
             msg = 'You must select at least two objects in the obs_points layer'
         
         if msg:#if something went wrong
-            self.iface.messageBar().pushMessage("Error",msg, 2,duration =15)
+            utils.MessagebarAndLog.critical(bar_msg=u'Error, %s'%msg)
         else:#otherwise go
             try:
                 self.myplot.do_it(self.ms,OBSID,SectionLineLayer)

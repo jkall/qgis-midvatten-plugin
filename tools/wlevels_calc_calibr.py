@@ -169,6 +169,8 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.connect(self.pushButtonAdd, PyQt4.QtCore.SIGNAL("clicked()"), self.add_to_level_masl)
         self.connect(self.pushButtonFrom, PyQt4.QtCore.SIGNAL("clicked()"), self.set_from_date_from_x)
         self.connect(self.pushButtonTo, PyQt4.QtCore.SIGNAL("clicked()"), self.set_to_date_from_x)
+        self.connect(self.pushButton_from_extent, PyQt4.QtCore.SIGNAL("clicked()"), lambda: self.FromDateTime.setDateTime(num2date(self.axes.get_xbound()[0])))
+        self.connect(self.pushButton_to_extent, PyQt4.QtCore.SIGNAL("clicked()"), lambda: self.ToDateTime.setDateTime(num2date(self.axes.get_xbound()[1])))
         self.connect(self.pushButtonupdateplot, PyQt4.QtCore.SIGNAL("clicked()"), self.update_plot)
         #self.connect(self.loggerpos_masl_or_offset, PyQt4.QtCore.SIGNAL("clicked()"), self.loggerpos_masl_or_offset_change)
         #self.connect(self.pushButtonLpos, PyQt4.QtCore.SIGNAL("clicked()"), self.calibrate_from_plot_selection)
@@ -399,6 +401,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.calib_help.setText("")
 
         self.getlastcalibration(obsid)
+        self.mpltoolbar.forward()
 
     def plot_recarray(self, axes, a_recarray, lable, line_style, picker=5):
         """ Plots a recarray to the supplied axes object """
@@ -410,7 +413,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     def set_from_date_from_x(self):
         """ Used to set the self.FromDateTime by clicking on a line node in the plot self.canvas """
         self.reset_plot_selects_and_calib_help()
-        self.calib_help.setText("Select a node to use as \"from\"")
+        self.calib_help.setText("Select a date to use as \"from\"")
         self.deactivate_pan_zoom()
         self.canvas.setFocusPolicy(Qt.ClickFocus)
         self.canvas.setFocus()   
@@ -419,7 +422,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     def set_to_date_from_x(self):
         """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """    
         self.reset_plot_selects_and_calib_help()
-        self.calib_help.setText("Select a node to use as \"to\"")
+        self.calib_help.setText("Select a date to use as \"to\"")
         self.deactivate_pan_zoom()
         self.canvas.setFocusPolicy(Qt.ClickFocus)
         self.canvas.setFocus()   
@@ -430,7 +433,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
             date_holder: a QDateTimeEdit object.
         """
-        found_date = utils.find_nearest_date_from_event(event)
+        found_date = num2date(event.mouseevent.xdata)
         date_holder.setDateTime(found_date)           
         self.reset_plot_selects_and_calib_help()
     

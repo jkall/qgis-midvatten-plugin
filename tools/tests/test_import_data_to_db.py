@@ -60,16 +60,17 @@ class TestParseDiverofficeFile(object):
              u'2016/03/15 10:30:00,26.9,5.18',
              u'2016/03/15 11:00:00,157.7,0.6'
              )
-        existing_obsids = [u'rb1']
 
         charset_of_diverofficefile = u'utf-8'
         with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile)
 
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = u'[[obsid, date_time, head_cm, temp_degc, cond_mscm], [rb1, 2016-03-15 10:30:00, 26.9, 5.18, ], [rb1, 2016-03-15 11:00:00, 157.7, 0.6, ]]'
+
+        test_string = utils_for_tests.create_test_string(file_data[0])
+        reference_string = u'[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 26.9, 5.18, ], [2016-03-15 11:00:00, 157.7, 0.6, ]]'
         assert test_string == reference_string
+        assert os.path.basename(path) == file_data[1]
+        assert file_data[2] == u'rb1'
 
     def test_parse_diveroffice_file_cp1252(self):
 
@@ -78,16 +79,16 @@ class TestParseDiverofficeFile(object):
              u'2016/03/15 10:30:00,26.9,5.18',
              u'2016/03/15 11:00:00,157.7,0.6'
              )
-        existing_obsids = [u'rb1']
 
         charset_of_diverofficefile = u'cp1252'
         with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile)
 
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = u'[[obsid, date_time, head_cm, temp_degc, cond_mscm], [rb1, 2016-03-15 10:30:00, 26.9, 5.18, ], [rb1, 2016-03-15 11:00:00, 157.7, 0.6, ]]'
+        test_string = utils_for_tests.create_test_string(file_data[0])
+        reference_string = u'[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 26.9, 5.18, ], [2016-03-15 11:00:00, 157.7, 0.6, ]]'
         assert test_string == reference_string
+        assert os.path.basename(path) == file_data[1]
+        assert file_data[2] == u'rb1'
 
     def test_parse_diveroffice_file_semicolon_sep(self):
 
@@ -96,16 +97,16 @@ class TestParseDiverofficeFile(object):
              u'2016/03/15 10:30:00;26.9;5.18',
              u'2016/03/15 11:00:00;157.7;0.6'
              )
-        existing_obsids = [u'rb1']
 
         charset_of_diverofficefile = u'cp1252'
         with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile)
 
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = u'[[obsid, date_time, head_cm, temp_degc, cond_mscm], [rb1, 2016-03-15 10:30:00, 26.9, 5.18, ], [rb1, 2016-03-15 11:00:00, 157.7, 0.6, ]]'
+        test_string = utils_for_tests.create_test_string(file_data[0])
+        reference_string = u'[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 26.9, 5.18, ], [2016-03-15 11:00:00, 157.7, 0.6, ]]'
         assert test_string == reference_string
+        assert os.path.basename(path) == file_data[1]
+        assert file_data[2] == u'rb1'
 
     def test_parse_diveroffice_file_comma_dec(self):
 
@@ -114,16 +115,16 @@ class TestParseDiverofficeFile(object):
              u'2016/03/15 10:30:00;26,9;5,18',
              u'2016/03/15 11:00:00;157,7;0,6'
              )
-        existing_obsids = [u'rb1']
 
         charset_of_diverofficefile = u'cp1252'
         with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile)
 
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = ur'''[[obsid, date_time, head_cm, temp_degc, cond_mscm], [rb1, 2016-03-15 10:30:00, 26.9, 5.18, ], [rb1, 2016-03-15 11:00:00, 157.7, 0.6, ]]'''
+        test_string = utils_for_tests.create_test_string(file_data[0])
+        reference_string = ur'''[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 26.9, 5.18, ], [2016-03-15 11:00:00, 157.7, 0.6, ]]'''
         assert test_string == reference_string
+        assert os.path.basename(path) == file_data[1]
+        assert file_data[2] == u'rb1'
 
     @mock.patch('import_data_to_db.utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
     def test_parse_diveroffice_file_comma_sep_comma_dec_failed(self):
@@ -133,12 +134,10 @@ class TestParseDiverofficeFile(object):
              u'2016/03/15 10:30:00,26,9,5,18',
              u'2016/03/15 11:00:00,157,7,0,6'
              )
-        existing_obsids = [u'rb1']
 
         charset_of_diverofficefile = u'cp1252'
         with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data)
         reference_string = 'cancel'
@@ -152,55 +151,13 @@ class TestParseDiverofficeFile(object):
              u'2016/03/15 10:30:00;26,9;5,18',
              u'2016/03/15 11:00:00;157,7;0,6'
              )
-        existing_obsids = [u'rb1']
 
         charset_of_diverofficefile = u'cp1252'
         with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
+                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data)
         reference_string = 'cancel'
-        assert test_string == reference_string
-
-    def test_parse_diveroffice_file_try_capitalize(self):
-
-        f = (u'Location=rb1',
-             u'Date/time;Water head[cm];Temperature[°C]',
-             u'2016/03/15 10:30:00;26,9;5,18',
-             u'2016/03/15 11:00:00;157,7;0,6'
-             )
-        existing_obsids = [u'Rb1']
-
-        charset_of_diverofficefile = u'cp1252'
-        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
-
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = u'[[obsid, date_time, head_cm, temp_degc, cond_mscm], [Rb1, 2016-03-15 10:30:00, 26.9, 5.18, ], [Rb1, 2016-03-15 11:00:00, 157.7, 0.6, ]]'
-        assert test_string == reference_string
-
-    @mock.patch('import_data_to_db.utils.NotFoundQuestion', autospec=True)
-    def test_parse_diveroffice_file_cancel(self, mock_notfoundquestion):
-        mock_notfoundquestion.return_value.answer = u'cancel'
-        mock_notfoundquestion.return_value.value = u''
-        mock_notfoundquestion.return_value.reuse_column = u'obsid'
-
-        f = (u'Location=rb1',
-             u'Date/time,Water head[cm],Temperature[°C]',
-             u'2016/03/15 10:30:00,26.9,5.18',
-             u'2016/03/15 11:00:00,157.7,0.6'
-             )
-        existing_obsids = [u'rb2']
-
-        charset_of_diverofficefile = u'utf-8'
-        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
-                ask_for_names = False
-                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile, existing_obsids, ask_for_names)
-
-        test_string = utils_for_tests.create_test_string(file_data)
-        reference_string = u'cancel'
         assert test_string == reference_string
 
 
