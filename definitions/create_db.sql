@@ -83,7 +83,7 @@ obsid text NOT NULL --ID for the observation point
 , PRIMARY KEY (obsid)
 );
 SPATIALITE SELECT AddGeometryColumn('obs_points', 'geometry', CHANGETORELEVANTEPSGID, 'POINT', 'XY', 0);
-POSTGIS ALTER TABLE obs_points ADD COLUMN geometry geometry(Point,CHANGETORELEVANTEPSGID)
+POSTGIS ALTER TABLE obs_points ADD COLUMN geometry geometry(Point,CHANGETORELEVANTEPSGID);
 CREATE TABLE obs_lines /*One of the two main tables. This table holds all line observation objects.*/(
 obsid text  NOT NULL --ID for observation line
 , name text --Ordinary name for the observation
@@ -93,7 +93,7 @@ obsid text  NOT NULL --ID for observation line
 , PRIMARY KEY (obsid)
 );
 SPATIALITE SELECT AddGeometryColumn('obs_lines', 'geometry', CHANGETORELEVANTEPSGID, 'LINESTRING', 'XY', 0);
-POSTGIS ALTER TABLE obs_lines ADD COLUMN geometry geometry(Linestring,CHANGETORELEVANTEPSGID)
+POSTGIS ALTER TABLE obs_lines ADD COLUMN geometry geometry(Linestring,CHANGETORELEVANTEPSGID);
 CREATE TABLE w_levels /*Manual water level measurements*/(
 obsid text NOT NULL --Obsid linked to obs_points.obsid
 , date_time text NOT NULL --Date and Time for the observation

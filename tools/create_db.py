@@ -22,6 +22,7 @@ import PyQt4.QtGui
 from qgis.core import QGis
 import qgis.utils
 import timeit
+import re
 
 import os
 import locale
@@ -30,6 +31,8 @@ import db_utils
 import datetime
 #plugin modules
 import midvatten_utils as utils
+
+tr = PyQt4.QtCore.QCoreApplication.translate
 
 class NewDb():
     def __init__(self):
@@ -49,7 +52,7 @@ class NewDb():
             EPSGID=EPSG_code
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         if EPSGID=='0' or not EPSGID:
-            utils.pop_up_info("Cancelling...")
+            utils.pop_up_info(tr(u'NewDb', u"Cancelling..."))
             return utils.Cancel()
         # If a CRS is selectd, go on and create the database
 
@@ -65,29 +68,30 @@ class NewDb():
             try:
                 os.remove(dbpath)
             except OSError, e:
-                utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", "%s - %s." % (e.filename,e.strerror), duration=10)
+                utils.MessagebarAndLog.critical(tr(u'NewDb', u"sqlite error, see lLog message panel", u"%s - %s." % (e.filename,e.strerror), duration=10))
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
                 return ''
+        utils.MessagebarAndLog.critical(tr(u'NewDb', u"sqlite error, see lLog message panel", u"%s - %s."% (u'a', u'e')), duration=10)
 
         self.db_settings = utils.returnunicode(utils.anything_to_string_representation({u'spatialite': {u'dbpath': dbpath}}))
-        #connection = db_utils.DbConnectionManager(self.db_settings)
+        #dbconnection = db_utils.DbConnectionManager(self.db_settings)
         try:
             # creating/connecting the test_db
-            connection = db_utils.DbConnectionManager(self.db_settings)
-            connection.execute(u"PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+            dbconnection = db_utils.DbConnectionManager(self.db_settings)
+            dbconnection.execute(u"PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database dbconnection separately.
         except Exception as e:
-            print("Creation of db failed")
-            utils.MessagebarAndLog.critical(bar_msg=u"Impossible to connect to selected DataBase, see log message panel", log_msg=u'Msg:\n' + str(e))
+            print(tr(u'NewDb', u"Creation of db failed"))
+            utils.MessagebarAndLog.critical(bar_msg=tr(u'NewDb', u"Impossible to connect to selected DataBase, see log message panel"), log_msg=tr(u'NewDb', u'Msg:\n') + str(e))
             #utils.pop_up_info("Impossible to connect to selected DataBase")
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return ''
 
         #First, find spatialite version
-        versionstext = connection.execute_and_fetchall('select spatialite_version()')[0]
+        versionstext = dbconnection.execute_and_fetchall('select spatialite_version()')[0]
         # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
         # then the syntax defines a Midvatten project db according to the loaded .sql-file
         if not int(versionstext[0][0]) > 3: # which file to use depends on spatialite version installed
-            utils.pop_up_info("Midvatten plugin needs spatialite4.\nDatabase can not be created")
+            utils.pop_up_info(tr(u'NewDb', u"Midvatten plugin needs spatialite4.\nDatabase can not be created"))
             return ''
 
         filenamestring = "create_db.sql"
@@ -104,35 +108,37 @@ class NewDb():
 
         with open(SQLFile, 'r') as f:
             f.readline()  # first line is encoding info....
-            for line in f:
-                if all([line, not line.startswith("#"), not line.startswith("POSTGIS")]):
-                    try:
-                        connection.execute(self.replace_words(line, replace_word_replace_with))
-                    except Exception as e:
-                        print(str(line))
-                        raise Exception(e)
+            lines = [utils.returnunicode(line) for line in f]
+        sql_lines = [u'{};'.format(l) for l in u' '.join(lines).split(u';') if l]
+        for line in sql_lines:
+            if all([line, not line.startswith("#"), u'POSTGIS' not in line]):
+                sql = self.replace_words(line, replace_word_replace_with)
+                try:
+                    dbconnection.execute(sql)
+                except:
+                    print(str(sql))
+                    raise
 
         #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
         delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
         try:
-            connection.execute(delete_srid_sql)
+            dbconnection.execute(delete_srid_sql)
         except:
-            utils.MessagebarAndLog.info(log_msg=u'Removing srids failed using: ' + str(delete_srid_sql))
+            utils.MessagebarAndLog.info(log_msg=tr(u'NewDb', u'Removing srids failed using: ') + str(delete_srid_sql))
 
+        self.insert_datadomains(set_locale, dbconnection)
 
-        self.insert_datadomains(set_locale, connection)
+        self.add_triggers_to_obs_points("insert_obs_points_triggers.sql", dbconnection)
 
-        self.add_triggers_to_obs_points("insert_obs_points_triggers.sql", connection)
+        self.add_metadata_to_about_db(dbconnection)
 
-        self.add_metadata_to_about_db()
-
-        connection.execute('vacuum')
+        dbconnection.execute('vacuum')
 
         #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
-        connection.commit_and_closedb()
+        dbconnection.commit_and_closedb()
         #create SpatiaLite Connection in QGIS QSettings
         settings=PyQt4.QtCore.QSettings()
-        settings.beginGroup('/SpatiaLite/connections')
+        settings.beginGroup('/SpatiaLite/dbconnections')
         settings.setValue(u'%s/sqlitepath'%os.path.basename(dbpath),'%s'%dbpath)
         settings.endGroup()
 
@@ -158,9 +164,9 @@ class NewDb():
         if EPSGID=='0' or not EPSGID:
             return utils.Cancel()
 
-        connection = db_utils.DbConnectionManager()
-        connection.execute(u'CREATE EXTENSION IF NOT EXISTS postgis;')
-        result = connection.execute_and_fetchall(u'select version(), PostGIS_full_version();')
+        dbconnection = db_utils.DbConnectionManager()
+        dbconnection.execute(u'CREATE EXTENSION IF NOT EXISTS postgis;')
+        result = dbconnection.execute_and_fetchall(u'select version(), PostGIS_full_version();')
         versionstext = u', '.join(result[0])
 
         filenamestring = "create_db.sql"
@@ -181,21 +187,27 @@ class NewDb():
 
         with open(SQLFile, 'r') as f:
             f.readline()  # first line is encoding info....
-            for line in f:
-                if all([line,not line.startswith("#"), u'InitSpatialMetadata' not in line, not line.startswith("SPATIALITE")]):
-                    line = self.replace_words(line, replace_word_replace_with)
-                    connection.execute(line)
+            lines = [utils.returnunicode(line) for line in f]
+        sql_lines = [u'{};'.format(l) for l in u' '.join(lines).split(u';') if l]
+        for line in sql_lines:
+            if all([line, not line.startswith("#"), u'InitSpatialMetadata' not in line, u'SPATIALITE' not in line]):
+                sql = self.replace_words(line, replace_word_replace_with)
+                try:
+                    dbconnection.execute(sql)
+                except:
+                    print(str(sql))
+                    raise
 
             #lines = [self.replace_words(line.decode('utf-8').rstrip('\n').rstrip('\r'), replace_word_replace_with) for line in f if all([line,not line.startswith("#"), u'InitSpatialMetadata' not in line])]
         #db_utils.sql_alter_db(lines)
 
-        self.insert_datadomains(set_locale, connection)
+        self.insert_datadomains(set_locale, dbconnection)
 
-        self.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql', connection)
+        self.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql', dbconnection)
 
-        connection.execute(u'vacuum')
+        dbconnection.execute(u'vacuum')
 
-        connection.commit_and_closedb()
+        dbconnection.commit_and_closedb()
 
         """
         #The intention is to keep layer styles in the database by using the class AddLayerStyles but due to limitations in how layer styles are stored in the database, I will put this class on hold for a while.
@@ -215,11 +227,11 @@ class NewDb():
         locale_names = [localeobj.name() for localeobj in locales]
         locale_names.append(locale.getdefaultlocale()[0])
         locale_names = list(set(locale_names))
-        question = utils.NotFoundQuestion(dialogtitle=u'User input needed',
-                                    msg=u'Supply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.',
+        question = utils.NotFoundQuestion(dialogtitle=tr(u'NewDb', u'User input needed'),
+                                    msg=tr(u'NewDb', u'Supply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.'),
                                     existing_list=locale_names,
                                     default_value=u'',
-                                    button_names=[u'Cancel', u'Ok'])
+                                    button_names=[tr(u'NewDb', u'Cancel'), tr(u'NewDb', u'Ok')])
         answer = question.answer
         submitted_value = utils.returnunicode(question.value)
         if answer == u'cancel':
@@ -233,23 +245,22 @@ class NewDb():
             default_crs = 3006
         else:
             default_crs = 4326
-        EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, "Select CRS", "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:",default_crs)
+        EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, tr(u'NewDb', "Select CRS"), tr(u'NewDb', "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:"),default_crs)
         return EPSGID
 
-    def insert_datadomains(self, set_locale=False, connection=None):
+    def insert_datadomains(self, set_locale=False, dbconnection=None):
         filenamestring = 'insert_datadomain'
         if set_locale == u'sv_SE':
             filenamestring += "_sv.sql"
         else:
             filenamestring += ".sql"
-        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring), connection)
+        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring), dbconnection)
 
-    def add_triggers_to_obs_points(self, filename, connection):
-        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename), connection)
+    def add_triggers_to_obs_points(self, filename, dbconnection):
+        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename), dbconnection)
 
-    def add_metadata_to_about_db(self):
-        self.cur.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table') and not (name in""" + defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")
-        tables = self.cur.fetchall()
+    def add_metadata_to_about_db(self, dbconnection):
+        tables = dbconnection.execute_and_fetchall(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table') and not (name in""" + dbconnection.internal_tables() + r""") ORDER BY tbl_name""")
 
         #Matches comment inside /* */
         #create_table_sql CREATE TABLE meteo /*meteorological observations*/(
@@ -264,8 +275,7 @@ class NewDb():
 
             #Get table and column comments
             table_descr_sql = (u"SELECT name, sql from sqlite_master WHERE name = '%s';"%table)
-            self.cur.execute(table_descr_sql)
-            create_table_sql = self.cur.fetchall()[0][1]
+            create_table_sql = dbconnection.execute_and_fetchall(table_descr_sql)[0][1]
             table_descr = table_descr_reg.findall(create_table_sql)
             try:
                 table_descr = table_descr[0]
@@ -276,12 +286,10 @@ class NewDb():
 
             columns_descr = dict(column_descr_reg.findall(create_table_sql))
 
-            self.cur.execute(u'''PRAGMA table_info(%s)''' % table)
-            table_info = self.cur.fetchall()
+            table_info = dbconnection.execute_and_fetchall(u'''PRAGMA table_info(%s)''' % table)
 
-            self.cur.execute(u"""PRAGMA foreign_key_list(%s)""" %(table))
+            foreign_keys = dbconnection.execute_and_fetchall(u"""PRAGMA foreign_key_list(%s)""" %(table))
             #table = idx 2, from = idx 3, to = idx 4
-            foreign_keys = self.cur.fetchall()
             foreign_keys_dict = {}
             #dict like {from: (table, to)}
             for _row in foreign_keys:
@@ -292,7 +300,7 @@ class NewDb():
 
             sql = ur"""INSERT INTO about_db (tablename, columnname, description) VALUES """
             sql +=  ur'({});'.format(u', '.join([u"""(CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END)"""%(col, col, col, col) for col in [table, ur'*', table_descr]]))
-            self.cur.execute(sql)
+            dbconnection.execute(sql)
 
             for column in table_info:
                 colname = column[1]
@@ -309,33 +317,33 @@ class NewDb():
                 sql = u'INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description) VALUES '
                 sql += u'({});'.format(u', '.join([u"""CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, colname, data_type, not_null, default_value, primary_key, _foreign_keys, column_descr]]))
                 try:
-                    self.cur.execute(sql)
+                    dbconnection.execute(sql)
                 except:
                     print(sql)
-                    raise Exception()
+                    raise
 
-    def excecute_sqlfile(self, sqlfilename, connection):
+    def excecute_sqlfile(self, sqlfilename, dbconnection):
         with open(sqlfilename, 'r') as f:
             f.readline()  # first line is encoding info....
             for line in f:
                 if all([line,not line.startswith("#")]):
-                    connection.execute(line)
+                    dbconnection.execute(line)
 
 
 class AddLayerStyles():
     """ currently this class is not used although it should be, when storing layer styles in the database works better """
     def __init__(self):
 
-        connection = db_utils.DbConnectionManager()
-        self.dbpath = connection.dbpath
+        dbconnection = db_utils.DbConnectionManager()
+        self.dbpath = dbconnection.dbpath
 
         try:
-            connection.execute(u"PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
+            dbconnection.execute(u"PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database dbconnection separately.
         except:
             pass
 
         #add layer styles
-        self.add_layer_styles_2_db(connection)
+        self.add_layer_styles_2_db(dbconnection)
 
         #load style from file and set it as value into the layer styles table
         """
@@ -344,28 +352,28 @@ class AddLayerStyles():
         self.style_from_file_into_db('obs_p_w_lvl', 'obs_p_w_lvl.qml','obs_p_w_lvl.sld')
         #osv
         """
-        self.style_from_file_into_db('obs_points', 'obs_points_tablayout.qml','obs_points_tablayout.sld', connection)
-        self.style_from_file_into_db('stratigraphy', 'stratigraphy_tablayout.qml','stratigraphy_tablayout.sld', connection)
+        self.style_from_file_into_db('obs_points', 'obs_points_tablayout.qml','obs_points_tablayout.sld', dbconnection)
+        self.style_from_file_into_db('stratigraphy', 'stratigraphy_tablayout.qml','stratigraphy_tablayout.sld', dbconnection)
 
         try:
-            connection.execute(u"PRAGMA foreign_keys = OFF")
+            dbconnection.execute(u"PRAGMA foreign_keys = OFF")
         except:
             pass
-        connection.commit_and_closedb()
+        dbconnection.commit_and_closedb()
 
-    def add_layer_styles_2_db(self, connection):
+    def add_layer_styles_2_db(self, dbconnection):
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","add_layer_styles_2_db.sql")
         datetimestring = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         f = open(SQLFile, 'r')
         for linecounter, line in enumerate(f):
             if linecounter > 1:    # first line is encoding info....
-                connection.execute(line.replace('CHANGETOCURRENTDATETIME',datetimestring).replace('CHANGETODBPATH',self.dbpath)) # use tags to find and replace SRID and versioning info
+                dbconnection.execute(line.replace('CHANGETOCURRENTDATETIME',datetimestring).replace('CHANGETODBPATH',self.dbpath)) # use tags to find and replace SRID and versioning info
 
-    def style_from_file_into_db(self,layer,qml_file, sld_file, connection):
+    def style_from_file_into_db(self,layer,qml_file, sld_file, dbconnection):
         with open(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",qml_file), 'r') as content_file:
             content = content_file.read()
-        connection.execute("update layer_styles set styleQML=? where f_table_name=?",(content,layer))#Use parameterized arguments to allow sqlite3 to escape the quotes for you. (It also helps prevent SQL injection.
+        dbconnection.execute("update layer_styles set styleQML=? where f_table_name=?",(content,layer))#Use parameterized arguments to allow sqlite3 to escape the quotes for you. (It also helps prevent SQL injection.
         #"UPDATE posts SET html = ? WHERE id = ?", (html ,temp[i][1])
         with open(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",sld_file), 'r') as content_file:
             content = content_file.read()
-        connection.execute("update layer_styles set styleSLD=? where f_table_name=?",(content,layer))#Use parameterized arguments to allow sqlite3 to escape the quotes for you. (It also helps prevent SQL injection.
+        dbconnection.execute("update layer_styles set styleSLD=? where f_table_name=?",(content,layer))#Use parameterized arguments to allow sqlite3 to escape the quotes for you. (It also helps prevent SQL injection.

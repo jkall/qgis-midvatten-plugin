@@ -123,6 +123,13 @@ class DbConnectionManager(object):
     def closedb(self):
         self.conn.close()
 
+    def internal_tables(self):
+        if self.dbtype == u'spatialite':
+            return sqlite_internal_tables()
+        else:
+            return postgis_internal_tables()
+
+
 
 def check_connection_ok():
     dbconnection = DbConnectionManager()

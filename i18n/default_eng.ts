@@ -3,7 +3,7 @@
 <context>
     <name>@default</name>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="64"/>
+        <location filename="../tools/import_data_to_db.py" line="66"/>
         <source>midv_data_importer</source>
         <comment>
 Import to %s starting
@@ -11,66 +11,37 @@ Import to %s starting
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="71"/>
+        <location filename="../tools/import_data_to_db.py" line="72"/>
         <source>midv_data_importer</source>
         <comment>Import error: No goal table given!</comment>
         <translation type="unfinished"></translation>
     </message>
-    <message numerus="yes">
-        <location filename="../tools/import_data_to_db.py" line="89"/>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="90"/>
         <source>midv_data_importer</source>
         <comment>Error: Import failed, see log message panel</comment>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-        </translation>
-    </message>
-    <message>
-        <location filename="../tools/import_data_to_db.py" line="89"/>
-        <source>midv_data_importer</source>
-        <comment>Required columns </comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="89"/>
-        <source>midv_data_importer</source>
-        <comment> are missing for table </comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../tools/import_data_to_db.py" line="162"/>
-        <source>midv_data_importer</source>
-        <comment>Import warning, see log message panel</comment>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-        </translation>
-    </message>
-    <message>
-        <location filename="../tools/import_data_to_db.py" line="103"/>
-        <source>midv_data_importer</source>
-        <comment>In total &quot;%s&quot; rows with the same date 
-on format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported.</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_data_to_db.py" line="113"/>
+        <location filename="../tools/import_data_to_db.py" line="117"/>
         <source>midv_data_importer</source>
         <comment>Removed %s duplicate rows from rows to import.</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="123"/>
+        <location filename="../tools/import_data_to_db.py" line="126"/>
         <source>midv_data_importer</source>
         <comment>Removed %s rows with non-allowed NULL-values, &apos; &apos;-values or &apos;&apos;-values from rows to import.</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="132"/>
+        <location filename="../tools/import_data_to_db.py" line="135"/>
         <source>midv_data_importer</source>
         <comment>Removed %s rows that already existed in %s from rows to import.</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="150"/>
+        <location filename="../tools/import_data_to_db.py" line="153"/>
         <source>midv_data_importer</source>
         <comment>Please note!
 Foreign keys will be imported silently into &quot;%s&quot; if needed. 
@@ -79,25 +50,25 @@ Proceed?</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="150"/>
+        <location filename="../tools/import_data_to_db.py" line="153"/>
         <source>midv_data_importer</source>
         <comment>Info!</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="170"/>
+        <location filename="../tools/import_data_to_db.py" line="175"/>
         <source>midv_data_importer</source>
         <comment>midv_data_importer</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="582"/>
+        <location filename="../tools/import_data_to_db.py" line="589"/>
         <source>midv_data_importer</source>
         <comment>YesNo</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="170"/>
+        <location filename="../tools/import_data_to_db.py" line="175"/>
         <source>midv_data_importer</source>
         <comment>Please note!
 There are %s rows in your data that can not be imported!
@@ -108,26 +79,26 @@ Proceed?</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="170"/>
+        <location filename="../tools/import_data_to_db.py" line="175"/>
         <source>midv_data_importer</source>
         <comment>Warning!</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="186"/>
+        <location filename="../tools/import_data_to_db.py" line="191"/>
         <source>midv_data_importer</source>
         <comment>Error, import failed, see log message panel</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="186"/>
+        <location filename="../tools/import_data_to_db.py" line="191"/>
         <source>midv_data_importer</source>
         <comment>Sql
 </comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="186"/>
+        <location filename="../tools/import_data_to_db.py" line="191"/>
         <source>midv_data_importer</source>
         <comment> failed.
 Msg:
@@ -135,19 +106,19 @@ Msg:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="207"/>
+        <location filename="../tools/import_data_to_db.py" line="202"/>
         <source>midv_data_importer</source>
         <comment>%s rows imported and %s excluded for table %s. See log message panel for details</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="217"/>
+        <location filename="../tools/import_data_to_db.py" line="213"/>
         <source>midv_data_importer</source>
         <comment>Warning - Table name confusion!</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="217"/>
+        <location filename="../tools/import_data_to_db.py" line="213"/>
         <source>midv_data_importer</source>
         <comment>The temporary import table &apos;%s&apos; already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove &apos;%s&apos;.
 
@@ -155,98 +126,32 @@ Meanwhile, do you want to go on with this import, creating a temporary table &ap
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="290"/>
-        <source>midv_data_importer</source>
-        <comment>Import error, nothing imported.</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_data_to_db.py" line="331"/>
+        <location filename="../tools/import_data_to_db.py" line="320"/>
         <source>midv_data_importer</source>
         <comment>Import error, see log message panel</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="326"/>
+        <location filename="../tools/import_data_to_db.py" line="315"/>
         <source>midv_data_importer</source>
         <comment>The obsid %s will not be imported due to gaps in stratid</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="331"/>
+        <location filename="../tools/import_data_to_db.py" line="320"/>
         <source>midv_data_importer</source>
         <comment>The obsid %s will not be imported due to gaps in depthtop/depthbot</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="343"/>
-        <source>midv_data_importer</source>
-        <comment>Do you want to confirm each logger import name before import?</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_data_to_db.py" line="344"/>
-        <source>midv_data_importer</source>
-        <comment>Do you want to import all data?
-
-</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_data_to_db.py" line="344"/>
-        <source>midv_data_importer</source>
-        <comment>&apos;No&apos; = only new data after the latest date in the database,
-</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_data_to_db.py" line="344"/>
-        <source>midv_data_importer</source>
-        <comment>for each observation point, will be imported.
-
-</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_data_to_db.py" line="344"/>
-        <source>midv_data_importer</source>
-        <comment>&apos;Yes&apos; = any data not matching an exact datetime in the database
-</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_data_to_db.py" line="344"/>
-        <source>midv_data_importer</source>
-        <comment> for the corresponding obs_point will be imported.</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_data_to_db.py" line="368"/>
-        <source>midv_data_importer</source>
-        <comment>Import Failure: Something went wrong with file </comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_data_to_db.py" line="371"/>
-        <source>midv_data_importer</source>
-        <comment>Import warning: No rows could be parsed from </comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_data_to_db.py" line="375"/>
-        <source>midv_data_importer</source>
-        <comment>Import Failure: No files imported</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_data_to_db.py" line="435"/>
+        <location filename="../tools/import_data_to_db.py" line="461"/>
         <source>midv_data_importer</source>
         <comment>Failure, delimiter did not match &apos;;&apos; or &apos;,&apos; or there was less than 3 or more than 4 columns in the file %s
 Do you want to stop the import? (else it will continue with the next file)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="452"/>
+        <location filename="../tools/import_data_to_db.py" line="478"/>
         <source>midv_data_importer</source>
         <comment>Failure: The number of data columns in file %s was not equal to the header.
 Is the decimal separator the same as the delimiter?
@@ -254,7 +159,7 @@ Do you want to stop the import? (else it will continue with the next file)</comm
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="475"/>
+        <location filename="../tools/import_data_to_db.py" line="501"/>
         <source>midv_data_importer</source>
         <comment>Failure, parsing failed for file %s
 No valid data found!
@@ -262,13 +167,13 @@ Do you want to stop the import? (else it will continue with the next file)</comm
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="511"/>
+        <location filename="../tools/import_data_to_db.py" line="518"/>
         <source>midv_data_importer</source>
         <comment>Failure during import. See log for more information</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="511"/>
+        <location filename="../tools/import_data_to_db.py" line="518"/>
         <source>midv_data_importer</source>
         <comment>Failure, the file %s
 did not have the correct headers and will not be imported.
@@ -277,22 +182,132 @@ Supported headers are obsid, Date/time, Water head[cm], Temperature[&#xc2;&#xb0;
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="576"/>
+        <location filename="../tools/import_data_to_db.py" line="583"/>
         <source>midv_data_importer</source>
         <comment>In total %s rows were imported to foreign key table %s while importing to %s.</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="582"/>
+        <location filename="../tools/import_data_to_db.py" line="589"/>
         <source>midv_data_importer</source>
         <comment>It is a strong recommendation that you do vacuum the database now, do you want to do so?
 (If unsure - then answer &quot;yes&quot;.)</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_data_to_db.py" line="582"/>
+        <location filename="../tools/import_data_to_db.py" line="589"/>
         <source>midv_data_importer</source>
         <comment>Vacuum the database?</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="90"/>
+        <source>midv_data_importer</source>
+        <comment>Required columns %s are missing for table %s</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="105"/>
+        <source>midv_data_importer</source>
+        <comment>In total &quot;%s&quot; rows with the same date 
+on format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported. %s rows remain.</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="168"/>
+        <source>midv_data_importer</source>
+        <comment>Nothing imported, see log message panel</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="165"/>
+        <source>midv_data_importer</source>
+        <comment>In total &quot;%s&quot; rows were deleted due to foreign keys restrictions and &quot;%s&quot; rows remain.</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="56"/>
+        <source>NewDb</source>
+        <comment>Cancelling...</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../tools/create_db.py" line="77"/>
+        <source>NewDb</source>
+        <comment>sqlite error, see lLog message panel</comment>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="86"/>
+        <source>NewDb</source>
+        <comment>Creation of db failed</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="87"/>
+        <source>NewDb</source>
+        <comment>Impossible to connect to selected DataBase, see log message panel</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="87"/>
+        <source>NewDb</source>
+        <comment>Msg:
+</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="98"/>
+        <source>NewDb</source>
+        <comment>Midvatten plugin needs spatialite4.
+Database can not be created</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="132"/>
+        <source>NewDb</source>
+        <comment>Removing srids failed using: </comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="235"/>
+        <source>NewDb</source>
+        <comment>User input needed</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="235"/>
+        <source>NewDb</source>
+        <comment>Supply locale for the database.
+Currently, only locale sv_SE has special meaning,
+all other locales will use english.</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="235"/>
+        <source>NewDb</source>
+        <comment>Cancel</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="235"/>
+        <source>NewDb</source>
+        <comment>Ok</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="253"/>
+        <source>NewDb</source>
+        <comment>Select CRS</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="253"/>
+        <source>NewDb</source>
+        <comment>Give EPSG-ID (integer) corresponding to
+the CRS you want to use in the database:</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1632,11 +1647,6 @@ Aveflow is to be calculated for Accvol observations within this interval:</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1547"/>
-        <source>Plot settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../ui/customplotdialog.ui" line="1558"/>
         <source>Remove mean</source>
         <translation type="unfinished"></translation>
@@ -1672,11 +1682,6 @@ Aveflow is to be calculated for Accvol observations within this interval:</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1708"/>
-        <source>Chart settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../ui/customplotdialog.ui" line="1754"/>
         <source>ymax  </source>
         <translation type="unfinished"></translation>
@@ -1687,52 +1692,52 @@ Aveflow is to be calculated for Accvol observations within this interval:</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1831"/>
+        <location filename="../ui/customplotdialog.ui" line="1834"/>
         <source>xmax  </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1852"/>
+        <location filename="../ui/customplotdialog.ui" line="1855"/>
         <source>ymin  </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1883"/>
+        <location filename="../ui/customplotdialog.ui" line="1886"/>
         <source>Plot width  </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1916"/>
+        <location filename="../ui/customplotdialog.ui" line="1919"/>
         <source>Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1934"/>
+        <location filename="../ui/customplotdialog.ui" line="1937"/>
         <source>Legend x-pos  </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1949"/>
+        <location filename="../ui/customplotdialog.ui" line="1952"/>
         <source>Legend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1967"/>
+        <location filename="../ui/customplotdialog.ui" line="1970"/>
         <source>Plot height  </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2019"/>
+        <location filename="../ui/customplotdialog.ui" line="2025"/>
         <source>Legend y-pos  </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2037"/>
+        <location filename="../ui/customplotdialog.ui" line="2043"/>
         <source>Please note! Although xmin and xmax are dates, both time series plots and xy scatter series can be plotted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2067"/>
+        <location filename="../ui/customplotdialog.ui" line="2073"/>
         <source>Redraw</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1789,138 +1794,173 @@ wells file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="309"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="313"/>
         <source>yyyy-MM-dd HH:mm:ss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="337"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="344"/>
         <source>select in plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="261"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="265"/>
         <source>to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="382"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="439"/>
         <source>Adjust water level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="399"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="456"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Water level (level_masl) is calculated from water column (head_cm) by equation:&lt;/p&gt;&lt;p&gt;level_masl = logger_pos + head_cm/100&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="466"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="523"/>
         <source>Manual methods 1-2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="493"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="550"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;1. set logger_pos&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="546"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="603"/>
         <source>set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="576"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="633"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;2. add offset to level_masl&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="617"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="674"/>
         <source>add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="639"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="696"/>
         <source>calculate offset from plot selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="666"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="723"/>
         <source>current</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="694"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="751"/>
         <source>new</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="721"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="778"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;(click &amp;quot;current&amp;quot; to start calculating offset)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="751"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="808"/>
         <source>Best fit (auto) methods 3-4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="767"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="824"/>
         <source>Search radius</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="814"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="871"/>
         <source>4. set logger_pos by best fit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="839"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="896"/>
         <source>auto set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="861"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="918"/>
         <source>5.  adjust level_masl by best fit </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="886"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="943"/>
         <source>auto adjust</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="900"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="957"/>
         <source>Delete data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="920"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In this tab you may remove erroneous data from the database. &lt;/p&gt;&lt;p&gt;Deletion is done of water level logger data (database table w_levels_logger). &lt;/p&gt;&lt;p&gt;Set interval for deletion above and then select to delete logger data below. (You will be asked to confirm the deletion.)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="943"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1000"/>
         <source>Delete logger data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1035"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1092"/>
         <source>Circle nodes for logger line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1061"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1118"/>
         <source>Plot logger head (water column)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1073"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1130"/>
         <source>Normalize head to logger line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1101"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1158"/>
         <source>Update plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/customplotdialog.ui" line="1547"/>
+        <source>Show plot settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/customplotdialog.ui" line="1708"/>
+        <source>Show chart settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="249"/>
+        <source>Select from-date in plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="341"/>
+        <source>Select to-date in plot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="363"/>
+        <source>Set from-date to current view extent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="394"/>
+        <source>from current extent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="391"/>
+        <source>Set to-date to current view extent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="977"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In this tab you may remove erroneous data from the database. &lt;/p&gt;&lt;p&gt;Deletion is done of water level logger data (database table w_levels_logger). &lt;/p&gt;&lt;p&gt;Set interval for deletion above (from/to) and then select to delete logger data below. (You will be asked to confirm the deletion.)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2342,7 +2382,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/secplotdockwidget_ui.ui" line="238"/>
+        <location filename="../ui/secplotdockwidget_ui.ui" line="241"/>
         <source>Replot</source>
         <translation type="unfinished"></translation>
     </message>
