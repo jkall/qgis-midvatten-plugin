@@ -434,14 +434,16 @@ def PlotTypesDict(international='no'):
         dictionary = OrderedDict({})
         #all_geoshorts = r"""not in ('"""
         #for key, value in sorted(Dict.iteritems()):
+
         for strata in strata_order:
             tl = r"""in ('"""
-            for geoshort in Dict[strata[0]]:
-                tl+=geoshort[0] + r"""', '"""
-                #all_geoshorts+=geoshort[0] + r"""', '"""
-            tl = utils.rstrip(r""", '""",tl) + r""")"""
-            #all_geoshorts = utils.rstrip(r""", '""",all_geoshorts) + r""")"""
-            dictionary[strata[0]]=tl
+            if strata[0] in Dict:
+                for geoshort in Dict[strata[0]]:
+                    tl+=geoshort[0] + r"""', '"""
+                    #all_geoshorts+=geoshort[0] + r"""', '"""
+                tl = utils.rstrip(r""", '""",tl) + r""")"""
+                #all_geoshorts = utils.rstrip(r""", '""",all_geoshorts) + r""")"""
+                dictionary[strata[0]]=tl
         #all_geoshorts+=r"""')"""
     return dictionary
 
