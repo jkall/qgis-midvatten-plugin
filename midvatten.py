@@ -453,14 +453,17 @@ class midvatten:
                 EPSG_code = str(CRS.authid()[5:])
 
                 #Let the user chose an EPSG-code for the exported database
-                #user_chosen_EPSG_code = utils.ask_for_export_crs(EPSG_code) #Transformation to new epsg doesn't work yet.
-                user_chosen_EPSG_code = EPSG_code
+                user_chosen_EPSG_code = utils.ask_for_export_crs(EPSG_code) #Transformation to new epsg doesn't work yet.
+                if not user_chosen_EPSG_code:
+                    QApplication.restoreOverrideCursor()
+                    return None
+                #user_chosen_EPSG_code = EPSG_code
 
                 filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
                 iniText = QSettings(filenamepath , QSettings.IniFormat)
                 verno = str(iniText.value('version'))
                 from create_db import newdb
-                newdbinstance = newdb(verno,'n',user_chosen_EPSG_code)#flag 'n' to avoid user selection of EPSG'
+                newdbinstance = newdb(verno, user_select_CRS='n', EPSG_code=user_chosen_EPSG_code, delete_srids=False)
                 if not newdbinstance.dbpath=='':
                     newdb = newdbinstance.dbpath
                     exportinstance = ExportData(OBSID_P, OBSID_L)
