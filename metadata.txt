@@ -22,6 +22,7 @@ changelog=
         Version 1.3.24
         - Export to spatialite now allows coordinate transformation (asks for crs)
         - Bug fix in general csv import.
+        - Export fieldlogger: Button for previewing file.
         Version 1.3.23
         - Bug fix for PlotTypesDict.
         - Bug fix in for converting to verify_msettings_loaded_and_layer_edit_mode.
