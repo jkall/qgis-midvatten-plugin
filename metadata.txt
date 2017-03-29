@@ -21,6 +21,8 @@ deprecated=False
 changelog=
         Version 1.3.23
         - Bug fix for PlotTypesDict.
+        - Bug fix in for converting to verify_msettings_loaded_and_layer_edit_mode.
+        - Warning message when trying to import to non-existing table.
         Version 1.3.22
         - Sectionplot: Fixed support for åäö-characters in obsids.
         Version 1.3.21
