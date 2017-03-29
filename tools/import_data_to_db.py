@@ -85,6 +85,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         recsinfile = utils.sql_load_fr_db(u'select count(*) from "%s"'%self.temptableName)[1][0][0]
 
         table_info = utils.sql_load_fr_db(u'''PRAGMA table_info("%s")'''%goal_table)[1]
+        if not table_info:
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error, see log message panel', log_msg=u'The table %s did not exist. Update the database to latest version.'%goal_table)
+            self.status = 'False'
+            self.drop_temptable()
+            return
+
         #POINT and LINESTRING must be cast as BLOB. So change the type to BLOB.
         column_headers_types = dict([(row[1], row[2]) if row[2] not in (u'POINT', u'LINESTRING') else (row[1], u'BLOB') for row in table_info])
         primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
