@@ -230,8 +230,13 @@ def db_tables_columns_info(table=None, dbconnection=None):
     if dbconnection is None:
         dbconnection = DbConnectionManager()
 
+    existing_tablenames = get_tables(dbconnection=dbconnection)
+    if table is not None:
+        if table not in existing_tablenames:
+            return {}
+
     if table is None:
-        tablenames = get_tables(dbconnection=dbconnection)
+        tablenames = existing_tablenames
     elif not isinstance(table, (list, tuple)):
         tablenames = [table]
     else:

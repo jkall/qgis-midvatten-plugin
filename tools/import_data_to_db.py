@@ -74,7 +74,15 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         db_utils.activate_foreign_keys(activated=True, dbconnection=dbconnection)
 
         recsinfile = len(file_data[1:])
-        table_info = db_utils.db_tables_columns_info(table=goal_table, dbconnection=dbconnection)[goal_table]
+        table_info = db_utils.db_tables_columns_info(table=goal_table, dbconnection=dbconnection)
+        if not table_info:
+            utils.MessagebarAndLog.critical(
+                bar_msg=tr(u'midv_data_importer', u'Import error, see log message panel'),
+                log_msg=tr(u'midv_data_importer', u'The table %s did not exist. Update the database to latest version.' % goal_table))
+            self.status = 'False'
+            return
+        else:
+            table_info = table_info[goal_table]
         #POINT and LINESTRING must be cast as BLOB. So change the type to BLOB.
         column_headers_types = db_utils.change_cast_type_for_geometry_columns(dbconnection, table_info, goal_table)
         primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.

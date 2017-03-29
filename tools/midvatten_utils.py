@@ -580,7 +580,7 @@ def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
 
 def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=('')):
     errorsignal = 0
-    if mset.settingsareloaded == False:
+    if not mset.settingsareloaded:
         mset.loadSettings()
 
     for layername in allcritical_layers:
