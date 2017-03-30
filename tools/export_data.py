@@ -189,34 +189,28 @@ class ExportData():
 
             #If the current table contains obsid, filter only the chosen ones.
             try:
-                sql = u"""INSERT INTO %s (%s) select distinct %s from  %s where obsid in %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix, self.format_obsids(obsids))
+                sql = u"""INSERT OR IGNORE INTO %s (%s) select distinct %s from  %s where obsid in %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix, self.format_obsids(obsids))
             except:
-                sql = u"""INSERT INTO %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
+                sql = u"""INSERT OR IGNORE INTO %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
             try:
                 self.curs.execute(sql)
             except Exception, e:
-                sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
-                utils.MessagebarAndLog.info(log_msg=u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: ' %reference_table + str(e))
-                self.curs.execute(sql)
+                utils.MessagebarAndLog.info(log_msg=u'INSERT failed while importing to %s.\nMsg: ' %tname + str(e))
 
         #Make a transformation for column names that are geometries #Transformation doesn't work yet.
-        #old_table_column_srid_dict = self.get_table_column_srid(prefix='a')
-        #new_table_column_srid_dict = self.get_table_column_srid()
-        #if tname in old_table_column_srid_dict and tname in new_table_column_srid_dict:
-        #    transformed_column_names = self.transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict) #Transformation doesn't work since east, north is not updated.
-        transformed_column_names = column_names
+        old_table_column_srid_dict = self.get_table_column_srid(prefix='a')
+        new_table_column_srid_dict = self.get_table_column_srid()
 
-        sql = u"""INSERT INTO %s (%s) select %s from %s where obsid in %s"""%(tname, ', '.join(column_names), ', '.join(transformed_column_names), tname_with_prefix, self.format_obsids(obsids))
+        if tname in old_table_column_srid_dict and tname in new_table_column_srid_dict:
+            transformed_column_names = self.transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict) #Transformation doesn't work since east, north is not updated.
+        else:
+            transformed_column_names = column_names
+
+        sql = u"""INSERT INTO %s (%s) SELECT %s FROM %s WHERE obsid IN %s"""%(tname, u', '.join(column_names), u', '.join(transformed_column_names), tname_with_prefix, self.format_obsids(obsids))
         try:
             self.curs.execute(sql)
         except Exception, e:
-            utils.MessagebarAndLog.info(log_msg=u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: ' %reference_table + str(e))
-
-            sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
-            try:
-                self.curs.execute(sql)
-            except Exception, e:
-                utils.MessagebarAndLog.critical(bar_msg=u"Export warning: sql failed. See message log.", log_msg=sql + u"\nmsg: " + str(e))
+            utils.MessagebarAndLog.critical(bar_msg=u"Export warning: sql failed. See message log.", log_msg=sql + u"\nmsg: " + str(e))
 
     @staticmethod
     def transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict):
@@ -235,9 +229,9 @@ class ExportData():
         >>> ExportData.transform_geometries(u'testt', [u'notgeom', u'geom'], {u'testt': {u'geom': 3006}}, {u'testt': {u'geom': 3006}})
         [u'notgeom', u'geom']
         >>> ExportData.transform_geometries(u'testt', [u'notgeom', u'geom'], {u'testt': {u'geom': 3006}}, {u'testt': {u'geom': 3010}})
-        [u'notgeom', u'Transform(geom, 3010)']
+        [u'notgeom', u'ST_Transform(geom, 3010)']
         >>> ExportData.transform_geometries(u'obs_points', [u'obsid', u'east', u'north', u'geom'], {u'obs_points': {u'geom': 3006}}, {u'obs_points': {u'geom': 3010}})
-        [u'obsid', u'X(Transform(geom, 3010))', u'Y(Transform(geom, 3010))', u'Transform(geom, 3010)']
+        [u'obsid', u'X(ST_Transform(geom, 3010))', u'Y(ST_Transform(geom, 3010))', u'ST_Transform(geom, 3010)']
         """
         transformed = False
         #Make a transformation for column names that are geometries
@@ -247,7 +241,7 @@ class ExportData():
                 new_srid = new_table_column_srid_dict.get(tname, {}).get(column, None)
                 old_srid = old_table_column_srid_dict.get(tname, {}).get(column, None)
                 if old_srid is not None and new_srid is not None and old_srid != new_srid:
-                    transformed_column_names.append(u'Transform(' + column + u', ' + utils.returnunicode(new_srid) + u')')
+                    transformed_column_names.append(u'ST_Transform({}, {})'.format(column, utils.returnunicode(new_srid)))
                     utils.MessagebarAndLog.info(log_msg=u'Transformation for table "' + tname + u'" column "' + column + u'" from ' + str(old_srid) + u" to " + str(new_srid))
                     transformed = True
                 else:
@@ -268,14 +262,13 @@ class ExportData():
                 res = []
                 for column in transformed_column_names:
                     if column == u'east':
-                        res.append(u'X(Transform(%s, %s))'%(old_geometry_column, new_srid))
+                        res.append(u'X(ST_Transform(%s, %s))'%(old_geometry_column, new_srid))
                     elif column == u'north':
-                        res.append(u'Y(Transform(%s, %s))'%(old_geometry_column, new_srid))
+                        res.append(u'Y(ST_Transform(%s, %s))'%(old_geometry_column, new_srid))
                     else:
                         res.append(column)
                 transformed_column_names = res
 
-        utils.MessagebarAndLog.info(log_msg=u'transformed_column_names:\n' + utils.returnunicode(transformed_column_names))
         return transformed_column_names
 
     def zz_to_csv(self, tname, tname_with_prefix):
@@ -325,7 +318,6 @@ class ExportData():
         else:
             return False
 
-
     def get_and_check_existing_column_names(self, tname, tname_with_prefix):
 
         new_column_names = self.get_column_names(tname)
@@ -372,7 +364,6 @@ class ExportData():
         #Only copy columns from old to new database that exist in old database.
         column_names = [col for col in new_column_names if col in old_column_names]
         return column_names
-
 
     def get_column_names(self, tname, prefix=None):
 

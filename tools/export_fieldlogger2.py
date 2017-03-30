@@ -134,13 +134,19 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         self.gridLayout_buttons.addWidget(get_line(), 7, 0)
 
+        self.preview_button = PyQt4.QtGui.QPushButton(u'Preview')
+        self.preview_button.setToolTip(u'View a preview of the file as pop-up info.')
+        self.gridLayout_buttons.addWidget(self.preview_button, 8, 0)
+        # Lambda and map is used to run several functions for every button click
+        self.connect(self.preview_button, PyQt4.QtCore.SIGNAL("clicked()"), self.preview)
+
         self.export_button = PyQt4.QtGui.QPushButton(u'Export')
         self.export_button.setToolTip(u'Exports the current combination of locations, sublocations and input fields to a Fieldlogger wells file.')
-        self.gridLayout_buttons.addWidget(self.export_button, 8, 0)
+        self.gridLayout_buttons.addWidget(self.export_button, 9, 0)
         # Lambda and map is used to run several functions for every button click
         self.connect(self.export_button, PyQt4.QtCore.SIGNAL("clicked()"), self.export)
 
-        self.gridLayout_buttons.setRowStretch(9, 1)
+        self.gridLayout_buttons.setRowStretch(10, 1)
 
         self.show()
 
@@ -306,6 +312,10 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
     def export(self):
         self.save_stored_settings(self.ms, self.update_stored_settings(self.parameter_groups), self.stored_settingskey)
         self.write_printlist_to_file(self.create_export_printlist(self.parameter_groups))
+
+    def preview(self):
+        export_printlist = self.create_export_printlist(self.parameter_groups)
+        PyQt4.QtGui.QMessageBox.information(None, u'Preview', u'\n'.join(export_printlist))
 
     @staticmethod
     def create_export_printlist(parameter_groups):

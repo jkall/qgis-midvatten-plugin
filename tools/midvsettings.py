@@ -20,6 +20,7 @@ from definitions import midvatten_defs
 class midvsettings(): 
     def __init__(self):
         # settings...
+        self.settingsareloaded = False
         self.readingSettings = False # To enable resetsettings
         self.settingsdict = self.createsettingsdict()# calling for the method that defines an empty dictionary of settings NOTE!! byte strings in dict
         try:
