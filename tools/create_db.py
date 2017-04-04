@@ -38,13 +38,13 @@ class NewDb():
     def __init__(self):
         self.db_settings = u''
 
-    def create_new_spatialite_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):  #CreateNewDB(self, verno):
+    def create_new_spatialite_db(self, verno, user_select_CRS='y', EPSG_code=u'4326', delete_srids=True):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
 
         set_locale = self.ask_for_locale()
         if set_locale == u'cancel':
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            return u'cancel'
+            return utils.Cancel()
 
         if user_select_CRS=='y':
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
@@ -119,12 +119,13 @@ class NewDb():
                     print(str(sql))
                     raise
 
-        #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
-        delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
-        try:
-            dbconnection.execute(delete_srid_sql)
-        except:
-            utils.MessagebarAndLog.info(log_msg=tr(u'NewDb', u'Removing srids failed using: ') + str(delete_srid_sql))
+        if delete_srids:
+            #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
+            delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
+            try:
+                dbconnection.execute(delete_srid_sql)
+            except:
+                utils.MessagebarAndLog.info(log_msg=tr(u'NewDb', u'Removing srids failed using: ') + str(delete_srid_sql))
 
         self.insert_datadomains(set_locale, dbconnection)
 
@@ -154,7 +155,7 @@ class NewDb():
         set_locale = self.ask_for_locale()
         if set_locale == u'cancel':
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            return u'cancel'
+            return utils.Cancel()
 
         if user_select_CRS=='y':
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
