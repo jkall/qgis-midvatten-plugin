@@ -128,7 +128,8 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
         else:
             utils.pop_up_info('Calculation aborted! There seems to be NULL values in your table obs_points, column h_toc.','Error')
             self.close()
-        
+
+
 class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of the class Calibr_Ui_Dialog is created same time as instance of calibrlogger is created
 
     def __init__(self, parent, settingsdict1={}, obsid=''):
@@ -249,16 +250,13 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         level_masl_ts_sql = r"""SELECT date_time as 'date [datetime]', level_masl FROM w_levels_logger WHERE obsid = '""" + self.obsid + """' ORDER BY date_time"""
         self.level_masl_ts = self.sql_into_recarray(level_masl_ts_sql)
 
-        self.getlastcalibration(obsid)
+        self.setlastcalibration(obsid)
 
         return obsid
 
-    def getlastcalibration(self, obsid):
+    def setlastcalibration(self, obsid):
         if not obsid=='':
-            sql = """SELECT MAX(date_time), loggerpos FROM (SELECT date_time, (level_masl - (head_cm/100)) as loggerpos FROM w_levels_logger WHERE level_masl is not Null and level_masl > -990 AND obsid = '"""
-            sql += obsid
-            sql += """')"""
-            self.lastcalibr = utils.sql_load_fr_db(sql)[1]
+            self.lastcalibr = self.getlastcalibration(obsid)
             if self.lastcalibr[0][1] and self.lastcalibr[0][0]:
                 text = """Last pos. for logger in """
                 text += obsid
@@ -266,6 +264,13 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             else:
                 text = """There is no earlier known position for the logger in """ + self.selected_obsid #self.obsid[0]
             self.INFO.setText(text)
+
+    def getlastcalibration(self, obsid):
+        sql = """SELECT MAX(date_time), loggerpos FROM (SELECT date_time, (level_masl - (head_cm/100)) as loggerpos FROM w_levels_logger WHERE level_masl is not Null and level_masl > -990 AND obsid = '"""
+        sql += obsid
+        sql += """')"""
+        lastcalibr = utils.sql_load_fr_db(sql)[1]
+        return lastcalibr
 
     def set_logger_pos(self):
         self.loggerpos_masl_or_offset_state = 1
@@ -297,7 +302,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                 else:
                     self.update_level_masl_from_level_masl(obsid, fr_d_t, to_d_t, self.Add2Levelmasl.text())
 
-                self.getlastcalibration(obsid)
+                self.setlastcalibration(obsid)
             else:
                 utils.pop_up_info("Calibration aborted!!\nThere must not be empty cells or\nnull values in the 'head_cm' column!")
         else:
@@ -358,6 +363,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.reset_plot_selects_and_calib_help()
         self.calib_help.setText("Updating plot")
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+        last_used_obsid = self.obsid
         obsid = self.load_obsid_and_init()
         if obsid == None:
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -399,8 +405,12 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.calib_help.setText("")
 
-        self.getlastcalibration(obsid)
-        self.mpltoolbar.forward()
+        self.setlastcalibration(obsid)
+        if last_used_obsid == self.obsid:
+            self.mpltoolbar.forward()
+        else:
+            #Clear choices
+            self.reset_settings()
 
     def plot_recarray(self, axes, a_recarray, lable, line_style, picker=5):
         """ Plots a recarray to the supplied axes object """
@@ -442,6 +452,20 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.log_pos = None
         self.y_pos = None
         self.calib_help.setText("")
+
+    def reset_settings(self):
+        self.FromDateTime.setDateTime(datestring_to_date(u'1901-01-01'))
+        self.ToDateTime.setDateTime(datestring_to_date(u'2099-12-31 23:59:59'))
+        self.Add2Levelmasl.setText('')
+        self.bestFitSearchRadius.setText('10 minutes')
+        self.mpltoolbar._views.clear()
+
+        last_calibration = self.getlastcalibration(self.obsid)
+        try:
+            if last_calibration[0][1] and last_calibration[0][0]:
+                self.LoggerPos.setText(str(self.lastcalibr[0][1]))
+        except:
+            self.LoggerPos.setText('')
 
     def reset_cid(self):
         """ Resets self.cid to an empty list and disconnects unused events """

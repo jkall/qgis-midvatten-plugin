@@ -389,7 +389,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                     date_time = datetime.strftime(datestring_to_date(u' '.join([sampledate, sampletime])), u'%Y-%m-%d %H:%M:%S')
                 else:
                     date_time = datetime.strftime(datestring_to_date(sampledate), u'%Y-%m-%d %H:%M:%S')
-                    utils.MessagebarAndLog.info(bar_msg=u'Interlab4 import: There was no sample time found (column "provtagningstid") for lablittera ' + lablittera + u'. Importing without it.')
+                    utils.MessagebarAndLog.info(log_msg=u'Interlab4 import: There was no sample time found (column "provtagningstid") for lablittera ' + lablittera + u'. Importing without it.')
 
             meta_comment = metadata.get(u'kommentar', None)
             additional_meta_comments = [u'provtagningsorsak',
