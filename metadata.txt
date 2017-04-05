@@ -21,6 +21,10 @@ deprecated=False
 changelog=
         Version 1.3.25
         - Interlab4 import: Removed a bar message and sent it to log instead.
+        - Calculate water level from logger: Settings are now reset when changing obsid.
+        - Calculate water level from logger: Changing obsid now correctly updates the canvas to show the new plot.
+        - Calculate water level from logger: The views history is now reset when changing obsids so home buttons works now.
+        - Calculate water level from logger: Logger pos line edit is now set to last used logger pos when changing obsid.
         Version 1.3.24
         - Export to spatialite now allows coordinate transformation (asks for crs)
         - Bug fix in general csv import.
