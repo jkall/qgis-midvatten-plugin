@@ -132,7 +132,6 @@ class TestParseDiverofficeFile(object):
 
     @mock.patch('import_data_to_db.utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
     def test_parse_diveroffice_file_comma_sep_comma_dec_failed(self):
-
         f = (u'Location=rb1',
              u'Date/time,Water head[cm],Temperature[°C]',
              u'2016/03/15 10:30:00,26,9,5,18',
@@ -146,6 +145,7 @@ class TestParseDiverofficeFile(object):
         test_string = utils_for_tests.create_test_string(file_data)
         reference_string = 'cancel'
         assert test_string == reference_string
+
 
     @mock.patch('import_data_to_db.utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
     def test_parse_diveroffice_file_different_separators_failed(self):
@@ -163,6 +163,60 @@ class TestParseDiverofficeFile(object):
         test_string = utils_for_tests.create_test_string(file_data)
         reference_string = 'cancel'
         assert test_string == reference_string
+
+    def test_parse_diveroffice_file_changed_order(self):
+        f = (u'Location=rb1',
+             u'Temperature[°C];2:Spec.cond.[mS/cm];Date/time;Water head[cm]',
+             u'5.18;2;2016/03/15 10:30:00;26.9',
+             u'0.6;3;2016/03/15 11:00:00;157.7'
+             )
+
+        charset_of_diverofficefile = u'cp1252'
+        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
+                file_data = self.importinstance.parse_diveroffice_file(path, charset_of_diverofficefile)
+
+        test_string = utils_for_tests.create_test_string(file_data[0])
+        reference_string = u'[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 26.9, 5.18, 2.0], [2016-03-15 11:00:00, 157.7, 0.6, 3.0]]'
+        assert test_string == reference_string
+        assert os.path.basename(path) == file_data[1]
+        assert file_data[2] == u'rb1'
+
+    @mock.patch("midvatten_utils.MessagebarAndLog")
+    def test_parse_diveroffice_warning_missing_head_cm(self, mock_messagebarandlog):
+        f = (u'Location=rb1',
+             u'Temperature[°C];2:Spec.cond.[mS/cm];Date/time',
+             u'5.18;2;2016/03/15 10:30:00',
+             u'0.6;3;2016/03/15 11:00:00'
+             )
+
+        charset_of_diverofficefile = u'cp1252'
+        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
+            file_data = self.importinstance.parse_diveroffice_file(path,
+                                                                   charset_of_diverofficefile)
+
+        test_string = utils_for_tests.create_test_string(file_data[0])
+        reference_string = u'[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, , 5.18, 2.0], [2016-03-15 11:00:00, , 0.6, 3.0]]'
+
+        assert len(mock_messagebarandlog.mock_calls) == 1
+        assert test_string == reference_string
+        assert os.path.basename(path) == file_data[1]
+        assert file_data[2] == u'rb1'
+
+    @mock.patch("midvatten_utils.MessagebarAndLog")
+    def test_parse_diveroffice_warning_missing_date_time(self, mock_messagebarandlog):
+        f = (u'Location=rb1',
+             u'Temperature[°C];2:Spec.cond.[mS/cm];dada',
+             u'5.18;2;2016/03/15 10:30:00',
+             u'0.6;3;2016/03/15 11:00:00'
+             )
+
+        charset_of_diverofficefile = u'cp1252'
+        with utils.tempinput(u'\n'.join(f), charset_of_diverofficefile) as path:
+            file_data = self.importinstance.parse_diveroffice_file(path,
+                                                                   charset_of_diverofficefile)
+
+        assert file_data == u'skip'
+        assert len(mock_messagebarandlog.mock_calls) == 1
 
 
 class TestWlvllogImportFromDiverofficeFiles(object):

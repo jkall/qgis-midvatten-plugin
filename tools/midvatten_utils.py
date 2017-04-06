@@ -370,9 +370,9 @@ def ask_user_about_stopping(question):
     """
     answer = askuser("YesNo", question)
     if answer.result:
-        return 'cancel'
+        return u'cancel'
     else:
-        return 'ignore'
+        return u'ignore'
 
 def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-table)
     sqlstring = r"""select %s, %s from %s"""%(params)
@@ -1398,15 +1398,21 @@ class Cancel(object):
 
 
 def get_delimiter(filename=None, charset=u'utf-8', delimiters=None, num_fields=None):
-    delimiter = None
     if filename is None:
         MessagebarAndLog.critical(u'Must give filename')
         return None
-    if delimiters is None:
-        delimiters = [u',', u';']
     with io.open(filename, 'r', encoding=charset) as f:
         rows = f.readlines()
 
+    delimiter = get_delimiter_from_file_rows(rows, filename=filename, delimiters=None, num_fields=None)
+    return delimiter
+
+def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_fields=None):
+    if filename is None:
+        filename = u'the rows'
+    delimiter = None
+    if delimiters is None:
+        delimiters = [u',', u';']
     tested_delim = []
     for _delimiter in delimiters:
         cols_on_all_rows = set()

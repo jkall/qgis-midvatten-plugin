@@ -467,23 +467,23 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         parsed_files = []
         for selected_file in files:
-            file_data, filename, location = self.parse_diveroffice_file(path=selected_file, charset=self.charsetchoosen)
-            if file_data == u'cancel':
+            res = self.parse_diveroffice_file(path=selected_file, charset=self.charsetchoosen)
+            if res == u'cancel':
                 self.status = True
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                return u'cancel'
-            elif file_data == u'skip':
+                return res
+            elif res in (u'skip', u'ignore'):
                 continue
-            elif not isinstance(file_data, list):
-                utils.MessagebarAndLog.critical(bar_msg="Import Failure: Something went wrong with file " + str(selected_file))
-                continue
-            elif len(file_data) == 0:
-                utils.MessagebarAndLog.warning(bar_msg="Import warning: No rows could be parsed from " + str(selected_file))
 
+            try:
+                file_data, filename, location = res
+            except Exception as e:
+                utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'File %s could not be parsed. Msg:\n%s'%(selected_file, str(e)))
+                continue
             parsed_files.append((file_data, filename, location))
 
         if len(parsed_files) == 0:
-            utils.MessagebarAndLog.critical(bar_msg="Import Failure: No files imported""")
+            utils.MessagebarAndLog.critical(bar_msg=u"Import Failure: No files imported""")
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return
 
@@ -559,10 +559,18 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         #begindate = datetime.strptime(u'2016-06-08 20:00:00',u'%Y-%m-%d %H:%M:%S')
         #enddate = datetime.strptime(u'2016-06-08 19:00:00',u'%Y-%m-%d %H:%M:%S')
 
+        #It should be possible to import all cols that exists in the translation dict
+
+        translation_dict_in_order = OrderedDict([(u'Date/time', u'date_time'),
+                                                 (u'Water head[cm]', u'head_cm'),
+                                                 (u'Temperature[°C]', u'temp_degc'),
+                                                 (u'Conductivity[mS/cm]', u'cond_mscm'),
+                                                 (u'2:Spec.cond.[mS/cm]', u'cond_mscm')])
+
         filedata = []
         begin_extraction = False
-        delimiter = u';'
-        num_cols = None
+
+        data_rows = []
         with io.open(path, u'rt', encoding=str(charset)) as f:
             location = None
             for rawrow in f:
@@ -574,82 +582,87 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     location = row.split(u'=')[1].strip()
                     continue
 
-                cols = row.split(delimiter)
-
-                #Parse header
-                if row.startswith(u'Date/time'):
-                    #Check that the delimitor is ; or try , or stop.
-                    if not 3 <= len(cols) <= 4:
-                        if 3 <= len(row.split(u',')) <= 4:
-                            delimiter = u','
-                        else:
-                            return utils.ask_user_about_stopping("Failure, delimiter did not match ';' or ',' or there was less than 3 or more than 4 columns in the file " + path + "\nDo you want to stop the import? (else it will continue with the next file)")
-
-                    cols = row.split(delimiter)
-                    num_cols = len(cols)
-
-                    header = cols
+                #Parse eader
+                if u'Date/time' in row:
                     begin_extraction = True
+
+                if begin_extraction:
+                    if row and not u'end of data' in row.lower():
+                        data_rows.append(row)
+
+        if not begin_extraction:
+            utils.MessagebarAndLog.critical(
+                bar_msg=u"Diveroffice import warning. See log message panel",
+                log_msg=u"Warning, the file %s \ndid not have Date/time as a header and will be skipped.\nSupported headers are %s" % (
+                    utils.returnunicode(path),
+                    u', '.join(translation_dict_in_order.keys())))
+            return u'skip'
+
+        if len(data_rows[0].split(u',')) > len(data_rows[0].split(u';')):
+            delimiter = u','
+        else:
+            delimiter = u';'
+
+        file_header = data_rows[0].split(delimiter)
+        nr_of_cols = len(file_header)
+
+        if nr_of_cols < 2:
+            utils.MessagebarAndLog.warning(bar_msg=u'Diveroffice import warning. See log message panel',
+                                           log_msg=u'Delimiter could not be found for file %s or it contained only one column, skipping it.'%path)
+            return u'skip'
+
+        translated_header = [translation_dict_in_order.get(col, None) for col in file_header]
+        if u'head_cm' not in translated_header:
+            utils.MessagebarAndLog.warning(
+                bar_msg=u"Diveroffice import warning. See log message panel",
+                log_msg=u"Warning, the file %s \ndid not have Water head[cm] as a header.\nMake sure its barocompensated!\nSupported headers are %s" % (
+                utils.returnunicode(path),
+                u', '.join(translation_dict_in_order.keys())))
+
+        new_header = [u'date_time', u'head_cm', u'temp_degc', u'cond_mscm']
+        colnrs_to_import = [translated_header.index(x) if x in translated_header else None for x in new_header]
+
+        date_col = colnrs_to_import[0]
+        filedata.append(new_header)
+
+        for row in data_rows[1:]:
+            cols = row.split(delimiter)
+            if len(cols) != nr_of_cols:
+                return utils.ask_user_about_stopping(
+                    "Failure: The number of data columns in file %s was not equal to the header.\nIs the decimal separator the same as the delimiter?\nDo you want to stop the import? (else it will continue with the next file)"%path)
+
+            dateformat = find_date_format(cols[date_col])
+
+            if dateformat is not None:
+                date = datetime.strptime(cols[date_col], dateformat)
+
+                #TODO: These checks are not implemented as a dialog yet.
+                if begindate is not None:
+                    if date < begindate:
+                        continue
+                if enddate is not None:
+                    if date > enddate:
+                        continue
+
+                printrow = [datetime.strftime(date,u'%Y-%m-%d %H:%M:%S')]
+
+                try:
+                    printrow.extend([str(float(cols[colnr].replace(u',', u'.')))
+                                     if colnr is not None else u''
+                                     for colnr in colnrs_to_import if colnr != date_col])
+                except ValueError as e:
+                    print("parse_diveroffice_file error: %s"%str(e))
                     continue
 
-                #Parse data
-                if begin_extraction:
-                    #This skips the last line.
-                    if len(cols) < 2:
-                        continue
-                    dateformat = find_date_format(cols[0])
-                    if dateformat is not None:
-                        if len(cols) != num_cols:
-                            return utils.ask_user_about_stopping("Failure: The number of data columns in file " + path + " was not equal to the header.\nIs the decimal separator the same as the delimiter?\nDo you want to stop the import? (else it will continue with the next file)")
+                if any(printrow[1:]):
+                    filedata.append(printrow)
 
-                        #Skip rows without flow value
-                        try:
-                            float(cols[1].replace(u',', u'.'))
-                        except ValueError:
-                            continue
-
-                        date = datetime.strptime(cols[0], dateformat)
-
-                        #TODO: These checks are not implemented as a dialog yet.
-                        if begindate is not None:
-                            if date < begindate:
-                                continue
-                        if enddate is not None:
-                            if date > enddate:
-                                continue
-
-                        printrow = [datetime.strftime(date,u'%Y-%m-%d %H:%M:%S')]
-                        printrow.extend([col.replace(u',', u'.') for col in cols[1:]])
-                        filedata.append(printrow)
-
-        if len(filedata) == 0:
+        if len(filedata) < 2:
             return utils.ask_user_about_stopping("Failure, parsing failed for file " + path + "\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)")
 
         filename = os.path.basename(path)
 
-        if u'Conductivity[mS/cm]' not in header:
-            header.append(u'Conductivity[mS/cm]')
-            for row in filedata:
-                row.append(u'')
-
-        translation_dict_in_order = OrderedDict([(u'Date/time', u'date_time'),
-                                                 (u'Water head[cm]', u'head_cm'),
-                                                 (u'Temperature[°C]', u'temp_degc'),
-                                                 (u'Conductivity[mS/cm]', u'cond_mscm')])
-
-        try:
-            translated_header = [translation_dict_in_order[headername] for headername in header]
-        except KeyError:
-            utils.MessagebarAndLog.critical(bar_msg=u"Failure during import. See log for more information", log_msg=u"Failure, the file " + utils.returnunicode(path) + u"\ndid not have the correct headers and will not be imported.\nMake sure its barocompensated!\nSupported headers are location, Date/time, Water head[cm], Temperature[°C] and optionally Conductivity[mS/cm].")
-            return u'skip'
-
-        filedata.reverse()
-        filedata.append(translated_header)
-        filedata.reverse()
-
-        sorted_filedata = [[row[translated_header.index(v)] for v in translation_dict_in_order.values()] for row in filedata]
-
-        return sorted_filedata, filename, location
+        return filedata, filename, location
 
     @staticmethod
     def filter_dates_from_filedata(file_data, obsid_last_imported_dates, obsid_header_name=u'obsid', date_time_header_name=u'date_time'):
