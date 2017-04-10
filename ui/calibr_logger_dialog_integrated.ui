@@ -124,6 +124,9 @@
               <pointsize>9</pointsize>
              </font>
             </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Obsid ends with &amp;quot;(uncalibrated)&amp;quot; if the column level_masl in table w_levels_logger contains NULL-values.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
            </widget>
           </item>
          </layout>
@@ -260,7 +263,7 @@
              </font>
             </property>
             <property name="toolTip">
-             <string>Select from-date in plot</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select from-date in plot&lt;/p&gt;&lt;p&gt;(must select close to the logger line).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>select in plot</string>
@@ -352,7 +355,7 @@
              </font>
             </property>
             <property name="toolTip">
-             <string>Select to-date in plot</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select to-date in plot&lt;/p&gt;&lt;p&gt;(must select close to the logger line).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>select in plot</string>
@@ -1128,6 +1131,9 @@
                 <italic>false</italic>
                </font>
               </property>
+              <property name="toolTip">
+               <string>Plot the column head_cm.</string>
+              </property>
               <property name="text">
                <string>Plot logger head (water column)</string>
               </property>
@@ -1139,6 +1145,9 @@
                <font>
                 <family>Arial</family>
                </font>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The difference between head_cm mean value and level_masl mean value is removed when plotting logger head (nothing in the database is changed).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Normalize head to logger line</string>
