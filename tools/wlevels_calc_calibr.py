@@ -454,7 +454,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.calib_help.setText("")
 
     def reset_settings(self):
-        self.FromDateTime.setDateTime(datestring_to_date(u'1901-01-01'))
+        self.FromDateTime.setDateTime(datestring_to_date(u'2099-12-31 23:59:59'))
         self.ToDateTime.setDateTime(datestring_to_date(u'2099-12-31 23:59:59'))
         self.Add2Levelmasl.setText('')
         self.bestFitSearchRadius.setText('10 minutes')
