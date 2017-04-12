@@ -55,8 +55,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.status = True
 
     def load_gui(self):
-        tables_columns = {k: v for (k, v) in defs.tables_columns().iteritems() if not k.endswith(u'_geom')}
-        self.table_chooser = ImportTableChooser(tables_columns, self.connect, file_header=None)
+        self.tables_columns = {k: v for (k, v) in defs.tables_columns().iteritems() if not k.endswith(u'_geom')}
+        self.table_chooser = ImportTableChooser(self.tables_columns, self.connect, file_header=None)
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.add_line(self.main_vertical_layout)
         #General buttons
@@ -162,6 +162,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         #Translate column names and add columns that appear more than once
         file_data = self.translate_and_reorder_file_data(file_data, translation_dict)
 
+        file_data = self.convert_comma_to_points_for_double_columns(file_data, self.tables_columns)
+
         if foreign_key_obsid_table and foreign_key_obsid_table != goal_table and u'obsid' in file_data[0]:
             file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
         if file_data == u'cancel':
@@ -197,6 +199,18 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             self.add_row(line)
         else:
             layout.addWidget(line)
+
+    @staticmethod
+    def convert_comma_to_points_for_double_columns(file_data, table_column):
+        """
+        Converts comma to point for columns with column types real or double
+        :param file_data: a list of lists like [[u'obsid', u'date_time', u'reading'], [u'obs1', u'2017-04-12 11:03', '123,456']]
+        :param table_column:
+        :return: file_data where double and real column types have been converted from comma to point.
+        """
+        colnrs_to_convert = [colnr for colnr, col in enumerate(file_data[0]) if table_column.get(col, [u'', u'', u''])[2].lower() in (u'double', u'double precision', u'real')]
+        file_data = [[col.replace(u',', u'.') if colnr in colnrs_to_convert and rownr > 0 else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
+        return file_data
 
 
 class ImportTableChooser(VRowEntry):
