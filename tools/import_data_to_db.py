@@ -202,8 +202,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.drop_temptable()
             return
 
-
-
         #Finally import data:
         nr_failed_import = recsinfile - nr_after
         if nr_failed_import > 0:
