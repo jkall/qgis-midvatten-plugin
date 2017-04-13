@@ -116,7 +116,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         nr_after = utils.sql_load_fr_db(u'''select count(*) from "%s"'''%(self.temptablename))[1][0][0]
 
         nr_same_date = nr_after - nr_before
-        utils.MessagebarAndLog.info(log_msg=u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported. %s rows remain.'%(str(nr_same_date), str(nr_after)))
+        if nr_same_date > 0:
+            utils.MessagebarAndLog.info(log_msg=u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported. %s rows remain.'%(str(nr_same_date), str(nr_after)))
         if not nr_after > 0:
             utils.MessagebarAndLog.warning(bar_msg=u'Nothing imported, see log message panel')
             self.status = 'False'
@@ -197,6 +198,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.check_and_delete_stratigraphy(existing_columns)
         if goal_table in (u'obs_lines', u'obs_points'):
             self.calculate_geometry(existing_columns, goal_table)
+        if self.status == 'False':
+            self.drop_temptable()
+            return
+
+
 
         #Finally import data:
         nr_failed_import = recsinfile - nr_after
@@ -428,7 +434,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             obsid_strat = utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from "%s"'%self.temptablename)[1]
             for obsid, stratid_depthbot_depthtop  in obsid_strat.iteritems():
                 #Turn everything to float
-                strats = [[float(x) for x in y] for y in stratid_depthbot_depthtop]
+                try:
+                    strats = [[float(x) for x in y] for y in stratid_depthbot_depthtop]
+                except ValueError as e:
+                    utils.MessagebarAndLog.critical(bar_msg=u'Import error, nothing imported, see log message panel.', log_msg=u'ValueError: %s. Obsid "%s", stratid: "%s", depthbot: "%s", depthtop: "%s"'%(str(e), obsid, stratid_depthbot_depthtop[0], stratid_depthbot_depthtop[1], stratid_depthbot_depthtop[2]))
+                    self.status = 'False'
+                    return
+
                 sorted_strats = sorted(strats, key=itemgetter(0))
                 stratid_idx = 0
                 depthtop_idx = 1
