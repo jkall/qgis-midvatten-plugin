@@ -108,7 +108,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
 
         nr_same_date = nr_after - nr_before
-        utils.MessagebarAndLog.info(log_msg=tr(u'midv_data_importer', u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported. %s rows remain.'%(str(nr_same_date), str(nr_after))))
+        if nr_same_date > 0:
+            utils.MessagebarAndLog.info(log_msg=tr(u'midv_data_importer', u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported. %s rows remain.'%(str(nr_same_date), str(nr_after))))
         if not nr_after > 0:
             utils.MessagebarAndLog.warning(bar_msg=tr(u'midv_data_importer', u'Nothing imported, see log message panel'))
             self.status = 'False'
