@@ -146,6 +146,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if goal_table in (u'obs_lines', u'obs_points'):
             self.calculate_geometry(existing_columns_in_goal_table, goal_table, dbconnection)
 
+        if self.status == 'False':
+            return
+
         # Import foreign keys in some special cases
         foreign_keys = db_utils.get_foreign_keys(goal_table, dbconnection=dbconnection)
         if foreign_keys:
@@ -308,7 +311,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             obsid_strat = db_utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from %s' % self.temptable_name, dbconnection)[1]
             for obsid, stratid_depthbot_depthtop  in obsid_strat.iteritems():
                 #Turn everything to float
-                strats = [[float(x) for x in y] for y in stratid_depthbot_depthtop]
+                try:
+                    strats = [[float(x) for x in y] for y in stratid_depthbot_depthtop]
+                except ValueError as e:
+                    utils.MessagebarAndLog.critical(bar_msg=tr(u'midv_data_importer', u'Import error, nothing imported, see log message panel.'), log_msg=tr(u'midv_data_importer', u'ValueError: %s. Obsid "%s", stratid: "%s", depthbot: "%s", depthtop: "%s"'%(str(e), obsid, stratid_depthbot_depthtop[0], stratid_depthbot_depthtop[1], stratid_depthbot_depthtop[2])))
+                    self.status = 'False'
+                    return
                 sorted_strats = sorted(strats, key=itemgetter(0))
                 stratid_idx = 0
                 depthtop_idx = 1
