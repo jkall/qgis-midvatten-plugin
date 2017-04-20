@@ -6,7 +6,7 @@ tablename text --Name of a table in the db
 , data_type text --Data type of the column
 , not_null text --1 if NULL-values isn't allowed
 , default_value text --The default value of the column
-, primary_key text --1 if column is a primary key
+, primary_key text --The primary key order number if column is a primary key
 , foreign_key text --"foreign key table(foreign key column)"
 , description text --Description for column or table
 , upd_date text --Date for last update
