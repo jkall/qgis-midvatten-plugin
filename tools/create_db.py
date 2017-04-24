@@ -59,15 +59,11 @@ class newdb():
                 return ''
             #create Spatialite database
             else:
-                #delete the file if exists
+                #exit if the file exists
                 if os.path.exists(self.dbpath):
-                    try:
-                        os.remove(self.dbpath)
-                    except OSError, e:
-                        utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", "%s - %s." % (e.filename,e.strerror), duration=10)
+                    utils.MessagebarAndLog.critical(bar_msg=u'A database with the chosen name already existed. Cancelling...')
+                    return ''
 
-                        PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                        return ''
                 try:
                     # creating/connecting the test_db
                     self.conn = sqlite.connect(self.dbpath)

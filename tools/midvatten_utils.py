@@ -63,13 +63,17 @@ class dbconnection():
     
     def connect2db(self):
         if os.path.exists(self.dbpath):
-            try:#verify this is an existing sqlite database
-                self.conn = sqlite.connect(self.dbpath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-                self.conn.cursor().execute("select count(*) from sqlite_master") 
-                ConnectionOK = True
-            except:
-                pop_up_info("Could not connect to  " + self.dbpath + "\nYou will have to reset Midvatten settings for this project!")
+            if check_db_is_locked(self.dbpath):
+                MessagebarAndLog.critical(bar_msg=u'Command stopped. The database is already in use (a journal-file was found)')
                 ConnectionOK = False
+            else:
+                try:#verify this is an existing sqlite database
+                    self.conn = sqlite.connect(self.dbpath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+                    self.conn.cursor().execute("select count(*) from sqlite_master")
+                    ConnectionOK = True
+                except:
+                    pop_up_info("Could not connect to  " + self.dbpath + "\nYou will have to reset Midvatten settings for this project!")
+                    ConnectionOK = False
         else:
             pop_up_info("The file " + self.dbpath + " do not exist.\nYou will have to reset Midvatten settings for this project!")
             ConnectionOK = False
@@ -77,6 +81,10 @@ class dbconnection():
         
     def closedb(self):
             self.conn.close()
+
+
+def check_db_is_locked(dbpath):
+    return os.path.exists(dbpath + u'-journal')
 
 def show_message_log(pop_error=False):
     """
