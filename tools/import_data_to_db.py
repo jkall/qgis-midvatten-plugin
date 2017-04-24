@@ -573,6 +573,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         translation_dict_in_order = OrderedDict([(u'Date/time', u'date_time'),
                                                  (u'Water head[cm]', u'head_cm'),
+                                                 (u'Level[cm]', u'head_cm'),
                                                  (u'Temperature[°C]', u'temp_degc'),
                                                  (u'Conductivity[mS/cm]', u'cond_mscm'),
                                                  (u'2:Spec.cond.[mS/cm]', u'cond_mscm')])
