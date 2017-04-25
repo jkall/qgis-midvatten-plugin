@@ -45,7 +45,7 @@ except:
 import datetime
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import midvatten_utils as utils
-from date_utils import dateshift, datestring_to_date
+from date_utils import dateshift, datestring_to_date, long_dateformat
 
 #from ui.calibr_logger_dialog import Ui_Dialog as Calibr_Ui_Dialog
 #from ui.calc_lvl_dialog import Ui_Dialog as Calc_Ui_Dialog
@@ -454,7 +454,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.calib_help.setText("")
 
     def reset_settings(self):
-        self.FromDateTime.setDateTime(datestring_to_date(u'2099-12-31 23:59:59'))
+
         self.ToDateTime.setDateTime(datestring_to_date(u'2099-12-31 23:59:59'))
         self.Add2Levelmasl.setText('')
         self.bestFitSearchRadius.setText('10 minutes')
@@ -463,9 +463,16 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         last_calibration = self.getlastcalibration(self.obsid)
         try:
             if last_calibration[0][1] and last_calibration[0][0]:
-                self.LoggerPos.setText(str(self.lastcalibr[0][1]))
-        except:
+                self.LoggerPos.setText(str(last_calibration[0][1]))
+                self.FromDateTime.setDateTime(datestring_to_date(last_calibration[0][0]))
+            else:
+                self.LoggerPos.setText('')
+                self.FromDateTime.setDateTime(datestring_to_date(u'2099-12-31 23:59:59'))
+        except Exception as e:
+            utils.MessagebarAndLog.info(log_msg=u'Getting last calibration failed for obsid %s, msg: %s'%(self.obsid, str(e)))
             self.LoggerPos.setText('')
+            self.FromDateTime.setDateTime(datestring_to_date(u'2099-12-31 23:59:59'))
+
 
     def reset_cid(self):
         """ Resets self.cid to an empty list and disconnects unused events """
