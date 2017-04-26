@@ -689,6 +689,7 @@ class PandasCalculations(object):
                            u'"20T" = 20 minutes\n'
                            u'"1h" = 1 hour\n'
                            u'"24h" = 24 hours\n'
+                           u'(D = calendar day, M = month end, MS = month start, W = weekly, AS = year start, A = year end, ...)\n'
                            u'No resampling if field is empty\n'
                            u'See pandas pandas.DataFrame.resample documentation for more info.')
 
@@ -701,6 +702,13 @@ class PandasCalculations(object):
                            u'For frequencies that evenly subdivide 1 day, the “origin” of the aggregated intervals.\n'
                            u'For example, for ‘5min’ frequency, base could range from 0 through 4. Defaults to 0\n')
 
+        self.how_label = PyQt4.QtGui.QLabel(u'Resample how')
+        self.how = PyQt4.QtGui.QLineEdit()
+        for wid in [self.how_label, self.how]:
+            wid.setToolTip(u'How to make the resample, ex. "mean" (default), "first", "last", "sum".\n'
+                           u'See pandas pandas.DataFrame.resample documentation for more info\n'
+                           u'(though "how" is not explained a lot)')
+
         #Moving average:
         self.window_label = PyQt4.QtGui.QLabel(u'Rolling mean window')
         self.window = PyQt4.QtGui.QLineEdit(u'')
@@ -710,17 +718,17 @@ class PandasCalculations(object):
                            u'See Pandas pandas.rolling_mean documentation for more info.\n'
                            u'No rolling mean if field is empty.')
 
-        for lineedit in [self.rule, self.base, self.window]:
+        for lineedit in [self.rule, self.base, self.how, self.window]:
             #lineedit.sizeHint()setFixedWidth(122)
             lineedit.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Preferred)
 
         maximumwidth = 0
-        for label in [self.rule_label, self.base_label, self.window_label]:
+        for label in [self.rule_label, self.base_label, self.how_label, self.window_label]:
             testlabel = PyQt4.QtGui.QLabel()
             testlabel.setText(label.text())
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
-        for label in [self.rule_label, self.base_label, self.window_label]:
+        for label in [self.rule_label, self.base_label, self.how_label, self.window_label]:
             label.setFixedWidth(maximumwidth)
             #label.setMinimumWidth(maximumwidth)
             label.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Fixed)
@@ -730,6 +738,7 @@ class PandasCalculations(object):
         gridlayout.addWidget(hline)
         for col1, col2 in [(self.rule_label, self.rule),
                            (self.base_label, self.base),
+                           (self.how_label, self.how),
                            (self.window_label, self.window)]:
             current_row = gridlayout.rowCount()
 
@@ -752,13 +761,14 @@ class PandasCalculations(object):
         #Resample
         rule = self.rule.text()
         base = self.base.text() if self.base.text() else 0
+        how = self.how.text() if self.how.text() else u'mean'
         if rule:
             try:
                 base = int(base)
             except ValueError:
                 utils.MessagebarAndLog.critical(bar_msg=u'Resample base must be an integer')
             else:
-                df = df.resample(rule, how='mean', base=int(base))
+                df = df.resample(rule, how=how, base=int(base))
 
         #Rolling mean
         window = self.window.text()
