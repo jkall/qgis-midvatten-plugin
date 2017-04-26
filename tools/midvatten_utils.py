@@ -64,7 +64,6 @@ class dbconnection():
     def connect2db(self):
         if os.path.exists(self.dbpath):
             if check_db_is_locked(self.dbpath):
-                MessagebarAndLog.critical(bar_msg=u'Command stopped. The database is already in use (a journal-file was found)')
                 ConnectionOK = False
             else:
                 try:#verify this is an existing sqlite database
@@ -84,7 +83,11 @@ class dbconnection():
 
 
 def check_db_is_locked(dbpath):
-    return os.path.exists(dbpath + u'-journal')
+    if os.path.exists(dbpath + u'-journal'):
+        MessagebarAndLog.warning(bar_msg=u"Error, The database is already in use (a journal-file was found)")
+        return True
+    else:
+        return False
 
 def show_message_log(pop_error=False):
     """
@@ -738,20 +741,23 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
         layerexists = find_layer(str(layername))
         if layerexists:
             if layerexists.isEditable():
-                iface.messageBar().pushMessage("Error","Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", 2)
+                MessagebarAndLog.warning(bar_msg=u"Error %s is currently in editing mode.\nPlease exit this mode before proceeding with this operation."%str(layerexists.name()))
                 #pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", "Warning")
                 errorsignal += 1
 
-    if mset.settingsdict['database'] == '': #Check that database is selected
-        iface.messageBar().pushMessage("Error","No database found. Please check your Midvatten Settings. Reset if needed.", 2)
-        #pop_up_info("Check settings! \nSelect database first!")        
+    dbpath = mset.settingsdict['database']
+    if not dbpath:
+        MessagebarAndLog.warning(bar_msg=u"Error, No database found. Please check your Midvatten Settings. Reset if needed.")
         errorsignal += 1
+    else:
+        if not os.path.isfile(dbpath):
+            MessagebarAndLog.warning(bar_msg=u"Error, The selected database doesn't exist. Please check your Midvatten Settings and database location. Reset if needed.")
+            errorsignal += 1
+        else:
+            if check_db_is_locked(dbpath):
+                errorsignal += 1
 
-    if not os.path.isfile(mset.settingsdict['database']):
-        iface.messageBar().pushMessage("Error", "The selected database doesn't exist. Please check your Midvatten Settings and database location. Reset if needed.", 2)
-        errorsignal += 1
-
-    return errorsignal    
+    return errorsignal
 
 def verify_layer_selection(errorsignal,selectedfeatures=0):
     layer = get_active_layer()

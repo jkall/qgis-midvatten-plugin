@@ -398,6 +398,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
     def LoadColumnsFromTable(self, table=''):
         """ This method returns a list with all the columns in the table"""
+        columns = []
         if len(table)>0 and len(self.ms.settingsdict['database'])>0:            # Should not be needed since the function never should be called without existing table...
             myconnection = utils.dbconnection(self.ms.settingsdict['database'])
             if myconnection.connect2db() == True:
@@ -405,13 +406,10 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                 sql = r"""SELECT * FROM '"""
                 sql += str(table)
                 sql += """'"""     
-                rs = curs.execute(sql)  #Send the SQL statement to get the columns in the table            
-                columns = {} 
+                rs = curs.execute(sql)  #Send the SQL statement to get the columns in the table
                 columns = [tuple[0] for tuple in curs.description]
                 rs.close()
-                myconnection.closedb()# then close the database         
-        else:
-            columns = {}
+                myconnection.closedb()# then close the database
         return columns        # This method returns a list with all the columns in the table
 
     def loadTablesFromDB(self,db): # This method populates all table-comboboxes with the tables inside the database
