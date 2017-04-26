@@ -4,7 +4,7 @@ name=Midvatten
 qgisMinimumVersion=2.4
 qgisMaximumVersion=2.98
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.3.26
+version=Version 1.3.27
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 
@@ -19,6 +19,12 @@ experimental=False
 deprecated=False
 
 changelog=
+        Version 1.3.27
+        - Db_connection stopped if a journal file is found (to reduce incidents where the database is malformed).
+        - Create_db: Creating db stopped if the chosen db name already exists.
+        - General csv import: Decimal separator for columns with type double or real is now converted from comma to point.
+        - Logger calibration: From date is set to last calibrated date as default.
+        - Export Fieldlogger: Updated button names and tooltips.
         Version 1.3.26
         - General csv import: Decimal separator for columns with type double or real is now converted from comma to point.
         - Imports: Added error message when stratigraphy import fails.

@@ -217,7 +217,7 @@ class TestExportFieldloggerNoDb():
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
-        mock_MessagebarAndLog.warning.assert_called_with(bar_msg=u'Warning: Empty parameter list for group nr 1')
+        mock_MessagebarAndLog.warning.assert_called_with(bar_msg=u'Warning: Empty input fields list for group nr 1')
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
