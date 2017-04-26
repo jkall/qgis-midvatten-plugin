@@ -21,6 +21,8 @@ deprecated=False
 changelog=
         Version 1.3.28
         - Added pandas argument "how" to custom plot.
+        - General csv import: Added function to import from active layers. QGis "Delimited Text Layer" can be used to load the file and the new buttons to import the loaded file.
+        - Changed to database path as default directory when selecting files.
         Version 1.3.27
         - Db_connection stopped if a journal file is found (to reduce incidents where the database is malformed).
         - Create_db: Creating db stopped if the chosen db name already exists.

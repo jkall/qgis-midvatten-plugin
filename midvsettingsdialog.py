@@ -486,8 +486,17 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ms.save_settings('piper_mg')#save this specific setting
         
     def selectFile(self):
-        """ Open a dialog to locate the sqlite file and some more..."""        
-        path = QFileDialog.getOpenFileName(None,str("Select database:"),"*.sqlite")
+        """ Open a dialog to locate the sqlite file and some more..."""
+        try:
+            current_path = self.ms.settingsdict.get('database', '')
+            if current_path:
+                dir = os.path.dirname(current_path)
+            else:
+                dir = ''
+        except:
+            dir = ''
+
+        path = QFileDialog.getOpenFileName(parent=None,caption=str("Select database:"),directory=dir, filter="*.sqlite")
         if path: #Only get new db name if not cancelling the FileDialog
             self.ms.settingsdict['database'] = path #
         else:#debug

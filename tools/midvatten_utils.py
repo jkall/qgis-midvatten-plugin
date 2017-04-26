@@ -970,10 +970,15 @@ def rstrip(word, from_string):
 
 def select_files(only_one_file=True, extension="csv (*.csv)"):
     """Asks users to select file(s)"""
+    try:
+        dir = os.path.dirname(QgsProject.instance().readEntry("Midvatten","database")[0])
+    except:
+        dir = u''
+
     if only_one_file:
-        csvpath = QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)
+        csvpath = QtGui.QFileDialog.getOpenFileName(parent=None, caption="Select File", directory=dir, filter=extension)
     else:
-        csvpath = QtGui.QFileDialog.getOpenFileNames(None, "Select Files","", extension)
+        csvpath = QtGui.QFileDialog.getOpenFileNames(parent=None, caption="Select Files", directory=dir, filter=extension)
     if not isinstance(csvpath, (list, tuple)):
         csvpath = [csvpath]
     csvpath = [p for p in csvpath if p]

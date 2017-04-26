@@ -26,8 +26,9 @@ from collections import OrderedDict
 
 import definitions.midvatten_defs as defs
 import midvatten_utils as utils
-from gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit
+from gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit, get_line
 from midvatten_utils import returnunicode
+
 
 export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 parameter_browser_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'fieldlogger_parameter_browser.ui'))[0]
@@ -733,14 +734,6 @@ def set_combobox(combobox, value):
         combobox.addItem(returnunicode(value))
         index = combobox.findText(returnunicode(value))
         combobox.setCurrentIndex(index)
-
-
-def get_line():
-    line = PyQt4.QtGui.QFrame()
-    line.setGeometry(PyQt4.QtCore.QRect(320, 150, 118, 3))
-    line.setFrameShape(PyQt4.QtGui.QFrame.HLine)
-    line.setFrameShadow(PyQt4.QtGui.QFrame.Sunken)
-    return line
 
 
 

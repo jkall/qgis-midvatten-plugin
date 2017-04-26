@@ -35,7 +35,7 @@ import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 from export_fieldlogger import get_line
 from midvatten_utils import returnunicode, Cancel
-from gui_utils import RowEntry, VRowEntry
+from gui_utils import RowEntry, VRowEntry, get_line
 
 import_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -60,7 +60,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.add_line(self.main_vertical_layout)
         #General buttons
-        self.select_file_button = PyQt4.QtGui.QPushButton(u'Select file')
+        self.select_file_button = PyQt4.QtGui.QPushButton(u'Load data from file')
         self.gridLayout_buttons.addWidget(self.select_file_button, 0, 0)
         self.connect(self.select_file_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(), [lambda: self.load_files(),
@@ -68,32 +68,34 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
                                                  lambda: self.file_data_loaded_popup()]))
 
 
-        self.import_all_features_button = PyQt4.QtGui.QPushButton(u'Import all features\nfrom active layer')
+        self.import_all_features_button = PyQt4.QtGui.QPushButton(u'Load data from all features\nfrom active layer')
         self.gridLayout_buttons.addWidget(self.import_all_features_button, 1, 0)
         self.connect(self.import_all_features_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(), [lambda: self.load_from_active_layer(only_selected=False),
                                                  lambda: self.table_chooser.reload(),
                                                  lambda: self.file_data_loaded_popup()]))
 
-        self.import_selected_features_button = PyQt4.QtGui.QPushButton(u'Import selected features\nfrom active layer')
+        self.import_selected_features_button = PyQt4.QtGui.QPushButton(u'Load data from selected features\nfrom active layer')
         self.gridLayout_buttons.addWidget(self.import_selected_features_button, 2, 0)
         self.connect(self.import_selected_features_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(), [lambda: self.load_from_active_layer(only_selected=True),
                                                  lambda: self.table_chooser.reload(),
                                                  lambda: self.file_data_loaded_popup()]))
 
+        self.gridLayout_buttons.addWidget(get_line(), 3, 0)
+
         self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
-        self.gridLayout_buttons.addWidget(self.start_import_button, 3, 0)
+        self.gridLayout_buttons.addWidget(self.start_import_button, 4, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      self.start_import)
 
-        self.gridLayout_buttons.setRowStretch(4, 1)
+        self.gridLayout_buttons.setRowStretch(5, 1)
 
         self.show()
 
     def load_files(self):
         charset = utils.ask_for_charset()
-        if not self.charset:
+        if not charset:
             return None
         filename = utils.select_files(only_one_file=True, extension="Comma or semicolon separated csv file (*.csv);;Comma or semicolon separated csv text file (*.txt);;Comma or semicolon separated file (*.*)")
         if not filename:
@@ -126,7 +128,10 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             self.file_data.reverse()
 
     def file_data_loaded_popup(self):
-        utils.pop_up_info(msg=u'File data loaded. Select table to import to.')
+        if self.file_data is not None:
+            for button in (self.select_file_button, self.import_all_features_button, self.import_selected_features_button):
+                button.setEnabled(False)
+            utils.pop_up_info(msg=u'File data loaded. Select table to import to.')
 
     def file_to_list(self, filename, charset, delimiter):
         with io.open(filename, 'r', encoding=charset) as f:
@@ -153,8 +158,6 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         self.file_data = file_data
         self.table_chooser.file_header = file_data[0]
-
-        print(str(self.file_data))
 
     @utils.waiting_cursor
     def start_import(self):
@@ -212,8 +215,6 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             return file_data
 
         importer = import_data_to_db.midv_data_importer()
-        print("To import:")
-        print(str(file_data))
         importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import,
                                                                goal_table=goal_table))
 
