@@ -64,19 +64,35 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.gridLayout_buttons.addWidget(self.select_file_button, 0, 0)
         self.connect(self.select_file_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(), [lambda: self.load_files(),
-                                                 lambda: self.table_chooser.reload()]))
+                                                 lambda: self.table_chooser.reload(),
+                                                 lambda: self.file_data_loaded_popup()]))
+
+
+        self.import_all_features_button = PyQt4.QtGui.QPushButton(u'Import all features\nfrom active layer')
+        self.gridLayout_buttons.addWidget(self.import_all_features_button, 1, 0)
+        self.connect(self.import_all_features_button, PyQt4.QtCore.SIGNAL("clicked()"),
+                     lambda: map(lambda x: x(), [lambda: self.load_from_active_layer(only_selected=False),
+                                                 lambda: self.table_chooser.reload(),
+                                                 lambda: self.file_data_loaded_popup()]))
+
+        self.import_selected_features_button = PyQt4.QtGui.QPushButton(u'Import selected features\nfrom active layer')
+        self.gridLayout_buttons.addWidget(self.import_selected_features_button, 2, 0)
+        self.connect(self.import_selected_features_button, PyQt4.QtCore.SIGNAL("clicked()"),
+                     lambda: map(lambda x: x(), [lambda: self.load_from_active_layer(only_selected=True),
+                                                 lambda: self.table_chooser.reload(),
+                                                 lambda: self.file_data_loaded_popup()]))
 
         self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
-        self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
+        self.gridLayout_buttons.addWidget(self.start_import_button, 3, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      self.start_import)
 
-        self.gridLayout_buttons.setRowStretch(2, 1)
+        self.gridLayout_buttons.setRowStretch(4, 1)
 
         self.show()
 
     def load_files(self):
-        self.charset = utils.ask_for_charset()
+        charset = utils.ask_for_charset()
         if not self.charset:
             return None
         filename = utils.select_files(only_one_file=True, extension="Comma or semicolon separated csv file (*.csv);;Comma or semicolon separated csv text file (*.txt);;Comma or semicolon separated file (*.*)")
@@ -86,11 +102,11 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             filename = filename[0]
         else:
             filename = filename
-        self.filename = returnunicode(filename)
-        delimiter = utils.get_delimiter(filename=self.filename, charset=self.charset, delimiters=[u',', u';'])
+        filename = returnunicode(filename)
+        delimiter = utils.get_delimiter(filename=filename, charset=charset, delimiters=[u',', u';'])
         if isinstance(delimiter, Cancel):
             return delimiter
-        self.file_data = self.file_to_list(self.filename, self.charset, delimiter)
+        self.file_data = self.file_to_list(filename, charset, delimiter)
 
         header_question = utils.askuser(question=u"YesNo", msg=u"""Does the file contain a header?""")
         if header_question.result:
@@ -109,10 +125,36 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             self.file_data.append(header)
             self.file_data.reverse()
 
+    def file_data_loaded_popup(self):
+        utils.pop_up_info(msg=u'File data loaded. Select table to import to.')
+
     def file_to_list(self, filename, charset, delimiter):
         with io.open(filename, 'r', encoding=charset) as f:
             file_data = [rawrow.rstrip(u'\n').rstrip(u'\r').split(delimiter) for rawrow in f if rawrow.strip()]
         return file_data
+
+    def load_from_active_layer(self, only_selected=False):
+        self.file_data = None
+        self.table_chooser.file_header = None
+
+        active_layer = utils.get_active_layer()
+        if not active_layer:
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error, no layer selected.')
+            return None
+
+        if not only_selected:
+            active_layer.selectAll()
+
+        features = active_layer.selectedFeaturesIterator()
+        file_data = [[returnunicode(field.name()) for field in active_layer.fields()]]
+
+        for feature in features:
+            file_data.append([returnunicode(attr) if attr is not None else u'' for attr in feature])
+
+        self.file_data = file_data
+        self.table_chooser.file_header = file_data[0]
+
+        print(str(self.file_data))
 
     @utils.waiting_cursor
     def start_import(self):
@@ -170,6 +212,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             return file_data
 
         importer = import_data_to_db.midv_data_importer()
+        print("To import:")
+        print(str(file_data))
         importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import,
                                                                goal_table=goal_table))
 
