@@ -181,8 +181,21 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         new_file_header = [db_column for file_column, db_columns in sorted(translation_dict.iteritems()) for db_column in sorted(db_columns)]
         file_column_index = dict([(file_column, idx) for idx, file_column in enumerate(file_data[0])])
         new_file_data = [new_file_header]
-        new_file_data.extend([[row[file_column_index[file_column]] for file_column, db_columns in sorted(translation_dict.iteritems()) for db_column in sorted(db_columns)] for row in file_data[1:]])
+        #The loop "for db_column in sorted(db_columns)" is used for cases where one file column is sent to multiple database columns.
+        try:
+            new_file_data.extend([[row[file_column_index[file_column]] for file_column, db_columns in sorted(translation_dict.iteritems()) for db_column in sorted(db_columns)] for rownr, row in enumerate(file_data[1:])])
+        except IndexError as e:
+            raise IndexError(u'Import error on row number %s:\n%s'%(str(rownr + 1), u'\n'.join([u': '.join(x) for x in zip(file_data[0], row)])))
+
         return new_file_data
+
+        outerlist = []
+        for row in file_data[1:]:
+            innerlist = []
+            for file_column, db_columns in sorted(translation_dict.iteritems()):
+                for db_column in sorted(db_columns):
+                    innerlist.append(row[file_column_index[file_column]])
+            outerlist.append(innerlist)
 
     def add_line(self, layout=None):
         """ just adds a line"""
