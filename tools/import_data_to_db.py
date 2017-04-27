@@ -260,7 +260,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if len(file_data[0]) == 1:
             [row.append(u'') for row in file_data]
 
-        file_string = utils.lists_to_string(file_data)
+        file_string = utils.lists_to_string(file_data, quote=True)
 
         with utils.tempinput(file_string, charset=u'utf_8') as csvpath:
             self.charsetchoosen = u'UTF-8'

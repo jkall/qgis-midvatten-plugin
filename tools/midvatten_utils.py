@@ -1007,8 +1007,8 @@ def ask_for_charset(default_charset=None, msg=None):
 def ask_for_export_crs(default_crs=u''):
     return str(QtGui.QInputDialog.getText(None, "Set export crs", "Give the crs for the exported database.\n",QtGui.QLineEdit.Normal,default_crs)[0])
 
-def lists_to_string(alist_of_lists):
-    ur"""
+def lists_to_string(alist_of_lists, quote=False):
+    ur'''
 
     :param alist_of_lists:
     :return: A string with '\n' separating rows and ; separating columns.
@@ -1017,12 +1017,17 @@ def lists_to_string(alist_of_lists):
     u'1'
     >>> lists_to_string([('a', 'b'), (1, 2)])
     u'a;b\n1;2'
-    """
-    if isinstance(alist_of_lists, list) or isinstance(alist_of_lists, tuple):
-        return_string = u'\n'.join([u';'.join([returnunicode(y) for y in x]) if isinstance(x, list) or isinstance(x, tuple) else returnunicode(x) for x in alist_of_lists])
+    >>> lists_to_string([('a', 'b'), (1, 2)], quote=True)
+    u'"a";"b"\n"1";"2"'
+    >>> lists_to_string([('"a"', 'b'), (1, 2)], quote=False)
+    u'"a";b\n1;2'
+    >>> lists_to_string([('"a"', 'b'), (1, 2)], quote=True)
+    u'"""a""";"b"\n"1";"2"'
+    '''
+    if isinstance(alist_of_lists, (list, tuple)):
+        return_string = u'\n'.join([u';'.join([u'"{}"'.format(returnunicode(col).replace(u'"', u'""') if all([u'"' in returnunicode(col), u'""' not in returnunicode(col)]) else returnunicode(col)) if quote else returnunicode(col) for col in row]) if isinstance(row, (list, tuple)) else returnunicode(row) for row in alist_of_lists])
     else:
         return_string = returnunicode(alist_of_lists)
-
     return return_string
 
 def find_similar(word, wordlist, hits=5):
