@@ -95,3 +95,9 @@ class ExtendedQPlainTextEdit(PyQt4.QtGui.QPlainTextEdit):
             return []
 
 
+def get_line():
+    line = PyQt4.QtGui.QFrame()
+    line.setGeometry(PyQt4.QtCore.QRect(320, 150, 118, 3))
+    line.setFrameShape(PyQt4.QtGui.QFrame.HLine)
+    line.setFrameShadow(PyQt4.QtGui.QFrame.Sunken)
+    return line

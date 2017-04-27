@@ -35,7 +35,7 @@ import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 from export_fieldlogger import get_line
 from midvatten_utils import returnunicode, Cancel
-from gui_utils import RowEntry, VRowEntry
+from gui_utils import RowEntry, VRowEntry, get_line
 
 import_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -60,24 +60,42 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.add_line(self.main_vertical_layout)
         #General buttons
-        self.select_file_button = PyQt4.QtGui.QPushButton(u'Select file')
+        self.select_file_button = PyQt4.QtGui.QPushButton(u'Load data from file')
         self.gridLayout_buttons.addWidget(self.select_file_button, 0, 0)
         self.connect(self.select_file_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(), [lambda: self.load_files(),
-                                                 lambda: self.table_chooser.reload()]))
+                                                 lambda: self.table_chooser.reload(),
+                                                 lambda: self.file_data_loaded_popup()]))
+
+
+        self.import_all_features_button = PyQt4.QtGui.QPushButton(u'Load data from all features\nfrom active layer')
+        self.gridLayout_buttons.addWidget(self.import_all_features_button, 1, 0)
+        self.connect(self.import_all_features_button, PyQt4.QtCore.SIGNAL("clicked()"),
+                     lambda: map(lambda x: x(), [lambda: self.load_from_active_layer(only_selected=False),
+                                                 lambda: self.table_chooser.reload(),
+                                                 lambda: self.file_data_loaded_popup()]))
+
+        self.import_selected_features_button = PyQt4.QtGui.QPushButton(u'Load data from selected features\nfrom active layer')
+        self.gridLayout_buttons.addWidget(self.import_selected_features_button, 2, 0)
+        self.connect(self.import_selected_features_button, PyQt4.QtCore.SIGNAL("clicked()"),
+                     lambda: map(lambda x: x(), [lambda: self.load_from_active_layer(only_selected=True),
+                                                 lambda: self.table_chooser.reload(),
+                                                 lambda: self.file_data_loaded_popup()]))
+
+        self.gridLayout_buttons.addWidget(get_line(), 3, 0)
 
         self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
-        self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
+        self.gridLayout_buttons.addWidget(self.start_import_button, 4, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      self.start_import)
 
-        self.gridLayout_buttons.setRowStretch(2, 1)
+        self.gridLayout_buttons.setRowStretch(5, 1)
 
         self.show()
 
     def load_files(self):
-        self.charset = utils.ask_for_charset()
-        if not self.charset:
+        charset = utils.ask_for_charset()
+        if not charset:
             return None
         filename = utils.select_files(only_one_file=True, extension="Comma or semicolon separated csv file (*.csv);;Comma or semicolon separated csv text file (*.txt);;Comma or semicolon separated file (*.*)")
         if not filename:
@@ -86,11 +104,11 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             filename = filename[0]
         else:
             filename = filename
-        self.filename = returnunicode(filename)
-        delimiter = utils.get_delimiter(filename=self.filename, charset=self.charset, delimiters=[u',', u';'])
+        filename = returnunicode(filename)
+        delimiter = utils.get_delimiter(filename=filename, charset=charset, delimiters=[u',', u';'])
         if isinstance(delimiter, Cancel):
             return delimiter
-        self.file_data = self.file_to_list(self.filename, self.charset, delimiter)
+        self.file_data = self.file_to_list(filename, charset, delimiter)
 
         header_question = utils.askuser(question=u"YesNo", msg=u"""Does the file contain a header?""")
         if header_question.result:
@@ -109,10 +127,37 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             self.file_data.append(header)
             self.file_data.reverse()
 
+    def file_data_loaded_popup(self):
+        if self.file_data is not None:
+            for button in (self.select_file_button, self.import_all_features_button, self.import_selected_features_button):
+                button.setEnabled(False)
+            utils.pop_up_info(msg=u'File data loaded. Select table to import to.')
+
     def file_to_list(self, filename, charset, delimiter):
         with io.open(filename, 'r', encoding=charset) as f:
             file_data = [rawrow.rstrip(u'\n').rstrip(u'\r').split(delimiter) for rawrow in f if rawrow.strip()]
         return file_data
+
+    def load_from_active_layer(self, only_selected=False):
+        self.file_data = None
+        self.table_chooser.file_header = None
+
+        active_layer = utils.get_active_layer()
+        if not active_layer:
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error, no layer selected.')
+            return None
+
+        if not only_selected:
+            active_layer.selectAll()
+
+        features = active_layer.selectedFeaturesIterator()
+        file_data = [[returnunicode(field.name()) for field in active_layer.fields()]]
+
+        for feature in features:
+            file_data.append([returnunicode(attr) if attr is not None else u'' for attr in feature])
+
+        self.file_data = file_data
+        self.table_chooser.file_header = file_data[0]
 
     @utils.waiting_cursor
     def start_import(self):
@@ -181,8 +226,21 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         new_file_header = [db_column for file_column, db_columns in sorted(translation_dict.iteritems()) for db_column in sorted(db_columns)]
         file_column_index = dict([(file_column, idx) for idx, file_column in enumerate(file_data[0])])
         new_file_data = [new_file_header]
-        new_file_data.extend([[row[file_column_index[file_column]] for file_column, db_columns in sorted(translation_dict.iteritems()) for db_column in sorted(db_columns)] for row in file_data[1:]])
+        #The loop "for db_column in sorted(db_columns)" is used for cases where one file column is sent to multiple database columns.
+        try:
+            new_file_data.extend([[row[file_column_index[file_column]] for file_column, db_columns in sorted(translation_dict.iteritems()) for db_column in sorted(db_columns)] for rownr, row in enumerate(file_data[1:])])
+        except IndexError as e:
+            raise IndexError(u'Import error on row number %s:\n%s'%(str(rownr + 1), u'\n'.join([u': '.join(x) for x in zip(file_data[0], row)])))
+
         return new_file_data
+
+        outerlist = []
+        for row in file_data[1:]:
+            innerlist = []
+            for file_column, db_columns in sorted(translation_dict.iteritems()):
+                for db_column in sorted(db_columns):
+                    innerlist.append(row[file_column_index[file_column]])
+            outerlist.append(innerlist)
 
     def add_line(self, layout=None):
         """ just adds a line"""
