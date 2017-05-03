@@ -4,7 +4,7 @@ name=Midvatten
 qgisMinimumVersion=2.4
 qgisMaximumVersion=2.98
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.3.28
+version=Version 1.3.29
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 
@@ -19,12 +19,13 @@ experimental=False
 deprecated=False
 
 changelog=
+        Version 1.3.29
+        - Diveroffice import: Resolved a bug happening on windows.
+        - Diveroffice import: The user can now choose to import or skip rows without water level.
         Version 1.3.28
         - Added pandas argument "how" to custom plot.
         - General csv import: Added function to import from active layers. QGis "Delimited Text Layer" can be used to load the file and the new buttons to import the loaded file.
         - Changed to database path as default directory when selecting files.
-        - Diveroffice import: Resolved a bug happening on windows.
-        - Diveroffice import: The user can now choose to import or skip rows without water level.
         Version 1.3.27
         - Db_connection stopped if a journal file is found (to reduce incidents where the database is malformed).
         - Create_db: Creating db stopped if the chosen db name already exists.
