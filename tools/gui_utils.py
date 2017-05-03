@@ -20,8 +20,10 @@
  ***************************************************************************/
 """
 import PyQt4
+import copy
 
 from midvatten_utils import returnunicode
+from tools.date_utils import datestring_to_date
 
 
 class SplitterWithHandel(PyQt4.QtGui.QSplitter):
@@ -101,3 +103,52 @@ def get_line():
     line.setFrameShape(PyQt4.QtGui.QFrame.HLine)
     line.setFrameShadow(PyQt4.QtGui.QFrame.Sunken)
     return line
+
+
+class DateTimeFilter(RowEntry):
+    def __init__(self):
+        super(DateTimeFilter, self).__init__()
+        self.label = PyQt4.QtGui.QLabel(u'Import data from: ')
+        self.from_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'1900-01-01 00:00:00'))
+        self.from_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh-mm-ss')
+        self.label_to = PyQt4.QtGui.QLabel(u'to: ')
+        self.to_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'2099-12-31 23:59:59'))
+        self.to_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh-mm-ss')
+        #self.import_after_last_date = PyQt4.QtGui.QCheckBox(u"Import after latest date in database for each obsid")
+        for widget in [self.label, self.from_datetimeedit, self.label_to, self.to_datetimeedit]:
+            self.layout.addWidget(widget)
+        self.layout.addStretch()
+
+    def alter_data(self, observation):
+        observation = copy.deepcopy(observation)
+        _from = self.from_datetimeedit.dateTime().toPyDateTime()
+        _to = self.to_datetimeedit.dateTime().toPyDateTime()
+        if not _from and not _to:
+            return observation
+        if _from and _to:
+            if _from < observation[u'date_time'] < _to:
+                return observation
+        elif _from:
+            if _from < observation[u'date_time']:
+                return observation
+        elif _to:
+            if observation[u'date_time'] < _to:
+                return observation
+        return None
+
+
+    @property
+    def from_date(self):
+        return self.from_datetimeedit.dateTime().toPyDateTime()
+
+    @from_date.setter
+    def from_date(self, value):
+        self.from_datetimeedit.setDateTime(datestring_to_date(value))
+
+    @property
+    def to_date(self):
+        return self.to_datetimeedit.dateTime().toPyDateTime()
+
+    @to_date.setter
+    def to_date(self, value):
+        self.to_datetimeedit.setDateTime(datestring_to_date(value))

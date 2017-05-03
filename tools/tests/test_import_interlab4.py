@@ -49,7 +49,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestInterlab4Importer():
+class _TestInterlab4Importer():
     def setUp(self):
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
@@ -472,7 +472,7 @@ class TestInterlab4Importer():
         pass
 
 
-class TestInterlab4ImporterDB(object):
+class _TestInterlab4ImporterDB(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
     CRS_question = MockUsingReturnValue([3006])

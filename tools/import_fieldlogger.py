@@ -25,10 +25,10 @@ import ast
 import copy
 import io
 import os
+from Queue import Queue
 from collections import OrderedDict
 from datetime import datetime
 from functools import partial
-from Queue import Queue
 
 import PyQt4.QtCore
 import PyQt4.QtGui
@@ -38,8 +38,9 @@ import import_data_to_db
 import midvatten_utils as utils
 from date_utils import datestring_to_date, dateshift
 from definitions import midvatten_defs as defs
-from midvatten_utils import Cancel
 from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid
+from midvatten_utils import Cancel
+from tools.gui_utils import DateTimeFilter
 
 import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -613,55 +614,6 @@ class DateShiftQuestion(RowEntry):
         observation[u'date_time'] = dateshift(observation[u'date_time'], step, steplength)
 
         return observation
-
-
-class DateTimeFilter(RowEntry):
-    def __init__(self):
-        super(DateTimeFilter, self).__init__()
-        self.label = PyQt4.QtGui.QLabel(u'Import data from: ')
-        self.from_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'1900-01-01 00:00:00'))
-        self.from_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh-mm-ss')
-        self.label_to = PyQt4.QtGui.QLabel(u'to: ')
-        self.to_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'2099-12-31 23:59:59'))
-        self.to_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh-mm-ss')
-        #self.import_after_last_date = PyQt4.QtGui.QCheckBox(u"Import after latest date in database for each obsid")
-        for widget in [self.label, self.from_datetimeedit, self.label_to, self.to_datetimeedit]:
-            self.layout.addWidget(widget)
-        self.layout.addStretch()
-
-    def alter_data(self, observation):
-        observation = copy.deepcopy(observation)
-        _from = self.from_datetimeedit.dateTime().toPyDateTime()
-        _to = self.to_datetimeedit.dateTime().toPyDateTime()
-        if not _from and not _to:
-            return observation
-        if _from and _to:
-            if _from < observation[u'date_time'] < _to:
-                return observation
-        elif _from:
-            if _from < observation[u'date_time']:
-                return observation
-        elif _to:
-            if observation[u'date_time'] < _to:
-                return observation
-        return None
-
-
-    @property
-    def from_date(self):
-        return self.from_datetimeedit.dateTime().toPyDateTime()
-
-    @from_date.setter
-    def from_date(self, value):
-        self.from_datetimeedit.setDateTime(datestring_to_date(value))
-
-    @property
-    def to_date(self):
-        return self.to_datetimeedit.dateTime().toPyDateTime()
-
-    @to_date.setter
-    def to_date(self, value):
-        self.to_datetimeedit.setDateTime(datestring_to_date(value))
 
 
 class SublocationFilter(RowEntry):

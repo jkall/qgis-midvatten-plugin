@@ -219,6 +219,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
                                                                goal_table=goal_table))
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        importer.SanityCheckVacuumDB()
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.close()
 
     @staticmethod
