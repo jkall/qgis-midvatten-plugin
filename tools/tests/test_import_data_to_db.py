@@ -1842,22 +1842,6 @@ class TestGetForeignKeys(object):
             assert isinstance(v, (list, tuple))
 
 
-class TestFilterDatesFromFiledata(object):
-
-    def setUp(self):
-        self.importinstance = midv_data_importer()
-
-    def test_filter_dates_from_filedata(self):
-
-        file_data = [[u'obsid', u'date_time'], [u'rb1', u'2015-05-01 00:00:00'], [u'rb1', u'2016-05-01 00:00'], [u'rb2', u'2015-05-01 00:00:00'], [u'rb2', u'2016-05-01 00:00'], [u'rb3', u'2015-05-01 00:00:00'], [u'rb3', u'2016-05-01 00:00']]
-        obsid_last_imported_dates = {u'rb1': [(datestring_to_date(u'2016-01-01 00:00:00'),)], u'rb2': [(datestring_to_date(u'2017-01-01 00:00:00'),)]}
-        test_file_data = utils_for_tests.create_test_string(self.importinstance.filter_dates_from_filedata(file_data, obsid_last_imported_dates))
-
-        reference_file_data = u'''[[obsid, date_time], [rb1, 2016-05-01 00:00], [rb3, 2015-05-01 00:00:00], [rb3, 2016-05-01 00:00]]'''
-
-        assert test_file_data == reference_file_data
-
-
 class TestDeleteExistingDateTimesFromTemptable(object):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')

@@ -792,7 +792,7 @@ class midvatten:
                     importinstance = DiverofficeImport(self.iface.mainWindow(), self.ms)
                     importinstance.select_files_and_load_gui()
 
-                    if not importinstance.status=='True':
+                    if not importinstance.status:
                         self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
                     else:
                         try:

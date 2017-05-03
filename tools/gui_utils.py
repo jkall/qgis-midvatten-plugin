@@ -106,14 +106,17 @@ def get_line():
 
 
 class DateTimeFilter(RowEntry):
-    def __init__(self):
+    def __init__(self, calendar=False):
         super(DateTimeFilter, self).__init__()
         self.label = PyQt4.QtGui.QLabel(u'Import data from: ')
-        self.from_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'1900-01-01 00:00:00'))
+        self.from_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'1901-01-01 00:00:00'))
         self.from_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh-mm-ss')
         self.label_to = PyQt4.QtGui.QLabel(u'to: ')
         self.to_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'2099-12-31 23:59:59'))
         self.to_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh-mm-ss')
+        if calendar:
+            self.from_datetimeedit.setCalendarPopup(True)
+            self.to_datetimeedit.setCalendarPopup(True)
         #self.import_after_last_date = PyQt4.QtGui.QCheckBox(u"Import after latest date in database for each obsid")
         for widget in [self.label, self.from_datetimeedit, self.label_to, self.to_datetimeedit]:
             self.layout.addWidget(widget)
@@ -135,7 +138,6 @@ class DateTimeFilter(RowEntry):
             if observation[u'date_time'] < _to:
                 return observation
         return None
-
 
     @property
     def from_date(self):

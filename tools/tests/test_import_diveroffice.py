@@ -707,7 +707,8 @@ class TestWlvllogImportFromDiverofficeFiles(object):
         files = [(u'Location=rb1',
                 u'Date/time,Water head[cm],Temperature[°C]',
                 u'2016/03/15 10:30:00,1,10',
-                u'2016/03/15 11:00:00,11,101'),
+                u'2016/03/15 11:00:00,11,101',
+                u'2016/06/15 11:00:00,11,101'),
                 (u'Location=rb2',
                 u'Date/time,Water head[cm],Temperature[°C]',
                 u'2016/04/15 10:30:00,2,20',
@@ -754,3 +755,16 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                 test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
                 reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None)])'''
                 assert test_string == reference_string
+
+
+class TestFilterDatesFromFiledata(object):
+
+    def test_filter_dates_from_filedata(self):
+
+        file_data = [[u'obsid', u'date_time'], [u'rb1', u'2015-05-01 00:00:00'], [u'rb1', u'2016-05-01 00:00'], [u'rb2', u'2015-05-01 00:00:00'], [u'rb2', u'2016-05-01 00:00'], [u'rb3', u'2015-05-01 00:00:00'], [u'rb3', u'2016-05-01 00:00']]
+        obsid_last_imported_dates = {u'rb1': [(datestring_to_date(u'2016-01-01 00:00:00'),)], u'rb2': [(datestring_to_date(u'2017-01-01 00:00:00'),)]}
+        test_file_data = utils_for_tests.create_test_string(DiverofficeImport.filter_dates_from_filedata(file_data, obsid_last_imported_dates))
+
+        reference_file_data = u'''[[obsid, date_time], [rb1, 2016-05-01 00:00], [rb3, 2015-05-01 00:00:00], [rb3, 2016-05-01 00:00]]'''
+
+        assert test_file_data == reference_file_data

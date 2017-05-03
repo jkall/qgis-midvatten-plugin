@@ -62,10 +62,9 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             self.status = 'True'
             return u'cancel'
 
-        self.date_time_filter = DateTimeFilter()
-        self.date_time_filter.from_date = u'1901-01-01 00:00:00'
-        self.date_time_filter.to_date = u'2099-12-31 23:59:59'
+        self.date_time_filter = DateTimeFilter(calendar=True)
         self.add_row(self.date_time_filter.widget)
+
         self.add_row(get_line())
 
         self.skip_rows = CheckboxAndExplanation(u'Skip rows without water level',
@@ -92,11 +91,12 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
-        self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.files, self.skip_rows.checked, self.confirm_names.checked, self.import_all_data.checked, self.date_time_filter.from_date, self.date_time_filter.to_date))
+        self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(files=self.files, skip_rows_without_water_level=self.skip_rows.checked, confirm_names=self.confirm_names.checked, import_all_data=self.import_all_data.checked, from_date=self.date_time_filter.from_date, to_date=self.date_time_filter.to_date))
 
         self.gridLayout_buttons.setRowStretch(1, 1)
 
         self.show()
+
 
     def select_files(self):
         self.charsetchoosen = utils.ask_for_charset(default_charset='cp1252')
@@ -110,7 +110,6 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
     def start_import(self, files, skip_rows_without_water_level, confirm_names, import_all_data, from_date=None, to_date=None):
         """
         """
-
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
         parsed_files = []
         for selected_file in files:
@@ -151,6 +150,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             return Cancel()
         elif len(filename_location_obsid) < 2:
             utils.MessagebarAndLog.warning(bar_msg=u'Warning. All files were skipped, nothing imported!')
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return False
 
         filenames_obsid = dict([(x[0], x[2]) for x in filename_location_obsid[1:]])
@@ -170,16 +170,19 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         if len(file_to_import_to_db) < 2:
             utils.MessagebarAndLog.info(bar_msg=u'No new data existed in the files. Nothing imported.')
             self.status = 'True'
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return True
         importer = import_data_to_db.midv_data_importer()
         answer = importer.send_file_data_to_importer(file_to_import_to_db, partial(importer.general_csv_import, goal_table=u'w_levels_logger'))
         if isinstance(answer, Cancel):
             self.status = 'True'
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return answer
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         importer.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        self.close()
 
     @staticmethod
     def parse_diveroffice_file(path, charset, skip_rows_without_water_level=False, begindate=None, enddate=None):
@@ -347,8 +350,6 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         :param: a_widget:
         """
         self.main_vertical_layout.addWidget(a_widget)
-        self.vrowentry = VRowEntry()
-        self.date_time_filter = DateTimeFilter()
 
 
 class CheckboxAndExplanation(VRowEntry):
