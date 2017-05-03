@@ -33,7 +33,6 @@ import PyQt4.QtGui
 import import_data_to_db
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
-from export_fieldlogger import get_line
 from midvatten_utils import returnunicode, Cancel
 from gui_utils import RowEntry, VRowEntry, get_line
 

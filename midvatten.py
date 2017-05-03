@@ -777,13 +777,21 @@ class midvatten:
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:   
             if not (self.ms.settingsdict['database'] == ''):
-                longmessage = """You are about to import water head data, recorded with a\nLevel Logger (e.g. Diver)."""
-                longmessage +=u""".\nData is supposed to be imported from a diveroffice file where obsid is supplied as 'Location'.\nThe data is supposed to be semicolon or comma\nseparated . The header for the data should have columns:\n\nDate/time,Water head[cm],Temperature[°C]\nor\nDate/time,Water head[cm],Temperature[°C],1:Conductivity[mS/cm]\n\nColumn names are unimportant although column order is.\nAlso, date-time must have format yyyy/mm/dd hh:mm(:ss) and\nthe other columns must be real numbers with point(. or ,) as decimal separator and no separator for thousands.\nRemember to not use comma in the comment field!\n\nAlso, records where any fields are empty will be excluded from the report!\nThe charset is usually cp1252!\n\nContinue?"""
+                longmessage = (u"""You are about to import water head data, recorded with a Level Logger (e.g. Diver).\n""" +
+                               u"""Data is supposed to be imported from a diveroffice file and obsid will be read from the attribute 'Location'.\n""" +
+                               u"""The data is supposed to be semicolon or comma separated.\n""" +
+                               u"""The header for the data should have column Date/time and at least one of the columns:\n""" +
+                               u"""Water head[cm], Temperature[°C], Level[cm], Conductivity[mS/cm], 1:Conductivity[mS/cm], 2:Spec.cond.[mS/cm].\n\n""" +
+                               u"""The column order is unimportant but the column names are.\n""" +
+                               u"""The data columns must be real numbers with point (.) or comma (,) as decimal separator and no separator for thousands.\n""" +
+                               u"""The charset is usually cp1252!\n\n""" +
+                               u"""Continue?""")
                 sanity = utils.askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
                 if sanity.result == 1:
-                    from import_data_to_db import midv_data_importer
-                    importinstance = midv_data_importer()
-                    importinstance.wlvllogg_import_from_diveroffice_files()
+                    from import_diveroffice import DiverofficeImport
+                    importinstance = DiverofficeImport(self.iface.mainWindow(), self.ms)
+                    importinstance.select_files_and_load_gui()
+
                     if not importinstance.status=='True':
                         self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
                     else:

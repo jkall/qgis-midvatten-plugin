@@ -40,7 +40,7 @@ from date_utils import datestring_to_date, dateshift
 from definitions import midvatten_defs as defs
 from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid
 from midvatten_utils import Cancel
-from tools.gui_utils import DateTimeFilter
+from gui_utils import DateTimeFilter
 
 import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 

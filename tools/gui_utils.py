@@ -23,7 +23,7 @@ import PyQt4
 import copy
 
 from midvatten_utils import returnunicode
-from tools.date_utils import datestring_to_date
+from date_utils import datestring_to_date
 
 
 class SplitterWithHandel(PyQt4.QtGui.QSplitter):

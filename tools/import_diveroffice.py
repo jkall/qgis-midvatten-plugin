@@ -35,7 +35,6 @@ import PyQt4.QtGui
 import import_data_to_db
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
-from export_fieldlogger import get_line
 from midvatten_utils import returnunicode, Cancel
 from gui_utils import RowEntry, VRowEntry, get_line, DateTimeFilter
 from date_utils import find_date_format, datestring_to_date
@@ -52,7 +51,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         PyQt4.QtGui.QDialog.__init__(self, parent)
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
-        self.setWindowTitle("Csv import")  # Set the title for the dialog
+        self.setWindowTitle("Diveroffice import")  # Set the title for the dialog
         self.table_chooser = None
         self.file_data = None
         self.status = True
@@ -69,24 +68,26 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.add_row(self.date_time_filter.widget)
         self.add_row(get_line())
 
-        self.skip_rows = CheckboxAndExplanation(u'Skip rows without water level')
+        self.skip_rows = CheckboxAndExplanation(u'Skip rows without water level',
+                                                u'Checked = Rows without a value for columns Water head[cm] or Level[cm] will be skipped.')
         self.skip_rows.checked = True
         self.add_row(self.skip_rows.widget)
         self.add_row(get_line())
         self.confirm_names = CheckboxAndExplanation(u'Confirm each logger obsid before import',
-                                                    u'Otherwise the location attribute in the file will be matched (both\n' +
-                                                    u'original location and capitalized location) against obsids in the database.\n' +
-                                                    u'Obsid will be requested of the user if no match is found.')
+                                                    u'Checked = The obsid will be requested of the user for every file.\n\n' +
+                                                    u'Unchecked = the location attribute, both as is and capitalized, in the\n' +
+                                                    u'file will be matched against obsids in the database.\n\n' +
+                                                    u'In both case, obsid will be requested of the user if no match in the database is found.')
         self.confirm_names.checked = True
         self.add_row(self.confirm_names.widget)
         self.add_row(get_line())
         self.import_all_data = CheckboxAndExplanation(u'Import all data',
-                                                      u'Unchecked = only new data after the latest date in the database,\n' +
-                                                      u'for each observation point, will be imported.\n\n' +
                                                       u'Checked = any data not matching an exact datetime in the database\n' +
-                                                      u'for the corresponding obsid will be imported.)')
+                                                      u'for the corresponding obsid will be imported.\n\n'
+                                                      u'Unchecked = only new data after the latest date in the database,\n' +
+                                                      u'for each observation point, will be imported.')
         self.import_all_data.checked = False
-
+        self.add_row(self.import_all_data.widget)
 
 
         self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
@@ -206,6 +207,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
                                                  (u'Level[cm]', u'head_cm'),
                                                  (u'Temperature[°C]', u'temp_degc'),
                                                  (u'Conductivity[mS/cm]', u'cond_mscm'),
+                                                 (u'1:Conductivity[mS/cm]', u'cond_mscm'),
                                                  (u'2:Spec.cond.[mS/cm]', u'cond_mscm')])
 
         filedata = []
@@ -350,14 +352,17 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
 
 class CheckboxAndExplanation(VRowEntry):
-    def __init__(self, checkbox_label, explanation=u''):
+    def __init__(self, checkbox_label, explanation=None):
         super(CheckboxAndExplanation, self).__init__()
         self.checkbox = PyQt4.QtGui.QCheckBox(checkbox_label)
-        self.label = PyQt4.QtGui.QLabel(explanation)
+        self.layout.addWidget(self.checkbox)
+        self.label = PyQt4.QtGui.QLabel()
 
-        for widget in [self.checkbox, self.label]:
-            self.layout.addWidget(widget)
-        self.layout.addStretch()
+        if explanation:
+            self.label.setText(explanation)
+            self.layout.addWidget(self.label)
+
+        #self.layout.addStretch()
 
     @property
     def checked(self):
