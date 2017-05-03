@@ -974,14 +974,11 @@ def select_files(only_one_file=True, extension="csv (*.csv)"):
         dir = os.path.dirname(QgsProject.instance().readEntry("Midvatten","database")[0])
     except:
         dir = u''
-
     if only_one_file:
-        csvpath = QtGui.QFileDialog.getOpenFileName(parent=None, caption="Select File", directory=dir, filter=extension)
+        csvpath = [QtGui.QFileDialog.getOpenFileName(parent=None, caption="Select File", directory=dir, filter=extension)]
     else:
         csvpath = QtGui.QFileDialog.getOpenFileNames(parent=None, caption="Select Files", directory=dir, filter=extension)
-    if not isinstance(csvpath, (list, tuple)):
-        csvpath = [csvpath]
-    csvpath = [p for p in csvpath if p]
+    csvpath = [returnunicode(p) for p in csvpath if p]
     return csvpath
 
 def ask_for_charset(default_charset=None, msg=None):

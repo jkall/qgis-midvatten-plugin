@@ -475,9 +475,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = 'True'
             return u'cancel'
 
+        skip_rows_without_water_level = utils.askuser("YesNo", "Do you want to skip rows without water level?").result
+
         parsed_files = []
         for selected_file in files:
-            res = self.parse_diveroffice_file(path=selected_file, charset=self.charsetchoosen)
+            res = self.parse_diveroffice_file(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level)
             if res == u'cancel':
                 self.status = True
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -551,7 +553,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     @staticmethod
-    def parse_diveroffice_file(path, charset, begindate=None, enddate=None):
+    def parse_diveroffice_file(path, charset, skip_rows_without_water_level=False, begindate=None, enddate=None):
         """ Parses a diveroffice csv file into a string
 
         :param path: The file name
@@ -629,6 +631,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 log_msg=u"Warning, the file %s \ndid not have Water head[cm] as a header.\nMake sure its barocompensated!\nSupported headers are %s" % (
                 utils.returnunicode(path),
                 u', '.join(translation_dict_in_order.keys())))
+            if skip_rows_without_water_level:
+                return u'skip'
 
         new_header = [u'date_time', u'head_cm', u'temp_degc', u'cond_mscm']
         colnrs_to_import = [translated_header.index(x) if x in translated_header else None for x in new_header]
@@ -636,6 +640,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         date_col = colnrs_to_import[0]
         filedata.append(new_header)
 
+        errors = set()
+        skipped_rows = 0
         for row in data_rows[1:]:
             cols = row.split(delimiter)
             if len(cols) != nr_of_cols:
@@ -655,19 +661,28 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                     if date > enddate:
                         continue
 
+                if skip_rows_without_water_level:
+                    try:
+                        float(cols[translated_header.index(u'head_cm')].replace(u',', u'.'))
+                    except:
+                        skipped_rows += 1
+                        continue
+
                 printrow = [datetime.strftime(date,u'%Y-%m-%d %H:%M:%S')]
 
                 try:
-                    printrow.extend([str(float(cols[colnr].replace(u',', u'.')))
+                    printrow.extend([(str(float(cols[colnr].replace(u',', u'.'))) if cols[colnr] else u'')
                                      if colnr is not None else u''
                                      for colnr in colnrs_to_import if colnr != date_col])
                 except ValueError as e:
-                    print("parse_diveroffice_file error: %s"%str(e))
+                    errors.add("parse_diveroffice_file error: %s"%str(e))
                     continue
 
                 if any(printrow[1:]):
                     filedata.append(printrow)
-
+        if errors:
+           utils.MessagebarAndLog.warning(log_msg=u'Error messages while parsing file "%s":\n%s'%(path, u'\n'.join(errors)))
+        
         if len(filedata) < 2:
             return utils.ask_user_about_stopping("Failure, parsing failed for file " + path + "\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)")
 
@@ -710,7 +725,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
             utils.sql_alter_db('vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
 
 
 
