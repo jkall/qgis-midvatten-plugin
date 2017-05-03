@@ -146,7 +146,6 @@ class TestParseDiverofficeFile(object):
         reference_string = 'cancel'
         assert test_string == reference_string
 
-
     @mock.patch('import_data_to_db.utils.ask_user_about_stopping', utils_ask_user_about_stopping.get_v)
     def test_parse_diveroffice_file_different_separators_failed(self):
 
@@ -365,7 +364,10 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                             elif args[1].startswith(u'It is a strong recommendation'):
                                 mock_result.result = 0
                                 return mock_result
-                        mock_askuser.side_effect = side_effect
+                            elif args[1].startswith(u'Do you want to skip rows without water level?'):
+                                mock_result.result = 0
+                                return mock_result
+                            mock_askuser.side_effect = side_effect
 
                         self.importinstance.wlvllogg_import_from_diveroffice_files()
 
@@ -431,6 +433,9 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                                 mock_result.result = 1
                                 return mock_result
                             elif args[1].startswith(u'It is a strong recommendation'):
+                                mock_result.result = 0
+                                return mock_result
+                            elif args[1].startswith(u'Do you want to skip rows without water level?'):
                                 mock_result.result = 0
                                 return mock_result
 
@@ -504,6 +509,9 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                             elif args[1].startswith(u'It is a strong recommendation'):
                                 mock_result.result = 0
                                 return mock_result
+                            elif args[1].startswith(u'Do you want to skip rows without water level?'):
+                                mock_result.result = 0
+                                return mock_result
 
                         mock_askuser.side_effect = side_effect
 
@@ -565,11 +573,11 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     elif args[1].startswith(u'It is a strong recommendation'):
                         mock_result.result = 0
                         return mock_result
+                    elif args[1].startswith(u'Do you want to skip rows without water level?'):
+                        mock_result.result = 0
+                        return mock_result
 
                 mock_askuser.side_effect = side_effect
-
-
-
 
                 self.importinstance.wlvllogg_import_from_diveroffice_files()
 
@@ -628,6 +636,9 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                     elif args[1].startswith(u'It is a strong recommendation'):
                         mock_result.result = 0
                         return mock_result
+                    elif args[1].startswith(u'Do you want to skip rows without water level?'):
+                        mock_result.result = 0
+                        return mock_result
 
                 mock_askuser.side_effect = side_effect
 
@@ -639,6 +650,156 @@ class TestWlvllogImportFromDiverofficeFiles(object):
             test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
             reference_string = ur'''(True, [])'''
             assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_wlvllogg_import_from_diveroffice_files_skip_missing_water_level(self):
+        files = [(u'Location=rb1',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/03/15 10:30:00,1,10',
+                u'2016/03/15 11:00:00,,101'),
+                (u'Location=rb2',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/04/15 10:30:00,2,20',
+                u'2016/04/15 11:00:00,21,201'),
+                (u'Location=rb3',
+                u'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
+                u'2016/05/15 10:30:00,3,30,5',
+                u'2016/05/15 11:00:00,31,301,6')
+                 ]
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
+        utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
+
+        self.importinstance.charsetchoosen = u'utf-8'
+        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen) as f1:
+            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen) as f2:
+                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen) as f3:
+
+                    filenames = [f1, f2, f3]
+
+                    @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+                    @mock.patch('midvatten_utils.QgsProject.instance', TestWlvllogImportFromDiverofficeFiles.mock_dbpath.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch('import_data_to_db.utils.select_files')
+                    def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
+                        mock_notfoundquestion.return_value.answer = u'ok'
+                        mock_notfoundquestion.return_value.value = u'rb1'
+                        mock_notfoundquestion.return_value.reuse_column = u'location'
+                        mock_filenames.return_value = filenames
+                        mock_encoding.return_value = [u'utf-8']
+
+                        def side_effect(*args, **kwargs):
+                            mock_result = mock.MagicMock()
+                            if args[1].startswith(u'Do you want to confirm'):
+                                mock_result.result = 0
+                                return mock_result
+                                #mock_askuser.return_value.result.return_value = 0
+                            elif args[1].startswith(u'Do you want to import all'):
+                                mock_result.result = 1
+                                return mock_result
+                            elif args[1].startswith(u'Please note!\nForeign keys'):
+                                mock_result.result = 1
+                                return mock_result
+                            elif args[1].startswith(u'Please note!\nThere are'):
+                                mock_result.result = 1
+                                return mock_result
+                            elif args[1].startswith(u'It is a strong recommendation'):
+                                mock_result.result = 0
+                                return mock_result
+                            elif args[1].startswith(u'Do you want to skip rows without water level?'):
+                                mock_result.result = 1
+                                return mock_result
+
+                        mock_askuser.side_effect = side_effect
+
+                        self.importinstance.wlvllogg_import_from_diveroffice_files()
+
+                    _test_wlvllogg_import_from_diveroffice_files(self, filenames)
+
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
+                    assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_wlvllogg_import_from_diveroffice_files_not_skip_missing_water_level(self):
+        files = [(u'Location=rb1',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/03/15 10:30:00,1,10',
+                u'2016/03/15 11:00:00,,101'),
+                (u'Location=rb2',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/04/15 10:30:00,2,20',
+                u'2016/04/15 11:00:00,21,201'),
+                (u'Location=rb3',
+                u'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
+                u'2016/05/15 10:30:00,3,30,5',
+                u'2016/05/15 11:00:00,31,301,6')
+                 ]
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb3")''')
+        utils.sql_alter_db(u'''INSERT INTO w_levels_logger ("obsid", "date_time", "head_cm") VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
+
+        self.importinstance.charsetchoosen = u'utf-8'
+        with utils.tempinput(u'\n'.join(files[0]), self.importinstance.charsetchoosen) as f1:
+            with utils.tempinput(u'\n'.join(files[1]), self.importinstance.charsetchoosen) as f2:
+                with utils.tempinput(u'\n'.join(files[2]), self.importinstance.charsetchoosen) as f3:
+
+                    filenames = [f1, f2, f3]
+
+                    @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+                    @mock.patch('midvatten_utils.QgsProject.instance', TestWlvllogImportFromDiverofficeFiles.mock_dbpath.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch('import_data_to_db.utils.select_files')
+                    def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
+                        mock_notfoundquestion.return_value.answer = u'ok'
+                        mock_notfoundquestion.return_value.value = u'rb1'
+                        mock_notfoundquestion.return_value.reuse_column = u'location'
+                        mock_filenames.return_value = filenames
+                        mock_encoding.return_value = [u'utf-8']
+
+                        def side_effect(*args, **kwargs):
+                            mock_result = mock.MagicMock()
+                            if args[1].startswith(u'Do you want to confirm'):
+                                mock_result.result = 0
+                                return mock_result
+                                #mock_askuser.return_value.result.return_value = 0
+                            elif args[1].startswith(u'Do you want to import all'):
+                                mock_result.result = 1
+                                return mock_result
+                            elif args[1].startswith(u'Please note!\nForeign keys'):
+                                mock_result.result = 1
+                                return mock_result
+                            elif args[1].startswith(u'Please note!\nThere are'):
+                                mock_result.result = 1
+                                return mock_result
+                            elif args[1].startswith(u'It is a strong recommendation'):
+                                mock_result.result = 0
+                                return mock_result
+                            elif args[1].startswith(u'Do you want to skip rows without water level?'):
+                                mock_result.result = 0
+                                return mock_result
+
+                        mock_askuser.side_effect = side_effect
+
+                        self.importinstance.wlvllogg_import_from_diveroffice_files()
+
+                    _test_wlvllogg_import_from_diveroffice_files(self, filenames)
+
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, None, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
+                    assert test_string == reference_string
 
 
 class TestGeneralCsvImport(object):

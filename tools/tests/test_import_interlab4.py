@@ -541,7 +541,7 @@ class TestInterlab4ImporterDB(object):
                 mock_not_found_question.return_value.answer = u'ok'
                 mock_not_found_question.return_value.value = u'anobsid'
                 mock_not_found_question.return_value.reuse_column = u'obsid'
-                mock_filenames.return_value = filename
+                mock_filenames.return_value = [filename]
                 self.mock_iface = mock_iface
                 ms = MagicMock()
                 ms.settingsdict = OrderedDict()
