@@ -1157,7 +1157,7 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
 
         #Put the found similar values on top, but include all values in the database as well
         similar_values = find_similar(current_value, existing_values, hits=5)
-        similar_values.extend(sorted(existing_values))
+        similar_values.extend([x for x in sorted(existing_values) if x not in similar_values])
 
         msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nGive the ' + header_value + u' for:\n' + u'\n'.join([u': '.join((file_data[0][_colnr], word if word is not None else u'')) for _colnr, word in enumerate(row)])
         question = NotFoundQuestion(dialogtitle=u'WARNING',

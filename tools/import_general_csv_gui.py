@@ -33,7 +33,6 @@ import PyQt4.QtGui
 import import_data_to_db
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
-from export_fieldlogger import get_line
 from midvatten_utils import returnunicode, Cancel
 from gui_utils import RowEntry, VRowEntry, get_line
 
@@ -218,6 +217,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import,
                                                                goal_table=goal_table))
 
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        importer.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.close()
 
