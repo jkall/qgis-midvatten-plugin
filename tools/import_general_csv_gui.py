@@ -34,7 +34,7 @@ import import_data_to_db
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 from midvatten_utils import returnunicode, Cancel
-from gui_utils import RowEntry, VRowEntry, get_line, RowEntryGrid
+from gui_utils import RowEntry, VRowEntry, get_line, RowEntryGrid, set_combobox
 import date_utils
 
 import_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
@@ -84,12 +84,17 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         self.gridLayout_buttons.addWidget(get_line(), 3, 0)
 
+        self.distinct_value_browser = DistinctValuesBrowser(self.tables_columns, self.connect)
+        self.gridLayout_buttons.addWidget(self.distinct_value_browser.widget, 4, 0)
+
+        self.gridLayout_buttons.addWidget(get_line(), 5, 0)
+
         self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
-        self.gridLayout_buttons.addWidget(self.start_import_button, 4, 0)
+        self.gridLayout_buttons.addWidget(self.start_import_button, 6, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      self.start_import)
 
-        self.gridLayout_buttons.setRowStretch(5, 1)
+        self.gridLayout_buttons.setRowStretch(7, 1)
 
         self.show()
 
@@ -506,3 +511,83 @@ class StaticValue(object):
         return str(self.value)
 
 
+class DistinctValuesBrowser(VRowEntry):
+    def __init__(self, tables_columns_org, connect):
+        super(DistinctValuesBrowser, self).__init__()
+
+        self.browser_label = PyQt4.QtGui.QLabel(u'DB browser:')
+        self.table_label = PyQt4.QtGui.QLabel(u'Table')
+        self._table_list = PyQt4.QtGui.QComboBox()
+        self.column_label = PyQt4.QtGui.QLabel(u'Column')
+        self._column_list = PyQt4.QtGui.QComboBox()
+        self.distinct_value_label = PyQt4.QtGui.QLabel(u'Distinct values')
+        self._distinct_value = PyQt4.QtGui.QComboBox()
+        self._distinct_value.setEditable(True)
+
+        tables_columns = {}
+        for table, columns_tuple in tables_columns_org.iteritems():
+            for column in columns_tuple:
+                tables_columns.setdefault(table, []).append(column[1])
+
+        self._table_list.addItem(u'')
+        self._table_list.addItems(sorted(tables_columns.keys()))
+
+        connect(self._table_list, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self.replace_items(self._column_list, tables_columns.get(self.table_list, [])))
+        connect(self._column_list, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self.replace_items(self._distinct_value, self.get_distinct_values(self.table_list, self.column_list)))
+
+
+        for widget in [self.browser_label, self.table_label, self._table_list,
+                       self.column_label, self._column_list, self.distinct_value_label,
+                       self._distinct_value]:
+            self.layout.addWidget(widget)
+
+    @staticmethod
+    def get_distinct_values(tablename, columnname):
+        if not tablename or not columnname:
+            return []
+        sql = '''SELECT distinct "%s" from "%s"''' % (
+        columnname, tablename)
+        connection_ok, result = utils.sql_load_fr_db(sql)
+
+        if not connection_ok:
+            textstring = u"""Cannot get data from sql """ + utils.returnunicode(
+                sql)
+            utils.MessagebarAndLog.critical(
+                bar_msg=u"Error, sql failed, see log message panel",
+                log_msg=textstring)
+            return []
+
+        values = [col[0] for col in result]
+        return values
+
+    @staticmethod
+    def replace_items(combobox, items):
+        combobox.clear()
+        combobox.addItem(u'')
+        combobox.addItems(items)
+
+    @property
+    def table_list(self):
+        return utils.returnunicode(self._table_list.currentText())
+
+    @table_list.setter
+    def table_list(self, value):
+        set_combobox(self._table_list, value)
+
+    @property
+    def column_list(self):
+        return utils.returnunicode(self._column_list.currentText())
+
+    @column_list.setter
+    def column_list(self, value):
+        set_combobox(self._column_list, value)
+
+    @property
+    def distinct_value(self):
+        return utils.returnunicode(self._distinct_value.currentText())
+
+    @distinct_value.setter
+    def distinct_value(self, value):
+        set_combobox(self._distinct_value, value)

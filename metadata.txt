@@ -22,6 +22,7 @@ changelog=
         Version 1.3.32
         - Csv import: Added possibility to import static values.
         - Csv import: Conversion of dates in column date_time to formats better supported in plugin.
+        - Csv import: Database browser for distinct values.
         Version 1.3.31
         - filter_nonexisting_values_and_ask: Existing values in list now only appears once.
         Version 1.3.30

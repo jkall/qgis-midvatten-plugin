@@ -26,9 +26,8 @@ from collections import OrderedDict
 
 import definitions.midvatten_defs as defs
 import midvatten_utils as utils
-from gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit, get_line
+from gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit, get_line, set_combobox
 from midvatten_utils import returnunicode
-
 
 export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 parameter_browser_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'fieldlogger_parameter_browser.ui'))[0]
@@ -724,16 +723,6 @@ class MessageBar(qgis.gui.QgsMessageBar):
     def popWidget(self, QgsMessageBarItem=None):
         self.setParent(0)
         self.hide()
-
-
-def set_combobox(combobox, value):
-    index = combobox.findText(returnunicode(value))
-    if index != -1:
-        combobox.setCurrentIndex(index)
-    else:
-        combobox.addItem(returnunicode(value))
-        index = combobox.findText(returnunicode(value))
-        combobox.setCurrentIndex(index)
 
 
 
