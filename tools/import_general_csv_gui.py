@@ -34,7 +34,8 @@ import import_data_to_db
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 from midvatten_utils import returnunicode, Cancel
-from gui_utils import RowEntry, VRowEntry, get_line
+from gui_utils import RowEntry, VRowEntry, get_line, RowEntryGrid
+import date_utils
 
 import_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -57,7 +58,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.tables_columns = {k: v for (k, v) in defs.tables_columns().iteritems() if not k.endswith(u'_geom')}
         self.table_chooser = ImportTableChooser(self.tables_columns, self.connect, file_header=None)
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
-        self.add_line(self.main_vertical_layout)
+        self.main_vertical_layout.addStretch()
         #General buttons
         self.select_file_button = PyQt4.QtGui.QPushButton(u'Load data from file')
         self.gridLayout_buttons.addWidget(self.select_file_button, 0, 0)
@@ -180,28 +181,40 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         else:
             foreign_key_obsid_table = goal_table
 
-        #Check if obsid should be set from selection and add an obsid-column if so.
         for file_column in translation_dict.keys():
+            alter_colnames = []
+            new_value = None
+            # Check if obsid should be set from selection and add an obsid-column if so.
             if isinstance(file_column, Obsids_from_selection):
                 selected = utils.get_selected_features_as_tuple()
                 if len(selected) != 1:
                     utils.MessagebarAndLog.critical(bar_msg=u'Import error, must select 1 obsid', duration=60)
                     return u'cancel'
-                try:
-                    obsidindex = file_data[0].index(u'obsid')
-                except ValueError:
-                    obsidindex = len(file_data[0])
-                    file_data[0].append(u'obsid')
+                alter_colnames = [u'obsid']
+                new_value = selected[0]
+            elif isinstance(file_column, StaticValue):
+                if translation_dict[file_column]:
+                    alter_colnames = translation_dict[file_column]
+                    new_value = file_column.value
 
-                for row in file_data[1:]:
-                    if obsidindex + 1 < len(file_data[0]):
-                        row[obsidindex] = selected[0]
-                    else:
-                        row.append(selected[0])
+            for alter_colname in alter_colnames:
+                if alter_colnames is not None and new_value is not None:
+                    try:
+                        colindex = file_data[0].index(alter_colname)
+                    except ValueError:
+                        colindex = len(file_data[0])
+                        file_data[0].append(alter_colname)
 
-                #[row.insert(obsidindex, selected[0]) if obsidindex + 1 < len(file_data[0]) else row.append(selected[0]) for row in file_data[1:]]
-                del translation_dict[file_column]
-                translation_dict[u'obsid'] = [u'obsid']
+                    for row in file_data[1:]:
+                        if colindex + 1 < len(file_data[0]):
+                            row[colindex] = new_value
+                        else:
+                            row.append(new_value)
+
+                    #[row.insert(obsidindex, selected[0]) if obsidindex + 1 < len(file_data[0]) else row.append(selected[0]) for row in file_data[1:]]
+                    del translation_dict[file_column]
+
+                    translation_dict[alter_colname] = [alter_colname]
 
         #Translate column names and add columns that appear more than once
         file_data = self.translate_and_reorder_file_data(file_data, translation_dict)
@@ -212,6 +225,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
         if file_data == u'cancel':
             return file_data
+
+        file_data = self.reformat_date_time(file_data)
 
         importer = import_data_to_db.midv_data_importer()
         importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import,
@@ -234,14 +249,6 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             raise IndexError(u'Import error on row number %s:\n%s'%(str(rownr + 1), u'\n'.join([u': '.join(x) for x in zip(file_data[0], row)])))
 
         return new_file_data
-
-        outerlist = []
-        for row in file_data[1:]:
-            innerlist = []
-            for file_column, db_columns in sorted(translation_dict.iteritems()):
-                for db_column in sorted(db_columns):
-                    innerlist.append(row[file_column_index[file_column]])
-            outerlist.append(innerlist)
 
     def add_line(self, layout=None):
         """ just adds a line"""
@@ -272,6 +279,16 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         file_data = [[col.replace(u',', u'.') if colnr in colnrs_to_convert and rownr > 0 else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
         return file_data
 
+    @staticmethod
+    def reformat_date_time(file_data):
+        try:
+            colnrs_to_convert = [file_data[0].index(u'date_time')]
+        except ValueError:
+            return file_data
+        else:
+            file_data = [[date_utils.reformat_date_time(col) if colnr in colnrs_to_convert and rownr > 0 else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
+            return file_data
+
 
 class ImportTableChooser(VRowEntry):
     def __init__(self, tables_columns, connect, file_header=None):
@@ -279,7 +296,6 @@ class ImportTableChooser(VRowEntry):
         self.connect = connect
         self.tables_columns = tables_columns
         self.file_header = file_header
-        self.columns_widgets = []
         self.columns = []
 
         chooser = RowEntry()
@@ -305,7 +321,7 @@ class ImportTableChooser(VRowEntry):
 
         self.layout.addWidget(self.specific_info_widget.widget)
 
-        self.layout.addStretch() #insertStretch(-1, 0)
+        self.layout.insertStretch(-1, 2)
 
     def get_translation_dict(self):
         translation_dict = {}
@@ -349,33 +365,34 @@ class ImportTableChooser(VRowEntry):
 
         #Remove stretch
         self.layout.takeAt(-1)
-        for widget in self.columns_widgets:
-            try:
-                widget.clear_widgets()
-            except:
-                pass
-            try:
-                self.layout.removeWidget(widget)
-            except:
-                pass
-            try:
-                widget.close()
-            except:
-                pass
-        self.columns_widgets = []
+
+        try:
+            self.layout.removeWidget(self.grid.widget)
+            self.grid.widget.close()
+        except:
+            pass
+
         self.columns = []
 
         if not import_method_name:
-            self.layout.addStretch()
+            self.layout.insertStretch(-1, 2)
             return None
+
+        self.grid = RowEntryGrid()
+        self.layout.addWidget(self.grid.widget)
+
+        self.grid.layout.addWidget(PyQt4.QtGui.QLabel(u'Column name'), 0, 0)
+        self.grid.layout.addWidget(PyQt4.QtGui.QLabel(u'File column'), 0, 1)
+        self.grid.layout.addWidget(PyQt4.QtGui.QLabel(u'Static value'), 0, 2)
 
         for index, tables_columns_info in enumerate(sorted(tables_columns[import_method_name], key=itemgetter(0))):
             column = ColumnEntry(tables_columns_info, file_header, self.connect)
-            self.layout.addWidget(column.widget)
-            self.columns_widgets.append(column.widget)
+            rownr = self.grid.layout.rowCount()
+            for colnr, wid in enumerate(column.column_widgets):
+                self.grid.layout.addWidget(wid, rownr, colnr)
             self.columns.append(column)
 
-        self.layout.addStretch()
+        self.layout.insertStretch(-1, 2)
 
     def reload(self):
         import_method = self.import_method
@@ -383,12 +400,12 @@ class ImportTableChooser(VRowEntry):
         self.import_method = import_method
 
 
-class ColumnEntry(RowEntry):
+class ColumnEntry(object):
     def __init__(self, tables_columns_info, file_header, connect):
-        super(ColumnEntry, self).__init__()
         self.tables_columns_info = tables_columns_info
         self.connect = connect
         self.obsids_from_selection = None
+        self.file_header = file_header
 
         self.db_column = tables_columns_info[1]
         column_type = tables_columns_info[2]
@@ -398,26 +415,39 @@ class ColumnEntry(RowEntry):
                                       u'primary key' if pk else False] if _x])
         label = PyQt4.QtGui.QLabel(u' '.join([u'Column ', self.db_column, u'({})'.format(concatted_info)]))
 
-        self.combobox = PyQt4.QtGui.QComboBox()
-        self.combobox.addItem(u'')
-        self.combobox.addItems(sorted(file_header, key=lambda s: s.lower()))
+        self.column_widgets = [label]
+        self._all_widgets = [label]
 
-        self.layout.addWidget(label)
+        self.combobox = PyQt4.QtGui.QComboBox()
+        self.combobox.setEditable(True)
+        self.combobox.addItem(u'')
+        self.combobox.addItems(sorted(self.file_header, key=lambda s: s.lower()))
+
 
         if self.db_column == u'obsid':
             self.obsids_from_selection = PyQt4.QtGui.QCheckBox(u'Obsid from qgis selection')
             self.obsids_from_selection.setToolTip(u'Select 1 obsid from obs_points or obs_lines attribute table or map.')
-            self.connect(self.obsids_from_selection, PyQt4.QtCore.SIGNAL("clicked()"),
-                         lambda : self.combobox.setEnabled(True if not self.obsids_from_selection.isChecked() else False))
-            self.widgets = [label, self.obsids_from_selection, self.combobox]
-            self.layout.addWidget(self.obsids_from_selection)
+            self.connect(self.obsids_from_selection, PyQt4.QtCore.SIGNAL("clicked()"), self.obsids_from_selection_checked)
+
+            self.obsid_widget = RowEntry()
+            self.obsid_widget.layout.addWidget(self.obsids_from_selection)
+            self.obsid_widget.layout.addWidget(self.combobox)
+
+            self._all_widgets.extend([self.obsids_from_selection, self.combobox, self.obsid_widget.widget])
+
+            self.column_widgets.append(self.obsid_widget.widget)
         else:
-            self.widgets = [label, self.combobox]
+            self.column_widgets.append(self.combobox)
+            self._all_widgets.extend(self.column_widgets)
+
+        self.static_checkbox = PyQt4.QtGui.QCheckBox()
+        self.column_widgets.append(self.static_checkbox)
+        self._all_widgets.append(self.static_checkbox)
+
+        self.connect(self.static_checkbox, PyQt4.QtCore.SIGNAL("clicked()"), self.static_checkbox_checked)
 
         #This line prefills the columns if the header names matches the database column names
         self.file_column_name = self.db_column
-
-        self.layout.addWidget(self.combobox)
 
     @property
     def file_column_name(self):
@@ -426,22 +456,40 @@ class ColumnEntry(RowEntry):
                 return Obsids_from_selection()
 
         selected = returnunicode(self.combobox.currentText())
+        if self.static_checkbox.isChecked():
+            selected = StaticValue(returnunicode(self.combobox.currentText()))
+
         if self.notnull and not selected:
             utils.MessagebarAndLog.critical(bar_msg=u'Import error, the column ' + self.db_column + u' must have a value', duration=999)
+            return Cancel()
+
+        if selected and not self.static_checkbox.isChecked() and selected not in self.file_header:
+            utils.MessagebarAndLog.critical(bar_msg=u'Import error, the chosen file column for the column ' + self.db_column + u' did not exist in the file header.', duration=999)
             return Cancel()
         else:
             return selected
 
     @file_column_name.setter
     def file_column_name(self, value):
-        index = self.combobox.findText(utils.returnunicode(value))
-        if index != -1:
-            self.combobox.setCurrentIndex(index)
+        if self.static_checkbox.isChecked():
+            self.combobox.setEditText(value)
+        else:
+            index = self.combobox.findText(utils.returnunicode(value))
+            if index != -1:
+                self.combobox.setCurrentIndex(index)
 
-    def clear_widgets(self):
-        for widget in self.widgets:
-            self.layout.removeWidget(widget)
-            widget.close()
+    def obsids_from_selection_checked(self):
+        if self.obsids_from_selection.isChecked():
+            self.combobox.setEnabled(False)
+            self.static_checkbox.setChecked(False)
+        else:
+            self.combobox.setEnabled(True)
+
+    def static_checkbox_checked(self):
+        if self.static_checkbox.isChecked():
+            self.combobox.setEnabled(True)
+            if isinstance(self.obsids_from_selection, PyQt4.QtGui.QCheckBox):
+                self.obsids_from_selection.setChecked(False)
 
 
 class Obsids_from_selection(object):
@@ -449,5 +497,12 @@ class Obsids_from_selection(object):
         pass
 
 
+class StaticValue(object):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return str(self.value)
+    def __repr__(self):
+        return str(self.value)
 
 
