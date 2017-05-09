@@ -226,6 +226,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         file_data = self.convert_comma_to_points_for_double_columns(file_data, self.tables_columns[goal_table])
 
+        file_data = self.remove_preceding_trailing_spaces_tabs(file_data)
+
         if foreign_key_obsid_table and foreign_key_obsid_table != goal_table and u'obsid' in file_data[0]:
             file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
         if file_data == u'cancel':
@@ -293,6 +295,11 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         else:
             file_data = [[date_utils.reformat_date_time(col) if colnr in colnrs_to_convert and rownr > 0 else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
             return file_data
+
+    @staticmethod
+    def remove_preceding_trailing_spaces_tabs(file_data):
+        file_data = [[col.lstrip().rstrip() if rownr > 0 else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
+        return file_data
 
 
 class ImportTableChooser(VRowEntry):
