@@ -24,6 +24,7 @@ import copy
 
 from midvatten_utils import returnunicode
 from date_utils import datestring_to_date
+from midvatten_utils import returnunicode
 
 
 class SplitterWithHandel(PyQt4.QtGui.QSplitter):
@@ -154,3 +155,13 @@ class DateTimeFilter(RowEntry):
     @to_date.setter
     def to_date(self, value):
         self.to_datetimeedit.setDateTime(datestring_to_date(value))
+
+
+def set_combobox(combobox, value):
+    index = combobox.findText(returnunicode(value))
+    if index != -1:
+        combobox.setCurrentIndex(index)
+    else:
+        combobox.addItem(returnunicode(value))
+        index = combobox.findText(returnunicode(value))
+        combobox.setCurrentIndex(index)

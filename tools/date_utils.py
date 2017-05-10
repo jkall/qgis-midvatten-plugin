@@ -43,7 +43,9 @@ def find_date_format(datestring):
     date_formats_to_try = [u'%Y/%m/%d %H:%M:%S', u'%Y-%m-%d %H:%M:%S',
                            u'%Y%m%d %H:%M:%S', u'%Y-%m-%d %H:%M', u'%Y%m%d',
                            u'%Y-%m-%d', u'%d-%m-%Y', u'%H:%M:%S', u'%d-%m-%Y %H:%M:%S',
-                           u'%d-%m-%Y %H:%M', u'%d-%m-%Y %H']
+                           u'%d-%m-%Y %H:%M', u'%d-%m-%Y %H', u'%Y/%m/%d %H:%M',
+                           u'%Y/%m/%d %H', u'%Y%m%d %H%M%S', u'%Y%m%d %H%M',
+                           u'%Y%m%d %H']
     found_format = None
     for dateformat in date_formats_to_try:
         try:
@@ -142,3 +144,14 @@ def long_dateformat(astring):
 
 def date_to_epoch(astring):
     return datestring_to_date(astring) - datetime.datetime(1970, 1, 1)
+
+def reformat_date_time(astring):
+    date_format = find_date_format(astring)
+    if date_format is None:
+        return None
+
+    date = u'-'.join([u'%{}'.format(letter) for letter in [u'Y', u'm', u'd'] if letter in date_format])
+    time = u':'.join([u'%{}'.format(letter) for letter in [u'H', u'M', u'S'] if letter in date_format])
+    outformat = u' '.join([date, time])
+    new_datestring = datetime.datetime.strftime(datetime.datetime.strptime(astring, date_format), outformat)
+    return new_datestring
