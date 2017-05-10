@@ -98,6 +98,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         self.show()
 
+    @utils.waiting_cursor
     def load_files(self):
         charset = utils.ask_for_charset()
         if not charset:
@@ -110,7 +111,9 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         else:
             filename = filename
         filename = returnunicode(filename)
+
         delimiter = utils.get_delimiter(filename=filename, charset=charset, delimiters=[u',', u';'])
+
         if isinstance(delimiter, Cancel):
             return delimiter
         self.file_data = self.file_to_list(filename, charset, delimiter)
@@ -143,6 +146,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             file_data = [rawrow.rstrip(u'\n').rstrip(u'\r').split(delimiter) for rawrow in f if rawrow.strip()]
         return file_data
 
+    @utils.waiting_cursor
     def load_from_active_layer(self, only_selected=False):
         self.file_data = None
         self.table_chooser.file_header = None
@@ -453,6 +457,7 @@ class ColumnEntry(object):
             self._all_widgets.extend(self.column_widgets)
 
         self.static_checkbox = PyQt4.QtGui.QCheckBox()
+        self.static_checkbox.setToolTip(u'The supplied string will be written to the current column name for all\nimported rows instead of being read from file column.')
         self.column_widgets.append(self.static_checkbox)
         self._all_widgets.append(self.static_checkbox)
 
