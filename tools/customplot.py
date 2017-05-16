@@ -314,21 +314,15 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
         if pandas_calc and FlagTimeXY == "time":
             if pandas_calc.use_pandas():
-                df = pd.DataFrame(table2.values, index=[datestring_to_date(x) for x in table2.date_time])
-                df.index.name = u'date_time'
+                df = pd.DataFrame.from_records(table2, columns=[u'values'], exclude=[u'date_time'])
+                df.set_index(pd.DatetimeIndex(table2.date_time, name=u'date_time'), inplace=True)
                 df.columns = [u'values']
 
                 df = pandas_calc.calculate(df)
                 if df is not None:
-                    date_time = [datetime.datetime.strftime(x, u'%Y-%m-%d %H:%M:%S') for x in df.index]
-                    values = df[u'values']
-                    new_recs = zip(date_time, values)
-
-                    table = np.array(new_recs, dtype=My_format)  # NDARRAY
+                    table = np.array(zip(df.index, df[u'values']), dtype=My_format)
                     table2 = table.view(np.recarray)  # RECARRAY transform the 2 cols into callable objects
-                    myTimestring = list(table2.date_time)
-                    numtime = datestr2num(myTimestring)  # conv list of strings to numpy.ndarray of floats
-
+                    numtime = table2.date_time
                 else:
                     utils.MessagebarAndLog.info(bar_msg=u"Pandas calculate failed.")
 
