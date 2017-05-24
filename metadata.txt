@@ -21,6 +21,7 @@ deprecated=False
 changelog=
         Version 1.3.33
         - Customplot: Much faster pandas calculations.
+        - Better names for some features.
         Version 1.3.32
         - Csv import: Added possibility to import static values.
         - Csv import: Conversion of dates in column date_time to formats better supported in plugin.
