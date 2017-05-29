@@ -4,7 +4,7 @@ name=Midvatten
 qgisMinimumVersion=2.4
 qgisMaximumVersion=2.98
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.3.33
+version=Version 1.4
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 
@@ -19,6 +19,21 @@ experimental=False
 deprecated=False
 
 changelog=
+        Version 1.4, a short summary of the most important changes since version 1.3.3:
+        - Database: Table w_qual_field: new column depth replaces column flow_lmp. Column depth is assumed to be the depth from which the measured or sampled water was extracted.
+        - Database: Table comments: New table to store any type of comment for obsids.
+        - Database: A couple of new data domain tables (zz_tables)
+        - Database: Hard coded plot settings like colors migrated to zz_tables (ex: zz_capacity_plots, zz_stratigraphy_plots)
+        - Database: Automatically updated geometries and east-north fields in obs_points: Database triggers in table obs_points keeps the geometries and east and north field synced.
+        - General csv import: New feature for importing csv-files or QGis vector layers into any of the database table. This feature removes the need for separate import features for each table. The older import features remain but will be removed in future versions.
+        - Diveroffice import: New feature for importing files from diver office (useful for importing many diveroffice files at once instead of only one at the time).
+        - Interlab4 import: New feature for importing files using interlab4 format (some Swedish labs use this format).
+        - FieldLogger import: New feature for importing files using the Fieldlogger (Android/ios app) output format.
+        - Fieldlogger Export: New feature for creating input files for FieldLogger (Android/ios app). Very useful when making field measurements.
+        - Calcultate logger w level from logger water head: Many new features to speed ut the process of calculating the logger position (and thus calculating level above sea level from logger head).
+        - Custom plot: New features for adjusting the plots (remove mean, apply factor, apply offset) and features only appearing if python pandas is correctly installed (resampling and rolling mean)
+        - Custom plot: The built in matplotlib "Edit curves lines and axes parameters" can now be used (clicking _Redraw_ button fixes the axes and lables).
+        - plot stratigraphy: Stratigraphy units, plot color and symbols are now editable by the user, so is also the water capacity (by making changes in the tables zz_capacity_plots and zz_stratigraphy_plots)
         Version 1.3.33
         - Customplot: Much faster pandas calculations.
         - Better names for some features.
