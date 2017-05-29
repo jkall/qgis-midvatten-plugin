@@ -43,7 +43,7 @@ from midvatten_utils import Cancel
 from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid, VRowEntry, ExtendedQPlainTextEdit
 
 
-import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
+import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_interlab4.ui'))[0]
 
 class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
     def __init__(self, parent, msettings=None):
@@ -54,6 +54,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         PyQt4.QtGui.QDialog.__init__(self, parent)
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setWindowTitle("Import interlab4 data to w_qual_lab table") # Set the title for the dialog
+        #self.MainWindow.setWindowTitle("Import interlab4 data to w_qual_lab table")
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.status = True
 
