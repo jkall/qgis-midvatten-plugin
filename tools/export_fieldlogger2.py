@@ -589,7 +589,11 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
     def replace_items(combobox, items):
         combobox.clear()
         combobox.addItem(u'')
-        combobox.addItems(items)
+        try:
+            combobox.addItems(items)
+        except TypeError:
+            for item in items:
+                combobox.addItem(item)
 
     def get_settings(self):
         if not self.input_field_list:
