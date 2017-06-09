@@ -731,6 +731,349 @@ class _TestGeneralCsvGui(object):
                     reference_string = u'''(True, [(rb1, inst1, precip, 2016-03-15 10:30:00, 5.0, 5.0, cm(H2O), None)])'''
                     assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_import_w_levels_comma_decimal_separator(self):
+        file = [u'obsid;date_time;meas',
+                 u'rb1;2016-03-15 10:30:00;5,0']
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+                    utils_askuser_answer_no_obj.result = 0
+                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+                    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+
+                        mock_filename.return_value = filename
+                        mock_encoding.return_value = [u'utf-8', True]
+
+                        def side_effect(*args, **kwargs):
+                            mock_result = mock.MagicMock()
+                            if u'msg' in kwargs:
+                                if kwargs[u'msg'].startswith(u'Does the file contain a header?'):
+                                    mock_result.result = 1
+                                    return mock_result
+                            if len(args) > 1:
+                                if args[1].startswith(u'Do you want to confirm'):
+                                    mock_result.result = 0
+                                    return mock_result
+                                    #mock_askuser.return_value.result.return_value = 0
+                                elif args[1].startswith(u'Do you want to import all'):
+                                    mock_result.result = 0
+                                    return mock_result
+                                elif args[1].startswith(u'Please note!\nForeign keys'):
+                                    mock_result.result = 1
+                                    return mock_result
+                                elif args[1].startswith(u'Please note!\nThere are'):
+                                    mock_result.result = 1
+                                    return mock_result
+                                elif args[1].startswith(u'It is a strong recommendation'):
+                                    mock_result.result = 0
+                                    return mock_result
+                        mock_askuser.side_effect = side_effect
+
+                        ms = MagicMock()
+                        ms.settingsdict = OrderedDict()
+                        importer = GeneralCsvImportGui(self.iface.mainWindow(), ms)
+                        importer.load_gui()
+
+                        importer.load_files()
+                        importer.table_chooser.import_method = u'w_levels'
+
+                        for column in importer.table_chooser.columns:
+                            names = {u'obsid': u'obsid', u'date_time': u'date_time', u'meas': u'meas'}
+                            if column.db_column in names:
+                                column.file_column_name = names[column.db_column]
+
+                        importer.start_import()
+
+                    _test(self, filename)
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
+                    assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_import_w_levels_convert_comma_to_point(self):
+        file = [u'obsid;date_time;meas',
+                 u'rb1;2016-03-15 10:30:00;5,0']
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+                    utils_askuser_answer_no_obj.result = 0
+                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+                    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+
+                        mock_filename.return_value = filename
+                        mock_encoding.return_value = [u'utf-8', True]
+
+                        def side_effect(*args, **kwargs):
+                            mock_result = mock.MagicMock()
+                            if u'msg' in kwargs:
+                                if kwargs[u'msg'].startswith(u'Does the file contain a header?'):
+                                    mock_result.result = 1
+                                    return mock_result
+                            if len(args) > 1:
+                                if args[1].startswith(u'Do you want to confirm'):
+                                    mock_result.result = 0
+                                    return mock_result
+                                    #mock_askuser.return_value.result.return_value = 0
+                                elif args[1].startswith(u'Do you want to import all'):
+                                    mock_result.result = 0
+                                    return mock_result
+                                elif args[1].startswith(u'Please note!\nForeign keys'):
+                                    mock_result.result = 1
+                                    return mock_result
+                                elif args[1].startswith(u'Please note!\nThere are'):
+                                    mock_result.result = 1
+                                    return mock_result
+                                elif args[1].startswith(u'It is a strong recommendation'):
+                                    mock_result.result = 0
+                                    return mock_result
+                        mock_askuser.side_effect = side_effect
+
+                        ms = MagicMock()
+                        ms.settingsdict = OrderedDict()
+                        importer = GeneralCsvImportGui(self.iface.mainWindow(), ms)
+                        importer.load_gui()
+
+                        importer.load_files()
+                        importer.table_chooser.import_method = u'w_levels'
+
+                        for column in importer.table_chooser.columns:
+                            names = {u'obsid': u'obsid', u'date_time': u'date_time', u'meas': u'meas'}
+                            if column.db_column in names:
+                                column.file_column_name = names[column.db_column]
+
+                        importer.start_import()
+
+                    _test(self, filename)
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
+                    assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_import_w_levels_static_value(self):
+        file = [u'obsid,date_time,meas',
+                 u'rb1,2016-03-15 10:30:00,5.0']
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+                    utils_askuser_answer_no_obj.result = 0
+                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+                    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+
+                        mock_filename.return_value = filename
+                        mock_encoding.return_value = [u'utf-8', True]
+
+                        def side_effect(*args, **kwargs):
+                            mock_result = mock.MagicMock()
+                            if u'msg' in kwargs:
+                                if kwargs[u'msg'].startswith(u'Does the file contain a header?'):
+                                    mock_result.result = 1
+                                    return mock_result
+                            if len(args) > 1:
+                                if args[1].startswith(u'Do you want to confirm'):
+                                    mock_result.result = 0
+                                    return mock_result
+                                    #mock_askuser.return_value.result.return_value = 0
+                                elif args[1].startswith(u'Do you want to import all'):
+                                    mock_result.result = 0
+                                    return mock_result
+                                elif args[1].startswith(u'Please note!\nForeign keys'):
+                                    mock_result.result = 1
+                                    return mock_result
+                                elif args[1].startswith(u'Please note!\nThere are'):
+                                    mock_result.result = 1
+                                    return mock_result
+                                elif args[1].startswith(u'It is a strong recommendation'):
+                                    mock_result.result = 0
+                                    return mock_result
+                        mock_askuser.side_effect = side_effect
+
+                        ms = MagicMock()
+                        ms.settingsdict = OrderedDict()
+                        importer = GeneralCsvImportGui(self.iface.mainWindow(), ms)
+                        importer.load_gui()
+
+                        importer.load_files()
+                        importer.table_chooser.import_method = u'w_levels'
+
+                        for column in importer.table_chooser.columns:
+                            names = {u'obsid': u'obsid', u'date_time': u'date_time', u'meas': u'meas', u'comment': u'a comment' }
+                            if column.db_column in names:
+                                if column.db_column == u'comment':
+                                    column.static_checkbox.setChecked(True)
+                                column.file_column_name = names[column.db_column]
+
+
+                        importer.start_import()
+
+                    _test(self, filename)
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, a comment)])'''
+                    assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_import_w_levels_slash_in_date_time(self):
+        file = [u'obsid,date_time,meas',
+                 u'rb1,2016/03/15 10:30,5.0']
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+                    utils_askuser_answer_no_obj.result = 0
+                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+                    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+
+                        mock_filename.return_value = filename
+                        mock_encoding.return_value = [u'utf-8', True]
+
+                        def side_effect(*args, **kwargs):
+                            mock_result = mock.MagicMock()
+                            if u'msg' in kwargs:
+                                if kwargs[u'msg'].startswith(u'Does the file contain a header?'):
+                                    mock_result.result = 1
+                                    return mock_result
+                            if len(args) > 1:
+                                if args[1].startswith(u'Do you want to confirm'):
+                                    mock_result.result = 0
+                                    return mock_result
+                                    #mock_askuser.return_value.result.return_value = 0
+                                elif args[1].startswith(u'Do you want to import all'):
+                                    mock_result.result = 0
+                                    return mock_result
+                                elif args[1].startswith(u'Please note!\nForeign keys'):
+                                    mock_result.result = 1
+                                    return mock_result
+                                elif args[1].startswith(u'Please note!\nThere are'):
+                                    mock_result.result = 1
+                                    return mock_result
+                                elif args[1].startswith(u'It is a strong recommendation'):
+                                    mock_result.result = 0
+                                    return mock_result
+                        mock_askuser.side_effect = side_effect
+
+                        ms = MagicMock()
+                        ms.settingsdict = OrderedDict()
+                        importer = GeneralCsvImportGui(self.iface.mainWindow(), ms)
+                        importer.load_gui()
+
+                        importer.load_files()
+                        importer.table_chooser.import_method = u'w_levels'
+
+                        for column in importer.table_chooser.columns:
+                            names = {u'obsid': u'obsid', u'date_time': u'date_time', u'meas': u'meas'}
+                            if column.db_column in names:
+                                column.file_column_name = names[column.db_column]
+
+                        importer.start_import()
+
+                    _test(self, filename)
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30, 5.0, None, None, None)])'''
+                    assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_import_w_levels_remove_preceeding_trailing_spaces_tabs(self):
+        file = [u'obsid,date_time,meas',
+                 u'rb1,2016-03-15 10:30:00 ,\t5.0']
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+
+        with utils.tempinput(u'\n'.join(file), u'utf-8') as filename:
+                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+                    utils_askuser_answer_no_obj.result = 0
+                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+                    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
+
+                        mock_filename.return_value = filename
+                        mock_encoding.return_value = [u'utf-8', True]
+
+                        def side_effect(*args, **kwargs):
+                            mock_result = mock.MagicMock()
+                            if u'msg' in kwargs:
+                                if kwargs[u'msg'].startswith(u'Does the file contain a header?'):
+                                    mock_result.result = 1
+                                    return mock_result
+                            if len(args) > 1:
+                                if args[1].startswith(u'Do you want to confirm'):
+                                    mock_result.result = 0
+                                    return mock_result
+                                    #mock_askuser.return_value.result.return_value = 0
+                                elif args[1].startswith(u'Do you want to import all'):
+                                    mock_result.result = 0
+                                    return mock_result
+                                elif args[1].startswith(u'Please note!\nForeign keys'):
+                                    mock_result.result = 1
+                                    return mock_result
+                                elif args[1].startswith(u'Please note!\nThere are'):
+                                    mock_result.result = 1
+                                    return mock_result
+                                elif args[1].startswith(u'It is a strong recommendation'):
+                                    mock_result.result = 0
+                                    return mock_result
+                        mock_askuser.side_effect = side_effect
+
+                        ms = MagicMock()
+                        ms.settingsdict = OrderedDict()
+                        importer = GeneralCsvImportGui(self.iface.mainWindow(), ms)
+                        importer.load_gui()
+
+                        importer.load_files()
+                        importer.table_chooser.import_method = u'w_levels'
+
+                        for column in importer.table_chooser.columns:
+                            names = {u'obsid': u'obsid', u'date_time': u'date_time', u'meas': u'meas'}
+                            if column.db_column in names:
+                                column.file_column_name = names[column.db_column]
+
+                        importer.start_import()
+
+                    _test(self, filename)
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, meas, h_toc, level_masl, comment from w_levels'''))
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
+                    assert test_string == reference_string
+
 
 class _TestStaticMethods(object):
 
@@ -743,3 +1086,12 @@ class _TestStaticMethods(object):
         test_string = utils_for_tests.create_test_string(GeneralCsvImportGui.translate_and_reorder_file_data(file_data, translation_dict))
         reference_string = u'[[num, txt, comment, obsid], [1, 1, 2, rb1]]'
         assert test_string == reference_string
+
+    def test_convert_comma_to_points_for_double_columns(self):
+        file_data = [[u'obsid', u'date_time', u'reading'], [u'obs1,1', u'2017-04-12 11:03', u'123,456']]
+
+        #(6, u'comment', u'text', 0, None, 0)
+        tables_columns = ((0, u'obsid', u'text', 0, None, 0), (1, u'reading', u'double', 0, None, 0))
+        test_string = utils.anything_to_string_representation(GeneralCsvImportGui.convert_comma_to_points_for_double_columns(file_data, tables_columns))
+        reference = u'[[u"obsid", u"date_time", u"reading"], [u"obs1,1", u"2017-04-12 11:03", u"123.456"]]'
+        assert test_string == reference

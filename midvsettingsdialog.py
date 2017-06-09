@@ -476,7 +476,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def PiperMgUpdated(self):
         self.ms.settingsdict['piper_mg']= unicode(self.paramMg.currentText())
         self.ms.save_settings('piper_mg')#save this specific setting
-        
+
     def set_location(self):
         dockarea = self.parent.dockWidgetArea(self)
         self.ms.settingsdict['settingslocation']=dockarea

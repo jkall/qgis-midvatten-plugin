@@ -337,9 +337,9 @@ def ask_user_about_stopping(question):
     """
     answer = Askuser("YesNo", question)
     if answer.result:
-        return 'cancel'
+        return u'cancel'
     else:
-        return 'ignore'
+        return u'ignore'
 
 def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-table)
     sqlstring = r"""select %s, %s from %s"""%(params)
@@ -587,11 +587,12 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
         layerexists = find_layer(str(layername))
         if layerexists:
             if layerexists.isEditable():
-                MessagebarAndLog.critical(bar_msg=u'Error, layer ' + str(layerexists.name()) + u" is currently in editing mode.\nPlease exit this mode before proceeding with this operation.")
+                MessagebarAndLog.warning(bar_msg=u"Error %s is currently in editing mode.\nPlease exit this mode before proceeding with this operation."%str(layerexists.name()))
+                #pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", "Warning")
                 errorsignal += 1
 
-    if mset.settingsdict['database'] == '': #Check that database is selected
-        MessagebarAndLog.critical(bar_msg=u'Error, no database found. Please check your Midvatten Settings. Reset if needed.')
+    if not mset.settingsdict['database']: #Check that database is selected
+        MessagebarAndLog.critical(bar_msg=u'Error, no database selected. Please check your Midvatten Settings. Reset if needed.')
         errorsignal += 1
     else:
         if not db_utils.check_connection_ok():
@@ -775,13 +776,15 @@ def rstrip(word, from_string):
 
 def select_files(only_one_file=True, extension="csv (*.csv)"):
     """Asks users to select file(s)"""
+    try:
+        dir = os.path.dirname(QgsProject.instance().readEntry("Midvatten","database")[0])
+    except:
+        dir = u''
     if only_one_file:
-        csvpath = QtGui.QFileDialog.getOpenFileName(None, "Select File","", extension)
+        csvpath = [QtGui.QFileDialog.getOpenFileName(parent=None, caption="Select File", directory=dir, filter=extension)]
     else:
-        csvpath = QtGui.QFileDialog.getOpenFileNames(None, "Select Files","", extension)
-    if not isinstance(csvpath, (list, tuple)):
-        csvpath = [csvpath]
-    csvpath = [p for p in csvpath if p]
+        csvpath = QtGui.QFileDialog.getOpenFileNames(parent=None, caption="Select Files", directory=dir, filter=extension)
+    csvpath = [returnunicode(p) for p in csvpath if p]
     return csvpath
 
 def ask_for_charset(default_charset=None, msg=None):
@@ -807,8 +810,8 @@ def ask_for_charset(default_charset=None, msg=None):
 def ask_for_export_crs(default_crs=u''):
     return str(QtGui.QInputDialog.getText(None, "Set export crs", "Give the crs for the exported database.\n",QtGui.QLineEdit.Normal,default_crs)[0])
 
-def lists_to_string(alist_of_lists):
-    ur"""
+def lists_to_string(alist_of_lists, quote=False):
+    ur'''
 
     :param alist_of_lists:
     :return: A string with '\n' separating rows and ; separating columns.
@@ -817,12 +820,17 @@ def lists_to_string(alist_of_lists):
     u'1'
     >>> lists_to_string([('a', 'b'), (1, 2)])
     u'a;b\n1;2'
-    """
-    if isinstance(alist_of_lists, list) or isinstance(alist_of_lists, tuple):
-        return_string = u'\n'.join([u';'.join([returnunicode(y) for y in x]) if isinstance(x, list) or isinstance(x, tuple) else returnunicode(x) for x in alist_of_lists])
+    >>> lists_to_string([('a', 'b'), (1, 2)], quote=True)
+    u'"a";"b"\n"1";"2"'
+    >>> lists_to_string([('"a"', 'b'), (1, 2)], quote=False)
+    u'"a";b\n1;2'
+    >>> lists_to_string([('"a"', 'b'), (1, 2)], quote=True)
+    u'"""a""";"b"\n"1";"2"'
+    '''
+    if isinstance(alist_of_lists, (list, tuple)):
+        return_string = u'\n'.join([u';'.join([u'"{}"'.format(returnunicode(col).replace(u'"', u'""') if all([u'"' in returnunicode(col), u'""' not in returnunicode(col)]) else returnunicode(col)) if quote else returnunicode(col) for col in row]) if isinstance(row, (list, tuple)) else returnunicode(row) for row in alist_of_lists])
     else:
         return_string = returnunicode(alist_of_lists)
-
     return return_string
 
 def find_similar(word, wordlist, hits=5):
@@ -955,7 +963,7 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
 
         #Put the found similar values on top, but include all values in the database as well
         similar_values = find_similar(current_value, existing_values, hits=5)
-        similar_values.extend(sorted(existing_values))
+        similar_values.extend([x for x in sorted(existing_values) if x not in similar_values])
 
         msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nGive the ' + header_value + u' for:\n' + u'\n'.join([u': '.join((file_data[0][_colnr], word if word is not None else u'')) for _colnr, word in enumerate(row)])
         question = NotFoundQuestion(dialogtitle=u'WARNING',
@@ -1202,15 +1210,21 @@ class Cancel(object):
 
 
 def get_delimiter(filename=None, charset=u'utf-8', delimiters=None, num_fields=None):
-    delimiter = None
     if filename is None:
         MessagebarAndLog.critical(u'Must give filename')
         return None
-    if delimiters is None:
-        delimiters = [u',', u';']
     with io.open(filename, 'r', encoding=charset) as f:
         rows = f.readlines()
 
+    delimiter = get_delimiter_from_file_rows(rows, filename=filename, delimiters=None, num_fields=None)
+    return delimiter
+
+def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_fields=None):
+    if filename is None:
+        filename = u'the rows'
+    delimiter = None
+    if delimiters is None:
+        delimiters = [u',', u';']
     tested_delim = []
     for _delimiter in delimiters:
         cols_on_all_rows = set()

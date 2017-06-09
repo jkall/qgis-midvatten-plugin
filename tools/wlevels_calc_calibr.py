@@ -23,7 +23,6 @@
 #TODO: cleanup pyqt imports
 import PyQt4.QtCore
 import PyQt4.QtGui
-import db_utils
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import uic
@@ -46,7 +45,7 @@ except:
 import datetime
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import midvatten_utils as utils
-from date_utils import dateshift, datestring_to_date
+from date_utils import dateshift, datestring_to_date, long_dateformat
 
 #from ui.calibr_logger_dialog import Ui_Dialog as Calibr_Ui_Dialog
 #from ui.calc_lvl_dialog import Ui_Dialog as Calc_Ui_Dialog
@@ -72,8 +71,8 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
         to_d_t = self.ToDateTime.dateTime().toPyDateTime()
         
 #        sanity1 = utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.h_toc""")[1]
-        sanity1 = db_utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid""")[1]
-        sanity2 = db_utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.h_toc NOT NULL""")[1]
+        sanity1 = utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid""")[1]
+        sanity2 = utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.h_toc NOT NULL""")[1]
         
         if len(sanity1) == len(sanity2): #only if h_toc exists for all objects!!
             sql1 = """UPDATE OR IGNORE w_levels SET h_toc = (SELECT obs_points.h_toc FROM obs_points WHERE w_levels.obsid = obs_points.obsid) WHERE """
@@ -82,14 +81,14 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
             sql1 += """' AND date_time <= '"""
             sql1 += str(to_d_t)
             sql1 += """' """
-            db_utils.sql_alter_db(sql1)
+            utils.sql_alter_db(sql1)
             sql2 = """UPDATE OR IGNORE w_levels SET level_masl = h_toc - meas WHERE """
             sql2 += """date_time >= '"""
             sql2 += str(fr_d_t)
             sql2 += """' AND date_time <= '"""
             sql2 += str(to_d_t)
             sql2 += """' """        
-            db_utils.sql_alter_db(sql2)
+            utils.sql_alter_db(sql2)
             self.close()
         else:
             utils.pop_up_info('Adjustment aborted! There seems to be NULL values in your table obs_points, column h_toc.','Error')
@@ -105,8 +104,8 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
         fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
         to_d_t = self.ToDateTime.dateTime().toPyDateTime()
 
-        sanity1 = db_utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.obsid IN """ + (str(observations)).encode('utf-8').replace('[', '(').replace(']', ')'))[1]
-        sanity2 = db_utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.h_toc NOT NULL  AND obs_points.obsid IN """ + (str(observations)).encode('utf-8').replace('[', '(').replace(']', ')'))[1]
+        sanity1 = utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.obsid IN """ + (str(observations)).encode('utf-8').replace('[','(').replace(']',')'))[1]
+        sanity2 = utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.h_toc NOT NULL  AND obs_points.obsid IN """ + (str(observations)).encode('utf-8').replace('[','(').replace(']',')'))[1]
 
         if len(sanity1) == len(sanity2): #only if h_toc exists for all objects
             sql1 = """UPDATE OR IGNORE w_levels SET h_toc = (SELECT obs_points.h_toc FROM obs_points WHERE w_levels.obsid = obs_points.obsid) WHERE obsid IN """
@@ -116,7 +115,7 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
             sql1 += """' AND date_time <= '"""
             sql1 += str(to_d_t)
             sql1 += """' """   
-            db_utils.sql_alter_db(sql1.replace("[", "(").replace("]", ")"))
+            utils.sql_alter_db(sql1.replace("[","(").replace("]",")"))
             sql2 = """UPDATE OR IGNORE w_levels SET level_masl = h_toc - meas WHERE obsid IN """
             sql2 += str(observations)
             sql2 += """ AND date_time >= '"""
@@ -124,12 +123,13 @@ class calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
             sql2 += """' AND date_time <= '"""
             sql2 += str(to_d_t)
             sql2 += """' and meas is not null and h_toc is not null """
-            db_utils.sql_alter_db(sql2.replace("[", "(").replace("]", ")"))
+            utils.sql_alter_db(sql2.replace("[","(").replace("]",")"))
             self.close()        
         else:
             utils.pop_up_info('Calculation aborted! There seems to be NULL values in your table obs_points, column h_toc.','Error')
             self.close()
-        
+
+
 class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of the class Calibr_Ui_Dialog is created same time as instance of calibrlogger is created
 
     def __init__(self, parent, settingsdict1={}, obsid=''):
@@ -198,13 +198,13 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     def load_obsid_from_db(self):
         print ('am here')#debug
         self.combobox_obsid.clear()
-        all_obsids = [x[0] for x in db_utils.sql_load_fr_db("""select distinct obsid from w_levels_logger order by obsid""")[1]]
+        all_obsids = [x[0] for x in utils.sql_load_fr_db("""select distinct obsid from w_levels_logger order by obsid""")[1]]
         self.combobox_obsid.addItems(all_obsids)
         self.update_combobox_with_calibration_info()
 
     def update_combobox_with_calibration_info(self):
         uncalibrated_str = u' (uncalibrated)'
-        obsids_with_uncalibrated_data = [x[0] for x in db_utils.sql_load_fr_db("""select distinct obsid from w_levels_logger where level_masl is NULL""")[1]]
+        obsids_with_uncalibrated_data = [x[0] for x in utils.sql_load_fr_db("""select distinct obsid from w_levels_logger where level_masl is NULL""")[1]]
         #utils.MessagebarAndLog.info(log_msg=u"Uncalibrated obsids: " + str(obsids_with_uncalibrated_data))
         num_entries = self.combobox_obsid.count()
 
@@ -250,16 +250,13 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         level_masl_ts_sql = r"""SELECT date_time as 'date [datetime]', level_masl FROM w_levels_logger WHERE obsid = '""" + self.obsid + """' ORDER BY date_time"""
         self.level_masl_ts = self.sql_into_recarray(level_masl_ts_sql)
 
-        self.getlastcalibration(obsid)
+        self.setlastcalibration(obsid)
 
         return obsid
 
-    def getlastcalibration(self, obsid):
+    def setlastcalibration(self, obsid):
         if not obsid=='':
-            sql = """SELECT MAX(date_time), loggerpos FROM (SELECT date_time, (level_masl - (head_cm/100)) as loggerpos FROM w_levels_logger WHERE level_masl is not Null and level_masl > -990 AND obsid = '"""
-            sql += obsid
-            sql += """')"""
-            self.lastcalibr = db_utils.sql_load_fr_db(sql)[1]
+            self.lastcalibr = self.getlastcalibration(obsid)
             if self.lastcalibr[0][1] and self.lastcalibr[0][0]:
                 text = """Last pos. for logger in """
                 text += obsid
@@ -267,6 +264,13 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             else:
                 text = """There is no earlier known position for the logger in """ + self.selected_obsid #self.obsid[0]
             self.INFO.setText(text)
+
+    def getlastcalibration(self, obsid):
+        sql = """SELECT MAX(date_time), loggerpos FROM (SELECT date_time, (level_masl - (head_cm/100)) as loggerpos FROM w_levels_logger WHERE level_masl is not Null and level_masl > -990 AND obsid = '"""
+        sql += obsid
+        sql += """')"""
+        lastcalibr = utils.sql_load_fr_db(sql)[1]
+        return lastcalibr
 
     def set_logger_pos(self):
         self.loggerpos_masl_or_offset_state = 1
@@ -289,7 +293,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         if not obsid=='':        
             sanity1sql = """select count(obsid) from w_levels_logger where obsid = '""" +  obsid[0] + """'"""
             sanity2sql = """select count(obsid) from w_levels_logger where head_cm not null and head_cm !='' and obsid = '""" +  obsid[0] + """'"""
-            if db_utils.sql_load_fr_db(sanity1sql)[1] == db_utils.sql_load_fr_db(sanity2sql)[1]: # This must only be done if head_cm exists for all data
+            if utils.sql_load_fr_db(sanity1sql)[1] == utils.sql_load_fr_db(sanity2sql)[1]: # This must only be done if head_cm exists for all data
                 fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
                 to_d_t = self.ToDateTime.dateTime().toPyDateTime()
 
@@ -298,7 +302,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                 else:
                     self.update_level_masl_from_level_masl(obsid, fr_d_t, to_d_t, self.Add2Levelmasl.text())
 
-                self.getlastcalibration(obsid)
+                self.setlastcalibration(obsid)
             else:
                 utils.pop_up_info("Calibration aborted!!\nThere must not be empty cells or\nnull values in the 'head_cm' column!")
         else:
@@ -324,7 +328,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         sql += """ AND CAST(strftime('%s', date_time) AS NUMERIC) < """
         sql += str((to_d_t - datetime.datetime(1970,1,1)).total_seconds())
         sql += """ """
-        dummy = db_utils.sql_alter_db(sql)
+        dummy = utils.sql_alter_db(sql)
 
     def update_level_masl_from_head(self, obsid, fr_d_t, to_d_t, newzref):
         """ Updates the level masl using newzref
@@ -344,12 +348,12 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         sql += """ AND CAST(strftime('%s', date_time) AS NUMERIC) < """
         sql += str((to_d_t - datetime.datetime(1970,1,1)).total_seconds())
         sql += """ """
-        dummy = db_utils.sql_alter_db(sql)
+        dummy = utils.sql_alter_db(sql)
 
     def sql_into_recarray(self, sql):
         """ Converts and runs an sql-string and turns the answer into an np.recarray and returns it""" 
         my_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array     
-        recs = db_utils.sql_load_fr_db(sql)[1]
+        recs = utils.sql_load_fr_db(sql)[1]
         table = np.array(recs, dtype=my_format)  #NDARRAY
         table2=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write table2.values 
         return table2        
@@ -359,6 +363,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.reset_plot_selects_and_calib_help()
         self.calib_help.setText("Updating plot")
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+        last_used_obsid = self.obsid
         obsid = self.load_obsid_and_init()
         if obsid == None:
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -400,8 +405,12 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.calib_help.setText("")
 
-        self.getlastcalibration(obsid)
-        self.mpltoolbar.forward()
+        self.setlastcalibration(obsid)
+        if last_used_obsid == self.obsid:
+            self.mpltoolbar.forward()
+        else:
+            #Clear choices
+            self.reset_settings()
 
     def plot_recarray(self, axes, a_recarray, lable, line_style, picker=5):
         """ Plots a recarray to the supplied axes object """
@@ -443,6 +452,27 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.log_pos = None
         self.y_pos = None
         self.calib_help.setText("")
+
+    def reset_settings(self):
+
+        self.ToDateTime.setDateTime(datestring_to_date(u'2099-12-31 23:59:59'))
+        self.Add2Levelmasl.setText('')
+        self.bestFitSearchRadius.setText('10 minutes')
+        self.mpltoolbar._views.clear()
+
+        last_calibration = self.getlastcalibration(self.obsid)
+        try:
+            if last_calibration[0][1] and last_calibration[0][0]:
+                self.LoggerPos.setText(str(last_calibration[0][1]))
+                self.FromDateTime.setDateTime(datestring_to_date(last_calibration[0][0]))
+            else:
+                self.LoggerPos.setText('')
+                self.FromDateTime.setDateTime(datestring_to_date(u'2099-12-31 23:59:59'))
+        except Exception as e:
+            utils.MessagebarAndLog.info(log_msg=u'Getting last calibration failed for obsid %s, msg: %s'%(self.obsid, str(e)))
+            self.LoggerPos.setText('')
+            self.FromDateTime.setDateTime(datestring_to_date(u'2099-12-31 23:59:59'))
+
 
     def reset_cid(self):
         """ Resets self.cid to an empty list and disconnects unused events """
@@ -691,10 +721,10 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         sql_list.append(r""" < '%s' """%to_d_t)
         sql = ''.join(sql_list)
 
-        really_delete = utils.Askuser("YesNo", "Do you want to delete the period " +
+        really_delete = utils.askuser("YesNo", "Do you want to delete the period " +
                                       str(self.FromDateTime.dateTime().toPyDateTime()) + " to " +
                                       str(self.ToDateTime.dateTime().toPyDateTime()) +
                                       " for obsid " + selected_obsid + " from table " + table_name + "?").result
         if really_delete:
-            db_utils.sql_alter_db(sql)
+            utils.sql_alter_db(sql)
             self.update_plot()

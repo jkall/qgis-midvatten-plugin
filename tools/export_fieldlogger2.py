@@ -27,7 +27,7 @@ from collections import OrderedDict
 import db_utils
 import definitions.midvatten_defs as defs
 import midvatten_utils as utils
-from gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit
+from gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit, get_line, set_combobox
 from midvatten_utils import returnunicode
 
 export_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
@@ -41,7 +41,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         PyQt4.QtGui.QDialog.__init__(self, parent)
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
-        self.setWindowTitle("Export to FieldLogger file") # Set the title for the dialog
+        self.setWindowTitle("Export to Fieldlogger dialog") # Set the title for the dialog
 
         self.widget.setMinimumWidth(180)
 
@@ -102,7 +102,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         #Buttons
         self.save_settings_button = PyQt4.QtGui.QPushButton(u'Save settings')
-        self.save_settings_button.setToolTip(u'Saves the current input fields settings to midvatten settings.')
+        self.save_settings_button.setToolTip(u'Saves the current input fields settings.')
         self.gridLayout_buttons.addWidget(self.save_settings_button, 3, 0)
         self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                         lambda: map(lambda x: x(),
@@ -114,34 +114,33 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                                                     self.stored_settingskey_parameterbrowser)]))
 
         self.clear_settings_button = PyQt4.QtGui.QPushButton(u'Clear settings')
-        self.clear_settings_button.setToolTip(u'Clear input fields and settings.\nReopen Fieldlogger export gui to it reset,\nor press "Save settings" to undo.')
+        self.clear_settings_button.setToolTip(u'Clear all input fields settings.')
         self.gridLayout_buttons.addWidget(self.clear_settings_button, 4, 0)
         self.connect(self.clear_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(),
                                  [lambda: self.save_stored_settings(self.ms, [], self.stored_settingskey),
-                                  lambda: self.save_stored_settings(self.ms, [], self.stored_settingskey_parameterbrowser),
-                                  lambda: utils.pop_up_info(u'Settings cleared. Restart Export Fieldlogger dialog\nor press "Save settings" to undo.')]))
+                                  lambda: utils.pop_up_info(u'Settings cleared. Restart Export to Fieldlogger dialog to complete,\nor press "Save settings" to save current input fields settings again.')]))
 
         self.settings_strings_button = PyQt4.QtGui.QPushButton(u'Settings strings')
-        self.settings_strings_button.setToolTip(u'Access the settings strings to copy and paste all settings between different qgis projects.\n Usage: Select string and copy to a text editor or directly\ninto Settings strings dialog of another qgis project.')
+        self.settings_strings_button.setToolTip(u'Access the settings strings ("Create input fields" and input fields) to copy and paste all settings between different qgis projects.\n Usage: Select string and copy to a text editor or directly into Settings strings dialog of another qgis project.')
         self.gridLayout_buttons.addWidget(self.settings_strings_button, 5, 0)
         self.connect(self.settings_strings_button, PyQt4.QtCore.SIGNAL("clicked()"), self.settings_strings_dialogs)
 
         self.default_settings_button = PyQt4.QtGui.QPushButton(u'Default settings')
-        self.default_settings_button.setToolTip(u'Updates to default settings.')
+        self.default_settings_button.setToolTip(u'Updates "Create input fields" and input fields to default settings.')
         self.gridLayout_buttons.addWidget(self.default_settings_button, 6, 0)
         self.connect(self.default_settings_button, PyQt4.QtCore.SIGNAL("clicked()"), self.restore_default_settings)
 
         self.gridLayout_buttons.addWidget(get_line(), 7, 0)
 
         self.preview_button = PyQt4.QtGui.QPushButton(u'Preview')
-        self.preview_button.setToolTip(u'View a preview of the file as pop-up info.')
+        self.preview_button.setToolTip(u'View a preview of the Fieldlogger location file as pop-up info.')
         self.gridLayout_buttons.addWidget(self.preview_button, 8, 0)
         # Lambda and map is used to run several functions for every button click
         self.connect(self.preview_button, PyQt4.QtCore.SIGNAL("clicked()"), self.preview)
 
         self.export_button = PyQt4.QtGui.QPushButton(u'Export')
-        self.export_button.setToolTip(u'Exports the current combination of locations, sublocations and input fields to a Fieldlogger wells file.')
+        self.export_button.setToolTip(u'Exports the current combination of locations and input fields to a Fieldlogger location file.')
         self.gridLayout_buttons.addWidget(self.export_button, 9, 0)
         # Lambda and map is used to run several functions for every button click
         self.connect(self.export_button, PyQt4.QtCore.SIGNAL("clicked()"), self.export)
@@ -173,7 +172,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
                                                    [PyQt4.QtGui.QLabel(u'Locations'),
                                                     parameter_group.paste_from_selection_button,
                                                     parameter_group._obsid_list,
-                                                   PyQt4.QtGui.QLabel(u'Location suffix\n(location name in map)'),
+                                                   PyQt4.QtGui.QLabel(u'Location suffix\n(ex. project number)'),
                                                    parameter_group._location_suffix])
 
     @staticmethod
@@ -272,7 +271,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         input_field_browser, input_fields_groups = defs.export_fieldlogger_defaults()
         self.update_settings(input_field_browser, self.stored_settingskey_parameterbrowser)
         self.update_settings(input_fields_groups, self.stored_settingskey)
-        utils.pop_up_info(u'Settings updated. Restart Export Fieldlogger dialog\nor press "Save settings" to undo.')
+        utils.pop_up_info(u'Input fields and "Create Input Fields" updated to default.\nRestart Export to Fieldlogger dialog to complete,\nor press "Save settings" to save current input fields settings again.')
 
     def settings_strings_dialogs(self):
 
@@ -281,7 +280,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         msg = u'Edit the settings string for input fields groups and restart export fieldlogger dialog\nto load the change.'
         groups_updated = self.ask_and_update_settings(self.parameter_groups, self.stored_settingskey, msg)
         if browser_updated or groups_updated:
-            utils.pop_up_info(u'Settings updated. Restart Export Fieldlogger dialog\nor press "Save settings" to undo.')
+            utils.pop_up_info(u'Settings updated. Restart Export to Fieldlogger dialog\nor press "Save settings" to undo.')
 
     def ask_and_update_settings(self, objects_with_get_settings, settingskey, msg=''):
 
@@ -342,7 +341,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             _parameters_inputtypes_hints = parameter_group.input_field_group_list
             if not _parameters_inputtypes_hints:
                 utils.MessagebarAndLog.warning(
-                    bar_msg=u"Warning: Empty parameter list for group nr " + str(index + 1))
+                    bar_msg=u"Warning: Empty input fields list for group nr " + str(index + 1))
                 continue
 
             for location, sublocation, obsid in parameter_group.locations_sublocations_obsids:
@@ -430,14 +429,14 @@ class ParameterGroup(object):
         self.paste_from_selection_button = PyQt4.QtGui.QPushButton(u'Paste obs_points selection')
         #------------------------------------------------------------------------
         self._location_suffix.setToolTip(u"""(optional)\n""" +
-                                         u"""Fieldlogger NAME = obsid.SUFFIX\n""" +
-                                         u"""Useful for separating projects or databases\n""" +
-                                         u"""ex: suffix = 1234 --> obsid.1234""")
+                                         u"""The Fieldlogger location in the Fieldlogger map will be "obsid.LOCATION SUFFIX".\n\n""" +
+                                         u"""Location suffix is useful for separating locations with identical obsids.\n""" +
+                                         u"""ex: Location suffix 1234 --> obsid.1234""")
         self._sublocation_suffix.setToolTip(u"""(optional)\n""" +
-                                            u"""Fieldlogger sub-location = obsid.SUFFIX\n""" +
-                                            u"""Useful for separating parameters into groups for the user.\n""" +
-                                            u"""Parameters sharing the same sub-location will be shown together\n""" +
-                                            u"""ex: suffix 1234.quality --> obsid.1234.quality""")
+                                            u"""Fieldlogger sub-location will be obsid.Location suffix.Sub-location suffix\n\n""" +
+                                            u"""Parameters sharing the same sub-location will be shown together.\n""" +
+                                            u"""Sub-location suffix is used to separate input fields into groups for the Fieldlogger user.\n""" +
+                                            u"""ex: level, quality, sample, comment, flow.""")
         self._input_field_group_list.setToolTip(u"""Copy and paste input fields from "Create Input Fields" to this box\n""" +
                                         u"""or from/to other input field boxes.\n""" +
                                         u"""The input fields in Fieldlogger will appear in the same order as in\n""" +
@@ -445,10 +444,15 @@ class ParameterGroup(object):
                                         u"""The topmost input field will be the first selected input field when\n""" +
                                         u"""the user enters the input fields in Fieldlogger. (!!! If the input\n""" +
                                         u"""field already exists in a previous group it will end up on top!!!)""")
-        self._obsid_list.setToolTip(u"""Add obsids to this box by selecting obsids from the table "obs_points"\n""" +
-                                    u"""using it's attribute table or select from map.\n""" +
-                                    u"""Then click the button "Paste obs_points selection"\n""" +
-                                    u"""Copy and paste obsids between Locations boxes""")
+        locations_box_tooltip = (u"""Add obsids to Locations box by selecting obsids from the table "obs_points"\n""" +
+                                u"""using it's attribute table or select from map.\n""" +
+                                u"""Then click the button "Paste obs_points selection"\n""" +
+                                u"""Copy and paste obsids between Locations boxes.""")
+
+
+        self._obsid_list.setToolTip(locations_box_tooltip)
+        self.paste_from_selection_button.setToolTip(locations_box_tooltip)
+
         #-------------------------------------------------------------------------------------
         connect(self.paste_from_selection_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : self._obsid_list.paste_data(utils.get_selected_features_as_tuple('obs_points')))
@@ -540,6 +544,14 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
                 lambda : self.combine_name(self.combined_name, self.input_type, self.hint))
 
         # ------------------------------------------------------------------------------------
+        par_unit_tooltip = (u'(optional)\n' +
+                            u'When both parameter and unit is given, they will be combined to create the input field name.')
+        self._distinct_parameter.setToolTip(par_unit_tooltip)
+        self._distinct_unit.setToolTip(par_unit_tooltip)
+        self._combined_name.setToolTip(u'(mandatory)\n' +
+                                       u'Either supply a chosen name directly or use parameter\n' +
+                                       u'and unit boxes to create a name.\n' +
+                                       u'ex: parameter.unit')
         self._input_type.addItem(u'')
         self._input_type.addItems([u'numberDecimal|numberSigned', u'text'])
         self._input_type.setToolTip(u'(mandatory)\n' +
@@ -548,7 +560,7 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
                                     u'text: Text')
         self._hint.setToolTip(u'(optional)\nHint given to the Fieldlogger user for the parameter. Ex: "depth to water"')
         #------------------------------------------------------------------------------------
-        self._input_field_list.setToolTip(u'Copy input fields to the "Input Fields" boxes using ctrl+v, ctrl+c.')
+        self._input_field_list.setToolTip(u'Copy input fields to the "Input Fields" boxes using ctrl+c, ctrl+v.')
         self._input_field_list.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
         self._input_field_list.setMinimumWidth(200)
         #------------------------------------------------------------------------------------
@@ -712,24 +724,6 @@ class MessageBar(qgis.gui.QgsMessageBar):
     def popWidget(self, QgsMessageBarItem=None):
         self.setParent(0)
         self.hide()
-
-
-def set_combobox(combobox, value):
-    index = combobox.findText(returnunicode(value))
-    if index != -1:
-        combobox.setCurrentIndex(index)
-    else:
-        combobox.addItem(returnunicode(value))
-        index = combobox.findText(returnunicode(value))
-        combobox.setCurrentIndex(index)
-
-
-def get_line():
-    line = PyQt4.QtGui.QFrame()
-    line.setGeometry(PyQt4.QtCore.QRect(320, 150, 118, 3))
-    line.setFrameShape(PyQt4.QtGui.QFrame.HLine)
-    line.setFrameShadow(PyQt4.QtGui.QFrame.Sunken)
-    return line
 
 
 

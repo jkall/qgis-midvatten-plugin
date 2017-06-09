@@ -60,18 +60,14 @@ class NewDb():
         dbpath = utils.returnunicode(PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)"))
         if not dbpath:
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            return ''
+            return u''
         #create Spatialite database
 
         #delete the file if exists
         if os.path.exists(dbpath):
-            try:
-                os.remove(dbpath)
-            except OSError, e:
-                utils.MessagebarAndLog.critical(tr(u'NewDb', u"sqlite error, see lLog message panel", u"%s - %s." % (e.filename,e.strerror), duration=10))
-                PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                return ''
-        utils.MessagebarAndLog.critical(tr(u'NewDb', u"sqlite error, see lLog message panel", u"%s - %s."% (u'a', u'e')), duration=10)
+            utils.MessagebarAndLog.critical(
+                bar_msg=tr(u'NewDb', u'A database with the chosen name already existed. Cancelling...'))
+            return u''
 
         self.db_settings = utils.returnunicode(utils.anything_to_string_representation({u'spatialite': {u'dbpath': dbpath}}))
         #dbconnection = db_utils.DbConnectionManager(self.db_settings)
@@ -283,7 +279,7 @@ class NewDb():
             except IndexError:
                 table_descr = None
             else:
-                table_descr = table_descr.replace(u"'", u"''")
+                table_descr = table_descr.rstrip(u'\n').rstrip(u'\r').replace(u"'", u"''")
 
             columns_descr = dict(column_descr_reg.findall(create_table_sql))
 
@@ -299,22 +295,22 @@ class NewDb():
                 _table = _row[2]
                 foreign_keys_dict[_from] = (_table, _to)
 
-            sql = ur"""INSERT INTO about_db (tablename, columnname, description) VALUES """
-            sql +=  ur'({});'.format(u', '.join([u"""(CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END)"""%(col, col, col, col) for col in [table, ur'*', table_descr]]))
+            sql = ur"""INSERT INTO about_db (tablename, columnname, description, data_type, not_null, default_value, primary_key, foreign_key) VALUES """
+            sql +=  ur'({});'.format(u', '.join([u"""(CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END)"""%(col, col, col, col) for col in [table, ur'*', table_descr, ur'', ur'', ur'', ur'', ur'']]))
             dbconnection.execute(sql)
 
             for column in table_info:
                 colname = column[1]
                 data_type = column[2]
-                not_null = column[3] if column[3] == u'1' else u''
+                not_null = str(column[3]) if str(column[3]) == u'1' else u''
                 default_value = column[4] if column[4] else u''
-                primary_key = column[5] if column[5] == u'1' else u''
+                primary_key = str(column[5]) if str(column[5]) != u'0' else u''
                 _foreign_keys = u''
                 if colname in foreign_keys_dict:
                     _foreign_keys = u'%s(%s)'%(foreign_keys_dict[colname])
                 column_descr = columns_descr.get(colname, None)
                 if column_descr:
-                    column_descr = column_descr.replace(u"'", u"''")
+                    column_descr = column_descr.rstrip(u'\n').rstrip(u'\r').replace(u"'", u"''")
                 sql = u'INSERT INTO about_db (tablename, columnname, data_type, not_null, default_value, primary_key, foreign_key, description) VALUES '
                 sql += u'({});'.format(u', '.join([u"""CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END"""%(col, col, col, col) for col in [table, colname, data_type, not_null, default_value, primary_key, _foreign_keys, column_descr]]))
                 try:

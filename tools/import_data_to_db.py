@@ -179,6 +179,15 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = 'False'
             return
 
+        #Special cases for some tables
+        if goal_table == u'stratigraphy':
+            self.check_and_delete_stratigraphy(existing_columns)
+        if goal_table in (u'obs_lines', u'obs_points'):
+            self.calculate_geometry(existing_columns, goal_table)
+        if self.status == 'False':
+            self.drop_temptable()
+            return
+
         #Finally import data:
         nr_failed_import = recsinfile - temptablerows_after
         if nr_failed_import > 0:
@@ -337,209 +346,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         break
             if skip_obsids:
                 dbconnection.execute(u'delete from %s where obsid in (%s)' % (self.temptable_name, u', '.join([u"'{}'".format(obsid) for obsid in skip_obsids])))
-        
-    def wlvllogg_import_from_diveroffice_files(self):
-        """ Method for importing diveroffice csv files
-        :return: None
-        """
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
-
-        self.charsetchoosen = utils.ask_for_charset(default_charset='cp1252')
-        if not self.charsetchoosen:
-            self.status = 'True'
-            return u'cancel'
-
-        files = utils.select_files(only_one_file=False, extension="csv (*.csv)")
-        if not files:
-            self.status = 'True'
-            return u'cancel'
-
-        parsed_files = []
-        for selected_file in files:
-            file_data, filename, location = self.parse_diveroffice_file(path=selected_file, charset=self.charsetchoosen)
-            if file_data == u'cancel':
-                self.status = True
-                PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                return u'cancel'
-            elif file_data == u'skip':
-                continue
-            elif not isinstance(file_data, list):
-                utils.MessagebarAndLog.critical(bar_msg="Import Failure: Something went wrong with file " + str(selected_file))
-                continue
-            elif len(file_data) == 0:
-                utils.MessagebarAndLog.warning(bar_msg="Import warning: No rows could be parsed from " + str(selected_file))
-
-            parsed_files.append((file_data, filename, location))
-
-        if len(parsed_files) == 0:
-            utils.MessagebarAndLog.critical(bar_msg="Import Failure: No files imported""")
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            return
-
-        #Add obsid to all parsed filedatas by asking the user for it.
-        filename_location_obsid = [[u'filename', u'location', u'obsid']]
-        filename_location_obsid.extend([[parsed_file[1], parsed_file[2], parsed_file[2]] for parsed_file in parsed_files])
-
-        confirm_names = utils.askuser("YesNo", "Do you want to confirm each logger obsid before import?\n\nOtherwise the location attribute in the file will be matched (both\noriginal location and capitalized location) against obsids in the database.\nObsid will be requested of the user if no match is found.")
-        try_capitalize = True
-        if confirm_names.result:
-            try_capitalize = False
-
-        existing_obsids = utils.get_all_obsids()
-        filename_location_obsid = utils.filter_nonexisting_values_and_ask(file_data=filename_location_obsid, header_value=u'obsid', existing_values=existing_obsids, try_capitalize=try_capitalize, always_ask_user=confirm_names.result)
-
-        if filename_location_obsid == u'cancel':
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            self.status = 'True'
-            return Cancel()
-        elif len(filename_location_obsid) < 2:
-            utils.MessagebarAndLog.warning(bar_msg=u'Warning. All files were skipped, nothing imported!')
-            return False
-
-        filenames_obsid = dict([(x[0], x[2]) for x in filename_location_obsid[1:]])
-
-        for file_data, filename, location in parsed_files:
-            if filename in filenames_obsid:
-                obsid = filenames_obsid[filename]
-                file_data[0].append(u'obsid')
-                [row.append(obsid) for row in file_data[1:]]
-
-        #Header
-        file_to_import_to_db =  [parsed_files[0][0][0]]
-        file_to_import_to_db.extend([row for parsed_file in parsed_files for row in parsed_file[0][1:]])
-
-        import_all_data = utils.askuser("YesNo", "Do you want to import all data?\n\n" +
-                                        "'No' = only new data after the latest date in the database,\n" +
-                                        "for each observation point, will be imported.\n\n" +
-                                        "'Yes' = any data not matching an exact datetime in the database\n" +
-                                        " for the corresponding obsid will be imported.")
-
-        if not import_all_data.result:
-            file_to_import_to_db = self.filter_dates_from_filedata(file_to_import_to_db, utils.get_last_logger_dates())
-        if len(file_to_import_to_db) < 2:
-            utils.MessagebarAndLog.info(bar_msg=u'No new data existed in the files. Nothing imported.')
-            self.status = 'True'
-            return True
-            answer = self.general_import(file_data=file_to_import_to_db,
-                                         goal_table=u'w_levels_logger')
-        if isinstance(answer, Cancel):
-            self.status = 'True'
-            return answer
-
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
-        self.SanityCheckVacuumDB()
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
-    @staticmethod
-    def parse_diveroffice_file(path, charset, begindate=None, enddate=None):
-        """ Parses a diveroffice csv file into a string
-
-        :param path: The file name
-        :param existing_obsids: A list or tuple with the obsids that exist in the db.
-        :param ask_for_names: (True/False) True to ask for location name for every location. False to only ask if the location is not found in existing_obsids.
-        :return: A string representing a table file. Including '\n' for newlines.
-
-        Assumptions and limitations:
-        * The Location attribute is used as location and added as a column.
-        * Values containing ',' is replaced with '.'
-        * Rows with missing "Water head[cm]"-data is skipped.
-
-        """
-        #These can be set to paritally import files.
-        #begindate = datetime.strptime(u'2016-06-08 20:00:00',u'%Y-%m-%d %H:%M:%S')
-        #enddate = datetime.strptime(u'2016-06-08 19:00:00',u'%Y-%m-%d %H:%M:%S')
-
-        filedata = []
-        begin_extraction = False
-        delimiter = u';'
-        num_cols = None
-        with io.open(path, u'rt', encoding=str(charset)) as f:
-            location = None
-            for rawrow in f:
-                rawrow = utils.returnunicode(rawrow)
-                row = rawrow.rstrip(u'\n').rstrip(u'\r').lstrip()
-
-                #Try to get location
-                if row.startswith(u'Location'):
-                    location = row.split(u'=')[1].strip()
-                    continue
-
-                cols = row.split(delimiter)
-
-                #Parse header
-                if row.startswith(u'Date/time'):
-                    #Check that the delimitor is ; or try , or stop.
-                    if not 3 <= len(cols) <= 4:
-                        if 3 <= len(row.split(u',')) <= 4:
-                            delimiter = u','
-                        else:
-                            return utils.ask_user_about_stopping(tr(u'midv_data_importer', "Failure, delimiter did not match ';' or ',' or there was less than 3 or more than 4 columns in the file %s\nDo you want to stop the import? (else it will continue with the next file)"%path))
-
-                    cols = row.split(delimiter)
-                    num_cols = len(cols)
-
-                    header = cols
-                    begin_extraction = True
-                    continue
-
-                #Parse data
-                if begin_extraction:
-                    #This skips the last line.
-                    if len(cols) < 2:
-                        continue
-                    dateformat = find_date_format(cols[0])
-                    if dateformat is not None:
-                        if len(cols) != num_cols:
-                            return utils.ask_user_about_stopping(tr(u'midv_data_importer', "Failure: The number of data columns in file %s was not equal to the header.\nIs the decimal separator the same as the delimiter?\nDo you want to stop the import? (else it will continue with the next file)"%path))
-
-                        #Skip rows without flow value
-                        try:
-                            float(cols[1].replace(u',', u'.'))
-                        except ValueError:
-                            continue
-
-                        date = datetime.strptime(cols[0], dateformat)
-
-                        #TODO: These checks are not implemented as a dialog yet.
-                        if begindate is not None:
-                            if date < begindate:
-                                continue
-                        if enddate is not None:
-                            if date > enddate:
-                                continue
-
-                        printrow = [datetime.strftime(date,u'%Y-%m-%d %H:%M:%S')]
-                        printrow.extend([col.replace(u',', u'.') for col in cols[1:]])
-                        filedata.append(printrow)
-
-        if len(filedata) == 0:
-            return utils.ask_user_about_stopping(tr(u'midv_data_importer', "Failure, parsing failed for file %s\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)"%path))
-
-        filename = os.path.basename(path)
-
-        if u'Conductivity[mS/cm]' not in header:
-            header.append(u'Conductivity[mS/cm]')
-            for row in filedata:
-                row.append(u'')
-
-        translation_dict_in_order = OrderedDict([(u'Date/time', u'date_time'),
-                                                 (u'Water head[cm]', u'head_cm'),
-                                                 (u'Temperature[°C]', u'temp_degc'),
-                                                 (u'Conductivity[mS/cm]', u'cond_mscm')])
-
-        try:
-            translated_header = [translation_dict_in_order[headername] for headername in header]
-        except KeyError:
-            utils.MessagebarAndLog.critical(bar_msg=tr(u'midv_data_importer', u"Failure during import. See log for more information"), log_msg=tr(u'midv_data_importer', u"Failure, the file %s\ndid not have the correct headers and will not be imported.\nMake sure its barocompensated!\nSupported headers are obsid, Date/time, Water head[cm], Temperature[°C] and optionally Conductivity[mS/cm]."%utils.returnunicode(path)))
-            return u'skip'
-
-        filedata.reverse()
-        filedata.append(translated_header)
-        filedata.reverse()
-
-        sorted_filedata = [[row[translated_header.index(v)] for v in translation_dict_in_order.values()] for row in filedata]
-
-        return sorted_filedata, filename, location
 
     @staticmethod
     def filter_dates_from_filedata(file_data, obsid_last_imported_dates, obsid_header_name=u'obsid', date_time_header_name=u'date_time'):
@@ -585,12 +391,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             concatted_from_string = u'||'.join([u"CASE WHEN %s is NULL then '0' ELSE %s END"%(x, x) for x in from_list])
             concatted_to_string = u'||'.join([u"CASE WHEN %s is NULL then '0' ELSE %s END"%(x, x) for x in to_list])
             sql = u'INSERT INTO %s (%s) SELECT DISTINCT %s FROM %s WHERE %s NOT IN (SELECT %s FROM %s)'%(fk_table,
-                                                                                                         u', '.join(to_list),
-                                                                                                         u', '.join([u"""(CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE NULL END)"""%(from_col, from_col, from_col, from_col, column_headers_types[to_list[idx]]) for idx, from_col in enumerate(from_list)]),
-                                                                                                         self.temptable_name,
-                                                                                                         concatted_from_string,
-                                                                                                         concatted_to_string,
-                                                                                                         fk_table)
+                                                                                 fk_table)
             dbconnection.execute(sql)
 
             nr_fk_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]
@@ -606,7 +407,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
             dbconnection.execute(u'vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-
 
 
 
