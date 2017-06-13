@@ -26,8 +26,8 @@ from qgis.gui import *
 from matplotlib.figure import Figure as figure
 import numpy as np
 import matplotlib.pyplot as plt
-import datetime 
-import sqlite3 as sqlite
+import datetime
+from pyspatialite import dbapi2 as sqlite
 import itertools
 import midvatten_utils as utils
 
