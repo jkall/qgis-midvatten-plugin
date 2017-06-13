@@ -410,12 +410,31 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
             for parameter, parameter_dict in lab_results.iteritems():
                 anameth = parameter_dict.get(u'metodbeteckning', None)
-                reading_num = parameter_dict.get(u'mätvärdetal', None)
 
-                try:
-                    reading_txt = parameter_dict[u'mätvärdetext']
-                except KeyError:
-                    reading_txt = u''.join([x for x in [parameter_dict.get(u'mätvärdetalanm', False), reading_num] if x])
+                reading_num = parameter_dict.get(u'mätvärdetal', None)
+                anm = parameter_dict.get(u'mätvärdetalanm', None)
+                reading_txt = parameter_dict.get(u'mätvärdetext', None)
+
+                if reading_num is None and reading_txt is not None:
+                    _reading_txt_replaced = reading_txt.replace(u'<', u'').replace(u'>', u'')
+                    try:
+                        float(_reading_txt_replaced)
+                    except ValueError:
+                        reading_num = None
+                        utils.MessagebarAndLog.warning(bar_msg=u'Import interlab4 warning, see log message panel',
+                                                       log_msg=u'Could not set reading_num for report %s, parameter %s:\n%s'%(
+                                                           lablittera,
+                                                            parameter,
+                                                           u'\n'.join([u': '.join([k, v]) for k, v in parameter_dict.iteritems()])))
+                    else:
+                        reading_num = _reading_txt_replaced
+
+                if reading_txt is None and reading_num is not None:
+                    reading_txt = reading_num
+
+                if anm is not None and reading_txt is not None:
+                    if not reading_txt.startswith(anm):
+                        reading_txt = anm + reading_txt
 
                 unit = parameter_dict.get(u'enhet', None)
                 parameter_comment = parameter_dict.get(u'kommentar', None)
