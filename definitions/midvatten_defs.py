@@ -554,7 +554,8 @@ def stratigraphy_table():
     return 'stratigraphy'
     
 def SQLiteInternalTables():
-    return r"""('geom_cols_ref_sys',
+    return r"""('ElementaryGeometries',
+                'geom_cols_ref_sys',
                 'geometry_columns',
                 'geometry_columns_time',
                 'spatial_ref_sys',
