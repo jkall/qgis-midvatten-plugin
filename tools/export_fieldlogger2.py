@@ -330,12 +330,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
 
         parameters_inputtypes_hints = OrderedDict()
 
-        #Check for duplicates in sublocation suffixes
-        all_sublocations = [l_s_o[1] for parameter_group in parameter_groups for l_s_o in parameter_group.locations_sublocations_obsids if parameter_group.input_field_group_list]
-        if len(all_sublocations) != len(set(all_sublocations)):
-            utils.MessagebarAndLog.critical(bar_msg=u'Critical: Combination of obsid, locationsuffix and sublocation suffix must be unique')
-            return
-
         for index, parameter_group in enumerate(parameter_groups):
             _parameters_inputtypes_hints = parameter_group.input_field_group_list
             if not _parameters_inputtypes_hints:
@@ -346,26 +340,22 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             for location, sublocation, obsid in parameter_group.locations_sublocations_obsids:
                 lat, lon = [None, None]
 
-                if sublocation in sublocations_locations:
-                    if sublocations_locations[sublocation] != location:
-                        utils.MessagebarAndLog.warning(bar_msg=u'Warning: Sublocation ' + sublocation + u' error, see log message panel', log_msg=u'Sublocation ' + sublocation + u' already existed for location ' + location + u'.\n Duplications not allowd. It will be skipped.')
-                        continue
-
                 if location not in locations_lat_lon:
                     lat, lon = latlons.get(obsid, [None, None])
                     if any([lat is None, not lat, lon is None, not lon]):
                         utils.MessagebarAndLog.critical(bar_msg=u'Critical: Obsid ' + obsid + u' did not have lat-lon coordinates. Check obs_points table')
                         continue
 
-                #sublocations_parameters.setdefault(sublocation, []).extend([par.split(u';')[0] for par in _parameters_inputtypes_hints])
-
+                #If a parameter appears again, delete it and add it again to make it appear last.
                 for _parameter_inputtype_hint in _parameters_inputtypes_hints:
                     _parameter = _parameter_inputtype_hint.split(u';')[0]
-                    existed_param = parameters_inputtypes_hints.get(_parameter, None)
-                    if existed_param is not None and existed_param != _parameter_inputtype_hint:
-                        utils.MessagebarAndLog.critical(bar_msg=u'Critical: Parameter error, see log message panel', log_msg=u'The parameter ' + _parameter_inputtype_hint + u'already existed as ' + existed_param + u'. Skipping it!')
-                    else:
-                        parameters_inputtypes_hints[_parameter] = _parameter_inputtype_hint
+
+                    existed_p_i_h = parameters_inputtypes_hints.get(_parameter, None)
+                    if existed_p_i_h is not None:
+                        if existed_p_i_h != _parameter_inputtype_hint:
+                            utils.MessagebarAndLog.warning(bar_msg=u'Warning, parameter error, see log message panel', log_msg=u'The parameter %s exists more than once and the last one will overwrite the previous.'%_parameter)
+                        del parameters_inputtypes_hints[_parameter]
+                    parameters_inputtypes_hints[_parameter] = _parameter_inputtype_hint
 
                     existed = sublocations_parameters.get(sublocation, [])
                     if _parameter not in existed:
@@ -488,7 +478,7 @@ class ParameterGroup(object):
         """
         locations_sublocations_obsids = [(u'.'.join([x for x in [returnunicode(obsid), returnunicode(self.location_suffix)] if x]),
                                       u'.'.join([x for x in [returnunicode(obsid), returnunicode(self.location_suffix), returnunicode(self.sublocation_suffix)] if x]), returnunicode(obsid))
-                                     for obsid in self._obsid_list.get_all_data()]
+                                     for obsid in set(self._obsid_list.get_all_data())]
         return locations_sublocations_obsids
 
     @property

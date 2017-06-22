@@ -24,6 +24,7 @@ changelog=
         - Fixed bug when using spatialite 4.3.0a (Added ElementaryGeometries to SQLiteInternalTables).
         - Replaced sqlite3 to pyspatialite where sqlite3 caused problems with Spatialite 4.3.0a.
         - Interlab4 import: Fix where mätvärdetal didn't exist but mätvärdetext and mätvärdetalanm did.
+        - Fieldlogger Export: Sublocations appearing more than once are now merged. When parameters appear more than once, the last one overwrites the previous.
         Version 1.4:
         Most important changes since version 1.3.3 are listed below
         - Database: Table w_qual_field: new column depth replaces column flow_lmp. Column depth is assumed to be the depth from which the measured or sampled water was extracted.

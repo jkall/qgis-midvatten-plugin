@@ -273,7 +273,7 @@ class TestExportFieldloggerNoDb():
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
         test_string = create_test_string(printlist)
-        reference_string = u'[FileVersion 1;1, NAME;INPUTTYPE;HINT, par1;type1;hint1 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 1.proj;1.proj.group2;lat1;lon1;par1]'
+        reference_string = u'[FileVersion 1;1, NAME;INPUTTYPE;HINT, par1;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1, 1.proj;1.proj.group2;lat1;lon1;par1]'
         assert reference_string == test_string
 
     @staticmethod
@@ -283,8 +283,8 @@ class TestExportFieldloggerNoDb():
         mock_latlons.return_value = {u'1': (u'lat1', u'lon1')}
         tables_columns = OrderedDict([(u'testtable', (u'col1', u'col2'))])
 
-        stored_settings = [(0, ((u'input_field_group_list', [u'par1;type1;hint1']), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj'))),
-                           (1, ((u'input_field_group_list', [u'par2;type2;hint2']), (u'sublocation_suffix', u'proj.group'), (u'location_suffix', u'proj')))]
+        stored_settings = [(0, ((u'input_field_group_list', [u'par1;type1;hint1']), (u'sublocation_suffix', u'group'), (u'location_suffix', u'proj'))),
+                           (1, ((u'input_field_group_list', [u'par2;type2;hint2']), (u'sublocation_suffix', u'group'), (u'location_suffix', u'proj')))]
         mock_connect = MagicMock()
 
         parameter_groups = ExportToFieldLogger.create_parameter_groups_using_stored_settings(stored_settings, mock_connect)
@@ -292,9 +292,9 @@ class TestExportFieldloggerNoDb():
         parameter_groups[1]._obsid_list.paste_data([u'1'])
 
         printlist = ExportToFieldLogger.create_export_printlist(parameter_groups)
-        test_string = printlist
-        assert test_string is None
-        assert call.critical(bar_msg=u'Critical: Combination of obsid, locationsuffix and sublocation suffix must be unique') in mock_MessagebarAndLog.mock_calls
+        test_string = create_test_string(printlist)
+        reference = u'[FileVersion 1;2, NAME;INPUTTYPE;HINT, par1;type1;hint1 , par2;type2;hint2 , NAME;SUBNAME;LAT;LON;INPUTFIELD, 1.proj;1.proj.group;lat1;lon1;par1|par2]'
+        assert test_string == reference
 
     @staticmethod
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
