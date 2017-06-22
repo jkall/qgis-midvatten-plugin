@@ -368,6 +368,8 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         """
         data_dict = copy.deepcopy(_data_dict)
 
+        parameter_report_warning_messages = {}
+
         #### !!!! If a metadata-dbcolumn connection is changed, MetadataFilter.update_table.metaheader_dbcolumn_tooltips MUST be updated as well.
 
         file_data = [[u'obsid', u'depth', u'report', u'project', u'staff', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment']]
@@ -416,16 +418,17 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 reading_txt = parameter_dict.get(u'mätvärdetext', None)
 
                 if reading_num is None and reading_txt is not None:
-                    _reading_txt_replaced = reading_txt.replace(u'<', u'').replace(u'>', u'')
+                    _reading_txt_replaced = reading_txt.replace(u'<', u'').replace(u'>', u'').replace(u',', u'.')
                     try:
                         float(_reading_txt_replaced)
                     except ValueError:
                         reading_num = None
-                        utils.MessagebarAndLog.warning(bar_msg=u'Import interlab4 warning, see log message panel',
-                                                       log_msg=u'Could not set reading_num for report %s, parameter %s:\n%s'%(
-                                                           lablittera,
-                                                            parameter,
-                                                           u'\n'.join([u': '.join([k, v]) for k, v in parameter_dict.iteritems()])))
+                        if parameter not in parameter_report_warning_messages:
+                            utils.MessagebarAndLog.warning(bar_msg=u'Import interlab4 warning, see log message panel',
+                                                           log_msg=u'Could not set reading_num for parameter %s for one or more reports/lablitteras (%s etc.)'%(
+                                                               parameter,
+                                                               lablittera))
+                        parameter_report_warning_messages.setdefault(parameter, []).append(report)
                     else:
                         reading_num = _reading_txt_replaced
 
@@ -460,6 +463,10 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                   unit,
                                   u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments, more_parameter_comments] if comment is not None and comment])]
                                  )
+
+        for parameter, reports in sorted(parameter_report_warning_messages.iteritems()):
+            utils.MessagebarAndLog.info(log_msg=u'reading_num could not be set for parameter %s for reports %s'%(parameter, u', '.join(reports)))
+
         return file_data
     
     def add_row(self, a_widget):
