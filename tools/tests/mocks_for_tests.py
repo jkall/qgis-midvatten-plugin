@@ -22,6 +22,7 @@
 import mock
 from PyQt4 import QtGui
 from qgis.core import QgsMapLayerRegistry
+from PyQt4.QtCore import QString
 
 
 class MockUsingReturnValue(object):
@@ -65,7 +66,10 @@ class MockReturnUsingDictIn(object):
         return_value = None
         if isinstance(self.args_idx, int):
             for k, v in self.adict.iteritems():
-                if args[self.args_idx].startswith(k):
+                a = args[self.args_idx]
+                if isinstance(a, QString):
+                    a = str(a)
+                if a.startswith(k):
                    return_value = v
         elif isinstance(self.args_idx, basestring):
             for k, v in self.adict.iteritems():

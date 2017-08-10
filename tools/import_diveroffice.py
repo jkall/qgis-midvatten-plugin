@@ -32,6 +32,8 @@ from datetime import datetime
 import PyQt4.QtCore
 import PyQt4.QtGui
 
+from PyQt4.QtCore import QCoreApplication
+
 import import_data_to_db
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
@@ -51,7 +53,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         PyQt4.QtGui.QDialog.__init__(self, parent)
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
-        self.setWindowTitle("Diveroffice import")  # Set the title for the dialog
+        self.setWindowTitle(QCoreApplication.translate('DiverofficeImport', "Diveroffice import"))  # Set the title for the dialog
         self.table_chooser = None
         self.file_data = None
         self.status = True
@@ -67,29 +69,29 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         self.add_row(get_line())
 
-        self.skip_rows = CheckboxAndExplanation(u'Skip rows without water level',
-                                                u'Checked = Rows without a value for columns Water head[cm] or Level[cm] will be skipped.')
+        self.skip_rows = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', u'Skip rows without water level'),
+                                                QCoreApplication.translate('DiverofficeImport', u'Checked = Rows without a value for columns Water head[cm] or Level[cm] will be skipped.'))
         self.skip_rows.checked = True
         self.add_row(self.skip_rows.widget)
         self.add_row(get_line())
-        self.confirm_names = CheckboxAndExplanation(u'Confirm each logger obsid before import',
-                                                    u'Checked = The obsid will be requested of the user for every file.\n\n' +
-                                                    u'Unchecked = the location attribute, both as is and capitalized, in the\n' +
-                                                    u'file will be matched against obsids in the database.\n\n' +
-                                                    u'In both case, obsid will be requested of the user if no match in the database is found.')
+        self.confirm_names = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', u'Confirm each logger obsid before import'),
+                                                    QCoreApplication.translate('DiverofficeImport', u'Checked = The obsid will be requested of the user for every file.\n\n') +
+                                                    QCoreApplication.translate('DiverofficeImport', u'Unchecked = the location attribute, both as is and capitalized, in the\n') +
+                                                    QCoreApplication.translate('DiverofficeImport', u'file will be matched against obsids in the database.\n\n') +
+                                                    QCoreApplication.translate('DiverofficeImport', u'In both case, obsid will be requested of the user if no match in the database is found.'))
         self.confirm_names.checked = True
         self.add_row(self.confirm_names.widget)
         self.add_row(get_line())
-        self.import_all_data = CheckboxAndExplanation(u'Import all data',
-                                                      u'Checked = any data not matching an exact datetime in the database\n' +
-                                                      u'for the corresponding obsid will be imported.\n\n'
-                                                      u'Unchecked = only new data after the latest date in the database,\n' +
-                                                      u'for each observation point, will be imported.')
+        self.import_all_data = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', u'Import all data'),
+                                                      QCoreApplication.translate('DiverofficeImport', u'Checked = any data not matching an exact datetime in the database\n') +
+                                                      QCoreApplication.translate('DiverofficeImport', u'for the corresponding obsid will be imported.\n\n') +
+                                                      QCoreApplication.translate('DiverofficeImport', u'Unchecked = only new data after the latest date in the database,\n') +
+                                                      QCoreApplication.translate('DiverofficeImport', u'for each observation point, will be imported.'))
         self.import_all_data.checked = False
         self.add_row(self.import_all_data.widget)
 
 
-        self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
+        self.start_import_button = PyQt4.QtGui.QPushButton(QCoreApplication.translate('DiverofficeImport', u'Start import'))
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(files=self.files, skip_rows_without_water_level=self.skip_rows.checked, confirm_names=self.confirm_names.checked, import_all_data=self.import_all_data.checked, from_date=self.date_time_filter.from_date, to_date=self.date_time_filter.to_date))
 
@@ -124,12 +126,13 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             try:
                 file_data, filename, location = res
             except Exception as e:
-                utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel', log_msg=u'File %s could not be parsed. Msg:\n%s'%(selected_file, str(e)))
+                utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', u'Import error, see log message panel'),
+                                               log_msg=QCoreApplication.translate('DiverofficeImport', u'File %1 could not be parsed. Msg:\n%2').arg(selected_file).arg(str(e)))
                 continue
             parsed_files.append((file_data, filename, location))
 
         if len(parsed_files) == 0:
-            utils.MessagebarAndLog.critical(bar_msg=u"Import Failure: No files imported""")
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate('DiverofficeImport', u"Import Failure: No files imported"""))
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return
 
@@ -149,7 +152,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             self.status = 'True'
             return Cancel()
         elif len(filename_location_obsid) < 2:
-            utils.MessagebarAndLog.warning(bar_msg=u'Warning. All files were skipped, nothing imported!')
+            utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', u'Warning. All files were skipped, nothing imported!'))
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return False
 
@@ -168,7 +171,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         if not import_all_data:
             file_to_import_to_db = self.filter_dates_from_filedata(file_to_import_to_db, utils.get_last_logger_dates())
         if len(file_to_import_to_db) < 2:
-            utils.MessagebarAndLog.info(bar_msg=u'No new data existed in the files. Nothing imported.')
+            utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate('DiverofficeImport', u'No new data existed in the files. Nothing imported.'))
             self.status = 'True'
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return True
@@ -238,10 +241,8 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         if not begin_extraction:
             utils.MessagebarAndLog.critical(
-                bar_msg=u"Diveroffice import warning. See log message panel",
-                log_msg=u"Warning, the file %s \ndid not have Date/time as a header and will be skipped.\nSupported headers are %s" % (
-                    utils.returnunicode(path),
-                    u', '.join(translation_dict_in_order.keys())))
+                bar_msg=QCoreApplication.translate('DiverofficeImport', u"Diveroffice import warning. See log message panel"),
+                log_msg=QCoreApplication.translate('DiverofficeImport', u"Warning, the file %1 \ndid not have Date/time as a header and will be skipped.\nSupported headers are %2").arg(utils.returnunicode(path)).arg(u', '.join(translation_dict_in_order.keys())))
             return u'skip'
 
         if len(data_rows[0].split(u',')) > len(data_rows[0].split(u';')):
@@ -253,17 +254,15 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         nr_of_cols = len(file_header)
 
         if nr_of_cols < 2:
-            utils.MessagebarAndLog.warning(bar_msg=u'Diveroffice import warning. See log message panel',
-                                           log_msg=u'Delimiter could not be found for file %s or it contained only one column, skipping it.'%path)
+            utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', u'Diveroffice import warning. See log message panel'),
+                                           log_msg=QCoreApplication.translate('DiverofficeImport', u'Delimiter could not be found for file %1 or it contained only one column, skipping it.').arg(path))
             return u'skip'
 
         translated_header = [translation_dict_in_order.get(col, None) for col in file_header]
         if u'head_cm' not in translated_header:
             utils.MessagebarAndLog.warning(
-                bar_msg=u"Diveroffice import warning. See log message panel",
-                log_msg=u"Warning, the file %s \ndid not have Water head[cm] as a header.\nMake sure its barocompensated!\nSupported headers are %s" % (
-                utils.returnunicode(path),
-                u', '.join(translation_dict_in_order.keys())))
+                bar_msg=QCoreApplication.translate('DiverofficeImport', u"Diveroffice import warning. See log message panel"),
+                log_msg=QCoreApplication.translate('DiverofficeImport', u"Warning, the file %1 \ndid not have Water head[cm] as a header.\nMake sure its barocompensated!\nSupported headers are %2").arg(utils.returnunicode(path)).arg(u', '.join(translation_dict_in_order.keys())))
             if skip_rows_without_water_level:
                 return u'skip'
 
@@ -279,7 +278,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             cols = row.split(delimiter)
             if len(cols) != nr_of_cols:
                 return utils.ask_user_about_stopping(
-                    "Failure: The number of data columns in file %s was not equal to the header.\nIs the decimal separator the same as the delimiter?\nDo you want to stop the import? (else it will continue with the next file)"%path)
+                    QCoreApplication.translate('DiverofficeImport', u"Failure: The number of data columns in file %1 was not equal to the header.\nIs the decimal separator the same as the delimiter?\nDo you want to stop the import? (else it will continue with the next file)").arg(path))
 
             dateformat = find_date_format(cols[date_col])
 
@@ -307,16 +306,16 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
                                      if colnr is not None else u''
                                      for colnr in colnrs_to_import if colnr != date_col])
                 except ValueError as e:
-                    errors.add("parse_diveroffice_file error: %s"%str(e))
+                    errors.add(QCoreApplication.translate('DiverofficeImport', "parse_diveroffice_file error: %1").arg(str(e)))
                     continue
 
                 if any(printrow[1:]):
                     filedata.append(printrow)
         if errors:
-           utils.MessagebarAndLog.warning(log_msg=u'Error messages while parsing file "%s":\n%s'%(path, u'\n'.join(errors)))
+           utils.MessagebarAndLog.warning(log_msg=QCoreApplication.translate('DiverofficeImport', u'Error messages while parsing file "%1":\n%2').arg(path).arg(u'\n'.join(errors)))
 
         if len(filedata) < 2:
-            return utils.ask_user_about_stopping("Failure, parsing failed for file " + path + "\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)")
+            return utils.ask_user_about_stopping(QCoreApplication.translate('DiverofficeImport', u"Failure, parsing failed for file %1\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)").arg(path))
 
         filename = os.path.basename(path)
 

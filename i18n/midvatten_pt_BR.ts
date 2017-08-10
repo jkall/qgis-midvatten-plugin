@@ -1412,6 +1412,164 @@ Momflow=Momentanflöde vid avläsningstillfället</source>
     </message>
 </context>
 <context>
+    <name>DiverofficeImport</name>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="72"/>
+        <source>Skip rows without water level</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="56"/>
+        <source>Diveroffice import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="72"/>
+        <source>Checked = Rows without a value for columns Water head[cm] or Level[cm] will be skipped.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="77"/>
+        <source>Confirm each logger obsid before import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="77"/>
+        <source>Checked = The obsid will be requested of the user for every file.
+
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="77"/>
+        <source>Unchecked = the location attribute, both as is and capitalized, in the
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="77"/>
+        <source>file will be matched against obsids in the database.
+
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="77"/>
+        <source>In both case, obsid will be requested of the user if no match in the database is found.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="85"/>
+        <source>Import all data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="85"/>
+        <source>Checked = any data not matching an exact datetime in the database
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="85"/>
+        <source>for the corresponding obsid will be imported.
+
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="85"/>
+        <source>Unchecked = only new data after the latest date in the database,
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="85"/>
+        <source>for each observation point, will be imported.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="94"/>
+        <source>Start import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="129"/>
+        <source>Import error, see log message panel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="135"/>
+        <source>Import Failure: No files imported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="155"/>
+        <source>Warning. All files were skipped, nothing imported!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="174"/>
+        <source>No new data existed in the files. Nothing imported.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="263"/>
+        <source>Diveroffice import warning. See log message panel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="263"/>
+        <source>Warning, the file %1 
+did not have Water head[cm] as a header.
+Make sure its barocompensated!
+Supported headers are %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="243"/>
+        <source>Warning, the file %1 
+did not have Date/time as a header and will be skipped.
+Supported headers are %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="129"/>
+        <source>File %1 could not be parsed. Msg:
+%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="257"/>
+        <source>Delimiter could not be found for file %1 or it contained only one column, skipping it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="280"/>
+        <source>Failure: The number of data columns in file %1 was not equal to the header.
+Is the decimal separator the same as the delimiter?
+Do you want to stop the import? (else it will continue with the next file)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="310"/>
+        <source>parse_diveroffice_file error: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="316"/>
+        <source>Error messages while parsing file &quot;%1&quot;:
+%2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="319"/>
+        <source>Failure, parsing failed for file %1
+No valid data found!
+Do you want to stop the import? (else it will continue with the next file)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <location filename="../ui/export_fieldlogger_ui_dialog.ui" line="14"/>
@@ -2129,322 +2287,322 @@ arquivo de poços </translation>
 <context>
     <name>Midvatten</name>
     <message>
-        <location filename="../midvatten.py" line="266"/>
+        <location filename="../midvatten.py" line="265"/>
         <source>&amp;Import data to database</source>
         <translation>&amp;Importar dados para a base de dados</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="270"/>
+        <location filename="../midvatten.py" line="269"/>
         <source>&amp;Old csv imports</source>
         <translation>&amp;Importação antiga em CSV</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="289"/>
+        <location filename="../midvatten.py" line="288"/>
         <source>&amp;Export data from database</source>
         <translation>&amp;Exportar dados da base de dados</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="295"/>
+        <location filename="../midvatten.py" line="294"/>
         <source>&amp;Edit data in database</source>
         <translation>&amp;Editar dados na base de dados</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="304"/>
+        <location filename="../midvatten.py" line="303"/>
         <source>&amp;View plot</source>
         <translation>&amp;Ver gráfico</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="314"/>
+        <location filename="../midvatten.py" line="313"/>
         <source>&amp;View report</source>
         <translation>&amp;Ver relatório</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="319"/>
+        <location filename="../midvatten.py" line="318"/>
         <source>&amp;Database management</source>
         <translation>&amp;Configurar base de dados</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="325"/>
+        <location filename="../midvatten.py" line="324"/>
         <source>&amp;Utilities</source>
         <translation>&amp;Utilitários</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="79"/>
+        <location filename="../midvatten.py" line="78"/>
         <source>Create a new Midvatten project DB</source>
         <translation>Criar uma nova BD Midvatten </translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="82"/>
+        <location filename="../midvatten.py" line="81"/>
         <source>Load default db-layers to qgis</source>
         <translation>Carregar camadas padrão para o qgis</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="83"/>
+        <location filename="../midvatten.py" line="82"/>
         <source>Load default layers from the selected database</source>
         <translation>Carregar camadas padrão a partir da base de dados selecionada</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="87"/>
+        <location filename="../midvatten.py" line="86"/>
         <source>Midvatten Settings</source>
         <translation>Configurações Midvatten</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="88"/>
+        <location filename="../midvatten.py" line="87"/>
         <source>Configuration for Midvatten toolset</source>
         <translation>Configurações das ferramentas Midvatten</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="92"/>
+        <location filename="../midvatten.py" line="91"/>
         <source>Reset Settings</source>
         <translation>Restaurar Configurações </translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="95"/>
+        <location filename="../midvatten.py" line="94"/>
         <source>About</source>
         <translation>Sobre</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="104"/>
+        <location filename="../midvatten.py" line="103"/>
         <source>Import w level measurements</source>
         <translation>Importar medições de nível d&apos;água</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="149"/>
+        <location filename="../midvatten.py" line="148"/>
         <source>Import w flow measurements</source>
         <translation>Importar medições de fluxo</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="110"/>
+        <location filename="../midvatten.py" line="109"/>
         <source>Import seismic data</source>
         <translation>Importar dados sísmicos</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="113"/>
+        <location filename="../midvatten.py" line="112"/>
         <source>Import vlf data</source>
         <translation>Importar dados vlf</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="116"/>
+        <location filename="../midvatten.py" line="115"/>
         <source>Import obs lines table</source>
         <translation>Importar tabela obs lines</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="119"/>
+        <location filename="../midvatten.py" line="118"/>
         <source>Calculate w level from manual measurements</source>
         <translation>Calcular o nível d&apos;água a partr de medições manuais</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="122"/>
+        <location filename="../midvatten.py" line="121"/>
         <source>Calculate Aveflow from Accvol</source>
         <translation>Calcular Aveflow a partir do Accvol</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="125"/>
+        <location filename="../midvatten.py" line="124"/>
         <source>Import w level from logger</source>
         <translation>Importar nível d&apos;água a partir do logger</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="128"/>
+        <location filename="../midvatten.py" line="127"/>
         <source>Import logger data using Diver-Office format</source>
         <translation>Importar dados de logger no formato Diver Office</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="131"/>
+        <location filename="../midvatten.py" line="130"/>
         <source>Calcultate logger w level from logger water head</source>
         <translation>Calcular o nível d&apos;água a partir do logger head</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="134"/>
+        <location filename="../midvatten.py" line="133"/>
         <source>Import w quality from lab</source>
         <translation>Importar dados de laboratório de qualidade de água</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="137"/>
+        <location filename="../midvatten.py" line="136"/>
         <source>Import w quality from lab data using interlab4 format</source>
         <translation>Importar dados de qual. de lab. no formato interlab4</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="140"/>
+        <location filename="../midvatten.py" line="139"/>
         <source>Import w quality from field</source>
         <translation>Importar dados de campo de qualidade de água</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="143"/>
+        <location filename="../midvatten.py" line="142"/>
         <source>Import stratigraphy data</source>
         <translation>Importar dados estratigráficos</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="146"/>
+        <location filename="../midvatten.py" line="145"/>
         <source>Import obs points table</source>
         <translation>Importar tabela de pontos</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="152"/>
+        <location filename="../midvatten.py" line="151"/>
         <source>Import meteorological observations</source>
         <translation>Importar observações meteorológicas</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="155"/>
+        <location filename="../midvatten.py" line="154"/>
         <source>Import data using FieldLogger format</source>
         <translation>Importar dados no formato FieldLogger</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="158"/>
+        <location filename="../midvatten.py" line="157"/>
         <source>Import data using general csv format</source>
         <translation>Importar dados em csv</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="161"/>
+        <location filename="../midvatten.py" line="160"/>
         <source>Time series plot</source>
         <translation>Gráfico de série temporal</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="162"/>
+        <location filename="../midvatten.py" line="161"/>
         <source>Plot time series for selected objects</source>
         <translation>Plotar um gráfico de série temporal para as feições selecionadas</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="166"/>
+        <location filename="../midvatten.py" line="165"/>
         <source>Scatter plot</source>
         <translation>Gráfico de dispersão</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="167"/>
+        <location filename="../midvatten.py" line="166"/>
         <source>Plot XY scatter data (e.g. seismic profile) for the selected objects</source>
         <translation>Plotar gráfico de dispersão (ex. perfil sísmico) para as feições selecionadas</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="171"/>
+        <location filename="../midvatten.py" line="170"/>
         <source>Piper diagram</source>
         <translation>Diagrama de Piper</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="172"/>
+        <location filename="../midvatten.py" line="171"/>
         <source>Plot a rectangular Piper diagram for selected objects</source>
         <translation>Plotar um diagrama de Piper retangular para as feições selecionadas</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="175"/>
+        <location filename="../midvatten.py" line="174"/>
         <source>Custom plots</source>
         <translation>Gráficos customizados</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="176"/>
+        <location filename="../midvatten.py" line="175"/>
         <source>Create custom plots for your reports</source>
         <translation>Criar gráficos customizados para relatórios</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="179"/>
+        <location filename="../midvatten.py" line="178"/>
         <source>Stratigraphy plot</source>
         <translation>Perfil estratigráfico</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="180"/>
+        <location filename="../midvatten.py" line="179"/>
         <source>Show stratigraphy for selected objects (modified ARPAT)</source>
         <translation>Mostrar estratigrafia para as feições selecionadas (modificado ARPAT)</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="184"/>
+        <location filename="../midvatten.py" line="183"/>
         <source>General report</source>
         <translation>Relatório geral</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="185"/>
+        <location filename="../midvatten.py" line="184"/>
         <source>Show a general report for the selected obs point</source>
         <translation>Mostrar um relatório geral para as feições selecionadas</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="189"/>
+        <location filename="../midvatten.py" line="188"/>
         <source>Water quality report</source>
         <translation>Relatório de qualidade de água</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="190"/>
+        <location filename="../midvatten.py" line="189"/>
         <source>Show water quality for the selected obs point</source>
         <translation>Mostrar qualidade da água para as feições selecionadas</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="194"/>
+        <location filename="../midvatten.py" line="193"/>
         <source>Section plot</source>
         <translation>Perfil</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="195"/>
+        <location filename="../midvatten.py" line="194"/>
         <source>Plot a section with stratigraphy and water levels</source>
         <translation>Plotar um perfil com dados estratigráficos e nível d&apos;água</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="199"/>
+        <location filename="../midvatten.py" line="198"/>
         <source>Prepare 3D-data for Qgis2threejs plugin</source>
         <translation>Preparar dados 3D para o complemento Qgis2threejs</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="200"/>
+        <location filename="../midvatten.py" line="199"/>
         <source>Add spatialite views to be used by Qgis2threejs plugin to create a 3D plot</source>
         <translation>Adicionar visão do spatialite para ser usado pelo complemento Qgis2threejs para gráficos 3D</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="203"/>
+        <location filename="../midvatten.py" line="202"/>
         <source>Load data domain tables to qgis</source>
         <translation>Importar tabelas de dados para o qgis</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="204"/>
+        <location filename="../midvatten.py" line="203"/>
         <source>Load the data domain tables from the database</source>
         <translation>Carregar tabelas de dados a partir da base de dados</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="207"/>
+        <location filename="../midvatten.py" line="206"/>
         <source>Vacuum the database</source>
         <translation>Limpar a base de dados</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="208"/>
+        <location filename="../midvatten.py" line="207"/>
         <source>Perform database vacuuming</source>
         <translation>Melhorar a performance do bd</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="211"/>
+        <location filename="../midvatten.py" line="210"/>
         <source>Backup the database</source>
         <translation>Backup da base de dados</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="212"/>
+        <location filename="../midvatten.py" line="211"/>
         <source>A compressed copy of the database will be placed in same directory as the db.</source>
         <translation>Uma cópia comprimida da base de dados será armazenada no mesmo diretório da bd.</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="215"/>
+        <location filename="../midvatten.py" line="214"/>
         <source>Export to a set of csv files</source>
         <translation>Exportar para arquivos csv</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="216"/>
+        <location filename="../midvatten.py" line="215"/>
         <source>All data for the selected objects (obs_points and obs_lines) will be exported to a set of csv files.</source>
         <translation>Todos os dados das feições selecionadas (obs_points e obs_lines) serão exportados para arquivos csv.</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="219"/>
+        <location filename="../midvatten.py" line="218"/>
         <source>Export to another spatialite db</source>
         <translation>Exportar para uma nova bd spatialite</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="220"/>
+        <location filename="../midvatten.py" line="219"/>
         <source>All data for the selected objects (obs_points and obs_lines) will be exported to another spatialite db.</source>
         <translation>Todos os dados das feições selecionadas (obs_points e obs_lines) serão exportados como uma base de dados spatialite.</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="223"/>
+        <location filename="../midvatten.py" line="222"/>
         <source>Export to FieldLogger format</source>
         <translation>Exportar para o formato FieldLogger</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="227"/>
+        <location filename="../midvatten.py" line="226"/>
         <source>Calculate statistics for all w logger data</source>
         <translation>Calcular a estatística para todos os dados de logger</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="231"/>
+        <location filename="../midvatten.py" line="230"/>
         <source>Calculate database table rows</source>
         <translation>Calcular as linhas da tabela da base de dados</translation>
     </message>
