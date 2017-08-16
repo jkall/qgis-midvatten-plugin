@@ -1518,52 +1518,52 @@ Momflow=Momentanflöde vid avläsningstillfället</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="263"/>
-        <source>Warning, the file %1 
-did not have Water head[cm] as a header.
-Make sure its barocompensated!
-Supported headers are %2</source>
+        <location filename="../tools/import_diveroffice.py" line="129"/>
+        <source>File %s could not be parsed. Msg:
+%s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tools/import_diveroffice.py" line="243"/>
-        <source>Warning, the file %1 
+        <source>Warning, the file %s 
 did not have Date/time as a header and will be skipped.
-Supported headers are %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_diveroffice.py" line="129"/>
-        <source>File %1 could not be parsed. Msg:
-%2</source>
+Supported headers are %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tools/import_diveroffice.py" line="257"/>
-        <source>Delimiter could not be found for file %1 or it contained only one column, skipping it.</source>
+        <source>Delimiter could not be found for file %s or it contained only one column, skipping it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="263"/>
+        <source>Warning, the file %s 
+did not have Water head[cm] as a header.
+Make sure its barocompensated!
+Supported headers are %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tools/import_diveroffice.py" line="280"/>
-        <source>Failure: The number of data columns in file %1 was not equal to the header.
+        <source>Failure: The number of data columns in file %s was not equal to the header.
 Is the decimal separator the same as the delimiter?
 Do you want to stop the import? (else it will continue with the next file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tools/import_diveroffice.py" line="310"/>
-        <source>parse_diveroffice_file error: %1</source>
+        <source>parse_diveroffice_file error: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tools/import_diveroffice.py" line="316"/>
-        <source>Error messages while parsing file &quot;%1&quot;:
-%2</source>
+        <source>Error messages while parsing file &quot;%s&quot;:
+%s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tools/import_diveroffice.py" line="319"/>
-        <source>Failure, parsing failed for file %1
+        <source>Failure, parsing failed for file %s
 No valid data found!
 Do you want to stop the import? (else it will continue with the next file)</source>
         <translation type="unfinished"></translation>
@@ -2267,21 +2267,6 @@ arquivo de poços </translation>
         <location filename="../ui/midvsettingsdock.ui" line="1051"/>
         <source>SO4, Sulfate parameter:</source>
         <translation>SO4, parâmetro sulfato:</translation>
-    </message>
-    <message>
-        <location filename="../ui/midvsettingsdock_icons.ui" line="715"/>
-        <source>Stratigraphy</source>
-        <translation type="obsolete">Estratigrafia</translation>
-    </message>
-    <message>
-        <location filename="../ui/midvsettingsdock_icons.ui" line="762"/>
-        <source>table containing stratigraphy info</source>
-        <translation type="obsolete">tabela contendo as informações de estratigrafia</translation>
-    </message>
-    <message>
-        <location filename="../ui/midvsettingsdock_icons.ui" line="796"/>
-        <source>Table status</source>
-        <translation type="obsolete">Status da tabela</translation>
     </message>
 </context>
 <context>

@@ -531,7 +531,7 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
     text = None
     for charset in [u'ascii', u'utf-8', u'utf-16', u'cp1252', u'iso-8859-1']:
         try:
-            if anything == None:
+            if anything is None:
                 text = u''
             elif isinstance(anything, list):
                 text = [returnunicode(x, keep_containers) for x in anything]
@@ -543,8 +543,16 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
                 text = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
             elif isinstance(anything, PyQt4.QtCore.QVariant):
                 text = returnunicode(anything.toString())
+            elif isinstance(anything, PyQt4.QtCore.QString):
+                text = returnunicode(unicode(anything.toUtf8(), 'utf-8'))
             else:
                 text = anything
+
+            #This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
+            #elif str(type(anything)) == u"<class 'PyQt4.QtCore.QVariant'>":
+
+            # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
+            #elif str(type(anything)) == u"<class 'PyQt4.QtCore.QString'>":
 
             if isinstance(text, (list, tuple, dict, OrderedDict)):
                 if not keep_containers:
@@ -1007,6 +1015,31 @@ def ask_for_export_crs(default_crs=u''):
 def lists_to_string(alist_of_lists, quote=False):
     ur'''
 
+        The long Version:
+        reslist = []
+        for row in alist_of_lists:
+            if isinstance(row, (list, tuple)):
+                innerlist = []
+                for col in row:
+                    if quote:
+                        if all([u'"' in returnunicode(col), u'""' not in returnunicode(col)]):
+                            innerword = returnunicode(col).replace(u'"', u'""')
+                        else:
+                            innerword = returnunicode(col)
+                        try:
+                            innerlist.append(u'"{}"'.format(innerword))
+                        except UnicodeDecodeError:
+                            print(str(innerword))
+                            raise Exception
+                    else:
+                        innerlist.append(returnunicode(col))
+                reslist.append(u';'.join(innerlist))
+            else:
+                reslist.append(returnunicode(row))
+
+        return_string = u'\n'.join(reslist)
+
+
     :param alist_of_lists:
     :return: A string with '\n' separating rows and ; separating columns.
 
@@ -1022,7 +1055,19 @@ def lists_to_string(alist_of_lists, quote=False):
     u'"""a""";"b"\n"1";"2"'
     '''
     if isinstance(alist_of_lists, (list, tuple)):
-        return_string = u'\n'.join([u';'.join([u'"{}"'.format(returnunicode(col).replace(u'"', u'""') if all([u'"' in returnunicode(col), u'""' not in returnunicode(col)]) else returnunicode(col)) if quote else returnunicode(col) for col in row]) if isinstance(row, (list, tuple)) else returnunicode(row) for row in alist_of_lists])
+
+        return_string = u'\n'.join(
+            [u';'.join([u'"{}"'.format(returnunicode(col).replace(u'"', u'""')
+                                       if all([u'"' in returnunicode(col),
+                                               u'""' not in returnunicode(col)])
+                                       else returnunicode(col))
+                        if quote
+                        else
+                        returnunicode(col) for col in row])
+             if isinstance(row, (list, tuple))
+             else
+             returnunicode(row) for row in alist_of_lists])
+
     else:
         return_string = returnunicode(alist_of_lists)
     return return_string
