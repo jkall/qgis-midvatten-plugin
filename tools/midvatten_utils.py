@@ -541,18 +541,14 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
                 text = dict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
             elif isinstance(anything, OrderedDict):
                 text = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
-            elif isinstance(anything, PyQt4.QtCore.QVariant):
+            # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
+            elif str(type(anything)) == u"<class 'PyQt4.QtCore.QVariant'>":
                 text = returnunicode(anything.toString())
-            elif isinstance(anything, PyQt4.QtCore.QString):
+            # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
+            elif str(type(anything)) == u"<class 'PyQt4.QtCore.QString'>":
                 text = returnunicode(unicode(anything.toUtf8(), 'utf-8'))
             else:
                 text = anything
-
-            #This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
-            #elif str(type(anything)) == u"<class 'PyQt4.QtCore.QVariant'>":
-
-            # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
-            #elif str(type(anything)) == u"<class 'PyQt4.QtCore.QString'>":
 
             if isinstance(text, (list, tuple, dict, OrderedDict)):
                 if not keep_containers:
