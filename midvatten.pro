@@ -31,6 +31,5 @@ ui/w_lvls_last_geom_en.ui \
 ui/w_lvls_last_geom.ui
 
 TRANSLATIONS = \
-./i18n/midvatten_pt_BR.ts \
-./i18n/midvatten_en_US.ts \
-./i18n/midvatten_sv_SE.ts
+./i18n/midvatten_pt_BR.ts
+
