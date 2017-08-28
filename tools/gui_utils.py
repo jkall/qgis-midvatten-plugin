@@ -111,10 +111,14 @@ class DateTimeFilter(RowEntry):
         super(DateTimeFilter, self).__init__()
         self.label = PyQt4.QtGui.QLabel(u'Import data from: ')
         self.from_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'1901-01-01 00:00:00'))
-        self.from_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh-mm-ss')
+        self.from_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh:mm:ss')
+        self.from_datetimeedit.setMinimumWidth(180)
+
         self.label_to = PyQt4.QtGui.QLabel(u'to: ')
         self.to_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'2099-12-31 23:59:59'))
-        self.to_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh-mm-ss')
+        self.to_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh:mm:ss')
+        self.to_datetimeedit.setMinimumWidth(180)
+
         if calendar:
             self.from_datetimeedit.setCalendarPopup(True)
             self.to_datetimeedit.setCalendarPopup(True)

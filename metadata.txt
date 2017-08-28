@@ -4,7 +4,7 @@ name=Midvatten
 qgisMinimumVersion=2.4
 qgisMaximumVersion=2.98
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.4.2
+version=Version 1.4.3
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 
@@ -19,6 +19,8 @@ experimental=False
 deprecated=False
 
 changelog=
+        Version 1.4.3:
+        - Diveroffice import: Fixed the format and width for the datetime filter.
         Version 1.4.2:
         - Added Qt internationalization support and Portuguese translations for ui-files and some modules (with special thanks to Luiz Pacheco Motta (IBAMA/QGISBrasil), Mariana Muniz Blank (Rede Guarani/Serra Geral/QGISBrasil), Arthur Schmidt Nanni (Rede Guarani/Serra Geral/QGISBrasil) and Luiz Fernando Scheibe (Rede Guarani/Serra Geral/QGISBrasil)!.
         Version 1.4.1:
