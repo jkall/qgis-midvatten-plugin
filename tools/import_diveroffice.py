@@ -156,17 +156,20 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return False
 
+
         filenames_obsid = dict([(x[0], x[2]) for x in filename_location_obsid[1:]])
 
+        parsed_files_with_obsid = []
         for file_data, filename, location in parsed_files:
             if filename in filenames_obsid:
+                file_data = list(file_data)
                 obsid = filenames_obsid[filename]
                 file_data[0].append(u'obsid')
                 [row.append(obsid) for row in file_data[1:]]
-
+                parsed_files_with_obsid.append([file_data, filename, location])
         #Header
-        file_to_import_to_db =  [parsed_files[0][0][0]]
-        file_to_import_to_db.extend([row for parsed_file in parsed_files for row in parsed_file[0][1:]])
+        file_to_import_to_db =  [parsed_files_with_obsid[0][0][0]]
+        file_to_import_to_db.extend([row for parsed_file in parsed_files_with_obsid for row in parsed_file[0][1:]])
 
         if not import_all_data:
             file_to_import_to_db = self.filter_dates_from_filedata(file_to_import_to_db, utils.get_last_logger_dates())
@@ -175,6 +178,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             self.status = 'True'
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return True
+
         importer = import_data_to_db.midv_data_importer()
         answer = importer.send_file_data_to_importer(file_to_import_to_db, partial(importer.general_csv_import, goal_table=u'w_levels_logger'))
         if isinstance(answer, Cancel):
@@ -339,6 +343,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         obsid_idx = file_data[0].index(obsid_header_name)
         date_time_idx = file_data[0].index(date_time_header_name)
         filtered_file_data = [row for row in file_data[1:] if datestring_to_date(row[date_time_idx]) > datestring_to_date(obsid_last_imported_dates.get(row[obsid_idx], [(u'0001-01-01 00:00:00',)])[0][0])]
+
         filtered_file_data.reverse()
         filtered_file_data.append(file_data[0])
         filtered_file_data.reverse()

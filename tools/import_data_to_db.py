@@ -174,7 +174,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 if missing_keys:
                     utils.MessagebarAndLog.warning(bar_msg=u'Import error, see log message panel',
                                                    log_msg=u'There was ' + str(len(missing_keys)) +
-                                                   u'entries where foreign keys were missing from ' + fk_table +
+                                                   u' entries where foreign keys were missing from ' + fk_table +
                                                    u' which will not be imported:\n' + u'\n'.join([u', '.join(f) for f in missing_keys]),
                                                    duration=999)
 
