@@ -530,7 +530,7 @@ class midvatten:
                 #utils.pop_up_info(returnvalue) #debugging
                 #utils.pop_up_info(importinstance.status) #debugging
                 if importinstance.status=='True':
-                    utils.pop_up_info("%s observation points were imported to the database.\nGeometries (map position) were automatically created based on east and north coordinates."))%str(importinstance.recsafter - importinstance.recsbefore))
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s observation points were imported to the database.\nGeometries (map position) were automatically created based on east and north coordinates."))%str(importinstance.recsafter - importinstance.recsbefore))
                     #utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s observation points were imported to the database.\nTo display the imported points on map, select them in\nthe obs_points attribute table then update map position:\nMidvatten - Edit data in database - Update map position from coordinates"))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         self.midvsettingsdialog.ClearEverything()
@@ -651,7 +651,7 @@ class midvatten:
                                 except:
                                     pass                            
                 else:
-                    utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!", 2)
+                    utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!"))
             else: 
                 utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
 
@@ -1057,7 +1057,7 @@ class midvatten:
             fail = 0
             for k in utils.getselectedobjectnames(qgis.utils.iface.activeLayer()):#all selected objects
                 if not utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.ms.settingsdict['wqualtable'],str(k)))[1]:#if there is a selected object without water quality data
-                    utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "No water quality data for %s"))%str(k), 2)
+                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate("Midvatten", "No water quality data for %s"))%str(k))
                     fail = 1
             if not fail == 1:#only if all objects has data
                 wqualreport(qgis.utils.iface.activeLayer(),self.ms.settingsdict)#TEMPORARY FOR GVAB
