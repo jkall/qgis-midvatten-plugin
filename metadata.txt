@@ -21,6 +21,8 @@ deprecated=False
 changelog=
         Version 1.4.3:
         - Diveroffice import: Fixed the format and width for the datetime filter.
+        - Diveroffice import: Bug fix where button "skip" did not work.
+        - Stratigraphy: Fixed bug where stratas with umlauts were not found (ex. morän).
         Version 1.4.2:
         - Added Qt internationalization support and Portuguese translations for ui-files and some modules (with special thanks to Luiz Pacheco Motta (IBAMA/QGISBrasil), Mariana Muniz Blank (Rede Guarani/Serra Geral/QGISBrasil), Arthur Schmidt Nanni (Rede Guarani/Serra Geral/QGISBrasil) and Luiz Fernando Scheibe (Rede Guarani/Serra Geral/QGISBrasil)!.
         Version 1.4.1:
