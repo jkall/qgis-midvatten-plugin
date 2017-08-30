@@ -1,6 +1,7 @@
 SOURCES = \
 ./midvatten.py \
 ./tools/import_diveroffice.py
+./definitions/midvatten_defs.py
 
 FORMS = \
 ui/calc_aveflow_dialog.ui \
