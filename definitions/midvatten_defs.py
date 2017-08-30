@@ -117,7 +117,7 @@ def geocolorsymbols():
     # fallback method to maintain backwards compatibility
     if not (res1 and res2):
         # Fallback method - if using old databases where zz_strat is missing, then you may change the code below to reflect your own GEOLOGIC CODES, SYMBOLS AND COLORS
-        print('using fallback method for backwards compat.')
+        utils.MessagebarAndLog.info(bar_msg=u'Reading zz_strat* tables failed. Using default dictionary instead')
         dictionary  = { '': ('NoBrush', 'white'),
                     ' ': ('NoBrush', 'white'),
                     'berg': ('DiagCrossPattern', 'red'),
@@ -263,12 +263,21 @@ def geocolorsymbols():
     # new method create dict from db table
     #dict_geo1 is just a start, not yet populated with tuples of geoshorts for each strata, time to do so
     dictionary={}
-    for key, value in sorted(dict_geo1.iteritems()):
-        for geoshort in value:
+    for strata, strata_synonyms in sorted(dict_geo1.iteritems()):
+        #In general there is only one geoshort in geoshort_as_strata_synonym
+        for geoshort in strata_synonyms:
+            geoshort = geoshort[0]
             try:
-                dictionary[geoshort[0]]=dict_qt[str(key)][0]
-            except:
-                dictionary[geoshort[0]]=(u'NoBrush', u'white')
+                dictionary[geoshort]=dict_qt[str(strata)][0]
+            except Exception as a:
+                try:
+                    dictionary[geoshort] = dict_qt[strata][0]
+                except Exception as b:
+                    try:
+                        dictionary[geoshort] = dict_qt[utils.returnunicode(strata)][0]
+                    except Exception as c:
+                        utils.MessagebarAndLog.warning(log_msg=u'Error in geocolorsymbols, setting brush and color for strata "%s" using geoshort %s failed. Msg1:\n%s\nMsg2:\n%s\Msg3:\n%s'%(strata, geoshort, str(a), str(b), str(c)))
+                        dictionary[geoshort]=(u'NoBrush', u'white')
     """
     # this was temporary method to deal with zz_stratigraphy table existing in plugin version 1.3.x
     # skip "unknown"
