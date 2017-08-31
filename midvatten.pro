@@ -1,6 +1,6 @@
 SOURCES = \
 ./midvatten.py \
-./tools/import_diveroffice.py
+./tools/import_diveroffice.py \
 ./definitions/midvatten_defs.py
 
 FORMS = \
@@ -32,5 +32,7 @@ ui/w_lvls_last_geom_en.ui \
 ui/w_lvls_last_geom.ui
 
 TRANSLATIONS = \
-./i18n/midvatten_pt_BR.ts
+./i18n/midvatten_pt_BR.ts \
+./i18n/midvatten_sv_SE.ts
+
 

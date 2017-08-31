@@ -42,6 +42,7 @@ from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialit
 from pyspatialite.dbapi2 import IntegrityError, OperationalError
 from qgis.core import *
 from qgis.gui import *
+from PyQt4.QtCore import QCoreApplication
 
 try:
     import pandas as pd
@@ -71,10 +72,10 @@ class dbconnection():
                     self.conn.cursor().execute("select count(*) from sqlite_master")
                     ConnectionOK = True
                 except:
-                    pop_up_info("Could not connect to  " + self.dbpath + "\nYou will have to reset Midvatten settings for this project!")
+                    pop_up_info(returnunicode(QCoreApplication.translate(u'dbconnection', "Could not connect to %s\nYou will have to reset Midvatten settings for this project!"))%(self.dbpath))
                     ConnectionOK = False
         else:
-            pop_up_info("The file " + self.dbpath + " do not exist.\nYou will have to reset Midvatten settings for this project!")
+            pop_up_info(returnunicode(QCoreApplication.translate(u'dbconnection', "The file %s does not exist.\nYou will have to reset Midvatten settings for this project!"))%self.dbpath)
             ConnectionOK = False
         return ConnectionOK
         
@@ -84,7 +85,7 @@ class dbconnection():
 
 def check_db_is_locked(dbpath):
     if os.path.exists(dbpath + u'-journal'):
-        MessagebarAndLog.warning(bar_msg=u"Error, The database is already in use (a journal-file was found)")
+        MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'check_db_is_locked', u"Error, The database is already in use (a journal-file was found)"))
         return True
     else:
         return False
@@ -137,7 +138,7 @@ class MessagebarAndLog():
             return None
         if bar_msg is not None:
             widget = qgis.utils.iface.messageBar().createMessage(returnunicode(bar_msg))
-            log_button = QtGui.QPushButton(u"View message log", pressed=show_message_log)
+            log_button = QtGui.QPushButton(QCoreApplication.translate(u'MessagebarAndLog', u"View message log"), pressed=show_message_log)
             if log_msg is not None and button:
                 widget.layout().addWidget(log_button)
             qgis.utils.iface.messageBar().pushWidget(widget, level=messagebar_level, duration=duration)
@@ -171,7 +172,7 @@ def write_qgs_log_to_file(message, tag, level):
 
 
 class askuser(QtGui.QDialog):
-    def __init__(self, question="YesNo", msg = '', dialogtitle='User input needed', parent=None):
+    def __init__(self, question="YesNo", msg = '', dialogtitle=QCoreApplication.translate(u'askuser', 'User input needed'), parent=None):
         self.result = ''
         if question == 'YesNo':         #  Yes/No dialog 
             reply = QtGui.QMessageBox.information(parent, dialogtitle, msg, QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
@@ -180,8 +181,8 @@ class askuser(QtGui.QDialog):
             else:
                 self.result = 0  #0="no"
         elif question == 'AllSelected': # All or Selected Dialog
-            btnAll = QtGui.QPushButton("All")   # = "0"
-            btnSelected = QtGui.QPushButton("Selected")     # = "1"
+            btnAll = QtGui.QPushButton(QCoreApplication.translate(u'askuser', "All"))   # = "0"
+            btnSelected = QtGui.QPushButton(QCoreApplication.translate(u'askuser', "Selected"))     # = "1"
             #btnAll.clicked.connect(self.DoForAll)
             #btnSelected.clicked.connect(self.DoForSelected)
             msgBox = QtGui.QMessageBox(parent)
@@ -196,7 +197,7 @@ class askuser(QtGui.QDialog):
         elif question == 'DateShift':
             supported_units = [u'microseconds', u'milliseconds', u'seconds', u'minutes', u'hours', u'days', u'weeks']
             while True:
-                answer = str(PyQt4.QtGui.QInputDialog.getText(None, "User input needed", "Give needed adjustment of date/time for the data.\nSupported format: +- X <resolution>\nEx: 1 hours, -1 hours, -1 days\nSupported units:\n" + ', '.join(supported_units), PyQt4.QtGui.QLineEdit.Normal, u'0 hours')[0])
+                answer = str(PyQt4.QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'askuser', "User input needed"), returnunicode(QCoreApplication.translate(u'askuser', "Give needed adjustment of date/time for the data.\nSupported format: +- X <resolution>\nEx: 1 hours, -1 hours, -1 days\nSupported units:\n%s"))%', '.join(supported_units), PyQt4.QtGui.QLineEdit.Normal, u'0 hours')[0])
                 if not answer:
                     self.result = u'cancel'
                     break
@@ -207,9 +208,9 @@ class askuser(QtGui.QDialog):
                             self.result = adjustment_unit
                             break
                         else:
-                            pop_up_info("Failure:\nOnly support resolutions\n " + ', '.join(supported_units))
+                            pop_up_info(returnunicode(QCoreApplication.translate(u'askuser', "Failure:\nOnly support resolutions\n%s"))%', '.join(supported_units))
                     else:
-                        pop_up_info("Failure:\nMust write time resolution also.\n")
+                        pop_up_info(QCoreApplication.translate(u'askuser', "Failure:\nMust write time resolution also.\n"))
 
 
 class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
@@ -232,7 +233,7 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
             self.buttonBox.addButton(button, QtGui.QDialogButtonBox.ActionRole)
             self.connect(button, PyQt4.QtCore.SIGNAL("clicked()"), self.button_clicked)
 
-        self.reuse_label = PyQt4.QtGui.QLabel(u'Reuse answer for all identical')
+        self.reuse_label = PyQt4.QtGui.QLabel(QCoreApplication.translate(u'NotFoundQuestion', u'Reuse answer for all identical'))
         self._reuse_column = PyQt4.QtGui.QComboBox()
         self._reuse_column.addItem(u'')
         if isinstance(reuse_header_list, (list, tuple)):
@@ -291,7 +292,7 @@ class HtmlDialog(QtGui.QDialog):
         self.verticalLayout.setMargin(0)
         self.verticalLayout.addWidget(self.webView)
         self.closeButton = QtGui.QPushButton()
-        self.closeButton.setText("Close")
+        self.closeButton.setText(QCoreApplication.translate(u'HtmlDialog', "Close"))
         self.closeButton.setMaximumWidth(150)
         self.horizontalLayout= QtGui.QHBoxLayout()
         self.horizontalLayout.setSpacing(2)
@@ -390,9 +391,9 @@ def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-tab
     connection_ok, list_of_tuples= sql_load_fr_db(sqlstring)
 
     if not connection_ok:
-        textstring = """Cannot create dictionary from columns %s and %s in table %s!"""%(params)#col1,col2,table)
+        textstring = returnunicode(QCoreApplication.translate(u'create_dict_from_db_2_cols', """Cannot create dictionary from columns %s and %s in table %s!"""))%(params)#col1,col2,table)
         #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)        
-        MessagebarAndLog.warning(bar_msg='Some sql failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
+        MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'create_dict_from_db_2_cols', 'Some sql failure, see log for additional info.'), log_msg=textstring, duration=4,button=True)
         return False, {'':''}
 
     adict = dict([(k, v) for k, v in list_of_tuples])
@@ -487,7 +488,7 @@ def isdate(str):
 def null_2_empty_string(input_string):
     return(input_string.replace('NULL','').replace('null',''))
 
-def pop_up_info(msg='',title='Information',parent=None):
+def pop_up_info(msg='',title=QCoreApplication.translate(u'pop_up_info', 'Information'),parent=None):
     """Display an info message via Qt box"""
     QtGui.QMessageBox.information(parent, title, '%s' % (msg))
 
@@ -571,7 +572,7 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
         try:
             text = unicode(str(anything))
         except:
-            text = unicode('data type unknown, check database')
+            text = unicode(QCoreApplication.translate(u'returnunicode', 'data type unknown, check database'))
     return text
 
 def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
@@ -587,9 +588,9 @@ def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list
             ConnectionOK = True
         except:
             #pop_up_info("Could not connect to DB, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
-            textstring = """DB error!\nDB call causing this error:%s\n"""%(sql)
+            textstring = returnunicode(QCoreApplication.translate(u'sql_load_fr_db', """DB error!\nDB call causing this error:%s\n"""))%(sql)
             #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15)
-            MessagebarAndLog.warning(bar_msg='Some sql failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
+            MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'sql_load_fr_db', 'Some sql failure, see log for additional info.'), log_msg=textstring, duration=4,button=True)
             ConnectionOK = False
             result = ''
             try:
@@ -598,9 +599,9 @@ def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list
                 pass
     else:
         #pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
-        textstring = """Could not connect to db %s!\nDB call causing this error:%s\n"""%(dbpath[0],sql)
+        textstring = returnunicode(QCoreApplication.translate(u'sql_load_fr_db', """Could not connect to db %s!\nDB call causing this error:%s\n"""))%(dbpath[0],sql)
         #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15)
-        MessagebarAndLog.critical(bar_msg='Db connection failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
+        MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'sql_load_fr_db', 'Db connection failure, see log for additional info.'), log_msg=textstring, duration=4,button=True)
         ConnectionOK = False
         result = ''
     return ConnectionOK, result
@@ -620,13 +621,13 @@ def sql_alter_db(sql=''):
                 conn.close()
             except:
                 pass
-            raise IntegrityError("The sql failed:\n" + sql2 + "\nmsg:\n" + str(e))
+            raise IntegrityError(returnunicode(QCoreApplication.translate("The sql failed:\n%s\nmsg:\n%s"))%(sql2, str(e)))
         except OperationalError, e:
             try:
                 conn.close()
             except:
                 pass
-            raise OperationalError("The sql failed:\n" + sql2 + "\nmsg:\n" + str(e))
+            raise OperationalError(returnunicode(QCoreApplication.translate("The sql failed:\n%s\nmsg:\n%s"))%(sql2, str(e)))
     else:
         try:
             resultfromsql = curs.executemany(sql2[0], sql2[1])
