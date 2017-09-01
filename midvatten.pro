@@ -1,6 +1,7 @@
 SOURCES = \
 ./midvatten.py \
 ./tools/import_diveroffice.py \
+./tools/midvatten_utils.py \
 ./definitions/midvatten_defs.py
 
 FORMS = \
