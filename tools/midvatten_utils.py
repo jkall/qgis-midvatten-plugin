@@ -621,13 +621,13 @@ def sql_alter_db(sql=''):
                 conn.close()
             except:
                 pass
-            raise IntegrityError(returnunicode(QCoreApplication.translate("The sql failed:\n%s\nmsg:\n%s"))%(sql2, str(e)))
+            raise IntegrityError(returnunicode(QCoreApplication.translate(u'sql_alter_db', "The sql failed:\n%s\nmsg:\n%s"))%(sql2, str(e)))
         except OperationalError, e:
             try:
                 conn.close()
             except:
                 pass
-            raise OperationalError(returnunicode(QCoreApplication.translate("The sql failed:\n%s\nmsg:\n%s"))%(sql2, str(e)))
+            raise OperationalError(returnunicode(QCoreApplication.translate(u'sql_alter_db', "The sql failed:\n%s\nmsg:\n%s"))%(sql2, str(e)))
     else:
         try:
             resultfromsql = curs.executemany(sql2[0], sql2[1])
@@ -674,11 +674,11 @@ def sql_alter_db_by_param_subst(sql='',*subst_params):
             conn.close()
             ConnectionOK = True
         except:
-            pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
+            pop_up_info(returnunicode(QCoreApplication.translate(u'sql_alter_db_by_param_subst', "Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n%s"))%sql)
             ConnectionOK = False
             result = ''
     else:
-        pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
+        pop_up_info(returnunicode(QCoreApplication.translate(u'sql_alter_db_by_param_subst', "Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n%s"))%sql)
         ConnectionOK = False
         result = ''
     return ConnectionOK, result
@@ -690,18 +690,17 @@ def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatur
         elif not(selectedfeatures==0) and layer.selectedFeatureCount()==selectedfeatures:
             return 'ok'
         elif selectedfeatures == 0 and not(layer.selectedFeatureCount() > 0):
-            qgis.utils.iface.messageBar().pushMessage("Error","Select at least one object in the qgis layer!", 2,duration=10)
+            MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'selection_check', u'Error, select at least one object in the qgis layer!'))
         else:
-            textstring = """Select exactly %s object in the qgis layer!"""%str(selectedfeatures)
-            qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+            MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'selection_check', u'"""Error, select exactly %s object in the qgis layer!'))%str(selectedfeatures))
     else:
-        pop_up_info("Select a qgis layer that has a field obsid!")
+        pop_up_info(QCoreApplication.translate(u'selection_check', "Select a qgis layer that has a field obsid!"))
 
 def strat_selection_check(layer=''):
     if layer.dataProvider().fieldNameIndex('h_gs')  > -1 or layer.dataProvider().fieldNameIndex('h_toc')  > -1  or layer.dataProvider().fieldNameIndex('SURF_LVL')  > -1: # SURF_LVL to enable backwards compatibility
             return 'ok'        
     else:
-        qgis.utils.iface.messageBar().pushMessage("Error","Select a qgis layer with field h_gs!", 2,duration=10)
+        MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'strat_selection_check', u'Error, select a qgis layer with field h_gs!')))
 
 def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
     ur"""
@@ -734,7 +733,7 @@ def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
         pass
 
     if text is None:
-        text = 'data type unknown, check database'.encode('utf-8')
+        text = returnunicode(QCoreApplication.translate(u'unicode_2_utf8', u'data type unknown, check database')).encode('utf-8')
     return text
 
 def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=('')):
@@ -746,17 +745,17 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
         layerexists = find_layer(str(layername))
         if layerexists:
             if layerexists.isEditable():
-                MessagebarAndLog.warning(bar_msg=u"Error %s is currently in editing mode.\nPlease exit this mode before proceeding with this operation."%str(layerexists.name()))
+                MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u"Error %s is currently in editing mode.\nPlease exit this mode before proceeding with this operation."))%str(layerexists.name()))
                 #pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", "Warning")
                 errorsignal += 1
 
     dbpath = mset.settingsdict['database']
     if not dbpath:
-        MessagebarAndLog.warning(bar_msg=u"Error, No database found. Please check your Midvatten Settings. Reset if needed.")
+        MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u"Error, No database found. Please check your Midvatten Settings. Reset if needed."))
         errorsignal += 1
     else:
         if not os.path.isfile(dbpath):
-            MessagebarAndLog.warning(bar_msg=u"Error, The selected database doesn't exist. Please check your Midvatten Settings and database location. Reset if needed.")
+            MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u"Error, The selected database doesn't exist. Please check your Midvatten Settings and database location. Reset if needed."))
             errorsignal += 1
         else:
             if check_db_is_locked(dbpath):
@@ -770,11 +769,11 @@ def verify_layer_selection(errorsignal,selectedfeatures=0):
         if not(selection_check(layer) == 'ok'):
             errorsignal += 1
             if selectedfeatures==0:
-                qgis.utils.iface.messageBar().pushMessage("Error","You have to select some features!", 2,duration=10)
+                MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'verify_layer_selection', u'Error, you have to select some features!'))
             else:
-                qgis.utils.iface.messageBar().pushMessage("Error","You have to select exactly %s features!"%str(selectedfeatures), 2,duration=10)
+                MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'verify_layer_selection', u'Error, you have to select exactly %s features!'))%str(selectedfeatures))
     else:
-        qgis.utils.iface.messageBar().pushMessage("Error","You have to select a relevant layer!", 2,duration=10)
+        MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'verify_layer_selection', u'Error, you have to select a relevant layer!'))
         errorsignal += 1
     return errorsignal
 
@@ -789,13 +788,13 @@ def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
     layer = get_active_layer()
     if not layer:#check there is actually a layer selected
         errorsignal += 1
-        qgis.utils.iface.messageBar().pushMessage("Error","You have to select/activate %s layer!"%layername, 2,duration=10)
+        MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'verify_this_layer_selected_and_not_in_edit_mode', u'Error, you have to select/activate %s layer!'))%layername)
     elif layer.isEditable():
         errorsignal += 1
-        qgis.utils.iface.messageBar().pushMessage("Error","The selected layer is currently in editing mode. Please exit this mode before updating coordinates.", 2,duration=10)
+        MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'verify_this_layer_selected_and_not_in_edit_mode', u'Error, the selected layer is currently in editing mode. Please exit this mode before updating coordinates.')))
     elif not(layer.name() == layername):
         errorsignal += 1
-        qgis.utils.iface.messageBar().pushMessage("Error","You have to select/activate %s layer!"%layername, 2,duration=10)
+        MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'verify_this_layer_selected_and_not_in_edit_mode', u'Error, you have to select/activate %s layer!'))%layername)
     return errorsignal
 
 def verify_table_exists(tablename):
@@ -913,8 +912,7 @@ def get_quality_instruments():
     connection_ok, result_list = sql_result
 
     if not connection_ok:
-        textstring = """Failed to get quality instruments from from sql """ + sql
-        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+        MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'get_quality_instruments', u'Sql failed, see log message panel.'), log_msg=returnunicode(QCoreApplication.translate(u'get_quality_instruments', u'Failed to get quality instruments from sql\n%s'))%sql)
         return False, tuple()
 
     return True, returnunicode([x[0] for x in result_list], True)
@@ -929,9 +927,7 @@ def get_sql_result_as_dict(sql):
     connection_ok, result_list = sql_result
 
     if not connection_ok:
-        textstring = """Cannot create dictionary from sql """ + sql
-        #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
-        MessagebarAndLog.warning(bar_msg='Some sql failure, see log for additional info.', log_msg=textstring, duration=4,button=True)
+        MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'get_sql_result_as_dict', u'Sql failed, see log message panel.'), log_msg=returnunicode(QCoreApplication.translate(u'get_sql_result_as_dict', u'Cannot create dictionary from sql\n%s'))%sql)
         return False, {}
     
     result_dict = {}
@@ -980,9 +976,9 @@ def select_files(only_one_file=True, extension="csv (*.csv)"):
     except:
         dir = u''
     if only_one_file:
-        csvpath = [QtGui.QFileDialog.getOpenFileName(parent=None, caption="Select File", directory=dir, filter=extension)]
+        csvpath = [QtGui.QFileDialog.getOpenFileName(parent=None, caption=QCoreApplication.translate(u'select_files', "Select file"), directory=dir, filter=extension)]
     else:
-        csvpath = QtGui.QFileDialog.getOpenFileNames(parent=None, caption="Select Files", directory=dir, filter=extension)
+        csvpath = QtGui.QFileDialog.getOpenFileNames(parent=None, caption=QCoreApplication.translate(u'select_files', "Select files"), directory=dir, filter=extension)
     csvpath = [returnunicode(p) for p in csvpath if p]
     return csvpath
 
@@ -991,23 +987,23 @@ def ask_for_charset(default_charset=None, msg=None):
         localencoding = getcurrentlocale()[1]
         if default_charset is None:
             if msg is None:
-                msg = "Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer " + localencoding + " is default."
-            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", msg,QtGui.QLineEdit.Normal,getcurrentlocale()[1])[0]
+                msg = returnunicode(QCoreApplication.translate(u'ask_for_charset',"Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer %s is default."))%localencoding
+            charsetchoosen = QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_charset',"Set charset encoding"), msg,QtGui.QLineEdit.Normal,getcurrentlocale()[1])[0]
         else:
             if msg is None:
-                msg = "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252."
-            charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", msg, QtGui.QLineEdit.Normal, default_charset)[0]
+                msg = QCoreApplication.translate(u'ask_for_charset', "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.")
+            charsetchoosen = QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_charset',"Set charset encoding"), msg, QtGui.QLineEdit.Normal, default_charset)[0]
     except Exception, e:
         if default_charset is None:
             default_charset = 'utf-8'
         if msg is None:
-            msg = "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252."
-        charsetchoosen = QtGui.QInputDialog.getText(None, "Set charset encoding", msg, QtGui.QLineEdit.Normal, default_charset)[0]
+            msg = QCoreApplication.translate(u'ask_for_charset', "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.")
+        charsetchoosen = QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_charset',"Set charset encoding"), msg, QtGui.QLineEdit.Normal, default_charset)[0]
 
     return str(charsetchoosen)
 
 def ask_for_export_crs(default_crs=u''):
-    return str(QtGui.QInputDialog.getText(None, "Set export crs", "Give the crs for the exported database.\n",QtGui.QLineEdit.Normal,default_crs)[0])
+    return str(QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_export_crs',"Set export crs"), QCoreApplication.translate(u'ask_for_export_crs', "Give the crs for the exported database.\n"),QtGui.QLineEdit.Normal,default_crs)[0])
 
 def lists_to_string(alist_of_lists, quote=False):
     ur'''
@@ -1201,8 +1197,8 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
         similar_values = find_similar(current_value, existing_values, hits=5)
         similar_values.extend([x for x in sorted(existing_values) if x not in similar_values])
 
-        msg = u'(Message ' + unicode(rownr + 1) + u' of ' + unicode(len(data_to_ask_for)) + u')\n\nGive the ' + header_value + u' for:\n' + u'\n'.join([u': '.join((file_data[0][_colnr], word if word is not None else u'')) for _colnr, word in enumerate(row)])
-        question = NotFoundQuestion(dialogtitle=u'WARNING',
+        msg = returnunicode(QCoreApplication.translate(u'filter_nonexisting_values_and_ask', u'(Message %s of %s)\n\nGive the %s for:\n%s'))%(unicode(rownr + 1), unicode(len(data_to_ask_for)), header_value, u'\n'.join([u': '.join((file_data[0][_colnr], word if word is not None else u'')) for _colnr, word in enumerate(row)]))
+        question = NotFoundQuestion(dialogtitle=QCoreApplication.translate(u'filter_nonexisting_values_and_ask', u'WARNING'),
                                     msg=msg,
                                     existing_list=similar_values,
                                     default_value=similar_values[0],
@@ -1363,10 +1359,9 @@ def calculate_db_table_rows():
     connection_ok, tablenames = sql_result
 
     if not connection_ok:
-        textstring = """get_db_table_rows: Sql failed: """ + sql
         MessagebarAndLog.warning(
-            bar_msg='Sql failure, see log for additional info.',
-            log_msg=textstring, duration=4, button=True)
+            bar_msg=QCoreApplication.translate(u'calculate_db_table_rows', u'Sql failed, see log message panel.'),
+            log_msg=returnunicode(QCoreApplication.translate(u'calculate_db_table_rows', u'Sql failed:\n%s'))%sql)
         return None
 
     sql_failed = []
@@ -1384,10 +1379,9 @@ def calculate_db_table_rows():
         results[tablename] = str(nr_of_rows[0][0])
 
     if sql_failed:
-        textstring = 'Sql failed:\n' + '\n'.join(sql_failed) + '\n'
         MessagebarAndLog.warning(
-            bar_msg='Sql failure, see log for additional info.',
-            log_msg=textstring, duration=15, button=True)
+            bar_msg=QCoreApplication.translate(u'calculate_db_table_rows', u'Sql failed, see log message panel.'),
+            log_msg=returnunicode(QCoreApplication.translate(u'calculate_db_table_rows', 'Sql failed:\n%s\n'))%'\n'.join(sql_failed))
 
     if results:
         printable_msg = '{0:40}{1:15}'.format('Tablename', 'Nr of rows\n')
@@ -1395,8 +1389,8 @@ def calculate_db_table_rows():
             ['{0:40}{1:15}'.format(table_name, _nr_of_rows) for
              table_name, _nr_of_rows in sorted(results.iteritems())])
         MessagebarAndLog.info(
-            bar_msg='Calculation done, see log for results.',
-            log_msg=printable_msg, duration=15, button=True)
+            bar_msg=QCoreApplication.translate(u'calculate_db_table_rows', 'Calculation done, see log for results.'),
+            log_msg=printable_msg)
 
 def anything_to_string_representation(anything):
     ur""" Turns anything into a string used for testing
