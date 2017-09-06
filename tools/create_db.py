@@ -23,12 +23,15 @@ from qgis.core import QGis
 import qgis.utils
 import re
 
+from PyQt4.QtCore import QCoreApplication
+
 import os
 import locale
 from pyspatialite import dbapi2 as sqlite# pyspatialite is absolutely necessary (sqlite3 not enough) due to InitSpatialMetaData()
 import datetime
 #plugin modules
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 
 class newdb():
@@ -50,7 +53,7 @@ class newdb():
             EPSGID=EPSG_code
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         if EPSGID=='0' or not EPSGID:
-            utils.pop_up_info("Cancelling...")
+            utils.pop_up_info(ru(QCoreApplication.translate(u'newdb', "Cancelling...")))
         else: # If a CRS is selectd, go on and create the database
             #path and name of new db
             self.dbpath = PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)")
@@ -61,7 +64,7 @@ class newdb():
             else:
                 #exit if the file exists
                 if os.path.exists(self.dbpath):
-                    utils.MessagebarAndLog.critical(bar_msg=u'A database with the chosen name already existed. Cancelling...')
+                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'newdb', u'A database with the chosen name already existed. Cancelling...')))
                     return ''
 
                 try:
@@ -71,7 +74,7 @@ class newdb():
                     self.cur = self.conn.cursor()
                     self.cur.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
                 except:
-                    qgis.utils.iface.messageBar().pushMessage("Impossible to connect to selected DataBase", 2,duration=3)
+                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'newdb', "Impossible to connect to selected DataBase")))
                     #utils.pop_up_info("Impossible to connect to selected DataBase")
                     PyQt4.QtGui.QApplication.restoreOverrideCursor()
                     return ''
@@ -80,7 +83,7 @@ class newdb():
                 # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
                 # then the syntax defines a Midvatten project db according to the loaded .sql-file
                 if not int(versionstext[0][0][0]) > 3: # which file to use depends on spatialite version installed
-                    utils.pop_up_info("Midvatten plugin needs spatialite4.\nDatabase can not be created")
+                    utils.pop_up_info(ru(QCoreApplication.translate(u'newdb', "Midvatten plugin needs spatialite4.\nDatabase can not be created")))
                     return ''
 
                 filenamestring = "create_db.sql"
@@ -110,11 +113,11 @@ class newdb():
                     try:
                         self.cur.execute(line)  # use tags to find and replace SRID and versioning info
                     except Exception, e:
-                        print("SQL Failed: %s msg: %s"%(line, str(e)))
+                        print(ru(QCoreApplication.translate(u'newdb', "SQL Failed: %s msg: %s"))%(line, str(e)))
                         #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
-                        utils.MessagebarAndLog.critical("sqlite error, see qgis Log Message Panel", 'Failed to create DB! sql failed: \n%serror msg: %s\n\n'%(line ,str(e)), duration=5)
+                        utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'newdb', "sqlite error, see qgis Log Message Panel")), log_msg=ru(QCoreApplication.translate(u'newdb', 'Failed to create DB! sql failed: \n%serror msg: %s\n\n'))%(line ,str(e)), duration=5)
 
-                #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
+                #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + ru(EPSGID))
                 if delete_srids:
                     try:#spatial_ref_sys_aux not implemented until spatialite 4.3
                         self.cur.execute(r"""delete from spatial_ref_sys_aux where srid NOT IN ('%s', '4326')""" % EPSGID)
@@ -124,7 +127,7 @@ class newdb():
                     try:
                         self.cur.execute(delete_srid_sql)
                     except:
-                        utils.MessagebarAndLog.info(log_msg=u'Removing srids failed using: ' + str(delete_srid_sql))
+                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'newdb', u'Removing srids failed using: %s'))%str(delete_srid_sql))
 
                 self.insert_datadomains(set_locale)
 
@@ -156,13 +159,13 @@ class newdb():
         locale_names = [localeobj.name() for localeobj in locales]
         locale_names.append(locale.getdefaultlocale()[0])
         locale_names = list(set(locale_names))
-        question = utils.NotFoundQuestion(dialogtitle=u'User input needed',
-                                    msg=u'Supply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.',
+        question = utils.NotFoundQuestion(dialogtitle=ru(QCoreApplication.translate(u'newdb', u'User input needed')),
+                                    msg=ru(QCoreApplication.translate(u'newdb', u'Supply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.')),
                                     existing_list=locale_names,
                                     default_value=u'',
                                     button_names=[u'Cancel', u'Ok'])
         answer = question.answer
-        submitted_value = utils.returnunicode(question.value)
+        submitted_value = ru(question.value)
         if answer == u'cancel':
             return answer
         elif answer == u'ok':
@@ -174,7 +177,7 @@ class newdb():
             default_crs = 3006
         else:
             default_crs = 4326
-        EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, "Select CRS", "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:",default_crs)
+        EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, ru(QCoreApplication.translate(u'newdb', "Select CRS")), ru(QCoreApplication.translate(u'newdb', "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:")),default_crs)
         return EPSGID
 
     def insert_datadomains(self, set_locale=False):
@@ -269,7 +272,7 @@ class newdb():
                     #utils.pop_up_info('Failed to create DB! sql failed:\n' + line + '\n\nerror msg:\n' + str(e))
                     #This print out is for debug, and it only prints during a fail so it can stay:
                     print("Sql line failed:\n%s\nmsg:%s"%(str(line), str(e)))
-                    utils.MessagebarAndLog.critical("Error: sql failed, see qgis Log Message Panel", 'sql failed:\n%s\nerror msg:\n%s\n'%(line ,str(e)), duration=5)
+                    utils.MessagebarAndLog.critical(utils.sql_failed_msg(), ru(QCoreApplication.translate(u'newdb', 'sql failed:\n%s\nerror msg:\n%s\n'))%(line ,str(e)), duration=5)
 
 
 class AddLayerStyles():

@@ -20,6 +20,9 @@ deprecated=False
 
 changelog=
         Version 1.4.3:
+        - Added Qt internationalization support for modules midvatten_defs.py, import_general_csv_gui.py,
+        loaddefaultlayers.py, import_diveroffice.py, import_data_to_db.py, create_db.py, date_utils.py,
+        import_interlab4.py, midvatten_utils.py.
         - Diveroffice import: Fixed the format and width for the datetime filter.
         - Diveroffice import: Bug fix where button "skip" did not work.
         - Stratigraphy: Fixed bug where stratas with umlauts were not found (ex. morän).

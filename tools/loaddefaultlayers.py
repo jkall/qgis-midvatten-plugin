@@ -23,10 +23,13 @@ from PyQt4.QtGui import *
 from qgis.core import *  
 from qgis.gui import *
 
+from PyQt4.QtCore import QCoreApplication
+
 import qgis.utils
 import os
 import locale
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 
 class LoadLayers():        
@@ -87,8 +90,9 @@ class LoadLayers():
         #now loop over all the layers and set styles etc
         for layer in layer_list:
             if not layer.isValid():
-                utils.pop_up_info(layer.name() + ' is not valid layer')
-                print(layer.name() + ' is not valid layer')
+                not_valid_msg = ru(QCoreApplication.translate(u'LoadLayers', '%s is not valid layer'))%layer.name()
+                utils.pop_up_info(not_valid_msg)
+                print(not_valid_msg)
                 pass
             else:
                 map_canvas_layer_list.append(QgsMapCanvasLayer(layer))
@@ -146,7 +150,7 @@ class LoadLayers():
             firststring= 'dbname="' + self.settingsdict['database'] + '" table="' + tablename + '"'#MacOSX fix1  #earlier sent byte string, now unicode
             layer = QgsVectorLayer(firststring,tablename, 'spatialite')   # Adding the layer as 'spatialite' and not ogr vector layer is preferred
             if not layer.isValid():
-                qgis.utils.iface.messageBar().pushMessage("Error","""Failed to load layer %s!"""%tablename,2)
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'LoadLayers', u'Error, filed to load layer %s!'))%tablename)
             else:
                 QgsMapLayerRegistry.instance().addMapLayers([layer])
                 group_index = self.legend.groups().index('Midvatten_OBS_DB') 
@@ -171,7 +175,7 @@ class LoadLayers():
             uri.setDataSource('',tablename, 'Geometry')
             layer = QgsVectorLayer(uri.uri(), tablename, 'spatialite') # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
             if not layer.isValid():
-                qgis.utils.iface.messageBar().pushMessage("Error","""Failed to load layer %s!"""%tablename,2)                
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'LoadLayers', u'Error, filed to load layer %s!'))%tablename)
             else:
                 filename = tablename + ".qml"
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filename)
@@ -228,7 +232,7 @@ class LoadLayers():
         sql = r"""select name from sqlite_master where name = 'layer_styles'"""
         result = utils.sql_load_fr_db(sql)[1]
         if len(result)==0:#if it is an old database w/o styles
-            update_db = utils.askuser("YesNo","""Your database was created with plugin version < 1.1 when layer styles were not stored in the database. You can update this database to the new standard with layer styles (symbols, colors, labels, input forms etc) stored in the database. This will increase plugin stability and multi-user experience but it will also change the layout of all your forms for entering data into the database. Anyway, an update of the database is recommended. Do you want to add these layer styles now?""",'Update database with layer styles?')
+            update_db = utils.askuser("YesNo",ru(QCoreApplication.translate(u'LoadLayers', """Your database was created with plugin version < 1.1 when layer styles were not stored in the database. You can update this database to the new standard with layer styles (symbols, colors, labels, input forms etc) stored in the database. This will increase plugin stability and multi-user experience but it will also change the layout of all your forms for entering data into the database. Anyway, an update of the database is recommended. Do you want to add these layer styles now?""",'Update database with layer styles?')))
             if update_db.result == 1:
                 from create_db import AddLayerStyles
                 AddLayerStyles(self.settingsdict['database'])

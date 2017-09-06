@@ -912,7 +912,7 @@ def get_quality_instruments():
     connection_ok, result_list = sql_result
 
     if not connection_ok:
-        MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'get_quality_instruments', u'Sql failed, see log message panel.'), log_msg=returnunicode(QCoreApplication.translate(u'get_quality_instruments', u'Failed to get quality instruments from sql\n%s'))%sql)
+        MessagebarAndLog.critical(bar_msg=sql_failed_msg(), log_msg=returnunicode(QCoreApplication.translate(u'get_quality_instruments', u'Failed to get quality instruments from sql\n%s'))%sql)
         return False, tuple()
 
     return True, returnunicode([x[0] for x in result_list], True)
@@ -927,7 +927,7 @@ def get_sql_result_as_dict(sql):
     connection_ok, result_list = sql_result
 
     if not connection_ok:
-        MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'get_sql_result_as_dict', u'Sql failed, see log message panel.'), log_msg=returnunicode(QCoreApplication.translate(u'get_sql_result_as_dict', u'Cannot create dictionary from sql\n%s'))%sql)
+        MessagebarAndLog.critical(bar_msg=sql_failed_msg(), log_msg=returnunicode(QCoreApplication.translate(u'get_sql_result_as_dict', u'Cannot create dictionary from sql\n%s'))%sql)
         return False, {}
     
     result_dict = {}
@@ -1360,7 +1360,7 @@ def calculate_db_table_rows():
 
     if not connection_ok:
         MessagebarAndLog.warning(
-            bar_msg=QCoreApplication.translate(u'calculate_db_table_rows', u'Sql failed, see log message panel.'),
+            bar_msg=sql_failed_msg(),
             log_msg=returnunicode(QCoreApplication.translate(u'calculate_db_table_rows', u'Sql failed:\n%s'))%sql)
         return None
 
@@ -1380,7 +1380,7 @@ def calculate_db_table_rows():
 
     if sql_failed:
         MessagebarAndLog.warning(
-            bar_msg=QCoreApplication.translate(u'calculate_db_table_rows', u'Sql failed, see log message panel.'),
+            bar_msg=sql_failed_msg(),
             log_msg=returnunicode(QCoreApplication.translate(u'calculate_db_table_rows', 'Sql failed:\n%s\n'))%'\n'.join(sql_failed))
 
     if results:
@@ -1556,3 +1556,6 @@ def list_of_lists_from_table(tablename):
 def transpose_lists_of_lists(list_of_lists):
     outlist_of_lists = [[row[colnr] for row in list_of_lists] for colnr in xrange(len(list_of_lists[0]))]
     return outlist_of_lists
+
+def sql_failed_msg():
+    return QCoreApplication.translate(u'sql_failed_msg', u'Sql failed, see log message panel.')

@@ -140,7 +140,7 @@ class TestGeneralCsvImport(object):
                         mock_encoding.return_value = [True, u'utf-8']
                         self.importinstance.general_csv_import(goal_table=u'w_levels_logger')
 
-                        mock_iface.messageBar.return_value.createMessage.assert_called_with(u'Error: Import failed, see log message panel')
+                        mock_iface.messageBar.return_value.createMessage.assert_called_with(u'Import error, see log message panel')
                     _test_general_csv_import_wlvllogg(self, filename)
 
                     test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
@@ -1002,7 +1002,7 @@ class TestWqualfieldImport(object):
                 mock_encoding.return_value = [True, u'utf-8']
                 self.mock_iface = mock_iface
                 self.importinstance.general_csv_import(goal_table=u'w_qual_field')
-                mock_iface.messageBar.return_value.createMessage.assert_called_with(u'Error: Import failed, see log message panel')
+                mock_iface.messageBar.return_value.createMessage.assert_called_with(u'Import error, see log message panel')
 
             _test_w_qual_field_import_from_csvlayer(self, filename)
 

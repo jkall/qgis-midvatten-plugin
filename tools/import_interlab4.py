@@ -33,13 +33,14 @@ import re
 
 import PyQt4.QtCore
 import PyQt4.QtGui
+from PyQt4.QtCore import QCoreApplication
 
 import definitions.midvatten_defs
 import import_data_to_db
 import midvatten_utils as utils
 from date_utils import datestring_to_date, dateshift
 from definitions import midvatten_defs as defs
-from midvatten_utils import Cancel
+from midvatten_utils import Cancel, returnunicode as ru
 from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid, VRowEntry, ExtendedQPlainTextEdit
 
 
@@ -53,7 +54,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.ms.loadSettings()
         PyQt4.QtGui.QDialog.__init__(self, parent)
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
-        self.setWindowTitle("Import interlab4 data to w_qual_lab table") # Set the title for the dialog
+        self.setWindowTitle(ru(QCoreApplication.translate(u'Interlab4Import', "Import interlab4 data to w_qual_lab table"))) # Set the title for the dialog
         #self.MainWindow.setWindowTitle("Import interlab4 data to w_qual_lab table")
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.status = True
@@ -83,12 +84,13 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         self.connect(self.metadata_filter.update_selection_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.metadata_filter.set_selection(self.specific_meta_filter.get_items_dict()))
 
-        self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
+        self.start_import_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'Interlab4Import', u'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras()))
 
-        self.help_label = PyQt4.QtGui.QLabel(u'Instructions')
-        self.help_label.setToolTip(u'Selected rows (lablitteras in the bottom table will be imported when pushing "Start import" button.\n'
+        self.help_label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'Interlab4Import', u'Instructions')))
+        self.help_label.setToolTip(ru(QCoreApplication.translate(u'Interlab4Import',
+                                   u'Selected rows (lablitteras in the bottom table will be imported when pushing "Start import" button.\n'
                                    u'The table can be sorted by clicking the column headers.\n\n'
                                    u'Rows at the bottom table can also be selected using the top list.\n'
                                    u'Howto:\n'
@@ -96,7 +98,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                    u'2. Make a list of entries (one row per entry).\n'
                                    u'3. Click "Update selection".\n'
                                    u'All rows where values in the chosen column match entries in the pasted list will be selected.\n\n'
-                                   u'Hover over a column header to see which database column it will go to.')
+                                   u'Hover over a column header to see which database column it will go to.')))
 
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
         self.gridLayout_buttons.addWidget(self.help_label, 1, 0)
@@ -160,7 +162,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 return file_settings
             file_error, version, encoding, decimalsign, quotechar = file_settings
             if file_error:
-                utils.pop_up_info("Warning: The file information" + filename + " could not be read. Skipping file")
+                utils.pop_up_info(ru(QCoreApplication.translate(u'Interlab4Import', u"Warning: The file information %s could not be read. Skipping file"))%filename)
                 continue
 
             with open(filename, 'rb') as f:
@@ -186,7 +188,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                     if cols[0].lower().startswith(u'#slut'):
                         break
 
-                    #cols = utils.returnunicode(cols, keep_containers=True)
+                    #cols = ru(cols, keep_containers=True)
 
                     if cols[0].lower().startswith(u'#provadm'):
                         parse_data_values = False
@@ -227,11 +229,11 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                             data[u'mätvärdetal'] = data[u'mätvärdetal'].replace(decimalsign, '.')
 
                         if not u'parameter' in data:
-                            utils.pop_up_info("WARNING: Parsing error. The parameter is missing on row " + str(cols))
+                            utils.pop_up_info(ru(QCoreApplication.translate(u'Interlab4Import', "WARNING: Parsing error. The parameter is missing on row %s"))%str(cols))
                             continue
 
                         if data[u'lablittera'] not in lab_results:
-                            utils.pop_up_info("WARNING: Parsing error. Data for " + data['lablittera'] + " read before it's metadata.")
+                            utils.pop_up_info(ru(QCoreApplication.translate(u'Interlab4Import', "WARNING: Parsing error. Data for %s read before it's metadata."))%data['lablittera'])
                             file_error = True
                             break
 
@@ -270,10 +272,10 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                         if previous_resolution > current_resolution:
                                             # The current one is the high resolution one. Keep it to overwrite the other one.
                                             parameter_chosen = True
-                                            utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The one with mätosäkerhet "' + _current_resolution + u'" was used.')
+                                            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Kalium was found more than once. The one with mätosäkerhet %s was used."'))%_current_resolution)
                                         elif current_resolution > previous_resolution:
                                             # The current one is the low resolution one, skip it.
-                                            utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The one with mätosäkerhet "' + _previous_resolution + u'" was used.')
+                                            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Kalium was found more than once. The one with mätosäkerhet %s was used."'))%_previous_resolution)
                                             parameter_chosen = True
                                             continue
                                         elif current_resolution == previous_resolution:
@@ -286,14 +288,14 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                     #Method 2: Use < and <2.5 limits to try to find the high resolution one.
                                     if current_txt == u'<1' or previous_txt.strip(u' ').replace(u',', u'.') == u'<2.5':
                                         #The current one is the high resolution one. Keep it to overwrite the other one.
-                                        utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The one with mätvärdetext "' + current_txt + u'" was used.')
+                                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Kalium was found more than once. The one with mätvärdetext %s was used."'))%current_txt)
                                         pass
                                     elif current_txt == u'<2.5' or previous_txt.strip(u' ') == u'<1':
                                         #The current one is the low resolution one, skip it.
-                                        utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The one with mätvärdetext "' + previous_txt + u'" was used.')
+                                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Kalium was found more than once. The one with mätvärdetext %s was used."'))%previous_txt)
                                         continue
                                     else:
-                                        utils.MessagebarAndLog.info(log_msg=u'Kalium was found more than once. The high resolution one could not be found. The one with mätvärdetext "' + current_txt + u'" was used.')
+                                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Kalium was found more than once. The high resolution one could not be found. The one with mätvärdetext %s was used."'))%current_txt)
                                         #Hope that the current one (the last one) is the high resolution one and let it overwrite the existing one
                                         pass
 
@@ -331,7 +333,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 continue
 
         if encoding is None:
-            encoding = utils.ask_for_charset(default_charset='utf-16', msg=u'Give charset used in the file %s'%filename)
+            encoding = utils.ask_for_charset(default_charset='utf-16', msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Give charset used in the file %s'))%filename)
         if encoding is None or not encoding:
             return Cancel()
 
@@ -384,7 +386,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
             sampledate = metadata.get(u'provtagningsdatum', None)
             if sampledate is None:
-                utils.MessagebarAndLog.info(log_msg=u'Interlab4 import: There was no sample date found (column "provtagningsdatum") for lablittera ' + lablittera + u'. Importing without it.')
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Interlab4 import: There was no sample date found (column "provtagningsdatum") for lablittera %s. Importing without it.'))%lablittera)
                 date_time = None
             else:
                 sampletime = metadata.get(u'provtagningstid', None)
@@ -392,7 +394,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                     date_time = datetime.strftime(datestring_to_date(u' '.join([sampledate, sampletime])), u'%Y-%m-%d %H:%M:%S')
                 else:
                     date_time = datetime.strftime(datestring_to_date(sampledate), u'%Y-%m-%d %H:%M:%S')
-                    utils.MessagebarAndLog.info(log_msg=u'Interlab4 import: There was no sample time found (column "provtagningstid") for lablittera ' + lablittera + u'. Importing without it.')
+                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Interlab4 import: There was no sample time found (column "provtagningstid") for lablittera %s. Importing without it.'))%lablittera)
 
             meta_comment = metadata.get(u'kommentar', None)
             additional_meta_comments = [u'provtagningsorsak',
@@ -424,8 +426,8 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                     except ValueError:
                         reading_num = None
                         if parameter not in parameter_report_warning_messages:
-                            utils.MessagebarAndLog.warning(bar_msg=u'Import interlab4 warning, see log message panel',
-                                                           log_msg=u'Could not set reading_num for parameter %s for one or more reports/lablitteras (%s etc.)'%(
+                            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Import interlab4 warning, see log message panel')),
+                                                           log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Could not set reading_num for parameter %s for one or more reports/lablitteras (%s etc.)'))%(
                                                                parameter,
                                                                lablittera))
                         parameter_report_warning_messages.setdefault(parameter, []).append(report)
@@ -465,7 +467,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                  )
 
         for parameter, reports in sorted(parameter_report_warning_messages.iteritems()):
-            utils.MessagebarAndLog.info(log_msg=u'reading_num could not be set for parameter %s for reports %s'%(parameter, u', '.join(reports)))
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'reading_num could not be set for parameter %s for reports %s'))%(parameter, u', '.join(reports)))
 
         return file_data
     
@@ -508,7 +510,7 @@ class MetaFilterSelection(VRowEntry):
 
     def get_items_dict(self):
         selected_items = self.items.get_all_data()
-        return {utils.returnunicode(self.combobox.currentText()): selected_items}
+        return {ru(self.combobox.currentText()): selected_items}
 
 
 class MetadataFilter(VRowEntry):
@@ -604,7 +606,7 @@ class MetadataFilter(VRowEntry):
         self.table.setColumnCount(len(self.sorted_table_header))
         self.table.setHorizontalHeaderLabels(self.sorted_table_header)
         for head_index, head_text in enumerate(self.sorted_table_header):
-            self.table.horizontalHeaderItem(head_index).setToolTip(u'%s will be put into database column "%s"'%(head_text, metaheader_dbcolumn_tooltips.get(head_text, u'comment')))
+            self.table.horizontalHeaderItem(head_index).setToolTip(ru(QCoreApplication.translate(u'MetadataFilter', u'%s will be put into database column "%s"'))%(head_text, metaheader_dbcolumn_tooltips.get(head_text, u'comment')))
 
         self.table.setRowCount(len(all_lab_results))
 
@@ -625,7 +627,7 @@ class MetadataFilter(VRowEntry):
         self.table.selectAll()
 
     def get_selected_lablitteras(self):
-        selected_lablitteras = [utils.returnunicode(self.table.item(rownr, 0).text()) for rownr in xrange(self.table.rowCount()) if self.table.item(rownr, 0).isSelected()]
+        selected_lablitteras = [ru(self.table.item(rownr, 0).text()) for rownr in xrange(self.table.rowCount()) if self.table.item(rownr, 0).isSelected()]
         return selected_lablitteras
 
     def get_all_data(self):
@@ -644,9 +646,9 @@ class MetadataFilter(VRowEntry):
         return all_lab_results
 
     def update_nr_of_selected(self):
-        labeltext = u'Select lablitteras to import'
+        labeltext = ru(QCoreApplication.translate(u'MetadataFilter',u'Select lablitteras to import'))
         nr_of_selected = str(len(self.get_selected_lablitteras()))
-        self.label.setText(u' '.join([labeltext, u'({} rows selected)'.format(nr_of_selected)]))
+        self.label.setText(u' '.join([labeltext, ru(QCoreApplication.translate(u'MetadataFilter',u'(%s rows selected)'))%nr_of_selected]))
 
 
 def get_metadata_headers(all_lab_results):

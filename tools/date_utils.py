@@ -19,6 +19,8 @@
 """
 import datetime
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
+from PyQt4.QtCore import QCoreApplication
 
 def find_date_format(datestring):
     """
@@ -58,11 +60,8 @@ def find_date_format(datestring):
 
     if found_format is None:
         utils.MessagebarAndLog.critical(
-            bar_msg=u'Date parsing failed, see log message panel',
-            log_msg=u'Could not find the date format for string "'
-                    + utils.returnunicode(datestring) + u'"'
-                    + u'\nSupported date formats:\n' + u'\n'.join(
-                    date_formats_to_try))
+            bar_msg=QCoreApplication.translate(u'find_date_format', u'Date parsing failed, see log message panel'),
+            log_msg=ru(QCoreApplication.translate(u'find_date_format', u'Could not find the date format for string "%s"\nSupported date formats:\n%s'))%(utils.returnunicode(datestring), u'\n'.join(date_formats_to_try)))
 
     return found_format
 
