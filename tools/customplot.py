@@ -44,9 +44,11 @@ import datetime
 import matplotlib.ticker as tick
 #import midvatten_utils as utils
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
 from date_utils import datestring_to_date
 from definitions import midvatten_defs
 import PyQt4
+from PyQt4.QtCore import QCoreApplication
 
 try:
     import pandas as pd
@@ -280,8 +282,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             myTimestring = list(table2.date_time)
             numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
         except Exception, e:
-            utils.MessagebarAndLog.warning(log_msg=u'Plotting date_time failed, msg: ' + str(e))
-            utils.MessagebarAndLog.info(log_msg=u"Customplot, transforming to recarray with date_time as x-axis failed, msg: " + utils.returnunicode(str(e)))
+            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u'Plotting date_time failed, msg: %s'))%str(e))
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u"Customplot, transforming to recarray with date_time as x-axis failed, msg: %s"))%ru(str(e)))
             table = np.array(recs, dtype=[('numx', float), ('values', float)])  #NDARRAY #define a format for xy-plot (to use if not datetime on x-axis)
 
             table2=table.view(np.recarray)   # RECARRAY transform the 2 cols into callable objects
@@ -324,7 +326,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                     table2 = table.view(np.recarray)  # RECARRAY transform the 2 cols into callable objects
                     numtime = table2.date_time
                 else:
-                    utils.MessagebarAndLog.info(bar_msg=u"Pandas calculate failed.")
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u"Pandas calculate failed.")))
 
         if FlagTimeXY == "time" and plottype == "step-pre":
             self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-pre', linestyle='-', marker='None',c=np.random.rand(3,1),label=self.plabels[i])# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
@@ -678,39 +680,43 @@ class PandasCalculations(object):
         self.rule_label = PyQt4.QtGui.QLabel(u'Resample rule')
         self.rule = PyQt4.QtGui.QLineEdit()
         for wid in [self.rule_label, self.rule]:
-            wid.setToolTip(u'Steplength for resampling, ex:\n'
+            wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
+                           u'Steplength for resampling, ex:\n'
                            u'"10S" = 10 seconds\n'
                            u'"20T" = 20 minutes\n'
                            u'"1h" = 1 hour\n'
                            u'"24h" = 24 hours\n'
                            u'(D = calendar day, M = month end, MS = month start, W = weekly, AS = year start, A = year end, ...)\n'
                            u'No resampling if field is empty\n'
-                           u'See pandas pandas.DataFrame.resample documentation for more info.')
+                           u'See pandas pandas.DataFrame.resample documentation for more info.')))
 
         self.base_label = PyQt4.QtGui.QLabel(u'Resample base')
         self.base = PyQt4.QtGui.QLineEdit()
         for wid in [self.base_label, self.base]:
-            wid.setToolTip(u'The hour to start each timestep when rule "evenly subdivide 1 day" (for example Rule = 24h)\n'
+            wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
+                           u'The hour to start each timestep when rule "evenly subdivide 1 day" (for example Rule = 24h)\n'
                            u'Ex: 7 (= 07:00). Default is 0 (00:00)\n'
                            u'See pandas pandas.DataFrame.resample documentation for more info:\n'
                            u'For frequencies that evenly subdivide 1 day, the “origin” of the aggregated intervals.\n'
-                           u'For example, for ‘5min’ frequency, base could range from 0 through 4. Defaults to 0\n')
+                           u'For example, for ‘5min’ frequency, base could range from 0 through 4. Defaults to 0\n')))
 
         self.how_label = PyQt4.QtGui.QLabel(u'Resample how')
         self.how = PyQt4.QtGui.QLineEdit()
         for wid in [self.how_label, self.how]:
-            wid.setToolTip(u'How to make the resample, ex. "mean" (default), "first", "last", "sum".\n'
+            wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
+                           u'How to make the resample, ex. "mean" (default), "first", "last", "sum".\n'
                            u'See pandas pandas.DataFrame.resample documentation for more info\n'
-                           u'(though "how" is not explained a lot)')
+                           u'(though "how" is not explained a lot)')))
 
         #Moving average:
         self.window_label = PyQt4.QtGui.QLabel(u'Rolling mean window')
         self.window = PyQt4.QtGui.QLineEdit(u'')
         for wid in [self.window_label, self.window]:
-            wid.setToolTip(u'The number of timesteps in each moving average (rolling mean) mean\n'
+            wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
+                           u'The number of timesteps in each moving average (rolling mean) mean\n'
                            u'The result is stored at the center timestep of each mean.\n'
                            u'See Pandas pandas.rolling_mean documentation for more info.\n'
-                           u'No rolling mean if field is empty.')
+                           u'No rolling mean if field is empty.')))
 
         for lineedit in [self.rule, self.base, self.how, self.window]:
             #lineedit.sizeHint()setFixedWidth(122)
@@ -760,7 +766,7 @@ class PandasCalculations(object):
             try:
                 base = int(base)
             except ValueError:
-                utils.MessagebarAndLog.critical(bar_msg=u'Resample base must be an integer')
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'PandasCalculations', u'Resample base must be an integer')))
             else:
                 df = df.resample(rule, how=how, base=int(base))
 
@@ -770,7 +776,7 @@ class PandasCalculations(object):
             try:
                 window = int(window)
             except ValueError:
-                utils.MessagebarAndLog.critical(bar_msg=u'Rolling mean window must be an integer')
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'PandasCalculations', u'Rolling mean window must be an integer')))
             else:
                 df = pd.rolling_mean(df, window=window, center=True)
         return df
