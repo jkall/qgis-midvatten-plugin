@@ -1456,7 +1456,7 @@ class Cancel(object):
 
 def get_delimiter(filename=None, charset=u'utf-8', delimiters=None, num_fields=None):
     if filename is None:
-        MessagebarAndLog.critical(u'Must give filename')
+        MessagebarAndLog.critical(QCoreApplication.translate(u'get_delimiter', u'Must give filename'))
         return None
     with io.open(filename, 'r', encoding=charset) as f:
         rows = f.readlines()
@@ -1484,14 +1484,14 @@ def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_field
     if not delimiter:
         # No delimiter worked
         if not tested_delim:
-            _delimiter = ask_for_delimiter(question=u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):" % filename)
+            _delimiter = ask_for_delimiter(question=returnunicode(QCoreApplication.translate(u'get_delimiter_from_file_rows', u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):"))% filename)
             if isinstance(_delimiter, Cancel):
                 return _delimiter
             delimiter = _delimiter[0]
         else:
             if delimiter is None:
                 if num_fields is not None:
-                    MessagebarAndLog.critical(u'Delimiter not found for ' + filename + u'. The file must contain ' + str(num_fields) + u' fields, but none of ' + u' or '.join(delimiters) + u' worked as delimiter.')
+                    MessagebarAndLog.critical(returnunicode(QCoreApplication.translate(u'get_delimiter_from_file_rows', u'Delimiter not found for %s. The file must contain %s fields, but none of %s worked as delimiter.'))%(filename, str(num_fields), u' or '.join(delimiters)))
                     return None
 
                 lenght = max(tested_delim, key=itemgetter(1))[1]
@@ -1501,15 +1501,15 @@ def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_field
                 delimiter = max(tested_delim, key=itemgetter(1))[0]
 
                 if lenght == 1 or len(more_than_one_delimiter) > 1:
-                    _delimiter = ask_for_delimiter(question=u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):" % filename)
+                    _delimiter = ask_for_delimiter(question=returnunicode(QCoreApplication.translate(u'get_delimiter_from_file_rows', u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):")) % filename)
                     if isinstance(_delimiter, Cancel):
                         return _delimiter
                     delimiter = _delimiter[0]
     return delimiter
 
-def ask_for_delimiter(header=u'Give delimiter', question=u'', default=u';'):
+def ask_for_delimiter(header=QCoreApplication.translate(u'ask_for_delimiter', u'Give delimiter'), question=u'', default=u';'):
     _delimiter = PyQt4.QtGui.QInputDialog.getText(None,
-                                                  u"Give delimiter",
+                                                  QCoreApplication.translate(u'ask_for_delimiter', u"Give delimiter"),
                                                   question,
                                                   PyQt4.QtGui.QLineEdit.Normal,
                                                   default)
