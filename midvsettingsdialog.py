@@ -435,27 +435,41 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
     def LoadDistinctPiperParams(self,db):
         self.ClearPiperParams()
-        myconnection = utils.dbconnection(db)#self.ms.settingsdict['database'])
-        if myconnection.connect2db() == True:
-            cursor = myconnection.conn.cursor()
-            rs=cursor.execute(r"""SELECT DISTINCT parameter FROM w_qual_lab ORDER BY parameter""")  #SQL statement to get all unique parameter names
-            self.paramCl.addItem('')
-            self.paramHCO3.addItem('')
-            self.paramSO4.addItem('')
-            self.paramNa.addItem('')
-            self.paramK.addItem('')
-            self.paramCa.addItem('')
-            self.paramMg.addItem('')
-            for row in cursor:
-                self.paramCl.addItem(row[0])
-                self.paramHCO3.addItem(row[0])
-                self.paramSO4.addItem(row[0])
-                self.paramNa.addItem(row[0])
-                self.paramK.addItem(row[0])
-                self.paramCa.addItem(row[0])
-                self.paramMg.addItem(row[0])
-            rs.close()
-            myconnection.closedb()# then close the database
+
+        lab_parameters = midvatten_defs.w_qual_lab_synonym_dict()
+        if lab_parameters:
+            for param_list in [self.paramCl,
+                          self.paramHCO3,
+                          self.paramSO4,
+                          self.paramNa,
+                          self.paramK,
+                          self.paramCa,
+                          self.paramMg]:
+                new_list = ['']
+                new_list.extend(sorted(lab_parameters.keys()))
+                param_list.addItems(new_list)
+        else:
+            myconnection = utils.dbconnection(db)#self.ms.settingsdict['database'])
+            if myconnection.connect2db() == True:
+                cursor = myconnection.conn.cursor()
+                rs=cursor.execute(r"""SELECT DISTINCT parameter FROM w_qual_lab ORDER BY parameter""")  #SQL statement to get all unique parameter names
+                self.paramCl.addItem('')
+                self.paramHCO3.addItem('')
+                self.paramSO4.addItem('')
+                self.paramNa.addItem('')
+                self.paramK.addItem('')
+                self.paramCa.addItem('')
+                self.paramMg.addItem('')
+                for row in cursor:
+                    self.paramCl.addItem(row[0])
+                    self.paramHCO3.addItem(row[0])
+                    self.paramSO4.addItem(row[0])
+                    self.paramNa.addItem(row[0])
+                    self.paramK.addItem(row[0])
+                    self.paramCa.addItem(row[0])
+                    self.paramMg.addItem(row[0])
+                rs.close()
+                myconnection.closedb()# then close the database
 
     def PiperClUpdated(self):
         self.ms.settingsdict['piper_cl']= unicode(self.paramCl.currentText())

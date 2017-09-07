@@ -30,11 +30,14 @@ import datetime
 from pyspatialite import dbapi2 as sqlite
 import itertools
 import midvatten_utils as utils
+from definitions import midvatten_defs
 
 class PiperPlot():
     def __init__(self,msettings,activelayer):
         self.ms = msettings
         self.activelayer = activelayer
+
+    def get_data_and_make_plot(self):
         self.create_parameter_selection()
         self.get_selected_observations()
         if self.ms.settingsdict['piper_markers']=='type':
@@ -53,7 +56,7 @@ class PiperPlot():
             try:
                 print ','.join([utils.returnunicode(col) for col in row])
             except:
-                print "failed printing piper data..."            
+                print "failed printing piper data..."
         self.make_the_plot()
 
     def big_sql(self):
@@ -91,34 +94,26 @@ class PiperPlot():
 
     def create_parameter_selection(self):
         self.ParameterList=[]# ParameterList = ['Klorid, Cl','Alkalinitet, HCO3','Sulfat, SO4','Natrium, Na','Kalium, K','Kalcium, Ca','Magnesium, Mg']
-        if self.ms.settingsdict['piper_cl']!='':
-            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_cl'] + "'")
-        else:
-            self.ParameterList.append(r"""(lower(parameter) like '%klorid%' or lower(parameter) like '%chloride%')""")
-        if self.ms.settingsdict['piper_hco3']!='':
-            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_hco3'] + "'")
-        else:
-            self.ParameterList.append(r"""(lower(parameter) like '%alkalinitet%' or lower(parameter) like '%alcalinity%')""")
-        if self.ms.settingsdict['piper_so4']!='':
-            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_so4'] + "'")
-        else:
-            self.ParameterList.append(r"""(lower(parameter) like '%sulfat%' or lower(parameter) like '%sulphat%')""")
-        if self.ms.settingsdict['piper_na']!='':
-            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_na'] + "'")
-        else:
-            self.ParameterList.append(r"""(lower(parameter) like '%natrium%')""")
-        if self.ms.settingsdict['piper_k']!='':
-            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_k'] + "'")
-        else:
-            self.ParameterList.append(r"""(lower(parameter) like '%kalium%' or lower(parameter) like '%potassium%')""")
-        if self.ms.settingsdict['piper_ca']!='':
-            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_ca'] + "'")
-        else:
-            self.ParameterList.append(r"""(lower(parameter) like '%kalcium%' or lower(parameter) like '%calcium%')""")
-        if self.ms.settingsdict['piper_mg']!='':
-            self.ParameterList.append(r"""parameter = '""" + self.ms.settingsdict['piper_mg'] + "'")
-        else:
-            self.ParameterList.append(r"""(lower(parameter) like '%magnesium%')""")
+
+        parameter_translation_dict = midvatten_defs.w_qual_lab_synonym_dict()
+        piper_setting_and_backup_names = [(r"""piper_cl""", (r"""klorid""", r"""chloride""")),
+                                         (r"""piper_hco3""", (r"""alkalinitet""", r"""alcalinity""")),
+                                         (r"""piper_so4""", (r"""sulfat""", r"""sulphat""")),
+                                         (r"""piper_na""", (r"""natrium""",)),
+                                         (r"""piper_k""", (r"""kalium""", r"""potassium""")),
+                                         (r"""piper_ca""", (r"""kalcium""", r"""calcium""")),
+                                         (r"""piper_mg""", (r"""magnesium""",))]
+
+        for piper_setting, backup_names in piper_setting_and_backup_names:
+            specified_name = self.ms.settingsdict[piper_setting]
+            if specified_name != '':
+                synonyms = parameter_translation_dict.get(specified_name, None)
+                if synonyms is None:
+                    self.ParameterList.append(r"""parameter = '%s'"""%specified_name)
+                else:
+                    self.ParameterList.append(r"""(""" + r""" or """.join([r"""parameter = '""" + synonym + r"""'""" for synonym in synonyms]) + r""")""")
+            else:
+                self.ParameterList.append(r"""(""" + r""" or """.join([r"""lower(parameter) like '%""" + backup_name + r"""%'""" for backup_name in backup_names]) + r""")""")
 
     def get_selected_datetimes(self):
         sql1 = self.big_sql()
