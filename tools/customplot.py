@@ -697,8 +697,8 @@ class PandasCalculations(object):
                            u'The hour to start each timestep when rule "evenly subdivide 1 day" (for example Rule = 24h)\n'
                            u'Ex: 7 (= 07:00). Default is 0 (00:00)\n'
                            u'See pandas pandas.DataFrame.resample documentation for more info:\n'
-                           u'For frequencies that evenly subdivide 1 day, the “origin” of the aggregated intervals.\n'
-                           u'For example, for ‘5min’ frequency, base could range from 0 through 4. Defaults to 0\n')))
+                           u'For frequencies that evenly subdivide 1 day, the "origin" of the aggregated intervals.\n'
+                           u'For example, for "5min" frequency, base could range from 0 through 4. Defaults to 0.')))
 
         self.how_label = PyQt4.QtGui.QLabel(u'Resample how')
         self.how = PyQt4.QtGui.QLineEdit()
