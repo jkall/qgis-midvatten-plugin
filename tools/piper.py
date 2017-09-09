@@ -95,7 +95,7 @@ class PiperPlot():
     def create_parameter_selection(self):
         self.ParameterList=[]# ParameterList = ['Klorid, Cl','Alkalinitet, HCO3','Sulfat, SO4','Natrium, Na','Kalium, K','Kalcium, Ca','Magnesium, Mg']
 
-        parameter_translation_dict = midvatten_defs.w_qual_lab_synonym_dict()
+        parameter_translation_dict = midvatten_defs.w_qual_lab_translation_dict()
         piper_setting_and_backup_names = [(r"""piper_cl""", (r"""klorid""", r"""chloride""")),
                                          (r"""piper_hco3""", (r"""alkalinitet""", r"""alcalinity""")),
                                          (r"""piper_so4""", (r"""sulfat""", r"""sulphat""")),

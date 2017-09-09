@@ -771,11 +771,11 @@ def db_setup_as_string():
         res.append(table_info)
     return utils.anything_to_string_representation(res)
 
-def w_qual_lab_synonym_dict():
+def w_qual_lab_translation_dict():
     if u'zz_lab_parameters' in tables_columns():
         utils.sql_load_fr_db()
 
-        sql = u'select parameter, synonym from zz_lab_parameters'
+        sql = u'select parameter, translation from zz_lab_parameters'
         sql_result = utils.sql_load_fr_db(sql)
         connection_ok, result_list = sql_result
 

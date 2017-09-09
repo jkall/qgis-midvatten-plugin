@@ -53,9 +53,9 @@ capacity text NOT NULL --Water capacity (ex. in the range 1-6)
 , PRIMARY KEY(capacity)
 , FOREIGN KEY(capacity) REFERENCES zz_capacity(capacity)
 );
-CREATE TABLE zz_lab_parameters /*Data domain for lab parameter synonyms*/(
-synonym text NOT NULL --Synonym for the parameter. ex Natrium, Na, Natrium Na, Natrium.
-, parameter text NOT NULL --Natrium, Na etc
+CREATE TABLE zz_lab_parameters /*Data domain for lab parameter synonyms and their common translation*/(
+parameter text NOT NULL --All parameter synonyms parameter. ex "Natrium, Na", "Natrium Na", "Natrium".
+, translation text NOT NULL --"Natrium, Na" etc
 , PRIMARY KEY(synonym)
 );
 CREATE TABLE obs_points /*One of the two main tables. This table holds all point observation objects.*/(
