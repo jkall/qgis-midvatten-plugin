@@ -436,7 +436,8 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def LoadDistinctPiperParams(self,db):
         self.ClearPiperParams()
 
-        lab_parameters = midvatten_defs.w_qual_lab_translation_dict()
+        #Dict not implemented yet.
+        lab_parameters = {}
         if lab_parameters:
             for param_list in [self.paramCl,
                           self.paramHCO3,

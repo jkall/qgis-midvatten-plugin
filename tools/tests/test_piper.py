@@ -125,33 +125,3 @@ class TestPiperPlotDb(object):
         ref = '''["parameter = 'cl'", "parameter = 'hco3'", "parameter = 'so4'", "parameter = 'na'", "parameter = 'k'", "parameter = 'ca'", "parameter = 'mg'"]'''
         assert test == ref
 
-
-
-    @mock.patch('piper.midvatten_defs.w_qual_lab_translation_dict')
-    @mock.patch('piper.plt.show')
-    @mock.patch('midvatten_utils.QgsProject.instance')
-    def test_piper_plot_user_chosen_settings(self, mock_qgsproject_instance, mock_showplot, mock_translations):
-        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
-        mock_ms = mock.MagicMock()
-        mock_ms.settingsdict = {r"""piper_cl""": 'cl',
-                                r"""piper_hco3""": 'hco3',
-                                r"""piper_so4""": 'so4',
-                                r"""piper_na""": 'na',
-                                r"""piper_k""": 'k',
-                                r"""piper_ca""": 'ca',
-                                r"""piper_mg""": 'mg'}
-        mock_active_layer = mock.MagicMock()
-        mock_translations.return_value = {'cl': ('cl', 'Cl'),
-                                          'hco3': ('hco3', 'hco_3'),
-                                          'so4': ('So4',),
-                                          'na': ('natr',),
-                                          'k': ('kal', 'kalium'),
-                                          'ca': ('cals', 'kalcium'),
-                                          'mg': ('magn',)}
-
-        piperplot = piper.PiperPlot(mock_ms, mock_active_layer)
-        piperplot.create_parameter_selection()
-
-        test = utils.anything_to_string_representation(piperplot.ParameterList)
-        ref = '''["(parameter = 'cl' or parameter = 'Cl')", "(parameter = 'hco3' or parameter = 'hco_3')", "(parameter = 'So4')", "(parameter = 'natr')", "(parameter = 'kal' or parameter = 'kalium')", "(parameter = 'cals' or parameter = 'kalcium')", "(parameter = 'magn')"]'''
-        assert test == ref

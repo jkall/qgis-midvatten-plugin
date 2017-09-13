@@ -770,22 +770,3 @@ def db_setup_as_string():
         table_info = utils.sql_load_fr_db(u'''PRAGMA table_info(%s)''' % table)[1]
         res.append(table_info)
     return utils.anything_to_string_representation(res)
-
-def w_qual_lab_translation_dict():
-    if u'zz_lab_parameters' in tables_columns():
-        utils.sql_load_fr_db()
-
-        sql = u'select parameter, translation from zz_lab_parameters'
-        sql_result = utils.sql_load_fr_db(sql)
-        connection_ok, result_list = sql_result
-
-        if not connection_ok:
-            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'w_qual_lab_translation_dict', u'Using zz_lab_parameters failed, see log message panel')), log_msg=ru(QCoreApplication.translate(u'w_qual_lab_translation_dict', u'Sql failed\n%s'))%sql)
-            return {}
-
-        result_dict = {}
-        for res in result_list:
-            result_dict.setdefault(res[0], []).append(res[1])
-        return result_dict
-    else:
-        return {}

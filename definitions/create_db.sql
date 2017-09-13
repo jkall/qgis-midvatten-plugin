@@ -1,4 +1,4 @@
-﻿﻿﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
+﻿﻿﻿﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
 SELECT InitSpatialMetadata(1);
 CREATE TABLE about_db /*A status log for the tables in the db*/(
 tablename text --Name of a table in the db
@@ -52,11 +52,6 @@ capacity text NOT NULL --Water capacity (ex. in the range 1-6)
 , color_qt text NOT NULL --Hatchcolor codes for Qt plots
 , PRIMARY KEY(capacity)
 , FOREIGN KEY(capacity) REFERENCES zz_capacity(capacity)
-);
-CREATE TABLE zz_lab_parameters /*Data domain for lab parameter synonyms and their common translation*/(
-parameter text NOT NULL --All parameter synonyms. ex "Natrium, Na", "Natrium Na", "Natrium".
-, translation text NOT NULL --"Natrium, Na" etc
-, PRIMARY KEY(parameter)
 );
 CREATE TABLE obs_points /*One of the two main tables. This table holds all point observation objects.*/(
 obsid text NOT NULL --ID for the observation point

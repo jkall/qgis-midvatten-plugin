@@ -95,7 +95,9 @@ class PiperPlot():
     def create_parameter_selection(self):
         self.ParameterList=[]# ParameterList = ['Klorid, Cl','Alkalinitet, HCO3','Sulfat, SO4','Natrium, Na','Kalium, K','Kalcium, Ca','Magnesium, Mg']
 
-        parameter_translation_dict = midvatten_defs.w_qual_lab_translation_dict()
+        #The dict is not implemented yet
+        paramshorts_parameters = {}
+
         piper_setting_and_backup_names = [(r"""piper_cl""", (r"""klorid""", r"""chloride""")),
                                          (r"""piper_hco3""", (r"""alkalinitet""", r"""alcalinity""")),
                                          (r"""piper_so4""", (r"""sulfat""", r"""sulphat""")),
@@ -107,11 +109,11 @@ class PiperPlot():
         for piper_setting, backup_names in piper_setting_and_backup_names:
             specified_name = self.ms.settingsdict[piper_setting]
             if specified_name != '':
-                synonyms = parameter_translation_dict.get(specified_name, None)
-                if synonyms is None:
+                parameters = paramshorts_parameters.get(specified_name, None)
+                if parameters is None:
                     self.ParameterList.append(r"""parameter = '%s'"""%specified_name)
                 else:
-                    self.ParameterList.append(r"""(""" + r""" or """.join([r"""parameter = '""" + synonym + r"""'""" for synonym in synonyms]) + r""")""")
+                    self.ParameterList.append(r"""(""" + r""" or """.join([r"""parameter = '""" + parameter + r"""'""" for parameter in parameters]) + r""")""")
             else:
                 self.ParameterList.append(r"""(""" + r""" or """.join([r"""lower(parameter) like '%""" + backup_name + r"""%'""" for backup_name in backup_names]) + r""")""")
 
