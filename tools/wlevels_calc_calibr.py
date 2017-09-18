@@ -20,20 +20,15 @@
  *                                                                         *
  ***************************************************************************/
 """
-#TODO: cleanup pyqt imports
 import PyQt4.QtCore
 import PyQt4.QtGui
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import uic
-import qgis
 
-import locale
 import os
-import time
 import numpy as np
 import math
-import matplotlib
 import matplotlib.pyplot as plt   
 import matplotlib.ticker as tick
 from matplotlib.dates import datestr2num, num2date
@@ -202,18 +197,34 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.combobox_obsid.addItems(all_obsids)
         self.update_combobox_with_calibration_info()
 
-    def update_combobox_with_calibration_info(self):
+    def update_combobox_with_calibration_info(self, obsid=False):
+        """
+        Adds an " (uncalibrated)" suffix after each obsid containing NULL-values in the column level_masl or removes it
+        if there is no NULL-values.
+
+        :param obsid: If obsid is given, only that obsid is checked. If not given then all obsids are checked.
+        :return:
+        """
         uncalibrated_str = u' (uncalibrated)'
-        obsids_with_uncalibrated_data = [x[0] for x in utils.sql_load_fr_db("""select distinct obsid from w_levels_logger where level_masl is NULL""")[1]]
-        #utils.MessagebarAndLog.info(log_msg=u"Uncalibrated obsids: " + str(obsids_with_uncalibrated_data))
+
         num_entries = self.combobox_obsid.count()
+
+        if not obsid:
+            obsids_with_uncalibrated_data = [row[0] for row in utils.sql_load_fr_db("""SELECT DISTINCT obsid FROM w_levels_logger WHERE level_masl IS NULL""")[1]]
 
         for idx in xrange(num_entries):
             current_obsid = self.combobox_obsid.itemText(idx).replace(uncalibrated_str, u'')
+            if obsid:
+                if current_obsid == obsid:
+                    obsids_with_uncalibrated_data = [row[0] for row in utils.sql_load_fr_db("""SELECT DISTINCT obsid FROM w_levels_logger WHERE obsid = '%s' AND level_masl IS NULL"""%current_obsid)[1]]
+                else:
+                    continue
+
             if current_obsid in obsids_with_uncalibrated_data:
                 new_text = current_obsid + uncalibrated_str
             else:
                 new_text = current_obsid
+
             self.combobox_obsid.setItemText(idx, new_text)
 
     def load_obsid_and_init(self):
@@ -224,12 +235,12 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         data was changed in the background in for example spatialite gui. Now all time series are reloaded always.
         It's rather fast anyway.
         """
-        self.update_combobox_with_calibration_info()
-        uncalibrated_str = u' (uncalibrated)'
         obsid = self.selected_obsid
         if not obsid:
             utils.pop_up_info("ERROR: no obsid is chosen")
             return None
+
+        self.update_combobox_with_calibration_info(obsid=obsid)
 
         meas_sql = r"""SELECT date_time, level_masl FROM w_levels WHERE obsid = '""" + obsid + """' ORDER BY date_time"""
         self.meas_ts = self.sql_into_recarray(meas_sql)
@@ -266,9 +277,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             self.INFO.setText(text)
 
     def getlastcalibration(self, obsid):
-        sql = """SELECT MAX(date_time), loggerpos FROM (SELECT date_time, (level_masl - (head_cm/100)) as loggerpos FROM w_levels_logger WHERE level_masl is not Null and level_masl > -990 AND obsid = '"""
-        sql += obsid
-        sql += """')"""
+        sql = """SELECT MAX(date_time), loggerpos FROM (SELECT date_time, (level_masl - (head_cm/100)) as loggerpos FROM w_levels_logger WHERE level_masl is not Null and level_masl > -990 AND obsid = '%s')"""%obsid
         lastcalibr = utils.sql_load_fr_db(sql)[1]
         return lastcalibr
 
@@ -588,7 +597,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
         coupled_vals = self.match_ts_values(self.meas_ts, logger_ts, search_radius)
         if not coupled_vals:
-            utils.pop_up_info("There was no matched measurements or logger values inside the chosen period.\n Try to increase the search radius!")
+            utils.pop_up_info("There was no match found between measurements and logger values inside the chosen period.\n Try to increase the search radius!")
         else:
             calculated_diff = str(utils.calc_mean_diff(coupled_vals))
             if not calculated_diff or calculated_diff.lower() == 'nan':
