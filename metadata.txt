@@ -20,6 +20,7 @@ deprecated=False
 
 changelog=
         Version 1.4.3:
+        - Logger calibration: Performance fix related to the obsid list which made calibration and updates very slow.
         - Diveroffice import: Fixed the format and width for the datetime filter.
         - Diveroffice import: Bug fix where button "skip" did not work.
         - Stratigraphy: Fixed bug where stratas with umlauts were not found (ex. morän).
