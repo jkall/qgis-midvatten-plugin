@@ -198,9 +198,15 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.update_combobox_with_calibration_info()
 
     def update_combobox_with_calibration_info(self, obsid=False):
+        """
+        Adds an " (uncalibrated)" suffix after each obsid containing NULL-values in the column level_masl or removes it
+        if there is no NULL-values.
+
+        :param obsid: If obsid is given, only that obsid is checked. If not given then all obsids are checked.
+        :return:
+        """
         uncalibrated_str = u' (uncalibrated)'
 
-        #utils.MessagebarAndLog.info(log_msg=u"Uncalibrated obsids: " + str(obsids_with_uncalibrated_data))
         num_entries = self.combobox_obsid.count()
 
         if not obsid:
@@ -210,7 +216,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             current_obsid = self.combobox_obsid.itemText(idx).replace(uncalibrated_str, u'')
             if obsid:
                 if current_obsid == obsid:
-                    obsids_with_uncalibrated_data = [row[0] for row in utils.sql_load_fr_db("""SELECT DISTINCT obsid FROM w_levels_logger WHERE obsid = '%s' AND level_masl IS NULL""")[1]]
+                    obsids_with_uncalibrated_data = [row[0] for row in utils.sql_load_fr_db("""SELECT DISTINCT obsid FROM w_levels_logger WHERE obsid = '%s' AND level_masl IS NULL"""%current_obsid)[1]]
                 else:
                     continue
 
@@ -218,6 +224,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                 new_text = current_obsid + uncalibrated_str
             else:
                 new_text = current_obsid
+
             self.combobox_obsid.setItemText(idx, new_text)
 
     def load_obsid_and_init(self):
