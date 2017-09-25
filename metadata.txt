@@ -4,7 +4,7 @@ name=Midvatten
 qgisMinimumVersion=2.4
 qgisMaximumVersion=2.98
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.4.3
+version=Version 1.4.4
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 
@@ -19,12 +19,14 @@ experimental=False
 deprecated=False
 
 changelog=
+        Version 1.4.4:
+        - Import dialogs: Added checkbox to close after import.
+        - Added Qt internationalization support for modules midvatten_defs.py, import_general_csv_gui.py,
+        loaddefaultlayers.py, import_diveroffice.py, import_data_to_db.py, create_db.py, date_utils.py,
+        import_interlab4.py, midvatten_utils.py, customplot.py.
         Version 1.4.3:
         - Logger calibration: Performance fix related to the obsid list which made calibration and updates very slow.
         - Added table zz_lab_parameters for merging parameter synonyms into a shared parameter name. Added support for it for piper plot.
-        - Added Qt internationalization support for modules midvatten_defs.py, import_general_csv_gui.py,
-        loaddefaultlayers.py, import_diveroffice.py, import_data_to_db.py, create_db.py, date_utils.py,
-        import_interlab4.py, midvatten_utils.py, customplot.py, .
         - Diveroffice import: Fixed the format and width for the datetime filter.
         - Diveroffice import: Bug fix where button "skip" did not work.
         - Stratigraphy: Fixed bug where stratas with umlauts were not found (ex. morän).

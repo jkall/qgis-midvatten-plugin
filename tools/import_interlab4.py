@@ -100,9 +100,13 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                    u'All rows where values in the chosen column match entries in the pasted list will be selected.\n\n'
                                    u'Hover over a column header to see which database column it will go to.')))
 
-        self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
-        self.gridLayout_buttons.addWidget(self.help_label, 1, 0)
-        self.gridLayout_buttons.setRowStretch(2, 1)
+        self.close_after_import = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'Interlab4Import', u'Close dialog after import')))
+        self.close_after_import.setChecked(True)
+        self.gridLayout_buttons.addWidget(self.close_after_import, 0, 0)
+
+        self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
+        self.gridLayout_buttons.addWidget(self.help_label, 2, 0)
+        self.gridLayout_buttons.setRowStretch(3, 1)
 
         self.show()
 
@@ -147,6 +151,10 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             return answer
 
         importer.SanityCheckVacuumDB()
+
+        if self.close_after_import.isChecked():
+            self.close()
+
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def parse(self, filenames):

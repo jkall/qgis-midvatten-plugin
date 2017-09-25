@@ -90,12 +90,15 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.import_all_data.checked = False
         self.add_row(self.import_all_data.widget)
 
+        self.close_after_import = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'DiverofficeImport', u'Close dialog after import')))
+        self.close_after_import.setChecked(True)
+        self.gridLayout_buttons.addWidget(self.close_after_import, 0, 0)
 
         self.start_import_button = PyQt4.QtGui.QPushButton(QCoreApplication.translate('DiverofficeImport', u'Start import'))
-        self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
+        self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(files=self.files, skip_rows_without_water_level=self.skip_rows.checked, confirm_names=self.confirm_names.checked, import_all_data=self.import_all_data.checked, from_date=self.date_time_filter.from_date, to_date=self.date_time_filter.to_date))
 
-        self.gridLayout_buttons.setRowStretch(1, 1)
+        self.gridLayout_buttons.setRowStretch(2, 1)
 
         self.show()
 
@@ -189,7 +192,9 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         importer.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-        self.close()
+
+        if self.close_after_import.isChecked():
+            self.close()
 
     @staticmethod
     def parse_diveroffice_file(path, charset, skip_rows_without_water_level=False, begindate=None, enddate=None):

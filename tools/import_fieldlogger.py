@@ -122,8 +122,12 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                  [lambda: self.save_stored_settings(self.ms, [], self.stored_settingskey),
                                   lambda: utils.pop_up_info(u'Settings cleared. Restart import Fieldlogger dialog')]))
 
+        self.close_after_import = PyQt4.QtGui.QCheckBox(u'Close dialog after import')
+        self.close_after_import.setChecked(True)
+        self.gridLayout_buttons.addWidget(self.close_after_import, 2, 0)
+
         self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
-        self.gridLayout_buttons.addWidget(self.start_import_button, 2, 0)
+        self.gridLayout_buttons.addWidget(self.start_import_button, 3, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
 
         self.connect(self.date_time_filter.from_datetimeedit, PyQt4.QtCore.SIGNAL("editingFinished()"),
@@ -136,7 +140,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.connect(self.input_fields.update_parameters_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      self.update_input_fields_from_button)
 
-        self.gridLayout_buttons.setRowStretch(3, 1)
+        self.gridLayout_buttons.setRowStretch(4, 1)
 
         self.show()
 
@@ -497,6 +501,9 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                     return answer
 
         importer.SanityCheckVacuumDB()
+
+        if self.close_after_import.isChecked():
+            self.close()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
 

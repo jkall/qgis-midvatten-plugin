@@ -92,12 +92,16 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         self.gridLayout_buttons.addWidget(get_line(), 5, 0)
 
+        self.close_after_import = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Close dialog after import')))
+        self.close_after_import.setChecked(True)
+        self.gridLayout_buttons.addWidget(self.close_after_import, 6, 0)
+
         self.start_import_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Start import')))
-        self.gridLayout_buttons.addWidget(self.start_import_button, 6, 0)
+        self.gridLayout_buttons.addWidget(self.start_import_button, 7, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      self.start_import)
 
-        self.gridLayout_buttons.setRowStretch(7, 1)
+        self.gridLayout_buttons.setRowStretch(8, 1)
 
         self.show()
 
@@ -249,7 +253,9 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         importer.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
-        self.close()
+
+        if self.close_after_import.isChecked():
+            self.close()
 
     @staticmethod
     def translate_and_reorder_file_data(file_data, translation_dict):
