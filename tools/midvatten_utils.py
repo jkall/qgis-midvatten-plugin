@@ -43,6 +43,7 @@ from pyspatialite.dbapi2 import IntegrityError, OperationalError
 from qgis.core import *
 from qgis.gui import *
 from PyQt4.QtCore import QCoreApplication
+from functools import wraps
 
 try:
     import pandas as pd
@@ -576,6 +577,8 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
     return text
 
 def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
+    t0 = time.time()
+
     dbpath = QgsProject.instance().readEntry("Midvatten","database")
     if os.path.exists(dbpath[0]):
         try:
@@ -604,9 +607,14 @@ def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list
         MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'sql_load_fr_db', 'Db connection failure, see log for additional info.'), log_msg=textstring, duration=4,button=True)
         ConnectionOK = False
         result = ''
+    try:
+        print("sql_load_fr_db: running time: %s, sql: %s"%(str(time.time()-t0), sql))
+    except IOError:
+        pass
     return ConnectionOK, result
 
 def sql_alter_db(sql=''):
+    t0 = time.time()
     dbpath = QgsProject.instance().readEntry("Midvatten","database")
     conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
     curs = conn.cursor()
@@ -638,6 +646,10 @@ def sql_alter_db(sql=''):
     conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
     resultfromsql.close()
     conn.close()
+    try:
+        print("sql_alter_db: running time: %s, sql: %s"%(str(time.time()-t0), sql))
+    except IOError:
+        pass
     return result
 
 def sql_alter_db_by_param_subst(sql='',*subst_params):
@@ -1559,3 +1571,23 @@ def transpose_lists_of_lists(list_of_lists):
 
 def sql_failed_msg():
     return QCoreApplication.translate(u'sql_failed_msg', u'Sql failed, see log message panel.')
+
+def fn_timer(function):
+    """from http://www.marinamele.com/7-tips-to-time-python-scripts-and-control-memory-and-cpu-usage"""
+    @wraps(function)
+    def function_timer(*args, **kwargs):
+        t0 = time.time()
+        result = function(*args, **kwargs)
+        t1 = time.time()
+        #logging.debug("Total time running %s: %s seconds" %
+        #       (function.func_name, str(t1-t0))
+        #       
+        try:
+            print ("Total time running %s: %s seconds" %
+                  (function.func_name, str(t1-t0))
+                   )
+        except IOError:
+            pass
+
+        return result
+    return function_timer

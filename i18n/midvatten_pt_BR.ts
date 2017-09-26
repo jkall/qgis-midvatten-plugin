@@ -1710,7 +1710,7 @@ from active layer</source>
 <context>
     <name>HtmlDialog</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="296"/>
+        <location filename="../tools/midvatten_utils.py" line="297"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2291,7 +2291,7 @@ arquivo de poços </translation>
 <context>
     <name>MessagebarAndLog</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="141"/>
+        <location filename="../tools/midvatten_utils.py" line="142"/>
         <source>View message log</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2712,7 +2712,7 @@ arquivo de poços </translation>
     <message>
         <location filename="../midvatten.py" line="131"/>
         <source>Calcultate logger w level from logger water head</source>
-        <translation>Calcular o nível d&apos;água a partir do logger head</translation>
+        <translation type="obsolete">Calcular o nível d&apos;água a partir do logger head</translation>
     </message>
     <message>
         <location filename="../midvatten.py" line="134"/>
@@ -3011,11 +3011,16 @@ Something is probably wrong in the &apos;W quality report&apos; tab!</source>
         <source>Statistics done, see log for results.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../midvatten.py" line="131"/>
+        <source>Calculate logger w level from logger water head</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NotFoundQuestion</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="237"/>
+        <location filename="../tools/midvatten_utils.py" line="238"/>
         <source>Reuse answer for all identical</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3430,7 +3435,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>ask_for_charset</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1001"/>
+        <location filename="../tools/midvatten_utils.py" line="1013"/>
         <source>Give charset used in the file, normally
 iso-8859-1, utf-8, cp1250 or cp1252.
 
@@ -3438,12 +3443,12 @@ On your computer %s is default.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1012"/>
+        <location filename="../tools/midvatten_utils.py" line="1024"/>
         <source>Set charset encoding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1011"/>
+        <location filename="../tools/midvatten_utils.py" line="1023"/>
         <source>Give charset used in the file, default charset on normally
 utf-8, iso-8859-1, cp1250 or cp1252.</source>
         <translation type="unfinished"></translation>
@@ -3452,7 +3457,7 @@ utf-8, iso-8859-1, cp1250 or cp1252.</source>
 <context>
     <name>ask_for_delimiter</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1532"/>
+        <location filename="../tools/midvatten_utils.py" line="1544"/>
         <source>Give delimiter</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3460,12 +3465,12 @@ utf-8, iso-8859-1, cp1250 or cp1252.</source>
 <context>
     <name>ask_for_export_crs</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1017"/>
+        <location filename="../tools/midvatten_utils.py" line="1029"/>
         <source>Set export crs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1017"/>
+        <location filename="../tools/midvatten_utils.py" line="1029"/>
         <source>Give the crs for the exported database.
 </source>
         <translation type="unfinished"></translation>
@@ -3474,22 +3479,22 @@ utf-8, iso-8859-1, cp1250 or cp1252.</source>
 <context>
     <name>askuser</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="201"/>
+        <location filename="../tools/midvatten_utils.py" line="202"/>
         <source>User input needed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="185"/>
+        <location filename="../tools/midvatten_utils.py" line="186"/>
         <source>All</source>
         <translation type="unfinished">Todas</translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="186"/>
+        <location filename="../tools/midvatten_utils.py" line="187"/>
         <source>Selected</source>
         <translation type="unfinished">Selecionadas</translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="201"/>
+        <location filename="../tools/midvatten_utils.py" line="202"/>
         <source>Give needed adjustment of date/time for the data.
 Supported format: +- X &lt;resolution&gt;
 Ex: 1 hours, -1 hours, -1 days
@@ -3498,14 +3503,14 @@ Supported units:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="212"/>
+        <location filename="../tools/midvatten_utils.py" line="213"/>
         <source>Failure:
 Only support resolutions
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="214"/>
+        <location filename="../tools/midvatten_utils.py" line="215"/>
         <source>Failure:
 Must write time resolution also.
 </source>
@@ -3515,20 +3520,20 @@ Must write time resolution also.
 <context>
     <name>calculate_db_table_rows</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1383"/>
+        <location filename="../tools/midvatten_utils.py" line="1395"/>
         <source>Sql failed:
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1403"/>
+        <location filename="../tools/midvatten_utils.py" line="1415"/>
         <source>Sql failed:
 %s
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1412"/>
+        <location filename="../tools/midvatten_utils.py" line="1424"/>
         <source>Calculation done, see log for results.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3536,7 +3541,7 @@ Must write time resolution also.
 <context>
     <name>check_db_is_locked</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="88"/>
+        <location filename="../tools/midvatten_utils.py" line="89"/>
         <source>Error, The database is already in use (a journal-file was found)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3544,12 +3549,12 @@ Must write time resolution also.
 <context>
     <name>create_dict_from_db_2_cols</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="395"/>
+        <location filename="../tools/midvatten_utils.py" line="396"/>
         <source>Cannot create dictionary from columns %s and %s in table %s!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="397"/>
+        <location filename="../tools/midvatten_utils.py" line="398"/>
         <source>Some sql failure, see log for additional info.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3557,13 +3562,13 @@ Must write time resolution also.
 <context>
     <name>dbconnection</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="75"/>
+        <location filename="../tools/midvatten_utils.py" line="76"/>
         <source>Could not connect to %s
 You will have to reset Midvatten settings for this project!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="78"/>
+        <location filename="../tools/midvatten_utils.py" line="79"/>
         <source>The file %s does not exist.
 You will have to reset Midvatten settings for this project!</source>
         <translation type="unfinished"></translation>
@@ -3572,7 +3577,7 @@ You will have to reset Midvatten settings for this project!</source>
 <context>
     <name>filter_nonexisting_values_and_ask</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1217"/>
+        <location filename="../tools/midvatten_utils.py" line="1229"/>
         <source>(Message %s of %s)
 
 Give the %s for:
@@ -3580,7 +3585,7 @@ Give the %s for:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1218"/>
+        <location filename="../tools/midvatten_utils.py" line="1230"/>
         <source>WARNING</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3620,7 +3625,7 @@ Msg2:
 <context>
     <name>get_delimiter</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1480"/>
+        <location filename="../tools/midvatten_utils.py" line="1492"/>
         <source>Must give filename</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3628,12 +3633,12 @@ Msg2:
 <context>
     <name>get_delimiter_from_file_rows</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1525"/>
+        <location filename="../tools/midvatten_utils.py" line="1537"/>
         <source>Delimiter couldn&apos;t be found automatically for %s. Give the correct one (ex &apos;;&apos;):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1515"/>
+        <location filename="../tools/midvatten_utils.py" line="1527"/>
         <source>Delimiter not found for %s. The file must contain %s fields, but none of %s worked as delimiter.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3641,7 +3646,7 @@ Msg2:
 <context>
     <name>get_quality_instruments</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="925"/>
+        <location filename="../tools/midvatten_utils.py" line="937"/>
         <source>Failed to get quality instruments from sql
 %s</source>
         <translation type="unfinished"></translation>
@@ -3650,7 +3655,7 @@ Msg2:
 <context>
     <name>get_sql_result_as_dict</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="940"/>
+        <location filename="../tools/midvatten_utils.py" line="952"/>
         <source>Cannot create dictionary from sql
 %s</source>
         <translation type="unfinished"></translation>
@@ -3924,7 +3929,7 @@ error msg:
 <context>
     <name>pop_up_info</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="492"/>
+        <location filename="../tools/midvatten_utils.py" line="493"/>
         <source>Information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3932,7 +3937,7 @@ error msg:
 <context>
     <name>returnunicode</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="581"/>
+        <location filename="../tools/midvatten_utils.py" line="582"/>
         <source>data type unknown, check database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3940,12 +3945,12 @@ error msg:
 <context>
     <name>select_files</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="990"/>
+        <location filename="../tools/midvatten_utils.py" line="1002"/>
         <source>Select file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="992"/>
+        <location filename="../tools/midvatten_utils.py" line="1004"/>
         <source>Select files</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3953,17 +3958,17 @@ error msg:
 <context>
     <name>selection_check</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="703"/>
+        <location filename="../tools/midvatten_utils.py" line="715"/>
         <source>Error, select at least one object in the qgis layer!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="705"/>
+        <location filename="../tools/midvatten_utils.py" line="717"/>
         <source>&quot;&quot;&quot;Error, select exactly %s object in the qgis layer!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="707"/>
+        <location filename="../tools/midvatten_utils.py" line="719"/>
         <source>Select a qgis layer that has a field obsid!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3971,7 +3976,7 @@ error msg:
 <context>
     <name>sql_alter_db</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="638"/>
+        <location filename="../tools/midvatten_utils.py" line="646"/>
         <source>The sql failed:
 %s
 msg:
@@ -3982,7 +3987,7 @@ msg:
 <context>
     <name>sql_alter_db_by_param_subst</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="690"/>
+        <location filename="../tools/midvatten_utils.py" line="702"/>
         <source>Could not connect to the database, please reset Midvatten settings!
 
 DB call causing this error (debug info):
@@ -3993,7 +3998,7 @@ DB call causing this error (debug info):
 <context>
     <name>sql_failed_msg</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="1582"/>
+        <location filename="../tools/midvatten_utils.py" line="1594"/>
         <source>Sql failed, see log message panel.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4001,26 +4006,26 @@ DB call causing this error (debug info):
 <context>
     <name>sql_load_fr_db</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="597"/>
+        <location filename="../tools/midvatten_utils.py" line="600"/>
         <source>DB error!
 DB call causing this error:%s
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="599"/>
+        <location filename="../tools/midvatten_utils.py" line="602"/>
         <source>Some sql failure, see log for additional info.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="609"/>
+        <location filename="../tools/midvatten_utils.py" line="612"/>
         <source>Could not connect to db %s!
 DB call causing this error:%s
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="611"/>
+        <location filename="../tools/midvatten_utils.py" line="614"/>
         <source>Db connection failure, see log for additional info.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4041,7 +4046,7 @@ DB call causing this error:%s
 <context>
     <name>strat_selection_check</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="713"/>
+        <location filename="../tools/midvatten_utils.py" line="725"/>
         <source>Error, select a qgis layer with field h_gs!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4062,7 +4067,7 @@ DB call causing this error:%s
 <context>
     <name>unicode_2_utf8</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="746"/>
+        <location filename="../tools/midvatten_utils.py" line="758"/>
         <source>data type unknown, check database</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4070,17 +4075,17 @@ DB call causing this error:%s
 <context>
     <name>verify_layer_selection</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="782"/>
+        <location filename="../tools/midvatten_utils.py" line="794"/>
         <source>Error, you have to select some features!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="784"/>
+        <location filename="../tools/midvatten_utils.py" line="796"/>
         <source>Error, you have to select exactly %s features!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="786"/>
+        <location filename="../tools/midvatten_utils.py" line="798"/>
         <source>Error, you have to select a relevant layer!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4088,18 +4093,18 @@ DB call causing this error:%s
 <context>
     <name>verify_msettings_loaded_and_layer_edit_mode</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="758"/>
+        <location filename="../tools/midvatten_utils.py" line="770"/>
         <source>Error %s is currently in editing mode.
 Please exit this mode before proceeding with this operation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="764"/>
+        <location filename="../tools/midvatten_utils.py" line="776"/>
         <source>Error, No database found. Please check your Midvatten Settings. Reset if needed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="768"/>
+        <location filename="../tools/midvatten_utils.py" line="780"/>
         <source>Error, The selected database doesn&apos;t exist. Please check your Midvatten Settings and database location. Reset if needed.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4107,12 +4112,12 @@ Please exit this mode before proceeding with this operation.</source>
 <context>
     <name>verify_this_layer_selected_and_not_in_edit_mode</name>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="807"/>
+        <location filename="../tools/midvatten_utils.py" line="819"/>
         <source>Error, you have to select/activate %s layer!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/midvatten_utils.py" line="804"/>
+        <location filename="../tools/midvatten_utils.py" line="816"/>
         <source>Error, the selected layer is currently in editing mode. Please exit this mode before updating coordinates.</source>
         <translation type="unfinished"></translation>
     </message>
