@@ -20,7 +20,7 @@ deprecated=False
 
 changelog=
         Version 1.4.5:
-        - Logger calibration: More performance related fixes.
+        - Logger calibration: More performance related fixes..
         Version 1.4.4:
         - Import dialogs: Added checkbox to close after import.
         - Added Qt internationalization support for modules midvatten_defs.py, import_general_csv_gui.py,
