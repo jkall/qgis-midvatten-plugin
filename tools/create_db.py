@@ -163,7 +163,7 @@ class newdb():
                                     msg=ru(QCoreApplication.translate(u'newdb', u'Supply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.')),
                                     existing_list=locale_names,
                                     default_value=u'',
-                                    combobox_label=u'Locales',
+                                    combobox_label=ru(QCoreApplication.translate(u'newdb', u'Locales')),
                                     button_names=[u'Cancel', u'Ok'])
         answer = question.answer
         submitted_value = ru(question.value)

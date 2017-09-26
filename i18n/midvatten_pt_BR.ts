@@ -1488,55 +1488,55 @@ Momflow=Momentanflöde vid avläsningstillfället</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="94"/>
+        <location filename="../tools/import_diveroffice.py" line="97"/>
         <source>Start import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="129"/>
+        <location filename="../tools/import_diveroffice.py" line="132"/>
         <source>Import error, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="135"/>
+        <location filename="../tools/import_diveroffice.py" line="138"/>
         <source>Import Failure: No files imported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="155"/>
+        <location filename="../tools/import_diveroffice.py" line="158"/>
         <source>Warning. All files were skipped, nothing imported!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="177"/>
+        <location filename="../tools/import_diveroffice.py" line="180"/>
         <source>No new data existed in the files. Nothing imported.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="267"/>
+        <location filename="../tools/import_diveroffice.py" line="272"/>
         <source>Diveroffice import warning. See log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="129"/>
+        <location filename="../tools/import_diveroffice.py" line="132"/>
         <source>File %s could not be parsed. Msg:
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="247"/>
+        <location filename="../tools/import_diveroffice.py" line="252"/>
         <source>Warning, the file %s 
 did not have Date/time as a header and will be skipped.
 Supported headers are %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="261"/>
+        <location filename="../tools/import_diveroffice.py" line="266"/>
         <source>Delimiter could not be found for file %s or it contained only one column, skipping it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="267"/>
+        <location filename="../tools/import_diveroffice.py" line="272"/>
         <source>Warning, the file %s 
 did not have Water head[cm] as a header.
 Make sure its barocompensated!
@@ -1544,28 +1544,41 @@ Supported headers are %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="284"/>
+        <location filename="../tools/import_diveroffice.py" line="289"/>
         <source>Failure: The number of data columns in file %s was not equal to the header.
 Is the decimal separator the same as the delimiter?
 Do you want to stop the import? (else it will continue with the next file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="314"/>
+        <location filename="../tools/import_diveroffice.py" line="319"/>
         <source>parse_diveroffice_file error: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="320"/>
+        <location filename="../tools/import_diveroffice.py" line="325"/>
         <source>Error messages while parsing file &quot;%s&quot;:
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_diveroffice.py" line="323"/>
+        <location filename="../tools/import_diveroffice.py" line="328"/>
         <source>Failure, parsing failed for file %s
 No valid data found!
 Do you want to stop the import? (else it will continue with the next file)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_diveroffice.py" line="93"/>
+        <source>Close dialog after import</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>HtmlDialog</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="296"/>
+        <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1994,6 +2007,14 @@ arquivo de poços </translation>
         <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1181"/>
         <source>Update plot</source>
         <translation>Atualizar gráfico</translation>
+    </message>
+</context>
+<context>
+    <name>MessagebarAndLog</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="141"/>
+        <source>View message log</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2658,39 +2679,47 @@ Geometries (map position) were automatically created based on east and north coo
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="875"/>
+        <location filename="../midvatten.py" line="876"/>
         <source>Please set time series table and column in Midvatten settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="897"/>
+        <location filename="../midvatten.py" line="898"/>
         <source>Verify Midvatten settings and make sure &apos;obs_points&apos; layer is not in editing mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="938"/>
+        <location filename="../midvatten.py" line="939"/>
         <source>Please set xy series table and columns in Midvatten settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="1055"/>
+        <location filename="../midvatten.py" line="1056"/>
         <source>Check Midvatten settings! 
 Something is probably wrong in the &apos;W quality report&apos; tab!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="1060"/>
+        <location filename="../midvatten.py" line="1061"/>
         <source>No water quality data for %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="1098"/>
+        <location filename="../midvatten.py" line="1099"/>
         <source>Database backup was written to %s </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="1121"/>
+        <location filename="../midvatten.py" line="1122"/>
         <source>Statistics done, see log for results.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NotFoundQuestion</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="237"/>
+        <source>Reuse answer for all identical</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3053,6 +3082,164 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
+    <name>ask_for_charset</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1001"/>
+        <source>Give charset used in the file, normally
+iso-8859-1, utf-8, cp1250 or cp1252.
+
+On your computer %s is default.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1012"/>
+        <source>Set charset encoding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1011"/>
+        <source>Give charset used in the file, default charset on normally
+utf-8, iso-8859-1, cp1250 or cp1252.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ask_for_delimiter</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1532"/>
+        <source>Give delimiter</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ask_for_export_crs</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1017"/>
+        <source>Set export crs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1017"/>
+        <source>Give the crs for the exported database.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>askuser</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="201"/>
+        <source>User input needed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="185"/>
+        <source>All</source>
+        <translation type="unfinished">Todas</translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="186"/>
+        <source>Selected</source>
+        <translation type="unfinished">Selecionadas</translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="201"/>
+        <source>Give needed adjustment of date/time for the data.
+Supported format: +- X &lt;resolution&gt;
+Ex: 1 hours, -1 hours, -1 days
+Supported units:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="212"/>
+        <source>Failure:
+Only support resolutions
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="214"/>
+        <source>Failure:
+Must write time resolution also.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>calculate_db_table_rows</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1383"/>
+        <source>Sql failed:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1403"/>
+        <source>Sql failed:
+%s
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1412"/>
+        <source>Calculation done, see log for results.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>check_db_is_locked</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="88"/>
+        <source>Error, The database is already in use (a journal-file was found)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>create_dict_from_db_2_cols</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="395"/>
+        <source>Cannot create dictionary from columns %s and %s in table %s!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="397"/>
+        <source>Some sql failure, see log for additional info.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>dbconnection</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="75"/>
+        <source>Could not connect to %s
+You will have to reset Midvatten settings for this project!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="78"/>
+        <source>The file %s does not exist.
+You will have to reset Midvatten settings for this project!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>filter_nonexisting_values_and_ask</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1217"/>
+        <source>(Message %s of %s)
+
+Give the %s for:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1218"/>
+        <source>WARNING</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>geocolorsymbols</name>
     <message>
         <location filename="../definitions/midvatten_defs.py" line="121"/>
@@ -3070,6 +3257,149 @@ Msg2:
     </message>
 </context>
 <context>
+    <name>get_delimiter</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1480"/>
+        <source>Must give filename</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>get_delimiter_from_file_rows</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1525"/>
+        <source>Delimiter couldn&apos;t be found automatically for %s. Give the correct one (ex &apos;;&apos;):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1515"/>
+        <source>Delimiter not found for %s. The file must contain %s fields, but none of %s worked as delimiter.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>get_quality_instruments</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="925"/>
+        <source>Failed to get quality instruments from sql
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>get_sql_result_as_dict</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="940"/>
+        <source>Cannot create dictionary from sql
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>pop_up_info</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="492"/>
+        <source>Information</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>returnunicode</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="581"/>
+        <source>data type unknown, check database</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>select_files</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="990"/>
+        <source>Select file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="992"/>
+        <source>Select files</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>selection_check</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="703"/>
+        <source>Error, select at least one object in the qgis layer!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="705"/>
+        <source>&quot;&quot;&quot;Error, select exactly %s object in the qgis layer!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="707"/>
+        <source>Select a qgis layer that has a field obsid!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>sql_alter_db</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="638"/>
+        <source>The sql failed:
+%s
+msg:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>sql_alter_db_by_param_subst</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="690"/>
+        <source>Could not connect to the database, please reset Midvatten settings!
+
+DB call causing this error (debug info):
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>sql_failed_msg</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="1582"/>
+        <source>Sql failed, see log message panel.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>sql_load_fr_db</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="597"/>
+        <source>DB error!
+DB call causing this error:%s
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="599"/>
+        <source>Some sql failure, see log for additional info.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="609"/>
+        <source>Could not connect to db %s!
+DB call causing this error:%s
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="611"/>
+        <source>Db connection failure, see log for additional info.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>staff_list</name>
     <message>
         <location filename="../definitions/midvatten_defs.py" line="558"/>
@@ -3083,6 +3413,14 @@ Msg2:
     </message>
 </context>
 <context>
+    <name>strat_selection_check</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="713"/>
+        <source>Error, select a qgis layer with field h_gs!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>tables_columns</name>
     <message>
         <location filename="../definitions/midvatten_defs.py" line="646"/>
@@ -3092,6 +3430,64 @@ Msg2:
     <message>
         <location filename="../definitions/midvatten_defs.py" line="646"/>
         <source>Cannot get data from sql %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>unicode_2_utf8</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="746"/>
+        <source>data type unknown, check database</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>verify_layer_selection</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="782"/>
+        <source>Error, you have to select some features!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="784"/>
+        <source>Error, you have to select exactly %s features!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="786"/>
+        <source>Error, you have to select a relevant layer!</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>verify_msettings_loaded_and_layer_edit_mode</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="758"/>
+        <source>Error %s is currently in editing mode.
+Please exit this mode before proceeding with this operation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="764"/>
+        <source>Error, No database found. Please check your Midvatten Settings. Reset if needed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="768"/>
+        <source>Error, The selected database doesn&apos;t exist. Please check your Midvatten Settings and database location. Reset if needed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>verify_this_layer_selected_and_not_in_edit_mode</name>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="807"/>
+        <source>Error, you have to select/activate %s layer!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/midvatten_utils.py" line="804"/>
+        <source>Error, the selected layer is currently in editing mode. Please exit this mode before updating coordinates.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
