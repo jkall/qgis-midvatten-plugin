@@ -24,6 +24,7 @@ changelog=
         - Added Qt internationalization support for modules midvatten_defs.py, import_general_csv_gui.py,
         loaddefaultlayers.py, import_diveroffice.py, import_data_to_db.py, create_db.py, date_utils.py,
         import_interlab4.py, midvatten_utils.py, customplot.py.
+        - Customplot: Fixed bug where not selecting filter1 and filter2 resulted in a crash.
         Version 1.4.3:
         - Logger calibration: Performance fix related to the obsid list which made calibration and updates very slow.
         - Added table zz_lab_parameters for merging parameter synonyms into a shared parameter name. Added support for it for piper plot.
