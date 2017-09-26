@@ -1,8 +1,21 @@
 SOURCES = \
 ./midvatten.py \
+./definitions/midvatten_defs.py \
+./tools/import_general_csv_gui.py \
+./tools/loaddefaultlayers.py \
 ./tools/import_diveroffice.py \
-./tools/midvatten_utils.py \
-./definitions/midvatten_defs.py
+./tools/customplot.py \
+./tools/import_data_to_db.py \
+./tools/create_db.py \
+./tools/date_utils.py \
+./tools/import_interlab4.py \
+./tools/midvatten_utils.py
+
+
+
+midvatten_defs.py, import_general_csv_gui.py,
+        loaddefaultlayers.py, import_diveroffice.py, import_data_to_db.py, create_db.py, date_utils.py,
+        import_interlab4.py, midvatten_utils.py, customplot.py
 
 FORMS = \
 ui/calc_aveflow_dialog.ui \

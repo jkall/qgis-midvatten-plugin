@@ -1,6 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS><TS version="2.0" language="pt_BR" sourcelanguage="">
 <context>
+    <name>ColumnEntry</name>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="455"/>
+        <source>Obsid from qgis selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="456"/>
+        <source>Select 1 obsid from obs_points or obs_lines attribute table or map.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="471"/>
+        <source>The supplied string will be written to the current column name for all
+imported rows instead of being read from file column.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="491"/>
+        <source>Import error, the column %s must have a value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="495"/>
+        <source>Import error, the chosen file column for the column %s did not exist in the file header.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Dialog</name>
     <message>
         <location filename="../ui/w_flow.ui" line="14"/>
@@ -1412,6 +1441,34 @@ Momflow=Momentanflöde vid avläsningstillfället</source>
     </message>
 </context>
 <context>
+    <name>DistinctValuesBrowser</name>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="541"/>
+        <source>DB browser:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="542"/>
+        <source>Table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="544"/>
+        <source>Column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="546"/>
+        <source>Distinct values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="578"/>
+        <source>Cannot get data from sql %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DiverofficeImport</name>
     <message>
         <location filename="../tools/import_diveroffice.py" line="72"/>
@@ -1575,10 +1632,232 @@ Do you want to stop the import? (else it will continue with the next file)</sour
     </message>
 </context>
 <context>
+    <name>GeneralCsvImportGui</name>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="55"/>
+        <source>Csv import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="66"/>
+        <source>Load data from file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="74"/>
+        <source>Load data from all features
+from active layer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="81"/>
+        <source>Load data from selected features
+from active layer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="95"/>
+        <source>Close dialog after import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="99"/>
+        <source>Start import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="113"/>
+        <source>Comma or semicolon separated csv file %s;;Comma or semicolon separated csv text file %s;;Comma or semicolon separated file %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="128"/>
+        <source>Does the file contain a header?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="149"/>
+        <source>File data loaded. Select table to import to.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="163"/>
+        <source>Import error, no layer selected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="181"/>
+        <source>Error, must select a file first!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="207"/>
+        <source>Import error, must select 1 obsid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="269"/>
+        <source>Import error on row number %s:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="382"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>HtmlDialog</name>
     <message>
         <location filename="../tools/midvatten_utils.py" line="296"/>
         <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ImportTableChooser</name>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="328"/>
+        <source>Import to table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="382"/>
+        <source>Layer %s is currently in editing mode.
+Please exit this mode before proceeding with this operation.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="410"/>
+        <source>Column name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="411"/>
+        <source>File column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_general_csv_gui.py" line="412"/>
+        <source>Static value</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Interlab4Import</name>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="57"/>
+        <source>Import interlab4 data to w_qual_lab table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="87"/>
+        <source>Start import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="91"/>
+        <source>Instructions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="92"/>
+        <source>Selected rows (lablitteras in the bottom table will be imported when pushing &quot;Start import&quot; button.
+The table can be sorted by clicking the column headers.
+
+Rows at the bottom table can also be selected using the top list.
+Howto:
+1. Choose column header to make a selection by in the Column header drop down list.
+2. Make a list of entries (one row per entry).
+3. Click &quot;Update selection&quot;.
+All rows where values in the chosen column match entries in the pasted list will be selected.
+
+Hover over a column header to see which database column it will go to.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="103"/>
+        <source>Close dialog after import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="173"/>
+        <source>Warning: The file information %s could not be read. Skipping file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="240"/>
+        <source>WARNING: Parsing error. The parameter is missing on row %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="244"/>
+        <source>WARNING: Parsing error. Data for %s read before it&apos;s metadata.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="286"/>
+        <source>Kalium was found more than once. The one with m&#xc3;&#xa4;tos&#xc3;&#xa4;kerhet %s was used.&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="303"/>
+        <source>Kalium was found more than once. The one with m&#xc3;&#xa4;tv&#xc3;&#xa4;rdetext %s was used.&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="306"/>
+        <source>Kalium was found more than once. The high resolution one could not be found. The one with m&#xc3;&#xa4;tv&#xc3;&#xa4;rdetext %s was used.&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="344"/>
+        <source>Give charset used in the file %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="397"/>
+        <source>Interlab4 import: There was no sample date found (column &quot;provtagningsdatum&quot;) for lablittera %s. Importing without it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="405"/>
+        <source>Interlab4 import: There was no sample time found (column &quot;provtagningstid&quot;) for lablittera %s. Importing without it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="437"/>
+        <source>Import interlab4 warning, see log message panel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="437"/>
+        <source>Could not set reading_num for parameter %s for one or more reports/lablitteras (%s etc.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="478"/>
+        <source>reading_num could not be set for parameter %s for reports %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>LoadLayers</name>
+    <message>
+        <location filename="../tools/loaddefaultlayers.py" line="93"/>
+        <source>%s is not valid layer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/loaddefaultlayers.py" line="178"/>
+        <source>Error, filed to load layer %s!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/loaddefaultlayers.py" line="235"/>
+        <source>Your database was created with plugin version &lt; 1.1 when layer styles were not stored in the database. You can update this database to the new standard with layer styles (symbols, colors, labels, input forms etc) stored in the database. This will increase plugin stability and multi-user experience but it will also change the layout of all your forms for entering data into the database. Anyway, an update of the database is recommended. Do you want to add these layer styles now?</source>
+        <comment>Update database with layer styles?</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2014,6 +2293,24 @@ arquivo de poços </translation>
     <message>
         <location filename="../tools/midvatten_utils.py" line="141"/>
         <source>View message log</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MetadataFilter</name>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="617"/>
+        <source>%s will be put into database column &quot;%s&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="657"/>
+        <source>Select lablitteras to import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_interlab4.py" line="659"/>
+        <source>(%s rows selected)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2724,6 +3021,55 @@ Something is probably wrong in the &apos;W quality report&apos; tab!</source>
     </message>
 </context>
 <context>
+    <name>PandasCalculations</name>
+    <message>
+        <location filename="../tools/customplot.py" line="683"/>
+        <source>Steplength for resampling, ex:
+&quot;10S&quot; = 10 seconds
+&quot;20T&quot; = 20 minutes
+&quot;1h&quot; = 1 hour
+&quot;24h&quot; = 24 hours
+(D = calendar day, M = month end, MS = month start, W = weekly, AS = year start, A = year end, ...)
+No resampling if field is empty
+See pandas pandas.DataFrame.resample documentation for more info.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/customplot.py" line="696"/>
+        <source>The hour to start each timestep when rule &quot;evenly subdivide 1 day&quot; (for example Rule = 24h)
+Ex: 7 (= 07:00). Default is 0 (00:00)
+See pandas pandas.DataFrame.resample documentation for more info:
+For frequencies that evenly subdivide 1 day, the &quot;origin&quot; of the aggregated intervals.
+For example, for &quot;5min&quot; frequency, base could range from 0 through 4. Defaults to 0.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/customplot.py" line="706"/>
+        <source>How to make the resample, ex. &quot;mean&quot; (default), &quot;first&quot;, &quot;last&quot;, &quot;sum&quot;.
+See pandas pandas.DataFrame.resample documentation for more info
+(though &quot;how&quot; is not explained a lot)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/customplot.py" line="715"/>
+        <source>The number of timesteps in each moving average (rolling mean) mean
+The result is stored at the center timestep of each mean.
+See Pandas pandas.rolling_mean documentation for more info.
+No rolling mean if field is empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/customplot.py" line="769"/>
+        <source>Resample base must be an integer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/customplot.py" line="779"/>
+        <source>Rolling mean window must be an integer</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ParameterBrowserDialog</name>
     <message>
         <location filename="../ui/fieldlogger_parameter_browser.ui" line="38"/>
@@ -3240,6 +3586,21 @@ Give the %s for:
     </message>
 </context>
 <context>
+    <name>find_date_format</name>
+    <message>
+        <location filename="../tools/date_utils.py" line="62"/>
+        <source>Date parsing failed, see log message panel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/date_utils.py" line="62"/>
+        <source>Could not find the date format for string &quot;%s&quot;
+Supported date formats:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>geocolorsymbols</name>
     <message>
         <location filename="../definitions/midvatten_defs.py" line="121"/>
@@ -3292,6 +3653,271 @@ Msg2:
         <location filename="../tools/midvatten_utils.py" line="940"/>
         <source>Cannot create dictionary from sql
 %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>midv_data_importer</name>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="68"/>
+        <source>
+Import to %s starting
+--------------------</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="75"/>
+        <source>Import error: No goal table given!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="97"/>
+        <source>The table %s did not exist. Update the database to latest version.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="111"/>
+        <source>Required columns %s are missing for table %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="124"/>
+        <source>In total &quot;%s&quot; rows with the same date 
+on format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported. %s rows remain.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="138"/>
+        <source>Please note!
+Foreign keys will be imported silently into &quot;%s&quot; if needed. 
+
+Proceed?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="138"/>
+        <source>Info!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="169"/>
+        <source>In total %s rows were imported to foreign key table %s while importing to %s.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="179"/>
+        <source>There was %s entries where foreign keys were missing from %s which will not be imported:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="190"/>
+        <source>In total &quot;%s&quot; rows were deleted due to foreign keys restrictions and &quot;%s&quot; rows remain.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="210"/>
+        <source>Please note!
+There are %s rows in your data that can not be imported!
+Do you really want to import the rest?
+Answering yes will start, from top of the imported file and only import the first of the duplicates.
+
+Proceed?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="210"/>
+        <source>Warning!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="229"/>
+        <source>INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="234"/>
+        <source>Sql
+%s  failed.
+Msg:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="246"/>
+        <source>%s rows imported and %s excluded for table %s. See log message panel for details</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="255"/>
+        <source>Import failed only a header was sent to importer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="271"/>
+        <source>Import error: Creating csvlayer failed!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="292"/>
+        <source>Failure, no csv file was selected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="298"/>
+        <source>Failure, Impossible to Load File in QGis:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="315"/>
+        <source>Warning - Table name confusion!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="315"/>
+        <source>The temporary import table &apos;%s&apos; already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove &apos;%s&apos;.
+
+Meanwhile, do you want to go on with this import, creating a temporary table &apos;%s_2&apos; in database?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="425"/>
+        <source>%s without geometry imported</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="440"/>
+        <source>ValueError: %s. Obsid &quot;%s&quot;, stratid: &quot;%s&quot;, depthbot: &quot;%s&quot;, depthtop: &quot;%s&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="453"/>
+        <source>The obsid %s will not be imported due to gaps in stratid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="458"/>
+        <source>The obsid %s will not be imported due to gaps in depthtop/depthbot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="471"/>
+        <source>It is a strong recommendation that you do vacuum the database now, do you want to do so?
+(If unsure - then answer &quot;yes&quot;.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="471"/>
+        <source>Vacuum the database?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_data_to_db.py" line="478"/>
+        <source>Import error, see log message panel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>newdb</name>
+    <message>
+        <location filename="../tools/create_db.py" line="57"/>
+        <source>Cancelling...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="69"/>
+        <source>A database with the chosen name already existed. Cancelling...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="80"/>
+        <source>Impossible to connect to selected DataBase</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="90"/>
+        <source>Midvatten plugin needs spatialite4.
+Database can not be created</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="121"/>
+        <source>SQL Failed: %s msg: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="123"/>
+        <source>sqlite error, see qgis Log Message Panel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="123"/>
+        <source>Failed to create DB! sql failed: 
+%serror msg: %s
+
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="135"/>
+        <source>Removing srids failed using: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="167"/>
+        <source>User input needed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="167"/>
+        <source>Supply locale for the database.
+Currently, only locale sv_SE has special meaning,
+all other locales will use english.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="167"/>
+        <source>Locales</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="186"/>
+        <source>Select CRS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="186"/>
+        <source>Give EPSG-ID (integer) corresponding to
+the CRS you want to use in the database:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/create_db.py" line="285"/>
+        <source>sql failed:
+%s
+error msg:
+%s
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>plotsqlitewindow</name>
+    <message>
+        <location filename="../tools/customplot.py" line="285"/>
+        <source>Plotting date_time failed, msg: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/customplot.py" line="286"/>
+        <source>Customplot, transforming to recarray with date_time as x-axis failed, msg: %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/customplot.py" line="329"/>
+        <source>Pandas calculate failed.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
