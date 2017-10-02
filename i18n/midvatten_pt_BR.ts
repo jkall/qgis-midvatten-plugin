@@ -3028,7 +3028,7 @@ Something is probably wrong in the &apos;W quality report&apos; tab!</source>
 <context>
     <name>PandasCalculations</name>
     <message>
-        <location filename="../tools/customplot.py" line="683"/>
+        <location filename="../tools/customplot.py" line="684"/>
         <source>Steplength for resampling, ex:
 &quot;10S&quot; = 10 seconds
 &quot;20T&quot; = 20 minutes
@@ -3040,7 +3040,7 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="696"/>
+        <location filename="../tools/customplot.py" line="697"/>
         <source>The hour to start each timestep when rule &quot;evenly subdivide 1 day&quot; (for example Rule = 24h)
 Ex: 7 (= 07:00). Default is 0 (00:00)
 See pandas pandas.DataFrame.resample documentation for more info:
@@ -3049,14 +3049,14 @@ For example, for &quot;5min&quot; frequency, base could range from 0 through 4. 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="706"/>
+        <location filename="../tools/customplot.py" line="707"/>
         <source>How to make the resample, ex. &quot;mean&quot; (default), &quot;first&quot;, &quot;last&quot;, &quot;sum&quot;.
 See pandas pandas.DataFrame.resample documentation for more info
 (though &quot;how&quot; is not explained a lot)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="715"/>
+        <location filename="../tools/customplot.py" line="716"/>
         <source>The number of timesteps in each moving average (rolling mean) mean
 The result is stored at the center timestep of each mean.
 See Pandas pandas.rolling_mean documentation for more info.
@@ -3064,12 +3064,12 @@ No rolling mean if field is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="769"/>
+        <location filename="../tools/customplot.py" line="770"/>
         <source>Resample base must be an integer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="779"/>
+        <location filename="../tools/customplot.py" line="780"/>
         <source>Rolling mean window must be an integer</source>
         <translation type="unfinished"></translation>
     </message>

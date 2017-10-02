@@ -328,10 +328,11 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 else:
                     utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u"Pandas calculate failed.")))
 
+        color_list = [_num[0] for _num in np.random.rand(3,1).tolist()]
         if FlagTimeXY == "time" and plottype == "step-pre":
-            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-pre', linestyle='-', marker='None',c=np.random.rand(3,1),label=self.plabels[i])# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
+            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-pre', linestyle='-', marker='None',c=color_list,label=self.plabels[i])# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
         elif FlagTimeXY == "time" and plottype == "step-post":
-            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-post', linestyle='-', marker='None',c=np.random.rand(3,1),label=self.plabels[i])
+            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-post', linestyle='-', marker='None',c=color_list,label=self.plabels[i])
         elif FlagTimeXY == "time" and plottype == "line and cross":
             self.p[i], = self.axes.plot_date(numtime, table2.values,  MarkVar,markersize = 6, label=self.plabels[i])
         elif FlagTimeXY == "time" and plottype == "frequency":
@@ -344,9 +345,9 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         elif FlagTimeXY == "time":
             self.p[i], = self.axes.plot_date(numtime, table2.values,  MarkVar,label=self.plabels[i])
         elif FlagTimeXY == "XY" and plottype == "step-pre":
-            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-pre', linestyle='-', marker='None',c=np.random.rand(3,1),label=self.plabels[i]) 
+            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-pre', linestyle='-', marker='None',c=color_list,label=self.plabels[i])
         elif FlagTimeXY == "XY" and plottype == "step-post":
-            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-post', linestyle='-', marker='None',c=np.random.rand(3,1),label=self.plabels[i]) 
+            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-post', linestyle='-', marker='None',c=color_list,label=self.plabels[i])
         elif FlagTimeXY == "XY" and plottype == "line and cross":
             self.p[i], = self.axes.plot(numtime, table2.values,  MarkVar,markersize = 6, label=self.plabels[i])
         else: 
