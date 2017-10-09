@@ -220,7 +220,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         dbconnection.commit_and_closedb()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
-    def list_to_table(self, dbconnection, file_data, primary_keys_for_concat, detailed_msg_list):
+    def list_to_table(self, dbconnection, file_data, primary_keys_for_concat):
         self.status = 'False'
         #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
         existing_names = db_utils.tables_columns(dbconnection=dbconnection).keys()
@@ -255,7 +255,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 dbconnection.cursor.execute(u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join([u'%s' for x in xrange(len(row))])), tuple(row))
         dbconnection.commit()
         if numskipped:
-            detailed_msg_list.append(ru(QCoreApplication.translate(u'midv_data_importer', u"%s nr of duplicate rows in file was skipped while importing."))%str(numskipped))
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Import warning')), log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u"%s nr of duplicate rows in file was skipped while importing."))%str(numskipped))
 
     def delete_existing_date_times_from_temptable(self, primary_keys, goal_table, dbconnection):
         """

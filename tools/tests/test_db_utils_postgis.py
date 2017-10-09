@@ -21,12 +21,9 @@
 """
 
 import db_utils
-import midvatten_utils as utils
 import mock
+
 import utils_for_tests
-from definitions import midvatten_defs as defs
-from import_data_to_db import midv_data_importer
-import os
 
 
 class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestPostgisDbSv):

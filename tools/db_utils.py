@@ -324,7 +324,8 @@ def get_foreign_keys(table, dbconnection=None):
 
 
 def sqlite_internal_tables(as_tuple=False):
-    astring = u"""('geom_cols_ref_sys',
+    astring = u"""('ElementaryGeometries',
+                'geom_cols_ref_sys',
                 'geometry_columns',
                 'geometry_columns_time',
                 'spatial_ref_sys',

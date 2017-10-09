@@ -26,6 +26,7 @@ import PyQt4
 import os
 from collections import OrderedDict
 
+from nose.plugins.attrib import attr
 import midvatten_utils as utils
 import mock
 from import_data_to_db import midv_data_importer

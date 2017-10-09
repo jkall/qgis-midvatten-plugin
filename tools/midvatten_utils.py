@@ -624,11 +624,14 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
         MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u"Error, No database found. Please check your Midvatten Settings. Reset if needed."))
         errorsignal += 1
     else:
-        if not db_utils.check_connection_ok():
-            MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u"Error, The selected database doesn't exist. Please check your Midvatten Settings and database location. Reset if needed."))
+        try:
+            connection_ok = db_utils.check_connection_ok()
+        except db_utils.DatabaseLockedError:
+            MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u'Databas is already in use'))
             errorsignal += 1
         else:
-            if db_utils.check_db_is_locked():
+            if not connection_ok:
+                MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u"Error, The selected database doesn't exist. Please check your Midvatten Settings and database location. Reset if needed."))
                 errorsignal += 1
 
     return errorsignal

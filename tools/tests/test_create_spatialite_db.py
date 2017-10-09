@@ -28,7 +28,7 @@ import utils_for_tests
 from definitions import midvatten_defs as defs
 import os
 
-@attr(status='on')
+@attr(status='off')
 class TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
@@ -45,7 +45,7 @@ class TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         self.midvatten.new_db()
 
 
-@attr(status='on')
+@attr(status='off')
 class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface')
@@ -140,6 +140,7 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert test_string == reference
 
 
+@attr(status='off')
 class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self):
