@@ -44,6 +44,9 @@ from tempfile import NamedTemporaryFile
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/tools'))
 
+# Add translate
+import util_translate
+
 # Import Midvatten tools and modules
 from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
@@ -52,6 +55,7 @@ from wqualreport import wqualreport
 from loaddefaultlayers import LoadLayers
 from prepareforqgis2threejs import PrepareForQgis2Threejs
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs
 from sectionplot import SectionPlot
 import customplot
@@ -60,39 +64,41 @@ import midvsettingsdialog
 from piper import PiperPlot
 from export_data import ExportData
 import PyQt4
-#import tools.db_utils as db_utils
 import db_utils
 from definitions import midvatten_defs as defs
 #import profilefromdem
+
 
 class midvatten:
     def __init__(self, iface): # Might need revision of variables and method for loading default variables
         #sys.path.append(os.path.dirname(os.path.abspath(__file__))) #add midvatten plugin directory to pythonpath
         self.iface = iface
         self.ms = midvsettings()#self.ms.settingsdict is created when ms is imported
-        
+        import util_translate
+        self.translator = util_translate.getTranslate( 'midvatten' )
+
     def initGui(self):
         # Create actions that will start plugin configuration
-        self.actionNewDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), "Create a new Midvatten project DB", self.iface.mainWindow())
+        self.actionNewDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), QCoreApplication.translate("Midvatten","Create a new Midvatten project DB"), self.iface.mainWindow())
         QObject.connect(self.actionNewDB, SIGNAL("triggered()"), self.new_db)
 
         self.actionNewPostgisDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), "Populate a postgis database to a new Midvatten project DB", self.iface.mainWindow())
         QObject.connect(self.actionNewPostgisDB, SIGNAL("triggered()"), self.new_postgis_db)
 
-        self.actionloadthelayers = QAction(QIcon(":/plugins/midvatten/icons/loaddefaultlayers.png"), "Load default db-layers to qgis", self.iface.mainWindow())
-        self.actionloadthelayers.setWhatsThis("Load default layers from the selected database")
+        self.actionloadthelayers = QAction(QIcon(":/plugins/midvatten/icons/loaddefaultlayers.png"), QCoreApplication.translate("Midvatten","Load default db-layers to qgis"), self.iface.mainWindow())
+        self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load default layers from the selected database"))
         self.iface.registerMainWindowAction(self.actionloadthelayers, "F7")   # The function should also be triggered by the F7 key
         QObject.connect(self.actionloadthelayers, SIGNAL("activated()"), self.loadthelayers)
 
-        self.actionsetup = QAction(QIcon(":/plugins/midvatten/icons/MidvSettings.png"), "Midvatten Settings", self.iface.mainWindow())
-        self.actionsetup.setWhatsThis("Configuration for Midvatten toolset")
+        self.actionsetup = QAction(QIcon(":/plugins/midvatten/icons/MidvSettings.png"), QCoreApplication.translate("Midvatten","Midvatten Settings"), self.iface.mainWindow())
+        self.actionsetup.setWhatsThis(QCoreApplication.translate("Midvatten","Configuration for Midvatten toolset"))
         self.iface.registerMainWindowAction(self.actionsetup, "F6")   # The function should also be triggered by the F6 key
         QObject.connect(self.actionsetup, SIGNAL("activated()"), self.setup)
         
-        self.actionresetSettings = QAction(QIcon(":/plugins/midvatten/icons/ResetSettings.png"), "Reset Settings", self.iface.mainWindow())
+        self.actionresetSettings = QAction(QIcon(":/plugins/midvatten/icons/ResetSettings.png"), QCoreApplication.translate("Midvatten","Reset Settings"), self.iface.mainWindow())
         QObject.connect(self.actionresetSettings, SIGNAL("triggered()"), self.reset_settings)
         
-        self.actionabout = QAction(QIcon(":/plugins/midvatten/icons/about.png"), "About", self.iface.mainWindow())
+        self.actionabout = QAction(QIcon(":/plugins/midvatten/icons/about.png"), QCoreApplication.translate("Midvatten","About"), self.iface.mainWindow())
         QObject.connect(self.actionabout, SIGNAL("triggered()"), self.about)
         
         #self.actionupdatecoord = QAction(QIcon(":/plugins/midvatten/icons/updatecoordfrpos.png"), "Update coordinates from map position", self.iface.mainWindow())
@@ -105,95 +111,95 @@ class midvatten:
         self.action_wlvlcalculate = QAction(QIcon(":/plugins/midvatten/icons/calc_level_masl.png"), "Calculate w level from manual measurements", self.iface.mainWindow())
         QObject.connect(self.action_wlvlcalculate , SIGNAL("triggered()"), self.wlvlcalculate)
         
-        self.action_aveflowcalculate = QAction(QIcon(":/plugins/midvatten/icons/import_wflow.png"), "Calculate Aveflow from Accvol", self.iface.mainWindow())
+        self.action_aveflowcalculate = QAction(QIcon(":/plugins/midvatten/icons/import_wflow.png"), QCoreApplication.translate("Midvatten","Calculate Aveflow from Accvol"), self.iface.mainWindow())
         QObject.connect(self.action_aveflowcalculate , SIGNAL("triggered()"), self.aveflowcalculate)
 
-        self.action_import_diverofficedata = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), "Import logger data using Diver-Office format", self.iface.mainWindow())
+        self.action_import_diverofficedata = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), QCoreApplication.translate("Midvatten","Import logger data using Diver-Office format"), self.iface.mainWindow())
         QObject.connect(self.action_import_diverofficedata, SIGNAL("triggered()"), self.import_diverofficedata)
         
-        self.action_wlvlloggcalibrate = QAction(QIcon(":/plugins/midvatten/icons/calibr_level_logger_masl.png"), "Calcultate logger w level from logger water head", self.iface.mainWindow())
+        self.action_wlvlloggcalibrate = QAction(QIcon(":/plugins/midvatten/icons/calibr_level_logger_masl.png"), QCoreApplication.translate("Midvatten","Calculate logger w level from logger water head"), self.iface.mainWindow())
         QObject.connect(self.action_wlvlloggcalibrate , SIGNAL("triggered()"), self.wlvlloggcalibrate)
 
-        self.actionimport_wqual_lab_from_interlab4 = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_lab.png"), "Import w quality from lab data using interlab4 format", self.iface.mainWindow())
+        self.actionimport_wqual_lab_from_interlab4 = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_lab.png"), QCoreApplication.translate("Midvatten","Import w quality from lab data using interlab4 format"), self.iface.mainWindow())
         QObject.connect(self.actionimport_wqual_lab_from_interlab4, SIGNAL("triggered()"), self.import_wqual_lab_from_interlab4)
 
-        self.actionimport_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import data using FieldLogger format", self.iface.mainWindow())
+        self.actionimport_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), QCoreApplication.translate("Midvatten","Import data using FieldLogger format"), self.iface.mainWindow())
         QObject.connect(self.actionimport_fieldlogger, SIGNAL("triggered()"), self.import_fieldlogger)
 
-        self.actiongeneral_import_csv = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), "Import data using general csv format", self.iface.mainWindow())
+        self.actiongeneral_import_csv = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), QCoreApplication.translate("Midvatten","Import data using general csv format"), self.iface.mainWindow())
         QObject.connect(self.actiongeneral_import_csv, SIGNAL("triggered()"), self.import_csv)
 
-        self.actionPlotTS = QAction(QIcon(":/plugins/midvatten/icons/PlotTS.png"), "Time series plot", self.iface.mainWindow())
-        self.actionPlotTS.setWhatsThis("Plot time series for selected objects")
+        self.actionPlotTS = QAction(QIcon(":/plugins/midvatten/icons/PlotTS.png"), QCoreApplication.translate("Midvatten","Time series plot"), self.iface.mainWindow())
+        self.actionPlotTS.setWhatsThis(QCoreApplication.translate("Midvatten","Plot time series for selected objects"))
         self.iface.registerMainWindowAction(self.actionPlotTS, "F8")   # The function should also be triggered by the F8 key
         QObject.connect(self.actionPlotTS, SIGNAL("triggered()"), self.plot_timeseries)
         
-        self.actionPlotXY = QAction(QIcon(":/plugins/midvatten/icons/PlotXY.png"), "Scatter plot", self.iface.mainWindow())
-        self.actionPlotXY.setWhatsThis("Plot XY scatter data (e.g. seismic profile) for the selected objects")
+        self.actionPlotXY = QAction(QIcon(":/plugins/midvatten/icons/PlotXY.png"), QCoreApplication.translate("Midvatten","Scatter plot"), self.iface.mainWindow())
+        self.actionPlotXY.setWhatsThis(QCoreApplication.translate("Midvatten","Plot XY scatter data (e.g. seismic profile) for the selected objects"))
         self.iface.registerMainWindowAction(self.actionPlotXY, "F9")   # The function should also be triggered by the F9 key
         QObject.connect(self.actionPlotXY, SIGNAL("triggered()"), self.plot_xy)
         
-        self.actionPlotPiper = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","Piper.png")), "Piper diagram", self.iface.mainWindow())
-        self.actionPlotPiper.setWhatsThis("Plot a rectangular Piper diagram for selected objects")
+        self.actionPlotPiper = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","Piper.png")), QCoreApplication.translate("Midvatten","Piper diagram"), self.iface.mainWindow())
+        self.actionPlotPiper.setWhatsThis(QCoreApplication.translate("Midvatten","Plot a rectangular Piper diagram for selected objects"))
         QObject.connect(self.actionPlotPiper, SIGNAL("triggered()"), self.plot_piper)
                 
-        self.actionPlotSQLite = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","plotsqliteicon.png")), "Custom plots", self.iface.mainWindow())
-        self.actionPlotSQLite.setWhatsThis("Create custom plots for your reports")
+        self.actionPlotSQLite = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","plotsqliteicon.png")), QCoreApplication.translate("Midvatten","Custom plots"), self.iface.mainWindow())
+        self.actionPlotSQLite.setWhatsThis(QCoreApplication.translate("Midvatten","Create custom plots for your reports"))
         QObject.connect(self.actionPlotSQLite, SIGNAL("triggered()"), self.plot_sqlite)
         
-        self.actionPlotStratigraphy = QAction(QIcon(":/plugins/midvatten/icons/PlotStratigraphy.png"), "Stratigraphy plot", self.iface.mainWindow())
-        self.actionPlotStratigraphy.setWhatsThis("Show stratigraphy for selected objects (modified ARPAT)")
+        self.actionPlotStratigraphy = QAction(QIcon(":/plugins/midvatten/icons/PlotStratigraphy.png"), QCoreApplication.translate("Midvatten","Stratigraphy plot"), self.iface.mainWindow())
+        self.actionPlotStratigraphy.setWhatsThis(QCoreApplication.translate("Midvatten","Show stratigraphy for selected objects (modified ARPAT)"))
         self.iface.registerMainWindowAction(self.actionPlotStratigraphy, "F10")   # The function should also be triggered by the F10 key
         QObject.connect(self.actionPlotStratigraphy, SIGNAL("triggered()"), self.plot_stratigraphy)
         
-        self.actiondrillreport = QAction(QIcon(":/plugins/midvatten/icons/drill_report.png"), "General report", self.iface.mainWindow())
-        self.actiondrillreport.setWhatsThis("Show a general report for the selected obs point")
+        self.actiondrillreport = QAction(QIcon(":/plugins/midvatten/icons/drill_report.png"), QCoreApplication.translate("Midvatten","General report"), self.iface.mainWindow())
+        self.actiondrillreport.setWhatsThis(QCoreApplication.translate("Midvatten","Show a general report for the selected obs point"))
         self.iface.registerMainWindowAction(self.actiondrillreport, "F11")   # The function should also be triggered by the F11 key
         QObject.connect(self.actiondrillreport, SIGNAL("triggered()"), self.drillreport)
 
-        self.actionwqualreport = QAction(QIcon(":/plugins/midvatten/icons/wqualreport.png"), "Water quality report", self.iface.mainWindow())
-        self.actionwqualreport.setWhatsThis("Show water quality for the selected obs point")
+        self.actionwqualreport = QAction(QIcon(":/plugins/midvatten/icons/wqualreport.png"), QCoreApplication.translate("Midvatten","Water quality report"), self.iface.mainWindow())
+        self.actionwqualreport.setWhatsThis(QCoreApplication.translate("Midvatten","Show water quality for the selected obs point"))
         self.iface.registerMainWindowAction(self.actionwqualreport, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionwqualreport, SIGNAL("triggered()"), self.waterqualityreport)
 
-        self.actionPlotSection = QAction(QIcon(":/plugins/midvatten/icons/PlotSection.png"), "Section plot", self.iface.mainWindow())
-        self.actionPlotSection.setWhatsThis("Plot a section with stratigraphy and water levels")
+        self.actionPlotSection = QAction(QIcon(":/plugins/midvatten/icons/PlotSection.png"), QCoreApplication.translate("Midvatten","Section plot"), self.iface.mainWindow())
+        self.actionPlotSection.setWhatsThis(QCoreApplication.translate("Midvatten","Plot a section with stratigraphy and water levels"))
         #self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionPlotSection, SIGNAL("triggered()"), self.plot_section)
         
-        self.actionPrepareFor2Qgis2ThreeJS = QAction(QIcon(":/plugins/midvatten/icons/qgis2threejs.png"), "Prepare 3D-data for Qgis2threejs plugin", self.iface.mainWindow())
-        self.actionPrepareFor2Qgis2ThreeJS.setWhatsThis("Add spatialite views to be used by Qgis2threejs plugin to create a 3D plot")
+        self.actionPrepareFor2Qgis2ThreeJS = QAction(QIcon(":/plugins/midvatten/icons/qgis2threejs.png"), QCoreApplication.translate("Midvatten","Prepare 3D-data for Qgis2threejs plugin"), self.iface.mainWindow())
+        self.actionPrepareFor2Qgis2ThreeJS.setWhatsThis(QCoreApplication.translate("Midvatten","Add spatialite views to be used by Qgis2threejs plugin to create a 3D plot"))
         QObject.connect(self.actionPrepareFor2Qgis2ThreeJS, SIGNAL("triggered()"), self.prepare_layers_for_qgis2threejs)
 
-        self.actionloaddatadomains = QAction(QIcon(":/plugins/midvatten/icons/loaddatadomains.png"), "Load data domain tables to qgis", self.iface.mainWindow())
-        self.actionloadthelayers.setWhatsThis("Load the data domain tables from the database")
+        self.actionloaddatadomains = QAction(QIcon(":/plugins/midvatten/icons/loaddatadomains.png"), QCoreApplication.translate("Midvatten","Load data domain tables to qgis"), self.iface.mainWindow())
+        self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load the data domain tables from the database"))
         QObject.connect(self.actionloaddatadomains, SIGNAL("activated()"), self.load_data_domains)
 
-        self.actionVacuumDB = QAction(QIcon(":/plugins/midvatten/icons/vacuum.png"), "Vacuum the database", self.iface.mainWindow())
-        self.actionVacuumDB.setWhatsThis("Perform database vacuuming")
+        self.actionVacuumDB = QAction(QIcon(":/plugins/midvatten/icons/vacuum.png"), QCoreApplication.translate("Midvatten","Vacuum the database"), self.iface.mainWindow())
+        self.actionVacuumDB.setWhatsThis(QCoreApplication.translate("Midvatten","Perform database vacuuming"))
         QObject.connect(self.actionVacuumDB, SIGNAL("triggered()"), self.vacuum_db)
 
-        self.actionZipDB = QAction(QIcon(":/plugins/midvatten/icons/zip.png"), "Backup the database", self.iface.mainWindow())
-        self.actionZipDB.setWhatsThis("A compressed copy of the database will be placed in same directory as the db.")
+        self.actionZipDB = QAction(QIcon(":/plugins/midvatten/icons/zip.png"), QCoreApplication.translate("Midvatten","Backup the database"), self.iface.mainWindow())
+        self.actionZipDB.setWhatsThis(QCoreApplication.translate("Midvatten","A compressed copy of the database will be placed in same directory as the db."))
         QObject.connect(self.actionZipDB, SIGNAL("triggered()"), self.zip_db)
 
-        self.action_export_csv = QAction(QIcon(":/plugins/midvatten/icons/export_csv.png"), "Export to a set of csv files", self.iface.mainWindow())
-        self.action_export_csv.setWhatsThis("All data for the selected objects (obs_points and obs_lines) will be exported to a set of csv files.")
+        self.action_export_csv = QAction(QIcon(":/plugins/midvatten/icons/export_csv.png"), QCoreApplication.translate("Midvatten","Export to a set of csv files"), self.iface.mainWindow())
+        self.action_export_csv.setWhatsThis(QCoreApplication.translate("Midvatten","All data for the selected objects (obs_points and obs_lines) will be exported to a set of csv files."))
         QObject.connect(self.action_export_csv, SIGNAL("triggered()"), self.export_csv)
 
-        self.action_export_spatialite = QAction(QIcon(":/plugins/midvatten/icons/export_spatialite.png"), "Export to another spatialite db", self.iface.mainWindow())
-        self.action_export_spatialite.setWhatsThis("All data for the selected objects (obs_points and obs_lines) will be exported to another spatialite db.")
+        self.action_export_spatialite = QAction(QIcon(":/plugins/midvatten/icons/export_spatialite.png"), QCoreApplication.translate("Midvatten","Export to another spatialite db"), self.iface.mainWindow())
+        self.action_export_spatialite.setWhatsThis(QCoreApplication.translate("Midvatten","All data for the selected objects (obs_points and obs_lines) will be exported to another spatialite db."))
         QObject.connect(self.action_export_spatialite, SIGNAL("triggered()"), self.export_spatialite)
 
-        self.action_export_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/export_csv.png"), "Export to FieldLogger format", self.iface.mainWindow())
+        self.action_export_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/export_csv.png"), QCoreApplication.translate("Midvatten","Export to FieldLogger format"), self.iface.mainWindow())
         self.action_export_fieldlogger.setWhatsThis(self.export_fieldlogger.__doc__)
         QObject.connect(self.action_export_fieldlogger, SIGNAL("triggered()"), self.export_fieldlogger)
 
-        self.action_calculate_statistics_for_all_w_logger_data = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), "Calculate statistics for all w logger data", self.iface.mainWindow())
+        self.action_calculate_statistics_for_all_w_logger_data = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate("Midvatten","Calculate statistics for all w logger data"), self.iface.mainWindow())
         self.action_calculate_statistics_for_all_w_logger_data.setWhatsThis(self.calculate_statistics_for_all_w_logger_data.__doc__)
         QObject.connect(self.action_calculate_statistics_for_all_w_logger_data, SIGNAL("triggered()"), self.calculate_statistics_for_all_w_logger_data)
 
-        self.action_calculate_db_table_rows = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), "Calculate database table rows", self.iface.mainWindow())
+        self.action_calculate_db_table_rows = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate("Midvatten","Calculate database table rows"), self.iface.mainWindow())
         self.action_calculate_statistics_for_all_w_logger_data.setWhatsThis(self.calculate_db_table_rows.__doc__)
         QObject.connect(self.action_calculate_db_table_rows, SIGNAL("triggered()"), self.calculate_db_table_rows)
 
@@ -326,11 +332,13 @@ class midvatten:
         self.iface.unregisterMainWindowAction(self.actionwqualreport)
         sys.path.remove(os.path.dirname(os.path.abspath(__file__))) #Clean up python environment
 
-    def about(self):   
+    def about(self):
+        print(self.translator)
+        util_translate.getTranslate('midvatten')
         filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
         iniText = QSettings(filenamepath , QSettings.IniFormat)#This method seems to return a list of unicode strings BUT it seems as if the encoding from the byte strings in the file is not utf-8, hence there is need for special encoding, see below
         verno = str(iniText.value('version'))
-        author = ', '.join(iniText.value('author')).encode('cp1252')#.encode due to encoding probs
+        author = ', '.join(iniText.value('author'))
         email = str(iniText.value('email'))
         homepage = str(iniText.value('homepage'))
 
@@ -343,9 +351,9 @@ class midvatten:
 
         f_in = open(ABOUT_templatefile, 'r')
         f_out = open(ABOUT_outputfile, 'w')
-        wholefile = f_in.read()
+        wholefile = f_in.read().decode('cp1252')
         changedfile = wholefile.replace('VERSIONCHANGETHIS',verno).replace('AUTHORCHANGETHIS',author).replace('EMAILCHANGETHIS',email).replace('HOMEPAGECHANGETHIS',homepage)
-        f_out.write(changedfile)
+        f_out.write(changedfile.encode('cp1252'))
         f_in.close()
         f_out.close()
         dlg = utils.HtmlDialog("About Midvatten plugin for QGIS",QUrl.fromLocalFile(ABOUT_outputfile))
@@ -380,7 +388,7 @@ class midvatten:
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
 
-            #sanity = utils.Askuser("YesNo","""You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""",'Are you sure?')
+            #sanity = utils.askuser("YesNo","""You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""",'Are you sure?')
             #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
             exportfolder = QFileDialog.getExistingDirectory(None, 'Select a folder where the csv files will be created:', '.',QFileDialog.ShowDirsOnly)
             if len(exportfolder) > 0:
@@ -398,7 +406,7 @@ class midvatten:
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
 
-            sanity = utils.Askuser("YesNo", """This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""", 'Are you sure?')
+            sanity = utils.askuser("YesNo","""This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""",'Are you sure?')
             if sanity.result == 1:
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
                 obsp_layer = utils.find_layer('obs_points')
@@ -459,13 +467,13 @@ class midvatten:
         if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):
                 longmessage = "You are about to import water head data, water flow or water quality from FieldLogger format."
-                sanity = utils.Askuser("YesNo", utils.returnunicode(longmessage), 'Are you sure?')
+                sanity = utils.askuser("YesNo",ru(longmessage),'Are you sure?')
                 if sanity.result == 1:
                     from import_fieldlogger import FieldloggerImport
                     importinstance = FieldloggerImport(self.iface.mainWindow(), self.ms)
                     importinstance.parse_observations_and_populate_gui()
                     if not importinstance.status == 'True' and not importinstance.status:
-                        self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
                     else:
                         try:
                             self.midvsettingsdialog.ClearEverything()
@@ -473,7 +481,7 @@ class midvatten:
                         except:
                             pass
             else:
-                self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
+                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
         QApplication.restoreOverrideCursor()
 
     def import_csv(self):
@@ -490,7 +498,7 @@ class midvatten:
                 importinstance = GeneralCsvImportGui(self.iface.mainWindow(), self.ms)
                 importinstance.load_gui()
                 if not importinstance.status == 'True' and not importinstance.status:
-                    self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                    utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
                 else:
                     try:
                         self.midvsettingsdialog.ClearEverything()
@@ -498,20 +506,20 @@ class midvatten:
                     except:
                         pass
             else:
-                self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
+                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
         QApplication.restoreOverrideCursor()
 
     def import_wqual_lab_from_interlab4(self):
         allcritical_layers = ('obs_points', 'w_qual_lab')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.Askuser("YesNo", """You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.\nSpecifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf\n\nContinue?""", 'Are you sure?')
+            sanity = utils.askuser("YesNo","""You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.\nSpecifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf\n\nContinue?""",'Are you sure?')
             if sanity.result == 1:
                 from import_interlab4 import Interlab4Import
                 importinstance = Interlab4Import(self.iface.mainWindow(), self.ms)
                 importinstance.parse_observations_and_populate_gui()
                 if importinstance.status=='True':      #
-                    self.iface.messageBar().pushMessage("Info","%s water quality parameters were imported to the database"%str(importinstance.recsafter - importinstance.recsbefore), 0)
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s water quality parameters were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
@@ -532,14 +540,14 @@ class midvatten:
                                u"""The data columns must be real numbers with point (.) or comma (,) as decimal separator and no separator for thousands.\n""" +
                                u"""The charset is usually cp1252!\n\n""" +
                                u"""Continue?""")
-                sanity = utils.Askuser("YesNo",utils.returnunicode(longmessage),'Are you sure?')
+                sanity = utils.askuser("YesNo",ru(longmessage),'Are you sure?')
                 if sanity.result == 1:
                     from import_diveroffice import DiverofficeImport
                     importinstance = DiverofficeImport(self.iface.mainWindow(), self.ms)
                     importinstance.select_files_and_load_gui()
 
                     if not importinstance.status:
-                        self.iface.messageBar().pushMessage("Warning","Something failed during import", 1)
+                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
                     else:
                         try:
                             self.midvsettingsdialog.ClearEverything()
@@ -547,13 +555,12 @@ class midvatten:
                         except:
                             pass
             else: 
-                self.iface.messageBar().pushMessage("Check settings","You have to select database first!",2)
+                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
         QApplication.restoreOverrideCursor()         
 
     def load_data_domains(self):
         #utils.pop_up_info(msg='This feature is not yet implemented',title='Hold on...')
         #return
-
         QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
         utils.MessagebarAndLog.info(log_msg=u'load_data_domains err_flag: ' + str(err_flag))
@@ -567,7 +574,7 @@ class midvatten:
     def loadthelayers(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
-            sanity = utils.Askuser("YesNo", """This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""", 'Warning!')
+            sanity = utils.askuser("YesNo","""This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""",'Warning!')
             if sanity.result == 1:
                 #show the user this may take a long time...
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
@@ -575,7 +582,7 @@ class midvatten:
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def new_db(self):
-        sanity = utils.Askuser("YesNo", """This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""", 'Are you sure?')
+        sanity = utils.askuser("YesNo","""This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""",'Are you sure?')
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
@@ -618,14 +625,15 @@ class midvatten:
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
         if err_flag == 0:
-            dlg = PiperPlot(self.ms,qgis.utils.iface.activeLayer())
+            piperplot = PiperPlot(self.ms,qgis.utils.iface.activeLayer())
+            dlg = piperplot.get_data_and_make_plot()
 
     def plot_timeseries(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
         if (self.ms.settingsdict['tstable'] =='' or self.ms.settingsdict['tscolumn'] == ''):
             err_flag += 1
-            self.iface.messageBar().pushMessage("Error","Please set time series table and column in Midvatten settings.", 2,duration =15)
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Please set time series table and column in Midvatten settings."), duration =15)
         if err_flag == 0:
             dlg = TimeSeriesPlot(qgis.utils.iface.activeLayer(), self.ms.settingsdict)
 
@@ -636,7 +644,7 @@ class midvatten:
         """
         if self.ms.settingsdict['stratigraphytable']=='':
             err_flag += 1
-            self.iface.messageBar().pushMessage("Error","Please set stratigraphy table in Midvatten settings.", 2,duration =15)
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Please set stratigraphy table in Midvatten settings."), duration =15)
         """
         if err_flag == 0 and utils.strat_selection_check(qgis.utils.iface.activeLayer()) == 'ok':
             dlg = Stratigraphy(self.iface, qgis.utils.iface.activeLayer(), self.ms.settingsdict)
@@ -647,7 +655,7 @@ class midvatten:
         all_critical_layers=('obs_points')
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, all_critical_layers)#verify midv settings are loaded
         if not(err_flag == 0):
-            self.iface.messageBar().pushMessage("Error","Verify Midvatten settings and make sure 'obs_points' layer is not in editing mode.", 2, duration=10)
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Verify Midvatten settings and make sure 'obs_points' layer is not in editing mode."))
             return
 
         SectionLineLayer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
@@ -670,7 +678,7 @@ class midvatten:
         if len(selectedobspoints)>1:
             # We cannot send unicode as string to sql because it would include the u'
             # Made into tuple because module sectionplot depends on obsid being a tuple
-            OBSID = utils.returnunicode(selectedobspoints, keep_containers=True)
+            OBSID = ru(selectedobspoints, keep_containers=True)
         else:
             msg = 'You must select at least two objects in the obs_points layer'
         
@@ -688,7 +696,7 @@ class midvatten:
         err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
         if (self.ms.settingsdict['xytable'] =='' or self.ms.settingsdict['xy_xcolumn'] == '' or (self.ms.settingsdict['xy_y1column'] == '' and self.ms.settingsdict['xy_y2column'] == '' and self.ms.settingsdict['xy_y3column'] == '')):
             err_flag += 1
-            self.iface.messageBar().pushMessage("Error","Please set xy series table and columns in Midvatten settings.", 2,duration =15)
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Please set xy series table and columns in Midvatten settings."), duration =15)
         if err_flag == 0:
             dlg = XYPlot(qgis.utils.iface.activeLayer(), self.ms.settingsdict)
 
@@ -743,9 +751,9 @@ class midvatten:
         layername = 'obs_points'
         err_flag = utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag, layername)
         if err_flag == 0:
-            sanity = utils.Askuser("AllSelected", """Do you want to update coordinates\nfor All or Selected objects?""")
+            sanity = utils.askuser("AllSelected","""Do you want to update coordinates\nfor All or Selected objects?""")
             if sanity.result == 0:  #IF USER WANT ALL OBJECTS TO BE UPDATED
-                sanity = utils.Askuser("YesNo", """Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor ALL objects in the obs_points table.\nProceed?""")
+                sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor ALL objects in the obs_points table.\nProceed?""")
                 if sanity.result==1:
                     ALL_OBS = db_utils.sql_load_fr_db("select distinct obsid from obs_points")[1]#a list of unicode strings is returned
                     observations = [None]*len(ALL_OBS)
@@ -756,7 +764,7 @@ class midvatten:
                     from coords_and_position import updatecoordinates
                     updatecoordinates(observations)
             elif sanity.result == 1:    #IF USER WANT ONLY SELECTED OBJECTS TO BE UPDATED
-                sanity = utils.Askuser("YesNo", """Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor SELECTED objects in the obs_points table.\nProceed?""")
+                sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor SELECTED objects in the obs_points table.\nProceed?""")
                 if sanity.result==1:
                     layer = self.iface.activeLayer()
                     if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!
@@ -805,12 +813,12 @@ class midvatten:
         err_flag = utils.verify_layer_selection(err_flag)#verify the selected layer has attribute "obsid" and that some feature(s) is selected
         if self.ms.settingsdict['database'] == '' or self.ms.settingsdict['wqualtable']=='' or self.ms.settingsdict['wqual_paramcolumn']=='' or self.ms.settingsdict['wqual_valuecolumn']=='':
             err_flag += 1
-            self.iface.messageBar().pushMessage("Error","Check Midvatten settings! \nSomething is probably wrong in the 'W quality report' tab!", 2,duration =15)
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Check Midvatten settings! \nSomething is probably wrong in the 'W quality report' tab!"), duration =15)
         if err_flag == 0:
             fail = 0
             for k in utils.getselectedobjectnames(qgis.utils.iface.activeLayer()):#all selected objects
                 if not db_utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.ms.settingsdict['wqualtable'], str(k)))[1]:#if there is a selected object without water quality data
-                    self.iface.messageBar().pushMessage("Error","No water quality data for %s"%str(k), 2)
+                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate("Midvatten", "No water quality data for %s")) % str(k))
                     fail = 1
             if not fail == 1:#only if all objects has data
                 wqualreport(qgis.utils.iface.activeLayer(),self.ms.settingsdict)#TEMPORARY FOR GVAB
@@ -850,7 +858,7 @@ class midvatten:
                 zf.close()
                 connection.conn.rollback()
                 connection.closedb()
-                utils.MessagebarAndLog.info(bar_msg=u'Information, database backup was written to ' + bkupname)
+                utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "Database backup was written to %s ")) % bkupname, duration=15)
 
     @utils.waiting_cursor
     def calculate_statistics_for_all_w_logger_data(self):
@@ -868,7 +876,7 @@ class midvatten:
             printlist.append('Obsid\tMin\tMedian\tNr of values\tMax')
             printlist.reverse()
             utils.MessagebarAndLog.info(
-                bar_msg='Statistics done, see log for results.',
+                bar_msg=QCoreApplication.translate("Midvatten", 'Statistics done, see log for results.'),
                 log_msg='\n'.join(printlist), duration=15, button=True)
 
     def calculate_db_table_rows(self):

@@ -192,24 +192,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ms.settingsdict[settings_string] = combobox.currentText()
         self.ms.save_settings(settings_string)
 
-    def ChangedLocale(self):    # TODO: remove in version 1.4
-        sql = u"select description from about_db where description like 'locale:%'"
-        connection_ok, result = db_utils.sql_load_fr_db(sql)
-        if not self.locale_combobox.currentText():
-            return
-        if connection_ok:
-            print(str(result))
-            if len(result) > 1:
-                utils.MessagebarAndLog.info(bar_msg=u'More than one row with locale found in db. No update can be done.')
-                return
-            if len(result) == 1:
-                sql = u"update or ignore about_db set description='locale:%s'"%self.locale_combobox.currentText()
-                sql += u" where description like 'locale:%'"
-                db_utils.sql_alter_db(sql)
-            elif len(result) == 0:
-                sql = u"insert or ignore into about_db (description) values ('locale:%s')"%self.locale_combobox.currentText()
-                db_utils.sql_alter_db(sql)
-
     def ClearColumnLists(self):
         self.ListOfColumns.clear()
         self.ListOfColumns_2.clear()
@@ -226,12 +208,10 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ClearTableLists()
         self.ClearColumnLists()
         self.ClearPiperParams()
-        #self.ClearGeneral() # TODO: remove in version 1.4
 
     def ClearTableLists(self):
         self.ListOfTables.clear()    
-        self.ListOfTables_2.clear()    
-        #self.ListOfTables_3.clear() #TODO: remove in version 1.4 (was for stratigraphy)
+        self.ListOfTables_2.clear()
         self.ListOfTables_WQUAL.clear()
 
     def ClearPiperParams(self):
@@ -242,9 +222,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.paramK.clear()
         self.paramCa.clear()
         self.paramMg.clear()
-
-    def ClearGeneral(self):     # TODO: remove in version 1.4
-        self.locale_combobox.clear()
 
     def ColumnsToComboBox(self, comboboxname='', table=None):
         getattr(self, comboboxname).clear()
@@ -268,9 +245,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
         #XY plot settings
         self.load_and_select_last_xyplot_settings()
-
-        #Stratigraphy settings # TODO: remove in version 1.4
-        #self.load_and_select_last_stratigraphy_settings()
 
         #Water Quality Reports settings
         self.load_and_select_last_wqual_settings()
@@ -431,23 +405,37 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def LoadDistinctPiperParams(self):
         self.ClearPiperParams()
 
-        connection_ok, result = db_utils.sql_load_fr_db(r"""SELECT DISTINCT parameter FROM w_qual_lab ORDER BY parameter""")
-        if connection_ok:
-            self.paramCl.addItem('')
-            self.paramHCO3.addItem('')
-            self.paramSO4.addItem('')
-            self.paramNa.addItem('')
-            self.paramK.addItem('')
-            self.paramCa.addItem('')
-            self.paramMg.addItem('')
-            for row in result:
-                self.paramCl.addItem(row[0])
-                self.paramHCO3.addItem(row[0])
-                self.paramSO4.addItem(row[0])
-                self.paramNa.addItem(row[0])
-                self.paramK.addItem(row[0])
-                self.paramCa.addItem(row[0])
-                self.paramMg.addItem(row[0])
+        #Dict not implemented yet.
+        lab_parameters = {}
+        if lab_parameters:
+            for param_list in [self.paramCl,
+                          self.paramHCO3,
+                          self.paramSO4,
+                          self.paramNa,
+                          self.paramK,
+                          self.paramCa,
+                          self.paramMg]:
+                new_list = ['']
+                new_list.extend(sorted(lab_parameters.keys()))
+                param_list.addItems(new_list)
+        else:
+            connection_ok, result = db_utils.sql_load_fr_db(r"""SELECT DISTINCT parameter FROM w_qual_lab ORDER BY parameter""")
+            if connection_ok:
+                self.paramCl.addItem('')
+                self.paramHCO3.addItem('')
+                self.paramSO4.addItem('')
+                self.paramNa.addItem('')
+                self.paramK.addItem('')
+                self.paramCa.addItem('')
+                self.paramMg.addItem('')
+                for row in result:
+                    self.paramCl.addItem(row[0])
+                    self.paramHCO3.addItem(row[0])
+                    self.paramSO4.addItem(row[0])
+                    self.paramNa.addItem(row[0])
+                    self.paramK.addItem(row[0])
+                    self.paramCa.addItem(row[0])
+                    self.paramMg.addItem(row[0])
 
     def PiperClUpdated(self):
         self.ms.settingsdict['piper_cl']= unicode(self.paramCl.currentText())

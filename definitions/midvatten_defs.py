@@ -23,8 +23,9 @@ from collections import OrderedDict
 
 import db_utils
 import midvatten_utils as utils
-from midvatten_utils import returnunicode
 
+from midvatten_utils import get_sql_result_as_dict, returnunicode as ru
+from PyQt4.QtCore import QCoreApplication
 
 def settingsdict():    #These are the default settings, they shall not be changed!!!
     dictionary = { 'database' : '',
@@ -116,7 +117,7 @@ def geocolorsymbols():
     # fallback method to maintain backwards compatibility
     if not (res1 and res2):
         # Fallback method - if using old databases where zz_strat is missing, then you may change the code below to reflect your own GEOLOGIC CODES, SYMBOLS AND COLORS
-        print('using fallback method for backwards compat.')
+        utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate(u'geocolorsymbols', u'Reading zz_strat* tables failed. Using default dictionary instead'))
         dictionary  = { '': ('NoBrush', 'white'),
                     ' ': ('NoBrush', 'white'),
                     'berg': ('DiagCrossPattern', 'red'),
@@ -262,12 +263,21 @@ def geocolorsymbols():
     # new method create dict from db table
     #dict_geo1 is just a start, not yet populated with tuples of geoshorts for each strata, time to do so
     dictionary={}
-    for key, value in sorted(dict_geo1.iteritems()):
-        for geoshort in value:
+    for strata, strata_synonyms in sorted(dict_geo1.iteritems()):
+        #In general there is only one geoshort in geoshort_as_strata_synonym
+        for geoshort in strata_synonyms:
+            geoshort = geoshort[0]
             try:
-                dictionary[geoshort[0]]=dict_qt[str(key)][0]
-            except:
-                dictionary[geoshort[0]]=(u'NoBrush', u'white')
+                dictionary[geoshort]=dict_qt[str(strata)][0]
+            except Exception as a:
+                try:
+                    dictionary[geoshort] = dict_qt[strata][0]
+                except Exception as b:
+                    try:
+                        dictionary[geoshort] = dict_qt[ru(strata)][0]
+                    except Exception as c:
+                        utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'geocolorsymbols', u'Error in geocolorsymbols, setting brush and color for strata "%s" using geoshort %s failed. Msg1:\n%s\nMsg2:\n%s\Msg3:\n%s'))%(strata, geoshort, str(a), str(b), str(c)))
+                        dictionary[geoshort]=(u'NoBrush', u'white')
     """
     # this was temporary method to deal with zz_stratigraphy table existing in plugin version 1.3.x
     # skip "unknown"
@@ -361,7 +371,7 @@ def PlotTypesDict(international='no'):
     success, Dict = db_utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
     succss_strata, strata_order = db_utils.sql_load_fr_db('select strata from zz_stratigraphy_plots order by ROWID')
     if not success:
-        print('fallback method using PlotTypesDict from code')
+        utils.MessagebarAndLog.info(log_msg=QCoreApplication.translate(u'PlotTypesDict', u'Getting strata and geoshort from zz_strat failed, fallback method using PlotTypesDict from code'))
         if international=='no' and  utils.getcurrentlocale() == 'sv_SE':
             """
             Dict = {u"Okänt" : u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')",
@@ -454,7 +464,7 @@ def PlotColorDict():
     """
     success, Dict = utils.create_dict_from_db_2_cols(('strata','color_mplot','zz_stratigraphy_plots'))
     if not success:
-        print('fallback method with PlotColorDict from code')
+        utils.MessagebarAndLog.info(log_msg=QCoreApplication.translate(u'PlotColorDict', u'Getting strata and color_mplot form zz_stratigraphy_plots failed, fallback method with PlotColorDict from code'))
         if  utils.getcurrentlocale() == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
             Dict = {u"Okänt" : u"white",
             "Berg"  : u"red",
@@ -498,7 +508,7 @@ def PlotHatchDict():
     """
     success, Dict = utils.create_dict_from_db_2_cols(('strata','hatch_mplot','zz_stratigraphy_plots'))
     if not success:
-        print('fallback method with PlotHatchDict from code')
+        utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate(u'PlotHatchDict', u'Getting strata and hatch_mplot from zz_stratigraphy_plots failed, fallback method with PlotHatchDict from code'))
         # hatch patterns : ('-', '+', 'x', '\\', '*', 'o', 'O', '.','/')
         if  utils.getcurrentlocale() == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
             Dict = {u"Okänt" : u"",
@@ -543,11 +553,10 @@ def staff_list():
     connection_ok, result_list = sql_result
 
     if not connection_ok:
-        textstring = """Failed to get existing staff from staff table from sql """ + sql
-        qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
+        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'staff_list', u'Sql failed, see log message panel'), log_msg=ru(QCoreApplication.translate(u'staff_list', u'Failed to get existing staff from staff table from sql %s'))%sql)
         return False, tuple()
 
-    return True, utils.returnunicode(tuple([x[0] for x in result_list]), True)
+    return True, ru(tuple([x[0] for x in result_list]), True)
 
 def stratigraphy_table():
     return 'stratigraphy'
@@ -565,22 +574,20 @@ def w_flow_flowtypes_units():
     connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
 
     if not connection_ok:
-        textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
-        utils.MessagebarAndLog.critical(bar_msg=u"Error, sql failed, see log message panel", log_msg=textstring)
+        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'w_flow_flowtypes_units', u"Error, sql failed, see log message panel"), log_msg=ru(QCoreApplication.translate(u'w_flow_flowtypes_units', u'Cannot get data from sql %s'))%ru(sql))
         return {}
 
-    return utils.returnunicode(result_dict, keep_containers=True)
+    return ru(result_dict, keep_containers=True)
 
 def w_qual_field_parameter_units():
     sql = 'select distinct parameter, unit from w_qual_field'
     connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
 
     if not connection_ok:
-        textstring = u"""Cannot get data from sql """ + utils.returnunicode(sql)
-        utils.MessagebarAndLog.critical(bar_msg=u"Error, sql failed, see log message panel", log_msg=textstring)
+        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'w_qual_field_parameter_units', u'Error, sql failed, see log message panel'), log_msg=ru(QCoreApplication.translate(u'w_qual_field_parameter_units', u'Cannot get data from sql %s'))%ru(sql))
         return {}
 
-    return utils.returnunicode(result_dict, keep_containers=True)
+    return ru(result_dict, keep_containers=True)
 
 
 def get_last_used_quality_instruments():
@@ -590,7 +597,7 @@ def get_last_used_quality_instruments():
     """
     sql = 'select parameter, unit, instrument, staff, max(date_time) from w_qual_field group by parameter, unit, instrument, staff'
     connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
-    return returnunicode(result_dict, True)
+    return ru(result_dict, True)
 
 specific_table_info = {u'obs_lines': u'The geometry column supports WKT ("well known text") of type LINESTRING and\nthe geometries must correspond to SRID in the database.',
                        u'obs_points': u'The geometry column supports WKT ("well known text") of type POINT and\nthe geometries must correspond to SRID in the database.'}

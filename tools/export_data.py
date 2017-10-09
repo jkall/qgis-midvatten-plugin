@@ -17,8 +17,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-import sqlite3 as sqlite, csv, codecs, cStringIO, os, os.path
-
+from pyspatialite import dbapi2 as sqlite
+import csv, codecs, cStringIO, os, os.path
 import db_utils
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs

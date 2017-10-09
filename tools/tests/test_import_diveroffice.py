@@ -756,6 +756,78 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                 reference_string = ur'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None)])'''
                 assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
+    def test_wlvllogg_import_from_diveroffice_files_skip_obsid(self):
+        files = [(u'Location=rb1',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/03/15 10:30:00,1,10',
+                u'2016/03/15 11:00:00,11,101'),
+                (u'Location=rb2',
+                u'Date/time,Water head[cm],Temperature[°C]',
+                u'2016/04/15 10:30:00,2,20',
+                u'2016/04/15 11:00:00,21,201'),
+                (u'Location=rb3',
+                u'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
+                u'2016/05/15 10:30:00,3,30,5',
+                u'2016/05/15 11:00:00,31,301,6')
+                 ]
+
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb1")''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("rb2")''')
+
+        DiverofficeImport.charsetchoosen = u'utf-8'
+        with utils.tempinput(u'\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with utils.tempinput(u'\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with utils.tempinput(u'\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+
+                    filenames = [f1, f2, f3]
+                    utils_askuser_answer_no_obj = MockUsingReturnValue(None)
+                    utils_askuser_answer_no_obj.result = 0
+                    utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
+
+                    @mock.patch("midvatten_utils.MessagebarAndLog")
+                    @mock.patch('import_data_to_db.utils.NotFoundQuestion')
+                    @mock.patch('midvatten_utils.QgsProject.instance', TestWlvllogImportFromDiverofficeFiles.mock_dbpath.get_v)
+                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('qgis.utils.iface', autospec=True)
+                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
+                    @mock.patch('import_data_to_db.utils.select_files')
+                    def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion, mock_messagebarandlog):
+
+                        mocks_notfoundquestion = []
+                        for answer, value in [[u'ok', u'rb1'],
+                                              [u'ok', u'rb2'],
+                                              [u'skip', u'rb3']]:
+                            a_mock = MagicMock()
+                            a_mock.answer = answer
+                            a_mock.value = value
+                            a_mock.reuse_column = u'location'
+                            mocks_notfoundquestion.append(a_mock)
+
+                        mock_notfoundquestion.side_effect = mocks_notfoundquestion
+
+                        mock_filenames.return_value = filenames
+                        mock_encoding.return_value = [u'utf-8']
+
+                        ms = MagicMock()
+                        ms.settingsdict = OrderedDict()
+                        importer = DiverofficeImport(self.iface.mainWindow(), ms)
+                        importer.select_files_and_load_gui()
+
+                        importer.start_import(importer.files, importer.skip_rows.checked, importer.confirm_names.checked, importer.import_all_data.checked)
+
+                        print(u'\n'.join([str(x) for x in mock_messagebarandlog.mock_calls]))
+
+
+                    _test_wlvllogg_import_from_diveroffice_files(self, filenames)
+
+                    test_string = utils_for_tests.create_test_string(utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None)])'''
+                    print(test_string)
+                    print(reference_string)
+                    assert test_string == reference_string
+
 
 class TestFilterDatesFromFiledata(object):
 

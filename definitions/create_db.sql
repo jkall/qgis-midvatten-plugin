@@ -1,4 +1,4 @@
-﻿﻿﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
+﻿﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
 SPATIALITE SELECT InitSpatialMetadata(1);
 CREATE TABLE about_db /*A status log for the tables in the db*/(
 tablename text --Name of a table in the db

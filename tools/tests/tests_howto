@@ -59,4 +59,17 @@ assert call.messageBar().createMessage(u'Warning, In total 2 posts were not impo
 assert call.messageBar().createMessage(u'In total 1 measurements were imported to "obs_points".') in mock_iface.mock_calls
 
 
+#Mock multiple answers from NotFoundQuestion
+mocks_notfoundquestion = []
+for answer, value, reuse_column in [[u'ok', u'rb1', u'location'],
+                      [u'ok', u'rb2', u'location'],
+                      [u'skip', u'rb3', u'location']]:
+    a_mock = MagicMock()
+    a_mock.answer = answer
+    a_mock.value = value
+    a_mock.reuse_column = reuse_column
+    mocks_notfoundquestion.append(a_mock)
+
+mock_notfoundquestion.side_effect = mocks_notfoundquestion
+
 #print("\nRef\n" + reference_string + "\ntest\n" + test_string)
