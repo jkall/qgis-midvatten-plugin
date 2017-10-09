@@ -24,6 +24,8 @@ import qgis.utils
 import timeit
 import re
 
+from PyQt4.QtCore import QCoreApplication
+
 import os
 import locale
 from pyspatialite import dbapi2 as sqlite# pyspatialite is absolutely necessary (sqlite3 not enough) due to InitSpatialMetaData()
@@ -31,8 +33,8 @@ import db_utils
 import datetime
 #plugin modules
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
 
-tr = PyQt4.QtCore.QCoreApplication.translate
 
 class NewDb():
     def __init__(self):
@@ -52,12 +54,12 @@ class NewDb():
             EPSGID=EPSG_code
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         if EPSGID=='0' or not EPSGID:
-            utils.pop_up_info(tr(u'NewDb', u"Cancelling..."))
+            utils.pop_up_info(ru(QCoreApplication.translate(u'NewDb', u"Cancelling...")))
             return utils.Cancel()
         # If a CRS is selectd, go on and create the database
 
         #path and name of new db
-        dbpath = utils.returnunicode(PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)"))
+        dbpath = ru(PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)"))
         if not dbpath:
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return u''
@@ -66,18 +68,17 @@ class NewDb():
         #delete the file if exists
         if os.path.exists(dbpath):
             utils.MessagebarAndLog.critical(
-                bar_msg=tr(u'NewDb', u'A database with the chosen name already existed. Cancelling...'))
+                bar_msg=ru(QCoreApplication.translate(u'NewDb', u'A database with the chosen name already existed. Cancelling...')))
             return u''
 
-        self.db_settings = utils.returnunicode(utils.anything_to_string_representation({u'spatialite': {u'dbpath': dbpath}}))
+        self.db_settings = ru(utils.anything_to_string_representation({u'spatialite': {u'dbpath': dbpath}}))
         #dbconnection = db_utils.DbConnectionManager(self.db_settings)
         try:
             # creating/connecting the test_db
             dbconnection = db_utils.DbConnectionManager(self.db_settings)
             dbconnection.execute(u"PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database dbconnection separately.
         except Exception as e:
-            print(tr(u'NewDb', u"Creation of db failed"))
-            utils.MessagebarAndLog.critical(bar_msg=tr(u'NewDb', u"Impossible to connect to selected DataBase, see log message panel"), log_msg=tr(u'NewDb', u'Msg:\n') + str(e))
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'NewDb', u"Impossible to connect to selected DataBase, see log message panel")), log_msg=ru(QCoreApplication.translate(u'NewDb', u'Msg:\n') + str(e)))
             #utils.pop_up_info("Impossible to connect to selected DataBase")
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return ''
@@ -87,7 +88,7 @@ class NewDb():
         # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
         # then the syntax defines a Midvatten project db according to the loaded .sql-file
         if not int(versionstext[0][0]) > 3: # which file to use depends on spatialite version installed
-            utils.pop_up_info(tr(u'NewDb', u"Midvatten plugin needs spatialite4.\nDatabase can not be created"))
+            utils.pop_up_info(ru(QCoreApplication.translate(u'NewDb', u"Midvatten plugin needs spatialite4.\nDatabase can not be created")))
             return ''
 
         filenamestring = "create_db.sql"
@@ -104,7 +105,7 @@ class NewDb():
 
         with open(SQLFile, 'r') as f:
             f.readline()  # first line is encoding info....
-            lines = [utils.returnunicode(line) for line in f]
+            lines = [ru(line) for line in f]
         sql_lines = [u'{};'.format(l) for l in u' '.join(lines).split(u';') if l]
         for line in sql_lines:
             if all([line, not line.startswith("#"), u'POSTGIS' not in line]):
@@ -116,12 +117,12 @@ class NewDb():
                     raise
 
         if delete_srids:
-            #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + utils.returnunicode(EPSGID))
+            #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + ru(EPSGID))
             delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
             try:
                 dbconnection.execute(delete_srid_sql)
             except:
-                utils.MessagebarAndLog.info(log_msg=tr(u'NewDb', u'Removing srids failed using: ') + str(delete_srid_sql))
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'NewDb', u'Removing srids failed using: %s'))%ru(delete_srid_sql))
 
         self.insert_datadomains(set_locale, dbconnection)
 
@@ -184,7 +185,7 @@ class NewDb():
 
         with open(SQLFile, 'r') as f:
             f.readline()  # first line is encoding info....
-            lines = [utils.returnunicode(line) for line in f]
+            lines = [ru(line) for line in f]
         sql_lines = [u'{};'.format(l) for l in u' '.join(lines).split(u';') if l]
         for line in sql_lines:
             if all([line, not line.startswith("#"), u'InitSpatialMetadata' not in line, u'SPATIALITE' not in line]):
@@ -224,13 +225,14 @@ class NewDb():
         locale_names = [localeobj.name() for localeobj in locales]
         locale_names.append(locale.getdefaultlocale()[0])
         locale_names = list(set(locale_names))
-        question = utils.NotFoundQuestion(dialogtitle=tr(u'NewDb', u'User input needed'),
-                                    msg=tr(u'NewDb', u'Supply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.'),
+        question = utils.NotFoundQuestion(dialogtitle=ru(QCoreApplication.translate(u'NewDb', u'User input needed')),
+                                    msg=ru(QCoreApplication.translate(u'NewDb', u'Supply locale for the database.\nCurrently, only locale sv_SE has special meaning,\nall other locales will use english.')),
                                     existing_list=locale_names,
                                     default_value=u'',
-                                    button_names=[tr(u'NewDb', u'Cancel'), tr(u'NewDb', u'Ok')])
+                                    combobox_label=ru(QCoreApplication.translate(u'newdb', u'Locales')),
+                                    button_names=[u'Cancel', u'Ok'])
         answer = question.answer
-        submitted_value = utils.returnunicode(question.value)
+        submitted_value = ru(question.value)
         if answer == u'cancel':
             return answer
         elif answer == u'ok':
@@ -242,7 +244,7 @@ class NewDb():
             default_crs = 3006
         else:
             default_crs = 4326
-        EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, tr(u'NewDb', "Select CRS"), tr(u'NewDb', "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:"),default_crs)
+        EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, ru(QCoreApplication.translate(u'NewDb', "Select CRS")), ru(QCoreApplication.translate(u'NewDb', "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:")),default_crs)
         return EPSGID
 
     def insert_datadomains(self, set_locale=False, dbconnection=None):
@@ -324,7 +326,10 @@ class NewDb():
             f.readline()  # first line is encoding info....
             for line in f:
                 if all([line,not line.startswith("#")]):
-                    dbconnection.execute(line)
+                    try:
+                        dbconnection.execute(line)
+                    except Exception, e:
+                        utils.MessagebarAndLog.critical(utils.sql_failed_msg(), ru(QCoreApplication.translate(u'newdb', 'sql failed:\n%s\nerror msg:\n%s\n'))%(line ,str(e)), duration=5)
 
 
 class AddLayerStyles():

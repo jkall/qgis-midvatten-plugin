@@ -30,7 +30,7 @@ from mocks_for_tests import MockUsingReturnValue
 from collections import OrderedDict
 
 
-class _TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -159,7 +159,7 @@ class _TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         assert test_string == reference_string
 
 
-class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_import_obsids_directly(self):
@@ -262,7 +262,7 @@ class _TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImpor
         assert test_string == reference_string
         
 
-class _TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_wquallab_import_from_csvlayer(self):
@@ -314,7 +314,7 @@ class _TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
         assert test_string == reference_string
 
 
-class _TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_wflow_import_from_csvlayer(self):
@@ -362,7 +362,7 @@ class _TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
 
-class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_w_qual_field_import_from_csvlayer(self):
@@ -462,7 +462,7 @@ class _TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstan
         assert test_string == reference_string
 
 
-class _TestWlevelsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestWlevelsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_w_level_import_from_csvlayer(self):
@@ -479,7 +479,7 @@ class _TestWlevelsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         assert test_string == reference_string
 
 
-class _TestSeismicImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestSeismicImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_seismic_import_from_csvlayer(self):
@@ -495,7 +495,7 @@ class _TestSeismicImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         assert test_string == reference_string
 
 
-class _TestCommentsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestCommentsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_comments_import_from_csvlayer(self):
@@ -511,7 +511,7 @@ class _TestCommentsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
         assert test_string == reference_string
 
 
-class _TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_strat_import_from_csvlayer(self):
@@ -586,7 +586,7 @@ class _TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
 
-class _TestMeteoImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestMeteoImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_meteo_import_from_csvlayer(self):
@@ -602,7 +602,7 @@ class _TestMeteoImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
 
-class _TestVlfImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestVlfImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_vlf_import_from_csvlayer(self):
@@ -631,7 +631,7 @@ class _TestVlfImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
 
-class _TestObsLinesImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestObsLinesImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     @mock.patch('midvatten_utils.MessagebarAndLog')
@@ -647,7 +647,7 @@ class _TestObsLinesImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
         assert test_string == reference_string
 
 
-class _TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_get_foreign_columns(self):
@@ -658,7 +658,7 @@ class _TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSvImportInstance
             assert isinstance(v, (list, tuple))
 
 
-class _TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     def test_delete_existing_date_times_from_temptable_00_already_exists(self):

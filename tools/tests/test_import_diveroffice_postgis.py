@@ -222,7 +222,7 @@ class TestParseDiverofficeFile(object):
 
 
 
-class _TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)

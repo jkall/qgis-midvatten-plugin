@@ -388,7 +388,7 @@ class midvatten:
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
 
-            #sanity = utils.askuser("YesNo","""You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""",'Are you sure?')
+            #sanity = utils.Askuser("YesNo","""You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""",'Are you sure?')
             #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
             exportfolder = QFileDialog.getExistingDirectory(None, 'Select a folder where the csv files will be created:', '.',QFileDialog.ShowDirsOnly)
             if len(exportfolder) > 0:
@@ -406,7 +406,7 @@ class midvatten:
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
 
-            sanity = utils.askuser("YesNo","""This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""",'Are you sure?')
+            sanity = utils.Askuser("YesNo","""This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""",'Are you sure?')
             if sanity.result == 1:
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
                 obsp_layer = utils.find_layer('obs_points')
@@ -467,7 +467,7 @@ class midvatten:
         if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):
                 longmessage = "You are about to import water head data, water flow or water quality from FieldLogger format."
-                sanity = utils.askuser("YesNo",ru(longmessage),'Are you sure?')
+                sanity = utils.Askuser("YesNo",ru(longmessage),'Are you sure?')
                 if sanity.result == 1:
                     from import_fieldlogger import FieldloggerImport
                     importinstance = FieldloggerImport(self.iface.mainWindow(), self.ms)
@@ -513,7 +513,7 @@ class midvatten:
         allcritical_layers = ('obs_points', 'w_qual_lab')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo","""You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.\nSpecifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf\n\nContinue?""",'Are you sure?')
+            sanity = utils.Askuser("YesNo","""You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.\nSpecifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf\n\nContinue?""",'Are you sure?')
             if sanity.result == 1:
                 from import_interlab4 import Interlab4Import
                 importinstance = Interlab4Import(self.iface.mainWindow(), self.ms)
@@ -540,7 +540,7 @@ class midvatten:
                                u"""The data columns must be real numbers with point (.) or comma (,) as decimal separator and no separator for thousands.\n""" +
                                u"""The charset is usually cp1252!\n\n""" +
                                u"""Continue?""")
-                sanity = utils.askuser("YesNo",ru(longmessage),'Are you sure?')
+                sanity = utils.Askuser("YesNo",ru(longmessage),'Are you sure?')
                 if sanity.result == 1:
                     from import_diveroffice import DiverofficeImport
                     importinstance = DiverofficeImport(self.iface.mainWindow(), self.ms)
@@ -574,7 +574,7 @@ class midvatten:
     def loadthelayers(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
-            sanity = utils.askuser("YesNo","""This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""",'Warning!')
+            sanity = utils.Askuser("YesNo","""This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""",'Warning!')
             if sanity.result == 1:
                 #show the user this may take a long time...
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
@@ -582,7 +582,7 @@ class midvatten:
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def new_db(self):
-        sanity = utils.askuser("YesNo","""This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""",'Are you sure?')
+        sanity = utils.Askuser("YesNo","""This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""",'Are you sure?')
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
@@ -751,9 +751,9 @@ class midvatten:
         layername = 'obs_points'
         err_flag = utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag, layername)
         if err_flag == 0:
-            sanity = utils.askuser("AllSelected","""Do you want to update coordinates\nfor All or Selected objects?""")
+            sanity = utils.Askuser("AllSelected","""Do you want to update coordinates\nfor All or Selected objects?""")
             if sanity.result == 0:  #IF USER WANT ALL OBJECTS TO BE UPDATED
-                sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor ALL objects in the obs_points table.\nProceed?""")
+                sanity = utils.Askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor ALL objects in the obs_points table.\nProceed?""")
                 if sanity.result==1:
                     ALL_OBS = db_utils.sql_load_fr_db("select distinct obsid from obs_points")[1]#a list of unicode strings is returned
                     observations = [None]*len(ALL_OBS)
@@ -764,7 +764,7 @@ class midvatten:
                     from coords_and_position import updatecoordinates
                     updatecoordinates(observations)
             elif sanity.result == 1:    #IF USER WANT ONLY SELECTED OBJECTS TO BE UPDATED
-                sanity = utils.askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor SELECTED objects in the obs_points table.\nProceed?""")
+                sanity = utils.Askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor SELECTED objects in the obs_points table.\nProceed?""")
                 if sanity.result==1:
                     layer = self.iface.activeLayer()
                     if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!

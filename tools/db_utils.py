@@ -22,16 +22,17 @@
 import ast
 import os
 from collections import OrderedDict
-from operator import itemgetter
 from pyspatialite import dbapi2 as sqlite
-from pyspatialite.dbapi2 import OperationalError, IntegrityError
-from psycopg2 import IntegrityError as PostGisIntegrityError
 
+from PyQt4.QtCore import QCoreApplication
 from PyQt4.QtCore import QSettings
-import midvatten_utils as utils
+
 from qgis._core import QgsProject, QgsDataSourceURI
 import db_manager.db_plugins.postgis.connector as postgis_connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
+
+from midvatten_utils import returnunicode as ru
+import midvatten_utils as utils
 
 class DbConnectionManager(object):
     def __init__(self, db_settings=None):
@@ -52,9 +53,9 @@ class DbConnectionManager(object):
         elif isinstance(db_settings, dict):
             pass
         else:
-            raise Exception(u"DbConnectionManager error: db_settings must be either a dict like {u'spatialite': {u'dbpath': u'x'} or a string representation of it. Was: "+ str(db_settings))
+            raise Exception(ru(QCoreApplication.translate(u'DbConnectionManager', u"DbConnectionManager error: db_settings must be either a dict like {u'spatialite': {u'dbpath': u'x'} or a string representation of it. Was: %s"))%ru(db_settings))
 
-        utils.returnunicode(db_settings, keep_containers=True)
+        ru(db_settings, keep_containers=True)
 
         self.dbtype = db_settings.keys()[0]
         self.connection_settings = db_settings.values()[0]
@@ -62,7 +63,9 @@ class DbConnectionManager(object):
         self.uri = QgsDataSourceURI()
 
         if self.dbtype == u'spatialite':
-            self.dbpath = utils.returnunicode(self.connection_settings[u'dbpath'])
+            self.dbpath = ru(self.connection_settings[u'dbpath'])
+            self.check_db_is_locked()
+
             #Create the database if it's not existing
             self.uri.setDatabase(self.dbpath)
             self.conn = sqlite.connect(self.dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
@@ -80,18 +83,21 @@ class DbConnectionManager(object):
             self.cursor = self.connector._get_cursor()
 
     def connect2db(self):
+        self.check_db_is_locked()
         if self.cursor:
             return True
 
     def execute(self, sql):
+        self.check_db_is_locked()
         if isinstance(sql, basestring):
             sql = [sql]
         elif not isinstance(sql, (list, tuple)):
-            raise TypeError(u'DbConnectionManager.execute: sql must be type string or a list/tuple of strings. Was ' + str(type(sql)))
+            raise TypeError(ru(QCoreApplication.translate(u'DbConnectionManager', u'DbConnectionManager.execute: sql must be type string or a list/tuple of strings. Was %s'))%ru(type(sql)))
         for line in sql:
             self.cursor.execute(line)
 
     def execute_and_fetchall(self, sql):
+        self.check_db_is_locked()
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
@@ -100,6 +106,7 @@ class DbConnectionManager(object):
         self.commit()
 
     def commit(self):
+        self.check_db_is_locked()
         self.conn.commit()
 
     def commit_and_closedb(self):
@@ -111,6 +118,7 @@ class DbConnectionManager(object):
         Schemas: [(2200, u'public', u'postgres', '{postgres=UC/postgres,=UC/postgres}', u'standard public schema')]
         This function only returns the first schema.
         """
+        self.check_db_is_locked()
 
         schemas = self.connector.getSchemas()
         if schemas is None:
@@ -129,6 +137,10 @@ class DbConnectionManager(object):
         else:
             return postgis_internal_tables()
 
+    def check_db_is_locked(self):
+        if self.dbtype == u'spatialite':
+            if os.path.exists(self.dbpath + u'-journal'):
+                raise DatabaseLockedError(ru(QCoreApplication.translate(u'DbConnectionManager', u"Error, The database is already in use (a journal-file was found)")))
 
 
 def check_connection_ok():
@@ -150,7 +162,7 @@ def get_postgis_connections():
     qs = QSettings()
     postgresql_connections = {}
     for k in sorted(qs.allKeys()):
-        k = utils.returnunicode(k)
+        k = ru(k)
         if k.startswith(u'PostgreSQL'):
             cols = k.split(u'/')
             conn_name = cols[2]
@@ -162,25 +174,22 @@ def get_postgis_connections():
             value = qs.value(k)
             postgresql_connections.setdefault(conn_name, {})[setting] = value
 
-    postgresql_connections= utils.returnunicode(postgresql_connections, keep_containers=True)
+    postgresql_connections= ru(postgresql_connections, keep_containers=True)
     return postgresql_connections
 
 def sql_load_fr_db(sql):
-
     try:
         dbconnection = DbConnectionManager()
         result = dbconnection.execute_and_fetchall(sql)
     except Exception as e:
-        textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (
-        utils.returnunicode(sql), utils.returnunicode(str(e)))
+        textstring = ru(QCoreApplication.translate(u'sql_load_fr_db', u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (ru(sql), ru(str(e)))
         utils.MessagebarAndLog.warning(
-            bar_msg=u'Some sql failure, see log for additional info.',
+            bar_msg=utils.sql_failed_msg(),
             log_msg=textstring, duration=4)
-        print(str(textstring))
-        print(str(e))
         return False, []
     else:
         return True, result
+
 
 def sql_alter_db(sql):
     dbconnection = DbConnectionManager()
@@ -192,10 +201,11 @@ def sql_alter_db(sql):
         dbconnection.execute_and_commit(sql)
     except Exception as e:
         textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (
-        utils.returnunicode(sql), utils.returnunicode(str(e)))
+        ru(sql), ru(str(e)))
         utils.MessagebarAndLog.warning(
             bar_msg=u'Some sql failure, see log for additional info.',
             log_msg=textstring, duration=4)
+
 
 def sql_alter_db_by_param_subst(sql='', *subst_params):
     """
@@ -212,6 +222,7 @@ def sql_alter_db_by_param_subst(sql='', *subst_params):
     ConnectionOK, result = execute_sql(sql=sql, foreign_keys_on=True, commit=True, fetchall=True, db_connection_manager_connection=None, *subst_params)
     return ConnectionOK, result
 
+
 def execute_sqlfile(sqlfilename, function=sql_alter_db):
     with open(sqlfilename, 'r') as f:
         f.readline()  # first line is encoding info....
@@ -222,8 +233,10 @@ def execute_sqlfile(sqlfilename, function=sql_alter_db):
                 continue
             function(line)
 
+
 def tables_columns(table=None, dbconnection=None):
     return dict([(k, [col[1] for col in v]) for k, v in db_tables_columns_info(table=table, dbconnection=dbconnection).iteritems()])
+
 
 def db_tables_columns_info(table=None, dbconnection=None):
     """Returns a dict like {u'tablename': (ordernumber, name, type, notnull, defaultvalue, primarykey)}"""
@@ -249,6 +262,7 @@ def db_tables_columns_info(table=None, dbconnection=None):
         tables_dict[tablename] = columns
     return tables_dict
 
+
 def get_tables(dbconnection=None):
     if dbconnection is None:
         dbconnection = DbConnectionManager()
@@ -257,11 +271,11 @@ def get_tables(dbconnection=None):
         tables_sql = (
         u"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') AND tbl_name NOT IN %s ORDER BY tbl_name""" % sqlite_internal_tables())
     else:
-        tables_sql = u"SELECT table_name FROM information_schema.tables WHERE table_schema='%s' AND table_name NOT IN %s ORDER BY table_name" % (
-        dbconnection.schemas(), postgis_internal_tables())
+        tables_sql = u"SELECT table_name FROM information_schema.tables WHERE table_schema='%s' AND table_name NOT IN %s ORDER BY table_name"%(dbconnection.schemas(), postgis_internal_tables())
     tables = dbconnection.execute_and_fetchall(tables_sql)
     tablenames = [col[0] for col in tables]
     return tablenames
+
 
 def get_table_info(tablename, dbconnection=None):
     if dbconnection is None:
@@ -279,6 +293,7 @@ def get_table_info(tablename, dbconnection=None):
                 column[5] = 1
     return columns
 
+
 def get_foreign_keys(table, dbconnection=None):
     """Get foreign keys for table.
        Returns a dict like {foreign_key_table: (colname in table, colname in foreign_key_table)}
@@ -287,7 +302,7 @@ def get_foreign_keys(table, dbconnection=None):
         dbconnection = DbConnectionManager()
     foreign_keys = {}
     if dbconnection.dbtype == u'spatialite':
-        result_list = dbconnection.execute_and_fetchall(u"""PRAGMA foreign_key_list(%s)""" % (table))
+        result_list = dbconnection.execute_and_fetchall(u"""PRAGMA foreign_key_list(%s)"""%table)
         for row in result_list:
             foreign_keys.setdefault(row[2], []).append((row[3], row[4]))
     else:
@@ -308,6 +323,7 @@ def get_foreign_keys(table, dbconnection=None):
             foreign_keys.setdefault(row[3], []).append((row[2], row[4]))
 
     return foreign_keys
+
 
 def sqlite_internal_tables(as_tuple=False):
     astring = u"""('geom_cols_ref_sys',
@@ -348,6 +364,7 @@ def sqlite_internal_tables(as_tuple=False):
     else:
         return astring
 
+
 def postgis_internal_tables(as_tuple=False):
     astring = u"""('geography_columns',
                'geometry_columns',
@@ -359,10 +376,12 @@ def postgis_internal_tables(as_tuple=False):
     else:
         return astring
 
+
 def get_sql_result_as_dict(sql, dbconnection=None):
     """
     Runs sql and returns result as dict
     :param sql: The sql command to run
+    :param dbconnection:
     :return: A dict with the first column as key and the rest in a tuple as value
     """
     if dbconnection is None:
@@ -375,8 +394,10 @@ def get_sql_result_as_dict(sql, dbconnection=None):
         result_dict.setdefault(res[0], []).append(tuple(res[1:]))
     return True, OrderedDict(result_dict)
 
+
 def verify_table_exists(tablename):
     return tablename in get_tables()
+
 
 def change_cast_type_for_geometry_columns(dbconnection, table_info, tablename):
     if dbconnection.dbtype == u'spatialite':
@@ -389,9 +410,10 @@ def change_cast_type_for_geometry_columns(dbconnection, table_info, tablename):
     column_headers_types = dict([(row[1], row[2]) if row[1] not in geometry_columns_types else (row[1], newtype) for row in table_info])
     return column_headers_types
 
+
 def get_geometry_types(dbconnection, tablename):
     if dbconnection.dbtype == u'spatialite':
-        sql = u"""SELECT f_geometry_column, geometry_type FROM geometry_columns WHERE f_table_name = '%s'"""%tablename
+        sql = u"""SELECT f_geometry_column, geometry_type FROM geometry_columns WHERE f_table_name = '%s'""" % tablename
     else:
         sql = u"""SELECT f_geometry_column, type
                 FROM geometry_columns
@@ -400,12 +422,14 @@ def get_geometry_types(dbconnection, tablename):
     result = get_sql_result_as_dict(sql, dbconnection=dbconnection)[1]
     return result
 
+
 def delete_duplicate_values(dbconnection, tablename, primary_keys):
     if dbconnection.dbtype == u'spatialite':
         rowid = u'rowid'
     else:
         rowid = u'ctid'
     dbconnection.execute(u"""DELETE FROM %s WHERE %s NOT IN (SELECT MIN(%s) FROM %s GROUP BY %s);"""%(tablename, rowid, rowid, tablename, u', '.join(primary_keys)))
+
 
 def activate_foreign_keys(activated=True, dbconnection=None):
     if dbconnection is None:
@@ -417,3 +441,6 @@ def activate_foreign_keys(activated=True, dbconnection=None):
             _activated = u'OFF'
         dbconnection.execute('PRAGMA foreign_keys=%s'%_activated)
 
+
+class DatabaseLockedError(Exception):
+    pass

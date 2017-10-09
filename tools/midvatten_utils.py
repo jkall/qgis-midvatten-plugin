@@ -54,7 +54,7 @@ from matplotlib.dates import num2date
 
 import db_utils
 
-not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
+not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__), '..', 'ui', 'not_found_gui.ui'))[0]
 
 
 class MessagebarAndLog():
@@ -150,7 +150,7 @@ class Askuser(QtGui.QDialog):
             msgBox.addButton(btnSelected, QtGui.QMessageBox.ActionRole)
             msgBox.addButton(QtGui.QMessageBox.Cancel)
             reply = msgBox.exec_()
-            self.result = reply # ALL=0, SELECTED=1
+            self.result = reply  # ALL=0, SELECTED=1
         elif question == 'DateShift':
             supported_units = [u'microseconds', u'milliseconds', u'seconds', u'minutes', u'hours', u'days', u'weeks']
             while True:
@@ -226,7 +226,7 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
         self.reuse_column = self._reuse_column.currentText()
 
     def closeEvent(self, event):
-        if self.answer == None:
+        if self.answer is None:
             self.set_answer_and_value(u'cancel')
         super(NotFoundQuestion, self).closeEvent(event)
 
@@ -251,7 +251,7 @@ class HtmlDialog(QtGui.QDialog):
         self.closeButton = QtGui.QPushButton()
         self.closeButton.setText(QCoreApplication.translate(u'HtmlDialog', "Close"))
         self.closeButton.setMaximumWidth(150)
-        self.horizontalLayout= QtGui.QHBoxLayout()
+        self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setSpacing(2)
         self.horizontalLayout.setMargin(0)
         self.horizontalLayout.addStretch(1000)
@@ -340,6 +340,7 @@ def show_message_log(pop_error=False):
 
     qgis.utils.iface.openMessageLog()
 
+
 def ask_user_about_stopping(question):
     """
     Asks the user a question and returns 'failed' or 'continue' as yes or no
@@ -351,6 +352,7 @@ def ask_user_about_stopping(question):
         return u'cancel'
     else:
         return u'ignore'
+
 
 def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-table)
     sqlstring = r"""select %s, %s from %s"""%(params)
@@ -365,10 +367,12 @@ def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-tab
     adict = dict([(k, v) for k, v in list_of_tuples])
     return True, adict
 
+
 def find_layer(layer_name):
     for name, search_layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():
         if search_layer.name() == layer_name:
             return search_layer
+
 
 def get_all_obsids(table=u'obs_points'):
     """ Returns all obsids from obs_points
@@ -380,9 +384,11 @@ def get_all_obsids(table=u'obs_points'):
         obsids = [row[0] for row in result]
     return obsids
 
+
 def get_date_time():
     """returns date and time as a string in a pre-formatted format"""
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
 
 def get_selected_features_as_tuple(layername=None):
     """ Returns all selected features from layername
@@ -398,6 +404,7 @@ def get_selected_features_as_tuple(layername=None):
     #we cannot send unicode as string to sql because it would include the u' so str() is used
     obsidtuple = tuple([returnunicode(id) for id in selected_obs_points])
     return obsidtuple
+
 
 def getselectedobjectnames(thelayer='default'):
     """ Returns a list of obsid as unicode
@@ -415,6 +422,7 @@ def getselectedobjectnames(thelayer='default'):
     observations = [obs[kolumnindex] for obs in selectedobs] # value in column obsid is stored as unicode
     return observations
 
+
 def getQgisVectorLayers():
     """Return list of all valid QgsVectorLayer in QgsMapLayerRegistry"""
     layermap = QgsMapLayerRegistry.instance().mapLayers()
@@ -424,19 +432,22 @@ def getQgisVectorLayers():
                 layerlist.append( layer )
     return layerlist
 
+
 def isfloat(str):
     try: float(str)
     except ValueError: return False
     return True
+
 
 def isinteger(str):
     try: int(str)
     except ValueError: return False
     return True
 
+
 def isdate(str):
     result = False
-    formats = ['%Y-%m-%d','%Y-%m-%d %H','%Y-%m-%d %H:%M','%Y-%m-%d %H:%M:%S']
+    formats = ['%Y-%m-%d', '%Y-%m-%d %H', '%Y-%m-%d %H:%M', '%Y-%m-%d %H:%M:%S']
     for fmt in formats:
         try:
             time.strptime(str, fmt)
@@ -445,12 +456,15 @@ def isdate(str):
             pass
     return result
 
+
 def null_2_empty_string(input_string):
-    return(input_string.replace('NULL','').replace('null',''))
+    return(input_string.replace('NULL', '').replace('null', ''))
+
 
 def pop_up_info(msg='',title=QCoreApplication.translate(u'pop_up_info', 'Information'),parent=None):
     """Display an info message via Qt box"""
     QtGui.QMessageBox.information(parent, title, '%s' % (msg))
+
 
 def return_lower_ascii_string(textstring):
     def onlyascii(char):
@@ -461,6 +475,7 @@ def return_lower_ascii_string(textstring):
     filtered_string=filter(onlyascii, textstring)
     filtered_string = filtered_string.lower()
     return filtered_string
+
 
 def returnunicode(anything, keep_containers=False): #takes an input and tries to return it as unicode
     ur"""
@@ -535,6 +550,7 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
             text = unicode(QCoreApplication.translate(u'returnunicode', 'data type unknown, check database'))
     return text
 
+
 def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatures=0 is for a check if any features are selected at all, the number is unimportant
     if layer.dataProvider().fieldNameIndex('obsid')  > -1 or layer.dataProvider().fieldNameIndex('OBSID')  > -1: # 'OBSID' to get backwards compatibility
         if selectedfeatures == 0 and layer.selectedFeatureCount() > 0:
@@ -548,11 +564,13 @@ def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatur
     else:
         pop_up_info(QCoreApplication.translate(u'selection_check', "Select a qgis layer that has a field obsid!"))
 
+
 def strat_selection_check(layer=''):
     if layer.dataProvider().fieldNameIndex('h_gs')  > -1 or layer.dataProvider().fieldNameIndex('h_toc')  > -1  or layer.dataProvider().fieldNameIndex('SURF_LVL')  > -1: # SURF_LVL to enable backwards compatibility
             return 'ok'
     else:
         MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'strat_selection_check', u'Error, select a qgis layer with field h_gs!')))
+
 
 def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
     ur"""
@@ -588,6 +606,7 @@ def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
         text = returnunicode(QCoreApplication.translate(u'unicode_2_utf8', u'data type unknown, check database')).encode('utf-8')
     return text
 
+
 def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=('')):
     errorsignal = 0
     if not mset.settingsareloaded:
@@ -614,6 +633,7 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
 
     return errorsignal
 
+
 def verify_layer_selection(errorsignal,selectedfeatures=0):
     layer = get_active_layer()
     if layer:
@@ -628,12 +648,14 @@ def verify_layer_selection(errorsignal,selectedfeatures=0):
         errorsignal += 1
     return errorsignal
 
+
 def get_active_layer():
     iface = qgis.utils.iface
     if iface is not None:
         return iface.activeLayer()
     else:
         return False
+
 
 def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
     layer = get_active_layer()
@@ -647,6 +669,7 @@ def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
         errorsignal += 1
         MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'verify_this_layer_selected_and_not_in_edit_mode', u'Error, you have to select/activate %s layer!'))%layername)
     return errorsignal
+
 
 @contextmanager
 def tempinput(data, charset=u'UTF-8'):
@@ -665,6 +688,7 @@ def tempinput(data, charset=u'UTF-8'):
     yield temp.name
     #os.unlink(temp.name) #TODO: This results in an error: WindowsError: [Error 32] Det går inte att komma åt filen eftersom den används av en annan process: 'c:\\users\\dator\\appdata\\local\\temp\\tmpxvcfna.csv'
 
+
 def find_nearest_date_from_event(event):
     """ Returns the nearest date from a picked list event artist from mouse click
 
@@ -676,6 +700,7 @@ def find_nearest_date_from_event(event):
     nearest_xy = find_nearest_using_pythagoras(xy_click, line_nodes)
     nearest_date = num2date(nearest_xy[0])
     return nearest_date
+
 
 def find_nearest_using_pythagoras(xy_point, xy_array):
     """ Finds the point in xy_array that is nearest xy_point
@@ -694,6 +719,7 @@ def find_nearest_using_pythagoras(xy_point, xy_array):
     min_index = distances.index(min(distances))
     return xy_array[min_index]
 
+
 def ts_gen(ts):
     """ A generator that supplies one tuple from a list of tuples at a time
 
@@ -710,6 +736,7 @@ def ts_gen(ts):
     for idx in xrange(len(ts)):
         yield (ts[idx][0], ts[idx][1])
 
+
 def calc_mean_diff(coupled_vals):
     """ Calculates the mean difference for all value couples in a list of tuples
 
@@ -720,6 +747,7 @@ def calc_mean_diff(coupled_vals):
     """
     return np.mean([float(m) - float(l) for m, l in coupled_vals if not math.isnan(m) or math.isnan(l)])
 
+
 def get_latlon_for_all_obsids():
     """
     Returns lat, lon for all obsids
@@ -729,15 +757,18 @@ def get_latlon_for_all_obsids():
     latlon_dict = dict([(obsid, lat_lon[0]) for obsid, lat_lon in latlon_dict.iteritems()])
     return latlon_dict
 
+
 def get_last_used_flow_instruments():
     """ Returns flow instrumentids
     :return: A dict like {obsid: (flowtype, instrumentid, last date used for obsid)
     """
     return db_utils.get_sql_result_as_dict('SELECT obsid, flowtype, instrumentid, max(date_time) FROM w_flow GROUP BY obsid, flowtype, instrumentid')
 
+
 def get_last_logger_dates():
     ok_or_not, obsid_last_imported_dates = db_utils.get_sql_result_as_dict('select obsid, max(date_time) from w_levels_logger group by obsid')
     return returnunicode(obsid_last_imported_dates, True)
+
 
 def get_quality_instruments():
     """
@@ -753,6 +784,7 @@ def get_quality_instruments():
         return False, tuple()
 
     return True, returnunicode([x[0] for x in result_list], True)
+
 
 def lstrip(word, from_string):
     """
@@ -771,6 +803,7 @@ def lstrip(word, from_string):
         new_word = from_string[len(word):]
     return new_word
 
+
 def rstrip(word, from_string):
     """
     Strips word from the end of from_string
@@ -788,6 +821,7 @@ def rstrip(word, from_string):
         new_word = from_string[0:-len(word)]
     return new_word
 
+
 def select_files(only_one_file=True, extension="csv (*.csv)"):
     """Asks users to select file(s)"""
     try:
@@ -800,6 +834,7 @@ def select_files(only_one_file=True, extension="csv (*.csv)"):
         csvpath = QtGui.QFileDialog.getOpenFileNames(parent=None, caption=QCoreApplication.translate(u'select_files', "Select files"), directory=dir, filter=extension)
     csvpath = [returnunicode(p) for p in csvpath if p]
     return csvpath
+
 
 def ask_for_charset(default_charset=None, msg=None):
     try:#MacOSX fix2
@@ -821,8 +856,10 @@ def ask_for_charset(default_charset=None, msg=None):
 
     return str(charsetchoosen)
 
+
 def ask_for_export_crs(default_crs=u''):
     return str(QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_export_crs',"Set export crs"), QCoreApplication.translate(u'ask_for_export_crs', "Give the crs for the exported database.\n"),QtGui.QLineEdit.Normal,default_crs)[0])
+
 
 def lists_to_string(alist_of_lists, quote=False):
     ur'''
@@ -884,6 +921,7 @@ def lists_to_string(alist_of_lists, quote=False):
         return_string = returnunicode(alist_of_lists)
     return return_string
 
+
 def find_similar(word, wordlist, hits=5):
     ur"""
 
@@ -926,6 +964,7 @@ def find_similar(word, wordlist, hits=5):
     matches = [x for x in matches if x and not (x in seen or seen_add(x))]
 
     return matches
+
 
 def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existing_values=None, try_capitalize=False, always_ask_user=False):
     """
@@ -1044,6 +1083,7 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
 
     return filtered_data
 
+
 def add_triggers_to_obs_points(filename):
     """
     /*
@@ -1092,6 +1132,7 @@ def add_triggers_to_obs_points(filename):
     db_utils.execute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", filename),
                      db_utils.sql_alter_db)
 
+
 def sql_to_parameters_units_tuple(sql):
     parameters_from_table = returnunicode(db_utils.sql_load_fr_db(sql)[1], True)
     parameters_dict = {}
@@ -1099,6 +1140,7 @@ def sql_to_parameters_units_tuple(sql):
         parameters_dict.setdefault(parameter, []).append(unit)
     parameters = tuple([(k, tuple(v)) for k, v in sorted(parameters_dict.iteritems())])
     return parameters
+
 
 def scale_nparray(x, a=1, b=0):
     """
@@ -1121,6 +1163,7 @@ def scale_nparray(x, a=1, b=0):
     """
     return a * copy.deepcopy(x) + b
 
+
 def remove_mean_from_nparray(x):
     """
 
@@ -1134,15 +1177,15 @@ def remove_mean_from_nparray(x):
     #     x[colnr] = x[colnr] - np.mean(x[colnr])
     return x
 
-def getcurrentlocale():
-    #saved_locale = locale.getlocale() #TODO: remove?
 
+def getcurrentlocale():
     db_locale = get_locale_from_db()
 
     if db_locale is not None and db_locale:
         return [db_locale, locale.getdefaultlocale()[1]]
     else:
         return locale.getdefaultlocale()[:2]
+
 
 def get_locale_from_db():
     connection_ok, locale_row = db_utils.sql_load_fr_db(u"SELECT description FROM about_db WHERE description LIKE 'locale:%'")
@@ -1161,6 +1204,7 @@ def get_locale_from_db():
     else:
         MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'get_locale_from_db', u'Connection to db failed when getting locale from db.')))
         return None
+
 
 def calculate_db_table_rows():
     results = {}
@@ -1203,6 +1247,7 @@ def calculate_db_table_rows():
             bar_msg=QCoreApplication.translate(u'calculate_db_table_rows', 'Calculation done, see log for results.'),
             log_msg=printable_msg)
 
+
 def anything_to_string_representation(anything):
     ur""" Turns anything into a string used for testing
     :param anything: just about anything
@@ -1231,6 +1276,7 @@ def anything_to_string_representation(anything):
     else:
         aunicode = returnunicode(str(anything))
     return aunicode
+
 
 def waiting_cursor(func):
     def func_wrapper(*args, **kwargs):
@@ -1267,6 +1313,7 @@ def get_delimiter(filename=None, charset=u'utf-8', delimiters=None, num_fields=N
 
     delimiter = get_delimiter_from_file_rows(rows, filename=filename, delimiters=None, num_fields=None)
     return delimiter
+
 
 def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_fields=None):
     if filename is None:
@@ -1311,6 +1358,7 @@ def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_field
                     delimiter = _delimiter[0]
     return delimiter
 
+
 def ask_for_delimiter(header=QCoreApplication.translate(u'ask_for_delimiter', u'Give delimiter'), question=u'', default=u';'):
     _delimiter = PyQt4.QtGui.QInputDialog.getText(None,
                                                   QCoreApplication.translate(u'ask_for_delimiter', u"Give delimiter"),
@@ -1346,23 +1394,27 @@ def create_markdown_table_from_table(tablename, transposed=False, only_descripti
     printlist.extend([u'|{}|'.format(u' | '.join([item if item is not None else u'' for item in row])) for row in table_contents])
     return u'\n'.join(printlist)
 
+
 def list_of_lists_from_table(tablename):
     list_of_lists = []
-    table_info = sql_load_fr_db(u'''PRAGMA table_info(%s)''' % tablename)[1]
+    table_info = db_utils.get_table_info(tablename)
     table_info = returnunicode(table_info, keep_containers=True)
     column_names = [x[1] for x in table_info]
     list_of_lists.append(column_names)
-    table_contents = sql_load_fr_db(u'SELECT * FROM %s'%tablename)[1]
+    table_contents = db_utils.sql_load_fr_db(u'SELECT * FROM %s'%tablename)[1]
     table_contents = returnunicode(table_contents, keep_containers=True)
     list_of_lists.extend(table_contents)
     return list_of_lists
+
 
 def transpose_lists_of_lists(list_of_lists):
     outlist_of_lists = [[row[colnr] for row in list_of_lists] for colnr in xrange(len(list_of_lists[0]))]
     return outlist_of_lists
 
+
 def sql_failed_msg():
     return QCoreApplication.translate(u'sql_failed_msg', u'Sql failed, see log message panel.')
+
 
 def fn_timer(function):
     """from http://www.marinamele.com/7-tips-to-time-python-scripts-and-control-memory-and-cpu-usage"""

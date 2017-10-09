@@ -27,9 +27,9 @@ import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 from date_utils import datestring_to_date
 import utils_for_tests as test_utils
-from tools.midvatten_utils import get_foreign_keys
+from midvatten_utils import get_foreign_keys
 from utils_for_tests import init_test
-from tools.tests.mocks_for_tests import DummyInterface
+from tests.mocks_for_tests import DummyInterface
 from nose.tools import raises
 from mock import mock_open, patch, call
 from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, \
@@ -757,7 +757,7 @@ class TestWlvllogImportFromDiverofficeFiles(object):
                 assert test_string == reference_string
 
 
-class _TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
+class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
