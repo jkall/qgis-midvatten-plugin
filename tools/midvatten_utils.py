@@ -608,8 +608,8 @@ def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list
         ConnectionOK = False
         result = ''
     try:
-        print("sql_load_fr_db: running time: %s, sql: %s"%(str(time.time()-t0), sql))
-    except IOError:
+        print("sql_load_fr_db: running time: %s, sql: %s"%(str(time.time()-t0), returnunicode(sql)))
+    except:
         pass
     return ConnectionOK, result
 
@@ -647,8 +647,8 @@ def sql_alter_db(sql=''):
     resultfromsql.close()
     conn.close()
     try:
-        print("sql_alter_db: running time: %s, sql: %s"%(str(time.time()-t0), sql))
-    except IOError:
+        print("sql_alter_db: running time: %s, sql: %s"%(str(time.time()-t0), returnunicode(sql)))
+    except:
         pass
     return result
 
