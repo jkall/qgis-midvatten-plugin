@@ -146,6 +146,7 @@ class NewDb():
         #Finally add the layer styles info into the data base
         AddLayerStyles(dbpath)
         """
+
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):

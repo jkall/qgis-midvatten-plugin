@@ -31,7 +31,6 @@ from qgis._core import QgsProject, QgsDataSourceURI
 import db_manager.db_plugins.postgis.connector as postgis_connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
 
-from midvatten_utils import returnunicode as ru
 import midvatten_utils as utils
 
 class DbConnectionManager(object):
@@ -53,9 +52,9 @@ class DbConnectionManager(object):
         elif isinstance(db_settings, dict):
             pass
         else:
-            raise Exception(ru(QCoreApplication.translate(u'DbConnectionManager', u"DbConnectionManager error: db_settings must be either a dict like {u'spatialite': {u'dbpath': u'x'} or a string representation of it. Was: %s"))%ru(db_settings))
+            raise Exception(utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u"DbConnectionManager error: db_settings must be either a dict like {u'spatialite': {u'dbpath': u'x'} or a string representation of it. Was: %s"))%utils.returnunicode(db_settings))
 
-        ru(db_settings, keep_containers=True)
+        utils.returnunicode(db_settings, keep_containers=True)
 
         self.dbtype = db_settings.keys()[0]
         self.connection_settings = db_settings.values()[0]
@@ -63,7 +62,7 @@ class DbConnectionManager(object):
         self.uri = QgsDataSourceURI()
 
         if self.dbtype == u'spatialite':
-            self.dbpath = ru(self.connection_settings[u'dbpath'])
+            self.dbpath = utils.returnunicode(self.connection_settings[u'dbpath'])
             self.check_db_is_locked()
 
             #Create the database if it's not existing
@@ -88,16 +87,14 @@ class DbConnectionManager(object):
             return True
 
     def execute(self, sql):
-        self.check_db_is_locked()
         if isinstance(sql, basestring):
             sql = [sql]
         elif not isinstance(sql, (list, tuple)):
-            raise TypeError(ru(QCoreApplication.translate(u'DbConnectionManager', u'DbConnectionManager.execute: sql must be type string or a list/tuple of strings. Was %s'))%ru(type(sql)))
+            raise TypeError(utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u'DbConnectionManager.execute: sql must be type string or a list/tuple of strings. Was %s'))%utils.returnunicode(type(sql)))
         for line in sql:
             self.cursor.execute(line)
 
     def execute_and_fetchall(self, sql):
-        self.check_db_is_locked()
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
@@ -106,7 +103,6 @@ class DbConnectionManager(object):
         self.commit()
 
     def commit(self):
-        self.check_db_is_locked()
         self.conn.commit()
 
     def commit_and_closedb(self):
@@ -118,7 +114,6 @@ class DbConnectionManager(object):
         Schemas: [(2200, u'public', u'postgres', '{postgres=UC/postgres,=UC/postgres}', u'standard public schema')]
         This function only returns the first schema.
         """
-        self.check_db_is_locked()
 
         schemas = self.connector.getSchemas()
         if schemas is None:
@@ -139,8 +134,8 @@ class DbConnectionManager(object):
 
     def check_db_is_locked(self):
         if self.dbtype == u'spatialite':
-            if os.path.exists(self.dbpath + u'-journal'):
-                raise DatabaseLockedError(ru(QCoreApplication.translate(u'DbConnectionManager', u"Error, The database is already in use (a journal-file was found)")))
+            if os.path.exists(u'%s-journal'%self.dbpath):
+                raise DatabaseLockedError(utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u"Error, The database is already in use (a journal-file was found)")))
 
 
 def check_connection_ok():
@@ -148,6 +143,7 @@ def check_connection_ok():
     connection_ok = dbconnection.connect2db()
     dbconnection.closedb()
     return connection_ok
+
 
 def if_connection_ok(func):
     def func_wrapper(*args, **kwargs):
@@ -158,11 +154,12 @@ def if_connection_ok(func):
         return ret
     return func_wrapper
 
+
 def get_postgis_connections():
     qs = QSettings()
     postgresql_connections = {}
     for k in sorted(qs.allKeys()):
-        k = ru(k)
+        k = utils.returnunicode(k)
         if k.startswith(u'PostgreSQL'):
             cols = k.split(u'/')
             conn_name = cols[2]
@@ -174,15 +171,16 @@ def get_postgis_connections():
             value = qs.value(k)
             postgresql_connections.setdefault(conn_name, {})[setting] = value
 
-    postgresql_connections= ru(postgresql_connections, keep_containers=True)
+    postgresql_connections= utils.returnunicode(postgresql_connections, keep_containers=True)
     return postgresql_connections
+
 
 def sql_load_fr_db(sql):
     try:
         dbconnection = DbConnectionManager()
         result = dbconnection.execute_and_fetchall(sql)
     except Exception as e:
-        textstring = ru(QCoreApplication.translate(u'sql_load_fr_db', u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (ru(sql), ru(str(e)))
+        textstring = utils.returnunicode(QCoreApplication.translate(u'sql_load_fr_db', u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (utils.returnunicode(sql), utils.returnunicode(str(e)))
         utils.MessagebarAndLog.warning(
             bar_msg=utils.sql_failed_msg(),
             log_msg=textstring, duration=4)
@@ -201,7 +199,7 @@ def sql_alter_db(sql):
         dbconnection.execute_and_commit(sql)
     except Exception as e:
         textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (
-        ru(sql), ru(str(e)))
+        utils.returnunicode(sql), utils.returnunicode(str(e)))
         utils.MessagebarAndLog.warning(
             bar_msg=u'Some sql failure, see log for additional info.',
             log_msg=textstring, duration=4)

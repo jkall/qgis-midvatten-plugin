@@ -333,7 +333,6 @@ class midvatten:
         sys.path.remove(os.path.dirname(os.path.abspath(__file__))) #Clean up python environment
 
     def about(self):
-        print(self.translator)
         util_translate.getTranslate('midvatten')
         filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
         iniText = QSettings(filenamepath , QSettings.IniFormat)#This method seems to return a list of unicode strings BUT it seems as if the encoding from the byte strings in the file is not utf-8, hence there is need for special encoding, see below
@@ -597,6 +596,8 @@ class midvatten:
             if not newdbinstance.db_settings=='':
                 self.ms.settingsdict['database'] = utils.anything_to_string_representation(newdbinstance.db_settings)
                 self.ms.save_settings()
+
+            about_db = db_utils.sql_load_fr_db(u'select * from about_db')
 
             #The markdown table is for gitlab. Run the rows below when there is a change in create_db
             #markdowntable = utils.create_markdown_table_from_table(u'about_db', transposed=False, only_description=True)

@@ -24,22 +24,12 @@
 
 import utils_for_tests
 import midvatten_utils as utils
-from definitions import midvatten_defs as defs
-from date_utils import datestring_to_date
-import utils_for_tests as test_utils
-from tools.db_utils import get_foreign_keys
-from utils_for_tests import init_test
-from tools.tests.mocks_for_tests import DummyInterface
-from nose.tools import raises
-from mock import mock_open, patch, call, MagicMock
-from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance, DummyInterface2, mock_answer
+from mock import MagicMock
+from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgisUtilsIface, MockQgsProjectInstance, DummyInterface2, mock_answer
 import mock
-import io
 from midvatten.midvatten import midvatten
 import os
-import PyQt4
 from collections import OrderedDict
-from import_data_to_db import midv_data_importer
 from import_interlab4 import Interlab4Import
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'

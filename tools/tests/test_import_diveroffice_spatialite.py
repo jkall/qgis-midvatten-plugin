@@ -24,14 +24,7 @@
 
 import utils_for_tests
 import midvatten_utils as utils
-from definitions import midvatten_defs as defs
 from date_utils import datestring_to_date
-import utils_for_tests as test_utils
-from midvatten_utils import get_foreign_keys
-from utils_for_tests import init_test
-from tests.mocks_for_tests import DummyInterface
-from nose.tools import raises
-from mock import mock_open, patch, call
 from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, \
     MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, \
     MockQgsProjectInstance, DummyInterface2, mock_answer

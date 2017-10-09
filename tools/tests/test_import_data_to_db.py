@@ -22,24 +22,20 @@
 """
 #
 
-import utils_for_tests
-import midvatten_utils as utils
-from definitions import midvatten_defs as defs
-from date_utils import datestring_to_date
-import utils_for_tests as test_utils
-from tools.midvatten_utils import get_foreign_keys
-from utils_for_tests import init_test
-from tools.tests.mocks_for_tests import DummyInterface
-from nose.tools import raises
-from mock import mock_open, patch, call
-from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance, DummyInterface2, mock_answer
-import mock
-import io
-from midvatten.midvatten import midvatten
-import os
 import PyQt4
+import os
 from collections import OrderedDict
+
+import midvatten_utils as utils
+import mock
 from import_data_to_db import midv_data_importer
+from midvatten.midvatten import midvatten
+from mock import call
+
+import utils_for_tests
+from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgisUtilsIface, MockQgsProjectInstance, \
+    DummyInterface2, mock_answer
+from tools.tests.mocks_for_tests import DummyInterface
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]

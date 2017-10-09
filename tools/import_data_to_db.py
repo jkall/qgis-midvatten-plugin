@@ -19,12 +19,6 @@
  *                                                                         *
  ***************************************************************************/
 """
-
-import io
-import os
-import qgis.utils
-from collections import OrderedDict
-from datetime import datetime
 from operator import itemgetter
 
 import PyQt4
@@ -35,7 +29,7 @@ from PyQt4.QtCore import QCoreApplication
 import db_utils
 import midvatten_utils as utils
 from midvatten_utils import Cancel, returnunicode as ru
-from date_utils import find_date_format, datestring_to_date
+from date_utils import datestring_to_date
 
 
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
