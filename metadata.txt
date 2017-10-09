@@ -22,7 +22,7 @@ changelog=
         Version 1.4.7:
         - Fixed bug where sql questions with special characters could cause an error.
         Version 1.4.6:
-        - Logger calibration: Fix for normalize when head_cm is None.
+        - Logger calibration: Fix for normalize when head_cm is None..
         - Customplot: Fix bug when setting colors to steps-pre/post that caused crash using figure options.
         Version 1.4.5:
         - Logger calibration: More performance related fixes..
