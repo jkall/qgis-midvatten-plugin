@@ -48,7 +48,17 @@ class DbConnectionManager(object):
             db_settings = QgsProject.instance().readEntry("Midvatten", "database")[0]
 
         if isinstance(db_settings, basestring):
-            db_settings = ast.literal_eval(db_settings)
+            #Test if the db_setting is an old database
+            if os.path.isfile(db_settings):
+                db_settings = {u'spatialite': {u'dbpath': db_settings}}
+            else:
+                try:
+                    db_settings = ast.literal_eval(db_settings)
+                except:
+                    #TODO: Something feels off here. It should not return None, as that will just cause other hard to solve errors.
+                    #TODO An exception feels better but is uglier for the user.
+                    utils.MessagebarAndLog.critical(bar_msg=utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u'Database connection failed. Try reset settings.')))
+                    return None
         elif isinstance(db_settings, dict):
             pass
         else:
