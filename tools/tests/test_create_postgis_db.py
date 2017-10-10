@@ -28,7 +28,7 @@ from nose.plugins.attrib import attr
 from definitions import midvatten_defs as defs
 
 
-@attr(status='on')
+@attr(status='off')
 class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface')
@@ -129,8 +129,9 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
 
 
 
-@attr(status='off')
+@attr(status='on')
 class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def setUp(self, mock_messagebar):
@@ -147,6 +148,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         if mock_calls != u'[]':
             print(mock_calls)
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_add_triggers_not_change_existing(self, mock_messagebar):
@@ -159,6 +161,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
 
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_add_triggers_add_east_north(self):
         """ Updating coordinates from NULL should create geometry. """
@@ -172,6 +175,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         reference_string = u'(True, [(rb1, 1.0, 2.0, POINT(1 2))])'
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_add_triggers_not_deleting_geom_when_east_north_null(self):
         """ Adding triggers should not automatically delete geometry when east AND north is NULL """
@@ -186,6 +190,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         reference_string = u'(True, [(rb1, None, None, POINT(1 1))])'
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_add_triggers_not_deleting_geom_when_one_east_north_null(self):
         
@@ -237,6 +242,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         reference_string = u'(True, [(rb1, 5.0, 6.0, POINT(5 6))])'
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_add_geometry_from_east_north(self):
         """ Test that adding triggers and adding obsid with east, north also adds geometry
@@ -251,6 +257,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         reference_string = u'(True, [(rb1, 1.0, 1.0, POINT(1 1))])'
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_add_east_north_from_geometry(self):
         """ Test that adding triggers and adding obsid with geometry also adds east, north
@@ -265,6 +272,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         reference_string = u'(True, [(rb1, 1.0, 1.0, POINT(1 1))])'
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_add_trigger_add_geometry_not_nulling_geometry(self):
         """ Test that adding triggers and adding obsid don't set null values for previous obsid.
@@ -283,6 +291,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         reference_string = u'(True, [(rb1, None, None, POINT(1 1)), (rb2, 2.0, 2.0, POINT(2 2))])'
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_add_trigger_add_geometry_not_nulling_east_north(self):
         """ Test that adding triggers and adding obsid from geometry don't set null values for previous obsid.
@@ -301,6 +310,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         reference_string = u'(True, [(rb1, 1.0, 1.0, None), (rb2, 2.0, 2.0, POINT(2 2))])'
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_add_trigger_add_east_north_not_nulling_east_north(self):
         """ Test that adding triggers and adding obsid from east, north don't set null values for previous obsid.
@@ -317,6 +327,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         reference_string = u'(True, [(rb1, 1.0, 1.0, None), (rb2, 2.0, 2.0, POINT(2 2))])'
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_update_geometry_from_east_north(self):
         """ Test that adding triggers and updating obsid with east, north also updates geometry
@@ -332,6 +343,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         reference_string = u'(True, [(rb1, 2.0, 2.0, POINT(2 2))])'
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_update_east_north_from_geometry(self):
         """ Test that adding triggers and updating obsid with geometry also updates east, north
@@ -347,6 +359,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         reference_string = u'(True, [(rb1, 2.0, 2.0, POINT(2 2))])'
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_add_trigger_update_geometry_not_nulling_geometry(self):
         """ Test that adding triggers and updating obsid don't set null values for previous obsid.
@@ -366,6 +379,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         reference_string = u'(True, [(rb1, 3.0, 3.0, POINT(3 3)), (rb2, None, None, POINT(2 2))])'
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_update_trigger_add_geometry_not_nulling_east_north(self,):
         """ Test that adding triggers and updating obsid from geometry don't set null values for previous obsid.
@@ -385,6 +399,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
 
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_update_trigger_add_east_north_not_nulling_east_north(self):
         """ Test that adding triggers and updating obsid from east, north don't set null values for previous obsid.
@@ -403,6 +418,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         reference_string = u'(True, [(rb1, 3.0, 3.0, POINT(3 3)), (rb2, 2.0, 2.0, POINT(2 2))])'
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_add_trigger_add_obsid_without_anything(self):
         """
@@ -418,6 +434,7 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         reference_string = u'(True, [(rb1, None, None, None), (rb2, None, None, None)])'
         assert test_string == reference_string
 
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_add_trigger_add_obsid_without_anything_not_changing_existing(self):
         """ Test that adding triggers and updating obsid from east, north don't set null values for previous obsid.

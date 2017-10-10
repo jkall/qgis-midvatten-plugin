@@ -210,7 +210,7 @@ class NewDb():
         #db_utils.sql_alter_db(lines)
 
         self.insert_datadomains(set_locale, dbconnection)
-        #self.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql', dbconnection)
+        self.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql', dbconnection)
 
         self.add_metadata_to_about_db(dbconnection, created_tables_sqls)
 

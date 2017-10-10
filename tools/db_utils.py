@@ -85,6 +85,8 @@ class DbConnectionManager(object):
             self.cursor = self.conn.cursor()
         elif self.dbtype == u'postgis':
             connection_name = self.connection_settings[u'connection'].split(u'/')[0]
+            #print(str(get_postgis_connections().mock_calls))
+
             self.postgis_settings = get_postgis_connections()[connection_name]
             self.uri.setConnection(self.postgis_settings[u'host'], self.postgis_settings[u'port'], self.postgis_settings[u'database'], self.postgis_settings[u'username'], self.postgis_settings[u'password'])
             self.connector = postgis_connector.PostGisDBConnector(self.uri)
