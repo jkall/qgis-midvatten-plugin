@@ -64,7 +64,7 @@ class DbConnectionManager(object):
         else:
             raise Exception(utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u"DbConnectionManager error: db_settings must be either a dict like {u'spatialite': {u'dbpath': u'x'} or a string representation of it. Was: %s"))%utils.returnunicode(db_settings))
 
-        utils.returnunicode(db_settings, keep_containers=True)
+        db_settings = utils.returnunicode(db_settings, keep_containers=True)
 
         self.dbtype = db_settings.keys()[0]
         self.connection_settings = db_settings.values()[0]
@@ -271,15 +271,23 @@ def db_tables_columns_info(table=None, dbconnection=None):
     return tables_dict
 
 
-def get_tables(dbconnection=None):
+def get_tables(dbconnection=None, skip_views=False):
     if dbconnection is None:
         dbconnection = DbConnectionManager()
 
     if dbconnection.dbtype == u'spatialite':
+        if skip_views:
+            tabletype = u"type='table'"
+        else:
+            tabletype = u"type = 'table' or type = 'view'"
         tables_sql = (
-        u"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') AND tbl_name NOT IN %s ORDER BY tbl_name""" % sqlite_internal_tables())
+        u"""SELECT tbl_name FROM sqlite_master WHERE (%s) AND tbl_name NOT IN %s ORDER BY tbl_name""" % (tabletype, sqlite_internal_tables()))
     else:
-        tables_sql = u"SELECT table_name FROM information_schema.tables WHERE table_schema='%s' AND table_name NOT IN %s ORDER BY table_name"%(dbconnection.schemas(), postgis_internal_tables())
+        if skip_views:
+            tabletype = u"AND table_type='BASE TABLE'"
+        else:
+            tabletype = u''
+        tables_sql = u"SELECT table_name FROM information_schema.tables WHERE table_schema='%s' %s AND table_name NOT IN %s ORDER BY table_name"%(dbconnection.schemas(), tabletype, postgis_internal_tables())
     tables = dbconnection.execute_and_fetchall(tables_sql)
     tablenames = [col[0] for col in tables]
     return tablenames
@@ -299,6 +307,7 @@ def get_table_info(tablename, dbconnection=None):
         for column in columns:
             if column[1] in primary_keys:
                 column[5] = 1
+        columns = [tuple(column) for column in columns]
     return columns
 
 

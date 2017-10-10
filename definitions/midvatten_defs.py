@@ -706,11 +706,9 @@ def export_fieldlogger_defaults():
 
 def db_setup_as_string():
     tables = db_utils.get_tables()
-    print(tables)
     #tables = db_utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + db_utils.sqlite_internal_tables() + r""") ORDER BY tbl_name""")[1]
     res = []
     for table in sorted(tables):
-
         res.append((table,))
         table_info = db_utils.get_table_info(table)
         res.append(table_info)

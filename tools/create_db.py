@@ -184,6 +184,7 @@ class NewDb():
             ('rowid as rowid', 'CTID as rowid'),
             ('POSTGIS ', '')]
 
+        created_tables_sqls = {}
         with open(SQLFile, 'r') as f:
             f.readline()  # first line is encoding info....
             lines = [ru(line) for line in f]
@@ -194,15 +195,24 @@ class NewDb():
                 try:
                     dbconnection.execute(sql)
                 except:
-                    print(str(sql))
+                    try:
+                        print(str(sql))
+                    except:
+                        pass
                     raise
+                else:
+                    _sql = sql.lstrip(u'\r').lstrip(u'\n').lstrip()
+                    if _sql.startswith(u'CREATE TABLE'):
+                        tablename = u' '.join(_sql.split()).split()[2]
+                        created_tables_sqls[tablename] = sql
 
             #lines = [self.replace_words(line.decode('utf-8').rstrip('\n').rstrip('\r'), replace_word_replace_with) for line in f if all([line,not line.startswith("#"), u'InitSpatialMetadata' not in line])]
         #db_utils.sql_alter_db(lines)
 
         self.insert_datadomains(set_locale, dbconnection)
+        #self.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql', dbconnection)
 
-        self.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql', dbconnection)
+        self.add_metadata_to_about_db(dbconnection, created_tables_sqls)
 
         dbconnection.execute(u'vacuum')
 
@@ -259,8 +269,8 @@ class NewDb():
     def add_triggers_to_obs_points(self, filename, dbconnection):
         self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename), dbconnection)
 
-    def add_metadata_to_about_db(self, dbconnection):
-        tables = dbconnection.execute_and_fetchall(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table') and not (name in""" + dbconnection.internal_tables() + r""") ORDER BY tbl_name""")
+    def add_metadata_to_about_db(self, dbconnection, created_tables_sqls=None):
+        tables = sorted(db_utils.get_tables(dbconnection=dbconnection, skip_views=True))
 
         #Matches comment inside /* */
         #create_table_sql CREATE TABLE meteo /*meteorological observations*/(
@@ -270,12 +280,15 @@ class NewDb():
         #, color_mplot text NOT NULL --color codes for matplotlib plots
         column_descr_reg = re.compile(ur'([A-Za-z_]+)[ ]+[A-Za-z ]*--(.+)', re.MULTILINE)
 
+        table_name_reg = re.compile(ur'([A-Za-z_]+)[ ]+[A-Za-z ]*--(.+)', re.MULTILINE)
         for table in tables:
-            table = table[0]
 
             #Get table and column comments
-            table_descr_sql = (u"SELECT name, sql from sqlite_master WHERE name = '%s';"%table)
-            create_table_sql = dbconnection.execute_and_fetchall(table_descr_sql)[0][1]
+            if created_tables_sqls is None:
+                table_descr_sql = (u"SELECT name, sql from sqlite_master WHERE name = '%s';"%table)
+                create_table_sql = dbconnection.execute_and_fetchall(table_descr_sql)[0][1]
+            else:
+                create_table_sql = created_tables_sqls[table]
             table_descr = table_descr_reg.findall(create_table_sql)
             try:
                 table_descr = table_descr[0]
@@ -286,16 +299,13 @@ class NewDb():
 
             columns_descr = dict(column_descr_reg.findall(create_table_sql))
 
-            table_info = dbconnection.execute_and_fetchall(u'''PRAGMA table_info(%s)''' % table)
+            table_info = db_utils.get_table_info(table, dbconnection)
 
-            foreign_keys = dbconnection.execute_and_fetchall(u"""PRAGMA foreign_key_list(%s)""" %(table))
-            #table = idx 2, from = idx 3, to = idx 4
             foreign_keys_dict = {}
-            #dict like {from: (table, to)}
-            for _row in foreign_keys:
-                _from = _row[3]
-                _to = _row[4]
-                _table = _row[2]
+            foreign_keys = db_utils.get_foreign_keys(table, dbconnection)
+            for _table, _from_to in foreign_keys.iteritems():
+                _from = _from_to[0][0]
+                _to = _from_to[0][1]
                 foreign_keys_dict[_from] = (_table, _to)
 
             sql = ur"""INSERT INTO about_db (tablename, columnname, description, data_type, not_null, default_value, primary_key, foreign_key) VALUES """
