@@ -137,6 +137,8 @@ class TestFieldLoggerImporterDb(object):
                 for setting in importer.settings:
                     if isinstance(setting, import_fieldlogger.StaffQuestion):
                         setting.staff = u'teststaff'
+                    if isinstance(setting, import_fieldlogger.WLevelsImportFields):
+                        setting.calculate_level_masl = False
 
                 stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
                                    [u'l.comment', [[u'import_method', u'comments']]],
@@ -209,6 +211,8 @@ class TestFieldLoggerImporterDb(object):
                 for setting in importer.settings:
                     if isinstance(setting, import_fieldlogger.StaffQuestion):
                         setting.staff = u'teststaff'
+                    if isinstance(setting, import_fieldlogger.WLevelsImportFields):
+                        setting.calculate_level_masl = False
 
                 stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
                                    [u'l.comment', [[u'import_method', u'comments']]],
@@ -281,6 +285,8 @@ class TestFieldLoggerImporterDb(object):
                 for setting in importer.settings:
                     if isinstance(setting, import_fieldlogger.StaffQuestion):
                         setting.staff = u'teststaff'
+                    if isinstance(setting, import_fieldlogger.WLevelsImportFields):
+                        setting.calculate_level_masl = False
 
                 stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
                                    [u'l.comment', [[u'import_method', u'comments']]],
@@ -354,6 +360,8 @@ class TestFieldLoggerImporterDb(object):
                 for setting in importer.settings:
                     if isinstance(setting, import_fieldlogger.StaffQuestion):
                         setting.staff = u'teststaff'
+                    if isinstance(setting, import_fieldlogger.WLevelsImportFields):
+                        setting.calculate_level_masl = False
 
                 stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
                                    [u'l.comment', [[u'import_method', u'comments']]],
@@ -432,6 +440,8 @@ class TestFieldLoggerImporterDb(object):
                 for setting in importer.settings:
                     if isinstance(setting, import_fieldlogger.StaffQuestion):
                         setting.staff = u'teststaff'
+                    if isinstance(setting, import_fieldlogger.WLevelsImportFields):
+                        setting.calculate_level_masl = False
 
                 stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
                                    [u'l.comment', [[u'import_method', u'comments']]],
@@ -511,6 +521,8 @@ class TestFieldLoggerImporterDb(object):
                 for setting in importer.settings:
                     if isinstance(setting, import_fieldlogger.StaffQuestion):
                         setting.staff = u'teststaff'
+                    if isinstance(setting, import_fieldlogger.WLevelsImportFields):
+                        setting.calculate_level_masl = False
 
                 stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
                                    [u'l.comment', [[u'import_method', u'comments']]],
@@ -604,6 +616,8 @@ class TestFieldLoggerImporterDb(object):
                 for setting in importer.settings:
                     if isinstance(setting, import_fieldlogger.StaffQuestion):
                         setting.staff = u'teststaff'
+                    if isinstance(setting, import_fieldlogger.WLevelsImportFields):
+                        setting.calculate_level_masl = False
 
                 stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
                                    [u'l.comment', [[u'import_method', u'comments']]],
@@ -704,6 +718,8 @@ class TestFieldLoggerImporterDb(object):
                 for setting in importer.settings:
                     if isinstance(setting, import_fieldlogger.StaffQuestion):
                         setting.staff = u'teststaff'
+                    if isinstance(setting, import_fieldlogger.WLevelsImportFields):
+                        setting.calculate_level_masl = False
 
                 stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
                                    [u'l.comment', [[u'import_method', u'comments']]],
@@ -794,6 +810,8 @@ class TestFieldLoggerImporterDb(object):
                 for setting in importer.settings:
                     if isinstance(setting, import_fieldlogger.StaffQuestion):
                         setting.staff = u'teststaff'
+                    if isinstance(setting, import_fieldlogger.WLevelsImportFields):
+                        setting.calculate_level_masl = False
 
                 stored_settings = [[u'f.comment', [[u'import_method', u'comments']]],
                                    [u'Aveflow.m3/s', [[u'import_method', u'w_flow'], [u'flowtype', u'Momflow2'], [u'unit', u'aunit']]]]
@@ -807,6 +825,74 @@ class TestFieldLoggerImporterDb(object):
             reference_string = u'{comments: (True, [(2, 2016-12-12 10:03:15, onlycomment, teststaff)]), w_flow: (True, [(2, testid, Momflow2, 2016-12-12 10:03:07, 123.0, aunit, None)]), zz_flowtype: (True, [(Accvol, Accumulated volume), (Momflow, Momentary flow rate), (Aveflow, Average flow since last reading), (Momflow2, None)]), zz_staff: (True, [(teststaff, None)])}'
             assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    def test_full_integration_test_to_db_w_levels_value_calculate_level_masl(self):
+        utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, h_toc) VALUES ('Rb1202', 0)''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, h_toc) VALUES ('Rb1608', 0)''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, h_toc) VALUES ('Rb1615', NULL)''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, h_toc) VALUES ('Rb1505', 0)''')
+        utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, h_toc) VALUES ('Rb1512', 10)''')
+        utils.sql_alter_db(u'''INSERT INTO zz_staff (staff) VALUES ("teststaff")''')
+
+        utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype ("type") VALUES ("Accvol")''')
+
+        f = [
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
+            u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:13;ergv;l.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:13;555;l.meas.m\n",
+            u"Rb1615.level;29-03-2016;15:34:13;ergv2;l.comment\n",
+            u"Rb1615.level;31-03-2016;15:34:13;ergv1;l.comment\n",
+            u"Rb1615.level;31-03-2016;15:34:13;111;l.meas.m\n",
+            ]
+
+        with utils.tempinput(''.join(f)) as filename:
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
+            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
+            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
+                mock_vacuum.return_value.result = 1
+                mock_charset.return_value = ('utf-8', True)
+                mock_savefilename.return_value = [filename]
+                mock_ask_instrument.return_value.value = u'testid'
+
+                ms = MagicMock()
+                ms.settingsdict = OrderedDict()
+                importer = FieldloggerImport(self.iface.mainWindow(), ms)
+                importer.parse_observations_and_populate_gui()
+
+                #Set settings:
+                for setting in importer.settings:
+                    if isinstance(setting, import_fieldlogger.StaffQuestion):
+                        setting.staff = u'teststaff'
+                    if isinstance(setting, import_fieldlogger.WLevelsImportFields):
+                        setting.calculate_level_masl = True
+
+                stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
+                                   [u'l.comment', [[u'import_method', u'comments']]],
+                                   [u'f.comment', [[u'import_method', u'comments']]],
+                                   [u'q.comment', [[u'import_method', u'comments']]],
+                                   [u'l.meas.m', [[u'import_method', u'w_levels'], [u'value_column', u'meas']]],
+                                   [u'f.Accvol.m3', [[u'import_method', u'w_flow'], [u'flowtype', u'Accvol'], [u'unit', u'm3']]],
+                                   [u's.turbiditet.FNU', [[u'import_method', u'w_qual_field'], [u'parameter', u'turbiditet'], [u'unit', u'FNU'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.konduktivitet.µS/cm', [[u'import_method', u'w_qual_field'], [u'parameter', u'konduktivitet'], [u'unit', u'µS/cm'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.syre.mg/L', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'mg/L'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.syre.%', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'%'], [u'depth', u''], [u'instrument', u'testid']]],
+                                   [u'q.temperatur.grC', [[u'import_method', u'w_qual_field'], [u'parameter', u'temperatur'], [u'unit', u'grC'], [u'depth', u''], [u'instrument', u'testid']]]]
+                importer.input_fields.set_parameters_using_stored_settings(stored_settings)
+                importer.start_import(importer.observations)
+
+            _test(self, filename)
+
+            test_string = create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
+            print(test_string)
+            reference_string = u'{comments: (True, [(Rb1608, 2016-03-30 15:34:40, testc, teststaff), (Rb1615, 2016-03-29 15:34:13, ergv2, teststaff)]), w_flow: (True, []), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, 0.0, -555.0, ergv), (Rb1615, 2016-03-31 15:34:13, 111.0, None, None, ergv1)]), w_qual_field: (True, []), zz_staff: (True, [(teststaff, None)])}'
+            assert test_string == reference_string
+
 
 class TestFieldLoggerImporterNoDb(object):
 
@@ -816,28 +902,38 @@ class TestFieldLoggerImporterNoDb(object):
         mock_flow_instruments = [True, {}]
         mock_instrument_not_found.return_value.answer = u'ok'
         mock_instrument_not_found.return_value.value = u'inst1'
-        observations = [{u'obsid': u'obs1', u'flowtype': u'atype', u'date_time': datestring_to_date(u'2016-01-01 00:00'), u'unit': u'aunit', u'value': u'123,4'}]
+        observations = [{u'sublocation': u'obs1.sub', u'obsid': u'obs1', u'flowtype': u'atype', u'date_time': datestring_to_date(u'2016-01-01 00:00'), u'unit': u'aunit', u'value': u'123,4'}]
         test_string = create_test_string(FieldloggerImport.prepare_w_flow_data(observations))
         reference_string = u'[[obsid, instrumentid, flowtype, date_time, reading, unit, comment], [obs1, inst1, atype, 2016-01-01 00:00:00, 123.4, aunit, ]]'
         assert test_string == reference_string
 
     def test_prepare_w_levels_data_to_meas(self):
-        observations = [{u'obsid': u'obs1', u'date_time': datestring_to_date(u'2016-01-01 00:00'), u'value': u'123,4'}]
+        observations = [{u'obsid': u'obs1', u'date_time': datestring_to_date(u'2016-01-01 00:00'), u'meas': u'123,4'}]
         test_string = create_test_string(FieldloggerImport.prepare_w_levels_data(observations))
-        reference_string = u'[[obsid, date_time, meas, level_masl, comment], [obs1, 2016-01-01 00:00:00, 123.4, , ]]'
+        reference_string = u'[[obsid, date_time, meas, h_toc, level_masl, comment], [obs1, 2016-01-01 00:00:00, 123.4, , , ]]'
+        print(test_string)
         assert test_string == reference_string
 
     def test_prepare_w_levels_data_to_level_masl(self):
         observations = [{u'obsid': u'obs1', u'date_time': datestring_to_date(u'2016-01-01 00:00'), u'value': u'123,4', u'level_masl': u'567'}]
         test_string = create_test_string(FieldloggerImport.prepare_w_levels_data(observations))
-        reference_string = u'[[obsid, date_time, meas, level_masl, comment], [obs1, 2016-01-01 00:00:00, , 567, ]]'
+        reference_string = u'[[obsid, date_time, meas, h_toc, level_masl, comment], [obs1, 2016-01-01 00:00:00, , , 567, ]]'
+        print(test_string)
         assert test_string == reference_string
 
     def test_prepare_w_levels_data_to_both(self):
         observations = [{u'obsid': u'obs1', u'date_time': datestring_to_date(u'2016-01-01 00:00'), u'value': u'123,4', u'level_masl': u'567'},
-                        {u'obsid': u'obs1', u'date_time': datestring_to_date(u'2016-01-01 00:02'), u'value': u'897'}]
+                        {u'obsid': u'obs1', u'date_time': datestring_to_date(u'2016-01-01 00:02'), u'meas': u'897'}]
         test_string = create_test_string(FieldloggerImport.prepare_w_levels_data(observations))
-        reference_string = u'[[obsid, date_time, meas, level_masl, comment], [obs1, 2016-01-01 00:00:00, , 567, ], [obs1, 2016-01-01 00:02:00, 897, , ]]'
+        reference_string = u'[[obsid, date_time, meas, h_toc, level_masl, comment], [obs1, 2016-01-01 00:00:00, , , 567, ], [obs1, 2016-01-01 00:02:00, 897, , , ]]'
+        print(test_string)
+        assert test_string == reference_string
+
+    def test_prepare_w_levels_data_calculated_level_masl(self):
+        observations = [{u'obsid': u'obs1', u'date_time': datestring_to_date(u'2016-01-01 00:00'), u'value': u'123,4', u'meas': u'456,4', u'level_masl': u'567', u'h_toc': '5'},
+                        {u'obsid': u'obs1', u'date_time': datestring_to_date(u'2016-01-01 00:02'), u'meas': u'897'}]
+        test_string = create_test_string(FieldloggerImport.prepare_w_levels_data(observations))
+        reference_string = u'[[obsid, date_time, meas, h_toc, level_masl, comment], [obs1, 2016-01-01 00:00:00, 456.4, 5, 567, ], [obs1, 2016-01-01 00:02:00, 897, , , ]]'
         assert test_string == reference_string
 
     def test_parse_rows_skip_empty_rows(self):
@@ -854,14 +950,16 @@ class TestFieldLoggerImporterNoDb(object):
         mock_flow_instruments = [True, {}]
         mock_instrument_not_found.return_value.answer = u'ok'
         mock_instrument_not_found.return_value.value = u'inst1'
-        observations = [{u'obsid': u'obs1', u'flowtype': u'atype',
+        observations = [{u'sublocation': u'obs1.sub',
+                         u'obsid': u'obs1', u'flowtype': u'atype',
                          u'date_time': datestring_to_date(u'2016-01-01 00:00'),
                          u'unit': u'aunit', u'value': u'123,4'},
-                        {u'obsid': u'obs1', u'flowtype': u'atype',
+                        {u'sublocation': u'obs1.sub',
+                         u'obsid': u'obs1', u'flowtype': u'atype',
                          u'date_time': datestring_to_date(u'2016-01-02 00:00'),
                          u'unit': u'aunit', u'value': u'223,4'}]
         test_string = create_test_string(FieldloggerImport.prepare_w_flow_data(observations))
-        mock_instrument_not_found.assert_called_once_with(combobox_label=u'Instrument id:s in database for obsid obs1.\nThe last used instrument id for obsid obs1 is prefilled:', default_value=u'', dialogtitle=u'Submit instrument id', existing_list=[u''], msg=u'Submit the instrument id for the measurement:\n obs1, 2016-01-01 00:00:00, atype, aunit')
+        mock_instrument_not_found.assert_called_once_with(combobox_label=u'Instrument id:s in database for obsid obs1.\nThe last used instrument id for obsid obs1 is prefilled:', default_value=u'', dialogtitle=u'Submit instrument id', existing_list=[u''], msg=u'Submit the instrument id for the measurement:\n obs1.sub, obs1, 2016-01-01 00:00:00, atype, aunit')
         reference_string = u'[[obsid, instrumentid, flowtype, date_time, reading, unit, comment], [obs1, inst1, atype, 2016-01-01 00:00:00, 123.4, aunit, ], [obs1, inst1, atype, 2016-01-02 00:00:00, 223.4, aunit, ]]'
         assert test_string == reference_string
 
@@ -872,18 +970,21 @@ class TestFieldLoggerImporterNoDb(object):
         mock_flow_instruments = [True, {}]
         mock_instrument_not_found.return_value.answer = u'ok'
         mock_instrument_not_found.return_value.value = u'inst1'
-        observations = [{u'obsid': u'obs1', u'flowtype': u'atype',
+        observations = [{u'sublocation': u'obs1.sub',
+                         u'obsid': u'obs1', u'flowtype': u'atype',
                          u'date_time': datestring_to_date(u'2016-01-01 00:00'),
                          u'unit': u'aunit', u'value': u'123,4'},
-                        {u'obsid': u'obs2', u'flowtype': u'atype',
+                        {u'sublocation': u'obs2.sub',
+                         u'obsid': u'obs2', u'flowtype': u'atype',
                          u'date_time': datestring_to_date(u'2016-01-02 00:00'),
                          u'unit': u'aunit', u'value': u'223,4'},
-                        {u'obsid': u'obs2', u'flowtype': u'atype',
+                        {u'sublocation': u'obs2.sub',
+                         u'obsid': u'obs2', u'flowtype': u'atype',
                          u'date_time': datestring_to_date(u'2016-01-03 00:00'),
                          u'unit': u'aunit', u'value': u'223,4'}]
         test_string = create_test_string(FieldloggerImport.prepare_w_flow_data(observations))
-        expected_calls = [call(combobox_label=u'Instrument id:s in database for obsid obs1.\nThe last used instrument id for obsid obs1 is prefilled:', default_value=u'', dialogtitle=u'Submit instrument id', existing_list=[u''], msg=u'Submit the instrument id for the measurement:\n obs1, 2016-01-01 00:00:00, atype, aunit'),
- call(combobox_label=u'Instrument id:s in database for obsid obs2.\nThe last used instrument id for obsid obs2 is prefilled:', default_value=u'', dialogtitle=u'Submit instrument id', existing_list=[u''], msg=u'Submit the instrument id for the measurement:\n obs2, 2016-01-02 00:00:00, atype, aunit')]
+        expected_calls = [call(combobox_label=u'Instrument id:s in database for obsid obs1.\nThe last used instrument id for obsid obs1 is prefilled:', default_value=u'', dialogtitle=u'Submit instrument id', existing_list=[u''], msg=u'Submit the instrument id for the measurement:\n obs1.sub, obs1, 2016-01-01 00:00:00, atype, aunit'),
+ call(combobox_label=u'Instrument id:s in database for obsid obs2.\nThe last used instrument id for obsid obs2 is prefilled:', default_value=u'', dialogtitle=u'Submit instrument id', existing_list=[u''], msg=u'Submit the instrument id for the measurement:\n obs2.sub, obs2, 2016-01-02 00:00:00, atype, aunit')]
         assert mock_instrument_not_found.mock_calls == expected_calls
         reference_string = u'[[obsid, instrumentid, flowtype, date_time, reading, unit, comment], [obs1, inst1, atype, 2016-01-01 00:00:00, 123.4, aunit, ], [obs2, inst1, atype, 2016-01-02 00:00:00, 223.4, aunit, ], [obs2, inst1, atype, 2016-01-03 00:00:00, 223.4, aunit, ]]'
         assert test_string == reference_string
