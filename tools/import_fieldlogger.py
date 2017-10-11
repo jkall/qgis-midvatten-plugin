@@ -998,19 +998,21 @@ class WLevelsImportFields(RowEntryGrid):
         """
         """
         super(WLevelsImportFields, self).__init__()
+        self.connect = connect
         self.h_toc_dict = None
         self.import_method_chooser = import_method_chooser
         self.label_value_column = PyQt4.QtGui.QLabel(u'Value column: ')
         self._value_column = PyQt4.QtGui.QComboBox()
+        self._calculate_level_masl_checkbox = PyQt4.QtGui.QCheckBox(u'Calculate level_masl from meas and h_toc')
+        self._calculate_level_masl_checkbox.setToolTip(u'If h_toc is not NULL in table obs_points, level_masl is calculated as h_toc - meas.')
         self._value_column.addItems([u'meas', u'level_masl'])
         self.value_column = u'meas'
         self.layout.addWidget(self.label_value_column, 0, 0)
         self.layout.addWidget(self._value_column, 1, 0)
-        self._calculate_level_masl_checkbox = PyQt4.QtGui.QCheckBox(u'Calculate level_masl from meas and h_toc')
-        self._calculate_level_masl_checkbox.setToolTip(u'If h_toc is not NULL in table obs_points, level_masl is calculated as h_toc - meas.')
-        self._calculate_level_masl_checkbox.setChecked(True)
-        self.layout.addWidget(self._calculate_level_masl_checkbox, 2, 0)
-        self.layout.setColumnStretch(2, 1)
+        self.layout.addWidget(self._calculate_level_masl_checkbox, 1, 1)
+        self.layout.setColumnStretch(1, 2)
+
+        self.connect(self._value_column, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.set_calculate_level_masl_visibility)
 
         self.set_calculate_level_masl_visibility()
 
@@ -1023,12 +1025,17 @@ class WLevelsImportFields(RowEntryGrid):
         index = self._value_column.findText(utils.returnunicode(value))
         if index != -1:
             self._value_column.setCurrentIndex(index)
+        if value == u'meas':
+            self.calculate_level_masl = True
+        else:
+            self.calculate_level_masl = False
+        self.set_calculate_level_masl_visibility()
 
     @property
     def calculate_level_masl(self):
         return self._calculate_level_masl_checkbox.isChecked()
 
-    @value_column.setter
+    @calculate_level_masl.setter
     def calculate_level_masl(self, a_bool):
         if a_bool:
             self._calculate_level_masl_checkbox.setChecked(True)
