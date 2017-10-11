@@ -28,7 +28,7 @@ from nose.plugins.attrib import attr
 from definitions import midvatten_defs as defs
 
 
-@attr(status='off')
+@attr(status='on')
 class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface')
