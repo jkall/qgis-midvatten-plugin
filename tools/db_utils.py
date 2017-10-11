@@ -461,6 +461,12 @@ def activate_foreign_keys(activated=True, dbconnection=None):
             _activated = u'OFF'
         dbconnection.execute('PRAGMA foreign_keys=%s'%_activated)
 
+def add_insert_or_ignore_to_sql(sql, dbconnection):
+    if dbconnection.dbtype == u'spatialite':
+        sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
+    else:
+        sql = sql + u' ON CONFLICT DO NOTHING'
+    return sql
 
 class DatabaseLockedError(Exception):
     pass

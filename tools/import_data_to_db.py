@@ -111,32 +111,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             self.status = 'False'
             return
 
-        # Delete duplicate rows in temptable:
-        temptablerows_before = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
-        db_utils.delete_duplicate_values(dbconnection, self.temptable_name, primary_keys_for_concat)
-        temptablerows_after = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
-        removed_rows = int(temptablerows_before) - int(temptablerows_after)
-        if removed_rows:
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Removed %s duplicate rows from rows to import.'))%str(removed_rows))
-        #Delete rows which null values where null-values is not allowed
-        if not_null_columns:
-            temptablerows_before = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
-            sql = u'DELETE FROM %s WHERE %s'%(self.temptable_name,  u' OR '.join([u"(CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN %s else NULL END) IS NULL"%(x, x, x, x) for x in not_null_columns]))
-            dbconnection.execute(sql)
-            temptablerows_after = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
-            removed_rows = int(temptablerows_before) - int(temptablerows_after)
-            if removed_rows:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u"""Removed %s rows with non-allowed NULL-values, ' '-values or ''-values from rows to import."""))%str(removed_rows))
-
-        #Delete rows already existing in goal table
-        temptablerows_before = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
-        concatted_string = u'||'.join([u"CASE WHEN %s is NULL then '0' ELSE %s END"%(x, x) for x in primary_keys_for_concat])
-        dbconnection.execute(u'DELETE FROM %s WHERE %s IN (SELECT %s FROM %s)'%(self.temptable_name, concatted_string, concatted_string, goal_table))
-        temptablerows_after = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (self.temptable_name))[0][0]
-        removed_rows = int(temptablerows_before) - int(temptablerows_after)
-        if removed_rows:
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u"""Removed %s rows that already existed in %s from rows to import."""))%(str(removed_rows), goal_table))
-
         #Special cases for some tables
         if goal_table == u'stratigraphy':
             self.check_and_delete_stratigraphy(existing_columns_in_goal_table, dbconnection)
@@ -164,11 +138,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         return Cancel()   # return simply to stop this function
                     else:
                         self.foreign_keys_import_question = 1
-                        nr_before = nr_after
-                        self.import_foreign_keys(goal_table, foreign_keys, dbconnection, existing_columns_in_temptable)
-                        nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
-                        nr_after_foreign_keys = nr_before - nr_after
-                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'))%(str(nr_after_foreign_keys), str(nr_after)))
+                if self.foreign_keys_import_question == 1:
+                    nr_before = nr_after
+                    self.import_foreign_keys(goal_table, foreign_keys, dbconnection, existing_columns_in_temptable)
+                    nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
+                    nr_after_foreign_keys = nr_before - nr_after
+                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'))%(str(nr_after_foreign_keys), str(nr_after)))
 
         if not nr_after > 0:
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Nothing imported, see log message panel')))
@@ -185,7 +160,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             return
 
         #Finally import data:
-        nr_failed_import = recsinfile - temptablerows_after
+        nr_failed_import = recsinfile - nr_after
         if nr_failed_import > 0:
             stop_question = utils.Askuser(u"YesNo", ru(QCoreApplication.translate(u'midv_data_importer', u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?""" ))% (str(nr_failed_import)), ru(QCoreApplication.translate(u'midv_data_importer', u"Warning!")))
             if stop_question.result == 0:      # if the user wants to abort
@@ -201,12 +176,17 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         recsbefore = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
         try:
-            dbconnection.execute(sql) #.encode(u'utf-8'))
+            dbconnection.execute(sql)
         except Exception, e:
-            utils.MessagebarAndLog.critical(
-                bar_msg=self.import_error_msg(),
-                log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Sql failed:\n%s\nMsg:\n%s'))%(ru(sql), str(e)),
-                duration=999)
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:\n')) % goal_table + str(e))
+            sql = db_utils.add_insert_or_ignore_to_sql(sql, dbconnection)
+            try:
+                dbconnection.execute(sql)
+            except Exception, e:
+                utils.MessagebarAndLog.critical(
+                    bar_msg=self.import_error_msg(),
+                    log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Sql\n%s  failed.\nMsg:\n%s')) % (sql, str(e)),
+                    duration=999)
             self.status = 'False'
             return
         recsafter = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
@@ -331,7 +311,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                         continue
                     #Check that there is no gap in the stratid:
                     if float(sorted_strats[index][stratid_idx]) - float(sorted_strats[index - 1][stratid_idx]) != 1:
-                        utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Import error, see log message panel')), log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'The obsid %s will not be imported due to gaps in stratid'))%obsid)
+                        utils.MessagebarAndLog.warning(bar_msg=self.import_error_msg(), log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'The obsid %s will not be imported due to gaps in stratid'))%obsid)
                         skip_obsids.append(obsid)
                         break
                     #Check that the current depthtop is equal to the previous depthbot
@@ -365,7 +345,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         filtered_file_data.reverse()
         return filtered_file_data
 
-    def import_foreign_keys(self, goal_table, foreign_keys, dbconnection, existing_columns_in_temptable, detailed_msg_list):
+    def import_foreign_key2(self, goal_table, foreign_keys, dbconnection, existing_columns_in_temptable, detailed_msg_list):
         #TODO: Empty foreign keys are probably imported now. Must add "case when...NULL" to a couple of sql questions here
 
         #What I want to do:
@@ -385,8 +365,14 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             concatted_from_string = u'||'.join([u"CASE WHEN %s is NULL then '0' ELSE %s END"%(x, x) for x in from_list])
             concatted_to_string = u'||'.join([u"CASE WHEN %s is NULL then '0' ELSE %s END"%(x, x) for x in to_list])
-            sql = u'INSERT INTO %s (%s) SELECT DISTINCT %s FROM %s WHERE %s NOT IN (SELECT %s FROM %s)'%(fk_table,
-                                                                                 fk_table)
+            sql = u'INSERT INTO %s (%s) SELECT DISTINCT %s FROM %s AS b WHERE %s NOT IN (SELECT %s FROM %s) AND %s'%(fk_table,
+                                                                                                         u', '.join([u'"{}"'.format(k) for k in to_list]),
+                                                                                                         u', '.join([u'''CAST("b"."%s" as "%s")'''%(k, column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
+                                                                                                         self.temptablename,
+                                                                                                         concatted_from_string,
+                                                                                                         concatted_to_string,
+                                                                                                         fk_table,
+                                                                                                         u' AND '.join([u''' b.{} IS NOT NULL and b.{} != '' and b.{} != ' ' '''.format(k, k, k) for k in from_list]))
             dbconnection.execute(sql)
 
             nr_fk_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]

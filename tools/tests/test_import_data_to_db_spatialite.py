@@ -31,7 +31,7 @@ from nose.plugins.attrib import attr
 import utils_for_tests
 
 
-@attr(status='off')
+@attr(status='on')
 class TestGeneralImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
@@ -48,6 +48,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstanc
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
         reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, None)])'''
+        print(test_string)
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
