@@ -79,7 +79,7 @@ def init_test():
     QtCore.QCoreApplication.setApplicationName('QGIS2')
     return app
 
-def create_test_string(anything):
+def create_test_string(anything=None):
     ur""" Turns anything into a string used for testing
     :param anything: just about anything
     :return: A unicode string

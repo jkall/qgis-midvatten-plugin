@@ -266,20 +266,16 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         :param obsdict: a dict like {obsid: {date_time: {parameter: value}}}
         :return: None
         """
-        file_data_list = [[u'obsid', u'date_time', u'meas', u'level_masl', u'comment']]
+        file_data_list = [[u'obsid', u'date_time', u'meas', u'h_toc', u'level_masl', u'comment']]
         for observation in observations:
             obsid = observation[u'obsid']
             date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
-            level_masl = observation.get(u'level_masl', None)
-            if level_masl is not None:
-                level_masl = level_masl.replace(u',', u'.')
-                meas = u''
-            else:
-                level_masl = u''
-                meas = observation[u'value'].replace(u',', u'.')
-
+            level_masl = observation.get(u'level_masl', '').replace(u',', u'.')
+            h_toc = observation.get(u'h_toc', '').replace(u',', u'.')
+            meas = observation.get(u'meas', '').replace(u',', u'.')
             comment = observation.get(u'comment', u'')
-            file_data_list.append([obsid, date_time, meas, level_masl, comment])
+
+            file_data_list.append([obsid, date_time, meas, h_toc, level_masl, comment])
 
         return file_data_list
 
@@ -314,8 +310,9 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             flowtype = observation[u'flowtype']
             date_time = datetime.strftime(observation[u'date_time'], '%Y-%m-%d %H:%M:%S')
             unit = observation[u'unit']
+            sublocation = observation[u'sublocation']
 
-            instrumentid = already_asked_instruments.get(obsid, None)
+            instrumentid = already_asked_instruments.get(sublocation, None)
             if instrumentid is None:
                 instrumentids_for_obsid = instrumentids.get(obsid, None)
                 if instrumentids_for_obsid is None:
@@ -330,7 +327,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                         last_used_instrumentid = [u'']
                 question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
                                                   msg=u''.join([u'Submit the instrument id for the measurement:\n ',
-                                                                u', '.join([obsid, date_time, flowtype, unit])]),
+                                                                u', '.join([sublocation, obsid, date_time, flowtype, unit])]),
                                                   existing_list=last_used_instrumentid,
                                                   default_value=last_used_instrumentid[0],
                                                   combobox_label=u'Instrument id:s in database for obsid %s.\nThe last used instrument id for obsid %s is prefilled:'%(obsid, obsid))
@@ -338,7 +335,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 if answer == u'cancel':
                     return Cancel()
                 instrumentid = utils.returnunicode(question.value)
-                already_asked_instruments[obsid] = instrumentid
+                already_asked_instruments[sublocation] = instrumentid
 
             reading = observation[u'value'].replace(u',', u'.')
 
@@ -1001,14 +998,23 @@ class WLevelsImportFields(RowEntryGrid):
         """
         """
         super(WLevelsImportFields, self).__init__()
+        self.connect = connect
+        self.h_toc_dict = None
         self.import_method_chooser = import_method_chooser
         self.label_value_column = PyQt4.QtGui.QLabel(u'Value column: ')
         self._value_column = PyQt4.QtGui.QComboBox()
+        self._calculate_level_masl_checkbox = PyQt4.QtGui.QCheckBox(u'Calculate level_masl from meas and h_toc')
+        self._calculate_level_masl_checkbox.setToolTip(u'If h_toc is not NULL in table obs_points, level_masl is calculated as h_toc - meas.')
         self._value_column.addItems([u'meas', u'level_masl'])
         self.value_column = u'meas'
         self.layout.addWidget(self.label_value_column, 0, 0)
         self.layout.addWidget(self._value_column, 1, 0)
-        self.layout.setColumnStretch(1, 1)
+        self.layout.addWidget(self._calculate_level_masl_checkbox, 1, 1)
+        self.layout.setColumnStretch(1, 2)
+
+        self.connect(self._value_column, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.set_calculate_level_masl_visibility)
+
+        self.set_calculate_level_masl_visibility()
 
     @property
     def value_column(self):
@@ -1019,12 +1025,44 @@ class WLevelsImportFields(RowEntryGrid):
         index = self._value_column.findText(utils.returnunicode(value))
         if index != -1:
             self._value_column.setCurrentIndex(index)
+        if value == u'meas':
+            self.calculate_level_masl = True
+        else:
+            self.calculate_level_masl = False
+        self.set_calculate_level_masl_visibility()
+
+    @property
+    def calculate_level_masl(self):
+        return self._calculate_level_masl_checkbox.isChecked()
+
+    @calculate_level_masl.setter
+    def calculate_level_masl(self, a_bool):
+        if a_bool:
+            self._calculate_level_masl_checkbox.setChecked(True)
+        else:
+            self._calculate_level_masl_checkbox.setChecked(False)
+
+    def set_calculate_level_masl_visibility(self):
+        if self.value_column == u'meas':
+            self._calculate_level_masl_checkbox.setVisible(True)
+        else:
+            self._calculate_level_masl_checkbox.setVisible(False)
 
     def alter_data(self, observations):
-        if self.value_column == u'level_masl':
-            for observation in observations:
-                if observation[u'parametername'] == self.import_method_chooser.parameter_name:
+        for observation in observations:
+            if observation[u'parametername'] == self.import_method_chooser.parameter_name:
+                if self.value_column == u'level_masl':
                     observation[u'level_masl'] = observation[u'value']
+                else:
+                    observation[u'meas'] = observation[u'value'].replace(u',', u'.')
+
+                    if self.calculate_level_masl:
+                        if self.h_toc_dict is None:
+                            self.h_toc_dict = dict([(obsid_h_toc[0], obsid_h_toc[1]) for obsid_h_toc in utils.sql_load_fr_db(u'SELECT obsid, h_toc FROM obs_points WHERE h_toc IS NOT NULL')[1]])
+                        h_toc = self.h_toc_dict.get(observation[u'obsid'], None)
+                        if h_toc is not None:
+                                observation[u'level_masl'] = str(float(h_toc) - float(observation[u'meas']))
+                                observation[u'h_toc'] = str(float(h_toc))
         return observations
 
     def get_settings(self):
