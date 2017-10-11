@@ -22,6 +22,7 @@ changelog=
         Version 1.4.8:
         - Fieldlogger import: Connected instrument id to sublocation instead of obsid.
         - Fieldlogger import: Added function for calculating level_masl directly from meas
+        - Logger calibration: Fixed better error msg.
         Version 1.4.7:
         - Fixed bug where sql questions with special characters could cause an error.
         Version 1.4.6:

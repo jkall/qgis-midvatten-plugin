@@ -277,11 +277,16 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                 head_mean = sum(head_vals) / float(len(head_vals))
 
                 level_masl_vals = [row[1] for row in level_masl_list if row[1] is not None]
-                level_masl_mean = sum(level_masl_vals) / float(len(level_masl_vals))
+                num_level_masl_vals = len(level_masl_vals)
+                if num_level_masl_vals > 0:
+                    level_masl_mean = sum(level_masl_vals) / float(num_level_masl_vals)
 
-                normalized_head = [(row[0], row[1] + (level_masl_mean - head_mean) if row[1] is not None else None) for row in head_list]
+                    normalized_head = [(row[0], row[1] + (level_masl_mean - head_mean) if row[1] is not None else None) for row in head_list]
 
-                self.head_ts_for_plot = self.list_of_list_to_recarray(normalized_head)
+                    self.head_ts_for_plot = self.list_of_list_to_recarray(normalized_head)
+                else:
+                    utils.MessagebarAndLog.warning(bar_msg=u'No calibrated level_masl values to normalize against.')
+                    self.head_ts_for_plot = self.head_ts
             else:
                 self.head_ts_for_plot = self.head_ts
         else:
