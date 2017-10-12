@@ -112,6 +112,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         files = utils.select_files(only_one_file=False, extension="csv (*.csv)")
         return files
 
+    @import_data_to_db.import_exception_handler
     def start_import(self, files, skip_rows_without_water_level, confirm_names, import_all_data, from_date=None, to_date=None):
         """
         """
@@ -159,7 +160,6 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return False
 
-
         filenames_obsid = dict([(x[0], x[2]) for x in filename_location_obsid[1:]])
 
         parsed_files_with_obsid = []
@@ -183,11 +183,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             return True
 
         importer = import_data_to_db.midv_data_importer()
-        answer = importer.send_file_data_to_importer(file_to_import_to_db, partial(importer.general_csv_import, goal_table=u'w_levels_logger'))
-        if isinstance(answer, Cancel):
-            self.status = 'True'
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            return answer
+        answer = importer.general_import(u'w_levels_logger', file_to_import_to_db)
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         importer.SanityCheckVacuumDB()

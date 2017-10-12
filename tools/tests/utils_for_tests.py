@@ -31,6 +31,7 @@ from midvatten.midvatten import midvatten
 from tools.tests.mocks_for_tests import DummyInterface
 import db_utils
 from import_data_to_db import midv_data_importer
+from mocks_for_tests import DummyInterface2
 
 
 class test_qapplication_is_running():
@@ -126,7 +127,9 @@ class MidvattenTestSpatialiteNotCreated(object):
     @mock.patch('midvatten_utils.QgsProject.instance', mock_instance_settings_database)
     def setUp(self):
 
-        self.iface = mock.MagicMock()
+        #self.iface = mock.MagicMock()
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
         self.midvatten = midvatten(self.iface)
         try:
             os.remove(self.TEMP_DBPATH)
@@ -180,7 +183,9 @@ class MidvattenTestPostgisNotCreated(object):
     @mock.patch('db_utils.get_postgis_connections', mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_instance_settings_database)
     def setUp(self):
-        self.iface = mock.MagicMock()
+        #self.iface = mock.MagicMock()
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
         self.midvatten = midvatten(self.iface)
 
         #Clear the database

@@ -37,6 +37,7 @@ from definitions import midvatten_defs as defs
 from midvatten_utils import returnunicode as ru, Cancel
 from gui_utils import RowEntry, VRowEntry, get_line, RowEntryGrid, set_combobox
 import date_utils
+import db_utils
 
 
 
@@ -58,7 +59,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.status = True
 
     def load_gui(self):
-        self.tables_columns = {k: v for (k, v) in defs.tables_columns().iteritems() if not k.endswith(u'_geom')}
+        self.tables_columns = {k: v for (k, v) in db_utils.tables_columns().iteritems() if not k.endswith(u'_geom')}
         self.table_chooser = ImportTableChooser(self.tables_columns, self.connect, file_header=None)
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.main_vertical_layout.addStretch()
@@ -125,7 +126,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             return delimiter
         self.file_data = self.file_to_list(filename, charset, delimiter)
 
-        header_question = utils.askuser(question=u"YesNo", msg=ru(QCoreApplication.translate(u'GeneralCsvImportGui', u"""Does the file contain a header?""")))
+        header_question = utils.Askuser(question=u"YesNo", msg=ru(QCoreApplication.translate(u'GeneralCsvImportGui', u"""Does the file contain a header?""")))
         if header_question.result:
             # Remove duplicate header entries
             header = self.file_data[0]
@@ -176,6 +177,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.table_chooser.file_header = file_data[0]
 
     @utils.waiting_cursor
+    @import_data_to_db.import_exception_handler
     def start_import(self):
         if self.file_data is None:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Error, must select a file first!')))
@@ -247,8 +249,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         file_data = self.reformat_date_time(file_data)
 
         importer = import_data_to_db.midv_data_importer()
-        importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import,
-                                                               goal_table=goal_table))
+
+        answer = importer.general_import(goal_table=goal_table, file_data=file_data)
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         importer.SanityCheckVacuumDB()
@@ -568,9 +570,8 @@ class DistinctValuesBrowser(VRowEntry):
     def get_distinct_values(tablename, columnname):
         if not tablename or not columnname:
             return []
-        sql = '''SELECT distinct "%s" from "%s"''' % (
-        columnname, tablename)
-        connection_ok, result = utils.sql_load_fr_db(sql)
+        sql = '''SELECT DISTINCT %s FROM %s''' % (columnname, tablename)
+        connection_ok, result = db_utils.sql_load_fr_db(sql)
 
         if not connection_ok:
             utils.MessagebarAndLog.critical(
