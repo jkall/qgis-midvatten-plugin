@@ -478,6 +478,21 @@ class TestWlevelsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         reference_string = ur'''(True, [(obsid1, 2011-10-19 12:30:00, 2.0, None, None, testcomment)])'''
         assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    def _test_w_level_import_from_csvlayer_missing_columns(self):
+        db_utils.sql_alter_db(u"""INSERT INTO obs_points (obsid) VALUES ('obsid1')""")
+        #f = [[u'obsid', u'date_time', u'meas', u'comment'],
+        #     [u'obsid1', u'2011-10-19 12:30:00', u'2', u'testcomment']]
+        f = [[u'obsid', u'date_time', u'meas'],
+             [u'obsid1', u'2011-10-19 12:30:00', u'2']]
+
+        self.importinstance.general_import(goal_table=u'w_levels', file_data=f)
+
+        test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT * FROM w_levels'''))
+        reference_string = ur'''(True, [])'''
+        assert test_string == reference_string
+
 
 class TestSeismicImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)

@@ -47,7 +47,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.csvlayer = None
         self.foreign_keys_import_question = None
 
-    def general_import(self, goal_table=None, file_data=None, allow_obs_fk_import=False):
+    def general_import(self, goal_table, file_data, allow_obs_fk_import=False):
         """General method for importing an sqlite table into a goal_table
 
             self.temptableName must be the name of the table containing the new data to import.
@@ -62,8 +62,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
 
-            if goal_table is None:
-                raise MidvDataImporterError(ru(QCoreApplication.translate(u'midv_data_importer', u'No goal table given!')))
             self.temptable_name = goal_table + u'_temp'
 
             dbconnection = db_utils.DbConnectionManager()
@@ -90,6 +88,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             primary_keys_for_concat = [pk for pk in primary_keys if pk in existing_columns_in_temptable]
 
             self.list_to_table(dbconnection, file_data, primary_keys_for_concat)
+            print(str(dbconnection.execute_and_fetchall(u'select * from %s'%self.temptable_name)))
 
             #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
             nr_before = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
@@ -101,7 +100,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if nr_same_date > 0:
                 utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported. %s rows remain.'))%(str(nr_same_date), str(nr_after)))
             if not nr_after > 0:
-                raise MidvDataImporterError(u'Nothing imported!')
+                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Nothing imported to %s after deleting duplicate date_times'))%goal_table)
+                return
 
             #Special cases for some tables
             if goal_table == u'stratigraphy':
@@ -126,19 +126,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                             self.foreign_keys_import_question = 1
                     if self.foreign_keys_import_question == 1:
                         nr_before = nr_after
-                        self.import_foreign_keys(goal_table, foreign_keys, dbconnection, existing_columns_in_temptable)
+                        self.import_foreign_keys(dbconnection, goal_table, self.temptable_name, foreign_keys, existing_columns_in_temptable)
                         nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
                         nr_after_foreign_keys = nr_before - nr_after
                         utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'))%(str(nr_after_foreign_keys), str(nr_after)))
 
             if not nr_after > 0:
                 raise MidvDataImporterError(ru(QCoreApplication.translate(u'midv_data_importer', u'Nothing imported, see log message panel')))
-
-            #Special cases for some tables
-            if goal_table == u'stratigraphy':
-                self.check_and_delete_stratigraphy(existing_columns_in_temptable)
-            if goal_table in (u'obs_lines', u'obs_points'):
-                self.calculate_geometry(existing_columns_in_temptable, goal_table)
 
             #Finally import data:
             nr_failed_import = recsinfile - nr_after
@@ -162,6 +156,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 try:
                     dbconnection.execute(sql)
                 except Exception as e:
+                    print(sql)
                     utils.MessagebarAndLog.critical(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Sql\n%s  failed.\nMsg:\n%s')) % (sql, str(e)), duration=999)
                     raise
 
@@ -198,9 +193,12 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
         self.temptable_name = db_utils.create_temporary_table_for_import(dbconnection, self.temptable_name, fieldnames_types)
 
+        placeholder_sign = db_utils.placeholder_sign(dbconnection)
+
         concat_cols = [file_data[0].index(pk) for pk in primary_keys_for_concat]
         added_rows = set()
         numskipped = 0
+        sql = u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join(placeholder_sign * len(file_data[0])))
         for row in file_data[1:]:
             concatted = u'|'.join([row[idx] for idx in concat_cols])
             if concatted in added_rows:
@@ -209,10 +207,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             else:
                 added_rows.add(concatted)
 
-            if dbconnection.dbtype == u'spatialite':
-                dbconnection.cursor.execute(u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join(u'?' * len(row))), tuple(row))
-            else:
-                dbconnection.cursor.execute(u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join([u'%s' for x in xrange(len(row))])), tuple(row))
+            args = tuple([None if any([r is None, r.strip() == u'']) else r for r in row])
+            dbconnection.cursor.execute(sql, args)
+
         #TODO: Let's see what happens without commit
         #dbconnection.commit()
         if numskipped:
@@ -324,7 +321,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         filtered_file_data.reverse()
         return filtered_file_data
 
-    def import_foreign_key2(self, goal_table, foreign_keys, dbconnection, existing_columns_in_temptable, detailed_msg_list):
+    def import_foreign_keys(self, dbconnection, goal_table, temptablename, foreign_keys, existing_columns_in_temptable):
         #TODO: Empty foreign keys are probably imported now. Must add "case when...NULL" to a couple of sql questions here
 
         #What I want to do:
@@ -335,7 +332,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             from_list = [x[0] for x in from_to_fields]
             to_list = [x[1] for x in from_to_fields]
             if not all([_from in existing_columns_in_temptable for _from in from_list]):
-                detailed_msg_list.append(u'There were keys missing for importing to fk_table %s, so no import was done.'%fk_table)
+                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Import of foreign keys failed, see log message panel')), log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'There were keys missing for importing to fk_table %s, so no import was done.'))%fk_table)
                 continue
 
             nr_fk_before = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]
@@ -347,7 +344,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             sql = u'INSERT INTO %s (%s) SELECT DISTINCT %s FROM %s AS b WHERE %s NOT IN (SELECT %s FROM %s) AND %s'%(fk_table,
                                                                                                          u', '.join([u'"{}"'.format(k) for k in to_list]),
                                                                                                          u', '.join([u'''CAST("b"."%s" as "%s")'''%(k, column_headers_types[to_list[idx]]) for idx, k in enumerate(from_list)]),
-                                                                                                         self.temptablename,
+                                                                                                         temptablename,
                                                                                                          concatted_from_string,
                                                                                                          concatted_to_string,
                                                                                                          fk_table,
@@ -355,8 +352,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             dbconnection.execute(sql)
 
             nr_fk_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]
-            if nr_fk_after > 0:
-                detailed_msg_list.append(ru(QCoreApplication.translate(u'midv_data_importer', u'In total %s rows were imported to foreign key table %s while importing to %s.'))%(str(nr_fk_after - nr_fk_before), fk_table, goal_table))
+            if nr_fk_after > nr_fk_before:
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'In total %s rows were imported to foreign key table %s while importing to %s.'))%(str(nr_fk_after - nr_fk_before), fk_table, goal_table))
 
     def SanityCheckVacuumDB(self, dbconnection=None):
         if dbconnection is None:

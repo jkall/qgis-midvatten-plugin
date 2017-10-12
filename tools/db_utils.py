@@ -98,13 +98,26 @@ class DbConnectionManager(object):
         if self.cursor:
             return True
 
-    def execute(self, sql):
+    def execute(self, sql, all_args=None):
+        """
+
+        :param sql:
+        :param all_args: A list of lists of equal lenght to sql (if sql is a list) containing arguments for ? in the
+        corresponding sql.
+        :return:
+        """
         if isinstance(sql, basestring):
             sql = [sql]
         elif not isinstance(sql, (list, tuple)):
             raise TypeError(utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u'DbConnectionManager.execute: sql must be type string or a list/tuple of strings. Was %s'))%utils.returnunicode(type(sql)))
-        for line in sql:
-            self.cursor.execute(line)
+        for idx, line in enumerate(sql):
+            if all_args is None:
+                self.cursor.execute(line)
+            elif isinstance(all_args, (list, tuple)):
+                args = all_args[idx]
+                self.cursor.execute(line, args)
+            else:
+                raise TypeError(utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u'DbConnectionManager.execute: all_args must be a list/tuple. Was %s')) % utils.returnunicode(type(all_args)))
 
     def execute_and_fetchall(self, sql):
         self.cursor.execute(sql)
@@ -481,3 +494,9 @@ def create_temporary_table_for_import(dbconnection, temptable_name, fieldnames_t
 class DatabaseLockedError(Exception):
     pass
 
+
+def placeholder_sign(dbconnection):
+    if dbconnection.dbtype == u'spatialite':
+        return u'?'
+    else:
+        return u'%s'

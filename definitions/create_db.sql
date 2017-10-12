@@ -15,7 +15,7 @@ tablename text --Name of a table in the db
 INSERT INTO about_db VALUES('*', '*', '', '', '', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION, running QGIS version CHANGETOQGISVERSION on top of SpatiaLite version CHANGETOSPLITEVERSION', '', '');
 INSERT INTO about_db VALUES('*', '*', '', '', '', '', '', 'locale:CHANGETOLOCALE', '', '');
 CREATE TABLE zz_staff /*Data domain for field staff used when importing data*/(
-staff text --Initials of the field staff
+staff text NOT NULL--Initials of the field staff
 , name text --Name of the field staff
 , PRIMARY KEY(staff)
 );
