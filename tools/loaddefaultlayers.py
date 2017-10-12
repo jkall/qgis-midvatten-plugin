@@ -63,8 +63,7 @@ class LoadLayers():
         dbtype = dbconnection.dbtype
         schema = dbconnection.schemas()
         #For QgsVectorLayer, dbtype has to be postgres instead of postgis
-        if dbtype == u'postgis':
-            dbtype = u'postgres'
+        dbtype = db_utils.get_dbtype(dbtype)
 
         canvas = self.iface.mapCanvas()
         layer_list = []

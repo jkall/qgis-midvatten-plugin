@@ -500,3 +500,15 @@ def placeholder_sign(dbconnection):
         return u'?'
     else:
         return u'%s'
+
+
+def get_dbtype(dbtype):
+    """
+    For QgsVectorLayer, dbtype has to be postgres instead of postgis
+    :param dbtype:
+    :return:
+    """
+    if dbtype == u'postgis':
+        return u'postgres'
+    else:
+        return dbtype
