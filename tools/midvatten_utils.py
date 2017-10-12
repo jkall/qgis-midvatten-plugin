@@ -33,15 +33,15 @@ import os
 import qgis.utils
 import tempfile
 import time
-import matplotlib.pyplot as plt
 from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
 from contextlib import contextmanager
+from functools import wraps
 from operator import itemgetter
 from qgis.core import *
 from qgis.gui import *
+
 from PyQt4.QtCore import QCoreApplication
-from functools import wraps
 
 try:
     import pandas as pd
@@ -1438,3 +1438,7 @@ def fn_timer(function):
 
         return result
     return function_timer
+
+
+class UserInterruptError(Exception):
+    pass

@@ -19,24 +19,25 @@
  *                                                                         *
  ***************************************************************************/
 """
+import PyQt4
+import sys
 from operator import itemgetter
 
-import PyQt4
 import PyQt4.QtCore
 import PyQt4.QtGui
 from PyQt4.QtCore import QCoreApplication
 
 import db_utils
 import midvatten_utils as utils
-from midvatten_utils import Cancel, returnunicode as ru
 from date_utils import datestring_to_date
+from midvatten_utils import returnunicode as ru
+from midvatten_utils import UserInterruptError
 
 
 class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
 
     def __init__(self):
         self.columns = 0
-        self.status= 'False'
         self.recsbefore = 0
         self.recsafter = 0
         self.recstoimport = 0
@@ -54,154 +55,137 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         :param goal_table:
         :return:
         """
-        if file_data is None or not file_data:
-            self.status = 'True'
-            return
-        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'\nImport to %s starting\n--------------------'))%goal_table)
-
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-        self.status = 'False' #True if upload to sqlite and cleaning of data succeeds
-        self.temptable_name = goal_table + u'_temp'
-        if goal_table is None:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Import error: No goal table given!')))
-            self.status = 'False'
-            return
-        dbconnection = db_utils.DbConnectionManager()
-        db_utils.activate_foreign_keys(activated=True, dbconnection=dbconnection)
-
-        recsinfile = len(file_data[1:])
-        table_info = db_utils.db_tables_columns_info(table=goal_table, dbconnection=dbconnection)
-        if not table_info:
-            utils.MessagebarAndLog.critical(
-                bar_msg=self.import_error_msg(),
-                log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'The table %s did not exist. Update the database to latest version.' ))% goal_table)
-            self.status = 'False'
-            return
-        else:
-            table_info = table_info[goal_table]
-        #POINT and LINESTRING must be cast as BLOB. So change the type to BLOB.
-        column_headers_types = db_utils.change_cast_type_for_geometry_columns(dbconnection, table_info, goal_table)
-        primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
-        not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
-        #Only use the columns that exists in the goal table.
-        existing_columns_in_goal_table = [col for col in file_data[0] if col in column_headers_types]
-        existing_columns_in_temptable = file_data[0]
-        missing_columns = [column for column in not_null_columns if column not in existing_columns_in_goal_table]
-
-        if missing_columns:
-            utils.MessagebarAndLog.critical(bar_msg=self.import_error_msg(), log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Required columns %s are missing for table %s'))%(u', '.join(missing_columns), goal_table), duration=999)
-            self.status = False
-            return
-
-        primary_keys_for_concat = [pk for pk in primary_keys if pk in existing_columns_in_temptable]
-
-        self.list_to_table(dbconnection, file_data, primary_keys_for_concat)
-
-        #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
-        nr_before = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
-        if u'date_time' in primary_keys:
-            self.delete_existing_date_times_from_temptable(primary_keys, goal_table, dbconnection)
-        nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
-
-        nr_same_date = nr_after - nr_before
-        if nr_same_date > 0:
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported. %s rows remain.'))%(str(nr_same_date), str(nr_after)))
-        if not nr_after > 0:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Nothing imported, see log message panel')))
-            self.status = 'False'
-            return
-
-        #Special cases for some tables
-        if goal_table == u'stratigraphy':
-            self.check_and_delete_stratigraphy(existing_columns_in_goal_table, dbconnection)
-        if goal_table in (u'obs_lines', u'obs_points'):
-            self.calculate_geometry(existing_columns_in_goal_table, goal_table, dbconnection)
-
-        if self.status == 'False':
-            return
-
-        # Import foreign keys in some special cases
-        foreign_keys = db_utils.get_foreign_keys(goal_table, dbconnection=dbconnection)
-        if foreign_keys:
-            if not allow_obs_fk_import:
-                for table in [u'obs_points', u'obs_lines']:
-                    if table in foreign_keys:
-                        del foreign_keys[table]
-
-            if foreign_keys:
-                if self.foreign_keys_import_question is None:
-                    stop_question = utils.Askuser(u"YesNo", ru(QCoreApplication.translate(u'midv_data_importer', u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""")) % (u', '.join(foreign_keys.keys())), ru(QCoreApplication.translate(u'midv_data_importer', u"Info!")))
-                    if stop_question.result == 0:      # if the user wants to abort
-                        self.status = 'False'
-                        PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                        dbconnection.closedb()
-                        return Cancel()   # return simply to stop this function
-                    else:
-                        self.foreign_keys_import_question = 1
-                if self.foreign_keys_import_question == 1:
-                    nr_before = nr_after
-                    self.import_foreign_keys(goal_table, foreign_keys, dbconnection, existing_columns_in_temptable)
-                    nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
-                    nr_after_foreign_keys = nr_before - nr_after
-                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'))%(str(nr_after_foreign_keys), str(nr_after)))
-
-        if not nr_after > 0:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Nothing imported, see log message panel')))
-            self.status = 'False'
-            return
-
-        #Special cases for some tables
-        if goal_table == u'stratigraphy':
-            self.check_and_delete_stratigraphy(existing_columns_in_temptable)
-        if goal_table in (u'obs_lines', u'obs_points'):
-            self.calculate_geometry(existing_columns_in_temptable, goal_table)
-        if self.status == 'False':
-            self.drop_temptable()
-            return
-
-        #Finally import data:
-        nr_failed_import = recsinfile - nr_after
-        if nr_failed_import > 0:
-            stop_question = utils.Askuser(u"YesNo", ru(QCoreApplication.translate(u'midv_data_importer', u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?""" ))% (str(nr_failed_import)), ru(QCoreApplication.translate(u'midv_data_importer', u"Warning!")))
-            if stop_question.result == 0:      # if the user wants to abort
-                self.status = 'False'
-                PyQt4.QtGui.QApplication.restoreOverrideCursor()
-                return Cancel()   # return simply to stop this function
-
-        sql = u"""INSERT INTO %s ("""%goal_table
-        sql += u', '.join(sorted(existing_columns_in_goal_table))
-        sql += u""") SELECT """
-        sql += u', '.join([u"""(CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE NULL END)"""%(colname, colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns_in_goal_table)])
-        sql += u"""FROM %s""" % (self.temptable_name)
-
-        recsbefore = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
         try:
-            dbconnection.execute(sql)
-        except Exception, e:
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:\n')) % goal_table + str(e))
-            sql = db_utils.add_insert_or_ignore_to_sql(sql, dbconnection)
+            if file_data is None or not file_data:
+                return
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'\nImport to %s starting\n--------------------'))%goal_table)
+
+            PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+
+            if goal_table is None:
+                raise MidvDataImporterError(ru(QCoreApplication.translate(u'midv_data_importer', u'No goal table given!')))
+            self.temptable_name = goal_table + u'_temp'
+
+            dbconnection = db_utils.DbConnectionManager()
+            db_utils.activate_foreign_keys(activated=True, dbconnection=dbconnection)
+
+            recsinfile = len(file_data[1:])
+            table_info = db_utils.db_tables_columns_info(table=goal_table, dbconnection=dbconnection)
+            if not table_info:
+                raise MidvDataImporterError(ru(QCoreApplication.translate(u'midv_data_importer', u'The table %s did not exist. Update the database to latest version.')) % goal_table)
+            else:
+                table_info = table_info[goal_table]
+            #POINT and LINESTRING must be cast as BLOB. So change the type to BLOB.
+            column_headers_types = db_utils.change_cast_type_for_geometry_columns(dbconnection, table_info, goal_table)
+            primary_keys = [row[1] for row in table_info if int(row[5])]        #Not null columns are allowed if they have a default value.
+            not_null_columns = [row[1] for row in table_info if int(row[3]) and row[4] is None]
+            #Only use the columns that exists in the goal table.
+            existing_columns_in_goal_table = [col for col in file_data[0] if col in column_headers_types]
+            existing_columns_in_temptable = file_data[0]
+            missing_columns = [column for column in not_null_columns if column not in existing_columns_in_goal_table]
+
+            if missing_columns:
+                raise MidvDataImporterError(ru(QCoreApplication.translate(u'midv_data_importer', u'Required columns %s are missing for table %s')) % (u', '.join(missing_columns), goal_table))
+
+            primary_keys_for_concat = [pk for pk in primary_keys if pk in existing_columns_in_temptable]
+
+            self.list_to_table(dbconnection, file_data, primary_keys_for_concat)
+
+            #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
+            nr_before = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
+            if u'date_time' in primary_keys:
+                self.delete_existing_date_times_from_temptable(primary_keys, goal_table, dbconnection)
+            nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
+
+            nr_same_date = nr_after - nr_before
+            if nr_same_date > 0:
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'In total "%s" rows with the same date \non format yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already existed and will not be imported. %s rows remain.'))%(str(nr_same_date), str(nr_after)))
+            if not nr_after > 0:
+                raise MidvDataImporterError(u'Nothing imported!')
+
+            #Special cases for some tables
+            if goal_table == u'stratigraphy':
+                self.check_and_delete_stratigraphy(existing_columns_in_goal_table, dbconnection)
+            if goal_table in (u'obs_lines', u'obs_points'):
+                self.calculate_geometry(existing_columns_in_goal_table, goal_table, dbconnection)
+
+            # Import foreign keys in some special cases
+            foreign_keys = db_utils.get_foreign_keys(goal_table, dbconnection=dbconnection)
+            if foreign_keys:
+                if not allow_obs_fk_import:
+                    for table in [u'obs_points', u'obs_lines']:
+                        if table in foreign_keys:
+                            del foreign_keys[table]
+
+                if foreign_keys:
+                    if self.foreign_keys_import_question is None:
+                        stop_question = utils.Askuser(u"YesNo", ru(QCoreApplication.translate(u'midv_data_importer', u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""")) % (u', '.join(foreign_keys.keys())), ru(QCoreApplication.translate(u'midv_data_importer', u"Info!")))
+                        if stop_question.result == 0:      # if the user wants to abort
+                            raise UserInterruptError()
+                        else:
+                            self.foreign_keys_import_question = 1
+                    if self.foreign_keys_import_question == 1:
+                        nr_before = nr_after
+                        self.import_foreign_keys(goal_table, foreign_keys, dbconnection, existing_columns_in_temptable)
+                        nr_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
+                        nr_after_foreign_keys = nr_before - nr_after
+                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'In total "%s" rows were deleted due to foreign keys restrictions and "%s" rows remain.'))%(str(nr_after_foreign_keys), str(nr_after)))
+
+            if not nr_after > 0:
+                raise MidvDataImporterError(ru(QCoreApplication.translate(u'midv_data_importer', u'Nothing imported, see log message panel')))
+
+            #Special cases for some tables
+            if goal_table == u'stratigraphy':
+                self.check_and_delete_stratigraphy(existing_columns_in_temptable)
+            if goal_table in (u'obs_lines', u'obs_points'):
+                self.calculate_geometry(existing_columns_in_temptable, goal_table)
+
+            #Finally import data:
+            nr_failed_import = recsinfile - nr_after
+            if nr_failed_import > 0:
+                stop_question = utils.Askuser(u"YesNo", ru(QCoreApplication.translate(u'midv_data_importer', u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?""" ))% (str(nr_failed_import)), ru(QCoreApplication.translate(u'midv_data_importer', u"Warning!")))
+                if stop_question.result == 0:      # if the user wants to abort
+                    raise UserInterruptError()
+
+            sql = u"""INSERT INTO %s ("""%goal_table
+            sql += u', '.join(sorted(existing_columns_in_goal_table))
+            sql += u""") SELECT """
+            sql += u', '.join([u"""(CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE NULL END)"""%(colname, colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns_in_goal_table)])
+            sql += u"""FROM %s""" % (self.temptable_name)
+
+            recsbefore = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
             try:
                 dbconnection.execute(sql)
             except Exception, e:
-                utils.MessagebarAndLog.critical(
-                    bar_msg=self.import_error_msg(),
-                    log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Sql\n%s  failed.\nMsg:\n%s')) % (sql, str(e)),
-                    duration=999)
-            self.status = 'False'
-            return
-        recsafter = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:\n')) % goal_table + str(e))
+                sql = db_utils.add_insert_or_ignore_to_sql(sql, dbconnection)
+                try:
+                    dbconnection.execute(sql)
+                except Exception as e:
+                    utils.MessagebarAndLog.critical(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Sql\n%s  failed.\nMsg:\n%s')) % (sql, str(e)), duration=999)
+                    raise
 
-        nr_imported = recsafter - recsbefore
-        nr_excluded = recsinfile - nr_imported
+            recsafter = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
 
-        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'%s rows imported and %s excluded for table %s. See log message panel for details'))%(nr_imported, nr_excluded, goal_table))
-        utils.MessagebarAndLog.info(log_msg=u'--------------------')
-        self.status = 'True'
-        dbconnection.commit_and_closedb()
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            nr_imported = recsafter - recsbefore
+            nr_excluded = recsinfile - nr_imported
+
+            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'%s rows imported and %s excluded for table %s. See log message panel for details'))%(nr_imported, nr_excluded, goal_table))
+            utils.MessagebarAndLog.info(log_msg=u'--------------------')
+            dbconnection.commit_and_closedb()
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        except:
+            exc_info = sys.exc_info()
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            try:
+                dbconnection.closedb()
+            except NameError():
+                pass
+            except:
+                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Closing database failed!')))
+            raise exc_info[0], exc_info[1], exc_info[2]
 
     def list_to_table(self, dbconnection, file_data, primary_keys_for_concat):
-        self.status = 'False'
         #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
         existing_names = db_utils.tables_columns(dbconnection=dbconnection).keys()
         while self.temptable_name in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
@@ -209,14 +193,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if reponse == PyQt4.QtGui.QMessageBox.Yes:
                 self.temptable_name = '%s_2' % self.temptable_name
             else:
-                return None
+                raise UserInterruptError()
         fieldnames_types = [u'{} TEXT'.format(field_name) for field_name in file_data[0]]
-        if dbconnection.dbtype == u'spatialite':
-            self.temptable_name = u'mem.' + self.temptable_name
-            dbconnection.execute(u"""ATTACH DATABASE ':memory:' AS mem""")
-            dbconnection.execute(u"""CREATE table %s (%s)""" % (self.temptable_name, u', '.join(fieldnames_types)))
-        else:
-            dbconnection.execute(u"""CREATE TEMPORARY table %s (%s)"""%(self.temptable_name, u', '.join(fieldnames_types)))
+
+        self.temptable_name = db_utils.create_temporary_table_for_import(dbconnection, self.temptable_name, fieldnames_types)
 
         concat_cols = [file_data[0].index(pk) for pk in primary_keys_for_concat]
         added_rows = set()
@@ -233,9 +213,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 dbconnection.cursor.execute(u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join(u'?' * len(row))), tuple(row))
             else:
                 dbconnection.cursor.execute(u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join([u'%s' for x in xrange(len(row))])), tuple(row))
-        dbconnection.commit()
+        #TODO: Let's see what happens without commit
+        #dbconnection.commit()
         if numskipped:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Import warning')), log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u"%s nr of duplicate rows in file was skipped while importing."))%str(numskipped))
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Import warning, duplicates skipped')), log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u"%s nr of duplicate rows in file was skipped while importing."))%str(numskipped))
 
     def delete_existing_date_times_from_temptable(self, primary_keys, goal_table, dbconnection):
         """
@@ -279,7 +260,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
     def calculate_geometry(self, existing_columns, table_name, dbconnection):
         # Calculate the geometry
         # THIS IS DUE TO WKT-import of geometries below
-        srid = dbconnection.execute_and_fetchall(u"""SELECT srid FROM geometry_columns where f_table_name = '%s'""" % table_name)[0][0]
+        srid = dbconnection.execute_and_fetchall(u"""SELECT srid FROM geometry_columns WHERE f_table_name = '%s'""" % table_name)[0][0]
         if u'WKT' in existing_columns:
             geocol = u'WKT'
         elif u'geometry' in existing_columns:
@@ -287,7 +268,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         else:
             return None
 
-        sql = u"""update %s set geometry = ST_GeomFromText(%s, %s)"""%(self.temptable_name, geocol, srid)
+        sql = u"""UPDATE %s SET geometry = ST_GeomFromText(%s, %s)"""%(self.temptable_name, geocol, srid)
         dbconnection.execute(sql)
 
     def check_and_delete_stratigraphy(self, existing_columns, dbconnection):
@@ -299,9 +280,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 try:
                     strats = [[float(x) for x in y] for y in stratid_depthbot_depthtop]
                 except ValueError as e:
-                    utils.MessagebarAndLog.critical(bar_msg=self.import_error_msg(), log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'ValueError: %s. Obsid "%s", stratid: "%s", depthbot: "%s", depthtop: "%s"'))%(str(e), obsid, stratid_depthbot_depthtop[0], stratid_depthbot_depthtop[1], stratid_depthbot_depthtop[2]))
-                    self.status = 'False'
-                    return
+                    raise MidvDataImporterError(ru(QCoreApplication.translate(u'midv_data_importer', u'ValueError: %s. Obsid "%s", stratid: "%s", depthbot: "%s", depthtop: "%s"')) % (str(e), obsid, stratid_depthbot_depthtop[0], stratid_depthbot_depthtop[1], stratid_depthbot_depthtop[2]))
                 sorted_strats = sorted(strats, key=itemgetter(0))
                 stratid_idx = 0
                 depthtop_idx = 1
@@ -392,9 +371,19 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         return ru(QCoreApplication.translate(u'midv_data_importer', u'Import error, see log message panel'))
 
 
+class MidvDataImporterError(Exception):
+    pass
 
 
-
-
-
-
+def import_exception_handler(func):
+    def new_func(*args, **kwargs):
+        try:
+            result = func(*args, **kwargs)
+        except UserInterruptError:
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        except MidvDataImporterError as e:
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Import error, see log message panel')),
+                                            log_msg=str(e))
+        else:
+            return result
+    return new_func

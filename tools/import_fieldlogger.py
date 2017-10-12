@@ -440,6 +440,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         ms.save_settings()
         utils.MessagebarAndLog.info(log_msg=u'Settings ' + settings_string + u' stored for key ' + settingskey)
 
+    @import_data_to_db.import_exception_handler
     def start_import(self, observations):
         """
 
@@ -492,10 +493,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 if isinstance(file_data, Cancel):
                     return file_data
 
-                answer = importer.general_import(file_data=file_data, goal_table=import_method)
-                if isinstance(answer, Cancel):
-                    self.status = True
-                    return answer
+                importer.general_import(file_data=file_data, goal_table=import_method)
 
         importer.SanityCheckVacuumDB()
 

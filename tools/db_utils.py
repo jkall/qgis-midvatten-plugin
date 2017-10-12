@@ -468,5 +468,16 @@ def add_insert_or_ignore_to_sql(sql, dbconnection):
         sql = sql + u' ON CONFLICT DO NOTHING'
     return sql
 
+def create_temporary_table_for_import(dbconnection, temptable_name, fieldnames_types):
+    if dbconnection.dbtype == u'spatialite':
+        temptable_name = u'mem.' + temptable_name
+        dbconnection.execute(u"""ATTACH DATABASE ':memory:' AS mem""")
+        dbconnection.execute(u"""CREATE table %s (%s)""" % (temptable_name, u', '.join(fieldnames_types)))
+    else:
+        dbconnection.execute(u"""CREATE TEMPORARY table %s (%s)""" % (temptable_name, u', '.join(fieldnames_types)))
+    return temptable_name
+
+
 class DatabaseLockedError(Exception):
     pass
+

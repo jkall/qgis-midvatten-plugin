@@ -31,13 +31,16 @@ from nose.plugins.attrib import attr
 import utils_for_tests
 
 
-@attr(status='on')
+
 class TestGeneralImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
+
+    @attr(status='on')
+    @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
-    def test_general_import_wlvllogg(self):
+    def test_general_import_wlvllogg(self, mock_messagebar):
         file = [(u'obsid',u'date_time',u'head_cm'),
                 (u'rb1',u'2016-03-15 10:30:00',u'1')]
 
@@ -48,13 +51,16 @@ class TestGeneralImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstanc
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
         reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, None)])'''
+        print(str(mock_messagebar.mock_calls))
         print(test_string)
         assert test_string == reference_string
 
+
+    @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     @mock.patch('qgis.utils.iface', autospec=True)
-    def test_general_import_wlvllogg_missing_not_null_column(self, mock_iface):
+    def test_general_import_wlvllogg_missing_not_null_column(self, mock_iface, mock_messagebar):
         file = [(u'obsids',u'date_time',u'test'),
                 (u'rb1',u'2016-03-15 10:30:00',u'1')]
 
