@@ -74,7 +74,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
                     @mock.patch('import_data_to_db.utils.NotFoundQuestion')
                     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-                    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
