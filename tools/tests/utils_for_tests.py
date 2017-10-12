@@ -167,7 +167,7 @@ class MidvattenTestSpatialiteDbSvImportInstance(MidvattenTestSpatialiteDbSv):
 
 class MidvattenTestPostgisNotCreated(object):
     mock_postgis_connections = mock.MagicMock()
-    mock_postgis_connections.return_value.__getitem__.return_value = {u'estimatedMetadata': u'false', u'username': u'henrik3', u'publicOnly': u'false', u'service': u'', u'database': u'nosetests', u'dontResolveType': u'false', u'saveUsername': u'true', u'sslmode': u'1', u'host': u'127.0.0.1', u'authcfg': u'', u'geometryColumnsOnly': u'false', u'allowGeometrylessTables': u'false', u'password': u'0000', u'savePassword': u'false', u'port': u'5432'}
+    mock_postgis_connections.return_value = {u'nosetests': {u'estimatedMetadata': u'false', u'username': u'henrik3', u'publicOnly': u'false', u'service': u'', u'database': u'nosetests', u'dontResolveType': u'false', u'saveUsername': u'true', u'sslmode': u'1', u'host': u'127.0.0.1', u'authcfg': u'', u'geometryColumnsOnly': u'false', u'allowGeometrylessTables': u'false', u'password': u'0000', u'savePassword': u'false', u'port': u'5432'}}
 
     mock_instance_settings_database = mock.MagicMock()
     mock_instance_settings_database.return_value.readEntry.return_value = (u"{u'postgis': {u'connection': u'nosetests/127.0.0.1:5432/nosetests'}}", True)
@@ -225,3 +225,11 @@ class MidvattenTestPostgisDbSvImportInstance(MidvattenTestPostgisDbSv):
     def setUp(self):
         super(MidvattenTestPostgisDbSvImportInstance, self).setUp()
         self.importinstance = midv_data_importer()
+
+
+
+def foreign_key_test_from_exception(e, dbtype):
+    if dbtype == u'spatialite':
+        return str(e) == u'FOREIGN KEY constraint failed'
+    elif dbtype == u'postgis':
+        return u'is not present in table' in str(e)

@@ -88,7 +88,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             primary_keys_for_concat = [pk for pk in primary_keys if pk in existing_columns_in_temptable]
 
             self.list_to_table(dbconnection, file_data, primary_keys_for_concat)
-            print(str(dbconnection.execute_and_fetchall(u'select * from %s'%self.temptable_name)))
 
             #Delete records from self.temptable where yyyy-mm-dd hh:mm or yyyy-mm-dd hh:mm:ss already exist for the same date.
             nr_before = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % (self.temptable_name))[0][0]
@@ -146,6 +145,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             sql += u""") SELECT """
             sql += u', '.join([u"""(CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE NULL END)"""%(colname, colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns_in_goal_table)])
             sql += u"""FROM %s""" % (self.temptable_name)
+            if not_null_columns:
+                sql += u""" WHERE %s"""%u' AND '.join([u'%s IS NOT NULL'%notnullcol for notnullcol in sorted(not_null_columns)])
 
             recsbefore = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
             try:
@@ -156,7 +157,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 try:
                     dbconnection.execute(sql)
                 except Exception as e:
-                    print(sql)
                     utils.MessagebarAndLog.critical(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Sql\n%s  failed.\nMsg:\n%s')) % (sql, str(e)), duration=999)
                     raise
 
@@ -198,7 +198,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         concat_cols = [file_data[0].index(pk) for pk in primary_keys_for_concat]
         added_rows = set()
         numskipped = 0
-        sql = u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join(placeholder_sign * len(file_data[0])))
+        sql = u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join([placeholder_sign for x in xrange(len(file_data[0]))]))
         for row in file_data[1:]:
             concatted = u'|'.join([row[idx] for idx in concat_cols])
             if concatted in added_rows:
@@ -206,7 +206,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 continue
             else:
                 added_rows.add(concatted)
-
             args = tuple([None if any([r is None, r.strip() == u'']) else r for r in row])
             dbconnection.cursor.execute(sql, args)
 
