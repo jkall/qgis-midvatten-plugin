@@ -23,19 +23,18 @@
 #
 
 import os
-from collections import OrderedDict
 
 import midvatten_utils as utils
 import mock
 from date_utils import datestring_to_date
 from import_diveroffice import DiverofficeImport
-from midvatten.midvatten import midvatten
-from mock import MagicMock
+from nose.plugins.attrib import attr
 
 import utils_for_tests
-from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgisUtilsIface, MockQgsProjectInstance, \
-    DummyInterface2, mock_answer
+from mocks_for_tests import MockReturnUsingDictIn
 
+
+@attr(status='off')
 class TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
@@ -205,7 +204,7 @@ class TestParseDiverofficeFile(object):
         assert file_data == u'skip'
         assert len(mock_messagebarandlog.mock_calls) == 1
 
-
+@attr(status='off')
 class TestFilterDatesFromFiledata(object):
 
     def test_filter_dates_from_filedata(self):
