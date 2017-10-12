@@ -811,7 +811,7 @@ class calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         sql_list.append(r""" < '%s' """%to_d_t)
         sql = ''.join(sql_list)
 
-        really_delete = utils.askuser("YesNo", "Do you want to delete the period " +
+        really_delete = utils.Askuser("YesNo", "Do you want to delete the period " +
                                       str(self.FromDateTime.dateTime().toPyDateTime()) + " to " +
                                       str(self.ToDateTime.dateTime().toPyDateTime()) +
                                       " for obsid " + selected_obsid + " from table " + table_name + "?").result

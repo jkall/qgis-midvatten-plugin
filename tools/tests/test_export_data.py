@@ -308,7 +308,7 @@ class TestExport(unittest.TestCase):
     @mock.patch('midvatten_utils.QtGui.QInputDialog.getText')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
     @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')

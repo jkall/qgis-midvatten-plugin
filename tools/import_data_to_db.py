@@ -375,9 +375,8 @@ def import_exception_handler(func):
     def new_func(*args, **kwargs):
         try:
             result = func(*args, **kwargs)
-        except UserInterruptError:
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
         except MidvDataImporterError as e:
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Import error, see log message panel')),
                                             log_msg=str(e))
         else:

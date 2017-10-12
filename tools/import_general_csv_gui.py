@@ -34,7 +34,7 @@ from PyQt4.QtCore import QCoreApplication
 import import_data_to_db
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
-from midvatten_utils import returnunicode as ru, Cancel
+from midvatten_utils import returnunicode as ru
 from gui_utils import RowEntry, VRowEntry, get_line, RowEntryGrid, set_combobox
 import date_utils
 import db_utils
@@ -59,7 +59,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.status = True
 
     def load_gui(self):
-        self.tables_columns = {k: v for (k, v) in db_utils.tables_columns().iteritems() if not k.endswith(u'_geom')}
+        self.tables_columns = {k: v for (k, v) in db_utils.db_tables_columns_info().iteritems() if not k.endswith(u'_geom')}
         self.table_chooser = ImportTableChooser(self.tables_columns, self.connect, file_header=None)
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.main_vertical_layout.addStretch()
@@ -121,9 +121,6 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         filename = ru(filename)
 
         delimiter = utils.get_delimiter(filename=filename, charset=charset, delimiters=[u',', u';'])
-
-        if isinstance(delimiter, Cancel):
-            return delimiter
         self.file_data = self.file_to_list(filename, charset, delimiter)
 
         header_question = utils.Askuser(question=u"YesNo", msg=ru(QCoreApplication.translate(u'GeneralCsvImportGui', u"""Does the file contain a header?""")))
@@ -177,28 +174,25 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.table_chooser.file_header = file_data[0]
 
     @utils.waiting_cursor
+    @utils.general_exception_handler
     @import_data_to_db.import_exception_handler
     def start_import(self):
         if self.file_data is None:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Error, must select a file first!')))
-            return u'cancel'
+            raise utils.UsageError(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Error, must select a file first!')))
 
         translation_dict = self.table_chooser.get_translation_dict()
-        if isinstance(translation_dict, Cancel):
-            return u'cancel'
 
         file_data = copy.deepcopy(self.file_data)
 
         goal_table = self.table_chooser.import_method
 
-        foreign_keys = utils.get_foreign_keys(goal_table)
+        foreign_keys = db_utils.get_foreign_keys(goal_table)
 
         foreign_key_obsid_tables = [tname for tname, colnames in foreign_keys.iteritems() for colname in colnames if colname[0] == u'obsid']
         if len(foreign_key_obsid_tables) == 1:
             foreign_key_obsid_table = foreign_key_obsid_tables[0]
         else:
             foreign_key_obsid_table = goal_table
-
         for file_column in translation_dict.keys():
             alter_colnames = []
             new_value = None
@@ -214,7 +208,6 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
                 if translation_dict[file_column]:
                     alter_colnames = translation_dict[file_column]
                     new_value = file_column.value
-
             for alter_colname in alter_colnames:
                 if alter_colnames is not None and new_value is not None:
                     try:
@@ -236,22 +229,15 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         #Translate column names and add columns that appear more than once
         file_data = self.translate_and_reorder_file_data(file_data, translation_dict)
-
         file_data = self.convert_comma_to_points_for_double_columns(file_data, self.tables_columns[goal_table])
-
         file_data = self.remove_preceding_trailing_spaces_tabs(file_data)
-
         if foreign_key_obsid_table and foreign_key_obsid_table != goal_table and u'obsid' in file_data[0]:
             file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
-        if file_data == u'cancel':
-            return file_data
 
         file_data = self.reformat_date_time(file_data)
 
         importer = import_data_to_db.midv_data_importer()
-
         answer = importer.general_import(goal_table=goal_table, file_data=file_data)
-
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         importer.SanityCheckVacuumDB()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -328,7 +314,6 @@ class ImportTableChooser(VRowEntry):
         chooser = RowEntry()
 
         self.label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', 'Import to table')))
-
         self.__import_method = PyQt4.QtGui.QComboBox()
         self.__import_method.addItem(u'')
         self.__import_method.addItems(sorted(tables_columns.keys(), key=lambda s: s.lower()))
@@ -354,8 +339,6 @@ class ImportTableChooser(VRowEntry):
         translation_dict = {}
         for column_entry in self.columns:
             file_column_name = column_entry.file_column_name
-            if isinstance(file_column_name, Cancel):
-                return file_column_name
             if file_column_name:
                 column_list = translation_dict.get(file_column_name, [])
                 column_list = copy.deepcopy(column_list)
@@ -377,7 +360,6 @@ class ImportTableChooser(VRowEntry):
         tables_columns = self.tables_columns
         file_header = self.file_header
         import_method_name = self.import_method
-
         layer = utils.find_layer(import_method_name)
         if layer is not None:
             if layer.isEditable():
@@ -488,12 +470,10 @@ class ColumnEntry(object):
             selected = StaticValue(ru(self.combobox.currentText()))
 
         if self.notnull and not selected:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ColumnEntry', u'Import error, the column %s must have a value'))%self.db_column, duration=999)
-            return Cancel()
+            raise utils.UsageError(ru(QCoreApplication.translate(u'ColumnEntry', u'Import error, the column %s must have a value'))%self.db_column)
 
         if selected and not self.static_checkbox.isChecked() and selected not in self.file_header:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ColumnEntry', u'Import error, the chosen file column for the column %s did not exist in the file header.'))%self.db_column, duration=999)
-            return Cancel()
+            raise utils.UsageError(ru(QCoreApplication.translate(u'ColumnEntry', u'Import error, the chosen file column for the column %s did not exist in the file header.'))%self.db_column)
         else:
             return selected
 

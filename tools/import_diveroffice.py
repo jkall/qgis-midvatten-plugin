@@ -61,8 +61,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
     def select_files_and_load_gui(self):
         self.files = self.select_files()
         if not self.files:
-            self.status = 'True'
-            return u'cancel'
+            raise utils.UserInterruptError()
 
         self.date_time_filter = DateTimeFilter(calendar=True)
         self.add_row(self.date_time_filter.widget)
@@ -112,6 +111,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         files = utils.select_files(only_one_file=False, extension="csv (*.csv)")
         return files
 
+    @utils.general_exception_handler
     @import_data_to_db.import_exception_handler
     def start_import(self, files, skip_rows_without_water_level, confirm_names, import_all_data, from_date=None, to_date=None):
         """
@@ -151,11 +151,8 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         existing_obsids = utils.get_all_obsids()
         filename_location_obsid = utils.filter_nonexisting_values_and_ask(file_data=filename_location_obsid, header_value=u'obsid', existing_values=existing_obsids, try_capitalize=try_capitalize, always_ask_user=confirm_names)
-        if filename_location_obsid == u'cancel':
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            self.status = 'True'
-            return Cancel()
-        elif len(filename_location_obsid) < 2:
+
+        if len(filename_location_obsid) < 2:
             utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', u'Warning. All files were skipped, nothing imported!'))
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return False

@@ -974,7 +974,7 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
 
     The class NotFoundQuestion is used with 4 buttons; u'Ignore', u'Cancel', u'Ok', u'Skip'.
     Ignore = use the chosen value and move to the next obsid.
-    Cancel = Returns u'cancel' to the calling function.
+    Cancel = raises UserInterruptError
     Ok = Tries the currently submitted obsid against the existing once. If it doesn't exist, it asks again.
     Skip = None is used as obsid and the row is removed from the file_data
 
@@ -1071,7 +1071,7 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
         submitted_value = returnunicode(question.value)
         reuse_column = returnunicode(question.reuse_column)
         if answer == u'cancel':
-            return answer
+            raise UserInterruptError()
         elif answer == u'ok':
             current_value = submitted_value
         elif answer == u'skip':
@@ -1307,10 +1307,9 @@ class Cancel(object):
         pass
 
 
-def get_delimiter(filename=None, charset=u'utf-8', delimiters=None, num_fields=None):
+def get_delimiter(filename, charset=u'utf-8', delimiters=None, num_fields=None):
     if filename is None:
-        MessagebarAndLog.critical(QCoreApplication.translate(u'get_delimiter', u'Must give filename'))
-        return None
+        raise TypeError(QCoreApplication.translate(u'get_delimiter', u'Must give filename'))
     with io.open(filename, 'r', encoding=charset) as f:
         rows = f.readlines()
 
@@ -1339,8 +1338,6 @@ def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_field
         # No delimiter worked
         if not tested_delim:
             _delimiter = ask_for_delimiter(question=returnunicode(QCoreApplication.translate(u'get_delimiter_from_file_rows', u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):"))% filename)
-            if isinstance(_delimiter, Cancel):
-                return _delimiter
             delimiter = _delimiter[0]
         else:
             if delimiter is None:
@@ -1356,8 +1353,6 @@ def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_field
 
                 if lenght == 1 or len(more_than_one_delimiter) > 1:
                     _delimiter = ask_for_delimiter(question=returnunicode(QCoreApplication.translate(u'get_delimiter_from_file_rows', u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):")) % filename)
-                    if isinstance(_delimiter, Cancel):
-                        return _delimiter
                     delimiter = _delimiter[0]
     return delimiter
 
@@ -1369,7 +1364,8 @@ def ask_for_delimiter(header=QCoreApplication.translate(u'ask_for_delimiter', u'
                                                   PyQt4.QtGui.QLineEdit.Normal,
                                                   default)
     if not _delimiter[1]:
-        return Cancel()
+        MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate(u'ask_for_delimiter', u'Delimiter not given. Stopping.')))
+        raise UserInterruptError()
     else:
         delimiter = _delimiter[0]
     return delimiter
@@ -1442,3 +1438,20 @@ def fn_timer(function):
 
 class UserInterruptError(Exception):
     pass
+
+class UsageError(Exception):
+    pass
+
+
+def general_exception_handler(func):
+    def new_func(*args, **kwargs):
+        try:
+            result = func(*args, **kwargs)
+        except UserInterruptError:
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        except UsageError as e:
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'general_exception_handler', u'Usage error: %s'))%str(e))
+        else:
+            return result
+    return new_func

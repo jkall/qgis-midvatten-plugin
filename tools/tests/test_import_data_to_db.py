@@ -56,7 +56,7 @@ class TestGeneralCsvImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -96,7 +96,7 @@ class TestGeneralCsvImport(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -127,7 +127,7 @@ class TestGeneralCsvImport(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -158,7 +158,7 @@ class TestGeneralCsvImport(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -188,7 +188,7 @@ class TestGeneralCsvImport(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -218,7 +218,7 @@ class TestGeneralCsvImport(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -248,7 +248,7 @@ class TestGeneralCsvImport(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -278,7 +278,7 @@ class TestGeneralCsvImport(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -308,7 +308,7 @@ class TestGeneralCsvImport(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -338,7 +338,7 @@ class TestGeneralCsvImport(object):
                     utils_askuser_answer_no = MockUsingReturnValue(utils_askuser_answer_no_obj)
 
                     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-                    @mock.patch('import_data_to_db.utils.askuser')
+                    @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -369,7 +369,7 @@ class TestDbCalls(object):
     #mocked_qgsproject = MockQgsProject(mocked_qgsinstance)
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
     def setUp(self, mock_locale):
@@ -410,7 +410,7 @@ class TestImportObsPointsObsLines(object):
     #mocked_qgsproject = MockQgsProject(mocked_qgsinstance)
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger', CRS_question.get_v)
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName', dbpath_question.get_v)
     def setUp(self, mock_locale):
@@ -431,7 +431,7 @@ class TestImportObsPointsObsLines(object):
 
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+    @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def _test_import_obsids_directly(self):
         utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid1")')
         utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("obsid2")')
@@ -445,7 +445,7 @@ class TestImportObsPointsObsLines(object):
 
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+    @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def _test_import_obs_points(self):
 
         self.importinstance.charsetchoosen = [u'utf-8']
@@ -459,7 +459,7 @@ class TestImportObsPointsObsLines(object):
             @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
             @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.Askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
@@ -476,7 +476,7 @@ class TestImportObsPointsObsLines(object):
 
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+    @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def _test_import_obs_points_already_exist(self):
 
         utils.sql_alter_db(u'''insert into obs_points ("obsid") values ('rb1')''')
@@ -491,7 +491,7 @@ class TestImportObsPointsObsLines(object):
             @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
             @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.Askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
@@ -511,7 +511,7 @@ class TestImportObsPointsObsLines(object):
 
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+    @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def _test_import_obs_points_duplicates(self):
 
         self.importinstance.charsetchoosen = [u'utf-8']
@@ -527,7 +527,7 @@ class TestImportObsPointsObsLines(object):
             @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
             @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.Askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
@@ -545,7 +545,7 @@ class TestImportObsPointsObsLines(object):
 
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+    @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def _test_import_obs_points_no_east_north(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -558,7 +558,7 @@ class TestImportObsPointsObsLines(object):
             @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
             @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.Askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test_import_obs_points_using_obsp_import(self, mock_iface):
@@ -575,7 +575,7 @@ class TestImportObsPointsObsLines(object):
 
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+    @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def test_import_obs_points_geometry_as_wkt(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -588,7 +588,7 @@ class TestImportObsPointsObsLines(object):
             @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
             @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.Askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(self, mock_iface):
@@ -602,7 +602,7 @@ class TestImportObsPointsObsLines(object):
 
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('midvatten_utils.QgsProject.instance', mock_dbpath.get_v)
-    @mock.patch('import_data_to_db.utils.askuser', mock_askuser.get_v)
+    @mock.patch('import_data_to_db.utils.Askuser', mock_askuser.get_v)
     def test_import_obs_lines_geometry_as_wkt(self):
         self.importinstance.charsetchoosen = [u'utf-8']
 
@@ -615,7 +615,7 @@ class TestImportObsPointsObsLines(object):
             @mock.patch('PyQt4.QtGui.QInputDialog.getText', TestImportObsPointsObsLines.mock_encoding.get_v)
             @mock.patch('import_data_to_db.PyQt4.QtGui.QFileDialog.getOpenFileName', selected_file.get_v)
             @mock.patch('midvatten_utils.QgsProject.instance', TestImportObsPointsObsLines.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
+            @mock.patch('import_data_to_db.utils.Askuser', TestImportObsPointsObsLines.mock_askuser.get_v)
             @mock.patch('import_data_to_db.utils.pop_up_info', TestImportObsPointsObsLines.skip_popup.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             def _test(self, mock_iface):
@@ -641,7 +641,7 @@ class TestWquallabImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -680,7 +680,7 @@ class TestWquallabImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', TestWquallabImport.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -710,7 +710,7 @@ class TestWquallabImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', TestWquallabImport.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -741,7 +741,7 @@ class TestWquallabImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', TestWquallabImport.mock_dbpath.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -768,7 +768,7 @@ class TestWflowImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -805,7 +805,7 @@ class TestWflowImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -832,7 +832,7 @@ class TestWflowImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -859,7 +859,7 @@ class TestWflowImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -889,7 +889,7 @@ class TestWqualfieldImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -928,7 +928,7 @@ class TestWqualfieldImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -955,7 +955,7 @@ class TestWqualfieldImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -985,7 +985,7 @@ class TestWqualfieldImport(object):
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1021,7 +1021,7 @@ class TestWqualfieldImport(object):
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1058,7 +1058,7 @@ class TestWqualfieldImport(object):
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1097,7 +1097,7 @@ class TestWlevelsImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1134,7 +1134,7 @@ class TestWlevelsImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1163,7 +1163,7 @@ class TestWlevelsImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1194,7 +1194,7 @@ class TestWlevelsImportOldWlevels(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1235,7 +1235,7 @@ class TestWlevelsImportOldWlevels(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1264,7 +1264,7 @@ class TestWlevelsImportOldWlevels(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1291,7 +1291,7 @@ class TestSeismicImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1328,7 +1328,7 @@ class TestSeismicImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1355,7 +1355,7 @@ class TestCommentsImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1392,7 +1392,7 @@ class TestCommentsImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1419,7 +1419,7 @@ class TestStratImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1457,7 +1457,7 @@ class TestStratImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1494,7 +1494,7 @@ class TestStratImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1524,7 +1524,7 @@ class TestStratImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1554,7 +1554,7 @@ class TestStratImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1581,7 +1581,7 @@ class TestMeteoImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1617,7 +1617,7 @@ class TestMeteoImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1644,7 +1644,7 @@ class TestVlfImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1680,7 +1680,7 @@ class TestVlfImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1705,7 +1705,7 @@ class TestVlfImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1732,7 +1732,7 @@ class TestObsLinesImport(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1767,7 +1767,7 @@ class TestObsLinesImport(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1794,7 +1794,7 @@ class TestGetForeignKeys(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1822,7 +1822,7 @@ class TestGetForeignKeys(object):
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('import_data_to_db.utils.askuser')
+    @mock.patch('import_data_to_db.utils.Askuser')
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1849,7 +1849,7 @@ class TestDeleteExistingDateTimesFromTemptable(object):
     mock_encoding = MockUsingReturnValue([True, u'utf-8'])
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
@@ -1888,7 +1888,7 @@ class TestDeleteExistingDateTimesFromTemptable(object):
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
 
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1918,7 +1918,7 @@ class TestDeleteExistingDateTimesFromTemptable(object):
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -1953,7 +1953,7 @@ class TestDeleteExistingDateTimesFromTemptable(object):
 
         with utils.tempinput(u'\n'.join([u';'.join(_x) for _x in f])) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_data_to_db.utils.askuser')
+            @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('PyQt4.QtGui.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)

@@ -57,7 +57,7 @@ class TestPiperPlotDb(object):
     skip_popup = MockUsingReturnValue('')
 
     @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.QgsProject.instance')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
     @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')

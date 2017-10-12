@@ -849,7 +849,7 @@ class TestFieldLoggerImporterDb(object):
 
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-            @mock.patch('import_fieldlogger.utils.askuser')
+            @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
             @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
