@@ -27,7 +27,7 @@ from nose.plugins.attrib import attr
 import utils_for_tests
 
 
-@attr(status='off')
+@attr(status='on')
 class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -62,7 +62,7 @@ class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestPostgisDbSv):
         assert int(col_obsid[5]) == 1
 
 
-@attr(status='off')
+@attr(status='on')
 class TestTablesColumns(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -90,7 +90,7 @@ class TestTablesColumns(utils_for_tests.MidvattenTestPostgisDbSv):
             assert tablename not in tables_columns
 
 
-@attr(status='off')
+@attr(status='on')
 class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -111,7 +111,7 @@ class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference
 
 
-@attr(status='off')
+@attr(status='on')
 class TestVerifyTableExist(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)

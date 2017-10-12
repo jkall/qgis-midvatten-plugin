@@ -25,11 +25,13 @@ import db_utils
 import midvatten_utils as utils
 import mock
 import utils_for_tests
+import nose
 from mock import call
+from nose.plugins.attrib import attr
 from mocks_for_tests import MockUsingReturnValue
 from utils_for_tests import create_test_string
 
-
+@attr(status='on')
 class TestFilterNonexistingObsidsAndAsk(object):
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
@@ -51,9 +53,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
-            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
-            reference_list = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
-            assert filtered_file_data == u'cancel'
+            nose.tools.assert_raises(utils.UserInterruptError, utils.filter_nonexisting_values_and_ask, file_data, u'obsid', existing_obsids)
 
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
@@ -128,7 +128,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             #The mock should only be called twice. First for 1, then for 21, and then 1 again should use the already given answer.
             assert len(mock_notfound.mock_calls) == 2
 
-
+@attr(status='on')
 class TestTempinput(object):
     def test_tempinput(self):
         rows = u'543\n21'
@@ -138,7 +138,7 @@ class TestTempinput(object):
         reference_list = [u'543\n', u'21']
         assert res == reference_list
 
-
+@attr(status='on')
 class TestAskUser(object):
     PyQt4_QtGui_QInputDialog_getText = MockUsingReturnValue([u'-1 hours'])
     cancel = MockUsingReturnValue([u''])
@@ -153,24 +153,23 @@ class TestAskUser(object):
         question = utils.Askuser('DateShift')
         assert question.result == u'cancel'
 
-
+@attr(status='on')
 class TestGetFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
-    @mock.patch('midvatten_utils.QgsProject.instance')
-    def test_get_last_logger_dates(self, mocked_instance):
-        mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
-        db_utils.sql_alter_db('''insert into obs_points (obsid) values ('rb1')''')
-        db_utils.sql_alter_db('''insert into obs_points (obsid) values ('rb2')''')
-        db_utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2015-01-01 00:00')''')
-        db_utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2015-01-01 00:00:00')''')
-        db_utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2014-01-01 00:00:00')''')
-        db_utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2013-01-01 00:00:00')''')
-        db_utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2016-01-01 00:00')''')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_get_last_logger_dates(self):
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb1', '2015-01-01 00:00')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb1', '2015-01-01 00:00:00')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb1', '2014-01-01 00:00:00')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb2', '2013-01-01 00:00:00')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb2', '2016-01-01 00:00')''')
 
         test_string = create_test_string(utils.get_last_logger_dates())
         reference_string = u'''{rb1: [(2015-01-01 00:00:00)], rb2: [(2016-01-01 00:00)]}'''
         assert test_string == reference_string
 
-
+@attr(status='on')
 class TestSqlToParametersUnitsTuple(object):
     @mock.patch('db_utils.sql_load_fr_db', autospec=True)
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
@@ -180,21 +179,21 @@ class TestSqlToParametersUnitsTuple(object):
         reference_string = u'''((par1, (un1)), (par2, (un2)))'''
         assert test_string == reference_string
 
-
+@attr(status='on')
 class TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('midvatten_utils.QgsProject.instance')
-    def test_get_db_statistics(self, mocked_instance, mock_messagebar):
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_get_db_statistics(self, mock_messagebar):
         """
         Test that calculate_db_table_rows can be run without major error
         :param mock_iface:
         :return:
         """
-        mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
         utils.calculate_db_table_rows()
-        assert mock.call.info(bar_msg='Calculation done, see log for results.', button=True, duration=15, log_msg='Tablename                               Nr of rows\n    SpatialIndex                            0              \nabout_db                                147            \ncomments                                0              \ngeometry_columns                        2              \ngeometry_columns_auth                   2              \ngeometry_columns_field_infos            0              \ngeometry_columns_statistics             2              \ngeometry_columns_time                   2              \nmeteo                                   0              \nobs_lines                               0              \nobs_points                              0              \nseismic_data                            0              \nspatial_ref_sys                         2              \nspatialite_history                      14             \nsql_statements_log                      0              \nsqlite_sequence                         1              \nstratigraphy                            0              \nviews_geometry_columns                  8              \nviews_geometry_columns_auth             0              \nviews_geometry_columns_field_infos      0              \nviews_geometry_columns_statistics       0              \nvirts_geometry_columns                  0              \nvirts_geometry_columns_auth             0              \nvirts_geometry_columns_field_infos      0              \nvirts_geometry_columns_statistics       0              \nvlf_data                                0              \nw_flow                                  0              \nw_levels                                0              \nw_levels_logger                         0              \nw_qual_field                            0              \nw_qual_lab                              0              \nzz_capacity                             24             \nzz_capacity_plots                       24             \nzz_flowtype                             3              \nzz_meteoparam                           2              \nzz_staff                                0              \nzz_strat                                55             \nzz_stratigraphy_plots                   14             ') in mock_messagebar.mock_calls
 
+        assert len(str(mock_messagebar.mock_calls[0])) > 1500 and u'about_db' in str(mock_messagebar.mock_calls[0])
 
+@attr(status='on')
 class TestGetCurrentLocale(object):
     @mock.patch('locale.getdefaultlocale')
     @mock.patch('midvatten_utils.get_locale_from_db')
@@ -206,7 +205,7 @@ class TestGetCurrentLocale(object):
         reference_string = u'[a_lang, an_enc]'
         assert test_string == reference_string
         
-
+@attr(status='on')
 class TestGetDelimiter(object):
     def test_get_delimiter_only_one_column(self):
         file = [u'obsid',

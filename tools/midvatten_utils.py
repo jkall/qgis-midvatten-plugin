@@ -1212,19 +1212,10 @@ def get_locale_from_db():
 def calculate_db_table_rows():
     results = {}
 
-    sql = u"""SELECT name FROM sqlite_master WHERE type='table'"""
-    sql_result = db_utils.sql_load_fr_db(sql)
-    connection_ok, tablenames = sql_result
-
-    if not connection_ok:
-        MessagebarAndLog.warning(
-            bar_msg=sql_failed_msg(),
-            log_msg=returnunicode(QCoreApplication.translate(u'calculate_db_table_rows', u'Sql failed:\n%s'))%sql)
-        return None
+    tablenames = db_utils.tables_columns().keys()
 
     sql_failed = []
-    for tablename in tablenames:
-        tablename = tablename[0]
+    for tablename in sorted(tablenames):
         sql = u"""SELECT count(*) FROM %s""" % (tablename)
 
         sql_result = db_utils.sql_load_fr_db(sql)
