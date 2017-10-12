@@ -30,6 +30,7 @@ import mock
 from import_diveroffice import DiverofficeImport
 from mock import MagicMock
 from nose.plugins.attrib import attr
+import nose
 
 import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue
@@ -351,7 +352,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                 return answer
 
             answer = _test_wlvllogg_import_from_diveroffice_files(self, filenames)
-            assert isinstance(answer, utils.Cancel)
+
 
             test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
             reference_string = ur'''(True, [])'''
