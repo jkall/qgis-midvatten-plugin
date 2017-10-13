@@ -34,7 +34,7 @@ import utils_for_tests
 from mocks_for_tests import MockReturnUsingDictIn
 
 
-@attr(status='off')
+@attr(status='on')
 class TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
@@ -204,7 +204,7 @@ class TestParseDiverofficeFile(object):
         assert file_data == u'skip'
         assert len(mock_messagebarandlog.mock_calls) == 1
 
-@attr(status='off')
+@attr(status='on')
 class TestFilterDatesFromFiledata(object):
 
     def test_filter_dates_from_filedata(self):

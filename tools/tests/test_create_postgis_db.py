@@ -28,7 +28,7 @@ from nose.plugins.attrib import attr
 from definitions import midvatten_defs as defs
 
 
-@attr(status='off')
+@attr(status='on')
 class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface')
@@ -129,7 +129,7 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
 
 
 
-@attr(status='off')
+@attr(status='on')
 class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.MessagebarAndLog')

@@ -190,6 +190,8 @@ class MidvattenTestPostgisNotCreated(object):
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
         self.midvatten = midvatten(self.iface)
+        self.ms = mock.MagicMock()
+        self.ms.settingsdict = OrderedDict()
 
         #Clear the database
         try:

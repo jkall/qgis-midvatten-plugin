@@ -206,7 +206,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 continue
             else:
                 added_rows.add(concatted)
-            args = tuple([None if any([r is None, r.strip() == u'']) else r for r in row])
+            args = tuple([None if any([r is None, r.strip() == u'' if r is not None else None]) else r for r in row])
             dbconnection.cursor.execute(sql, args)
 
         #TODO: Let's see what happens without commit
@@ -347,7 +347,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                                          concatted_from_string,
                                                                                                          concatted_to_string,
                                                                                                          fk_table,
-                                                                                                         u' AND '.join([u''' b.{} IS NOT NULL and b.{} != '' and b.{} != ' ' '''.format(k, k, k) for k in from_list]))
+                                                                                                         u' AND '.join([u''' b.{} IS NOT NULL and b.{} != '' '''.format(k, k, k) for k in from_list]))
             dbconnection.execute(sql)
 
             nr_fk_after = dbconnection.execute_and_fetchall(u'''select count(*) from %s''' % fk_table)[0][0]

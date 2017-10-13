@@ -160,9 +160,15 @@ class DummyInterface2(object):
         self.mock.mainWindow.return_value = self.mainwindow
         self.mock.layers.return_value = QgsMapLayerRegistry.instance().mapLayers().values()
 
+
 def mock_answer(yes_or_no='yes'):
     ans = {'yes': 1, 'no': 0}
     answer_obj = MockUsingReturnValue()
     answer_obj.result = ans.get(yes_or_no, yes_or_no)
     answer = MockUsingReturnValue(answer_obj)
     return answer
+
+answer_yes = mock_answer('yes')
+answer_no = mock_answer('no')
+
+mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)

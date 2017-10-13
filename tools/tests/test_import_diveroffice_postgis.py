@@ -34,7 +34,7 @@ import nose
 import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue
 
-@attr(status='off')
+@attr(status='on')
 class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestPostgisDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """

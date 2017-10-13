@@ -32,7 +32,7 @@ from import_data_to_db import MidvDataImporterError
 import utils_for_tests
 
 
-@attr(status='off')
+@attr(status='on')
 class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
@@ -175,7 +175,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
 
-@attr(status='off')
+@attr(status='on')
 class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -286,7 +286,7 @@ class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImport
         assert test_string == reference_string
 
 
-@attr(status='off')
+@attr(status='on')
 class TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -342,7 +342,7 @@ class TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         assert test_string == reference_string
 
 
-@attr(status='off')
+@attr(status='on')
 class TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -394,7 +394,7 @@ class TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
 
-@attr(status='off')
+@attr(status='on')
 class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -514,7 +514,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
         assert test_string == reference_string
 
 
-@attr(status='off')
+@attr(status='on')
 class TestWlevelsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -548,7 +548,7 @@ class TestWlevelsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
 
-@attr(status='off')
+@attr(status='on')
 class TestSeismicImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -566,7 +566,7 @@ class TestSeismicImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
 
-@attr(status='off')
+@attr(status='on')
 class TestCommentsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -584,7 +584,7 @@ class TestCommentsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         assert test_string == reference_string
 
 
-@attr(status='off')
+@attr(status='on')
 class TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -664,7 +664,7 @@ class TestStratImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
 
-@attr(status='off')
+@attr(status='on')
 class TestMeteoImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -682,7 +682,7 @@ class TestMeteoImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
 
-@attr(status='off')
+@attr(status='on')
 class TestVlfImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -718,7 +718,7 @@ class TestVlfImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         assert test_string == reference_string
 
 
-@attr(status='off')
+@attr(status='on')
 class TestObsLinesImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -736,7 +736,7 @@ class TestObsLinesImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         assert test_string == reference_string
 
 
-@attr(status='off')
+@attr(status='on')
 class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -749,7 +749,7 @@ class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
             assert isinstance(v, (list, tuple))
 
 
-@attr(status='off')
+@attr(status='on')
 class TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
