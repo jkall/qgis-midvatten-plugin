@@ -508,6 +508,7 @@ class midvatten:
                 utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
         QApplication.restoreOverrideCursor()
 
+    @utils.general_exception_handler
     def import_wqual_lab_from_interlab4(self):
         allcritical_layers = ('obs_points', 'w_qual_lab')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode

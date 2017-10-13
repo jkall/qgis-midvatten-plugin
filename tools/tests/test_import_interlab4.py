@@ -31,22 +31,16 @@ from midvatten.midvatten import midvatten
 import os
 from collections import OrderedDict
 from import_interlab4 import Interlab4Import
-
-TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
-MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
-
-MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
-DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
+from nose.plugins.attrib import attr
+import db_utils
 
 
-class TestInterlab4Importer():
+
+class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     def setUp(self):
-        self.dummy_iface = DummyInterface2()
-        self.iface = self.dummy_iface.mock
-        ms = MagicMock()
-        ms.settingsdict = OrderedDict()
-        self.importinstance = Interlab4Import(self.iface.mainWindow(), ms)
+        self.importinstance = Interlab4Import(self.iface.mainWindow(), self.ms)
 
+    @attr(status='on')
     def test_interlab4_parse_filesettings_utf16(self):
         interlab4_lines = (
                     u"#Interlab",
@@ -481,53 +475,19 @@ class TestInterlab4Importer():
         # "obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment"
         reference_string = u'[[obsid, depth, report, project, staff, date_time, anameth, parameter, reading_num, reading_txt, unit, comment], [anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Färgtal, 5, <5, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30. mätosäkerhet: ±1]]'
         assert result_string == reference_string
-        
-    def tearDown(self):
-        self.importinstance = None
-        pass
 
 
-class TestInterlab4ImporterDB(object):
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
-    skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
+@attr(status='off')
+class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestSpatialiteDbSv):
+    def setUp(self):
+        self.importinstance = Interlab4Import(self.iface.mainWindow(), self.ms)
 
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance')
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
-    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
-        mock_crsquestion.return_value = [3006]
-        mock_savefilename.return_value = TEMP_DB_PATH
-        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
-
-        self.dummy_iface = DummyInterface2()
-        self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten(self.iface)
-
-        try:
-            os.remove(TEMP_DB_PATH)
-        except OSError:
-            pass
-        mock_locale.return_value.answer = u'ok'
-        mock_locale.return_value.value = u'sv_SE'
-        self.midvatten.new_db()
-        
-    def tearDown(self):
-        #Delete database
-        os.remove(TEMP_DB_PATH)
-
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_interlab4_full_test_to_db(self):
 
-        db_utils.sql_alter_db(u'''insert into zz_staff (staff) values ('DV')''')
+        db_utils.sql_alter_db(u'''INSERT INTO zz_staff (staff) VALUES ('DV')''')
 
-        db_utils.sql_alter_db(u'INSERT INTO obs_points ("obsid") VALUES ("anobsid")')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('anobsid')''')
 
         interlab4_lines = (
             u'#Interlab',
@@ -547,7 +507,7 @@ class TestInterlab4ImporterDB(object):
 
         with utils.tempinput(u'\n'.join(interlab4_lines), 'utf-8') as filename:
             @mock.patch('midvatten_utils.NotFoundQuestion')
-            @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser', TestInterlab4ImporterDB.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
@@ -566,7 +526,7 @@ class TestInterlab4ImporterDB(object):
 
             _test(self, filename)
 
-        test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
+        test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT * FROM w_qual_lab'''))
         reference_string = ur'''(True, [(anobsid, None, DM-990908-2773, Demoproj, DV, 2010-09-07 10:15:00, SS-EN ISO 7887-1/4, Kalium, 1.0, <1, mg/l Pt, provtagningsorsak: Dricksvatten enligt SLVFS 2001:30. provtyp: Utgående. provtypspecifikation: Nej. bedömning: Tjänligt. provplatsid: Demo1 vattenverk. specifik provplats: Föreskriven regelbunden undersökning enligt SLVFS 2001:30)])'''
         assert test_string == reference_string
 

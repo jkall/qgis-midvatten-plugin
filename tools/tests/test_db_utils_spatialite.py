@@ -27,7 +27,7 @@ from nose.plugins.attrib import attr
 import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='off')
 class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_tables_columns_info_all_tables(self):
@@ -60,7 +60,7 @@ class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert int(col_obsid[5]) == 1
 
 
-@attr(status='on')
+@attr(status='off')
 class TestTablesColumns(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_tables_columns_no_dbconnection_supplied(self):
@@ -86,7 +86,7 @@ class TestTablesColumns(utils_for_tests.MidvattenTestSpatialiteDbSv):
             assert tablename not in tables_columns
 
 
-@attr(status='on')
+@attr(status='off')
 class TestGetForeignKeys(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_get_foreign_keys(self):
@@ -105,7 +105,7 @@ class TestGetForeignKeys(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert test_string == reference
 
 
-@attr(status='on')
+@attr(status='off')
 class TestVerifyTableExist(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_verify_table_exists(self):

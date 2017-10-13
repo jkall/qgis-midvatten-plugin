@@ -32,6 +32,7 @@ from tools.tests.mocks_for_tests import DummyInterface
 import db_utils
 from import_data_to_db import midv_data_importer
 from mocks_for_tests import DummyInterface2
+from collections import OrderedDict
 
 
 class test_qapplication_is_running():
@@ -131,6 +132,8 @@ class MidvattenTestSpatialiteNotCreated(object):
         self.dummy_iface = DummyInterface2()
         self.iface = self.dummy_iface.mock
         self.midvatten = midvatten(self.iface)
+        self.ms = mock.MagicMock()
+        self.ms.settingsdict = OrderedDict()
         try:
             os.remove(self.TEMP_DBPATH)
         except OSError:

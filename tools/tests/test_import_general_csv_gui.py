@@ -27,7 +27,7 @@ from import_general_csv_gui import GeneralCsvImportGui
 from nose.plugins.attrib import attr
 import utils_for_tests
 
-@attr(status='on')
+@attr(status='off')
 class TestStaticMethods(object):
 
     def test_translate_and_reorder_file_data(self):

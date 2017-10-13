@@ -46,7 +46,7 @@ from import_data_to_db import midv_data_importer
 from import_general_csv_gui import GeneralCsvImportGui
 
 
-@attr(status='on')
+@attr(status='off')
 class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
