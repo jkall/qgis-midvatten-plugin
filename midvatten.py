@@ -832,19 +832,19 @@ class midvatten:
         layername='obs_points'
         err_flag = utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag,layername)#verify selected layername and not in edit mode
         if err_flag == 0:
-            from wlevels_calc_calibr import calclvl
-            dlg = calclvl(self.iface.mainWindow(),qgis.utils.iface.activeLayer())  # dock is an instance of calibrlogger
+            from wlevels_calc_calibr import Calclvl
+            dlg = Calclvl(self.iface.mainWindow(),qgis.utils.iface.activeLayer())  # dock is an instance of calibrlogger
             dlg.exec_()
 
     def wlvlloggcalibrate(self):
         allcritical_layers = ('w_levels_logger', 'w_levels')
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
         if err_flag == 0:
-            from wlevels_calc_calibr import calibrlogger
+            from wlevels_calc_calibr import Calibrlogger
             try:
                 self.calibrplot.activateWindow()
             except:
-                self.calibrplot = calibrlogger(self.iface.mainWindow(), self.ms.settingsdict)#,obsid)
+                self.calibrplot = Calibrlogger(self.iface.mainWindow(), self.ms.settingsdict)#,obsid)
 
     @utils.waiting_cursor
     def zip_db(self):
