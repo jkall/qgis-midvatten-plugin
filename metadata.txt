@@ -23,7 +23,7 @@ changelog=
         - Fieldlogger import: Connected instrument id to sublocation instead of obsid.
         - Fieldlogger import: Added function for calculating level_masl directly from meas
         - Logger calibration: Fixed better error msg.
-        - Added translation support for fieldlogger import.
+        - Added translation support for fieldlogger import, wlevels_calc_calibr.py.
         Version 1.4.7:
         - Fixed bug where sql questions with special characters could cause an error.
         Version 1.4.6:
