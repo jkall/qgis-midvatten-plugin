@@ -32,15 +32,18 @@ from functools import partial
 
 import PyQt4.QtCore
 import PyQt4.QtGui
+from PyQt4.QtCore import QCoreApplication
 
 import definitions.midvatten_defs
 import import_data_to_db
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
 from date_utils import datestring_to_date, dateshift
 from definitions import midvatten_defs as defs
 from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid
 from midvatten_utils import Cancel
 from gui_utils import DateTimeFilter
+
 
 import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -90,7 +93,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         sublocations_widget = PyQt4.QtGui.QWidget()
         sublocations_layout = PyQt4.QtGui.QVBoxLayout()
         sublocations_widget.setLayout(sublocations_layout)
-        sublocations_layout.addWidget(PyQt4.QtGui.QLabel(u'Select sublocations to import:'))
+        sublocations_layout.addWidget(PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'FieldloggerImport', u'Select sublocations to import:'))))
         splitter.addWidget(sublocations_widget)
         self.sublocation_filter = SublocationFilter(sublocations)
         self.settings.append(self.sublocation_filter)
@@ -107,26 +110,26 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         splitter.addWidget(self.input_fields.widget)
 
         #General buttons
-        self.save_settings_button = PyQt4.QtGui.QPushButton(u'Save settings')
+        self.save_settings_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Save settings')))
         self.gridLayout_buttons.addWidget(self.save_settings_button, 0, 0)
         self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : map(lambda x: x(),
                                       [lambda : self.input_fields.update_stored_settings(self.stored_settings),
                                        lambda : self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]))
 
-        self.clear_settings_button = PyQt4.QtGui.QPushButton(u'Clear settings')
-        self.clear_settings_button.setToolTip(u'Clear all parameter settings\nReopen Fieldlogger import gui to have it reset,\nor press "Save settings" to undo.')
+        self.clear_settings_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Clear settings')))
+        self.clear_settings_button.setToolTip(ru(QCoreApplication.translate(u'FieldloggerImport', u'Clear all parameter settings\nReopen Fieldlogger import gui to have it reset,\nor press "Save settings" to undo.')))
         self.gridLayout_buttons.addWidget(self.clear_settings_button, 1, 0)
         self.connect(self.clear_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(),
                                  [lambda: self.save_stored_settings(self.ms, [], self.stored_settingskey),
-                                  lambda: utils.pop_up_info(u'Settings cleared. Restart import Fieldlogger dialog')]))
+                                  lambda: utils.pop_up_info(ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings cleared. Restart import Fieldlogger dialog')))]))
 
-        self.close_after_import = PyQt4.QtGui.QCheckBox(u'Close dialog after import')
+        self.close_after_import = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'FieldloggerImport', u'Close dialog after import')))
         self.close_after_import.setChecked(True)
         self.gridLayout_buttons.addWidget(self.close_after_import, 2, 0)
 
-        self.start_import_button = PyQt4.QtGui.QPushButton(u'Start import')
+        self.start_import_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 3, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
 
@@ -152,7 +155,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         observations = []
         for filename in filenames:
-            filename = utils.returnunicode(filename)
+            filename = ru(filename)
 
             supported_encodings = [u'utf-8', u'cp1252']
             for encoding in supported_encodings:
@@ -189,7 +192,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         observations = []
         for rownr, rawrow in enumerate(f):
             observation = {}
-            row = utils.returnunicode(rawrow).rstrip(u'\r').rstrip(u'\n')
+            row = ru(rawrow).rstrip(u'\r').rstrip(u'\n')
             if not row:
                 continue
             cols = row.split(delimiter)
@@ -325,16 +328,16 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                         last_used_instrumentid = [x[1] for x in last_used_instrumentid]
                     else:
                         last_used_instrumentid = [u'']
-                question = utils.NotFoundQuestion(dialogtitle=u'Submit instrument id',
-                                                  msg=u''.join([u'Submit the instrument id for the measurement:\n ',
+                question = utils.NotFoundQuestion(dialogtitle=ru(QCoreApplication.translate(u'FieldloggerImport', u'Submit instrument id')),
+                                                  msg=u''.join([ru(QCoreApplication.translate(u'FieldloggerImport', u'Submit the instrument id for the measurement:\n ')),
                                                                 u', '.join([sublocation, obsid, date_time, flowtype, unit])]),
                                                   existing_list=last_used_instrumentid,
                                                   default_value=last_used_instrumentid[0],
-                                                  combobox_label=u'Instrument id:s in database for obsid %s.\nThe last used instrument id for obsid %s is prefilled:'%(obsid, obsid))
+                                                  combobox_label=ru(QCoreApplication.translate(u'FieldloggerImport', u'Instrument id:s in database for obsid %s.\nThe last used instrument id for obsid %s is prefilled:'))%(obsid, obsid))
                 answer = question.answer
                 if answer == u'cancel':
                     return Cancel()
-                instrumentid = utils.returnunicode(question.value)
+                instrumentid = ru(question.value)
                 already_asked_instruments[sublocation] = instrumentid
 
             reading = observation[u'value'].replace(u',', u'.')
@@ -411,19 +414,19 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         """
         settings_string_raw = ms.settingsdict.get(settingskey, None)
         if settings_string_raw is None:
-            utils.MessagebarAndLog.warning(bar_msg=u'Settings key ' + settingskey + u' did not exist in midvatten settings.')
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings key %s did not exist in midvatten settings.'))%settingskey)
             return []
         if not settings_string_raw:
-            utils.MessagebarAndLog.warning(log_msg=u'Settings key ' + settingskey + u' was empty.')
+            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings key %s was empty.'))%settingskey)
             return []
 
-        settings_string_raw = utils.returnunicode(settings_string_raw)
+        settings_string_raw = ru(settings_string_raw)
 
         try:
             stored_settings = ast.literal_eval(settings_string_raw)
         except SyntaxError:
             stored_settings = []
-            utils.MessagebarAndLog.warning(bar_msg=u'Getting stored settings failed for key ' + settingskey + u' see log message panel.', log_msg=u'Parsing the settingsstring ' + str(settings_string_raw) + u'failed.')
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Getting stored settings failed for key %s, see log message panel.'))%settingskey, log_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Parsing the settingsstring %s failed'))%str(settings_string_raw))
         return stored_settings
 
     @staticmethod
@@ -438,7 +441,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         settings_string = utils.anything_to_string_representation(stored_settings)
         ms.settingsdict[settingskey] = settings_string
         ms.save_settings()
-        utils.MessagebarAndLog.info(log_msg=u'Settings ' + settings_string + u' stored for key ' + settingskey)
+        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings %s stored for key %s'))%(settings_string, settingskey))
 
     def start_import(self, observations):
         """
@@ -455,8 +458,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         chosen_methods = [import_method_chooser.import_method for import_method_chooser in self.input_fields.parameter_imports.values()
                           if import_method_chooser.import_method]
         if not chosen_methods:
-            utils.pop_up_info("Must choose at least one parameter import method")
-            utils.MessagebarAndLog.critical(bar_msg="No parameter import method chosen")
+            utils.pop_up_info(ru(QCoreApplication.translate(u'FieldloggerImport', u"Must choose at least one parameter import method")))
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u"No parameter import method chosen")))
             return None
 
         #Update the observations using the general settings, filters and parameter settings
@@ -474,7 +477,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             return observations
 
         if not observations:
-            utils.MessagebarAndLog.warning(bar_msg=u"No observations left to import after filtering")
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u"No observations left to import after filtering")))
             return None
 
         observations_importmethods = self.input_fields.get_observations_importmethods(observations)
@@ -538,9 +541,8 @@ class ObsidFilter(object):
             observations = [observation for observation in observations if all([observation[u'obsid'] is not None, observation[u'obsid']])]
 
         if len(observations) == 0:
-            utils.MessagebarAndLog.warning(bar_msg=u'No observations imported, see log message panel',
-                                           log_msg=u'No observations returned from obsid verification.' +
-                                                   u'Were all skipped?')
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'No observations imported, see log message panel')),
+                                           log_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'No observations returned from obsid verification. Were all skipped?')))
             return Cancel()
         return observations
 
@@ -548,7 +550,7 @@ class ObsidFilter(object):
 class StaffQuestion(RowEntry):
     def __init__(self):
         super(StaffQuestion, self).__init__()
-        self.label = PyQt4.QtGui.QLabel(u'Staff who did the measurement')
+        self.label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'StaffQuestion', u'Staff who did the measurement')))
         self.existing_staff_combobox = default_combobox()
         existing_staff = sorted(defs.staff_list()[1])
         self.existing_staff_combobox.addItems(existing_staff)
@@ -559,7 +561,7 @@ class StaffQuestion(RowEntry):
 
     @property
     def staff(self):
-        return utils.returnunicode(self.existing_staff_combobox.currentText())
+        return ru(self.existing_staff_combobox.currentText())
 
     @staff.setter
     def staff(self, value):
@@ -568,8 +570,8 @@ class StaffQuestion(RowEntry):
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
         if self.staff is None or not self.staff:
-            utils.MessagebarAndLog.critical(log_msg=u'Import error, staff not given')
-            utils.pop_up_info(u'Import error, staff not given')
+            utils.MessagebarAndLog.critical(log_msg=ru(QCoreApplication.translate(u'StaffQuestion', u'Import error, staff not given')))
+            utils.pop_up_info(ru(QCoreApplication.translate(u'StaffQuestion', u'Import error, staff not given')))
             return Cancel()
 
         observation[u'staff'] = self.staff
@@ -579,7 +581,7 @@ class StaffQuestion(RowEntry):
 class DateShiftQuestion(RowEntry):
     def __init__(self):
         super(DateShiftQuestion, self).__init__()
-        self.label = PyQt4.QtGui.QLabel(u'Shift dates, supported format ex. "-1 hours":')
+        self.label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'DateShiftQuestion', u'Shift dates, supported format ex. "%s":'))%u'-1 hours')
         self.dateshift_lineedit = PyQt4.QtGui.QLineEdit()
         self.dateshift_lineedit.setText(u'0 hours')
 
@@ -589,16 +591,14 @@ class DateShiftQuestion(RowEntry):
 
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
-        shift_specification = utils.returnunicode(self.dateshift_lineedit.text())
+        shift_specification = ru(self.dateshift_lineedit.text())
 
         step_steplength = shift_specification.split(u' ')
         failed = False
 
-        bar_msg = u'Dateshift specification wrong format, se log message panel'
-        log_msg = (u'Dateshift specification must be made using format ' +
-                    '"step step_length", ex: "0 hours", "-1 hours", "-1 days" etc.\n' +
-                    'Supported step lengths: microseconds, milliseconds, seconds, ' +
-                    'minutes, hours, days, weeks.')
+        bar_msg = ru(QCoreApplication.translate(u'DateShiftQuestion', u'Dateshift specification wrong format, se log message panel'))
+
+        log_msg = (ru(QCoreApplication.translate(u'DateShiftQuestion', u'Dateshift specification must be made using format "step step_length", ex: "%s", "%s", "%s" etc.\nSupported step lengths: %s'))%(u'0 hours', u'-1 hours', u'-1 days', u'microseconds, milliseconds, seconds, minutes, hours, days, weeks.'))
 
         if len(step_steplength) != 2:
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
@@ -701,14 +701,14 @@ class InputFields(RowEntry):
         self.update_queue = Queue()
         self.update_queue_working = False
 
-        self.layout.addWidget(PyQt4.QtGui.QLabel(u'Specify import methods for input fields'))
+        self.layout.addWidget(PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'InputFields', u'Specify import methods for input fields'))))
 
         self.parameter_imports = OrderedDict()
 
         #This button has to get filtered observations as input, so it has to be
         #connected elsewhere.
-        self.update_parameters_button = PyQt4.QtGui.QPushButton(u'Update input fields')
-        self.update_parameters_button.setToolTip(u'Update input fields using the observations remaining after filtering by date and sublocation selection.')
+        self.update_parameters_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'InputFields', u'Update input fields')))
+        self.update_parameters_button.setToolTip(ru(QCoreApplication.translate(u'InputFields', u'Update input fields using the observations remaining after filtering by date and sublocation selection.')))
         self.layout.addWidget(self.update_parameters_button)
 
     def update_parameter_imports_queue(self, *args, **kwargs):
@@ -819,7 +819,7 @@ class InputFields(RowEntry):
         :param stored_settings: alist like [[u'parametername', [[u'attr1', u'val1'], ...]], ...]
         :return:
         """
-        utils.MessagebarAndLog.info(log_msg=u'Setting parameters using stored settings: ' + str(stored_settings))
+        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'InputFields', u'Setting parameters using stored settings: %s'))%str(stored_settings))
         for import_method_chooser in self.parameter_imports.values():
 
             if not stored_settings:
@@ -845,7 +845,7 @@ class InputFields(RowEntry):
                 try:
                     setattr(import_method_chooser.parameter_import_fields, attr, val)
                 except Exception, e:
-                    utils.MessagebarAndLog.info(log_msg=u'Setting parameter ' + str(attr) + u' for ' + import_method_chooser.parameter_name + u' to value ' + str(val) + u' failed, msg:\n' + str(e))
+                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'InputFields', u'Setting parameter %s for %s to value %s failed, msg:\n%s'))%(str(attr), import_method_chooser.parameter_name, str(val), str(e)))
 
     def update_stored_settings(self, stored_settings, force_update=False):
         setted_pars = []
@@ -919,7 +919,7 @@ class ImportMethodChooser(RowEntry):
 
     @import_method.setter
     def import_method(self, value):
-        index = self.__import_method.findText(utils.returnunicode(value))
+        index = self.__import_method.findText(ru(value))
         if index != -1:
             self.__import_method.setCurrentIndex(index)
 
@@ -1003,8 +1003,8 @@ class WLevelsImportFields(RowEntryGrid):
         self.import_method_chooser = import_method_chooser
         self.label_value_column = PyQt4.QtGui.QLabel(u'Value column: ')
         self._value_column = PyQt4.QtGui.QComboBox()
-        self._calculate_level_masl_checkbox = PyQt4.QtGui.QCheckBox(u'Calculate level_masl from meas and h_toc')
-        self._calculate_level_masl_checkbox.setToolTip(u'If h_toc is not NULL in table obs_points, level_masl is calculated as h_toc - meas.')
+        self._calculate_level_masl_checkbox = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'WLevelsImportFields', u'Calculate level_masl from meas and h_toc')))
+        self._calculate_level_masl_checkbox.setToolTip(ru(QCoreApplication.translate(u'WLevelsImportFields', u'If h_toc is not NULL in table obs_points, level_masl is calculated as h_toc - meas.')))
         self._value_column.addItems([u'meas', u'level_masl'])
         self.value_column = u'meas'
         self.layout.addWidget(self.label_value_column, 0, 0)
@@ -1022,7 +1022,7 @@ class WLevelsImportFields(RowEntryGrid):
 
     @value_column.setter
     def value_column(self, value):
-        index = self._value_column.findText(utils.returnunicode(value))
+        index = self._value_column.findText(ru(value))
         if index != -1:
             self._value_column.setCurrentIndex(index)
         if value == u'meas':
@@ -1061,8 +1061,8 @@ class WLevelsImportFields(RowEntryGrid):
                             self.h_toc_dict = dict([(obsid_h_toc[0], obsid_h_toc[1]) for obsid_h_toc in utils.sql_load_fr_db(u'SELECT obsid, h_toc FROM obs_points WHERE h_toc IS NOT NULL')[1]])
                         h_toc = self.h_toc_dict.get(observation[u'obsid'], None)
                         if h_toc is not None:
-                                observation[u'level_masl'] = str(float(h_toc) - float(observation[u'meas']))
-                                observation[u'h_toc'] = str(float(h_toc))
+                            observation[u'level_masl'] = str(float(h_toc) - float(observation[u'meas']))
+                            observation[u'h_toc'] = str(float(h_toc))
         return observations
 
     def get_settings(self):
@@ -1103,7 +1103,7 @@ class WFlowImportFields(RowEntryGrid):
 
     @property
     def flowtype(self):
-        return utils.returnunicode(self.__flowtype.currentText())
+        return ru(self.__flowtype.currentText())
 
     @flowtype.setter
     def flowtype(self, value):
@@ -1111,11 +1111,11 @@ class WFlowImportFields(RowEntryGrid):
 
     @property
     def unit(self):
-        return utils.returnunicode(self.__unit.currentText())
+        return ru(self.__unit.currentText())
 
     @unit.setter
     def unit(self, value):
-        self.__unit.setEditText(utils.returnunicode(value))
+        self.__unit.setEditText(ru(value))
 
     def fill_list(self, combobox_var, parameter_var, parameter_list_dict):
         """
@@ -1132,17 +1132,17 @@ class WFlowImportFields(RowEntryGrid):
             vals = list(vals[0])
         combobox_var.clear()
         combobox_var.addItem(u'')
-        combobox_var.addItems(utils.returnunicode(vals, keep_containers=True))
+        combobox_var.addItems(ru(vals, keep_containers=True))
 
     def get_settings(self):
         return ((u'flowtype', self.flowtype), (u'unit', self.unit))
 
     def alter_data(self, observations):
         if not self.flowtype:
-            utils.MessagebarAndLog.critical(bar_msg=u'Import error, flowtype not given')
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'WFlowImportFields', u'Import error, flowtype not given')))
             return Cancel()
         if not self.unit:
-            utils.MessagebarAndLog.critical(bar_msg=u'Import error, unit not given')
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'WFlowImportFields', u'Import error, unit not given')))
             return Cancel()
 
         observations = copy.deepcopy(observations)
@@ -1170,17 +1170,17 @@ class WQualFieldImportFields(RowEntryGrid):
         super(WQualFieldImportFields, self).__init__()
         self.connect = connect
         self._import_method_chooser = import_method_chooser
-        self.label_parameter = PyQt4.QtGui.QLabel(u'Parameter: ')
+        self.label_parameter = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Parameter: ')))
         self.__parameter = default_combobox()
         self._parameters_units = defs.w_qual_field_parameter_units()
         self.__parameter.addItems(self._parameters_units.keys())
-        self.label_unit = PyQt4.QtGui.QLabel(u'Unit: ')
+        self.label_unit = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Unit: ')))
         self.__unit = default_combobox()
-        self.label_depth = PyQt4.QtGui.QLabel(u'Depth input field (optional): ')
+        self.label_depth = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Depth input field (optional): ')))
         self.__depth = default_combobox()
         self.__depth.addItems(self._import_method_chooser.parameter_names)
         self.__instrument = default_combobox()
-        self.label_instrument = PyQt4.QtGui.QLabel(u'Instrument: ')
+        self.label_instrument = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Instrument: ')))
         self.parameter_instruments = {}
         for parameter, unit_instrument_staff_date_time_list_of_lists in definitions.midvatten_defs.get_last_used_quality_instruments().iteritems():
             for unit, instrument, staff, date_time, in unit_instrument_staff_date_time_list_of_lists:
@@ -1207,7 +1207,7 @@ class WQualFieldImportFields(RowEntryGrid):
 
     @property
     def parameter(self):
-        return utils.returnunicode(self.__parameter.currentText())
+        return ru(self.__parameter.currentText())
 
     @parameter.setter
     def parameter(self, value):
@@ -1215,27 +1215,27 @@ class WQualFieldImportFields(RowEntryGrid):
 
     @property
     def unit(self):
-        return utils.returnunicode(self.__unit.currentText())
+        return ru(self.__unit.currentText())
 
     @unit.setter
     def unit(self, value):
-        self.__unit.setEditText(utils.returnunicode(value))
+        self.__unit.setEditText(ru(value))
 
     @property
     def depth(self):
-        return utils.returnunicode(self.__depth.currentText())
+        return ru(self.__depth.currentText())
 
     @depth.setter
     def depth(self, value):
-        self.__depth.setEditText(utils.returnunicode(value))
+        self.__depth.setEditText(ru(value))
 
     @property
     def instrument(self):
-        return utils.returnunicode(self.__instrument.currentText())
+        return ru(self.__instrument.currentText())
 
     @instrument.setter
     def instrument(self, value):
-        self.__instrument.setEditText(utils.returnunicode(value))
+        self.__instrument.setEditText(ru(value))
 
     def fill_list(self, combobox_var, parameter_var, parameter_list_dict):
         """
@@ -1253,7 +1253,7 @@ class WQualFieldImportFields(RowEntryGrid):
 
         combobox_var.clear()
         combobox_var.addItem(u'')
-        combobox_var.addItems(utils.returnunicode(vals, keep_containers=True))
+        combobox_var.addItems(ru(vals, keep_containers=True))
 
     def get_settings(self):
         return ((u'parameter', self.parameter),
@@ -1263,7 +1263,7 @@ class WQualFieldImportFields(RowEntryGrid):
 
     def alter_data(self, observations):
         if not self.parameter:
-            utils.MessagebarAndLog.critical(bar_msg=u'Import error, parameter not given')
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Import error, parameter not given')))
             return Cancel()
 
         observations = copy.deepcopy(observations)
@@ -1290,9 +1290,8 @@ class WQualFieldImportFields(RowEntryGrid):
                     observation[u'instrument'] = self.instrument
                     observation[u'unit'] = self.unit
             except TypeError:
-                utils.MessagebarAndLog.critical(bar_msg="Import error. See message log panel",
-                                                log_msg="error on observation : " + str(observation) +
-                                                        "\nand parameter: " + self.parameter)
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'WQualFieldImportFields', u"Import error. See message log panel")),
+                                                log_msg=ru(QCoreApplication.translate(u'WQualFieldImportFields', u"error on observation : %s\nand parameter: %s"))%(str(observation), self.parameter))
                 raise TypeError
         return observations
 

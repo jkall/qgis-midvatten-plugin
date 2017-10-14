@@ -21,10 +21,10 @@
 """
 import PyQt4
 import copy
+from PyQt4.QtCore import QCoreApplication
 
-from midvatten_utils import returnunicode
 from date_utils import datestring_to_date
-from midvatten_utils import returnunicode
+from midvatten_utils import returnunicode as ru
 
 
 class SplitterWithHandel(PyQt4.QtGui.QSplitter):
@@ -83,7 +83,7 @@ class ExtendedQPlainTextEdit(PyQt4.QtGui.QPlainTextEdit):
             for x in alist:
                 if x:
                     if x not in new_items:
-                        new_items.append(returnunicode(x))
+                        new_items.append(ru(x))
 
         self.clear()
         if self.keep_sorted:
@@ -93,7 +93,7 @@ class ExtendedQPlainTextEdit(PyQt4.QtGui.QPlainTextEdit):
 
     def get_all_data(self):
         if self.toPlainText():
-            return returnunicode(self.toPlainText()).replace(u'\r', u'').split(u'\n')
+            return ru(self.toPlainText()).replace(u'\r', u'').split(u'\n')
         else:
             return []
 
@@ -109,12 +109,12 @@ def get_line():
 class DateTimeFilter(RowEntry):
     def __init__(self, calendar=False):
         super(DateTimeFilter, self).__init__()
-        self.label = PyQt4.QtGui.QLabel(u'Import data from: ')
+        self.label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'DateTimeFilter', u'Import data from: ')))
         self.from_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'1901-01-01 00:00:00'))
         self.from_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh:mm:ss')
         self.from_datetimeedit.setMinimumWidth(180)
 
-        self.label_to = PyQt4.QtGui.QLabel(u'to: ')
+        self.label_to = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'DateTimeFilter', u'to: ')))
         self.to_datetimeedit = PyQt4.QtGui.QDateTimeEdit(datestring_to_date(u'2099-12-31 23:59:59'))
         self.to_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh:mm:ss')
         self.to_datetimeedit.setMinimumWidth(180)
@@ -162,10 +162,10 @@ class DateTimeFilter(RowEntry):
 
 
 def set_combobox(combobox, value):
-    index = combobox.findText(returnunicode(value))
+    index = combobox.findText(ru(value))
     if index != -1:
         combobox.setCurrentIndex(index)
     else:
-        combobox.addItem(returnunicode(value))
-        index = combobox.findText(returnunicode(value))
+        combobox.addItem(ru(value))
+        index = combobox.findText(ru(value))
         combobox.setCurrentIndex(index)
