@@ -248,30 +248,33 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             _sql += r"""AND %s IS NOT NULL AND %s !='' """ % (unicode(ycol_ComboBox.currentText()), unicode(ycol_ComboBox.currentText()))
 
             while i < len(self.p):
-                if not (filter1 == '' or filter1==' ' or filter1list==[]) and not (filter2== '' or filter2==' ' or filter2list==[]):
+                #Both filters empty
+                if (not filter1.strip() or not filter1list) and (not filter2.strip() or not filter2list):
+                    sql = _sql + r""" ORDER BY %s"""%unicode(xcol_ComboBox.currentText())
+                    self.plabels[i] = unicode(ycol_ComboBox.currentText())+""", """+unicode(table_ComboBox.currentText())
+                    self.createsingleplotobject(sql, i, My_format, dbconnection, PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
+                    i += 1
+                #Both filters in use
+                elif all((filter1.strip(), filter1list, filter2.strip(), filter2list)):
                     for item1 in filter1list:
                         for item2 in filter2list:
                             sql = _sql + r""" AND %s = '%s' AND %s = '%s' ORDER BY %s"""%(filter1, unicode(item1.text()), filter2, unicode(item2.text()), unicode(xcol_ComboBox.currentText()))
                             self.plabels[i] = unicode(item1.text()) + """, """ + unicode(item2.text())
                             self.createsingleplotobject(sql, i, My_format, dbconnection, PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
                             i += 1
-                elif not (filter1 == '' or filter1==' ' or filter1list==[]):
-                    for item1 in filter1list:
-                        sql = _sql + r""" AND %s = '%s' ORDER BY %s"""%(filter1, unicode(item1.text()), unicode(xcol_ComboBox.currentText()))
-                        self.plabels[i] = unicode(item1.text())
-                        self.createsingleplotobject(sql, i, My_format, dbconnection, PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
-                        i += 1
-                elif not (filter2 == '' or filter2==' ' or filter2list==[]):
-                    for item2 in filter2list:
-                        sql = _sql + r""" AND %s = '%s' ORDER BY %s"""%(filter2, unicode(item2.text()), unicode(xcol_ComboBox.currentText()))
-                        self.plabels[i] = unicode(item2.text())
-                        self.createsingleplotobject(sql, i, My_format, dbconnection, PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
-                        i += 1
+                #One filter in use
                 else:
-                    sql = _sql + r""" ORDER BY %s"""%unicode(xcol_ComboBox.currentText())
-                    self.plabels[i] = unicode(ycol_ComboBox.currentText())+""", """+unicode(table_ComboBox.currentText())
-                    self.createsingleplotobject(sql, i, My_format, dbconnection, PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
-                    i += 1
+                    for filter, filterlist in [(filter1, filter1list), (filter2, filter2list)]:
+                        if not filter.strip() or not filterlist:
+                            continue
+                        else:
+                            for item in filterlist:
+                                sql = _sql + r""" AND %s = '%s' ORDER BY %s"""%(filter, unicode(item.text()), unicode(xcol_ComboBox.currentText()))
+                                self.plabels[i] = unicode(item.text())
+                                self.createsingleplotobject(sql, i, My_format, dbconnection, PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
+                                i += 1
+
+
         return nop, i
 
     def createsingleplotobject(self,sql,i,My_format,dbconnection,plottype='line', factor=1.0, offset=0.0, remove_mean=False, pandas_calc=None):
