@@ -13,14 +13,12 @@ import import_fieldlogger
 from import_fieldlogger import FieldloggerImport, InputFields, DateTimeFilter
 from collections import OrderedDict
 from utils_for_tests import create_test_string
-from nose.plugins.attrib import attr
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
 MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
 
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
-
 
 class TestFieldLoggerImporterDb(object):
     answer_yes = mock_answer('yes')
@@ -88,7 +86,6 @@ class TestFieldLoggerImporterDb(object):
                 importer.start_import(importer.observations)
                 mock_MessagebarAndLog.critical.assert_called_with(bar_msg=u'Import error, staff not given')
 
-    @attr(status='on')
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
     def test_full_integration_test_to_db(self):
         utils.sql_alter_db(u'''INSERT INTO obs_points ("obsid") VALUES ("Rb1202")''')
@@ -156,13 +153,11 @@ class TestFieldLoggerImporterDb(object):
                                    [u'q.temperatur.grC', [[u'import_method', u'w_qual_field'], [u'parameter', u'temperatur'], [u'unit', u'grC'], [u'depth', u''], [u'instrument', u'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
                 importer.start_import(importer.observations)
-                print(str(mock_MessagebarAndLog.mock_calls))
 
             _test(self, filename)
 
             test_string = create_test_string(dict([(k, utils.sql_load_fr_db(u'select * from %s'%k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
             reference_string = u'{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
-            print(str(test_string))
             assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
@@ -899,8 +894,7 @@ class TestFieldLoggerImporterDb(object):
             assert test_string == reference_string
 
 
-@attr(status='off')
-class TestFieldLoggerImporterNoDb(object):
+class _TestFieldLoggerImporterNoDb(object):
 
     @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
     @mock.patch('import_fieldlogger.utils.get_last_used_flow_instruments')
@@ -1133,8 +1127,7 @@ class TestFieldLoggerImporterNoDb(object):
             assert test_string == reference
 
 
-@attr(status='off')
-class TestCommentsImportFields(object):
+class _TestCommentsImportFields(object):
     def setUp(self):
         mock_import_method_chooser = MagicMock()
         mock_import_method_chooser.parameter_name = u'comment'
@@ -1169,8 +1162,7 @@ class TestCommentsImportFields(object):
         assert test_string == reference_string
 
 
-@attr(status='off')
-class TestStaffQuestion(object):
+class _TestStaffQuestion(object):
 
     @mock.patch('import_fieldlogger.defs.staff_list')
     def setUp(self, mock_stafflist):
@@ -1186,8 +1178,7 @@ class TestStaffQuestion(object):
         assert test_string == reference_string
 
 
-@attr(status='off')
-class TestObsidFilter(object):
+class _TestObsidFilter(object):
     def setUp(self):
         self.obsid_filter = import_fieldlogger.ObsidFilter()
 
@@ -1201,8 +1192,6 @@ class TestObsidFilter(object):
         reference_string = u'[{obsid: rb1, sublocation: rb1}, {obsid: rb2, sublocation: rb2}]'
         assert test_string == reference_string
 
-
-@attr(status='off')
 @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
 @mock.patch('import_fieldlogger.defs.w_qual_field_parameter_units')
 def test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units, mock_mock_message_bar):
@@ -1238,7 +1227,6 @@ def test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units,
     assert test_string == reference_string
 
 
-@attr(status='off')
 def test_SublocationFilter():
     sublocation_filter = import_fieldlogger.SublocationFilter([u'a.1', u'a.2'])
 
@@ -1253,8 +1241,7 @@ def test_SublocationFilter():
     assert u'{sublocation: a.2}' == create_test_string(sublocation_filter.alter_data({u'sublocation': u'a.2'}))
 
 
-@attr(status='off')
-class TestDateTimeFilter(object):
+class _TestDateTimeFilter(object):
     def test_date_time_filter_observation_should_be_none(self):
         datetimefilter = DateTimeFilter()
         datetimefilter.from_date = u'2016-01-01'

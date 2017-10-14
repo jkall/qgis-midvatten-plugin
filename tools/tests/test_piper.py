@@ -46,7 +46,7 @@ MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
 DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
-class TestPiperPlotDb(object):
+class _TestPiperPlotDb(object):
     """ The test doesn't go through the whole section plot unfortunately
     """
     answer_yes = mock_answer('yes')

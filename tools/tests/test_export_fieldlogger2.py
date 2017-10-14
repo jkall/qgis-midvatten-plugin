@@ -37,7 +37,7 @@ import utils_for_tests
 from utils_for_tests import dict_to_sorted_list, create_test_string
 import ast
 
-class TestExportFieldloggerNoDb():
+class _TestExportFieldloggerNoDb():
     def setUp(self):
         #self.ExportToFieldLogger = ExportToFieldLogger
         pass
