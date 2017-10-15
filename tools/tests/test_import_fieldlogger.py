@@ -14,7 +14,7 @@ import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance
 from utils_for_tests import create_test_string
 
-@attr(status='off')
+@attr(status='on')
 class TestFieldLoggerImporterNoDb(object):
 
     @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
@@ -247,7 +247,7 @@ class TestFieldLoggerImporterNoDb(object):
             reference = u'[{date_time: 2016-03-30 15:29:26, parametername: q.comment, sublocation: Rb1505.quality, value: hej}, {date_time: 2016-03-30 15:30:39, parametername: q.syre.mg/L, sublocation: Rb1512.quality, value: 67}, {date_time: 2016-03-30 15:31:30, parametername: s.turbiditet.FNU, sublocation: Rb1512.sample, value: 899}, {date_time: 2016-03-30 15:29:26, parametername: q.konduktivitet.µS/cm, sublocation: Rb1505.quality, value: 863}, {date_time: 2016-03-30 15:30:09, parametername: f.comment, sublocation: Rb1615.flow, value: gick bra}, {date_time: 2016-03-30 15:30:40, parametername: q.syre.%, sublocation: Rb1512.quality, value: 58}, {date_time: 2016-03-30 15:34:13, parametername: l.meas.m, sublocation: Rb1608.level, value: 555}, {date_time: 2016-03-30 15:30:39, parametername: q.comment, sublocation: Rb1512.quality, value: test}, {date_time: 2016-03-30 15:31:30, parametername: s.comment, sublocation: Rb1202.sample, value: hej2}, {date_time: 2016-03-30 15:34:40, parametername: l.comment, sublocation: Rb1608.level, value: testc}, {date_time: 2016-03-30 15:30:09, parametername: f.Accvol.m3, sublocation: Rb1615.flow, value: 357}, {date_time: 2016-03-30 15:34:13, parametername: l.comment, sublocation: Rb1608.level, value: ergv}, {date_time: 2016-03-30 15:30:39, parametername: q.temperatur.grC, sublocation: Rb1512.quality, value: 8}]'
             assert test_string == reference
 
-@attr(status='off')
+@attr(status='on')
 class TestCommentsImportFields(object):
     def setUp(self):
         mock_import_method_chooser = MagicMock()
@@ -282,7 +282,7 @@ class TestCommentsImportFields(object):
         reference_string = u'[{date_time: 2016-01-01 00:00:00, parametername: comment, skip_comment_import: True, sublocation: 1, value: shared_comment}, {comment: shared_comment, date_time: 2016-01-01 00:00:00, parametername: par_get_shared_comment, sublocation: 1, value: 1}, {date_time: 2016-01-02 00:00:00, parametername: par_not_get_shared_comment, sublocation: 2, value: 1}, {date_time: 2016-01-04 00:00:00, parametername: par_not_get_shared_comment, sublocation: 1, value: 1}, {date_time: 2016-01-03 00:00:00, parametername: comment, sublocation: 1, value: not_shared_comment}]'
         assert test_string == reference_string
 
-@attr(status='off')
+@attr(status='on')
 class TestStaffQuestion(object):
 
     @mock.patch('import_fieldlogger.defs.staff_list')
@@ -298,7 +298,7 @@ class TestStaffQuestion(object):
         reference_string = u'{staff: teststaff, sublocation: 1}'
         assert test_string == reference_string
 
-@attr(status='off')
+@attr(status='on')
 class TestObsidFilter(object):
     def setUp(self):
         self.obsid_filter = import_fieldlogger.ObsidFilter()
@@ -313,7 +313,7 @@ class TestObsidFilter(object):
         reference_string = u'[{obsid: rb1, sublocation: rb1}, {obsid: rb2, sublocation: rb2}]'
         assert test_string == reference_string
 
-@attr(status='off')
+@attr(status='on')
 @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
 @mock.patch('import_fieldlogger.defs.w_qual_field_parameter_units')
 def _test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units, mock_mock_message_bar):
@@ -348,7 +348,7 @@ def _test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units
     reference_string = u'[[s.comment, [(import_method, comments)]], [l.meas.m, [(import_method, w_levels), (value_column, level_masl)]], [f.Accvol.m3, [(import_method, w_flow), (flowtype, Accvol), (unit, m3)]], [s.turbiditet.FNU, [(import_method, w_qual_field), (parameter, turbiditet), (unit, FNU), (depth, 1), (instrument, testid)]]]'
     assert test_string == reference_string
 
-@attr(status='off')
+@attr(status='on')
 def _test_SublocationFilter():
     sublocation_filter = import_fieldlogger.SublocationFilter([u'a.1', u'a.2'])
 
@@ -362,7 +362,7 @@ def _test_SublocationFilter():
     assert u'{sublocation: a.1}' == create_test_string(sublocation_filter.alter_data({u'sublocation': u'a.1'}))
     assert u'{sublocation: a.2}' == create_test_string(sublocation_filter.alter_data({u'sublocation': u'a.2'}))
 
-@attr(status='off')
+@attr(status='on')
 class TestDateTimeFilter(object):
     def test_date_time_filter_observation_should_be_none(self):
         datetimefilter = DateTimeFilter()
