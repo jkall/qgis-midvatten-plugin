@@ -512,3 +512,13 @@ def get_dbtype(dbtype):
         return u'postgres'
     else:
         return dbtype
+
+
+def cast_date_time_as_epoch(dbconnection=None):
+    if dbconnection is None:
+        dbconnection = DbConnectionManager()
+    if dbconnection.dbtype == u'spatialite':
+        return u"""CAST(strftime('%s', date_time) AS NUMERIC)"""
+    else:
+        return u"""extract(epoch from date_time::timestamp)"""
+

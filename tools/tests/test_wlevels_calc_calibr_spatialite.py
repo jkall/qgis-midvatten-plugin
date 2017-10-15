@@ -27,10 +27,23 @@ import date_utils
 import utils_for_tests
 from wlevels_calc_calibr import Calibrlogger
 
-@attr(status='only')
+
+
 class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_calibrlogger_last_calibration(self, mock_messagebar):
+        db_utils.sql_alter_db(u"INSERT INTO obs_points (obsid) VALUES ('rb1')")
+        db_utils.sql_alter_db(u"INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-02-01 00:00', 50, 100)")
+        db_utils.sql_alter_db(u"INSERT INTO w_levels_logger (obsid, date_time, head_cm, level_masl) VALUES ('rb1', '2017-03-01 00:00', 100, NULL)")
+        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.ms)
+
+        calibrlogger.update_plot()
+        test = utils_for_tests.create_test_string(calibrlogger.getlastcalibration(calibrlogger.selected_obsid))
+        ref = u'[(2017-02-01 00:00, 99.5)]'
+        assert test == ref
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -137,5 +150,52 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'SELECT * FROM w_levels_logger'))
         ref = u'(True, [(rb1, 2017-02-01 01:00, None, None, None, 100.0, None)])'
+        print(test)
+        assert test == ref
+
+    @mock.patch('wlevels_calc_calibr.utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_calibrlogger_calc_best_fit_add_no_matches_same_from_date(self, mock_messagebar, skip_popup):
+        db_utils.sql_alter_db(u"INSERT INTO obs_points (obsid) VALUES ('rb1')")
+        db_utils.sql_alter_db(u"INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
+        db_utils.sql_alter_db(u"INSERT INTO w_levels_logger (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 01:00', 50)")
+        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.ms)
+
+        calibrlogger.update_plot()
+
+        calibrlogger.loggerpos_masl_or_offset_state = 2
+        calibrlogger.FromDateTime.setDateTime(date_utils.datestring_to_date(u'2017-02-01 01:00'))
+        gui_utils.set_combobox(calibrlogger.combobox_obsid, u'rb1 (uncalibrated)')
+        calibrlogger.bestFitSearchRadius.setText(u'2 hours')
+
+        calibrlogger.calc_best_fit()
+
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'SELECT * FROM w_levels_logger'))
+        ref = u'(True, [(rb1, 2017-02-01 01:00, None, None, None, 50.0, None)])'
+        print(test)
+        assert test == ref
+
+    @mock.patch('wlevels_calc_calibr.utils.pop_up_info', autospec=True)
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_calibrlogger_calc_best_fit_add_no_matches_same_to_date(self, mock_messagebar, skip_popup):
+        db_utils.sql_alter_db(u"INSERT INTO obs_points (obsid) VALUES ('rb1')")
+        db_utils.sql_alter_db(u"INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
+        db_utils.sql_alter_db(u"INSERT INTO w_levels_logger (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 01:00', 50)")
+        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.ms)
+
+        calibrlogger.update_plot()
+
+        calibrlogger.loggerpos_masl_or_offset_state = 2
+        calibrlogger.FromDateTime.setDateTime(date_utils.datestring_to_date(u'2010-02-01 01:00'))
+        calibrlogger.ToDateTime.setDateTime(date_utils.datestring_to_date(u'2017-02-01 01:00'))
+        gui_utils.set_combobox(calibrlogger.combobox_obsid, u'rb1 (uncalibrated)')
+        calibrlogger.bestFitSearchRadius.setText(u'2 hours')
+
+        calibrlogger.calc_best_fit()
+
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'SELECT * FROM w_levels_logger'))
+        ref = u'(True, [(rb1, 2017-02-01 01:00, None, None, None, 50.0, None)])'
         print(test)
         assert test == ref

@@ -199,11 +199,10 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     @fn_timer
     def load_obsid_from_db(self):
         self.combobox_obsid.clear()
-        res = db_utils.sql_load_fr_db("""SELECT DISTINCT obsid, CASE WHEN level_masl IS NULL THEN 'uncalibrated' ELSE 'calibrated' END AS 'status' FROM w_levels_logger ORDER BY obsid""")[1]
+        res = db_utils.sql_load_fr_db("""SELECT DISTINCT obsid, (CASE WHEN level_masl IS NULL THEN 'uncalibrated' ELSE 'calibrated' END) AS status FROM w_levels_logger ORDER BY obsid""")[1]
         all_obsids = {}
         for row in res:
             all_obsids.setdefault(row[0], []).append(row[1])
-
         self.combobox_obsid.addItems(sorted(all_obsids))
         obsids_with_uncalibrated_data = [_obsid for _obsid, status in all_obsids.iteritems() if 'uncalibrated' in status]
         self.update_combobox_with_calibration_info(_obsids_with_uncalibrated_data=obsids_with_uncalibrated_data)
@@ -219,7 +218,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
         If only obsid is given, calibration status will be read from database for that obsid.
         If only _obsids_with_uncalibrated_data is given, all obsids will update status based on that list.
-        If both obsid and _obsids_with_uncalibrated_data are given, only status for that obsid will be updated based _obsids_with_uncalibrated_data. 
+        If both obsid and _obsids_with_uncalibrated_data are given, only status for that obsid will be updated based _obsids_with_uncalibrated_data.
         If none is given, all obsids will update status based on result from database.
         :return:
         """
@@ -259,14 +258,16 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         It's rather fast anyway.
         """
         obsid = self.selected_obsid
+        print(str(obsid))
         if not obsid:
-            utils.pop_up_info(ru(QCoreApplication.translate(u'Calibrlogger', u"ERROR: no obsid is chosen")))
+            print(u'error onsid ' + str(obsid))
+            #utils.pop_up_info(ru(QCoreApplication.translate(u'Calibrlogger', u"ERROR: no obsid is chosen")))
             return None
 
-        meas_sql = r"""SELECT date_time AS 'date [datetime]', level_masl FROM w_levels WHERE obsid = '%s' ORDER BY date_time"""%obsid
+        meas_sql = r"""SELECT date_time, level_masl FROM w_levels WHERE obsid = '%s' ORDER BY date_time"""%obsid
         self.meas_ts = self.sql_into_recarray(meas_sql)
 
-        head_level_masl_sql = r"""SELECT date_time AS 'date [datetime]', head_cm / 100, level_masl FROM w_levels_logger WHERE obsid = '%s' ORDER BY date_time"""%obsid
+        head_level_masl_sql = r"""SELECT date_time, head_cm / 100, level_masl FROM w_levels_logger WHERE obsid = '%s' ORDER BY date_time"""%obsid
         head_level_masl_list = db_utils.sql_load_fr_db(head_level_masl_sql)[1]
         head_list = [(row[0], row[1]) for row in head_level_masl_list]
         level_masl_list = [(row[0], row[2]) for row in head_level_masl_list]
@@ -309,16 +310,16 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     def setlastcalibration(self, obsid):
         if not obsid=='':
             self.lastcalibr = self.getlastcalibration(obsid)
-            if self.lastcalibr[0][1] and self.lastcalibr[0][0]:
-                text = ru(QCoreApplication.translate(u'Calibrlogger', u"Last pos. for logger in %s was %s masl at %s"))%(obsid, str(self.lastcalibr[0][1]), str(self.lastcalibr[0][0]))
-
+            if self.lastcalibr:
+                if self.lastcalibr[0][1] and self.lastcalibr[0][0]:
+                    text = ru(QCoreApplication.translate(u'Calibrlogger', u"Last pos. for logger in %s was %s masl at %s"))%(obsid, str(self.lastcalibr[0][1]), str(self.lastcalibr[0][0]))
             else:
                 text = ru(QCoreApplication.translate(u'Calibrlogger', u"""There is no earlier known position for the logger in %s"""))%self.selected_obsid
             self.INFO.setText(text)
 
     @fn_timer
     def getlastcalibration(self, obsid):
-        sql = """SELECT MAX(date_time), loggerpos FROM (SELECT date_time, (level_masl - (head_cm/100)) AS loggerpos FROM w_levels_logger WHERE level_masl IS NOT Null AND level_masl > -990 AND obsid = '%s')"""%obsid
+        sql = u"SELECT date_time, (level_masl - (head_cm/100)) AS loggerpos FROM w_levels_logger WHERE date_time = (SELECT max(date_time) AS date_time FROM w_levels_logger WHERE obsid = '%s' AND (CASE WHEN level_masl IS NULL THEN -1000 ELSE level_masl END) > -990 AND level_masl IS NOT NULL AND head_cm IS NOT NULL) AND obsid = '%s' "%(obsid, obsid)
         lastcalibr = db_utils.sql_load_fr_db(sql)[1]
         return lastcalibr
 
@@ -347,7 +348,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         if obsid is None:
             obsid = self.load_obsid_and_init()
-        if not obsid=='':        
+        if not obsid=='':
             fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
             to_d_t = self.ToDateTime.dateTime().toPyDateTime()
 
@@ -374,12 +375,11 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         sql += str(newzref)
         sql += """ + level_masl WHERE obsid = '"""
         sql += obsid
-        sql += """' AND level_masl IS NOT NULL AND level_masl !='' """
+        sql += """' AND level_masl IS NOT NULL"""
         # Sqlite seems to have problems with date comparison date_time >= a_date, so they have to be converted into total seconds first.
-        sql += """ AND CAST(strftime('%s', date_time) AS NUMERIC) > """
-        sql += str((fr_d_t - datetime.datetime(1970,1,1)).total_seconds())
-        sql += """ AND CAST(strftime('%s', date_time) AS NUMERIC) < """
-        sql += str((to_d_t - datetime.datetime(1970,1,1)).total_seconds())
+        date_time_as_epoch = db_utils.cast_date_time_as_epoch()
+        sql += """ AND %s > %s"""%(date_time_as_epoch, str((fr_d_t - datetime.datetime(1970,1,1)).total_seconds()))
+        sql += """ AND %s < %s""" % (date_time_as_epoch, str((to_d_t - datetime.datetime(1970, 1, 1)).total_seconds()))
         dummy = db_utils.sql_alter_db(sql)
 
     @fn_timer
@@ -391,18 +391,18 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         :param newzref: (int/float/str [m]) The correction that should be made against the head [m]
         :return: None
         """
+
         sql =r"""UPDATE w_levels_logger SET level_masl = """
         sql += str(newzref)
         sql += """ + head_cm / 100 WHERE obsid = '"""
         sql += obsid
-        sql += """' AND head_cm IS NOT NULL AND head_cm !='' """
+        sql += """' AND head_cm IS NOT NULL"""
         # Sqlite seems to have problems with date comparison date_time >= a_date, so they have to be converted into total seconds first (but now we changed to > but kept .total_seconds())
-        sql += """ AND CAST(strftime('%s', date_time) AS NUMERIC) > """
-        sql += str((fr_d_t - datetime.datetime(1970,1,1)).total_seconds())
-        sql += """ AND CAST(strftime('%s', date_time) AS NUMERIC) < """
-        sql += str((to_d_t - datetime.datetime(1970,1,1)).total_seconds())
-        sql += """ """
+        date_time_as_epoch = db_utils.cast_date_time_as_epoch()
+        sql += """ AND %s > %s"""%(date_time_as_epoch, str((fr_d_t - datetime.datetime(1970,1,1)).total_seconds()))
+        sql += """ AND %s < %s""" % (date_time_as_epoch, str((to_d_t - datetime.datetime(1970, 1, 1)).total_seconds()))
         dummy = db_utils.sql_alter_db(sql)
+        print(str(dummy))
 
     @fn_timer
     def sql_into_recarray(self, sql):
