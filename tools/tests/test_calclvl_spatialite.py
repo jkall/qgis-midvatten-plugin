@@ -19,27 +19,19 @@
  *                                                                         *
  ***************************************************************************/
 """
-import os
-from qgis.core import QgsApplication, QgsProviderRegistry
+
+from PyQt4 import QtGui
 
 import db_utils
-from utils_for_tests import init_test
-from tools.tests.mocks_for_tests import DummyInterface
-from date_utils import datestring_to_date
-from PyQt4 import QtCore, QtGui, QtTest
-from mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance
-import midvatten_utils as utils
-from nose.tools import raises
-from mock import MagicMock
 import mock
-from utils_for_tests import dict_to_sorted_list
-from wlevels_calc_calibr import Calclvl
-from midvatten.midvatten import midvatten
-import utils_for_tests
+from date_utils import datestring_to_date
 from nose.plugins.attrib import attr
+from wlevels_calc_calibr import Calclvl
+
+import utils_for_tests
 
 
-@attr(status='only')
+@attr(status='on')
 class TestCalclvl(utils_for_tests.MidvattenTestSpatialiteDbSv):
     def setUp(self):
         super(self.__class__, self).setUp()

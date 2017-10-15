@@ -649,14 +649,14 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     @fn_timer
     def calc_best_fit(self):
         """ Calculates the self.LoggerPos from self.meas_ts and self.head_ts
-        
+
             First matches measurements from self.meas_ts to logger values from
             self.head_ts. This is done by making a mean of all logger values inside
             self.meas_ts date - search_radius and self.meas_ts date + search_radius.
             (this could probably be change to get only the closest logger value
             inside the search_radius instead)
             (search_radius is gotten from self.get_search_radius())
-            
+
             Then calculates the mean of all matches and set to self.LoggerPos.
         """
         obsid = self.load_obsid_and_init()
@@ -771,7 +771,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         else:
             search_radius = self.bestFitSearchRadius.text()
 
-        search_radius_splitted = search_radius.split()
+        search_radius_splitted = ru(search_radius).split()
         if len(search_radius_splitted) != 2:
             utils.pop_up_info(ru(QCoreApplication.translate(u'Calibrlogger', u"Must write time resolution also, ex. %s"))%u'10 minutes')
         return tuple(search_radius_splitted)
