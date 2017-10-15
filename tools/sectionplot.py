@@ -358,8 +358,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.secax.grid(b=True, which='both', color='0.65',linestyle='-')
         self.secax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
         self.secax.xaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
-        self.secax.set_ylabel(unicode(ru(QCoreApplication.translate(u'SectionPlot', u"Level, masl")),'utf-8'))  #Allows international characters ('åäö') as ylabel
-        self.secax.set_xlabel(unicode(ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")),'utf-8'))  #Allows international characters ('åäö') as xlabel
+        self.secax.set_ylabel(ru(QCoreApplication.translate(u'SectionPlot', u"Level, masl")))  #Allows international characters ('åäö') as ylabel
+        self.secax.set_xlabel(ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")))  #Allows international characters ('åäö') as xlabel
         for label in self.secax.xaxis.get_ticklabels():
             label.set_fontsize(10)
         for label in self.secax.yaxis.get_ticklabels():
