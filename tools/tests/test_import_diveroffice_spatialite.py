@@ -30,7 +30,6 @@ import mock
 from import_diveroffice import DiverofficeImport
 from mock import MagicMock
 from nose.plugins.attrib import attr
-import nose
 
 import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue

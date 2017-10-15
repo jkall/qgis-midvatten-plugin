@@ -28,7 +28,7 @@ import utils_for_tests
 from wlevels_calc_calibr import Calibrlogger
 
 
-
+@attr(status='on')
 class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
@@ -46,7 +46,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         ref = u'[(2017-02-01 00:00, 99.5)]'
         assert test == ref
 
-    @attr(status='on')
+
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)

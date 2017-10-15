@@ -379,9 +379,10 @@ def get_all_obsids(table=u'obs_points'):
     :return: All obsids from obs_points
     """
     obsids = []
-    connection_ok, result = db_utils.sql_load_fr_db(u'''select distinct obsid from %s order by obsid''' % table)
+    connection_ok, result = db_utils.sql_load_fr_db(u'''SELECT DISTINCT obsid FROM %s ORDER BY OBSID''' % table)
     if connection_ok:
         obsids = [row[0] for row in result]
+    print("obsids: " + str(obsids))
     return obsids
 
 
@@ -1435,6 +1436,15 @@ class UsageError(Exception):
 
 
 def general_exception_handler(func):
+    """
+    If UsageError is raised without message, it is assumed that the programmer has used MessagebarAndLog for the messages
+    and no additional message will be printed.
+
+    UserInterruptError is assumed to never have an error text.
+
+    :param func:
+    :return:
+    """
     def new_func(*args, **kwargs):
         try:
             result = func(*args, **kwargs)
@@ -1442,7 +1452,9 @@ def general_exception_handler(func):
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
         except UsageError as e:
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'general_exception_handler', u'Usage error: %s'))%str(e))
+            msg = str(e)
+            if msg:
+                MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'general_exception_handler', u'Usage error: %s'))%str(e))
         else:
             return result
     return new_func
