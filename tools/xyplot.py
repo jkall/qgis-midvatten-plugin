@@ -28,6 +28,9 @@ import matplotlib.pyplot as plt  # THIS LINE may cause conflict with plugins "st
 import matplotlib.ticker as tick
 import midvatten_utils as utils
 import locale
+from midvatten_utils import returnunicode as ru
+
+from PyQt4.QtCore import QCoreApplication
 
 class XYPlot:
 
@@ -155,6 +158,6 @@ class XYPlot:
                         label.set_fontsize(10)
                     plt.show() # causes conflict with plugins "statist" and "chartmaker"
             else:
-                utils.pop_up_info("Please select at least one point with xy data")
+                utils.pop_up_info(ru(QCoreApplication.translate(u'XYPlot', u"Please select at least one point with xy data")))
         else:
-            utils.pop_up_info("Please select a layer containing observations with xy data")
+            utils.pop_up_info(ru(QCoreApplication.translate(u'XYPlot', u"Please select a layer containing observations with xy data")))

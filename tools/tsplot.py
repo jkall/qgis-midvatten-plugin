@@ -30,7 +30,10 @@ from matplotlib.dates import datestr2num
 import datetime
 import matplotlib.ticker as tick
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
 import locale
+
+from PyQt4.QtCore import QCoreApplication
 
 class TimeSeriesPlot:
 
@@ -126,6 +129,6 @@ class TimeSeriesPlot:
                     plt.show() 
                     #plt.draw()
             else:
-                utils.pop_up_info("Please select at least one point with time series data")
+                utils.pop_up_info(ru(QCoreApplication.translate(u'TimeSeriesPlot', u"Please select at least one point with time series data")))
         else:
-            utils.pop_up_info("Please select a layer with time series observation points")
+            utils.pop_up_info(ru(QCoreApplication.translate(u'TimeSeriesPlot', u"Please select a layer with time series observation points")))

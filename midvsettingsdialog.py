@@ -17,12 +17,16 @@ from PyQt4.QtGui import *
 from PyQt4 import uic
 from PyQt4.QtCore import QLocale
 
+from PyQt4.QtCore import QCoreApplication
+
 from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency  
 import os.path
 import qgis.utils
 from functools import partial # only to get combobox signals to work
 import locale
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
+
 from definitions import midvatten_defs
 #from ui.midvsettingsdock_ui import Ui_MidDockSettings
 midvsettingsdock_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'midvsettingsdock.ui'))[0]
@@ -73,10 +77,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.ListOfColumns_WQUALVALUE, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualValue))
         self.connect(self.ListOfdate_time_format, SIGNAL("activated(int)"), partial(self.ChangedListOfdate_time_format))
         self.connect(self.ListOfColumns_WQUALUNIT, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualUnit))         
-        self.connect(self.ListOfColumns_WQUALSORTING, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualSorting))                 
-
-        #tab stratigraphy  - TO BE REMOVED
-        #self.connect(self.ListOfTables_3, SIGNAL("activated(int)"), partial(self.StratigraphyTableUpdated))  # TODO: remove in version 1.4
+        self.connect(self.ListOfColumns_WQUALSORTING, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualSorting))
 
         #tab piper
         self.connect(self.paramCl, SIGNAL("activated(int)"), partial(self.ChangedParamCl)) 
@@ -87,8 +88,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.paramCa, SIGNAL("activated(int)"), partial(self.ChangedParamCa)) 
         self.connect(self.paramMg, SIGNAL("activated(int)"), partial(self.ChangedParamMg))         
         self.connect(self.MarkerComboBox, SIGNAL("activated(int)"), partial(self.ChangedPiperMarkerComboBox))
-        #tab general - TO BE REMOVED
-        #self.connect(self.locale_combobox, SIGNAL("activated(int)"), partial(self.ChangedLocale))# TODO: remove in version 1.4
 
         #Draw the widget
         self.iface.addDockWidget(max(self.ms.settingsdict['settingslocation'],1), self)
@@ -178,24 +177,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ms.settingsdict['piper_markers']=self.MarkerComboBox.currentText()
         self.ms.save_settings('piper_markers')
 
-    def ChangedLocale(self):    # TODO: remove in version 1.4
-        sql = u"select description from about_db where description like 'locale:%'"
-        connection_ok, result = utils.sql_load_fr_db(sql)
-        if not self.locale_combobox.currentText():
-            return
-        if connection_ok:
-            print(str(result))
-            if len(result) > 1:
-                utils.MessagebarAndLog.info(bar_msg=u'More than one row with locale found in db. No update can be done.')
-                return
-            if len(result) == 1:
-                sql = u"update or ignore about_db set description='locale:%s'"%self.locale_combobox.currentText()
-                sql += u" where description like 'locale:%'"
-                utils.sql_alter_db(sql)
-            elif len(result) == 0:
-                sql = u"insert or ignore into about_db (description) values ('locale:%s')"%self.locale_combobox.currentText()
-                utils.sql_alter_db(sql)
-
     def ClearColumnLists(self):
         self.ListOfColumns.clear()
         self.ListOfColumns_2.clear()
@@ -212,12 +193,10 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.ClearTableLists()
         self.ClearColumnLists()
         self.ClearPiperParams()
-        #self.ClearGeneral() # TODO: remove in version 1.4
 
     def ClearTableLists(self):
         self.ListOfTables.clear()    
-        self.ListOfTables_2.clear()    
-        #self.ListOfTables_3.clear() #TODO: remove in version 1.4 (was for stratigraphy)
+        self.ListOfTables_2.clear()
         self.ListOfTables_WQUAL.clear()
 
     def ClearPiperParams(self):
@@ -228,9 +207,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.paramK.clear()
         self.paramCa.clear()
         self.paramMg.clear()
-
-    def ClearGeneral(self):     # TODO: remove in version 1.4
-        self.locale_combobox.clear()
 
     def ColumnsToComboBox(self, comboboxname='', table=None):
         getattr(self, comboboxname).clear()
@@ -254,9 +230,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             #XY plot settings
             self.load_and_select_last_xyplot_settings()
             
-            #Stratigraphy settings # TODO: remove in version 1.4
-            #self.load_and_select_last_stratigraphy_settings()
-            
             #Water Quality Reports settings
             self.load_and_select_last_wqual_settings()
 
@@ -266,7 +239,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             # finally, set dockwidget to last choosen tab
             self.tabWidget.setCurrentIndex(int(self.ms.settingsdict['tabwidget']))
         else:
-            self.iface.messageBar().pushMessage("Warning","Could not recover Midvatten settings. You will have to reset.", 1,duration=5)
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'midvsettingsdialogdock', u'Could not recover Midvatten settings. You will have to reset.')))
 
     def load_and_select_last_piper_settings(self):
         searchindex = self.paramCl.findText(self.ms.settingsdict['piper_cl'])
@@ -293,13 +266,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         searchindex = self.MarkerComboBox.findText(self.ms.settingsdict['piper_markers'])
         if searchindex >= 0:
             self.MarkerComboBox.setCurrentIndex(searchindex)
-
-    def load_and_select_last_stratigraphy_settings(self):#TODO: remove in version 1.4
-        searchindex = self.ListOfTables_3.findText(self.ms.settingsdict['stratigraphytable'])
-        print(searchindex)
-        print(self.ms.settingsdict['stratigraphytable'])
-        if searchindex >= 0:
-            self.ListOfTables_3.setCurrentIndex(searchindex)
 
     def load_and_select_last_ts_plot_settings(self):
         if len(str(self.ms.settingsdict['tstable'])):#If there is a last selected tstable. #MacOSX fix1
@@ -379,23 +345,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         else:
             self.checkBoxDataPoints_2.setChecked(False)
 
-    def load_and_select_general_settings(self):     # TODO: remove in version 1.4
-        locales = [QLocale(QLocale.Swedish, QLocale.Sweden), QLocale(QLocale.English, QLocale.UnitedStates)]
-        current_locale = utils.getcurrentlocale()[0]
-        items_set = set()
-        items_set.add(current_locale)
-        items_set.update([localeobj.name() for localeobj in locales])
-        items = [u'']
-        items.extend(sorted(list(items_set)))
-
-        self.locale_combobox.addItems(items)
-        if current_locale:
-            idx = self.locale_combobox.findText(current_locale)
-            try:
-                self.locale_combobox.setCurrentIndex(idx)
-            except:
-                pass
-
     def LoadColumnsFromTable(self, table=''):
         """ This method returns a list with all the columns in the table"""
         columns = []
@@ -422,13 +371,11 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             rs=cursor.execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + midvatten_defs.SQLiteInternalTables() + r""") ORDER BY tbl_name""")  #SQL statement to get the relevant tables in the spatialite database
             self.ListOfTables.addItem('')
             self.ListOfTables_2.addItem('')
-            #self.ListOfTables_3.addItem('') #TODO: remove in version 1.4
             self.ListOfTables_WQUAL.addItem('')
             
             for row in cursor:
                 self.ListOfTables.addItem(row[0])
                 self.ListOfTables_2.addItem(row[0])
-                #self.ListOfTables_3.addItem(row[0]) #TODO: remove in version 1.4
                 self.ListOfTables_WQUAL.addItem(row[0])
             rs.close()
             myconnection.closedb()# then close the database          
@@ -511,30 +458,20 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         except:
             dir = ''
 
-        path = QFileDialog.getOpenFileName(parent=None,caption=str("Select database:"),directory=dir, filter="*.sqlite")
+        path = QFileDialog.getOpenFileName(parent=None,caption=str(ru(QCoreApplication.translate(u'midvsettingsdialogdock', u"Select database:"))),directory=dir, filter="*.sqlite")
         if path: #Only get new db name if not cancelling the FileDialog
             self.ms.settingsdict['database'] = path #
         else:#debug
-            print "cancelled and still using database path " + self.ms.settingsdict['database'] #debug
+            try:
+                print "cancelled and still using database path " + self.ms.settingsdict['database'] #debug
+            except:
+                pass
         self.LoadAndSelectLastSettings()
 
     def set_location(self):
         dockarea = self.parent.dockWidgetArea(self)
         self.ms.settingsdict['settingslocation']=dockarea
         self.ms.save_settings('settingslocation')
-        
-    def StratigraphyTableUpdated(self): # TODO: remove in version 1.4
-        """This method is called whenever stratigraphy table is changed"""
-        # Make sure that columns obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, comment exists
-        Needed_columns = ('comment', 'capacity', 'geology', 'geoshort', 'depthtop', 'depthbot', 'obsid', 'stratid')
-        columns = self.LoadColumnsFromTable(self.ListOfTables_3.currentText())     # For some reason it is not possible to send currentText with the SIGNAL-trigger
-        text = "<font color=green>Correct table! all the expected columns obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, comment have been found.</font>"
-        for column in Needed_columns:
-            if not column in columns:
-                text = "<font color=red>Wrong table! Column " + str(column) + " is missing.</font>"
-        self.InfoTxtStratigraphy.setText(text)
-        self.ms.settingsdict['stratigraphytable']=self.ListOfTables_3.currentText()
-        self.ms.save_settings('stratigraphytable')#save this specific setting
                 
     def TSTableUpdated(self):
         """This method is called whenever time series table is changed"""
@@ -543,9 +480,9 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         # Second, Make sure that columns obsid and date_time exists
         columns = self.LoadColumnsFromTable(self.ListOfTables.currentText())     # For some reason it is not possible to send currentText with the SIGNAL-trigger
         if ('obsid' in columns) and ('date_time' in columns):
-            text = "<font color=green>Correct table, both obsid and date_time columns have been found.</font>"
+            text = u"<font color=green>%s</font>"%ru(QCoreApplication.translate(u'midvsettingsdialogdock', u'Correct table, both obsid and date_time columns have been found.'))
         else:
-            text = "<font color=red>Wrong table! obsid and/or date_time is missing.</font>"
+            text = u"<font color=red>%s</font>"%ru(QCoreApplication.translate(u'midvsettingsdialogdock', u'Wrong table! obsid and/or date_time is missing.'))
         self.InfoTxtTSPlot.setText(text)
         #finally, save to qgis project settings
         self.ms.settingsdict['tstable']=self.ListOfTables.currentText()
@@ -608,9 +545,9 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         # Second, Make sure that column obsid exists
         columns = self.LoadColumnsFromTable(self.ListOfTables_2.currentText())     # For some reason it is not possible to send currentText with the SIGNAL-trigger
         if 'obsid' in columns:    
-            text = "<font color=green>Correct table! obsid column is found.</font>"
+            text = u"<font color=green>%s</font>"%ru(QCoreApplication.translate(u'midvsettingsdialogdock', u'Correct table! obsid column is found.'))
         else:
-            text = "<font color=red>Wrong table! obsid is missing.</font>"
+            text = u"<font color=red>%s</font>"%ru(QCoreApplication.translate(u'midvsettingsdialogdock', u'Wrong table! obsid is missing.'))
         self.InfoTxtXYPlot.setText(text)
         self.ms.settingsdict['xytable']=self.ListOfTables_2.currentText()
         self.ms.save_settings('xytable')#save this specific setting
