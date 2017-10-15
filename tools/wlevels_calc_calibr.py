@@ -73,16 +73,16 @@ class Calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
 #        sanity1 = db_utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.h_toc""")[1]
         sanity1 = db_utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid""")[1]
         sanity2 = db_utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.h_toc NOT NULL""")[1]
-        
+
         if len(sanity1) == len(sanity2): #only if h_toc exists for all objects!!
-            sql1 = """UPDATE OR IGNORE w_levels SET h_toc = (SELECT obs_points.h_toc FROM obs_points WHERE w_levels.obsid = obs_points.obsid) WHERE """
+            sql1 = """UPDATE w_levels SET h_toc = (SELECT obs_points.h_toc FROM obs_points WHERE w_levels.obsid = obs_points.obsid) WHERE """
             sql1 += """date_time >= '"""
             sql1 += str(fr_d_t)
             sql1 += """' AND date_time <= '"""
             sql1 += str(to_d_t)
             sql1 += """' """
             db_utils.sql_alter_db(sql1)
-            sql2 = """UPDATE OR IGNORE w_levels SET level_masl = h_toc - meas WHERE """
+            sql2 = """UPDATE w_levels SET level_masl = h_toc - meas WHERE """
             sql2 += """date_time >= '"""
             sql2 += str(fr_d_t)
             sql2 += """' AND date_time <= '"""
@@ -100,7 +100,7 @@ class Calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
         i=0
         for obs in obsar:
                 observations[i] = obs.encode('utf-8') #turn into a list of python byte strings
-                i += 1        
+                i += 1
         fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
         to_d_t = self.ToDateTime.dateTime().toPyDateTime()
 
@@ -108,7 +108,7 @@ class Calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
         sanity2 = db_utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.h_toc NOT NULL  AND obs_points.obsid IN """ + (str(observations)).encode('utf-8').replace('[','(').replace(']',')'))[1]
 
         if len(sanity1) == len(sanity2): #only if h_toc exists for all objects
-            sql1 = """UPDATE OR IGNORE w_levels SET h_toc = (SELECT obs_points.h_toc FROM obs_points WHERE w_levels.obsid = obs_points.obsid) WHERE obsid IN """
+            sql1 = """UPDATE w_levels SET h_toc = (SELECT obs_points.h_toc FROM obs_points WHERE w_levels.obsid = obs_points.obsid) WHERE obsid IN """
             sql1 += str(observations)
             sql1 += """ AND date_time >= '"""
             sql1 += str(fr_d_t)
@@ -116,7 +116,7 @@ class Calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
             sql1 += str(to_d_t)
             sql1 += """' """   
             db_utils.sql_alter_db(sql1.replace("[","(").replace("]",")"))
-            sql2 = """UPDATE OR IGNORE w_levels SET level_masl = h_toc - meas WHERE obsid IN """
+            sql2 = """UPDATE w_levels SET level_masl = h_toc - meas WHERE obsid IN """
             sql2 += str(observations)
             sql2 += """ AND date_time >= '"""
             sql2 += str(fr_d_t)
