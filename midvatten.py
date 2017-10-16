@@ -51,7 +51,7 @@ import util_translate
 from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
-from wqualreport import wqualreport
+from wqualreport import Wqualreport
 from loaddefaultlayers import LoadLayers
 from prepareforqgis2threejs import PrepareForQgis2Threejs
 import midvatten_utils as utils
@@ -79,10 +79,10 @@ class midvatten:
 
     def initGui(self):
         # Create actions that will start plugin configuration
-        self.actionNewDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), QCoreApplication.translate("Midvatten","Create a new Midvatten project DB"), self.iface.mainWindow())
+        self.actionNewDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), ru(QCoreApplication.translate("Midvatten","Create a new Midvatten project DB")), self.iface.mainWindow())
         QObject.connect(self.actionNewDB, SIGNAL("triggered()"), self.new_db)
 
-        self.actionNewPostgisDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), "Populate a postgis database to a new Midvatten project DB", self.iface.mainWindow())
+        self.actionNewPostgisDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), ru(QCoreApplication.translate("Midvatten", "Populate a postgis database to a new Midvatten project DB")), self.iface.mainWindow())
         QObject.connect(self.actionNewPostgisDB, SIGNAL("triggered()"), self.new_postgis_db)
 
         self.actionloadthelayers = QAction(QIcon(":/plugins/midvatten/icons/loaddefaultlayers.png"), QCoreApplication.translate("Midvatten","Load default db-layers to qgis"), self.iface.mainWindow())
@@ -100,15 +100,8 @@ class midvatten:
         
         self.actionabout = QAction(QIcon(":/plugins/midvatten/icons/about.png"), QCoreApplication.translate("Midvatten","About"), self.iface.mainWindow())
         QObject.connect(self.actionabout, SIGNAL("triggered()"), self.about)
-        
-        #self.actionupdatecoord = QAction(QIcon(":/plugins/midvatten/icons/updatecoordfrpos.png"), "Update coordinates from map position", self.iface.mainWindow())
-        #QObject.connect(self.actionupdatecoord , SIGNAL("triggered()"), self.updatecoord)
-        
-        #self.actionupdateposition = QAction(QIcon(":/plugins/midvatten/icons/updateposfrcoord.png"), "Update map position from coordinates", self.iface.mainWindow())
-        #QObject.connect(self.actionupdateposition , SIGNAL("triggered()"), self.updateposition)
 
-
-        self.action_wlvlcalculate = QAction(QIcon(":/plugins/midvatten/icons/calc_level_masl.png"), "Calculate w level from manual measurements", self.iface.mainWindow())
+        self.action_wlvlcalculate = QAction(QIcon(":/plugins/midvatten/icons/calc_level_masl.png"), ru(QCoreApplication.translate("Midvatten", "Calculate w level from manual measurements")), self.iface.mainWindow())
         QObject.connect(self.action_wlvlcalculate , SIGNAL("triggered()"), self.wlvlcalculate)
         
         self.action_aveflowcalculate = QAction(QIcon(":/plugins/midvatten/icons/import_wflow.png"), QCoreApplication.translate("Midvatten","Calculate Aveflow from Accvol"), self.iface.mainWindow())
@@ -363,8 +356,8 @@ class midvatten:
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some feature(s) is selected
         if err_flag == 0:     
-            from w_flow_calc_aveflow import calcave
-            dlg = calcave(self.iface.mainWindow()) 
+            from w_flow_calc_aveflow import Calcave
+            dlg = Calcave(self.iface.mainWindow())
             dlg.exec_()
 
     def drillreport(self):
@@ -373,8 +366,8 @@ class midvatten:
         err_flag = utils.verify_layer_selection(err_flag,1)#verify the selected layer has attribute "obsid" and that exactly one feature is selected
         if err_flag == 0:
             obsids = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())  # selected obs_point is now found in obsid[0]
-            from drillreport import drillreport
-            drillreport(obsids,self.ms.settingsdict)
+            from drillreport import Drillreport
+            Drillreport(obsids,self.ms.settingsdict)
 
     def export_csv(self):
         allcritical_layers = tuple(midvatten_defs.get_subset_of_tables_fr_db('obs_points') + midvatten_defs.get_subset_of_tables_fr_db('obs_lines') + midvatten_defs.get_subset_of_tables_fr_db('data_domains') + midvatten_defs.get_subset_of_tables_fr_db('default_layers') +  midvatten_defs.get_subset_of_tables_fr_db('default_nonspatlayers') )#none of these layers must be in editing mode
@@ -389,7 +382,7 @@ class midvatten:
 
             #sanity = utils.Askuser("YesNo","""You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""",'Are you sure?')
             #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
-            exportfolder = QFileDialog.getExistingDirectory(None, 'Select a folder where the csv files will be created:', '.',QFileDialog.ShowDirsOnly)
+            exportfolder = QFileDialog.getExistingDirectory(None, ru(QCoreApplication.translate("Midvatten", 'Select a folder where the csv files will be created:')), '.',QFileDialog.ShowDirsOnly)
             if len(exportfolder) > 0:
                 exportinstance = ExportData(OBSID_P, OBSID_L)
                 exportinstance.export_2_csv(exportfolder)
@@ -607,7 +600,7 @@ class midvatten:
 
     @db_utils.if_connection_ok
     def new_postgis_db(self):
-        sanity = utils.Askuser("YesNo", """This will create a new empty\nMidvatten Postgis DB with predefined design.\n\nContinue?""", 'Are you sure?')
+        sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This will create a new empty\nMidvatten Postgis DB with predefined design.\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten",  u'Are you sure?')))
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
@@ -670,9 +663,9 @@ class midvatten:
                 if geom.wkbType() == QGis.WKBLineString:#...and that the active layer is a line vector layer
                     pass
                 else:
-                    msg = 'You must activate the vector line layer that defines the section.'
+                    msg = QCoreApplication.translate("Midvatten", 'You must activate the vector line layer that defines the section.')
         else:
-            msg = 'You must activate the vector line layer and select exactly one feature that defines the section'
+            msg = QCoreApplication.translate("Midvatten", 'You must activate the vector line layer and select exactly one feature that defines the section')
         
         #Then verify that at least two feature is selected in obs_points layer, and get a list (OBSID) of selected obs_points
         obs_points_layer = utils.find_layer('obs_points')
@@ -683,7 +676,7 @@ class midvatten:
             # Made into tuple because module sectionplot depends on obsid being a tuple
             OBSID = ru(selectedobspoints, keep_containers=True)
         else:
-            msg = 'You must select at least two objects in the obs_points layer'
+            msg = ru(QCoreApplication.translate("Midvatten", 'You must select at least two objects in the obs_points layer'))
         
         if msg:#if something went wrong
             utils.MessagebarAndLog.critical(bar_msg=u'Error, %s'%msg)
@@ -748,62 +741,6 @@ class midvatten:
         except:
             self.midvsettingsdialog = midvsettingsdialog.midvsettingsdialogdock(self.iface.mainWindow(),self.iface, self.ms)#self.iface as arg?
 
-    def updatecoord(self):# no longer used, to be removed
-        all_critical_layers=('obs_points')
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, all_critical_layers)#verify midv settings are loaded
-        layername = 'obs_points'
-        err_flag = utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag, layername)
-        if err_flag == 0:
-            sanity = utils.Askuser("AllSelected","""Do you want to update coordinates\nfor All or Selected objects?""")
-            if sanity.result == 0:  #IF USER WANT ALL OBJECTS TO BE UPDATED
-                sanity = utils.Askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor ALL objects in the obs_points table.\nProceed?""")
-                if sanity.result==1:
-                    ALL_OBS = db_utils.sql_load_fr_db("select distinct obsid from obs_points")[1]#a list of unicode strings is returned
-                    observations = [None]*len(ALL_OBS)
-                    i = 0
-                    for obs in ALL_OBS:
-                        observations[i] = obs[0]
-                        i+=1
-                    from coords_and_position import updatecoordinates
-                    updatecoordinates(observations)
-            elif sanity.result == 1:    #IF USER WANT ONLY SELECTED OBJECTS TO BE UPDATED
-                sanity = utils.Askuser("YesNo","""Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor SELECTED objects in the obs_points table.\nProceed?""")
-                if sanity.result==1:
-                    layer = self.iface.activeLayer()
-                    if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!
-                        observations = utils.getselectedobjectnames(layer)#a list of unicode strings is returned
-                        from coords_and_position import updatecoordinates
-                        updatecoordinates(observations)
-
-    def updateposition(self):# no longer used, to be removed
-        all_critical_layers=('obs_points')
-        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, all_critical_layers)#verify midv settings are loaded
-        layername = 'obs_points'
-        err_flag = utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag, layername)
-        if err_flag == 0:
-            layer = self.iface.activeLayer()
-            sanity = utils.Askuser("AllSelected", """Do you want to update position\nfor All or Selected objects?""")
-            if sanity.result == 0:      #IF USER WANT ALL OBJECTS TO BE UPDATED
-                sanity = utils.Askuser("YesNo", """Sanity check! This will alter the database.\nALL objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")
-                if sanity.result==1:
-                    ALL_OBS = db_utils.sql_load_fr_db("select distinct obsid from obs_points")[1]
-                    observations = [None]*len(ALL_OBS)
-                    i = 0
-                    for obs in ALL_OBS:
-                        observations[i] = obs[0]
-                        i+=1
-                    from coords_and_position import updateposition
-                    updateposition(observations)
-                    layer.updateExtents()
-            elif sanity.result == 1:    #IF USER WANT ONLY SELECTED OBJECTS TO BE UPDATED
-                sanity = utils.Askuser("YesNo", """Sanity check! This will alter the database.\nSELECTED objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")
-                if sanity.result==1:
-                    if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!
-                        observations = utils.getselectedobjectnames(layer)
-                        from coords_and_position import updateposition
-                        updateposition(observations)
-                        layer.updateExtents()
-
     def vacuum_db(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
@@ -824,7 +761,7 @@ class midvatten:
                     utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate("Midvatten", "No water quality data for %s")) % str(k))
                     fail = 1
             if not fail == 1:#only if all objects has data
-                wqualreport(qgis.utils.iface.activeLayer(),self.ms.settingsdict)#TEMPORARY FOR GVAB
+                Wqualreport(qgis.utils.iface.activeLayer(),self.ms.settingsdict)#TEMPORARY FOR GVAB
 
     def wlvlcalculate(self):
         allcritical_layers = ('obs_points', 'w_levels')     #Check that none of these layers are in editing mode

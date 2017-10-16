@@ -20,23 +20,18 @@
  ***************************************************************************/
 """
 
-from qgis.core import QgsApplication, QgsProviderRegistry
-from utils_for_tests import init_test
 from collections import OrderedDict
-from tools.tests.mocks_for_tests import DummyInterface
-from PyQt4 import QtCore, QtGui, QtTest
-from export_fieldlogger import ExportToFieldLogger
-from mocks_for_tests import MockUsingReturnValue
-import export_fieldlogger
-import midvatten_utils as utils
-from midvatten_utils import anything_to_string_representation
-from nose.tools import raises
-from mock import MagicMock, call, patch
-import mock
-import utils_for_tests
-from utils_for_tests import dict_to_sorted_list, create_test_string
-import ast
 
+import export_fieldlogger
+import mock
+from export_fieldlogger import ExportToFieldLogger
+from mock import MagicMock
+from nose.plugins.attrib import attr
+
+from utils_for_tests import create_test_string
+
+
+@attr(status='only')
 class TestExportFieldloggerNoDb():
     def setUp(self):
         #self.ExportToFieldLogger = ExportToFieldLogger
@@ -384,7 +379,7 @@ class TestExportFieldloggerNoDb():
     @mock.patch('export_fieldlogger.utils.pop_up_info')
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
     @mock.patch('export_fieldlogger.PyQt4.QtGui.QInputDialog.getText')
-    @mock.patch('export_fieldlogger.defs.tables_columns')
+    @mock.patch('export_fieldlogger.db_utils.tables_columns')
     @mock.patch('qgis.utils.iface', autospec=True)
     def test_create_parameter_groups_using_stored_settings_string(self, mock_iface, mock_tables_columns, mock_settingsstrings, mock_settingsbarandlog, mock_popup):
         mock_tables_columns.return_value = {}

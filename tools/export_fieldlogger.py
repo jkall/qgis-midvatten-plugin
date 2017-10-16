@@ -563,7 +563,7 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
     def get_distinct_values(tablename, columnname):
         if not tablename or not columnname:
             return []
-        sql = '''SELECT distinct "%s" from "%s"'''%(columnname, tablename)
+        sql = '''SELECT distinct %s FROM %s'''%(columnname, tablename)
         connection_ok, result = db_utils.sql_load_fr_db(sql)
 
         if not connection_ok:
