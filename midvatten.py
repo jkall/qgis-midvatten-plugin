@@ -380,7 +380,7 @@ class midvatten:
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
 
-            #sanity = utils.Askuser("YesNo","""You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""",'Are you sure?')
+            #sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""")), ru(QCoreApplication.translate(u"Midvatten", u'Are you sure?')))
             #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
             exportfolder = QFileDialog.getExistingDirectory(None, ru(QCoreApplication.translate("Midvatten", 'Select a folder where the csv files will be created:')), '.',QFileDialog.ShowDirsOnly)
             if len(exportfolder) > 0:
@@ -398,14 +398,14 @@ class midvatten:
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
 
-            sanity = utils.Askuser("YesNo","""This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""",'Are you sure?')
+            sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""")), ru(QCoreApplication.translate(u"Midvatten", u'Are you sure?')))
             if sanity.result == 1:
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
                 obsp_layer = utils.find_layer('obs_points')
                 try:
                     CRS = obsp_layer.crs()
                 except AttributeError:
-                    utils.pop_up_info("Export error!\n\nMust use \"load default db-layers to qgis\" from Midvatten menu (or key F7) first!")
+                    utils.pop_up_info(ru(QCoreApplication.translate(u"Midvatten", "Export error!\n\nMust use \"load default db-layers to qgis\" from Midvatten menu (or key F7) first!")))
                     QApplication.restoreOverrideCursor()  # now this long process is done and the cursor is back as normal
                     return None
                 EPSG_code = str(CRS.authid()[5:])
@@ -446,7 +446,7 @@ class midvatten:
                 self.export_to_field_logger = ExportToFieldLogger(self.iface.mainWindow(), self.ms)
         else:
             utils.MessagebarAndLog.warning(
-                bar_msg='Error! Verify Midvatten settings. Verify that no layer is in edit mode.',
+                bar_msg=ru(QCoreApplication.translate(u"Midvatten", 'Error! Verify Midvatten settings. Verify that no layer is in edit mode.')),
                 duration=15, button=False)
 
     def import_fieldlogger(self):
@@ -458,8 +458,8 @@ class midvatten:
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):
-                longmessage = "You are about to import water head data, water flow or water quality from FieldLogger format."
-                sanity = utils.Askuser("YesNo",ru(longmessage),'Are you sure?')
+                longmessage = ru(QCoreApplication.translate(u"Midvatten", "You are about to import water head data, water flow or water quality from FieldLogger format."))
+                sanity = utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate(u"Midvatten", 'Are you sure?')))
                 if sanity.result == 1:
                     from import_fieldlogger import FieldloggerImport
                     importinstance = FieldloggerImport(self.iface.mainWindow(), self.ms)
@@ -506,7 +506,7 @@ class midvatten:
         allcritical_layers = ('obs_points', 'w_qual_lab')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.Askuser("YesNo","""You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.\nSpecifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf\n\nContinue?""",'Are you sure?')
+            sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.\nSpecifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf\n\nContinue?""")), ru(QCoreApplication.translate(u"Midvatten", u'Are you sure?')))
             if sanity.result == 1:
                 from import_interlab4 import Interlab4Import
                 importinstance = Interlab4Import(self.iface.mainWindow(), self.ms)
@@ -525,16 +525,17 @@ class midvatten:
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:   
             if not (self.ms.settingsdict['database'] == ''):
-                longmessage = (u"""You are about to import water head data, recorded with a Level Logger (e.g. Diver).\n""" +
-                               u"""Data is supposed to be imported from a diveroffice file and obsid will be read from the attribute 'Location'.\n""" +
-                               u"""The data is supposed to be semicolon or comma separated.\n""" +
-                               u"""The header for the data should have column Date/time and at least one of the columns:\n""" +
-                               u"""Water head[cm], Temperature[°C], Level[cm], Conductivity[mS/cm], 1:Conductivity[mS/cm], 2:Spec.cond.[mS/cm].\n\n""" +
-                               u"""The column order is unimportant but the column names are.\n""" +
-                               u"""The data columns must be real numbers with point (.) or comma (,) as decimal separator and no separator for thousands.\n""" +
-                               u"""The charset is usually cp1252!\n\n""" +
-                               u"""Continue?""")
-                sanity = utils.Askuser("YesNo",ru(longmessage),'Are you sure?')
+                longmessage = ru(QCoreApplication.translate(u"Midvatten",
+                               u"""You are about to import water head data, recorded with a Level Logger (e.g. Diver).\n"""
+                               u"""Data is supposed to be imported from a diveroffice file and obsid will be read from the attribute 'Location'.\n"""
+                               u"""The data is supposed to be semicolon or comma separated.\n"""
+                               u"""The header for the data should have column Date/time and at least one of the columns:\n"""
+                               u"""Water head[cm], Temperature[°C], Level[cm], Conductivity[mS/cm], 1:Conductivity[mS/cm], 2:Spec.cond.[mS/cm].\n\n"""
+                               u"""The column order is unimportant but the column names are.\n"""
+                               u"""The data columns must be real numbers with point (.) or comma (,) as decimal separator and no separator for thousands.\n"""
+                               u"""The charset is usually cp1252!\n\n"""
+                               u"""Continue?"""))
+                sanity = utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate(u"Midvatten", 'Are you sure?')))
                 if sanity.result == 1:
                     from import_diveroffice import DiverofficeImport
                     importinstance = DiverofficeImport(self.iface.mainWindow(), self.ms)
@@ -557,9 +558,9 @@ class midvatten:
         #return
         QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
-        utils.MessagebarAndLog.info(log_msg=u'load_data_domains err_flag: ' + str(err_flag))
+        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u"Midvatten", u'load_data_domains err_flag: %s'))%str(err_flag))
         if err_flag == 0:
-            d_domain_tables = [str(x) for x in db_utils.tables_columns.keys() if x.startswith(u'zz_')]
+            d_domain_tables = [str(x) for x in db_utils.tables_columns().keys() if x.startswith(u'zz_')]
             err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms, d_domain_tables)#verify none of the tables are already loaded and in edit mode
             if err_flag == 0:
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict,'Midvatten_data_domains')
@@ -568,7 +569,7 @@ class midvatten:
     def loadthelayers(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
-            sanity = utils.Askuser("YesNo","""This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""",'Warning!')
+            sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""")), ru(QCoreApplication.translate(u"Midvatten", u'Warning!')))
             if sanity.result == 1:
                 #show the user this may take a long time...
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
@@ -576,7 +577,7 @@ class midvatten:
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def new_db(self):
-        sanity = utils.Askuser("YesNo","""This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""",'Are you sure?')
+        sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""")), ru(QCoreApplication.translate(u"Midvatten", u'Are you sure?')))
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
@@ -600,7 +601,7 @@ class midvatten:
 
     @db_utils.if_connection_ok
     def new_postgis_db(self):
-        sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This will create a new empty\nMidvatten Postgis DB with predefined design.\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten",  u'Are you sure?')))
+        sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """This will create a new empty\nMidvatten Postgis DB with predefined design.\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten",  u'Are you sure?')))
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
@@ -813,7 +814,7 @@ class midvatten:
             from drillreport import GetStatistics
             printlist = [obsid + "\t" + '\t'.join([str(x) for x in GetStatistics(obsid)[1]]) for obsid in sorted(obsids)]
             printlist.reverse()
-            printlist.append('Obsid\tMin\tMedian\tNr of values\tMax')
+            printlist.append(ru(QCoreApplication.translate(u"Midvatten", 'Obsid\tMin\tMedian\tNr of values\tMax')))
             printlist.reverse()
             utils.MessagebarAndLog.info(
                 bar_msg=QCoreApplication.translate("Midvatten", 'Statistics done, see log for results.'),
