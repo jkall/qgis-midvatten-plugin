@@ -294,12 +294,18 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         except ValueError:
             return file_data
         else:
-            num_rows_before = len(file_data)
-            file_data = [[date_utils.reformat_date_time(col) if all([colnr in colnrs_to_convert, rownr > 0]) else col for colnr, col in enumerate(row) if date_utils.reformat_date_time(col) is not None] for rownr, row in enumerate(file_data)]
-            num_rows_after = len(file_data)
-            num_removed_rows = num_rows_before - num_rows_after
-            if num_removed_rows > 0:
-                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'%s rows without parsable date_time format skipped during import'))%str(num_removed_rows))
+            if colnrs_to_convert:
+                print(colnrs_to_convert)
+                num_rows_before = len(file_data)
+                file_data = [[date_utils.reformat_date_time(col) if all([rownr > 0, colnr in colnrs_to_convert]) else col
+                              for colnr, col in enumerate(row)]
+                             for rownr, row in enumerate(file_data)
+                             if rownr == 0 or all([date_utils.reformat_date_time(row[_colnr]) for _colnr in colnrs_to_convert])]
+
+                num_rows_after = len(file_data)
+                num_removed_rows = num_rows_before - num_rows_after
+                if num_removed_rows > 0:
+                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'%s rows without parsable date_time format skipped during import'))%str(num_removed_rows))
             return file_data
 
     @staticmethod
