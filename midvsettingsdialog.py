@@ -11,27 +11,21 @@
         copyright            : (C) 2011 by joskal
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/"""
-import db_utils
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4 import uic
-from PyQt4.QtCore import QLocale
-from PyQt4.QtCore import QSettings
 import PyQt4
-
-from PyQt4.QtCore import QCoreApplication
-
-from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
-import os.path
 import ast
-import qgis.utils
-from functools import partial # only to get combobox signals to work
-import locale
-import midvatten_utils as utils
+import os.path
+from PyQt4 import uic
+from functools import partial  # only to get combobox signals to work
+
+import db_utils
 import gui_utils
+import midvatten_utils as utils
+from PyQt4.QtCore import *
+from PyQt4.QtCore import QCoreApplication
+from PyQt4.QtCore import QLocale
+from PyQt4.QtGui import *
 from midvatten_utils import returnunicode as ru
 
-from definitions import midvatten_defs
 #from ui.midvsettingsdock_ui import Ui_MidDockSettings
 midvsettingsdock_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'midvsettingsdock.ui'))[0]
 
@@ -528,7 +522,7 @@ class DatabaseSettings(object):
         self.db_settings_obj = None
         self.label_width = self.maximum_label_width()
 
-        self._label = PyQt4.QtGui.QLabel(u'Database type')
+        self._label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'DatabaseSettings', u'Database type')))
         self._label.setFixedWidth(self.label_width)
         self._dbtype_combobox = PyQt4.QtGui.QComboBox()
         self._dbtype_combobox.addItems([u'', u'spatialite', u'postgis'])
@@ -587,24 +581,37 @@ class DatabaseSettings(object):
 
         self.layout.setRowStretch(self.layout.rowCount(), 1)
 
-    def update_settings(self, db_settings):
-        if not db_settings or db_settings is None:
+    def update_settings(self, _db_settings):
+        db_settings = None
+        if not _db_settings or _db_settings is None:
             return
 
         try:
-            db_settings = ast.literal_eval(db_settings)
+            db_settings = ast.literal_eval(_db_settings)
         except:
+            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'DatabaseSettings', u'Reading db_settings failed using string %s'))%_db_settings)
+        else:
             pass
 
-        for dbtype, settings in db_settings.iteritems():
-            self.dbtype_combobox = dbtype
-            self.choose_dbtype()
+        for setting in [db_settings, _db_settings]:
+            if isinstance(setting, basestring):
+                # Assume that the db_settings is an old spatialite database
+                if os.path.isfile(setting) and setting.endswith(u'.sqlite'):
+                    db_settings = {u'spatialite': {u'dbpath': setting}}
+                    break
 
-            for setting_name, value in settings.iteritems():
-                if hasattr(self.db_settings_obj, setting_name.encode(u'utf-8')):
-                    setattr(self.db_settings_obj, setting_name.encode(u'utf-8'), value)
-                else:
-                    utils.MessagebarAndLog.warning(log_msg=u'Databasetype ' + dbtype + u" didn' t have setting " + setting_name)
+        if isinstance(db_settings, dict):
+            for dbtype, settings in db_settings.iteritems():
+                self.dbtype_combobox = dbtype
+                self.choose_dbtype()
+
+                for setting_name, value in settings.iteritems():
+                    if hasattr(self.db_settings_obj, setting_name.encode(u'utf-8')):
+                        setattr(self.db_settings_obj, setting_name.encode(u'utf-8'), value)
+                    else:
+                        utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'DatabaseSettings', u"Databasetype %s didn' t have setting %s"))%(dbtype, setting_name))
+        else:
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'DatabaseSettings', u"Could not load database settings. Select database again!")), log_msg=ru(QCoreApplication.translate(u'DatabaseSettings', u'Tried to load db_settings string %s'))%_db_settings)
 
     def clear(self):
         self.dbtype_combobox = u''
@@ -612,7 +619,7 @@ class DatabaseSettings(object):
 
     def maximum_label_width(self):
         maximumwidth = 0
-        for label_name in [u'Database type', u'Select db', u'Connections']:
+        for label_name in [ru(QCoreApplication.translate(u'DatabaseSettings', u'Database type')), ru(QCoreApplication.translate(u'DatabaseSettings', u'Select db')), ru(QCoreApplication.translate(u'DatabaseSettings', u'Connections'))]:
             testlabel = PyQt4.QtGui.QLabel(label_name)
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
@@ -623,7 +630,7 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
     def __init__(self, midvsettingsdialogdock, label_width):
         super(SpatialiteSettings, self).__init__()
         self.midvsettingsdialogdock = midvsettingsdialogdock
-        self.btnSetDB = PyQt4.QtGui.QPushButton(u'Select db')
+        self.btnSetDB = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'SpatialiteSettings', u'Select db')))
         self.btnSetDB.setFixedWidth(label_width)
         self.layout.addWidget(self.btnSetDB, 0, 0)
         self._dbpath = PyQt4.QtGui.QLineEdit(u'')
@@ -649,7 +656,7 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
             self.midvsettingsdialogdock.ms.save_settings('database')
             #self.midvsettingsdialogdock.LoadAndSelectLastSettings()
         else:  # debug
-            utils.MessagebarAndLog.info(log_msg=u"DB selection cancelled and still using database path " + utils.returnunicode(self.midvsettingsdialogdock.ms.settingsdict['database']))
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SpatialiteSettings', u"DB selection cancelled and still using database path %s"))%utils.returnunicode(self.midvsettingsdialogdock.ms.settingsdict['database']))
 
 
 class PostgisSettings(gui_utils.RowEntryGrid):
@@ -660,7 +667,7 @@ class PostgisSettings(gui_utils.RowEntryGrid):
 
         postgis_connections = db_utils.get_postgis_connections()
 
-        self.label = PyQt4.QtGui.QLabel(u'Connections')
+        self.label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'PostgisSettings', u'Connections')))
         self.label.setFixedWidth(label_width)
         self._connection = PyQt4.QtGui.QComboBox()
         self._connection.addItem(u'')
