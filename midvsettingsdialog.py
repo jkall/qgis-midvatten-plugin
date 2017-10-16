@@ -357,7 +357,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             self.checkBoxDataPoints_2.setChecked(False)
 
     def LoadColumnsFromTable(self, table=''):
-        return db_utils.tables_columns.get(table, [])
+        return db_utils.tables_columns().get(table, [])
 
     def loadTablesFromDB(self): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
