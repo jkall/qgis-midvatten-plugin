@@ -76,23 +76,23 @@ class midvatten:
         
     def initGui(self):
         # Create actions that will start plugin configuration
-        self.actionNewDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), QCoreApplication.translate("Midvatten","Create a new Midvatten project DB"), self.iface.mainWindow())
+        self.actionNewDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), QCoreApplication.translate(u'Midvatten',"Create a new Midvatten project DB"), self.iface.mainWindow())
         QObject.connect(self.actionNewDB, SIGNAL("triggered()"), self.new_db)
         
-        self.actionloadthelayers = QAction(QIcon(":/plugins/midvatten/icons/loaddefaultlayers.png"), QCoreApplication.translate("Midvatten","Load default db-layers to qgis"), self.iface.mainWindow())
-        self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load default layers from the selected database"))
+        self.actionloadthelayers = QAction(QIcon(":/plugins/midvatten/icons/loaddefaultlayers.png"), QCoreApplication.translate(u'Midvatten',"Load default db-layers to qgis"), self.iface.mainWindow())
+        self.actionloadthelayers.setWhatsThis(QCoreApplication.translate(u'Midvatten',"Load default layers from the selected database"))
         self.iface.registerMainWindowAction(self.actionloadthelayers, "F7")   # The function should also be triggered by the F7 key
         QObject.connect(self.actionloadthelayers, SIGNAL("activated()"), self.loadthelayers)
 
-        self.actionsetup = QAction(QIcon(":/plugins/midvatten/icons/MidvSettings.png"), QCoreApplication.translate("Midvatten","Midvatten Settings"), self.iface.mainWindow())
-        self.actionsetup.setWhatsThis(QCoreApplication.translate("Midvatten","Configuration for Midvatten toolset"))
+        self.actionsetup = QAction(QIcon(":/plugins/midvatten/icons/MidvSettings.png"), QCoreApplication.translate(u'Midvatten',"Midvatten Settings"), self.iface.mainWindow())
+        self.actionsetup.setWhatsThis(QCoreApplication.translate(u'Midvatten',"Configuration for Midvatten toolset"))
         self.iface.registerMainWindowAction(self.actionsetup, "F6")   # The function should also be triggered by the F6 key
         QObject.connect(self.actionsetup, SIGNAL("activated()"), self.setup)
         
-        self.actionresetSettings = QAction(QIcon(":/plugins/midvatten/icons/ResetSettings.png"), QCoreApplication.translate("Midvatten","Reset Settings"), self.iface.mainWindow())
+        self.actionresetSettings = QAction(QIcon(":/plugins/midvatten/icons/ResetSettings.png"), QCoreApplication.translate(u'Midvatten',"Reset Settings"), self.iface.mainWindow())
         QObject.connect(self.actionresetSettings, SIGNAL("triggered()"), self.reset_settings)
         
-        self.actionabout = QAction(QIcon(":/plugins/midvatten/icons/about.png"), QCoreApplication.translate("Midvatten","About"), self.iface.mainWindow())
+        self.actionabout = QAction(QIcon(":/plugins/midvatten/icons/about.png"), QCoreApplication.translate(u'Midvatten',"About"), self.iface.mainWindow())
         QObject.connect(self.actionabout, SIGNAL("triggered()"), self.about)
         
         #self.actionupdatecoord = QAction(QIcon(":/plugins/midvatten/icons/updatecoordfrpos.png"), "Update coordinates from map position", self.iface.mainWindow())
@@ -101,134 +101,134 @@ class midvatten:
         #self.actionupdateposition = QAction(QIcon(":/plugins/midvatten/icons/updateposfrcoord.png"), "Update map position from coordinates", self.iface.mainWindow())
         #QObject.connect(self.actionupdateposition , SIGNAL("triggered()"), self.updateposition)
         
-        self.action_import_wlvl = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_manual.png"), QCoreApplication.translate("Midvatten","Import w level measurements"), self.iface.mainWindow())
+        self.action_import_wlvl = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_manual.png"), QCoreApplication.translate(u'Midvatten',"Import w level measurements"), self.iface.mainWindow())
         QObject.connect(self.action_import_wlvl , SIGNAL("triggered()"), self.import_wlvl)
         
-        self.action_import_wflow = QAction(QIcon(":/plugins/midvatten/icons/load_wflow.png"), QCoreApplication.translate("Midvatten","Import w flow measurements"), self.iface.mainWindow())
+        self.action_import_wflow = QAction(QIcon(":/plugins/midvatten/icons/load_wflow.png"), QCoreApplication.translate(u'Midvatten',"Import w flow measurements"), self.iface.mainWindow())
         QObject.connect(self.action_import_wflow , SIGNAL("triggered()"), self.import_wflow)
         
-        self.action_import_seismics = QAction(QIcon(":/plugins/midvatten/icons/load_seismics.png"), QCoreApplication.translate("Midvatten","Import seismic data"), self.iface.mainWindow())
+        self.action_import_seismics = QAction(QIcon(":/plugins/midvatten/icons/load_seismics.png"), QCoreApplication.translate(u'Midvatten',"Import seismic data"), self.iface.mainWindow())
         QObject.connect(self.action_import_seismics , SIGNAL("triggered()"), self.import_seismics)
         
-        self.action_import_vlf = QAction(QIcon(":/plugins/midvatten/icons/load_vlf.png"), QCoreApplication.translate("Midvatten","Import vlf data"), self.iface.mainWindow())
+        self.action_import_vlf = QAction(QIcon(":/plugins/midvatten/icons/load_vlf.png"), QCoreApplication.translate(u'Midvatten',"Import vlf data"), self.iface.mainWindow())
         QObject.connect(self.action_import_vlf , SIGNAL("triggered()"), self.import_vlf)
         
-        self.action_import_obs_lines = QAction(QIcon(":/plugins/midvatten/icons/import_obs_lines.png"), QCoreApplication.translate("Midvatten","Import obs lines table"), self.iface.mainWindow())
+        self.action_import_obs_lines = QAction(QIcon(":/plugins/midvatten/icons/import_obs_lines.png"), QCoreApplication.translate(u'Midvatten',"Import obs lines table"), self.iface.mainWindow())
         QObject.connect(self.action_import_obs_lines , SIGNAL("triggered()"), self.import_obs_lines)
         
-        self.action_wlvlcalculate = QAction(QIcon(":/plugins/midvatten/icons/calc_level_masl.png"), QCoreApplication.translate("Midvatten","Calculate w level from manual measurements"), self.iface.mainWindow())
+        self.action_wlvlcalculate = QAction(QIcon(":/plugins/midvatten/icons/calc_level_masl.png"), QCoreApplication.translate(u'Midvatten',"Calculate w level from manual measurements"), self.iface.mainWindow())
         QObject.connect(self.action_wlvlcalculate , SIGNAL("triggered()"), self.wlvlcalculate)
         
-        self.action_aveflowcalculate = QAction(QIcon(":/plugins/midvatten/icons/import_wflow.png"), QCoreApplication.translate("Midvatten","Calculate Aveflow from Accvol"), self.iface.mainWindow())
+        self.action_aveflowcalculate = QAction(QIcon(":/plugins/midvatten/icons/import_wflow.png"), QCoreApplication.translate(u'Midvatten',"Calculate Aveflow from Accvol"), self.iface.mainWindow())
         QObject.connect(self.action_aveflowcalculate , SIGNAL("triggered()"), self.aveflowcalculate)
         
-        self.action_import_wlvllogg = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), QCoreApplication.translate("Midvatten","Import w level from logger"), self.iface.mainWindow())
+        self.action_import_wlvllogg = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), QCoreApplication.translate(u'Midvatten',"Import w level from logger"), self.iface.mainWindow())
         QObject.connect(self.action_import_wlvllogg , SIGNAL("triggered()"), self.import_wlvllogg)
 
-        self.action_import_diverofficedata = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), QCoreApplication.translate("Midvatten","Import logger data using Diver-Office format"), self.iface.mainWindow())
+        self.action_import_diverofficedata = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), QCoreApplication.translate(u'Midvatten',"Import logger data using Diver-Office format"), self.iface.mainWindow())
         QObject.connect(self.action_import_diverofficedata, SIGNAL("triggered()"), self.import_diverofficedata)
         
-        self.action_wlvlloggcalibrate = QAction(QIcon(":/plugins/midvatten/icons/calibr_level_logger_masl.png"), QCoreApplication.translate("Midvatten","Calculate logger w level from logger water head"), self.iface.mainWindow())
+        self.action_wlvlloggcalibrate = QAction(QIcon(":/plugins/midvatten/icons/calibr_level_logger_masl.png"), QCoreApplication.translate(u'Midvatten',"Calculate logger w level from logger water head"), self.iface.mainWindow())
         QObject.connect(self.action_wlvlloggcalibrate , SIGNAL("triggered()"), self.wlvlloggcalibrate)
 
-        self.actionimport_wqual_lab = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_lab.png"), QCoreApplication.translate("Midvatten","Import w quality from lab"), self.iface.mainWindow())
+        self.actionimport_wqual_lab = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_lab.png"), QCoreApplication.translate(u'Midvatten',"Import w quality from lab"), self.iface.mainWindow())
         QObject.connect(self.actionimport_wqual_lab, SIGNAL("triggered()"), self.import_wqual_lab)
 
-        self.actionimport_wqual_lab_from_interlab4 = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_lab.png"), QCoreApplication.translate("Midvatten","Import w quality from lab data using interlab4 format"), self.iface.mainWindow())
+        self.actionimport_wqual_lab_from_interlab4 = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_lab.png"), QCoreApplication.translate(u'Midvatten',"Import w quality from lab data using interlab4 format"), self.iface.mainWindow())
         QObject.connect(self.actionimport_wqual_lab_from_interlab4, SIGNAL("triggered()"), self.import_wqual_lab_from_interlab4)
         
-        self.actionimport_wqual_field = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), QCoreApplication.translate("Midvatten","Import w quality from field"), self.iface.mainWindow())
+        self.actionimport_wqual_field = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), QCoreApplication.translate(u'Midvatten',"Import w quality from field"), self.iface.mainWindow())
         QObject.connect(self.actionimport_wqual_field, SIGNAL("triggered()"), self.import_wqual_field)
         
-        self.actionimport_stratigraphy = QAction(QIcon(":/plugins/midvatten/icons/import_stratigraphy.png"), QCoreApplication.translate("Midvatten","Import stratigraphy data"), self.iface.mainWindow())
+        self.actionimport_stratigraphy = QAction(QIcon(":/plugins/midvatten/icons/import_stratigraphy.png"), QCoreApplication.translate(u'Midvatten',"Import stratigraphy data"), self.iface.mainWindow())
         QObject.connect(self.actionimport_stratigraphy, SIGNAL("triggered()"), self.import_stratigraphy)
         
-        self.actionimport_obs_points = QAction(QIcon(":/plugins/midvatten/icons/import_obs_points.png"), QCoreApplication.translate("Midvatten","Import obs points table"), self.iface.mainWindow())
+        self.actionimport_obs_points = QAction(QIcon(":/plugins/midvatten/icons/import_obs_points.png"), QCoreApplication.translate(u'Midvatten',"Import obs points table"), self.iface.mainWindow())
         QObject.connect(self.actionimport_obs_points, SIGNAL("triggered()"), self.import_obs_points)
         
-        self.actionimport_wflow = QAction(QIcon(":/plugins/midvatten/icons/import_wflow.png"), QCoreApplication.translate("Midvatten","Import w flow measurements"), self.iface.mainWindow())
+        self.actionimport_wflow = QAction(QIcon(":/plugins/midvatten/icons/import_wflow.png"), QCoreApplication.translate(u'Midvatten',"Import w flow measurements"), self.iface.mainWindow())
         QObject.connect(self.actionimport_wflow, SIGNAL("triggered()"), self.import_wflow)
         
-        self.actionimport_meteo = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), QCoreApplication.translate("Midvatten","Import meteorological observations"), self.iface.mainWindow())
+        self.actionimport_meteo = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), QCoreApplication.translate(u'Midvatten',"Import meteorological observations"), self.iface.mainWindow())
         QObject.connect(self.actionimport_meteo, SIGNAL("triggered()"), self.import_meteo)
 
-        self.actionimport_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), QCoreApplication.translate("Midvatten","Import data using FieldLogger format"), self.iface.mainWindow())
+        self.actionimport_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), QCoreApplication.translate(u'Midvatten',"Import data using FieldLogger format"), self.iface.mainWindow())
         QObject.connect(self.actionimport_fieldlogger, SIGNAL("triggered()"), self.import_fieldlogger)
 
-        self.actiongeneral_import_csv = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), QCoreApplication.translate("Midvatten","Import data using general csv format"), self.iface.mainWindow())
+        self.actiongeneral_import_csv = QAction(QIcon(":/plugins/midvatten/icons/import_wqual_field.png"), QCoreApplication.translate(u'Midvatten',"Import data using general csv format"), self.iface.mainWindow())
         QObject.connect(self.actiongeneral_import_csv, SIGNAL("triggered()"), self.import_csv)
 
-        self.actionPlotTS = QAction(QIcon(":/plugins/midvatten/icons/PlotTS.png"), QCoreApplication.translate("Midvatten","Time series plot"), self.iface.mainWindow())
-        self.actionPlotTS.setWhatsThis(QCoreApplication.translate("Midvatten","Plot time series for selected objects"))
+        self.actionPlotTS = QAction(QIcon(":/plugins/midvatten/icons/PlotTS.png"), QCoreApplication.translate(u'Midvatten',"Time series plot"), self.iface.mainWindow())
+        self.actionPlotTS.setWhatsThis(QCoreApplication.translate(u'Midvatten',"Plot time series for selected objects"))
         self.iface.registerMainWindowAction(self.actionPlotTS, "F8")   # The function should also be triggered by the F8 key
         QObject.connect(self.actionPlotTS, SIGNAL("triggered()"), self.plot_timeseries)
         
-        self.actionPlotXY = QAction(QIcon(":/plugins/midvatten/icons/PlotXY.png"), QCoreApplication.translate("Midvatten","Scatter plot"), self.iface.mainWindow())
-        self.actionPlotXY.setWhatsThis(QCoreApplication.translate("Midvatten","Plot XY scatter data (e.g. seismic profile) for the selected objects"))
+        self.actionPlotXY = QAction(QIcon(":/plugins/midvatten/icons/PlotXY.png"), QCoreApplication.translate(u'Midvatten',"Scatter plot"), self.iface.mainWindow())
+        self.actionPlotXY.setWhatsThis(QCoreApplication.translate(u'Midvatten',"Plot XY scatter data (e.g. seismic profile) for the selected objects"))
         self.iface.registerMainWindowAction(self.actionPlotXY, "F9")   # The function should also be triggered by the F9 key
         QObject.connect(self.actionPlotXY, SIGNAL("triggered()"), self.plot_xy)
         
-        self.actionPlotPiper = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","Piper.png")), QCoreApplication.translate("Midvatten","Piper diagram"), self.iface.mainWindow())
-        self.actionPlotPiper.setWhatsThis(QCoreApplication.translate("Midvatten","Plot a rectangular Piper diagram for selected objects"))
+        self.actionPlotPiper = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","Piper.png")), QCoreApplication.translate(u'Midvatten',"Piper diagram"), self.iface.mainWindow())
+        self.actionPlotPiper.setWhatsThis(QCoreApplication.translate(u'Midvatten',"Plot a rectangular Piper diagram for selected objects"))
         QObject.connect(self.actionPlotPiper, SIGNAL("triggered()"), self.plot_piper)
                 
-        self.actionPlotSQLite = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","plotsqliteicon.png")), QCoreApplication.translate("Midvatten","Custom plots"), self.iface.mainWindow())
-        self.actionPlotSQLite.setWhatsThis(QCoreApplication.translate("Midvatten","Create custom plots for your reports"))
+        self.actionPlotSQLite = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons","plotsqliteicon.png")), QCoreApplication.translate(u'Midvatten',"Custom plots"), self.iface.mainWindow())
+        self.actionPlotSQLite.setWhatsThis(QCoreApplication.translate(u'Midvatten',"Create custom plots for your reports"))
         QObject.connect(self.actionPlotSQLite, SIGNAL("triggered()"), self.plot_sqlite)
         
-        self.actionPlotStratigraphy = QAction(QIcon(":/plugins/midvatten/icons/PlotStratigraphy.png"), QCoreApplication.translate("Midvatten","Stratigraphy plot"), self.iface.mainWindow())
-        self.actionPlotStratigraphy.setWhatsThis(QCoreApplication.translate("Midvatten","Show stratigraphy for selected objects (modified ARPAT)"))
+        self.actionPlotStratigraphy = QAction(QIcon(":/plugins/midvatten/icons/PlotStratigraphy.png"), QCoreApplication.translate(u'Midvatten',"Stratigraphy plot"), self.iface.mainWindow())
+        self.actionPlotStratigraphy.setWhatsThis(QCoreApplication.translate(u'Midvatten',"Show stratigraphy for selected objects (modified ARPAT)"))
         self.iface.registerMainWindowAction(self.actionPlotStratigraphy, "F10")   # The function should also be triggered by the F10 key
         QObject.connect(self.actionPlotStratigraphy, SIGNAL("triggered()"), self.plot_stratigraphy)
         
-        self.actiondrillreport = QAction(QIcon(":/plugins/midvatten/icons/drill_report.png"), QCoreApplication.translate("Midvatten","General report"), self.iface.mainWindow())
-        self.actiondrillreport.setWhatsThis(QCoreApplication.translate("Midvatten","Show a general report for the selected obs point"))
+        self.actiondrillreport = QAction(QIcon(":/plugins/midvatten/icons/drill_report.png"), QCoreApplication.translate(u'Midvatten',"General report"), self.iface.mainWindow())
+        self.actiondrillreport.setWhatsThis(QCoreApplication.translate(u'Midvatten',"Show a general report for the selected obs point"))
         self.iface.registerMainWindowAction(self.actiondrillreport, "F11")   # The function should also be triggered by the F11 key
         QObject.connect(self.actiondrillreport, SIGNAL("triggered()"), self.drillreport)
 
-        self.actionwqualreport = QAction(QIcon(":/plugins/midvatten/icons/wqualreport.png"), QCoreApplication.translate("Midvatten","Water quality report"), self.iface.mainWindow())
-        self.actionwqualreport.setWhatsThis(QCoreApplication.translate("Midvatten","Show water quality for the selected obs point"))
+        self.actionwqualreport = QAction(QIcon(":/plugins/midvatten/icons/wqualreport.png"), QCoreApplication.translate(u'Midvatten',"Water quality report"), self.iface.mainWindow())
+        self.actionwqualreport.setWhatsThis(QCoreApplication.translate(u'Midvatten',"Show water quality for the selected obs point"))
         self.iface.registerMainWindowAction(self.actionwqualreport, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionwqualreport, SIGNAL("triggered()"), self.waterqualityreport)
 
-        self.actionPlotSection = QAction(QIcon(":/plugins/midvatten/icons/PlotSection.png"), QCoreApplication.translate("Midvatten","Section plot"), self.iface.mainWindow())
-        self.actionPlotSection.setWhatsThis(QCoreApplication.translate("Midvatten","Plot a section with stratigraphy and water levels"))
+        self.actionPlotSection = QAction(QIcon(":/plugins/midvatten/icons/PlotSection.png"), QCoreApplication.translate(u'Midvatten',"Section plot"), self.iface.mainWindow())
+        self.actionPlotSection.setWhatsThis(QCoreApplication.translate(u'Midvatten',"Plot a section with stratigraphy and water levels"))
         #self.iface.registerMainWindowAction(self.actionChartMaker, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionPlotSection, SIGNAL("triggered()"), self.plot_section)
         
-        self.actionPrepareFor2Qgis2ThreeJS = QAction(QIcon(":/plugins/midvatten/icons/qgis2threejs.png"), QCoreApplication.translate("Midvatten","Prepare 3D-data for Qgis2threejs plugin"), self.iface.mainWindow())
-        self.actionPrepareFor2Qgis2ThreeJS.setWhatsThis(QCoreApplication.translate("Midvatten","Add spatialite views to be used by Qgis2threejs plugin to create a 3D plot"))
+        self.actionPrepareFor2Qgis2ThreeJS = QAction(QIcon(":/plugins/midvatten/icons/qgis2threejs.png"), QCoreApplication.translate(u'Midvatten',"Prepare 3D-data for Qgis2threejs plugin"), self.iface.mainWindow())
+        self.actionPrepareFor2Qgis2ThreeJS.setWhatsThis(QCoreApplication.translate(u'Midvatten',"Add spatialite views to be used by Qgis2threejs plugin to create a 3D plot"))
         QObject.connect(self.actionPrepareFor2Qgis2ThreeJS, SIGNAL("triggered()"), self.prepare_layers_for_qgis2threejs)
 
-        self.actionloaddatadomains = QAction(QIcon(":/plugins/midvatten/icons/loaddatadomains.png"), QCoreApplication.translate("Midvatten","Load data domain tables to qgis"), self.iface.mainWindow())
-        self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load the data domain tables from the database"))
+        self.actionloaddatadomains = QAction(QIcon(":/plugins/midvatten/icons/loaddatadomains.png"), QCoreApplication.translate(u'Midvatten',"Load data domain tables to qgis"), self.iface.mainWindow())
+        self.actionloadthelayers.setWhatsThis(QCoreApplication.translate(u'Midvatten',"Load the data domain tables from the database"))
         QObject.connect(self.actionloaddatadomains, SIGNAL("activated()"), self.load_data_domains)
 
-        self.actionVacuumDB = QAction(QIcon(":/plugins/midvatten/icons/vacuum.png"), QCoreApplication.translate("Midvatten","Vacuum the database"), self.iface.mainWindow())
-        self.actionVacuumDB.setWhatsThis(QCoreApplication.translate("Midvatten","Perform database vacuuming"))
+        self.actionVacuumDB = QAction(QIcon(":/plugins/midvatten/icons/vacuum.png"), QCoreApplication.translate(u'Midvatten',"Vacuum the database"), self.iface.mainWindow())
+        self.actionVacuumDB.setWhatsThis(QCoreApplication.translate(u'Midvatten',"Perform database vacuuming"))
         QObject.connect(self.actionVacuumDB, SIGNAL("triggered()"), self.vacuum_db)
 
-        self.actionZipDB = QAction(QIcon(":/plugins/midvatten/icons/zip.png"), QCoreApplication.translate("Midvatten","Backup the database"), self.iface.mainWindow())
-        self.actionZipDB.setWhatsThis(QCoreApplication.translate("Midvatten","A compressed copy of the database will be placed in same directory as the db."))
+        self.actionZipDB = QAction(QIcon(":/plugins/midvatten/icons/zip.png"), QCoreApplication.translate(u'Midvatten',"Backup the database"), self.iface.mainWindow())
+        self.actionZipDB.setWhatsThis(QCoreApplication.translate(u'Midvatten',"A compressed copy of the database will be placed in same directory as the db."))
         QObject.connect(self.actionZipDB, SIGNAL("triggered()"), self.zip_db)
 
-        self.action_export_csv = QAction(QIcon(":/plugins/midvatten/icons/export_csv.png"), QCoreApplication.translate("Midvatten","Export to a set of csv files"), self.iface.mainWindow())
-        self.action_export_csv.setWhatsThis(QCoreApplication.translate("Midvatten","All data for the selected objects (obs_points and obs_lines) will be exported to a set of csv files."))
+        self.action_export_csv = QAction(QIcon(":/plugins/midvatten/icons/export_csv.png"), QCoreApplication.translate(u'Midvatten',"Export to a set of csv files"), self.iface.mainWindow())
+        self.action_export_csv.setWhatsThis(QCoreApplication.translate(u'Midvatten',"All data for the selected objects (obs_points and obs_lines) will be exported to a set of csv files."))
         QObject.connect(self.action_export_csv, SIGNAL("triggered()"), self.export_csv)
 
-        self.action_export_spatialite = QAction(QIcon(":/plugins/midvatten/icons/export_spatialite.png"), QCoreApplication.translate("Midvatten","Export to another spatialite db"), self.iface.mainWindow())
-        self.action_export_spatialite.setWhatsThis(QCoreApplication.translate("Midvatten","All data for the selected objects (obs_points and obs_lines) will be exported to another spatialite db."))
+        self.action_export_spatialite = QAction(QIcon(":/plugins/midvatten/icons/export_spatialite.png"), QCoreApplication.translate(u'Midvatten',"Export to another spatialite db"), self.iface.mainWindow())
+        self.action_export_spatialite.setWhatsThis(QCoreApplication.translate(u'Midvatten',"All data for the selected objects (obs_points and obs_lines) will be exported to another spatialite db."))
         QObject.connect(self.action_export_spatialite, SIGNAL("triggered()"), self.export_spatialite)
 
-        self.action_export_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/export_csv.png"), QCoreApplication.translate("Midvatten","Export to FieldLogger format"), self.iface.mainWindow())
+        self.action_export_fieldlogger = QAction(QIcon(":/plugins/midvatten/icons/export_csv.png"), QCoreApplication.translate(u'Midvatten',"Export to FieldLogger format"), self.iface.mainWindow())
         self.action_export_fieldlogger.setWhatsThis(self.export_fieldlogger.__doc__)
         QObject.connect(self.action_export_fieldlogger, SIGNAL("triggered()"), self.export_fieldlogger)
 
-        self.action_calculate_statistics_for_all_w_logger_data = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate("Midvatten","Calculate statistics for all w logger data"), self.iface.mainWindow())
+        self.action_calculate_statistics_for_all_w_logger_data = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate(u'Midvatten',"Calculate statistics for all w logger data"), self.iface.mainWindow())
         self.action_calculate_statistics_for_all_w_logger_data.setWhatsThis(self.calculate_statistics_for_all_w_logger_data.__doc__)
         QObject.connect(self.action_calculate_statistics_for_all_w_logger_data, SIGNAL("triggered()"), self.calculate_statistics_for_all_w_logger_data)
 
-        self.action_calculate_db_table_rows = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate("Midvatten","Calculate database table rows"), self.iface.mainWindow())
+        self.action_calculate_db_table_rows = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate(u'Midvatten',"Calculate database table rows"), self.iface.mainWindow())
         self.action_calculate_statistics_for_all_w_logger_data.setWhatsThis(self.calculate_db_table_rows.__doc__)
         QObject.connect(self.action_calculate_db_table_rows, SIGNAL("triggered()"), self.calculate_db_table_rows)
 
@@ -263,11 +263,11 @@ class midvatten:
             menuBar = self.iface.mainWindow().menuBar()
             menuBar.addMenu(self.menu)
 
-        self.menu.import_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Import data to database"))
+        self.menu.import_data_menu = QMenu(QCoreApplication.translate(u'Midvatten', "&Import data to database"))
         #self.iface.addPluginToMenu("&Midvatten", self.menu.add_data_menu.menuAction())
         self.menu.addMenu(self.menu.import_data_menu)
 
-        self.menu.import_data_menu_old = QMenu(QCoreApplication.translate("Midvatten", "&Old csv imports"))
+        self.menu.import_data_menu_old = QMenu(QCoreApplication.translate(u'Midvatten', "&Old csv imports"))
         self.menu.import_data_menu.addMenu(self.menu.import_data_menu_old)
         self.menu.import_data_menu_old.addAction(self.actionimport_obs_points)
         self.menu.import_data_menu_old.addAction(self.action_import_wlvl)
@@ -286,13 +286,13 @@ class midvatten:
         self.menu.import_data_menu.addAction(self.actionimport_wqual_lab_from_interlab4)
         self.menu.import_data_menu.addAction(self.actionimport_fieldlogger)
         
-        self.menu.export_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Export data from database"))
+        self.menu.export_data_menu = QMenu(QCoreApplication.translate(u'Midvatten', "&Export data from database"))
         self.menu.addMenu(self.menu.export_data_menu)
         self.menu.export_data_menu.addAction(self.action_export_csv)   
         self.menu.export_data_menu.addAction(self.action_export_spatialite)
         self.menu.export_data_menu.addAction(self.action_export_fieldlogger)
         
-        self.menu.add_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&Edit data in database"))
+        self.menu.add_data_menu = QMenu(QCoreApplication.translate(u'Midvatten', "&Edit data in database"))
         #self.iface.addPluginToMenu("&Midvatten", self.menu.add_data_menu.menuAction())
         self.menu.addMenu(self.menu.add_data_menu)
         self.menu.add_data_menu.addAction(self.action_wlvlcalculate)   
@@ -301,7 +301,7 @@ class midvatten:
         #self.menu.add_data_menu.addAction(self.actionupdateposition)   
         self.menu.add_data_menu.addAction(self.action_aveflowcalculate)   
 
-        self.menu.plot_data_menu = QMenu(QCoreApplication.translate("Midvatten", "&View plot"))
+        self.menu.plot_data_menu = QMenu(QCoreApplication.translate(u'Midvatten', "&View plot"))
         #self.iface.addPluginToMenu("&Midvatten", self.menu.plot_data_menu.menuAction())
         self.menu.addMenu(self.menu.plot_data_menu)
         self.menu.plot_data_menu.addAction(self.actionPlotTS) 
@@ -311,18 +311,18 @@ class midvatten:
         self.menu.plot_data_menu.addAction(self.actionPlotSQLite)
         self.menu.plot_data_menu.addAction(self.actionPlotPiper)
 
-        self.menu.report_menu = QMenu(QCoreApplication.translate("Midvatten", "&View report"))
+        self.menu.report_menu = QMenu(QCoreApplication.translate(u'Midvatten', "&View report"))
         self.menu.addMenu(self.menu.report_menu)
         self.menu.report_menu.addAction(self.actiondrillreport)
         self.menu.report_menu.addAction(self.actionwqualreport)
         
-        self.menu.db_manage_menu = QMenu(QCoreApplication.translate("Midvatten", "&Database management"))
+        self.menu.db_manage_menu = QMenu(QCoreApplication.translate(u'Midvatten', "&Database management"))
         self.menu.addMenu(self.menu.db_manage_menu)
         self.menu.db_manage_menu.addAction(self.actionNewDB)
         self.menu.db_manage_menu.addAction(self.actionVacuumDB)
         self.menu.db_manage_menu.addAction(self.actionZipDB)
 
-        self.menu.utils = QMenu(QCoreApplication.translate("Midvatten", "&Utilities"))
+        self.menu.utils = QMenu(QCoreApplication.translate(u'Midvatten', "&Utilities"))
         self.menu.addMenu(self.menu.utils)
         self.menu.utils.addAction(self.actionloaddatadomains)
         self.menu.utils.addAction(self.actionPrepareFor2Qgis2ThreeJS)
@@ -431,9 +431,9 @@ class midvatten:
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
 
-            #sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""")),ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+            #sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""")),ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
             #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
-            exportfolder = QFileDialog.getExistingDirectory(None, ru(QCoreApplication.translate(u'midvatten', 'Select a folder where the csv files will be created:')), '.',QFileDialog.ShowDirsOnly)
+            exportfolder = QFileDialog.getExistingDirectory(None, ru(QCoreApplication.translate(u'Midvatten', 'Select a folder where the csv files will be created:')), '.',QFileDialog.ShowDirsOnly)
             if len(exportfolder) > 0:
                 exportinstance = ExportData(OBSID_P, OBSID_L)
                 exportinstance.export_2_csv(exportfolder)
@@ -449,14 +449,14 @@ class midvatten:
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
 
-            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""")), ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""")), ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
             if sanity.result == 1:
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
                 obsp_layer = utils.find_layer('obs_points')
                 try:
                     CRS = obsp_layer.crs()
                 except AttributeError:
-                    utils.pop_up_info(ru(QCoreApplication.translate(u'midvatten', "Export error!\n\nMust use \"load default db-layers to qgis\" from Midvatten menu (or key F7) first!")))
+                    utils.pop_up_info(ru(QCoreApplication.translate(u'Midvatten', "Export error!\n\nMust use \"load default db-layers to qgis\" from Midvatten menu (or key F7) first!")))
                     QApplication.restoreOverrideCursor()  # now this long process is done and the cursor is back as normal
                     return None
                 EPSG_code = str(CRS.authid()[5:])
@@ -496,21 +496,21 @@ class midvatten:
                 self.export_to_field_logger = ExportToFieldLogger(self.iface.mainWindow(), self.ms)
         else:
             utils.MessagebarAndLog.warning(
-                bar_msg=ru(QCoreApplication.translate(u'midvatten', 'Error! Verify Midvatten settings. Verify that no layer is in edit mode.')),
+                bar_msg=ru(QCoreApplication.translate(u'Midvatten', 'Error! Verify Midvatten settings. Verify that no layer is in edit mode.')),
                 duration=15, button=False)
 
     def import_obs_lines(self):
         allcritical_layers = ('obs_lines')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """You are about to import observation lines data, from a text file which must have one header row and 6 columns (see plugin web page for further explanation):\nWKT;obsid;name;place;type;source\n\nPlease note that:\nThere must be WKT geometries of type LINESTRING in the first column.\nThe LINESTRING geometries must correspond to SRID in the dataabse.\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in string fields.\nEmpty or null values are not allowed for obsid and there must not be any duplicates of obsid\n\nContinue?""")), ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """You are about to import observation lines data, from a text file which must have one header row and 6 columns (see plugin web page for further explanation):\nWKT;obsid;name;place;type;source\n\nPlease note that:\nThere must be WKT geometries of type LINESTRING in the first column.\nThe LINESTRING geometries must correspond to SRID in the dataabse.\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in string fields.\nEmpty or null values are not allowed for obsid and there must not be any duplicates of obsid\n\nContinue?""")), ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db_old import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.obslines_import()
                 if importinstance.status=='True': 
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s observation lines were imported to the database."))%str(importinstance.recsafter - importinstance.recsbefore))
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "%s observation lines were imported to the database."))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
@@ -521,7 +521,7 @@ class midvatten:
         allcritical_layers = ('obs_points')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """You are about to import observation points data, from a text file which must have one header row and 26 columns (see plugin web page for further explanation):\n\n1. obsid, 2. name, 3. place, 4. type, 5. length, 6. drillstop, 7. diam, 8. material, 9. screen, 10. capacity, 11. drilldate, 12. wmeas_yn, 13. wlogg_yn, 14. east, 15. north, 16. ne_accur, 17. ne_source, 18. h_toc, 19. h_tocags, 20. h_gs, 21. h_accur, 22. h_syst, 23. h_source, 24. source, 25. com_onerow, 26. com_html\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in string fields.\nEmpty or null values are not allowed for obsid and there must not be any duplicates of obsid.\nEast and north values must correspond to the database SRID.\nIf the East and north values are missing, the corresponding point will assigned a position at coordinate 0,0.  \n\nContinue?""")), ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """You are about to import observation points data, from a text file which must have one header row and 26 columns (see plugin web page for further explanation):\n\n1. obsid, 2. name, 3. place, 4. type, 5. length, 6. drillstop, 7. diam, 8. material, 9. screen, 10. capacity, 11. drilldate, 12. wmeas_yn, 13. wlogg_yn, 14. east, 15. north, 16. ne_accur, 17. ne_source, 18. h_toc, 19. h_tocags, 20. h_gs, 21. h_accur, 22. h_syst, 23. h_source, 24. source, 25. com_onerow, 26. com_html\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in string fields.\nEmpty or null values are not allowed for obsid and there must not be any duplicates of obsid.\nEast and north values must correspond to the database SRID.\nIf the East and north values are missing, the corresponding point will assigned a position at coordinate 0,0.  \n\nContinue?""")), ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db_old import midv_data_importer
@@ -530,8 +530,8 @@ class midvatten:
                 #utils.pop_up_info(returnvalue) #debugging
                 #utils.pop_up_info(importinstance.status) #debugging
                 if importinstance.status=='True':
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s observation points were imported to the database.\nGeometries (map position) were automatically created based on east and north coordinates."))%str(importinstance.recsafter - importinstance.recsbefore))
-                    #utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s observation points were imported to the database.\nTo display the imported points on map, select them in\nthe obs_points attribute table then update map position:\nMidvatten - Edit data in database - Update map position from coordinates"))%str(importinstance.recsafter - importinstance.recsbefore))
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "%s observation points were imported to the database.\nGeometries (map position) were automatically created based on east and north coordinates."))%str(importinstance.recsafter - importinstance.recsbefore))
+                    #utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "%s observation points were imported to the database.\nTo display the imported points on map, select them in\nthe obs_points attribute table then update map position:\nMidvatten - Edit data in database - Update map position from coordinates"))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
@@ -542,13 +542,13 @@ class midvatten:
         allcritical_layers = ('obs_lines', 'seismic_data')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0: 
-            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """You are about to import interpreted seismic data, from a text file which must have one header row and 6 columns:\n\nobsid, length, ground, bedrock, gw_table, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nEmpty or null values are not allowed for obsid or length.\nEach combination of obsid and length must be unique.\n\nContinue?""")) , ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """You are about to import interpreted seismic data, from a text file which must have one header row and 6 columns:\n\nobsid, length, ground, bedrock, gw_table, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nEmpty or null values are not allowed for obsid or length.\nEach combination of obsid and length must be unique.\n\nContinue?""")) , ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
             if sanity.result == 1:
                 from import_data_to_db_old import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.seismics_import()
                 if importinstance.status=='True':  
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s interpreted seismic data values were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "%s interpreted seismic data values were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
@@ -559,13 +559,13 @@ class midvatten:
         allcritical_layers = ('obs_points', 'stratigraphy')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """You are about to import stratigraphy data, from a text file which must have one header row and 9 columns:\n1. obsid\n2. stratid - integer starting from ground surface and increasing downwards\n3. depth_top - depth to top of stratigraphy layer\n4. depth_bot - depth to bottom of stratigraphy layer\n5. geology - full description of layer geology\n6. geoshort - shortname for layer geology (see dicionary)\n7. capacity\n8. development - well development\n9. comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid or stratid, such rows will be excluded from the import.\nEach combination of obsid and stratid must be unique.\n\nContinue?""")) , ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """You are about to import stratigraphy data, from a text file which must have one header row and 9 columns:\n1. obsid\n2. stratid - integer starting from ground surface and increasing downwards\n3. depth_top - depth to top of stratigraphy layer\n4. depth_bot - depth to bottom of stratigraphy layer\n5. geology - full description of layer geology\n6. geoshort - shortname for layer geology (see dicionary)\n7. capacity\n8. development - well development\n9. comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid or stratid, such rows will be excluded from the import.\nEach combination of obsid and stratid must be unique.\n\nContinue?""")) , ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
             if sanity.result == 1:
                 from import_data_to_db_old import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.strat_import()
                 if importinstance.status=='True':      # 
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s stratigraphy layers were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "%s stratigraphy layers were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
@@ -576,14 +576,14 @@ class midvatten:
         allcritical_layers = ('obs_lines', 'vlf_data')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # om ingen av de kritiska lagren är i editeringsmode
-            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """You are about to import raw data from vlf measurements, from a text file which must have one header row and 5 columns:\n\nobsid; length; real_comp; imag_comp, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nEmpty or null values are not allowed for obsid or length.\nEach combination of obsid and length must be unique.\n\nContinue?""")),ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')) )
+            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """You are about to import raw data from vlf measurements, from a text file which must have one header row and 5 columns:\n\nobsid; length; real_comp; imag_comp, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\nDecimal separator must be point (.)\nEmpty or null values are not allowed for obsid or length.\nEach combination of obsid and length must be unique.\n\nContinue?""")),ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')) )
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db_old import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.vlf_import()
                 if importinstance.status=='True': 
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s raw values of vlf measurements were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "%s raw values of vlf measurements were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
@@ -594,14 +594,14 @@ class midvatten:
         allcritical_layers = ('obs_points', 'w_flow')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # om ingen av de kritiska lagren är i editeringsmode
-            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """You are about to import water flow reading, from a text file which must have one header row with \nmandatory columns: obsid, instrumentid, flowtype, date_time\n and at least one optional column: reading, unit, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of flowtypes since all new flowtypes will silently be added to the database table zz_flowtype during import.\nEmpty or null values are not allowed for obsid, instrumentid, flowtype or date_time.\nEach combination of obsid, instrumentid, flowtype and date_time must be unique.\n\nContinue?""")),ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """You are about to import water flow reading, from a text file which must have one header row with \nmandatory columns: obsid, instrumentid, flowtype, date_time\n and at least one optional column: reading, unit, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of flowtypes since all new flowtypes will silently be added to the database table zz_flowtype during import.\nEmpty or null values are not allowed for obsid, instrumentid, flowtype or date_time.\nEach combination of obsid, instrumentid, flowtype and date_time must be unique.\n\nContinue?""")),ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db_old import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.default_import(importinstance.wflow_import_from_csvlayer)
                 if importinstance.status=='True':      # 
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s water flow readings were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "%s water flow readings were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         importinstance.SanityCheckVacuumDB()
                         self.midvsettingsdialog.ClearEverything()
@@ -613,13 +613,13 @@ class midvatten:
         allcritical_layers = ('obs_points', 'w_levels')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
-            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """You are about to import water level measurements, from a text file which must have one header row with \nmandatory columns: obsid, datetime\n and at least one optional column: head_cm, level_masl, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid or date_time, such rows will be excluded from the import.\nEmpty or null values are not accepted at the same time in both the columns meas and comment.\nEach combination of obsid and date_time must be unique.\n\nContinue?""")),ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """You are about to import water level measurements, from a text file which must have one header row with \nmandatory columns: obsid, datetime\n and at least one optional column: head_cm, level_masl, comment\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid or date_time, such rows will be excluded from the import.\nEmpty or null values are not accepted at the same time in both the columns meas and comment.\nEach combination of obsid and date_time must be unique.\n\nContinue?""")),ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
             if sanity.result == 1:
                 from import_data_to_db_old import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.default_import(importinstance.wlvl_import_from_csvlayer)
                 if importinstance.status=='True': 
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s water level measurements were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "%s water level measurements were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         importinstance.SanityCheckVacuumDB()
                         self.midvsettingsdialog.ClearEverything()
@@ -635,13 +635,13 @@ class midvatten:
                 if qgis.utils.iface.activeLayer():
                     if utils.selection_check(qgis.utils.iface.activeLayer(),1) == 'ok':                
                         obsid = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())                    
-                        longmessage = ru(QCoreApplication.translate(u'midvatten', """You are about to import water head data, recorded with a\nLevel Logger (e.g. Diver), for %s.\nData is supposed to be imported from a semicolon or comma\nseparated text file. The text file must have one header row and columns:\n\nDate/time,Water head[cm],Temperature[°C]\nor\nDate/time,Water head[cm],Temperature[°C],1:Conductivity[mS/cm]\n\nColumn names are unimportant although column order is.\nAlso, date-time must have format yyyy-mm-dd hh:mm(:ss) and\nthe other columns must be real numbers with point(.) as decimal separator and no separator for thousands.\nRemember to not use comma in the comment field!\n\nAlso, records where any fields are empty will be excluded from the report!\n\nContinue?"""))%obsid[0]
-                        sanity = utils.askuser("YesNo", ru(longmessage),ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')) )
+                        longmessage = ru(QCoreApplication.translate(u'Midvatten', """You are about to import water head data, recorded with a\nLevel Logger (e.g. Diver), for %s.\nData is supposed to be imported from a semicolon or comma\nseparated text file. The text file must have one header row and columns:\n\nDate/time,Water head[cm],Temperature[°C]\nor\nDate/time,Water head[cm],Temperature[°C],1:Conductivity[mS/cm]\n\nColumn names are unimportant although column order is.\nAlso, date-time must have format yyyy-mm-dd hh:mm(:ss) and\nthe other columns must be real numbers with point(.) as decimal separator and no separator for thousands.\nRemember to not use comma in the comment field!\n\nAlso, records where any fields are empty will be excluded from the report!\n\nContinue?"""))%obsid[0]
+                        sanity = utils.askuser("YesNo", ru(longmessage),ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')) )
                         if sanity.result == 1:
                             from import_data_to_db_old import wlvlloggimportclass
                             importinstance = wlvlloggimportclass()
                             if not importinstance.status=='True':      
-                                utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
+                                utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'Midvatten', "Something failed during import"))
                             else:
                                 try:
                                     self.midvsettingsdialog.ClearEverything()
@@ -649,22 +649,22 @@ class midvatten:
                                 except:
                                     pass                            
                 else:
-                    utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!"))
+                    utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'Midvatten', "You have to select the obs_points layer and the object (just one!) for which logger data is to be imported!"))
             else: 
-                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
+                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'Midvatten', "You have to select database first!"))
 
     def import_wqual_field(self):
         allcritical_layers = ('obs_points', 'w_qual_field')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """You are about to import water quality data from field measurements, from a text file which must have one header must have one header with\nmandatory columns: obsid, date_time, parameter, unit"                    \n\n1. obsid\n2. staff\n3. date_time - on format yyyy-mm-dd hh:mm(:ss)\n4. instrument\n5. parameter - water quality parameter name\n6. reading_num - param. value (real number, decimal separator=point(.))\n7. reading_txt - parameter value as text, including <, > etc\n8. unit\n9. depth\n10. comment - text string\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid, date_time or parameter, such rows will be excluded from the import.\nEach combination of obsid, date_time and parameter must be unique.\n\nContinue?""")),ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """You are about to import water quality data from field measurements, from a text file which must have one header must have one header with\nmandatory columns: obsid, date_time, parameter, unit"                    \n\n1. obsid\n2. staff\n3. date_time - on format yyyy-mm-dd hh:mm(:ss)\n4. instrument\n5. parameter - water quality parameter name\n6. reading_num - param. value (real number, decimal separator=point(.))\n7. reading_txt - parameter value as text, including <, > etc\n8. unit\n9. depth\n10. comment - text string\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid, date_time or parameter, such rows will be excluded from the import.\nEach combination of obsid, date_time and parameter must be unique.\n\nContinue?""")),ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
             #utils.pop_up_info(sanity.result)   #debugging
             if sanity.result == 1:
                 from import_data_to_db_old import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.default_import(importinstance.wqualfield_import_from_csvlayer)
                 if importinstance.status=='True':      # 
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s water quality parameters were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "%s water quality parameters were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
@@ -675,13 +675,13 @@ class midvatten:
         allcritical_layers = ('obs_points', 'w_qual_lab')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """You are about to import water quality data from laboratory analysis, from a text file which must have one header row and the following 12 columns:\n\n1. obsid - must exist in obs_points table\n2. depth - sample depth (real number)\n3. report - each pair of 'report' & 'parameter' must be unique!\n4. project\n5. staff\n6. date_time - on format yyyy-mm-dd hh:mm(:ss)\n7. analysis_method\n8. parameter - water quality parameter name\n9. reading_num - param. value (real number, decimal separator=point(.))\n10. reading_txt - parameter value as text, including <, > etc\n11. unit\n12. comment - text string, avoid semicolon and commas\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid, report or parameter, such rows will be excluded from the import.\nEach combination of report and parameter must be unique.\n\nContinue?""")),ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """You are about to import water quality data from laboratory analysis, from a text file which must have one header row and the following 12 columns:\n\n1. obsid - must exist in obs_points table\n2. depth - sample depth (real number)\n3. report - each pair of 'report' & 'parameter' must be unique!\n4. project\n5. staff\n6. date_time - on format yyyy-mm-dd hh:mm(:ss)\n7. analysis_method\n8. parameter - water quality parameter name\n9. reading_num - param. value (real number, decimal separator=point(.))\n10. reading_txt - parameter value as text, including <, > etc\n11. unit\n12. comment - text string, avoid semicolon and commas\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nEmpty or null values are not allowed for obsid, report or parameter, such rows will be excluded from the import.\nEach combination of report and parameter must be unique.\n\nContinue?""")),ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
             if sanity.result == 1:
                 from import_data_to_db_old import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.default_import(importinstance.wquallab_import_from_csvlayer)
                 if importinstance.status=='True':      # 
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s water quality parameters were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "%s water quality parameters were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
@@ -694,16 +694,16 @@ class midvatten:
 
         if (utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[0]==True and len(utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[1])==0) or (utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master where tbl_name = 'meteo'""")[0]==False): #verify there actually is a meteo table (introduced in midv plugin version 1.1)
             err_flag += 1
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "There is no table for meteorological data in your database! Perhaps your database was created with an earlier version of Midvatten plugin?"),duration=15)
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'Midvatten', "There is no table for meteorological data in your database! Perhaps your database was created with an earlier version of Midvatten plugin?"),duration=15)
         
         if err_flag == 0:        # unless none of the critical layers are in editing mode or the database is so old no meteo table exist
-            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """You are about to import meteorological data from, from a text file which must have one header row and 8 columns:\n\n"obsid", "instrumentid", "parameter", "date_time", "reading_num", "reading_txt", "unit", "comment"\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of parameters since all new parameters will silently be added to the database table zz_meteoparam during import.\nEmpty or null values are not allowed for obsid, instrumentid, parameter or date_time.\nEach combination of obsid, instrumentid, parameter and date_time must be unique.\n\nContinue?""")),ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """You are about to import meteorological data from, from a text file which must have one header row and 8 columns:\n\n"obsid", "instrumentid", "parameter", "date_time", "reading_num", "reading_txt", "unit", "comment"\n\nPlease note that:\nThe file must be either comma, or semicolon-separated.\ndate_time must be of format 'yyyy-mm-dd hh:mm(:ss)'.\nDecimal separator must be point (.)\nComma or semicolon is not allowed in the comments.\nBe sure to use a limited number of parameters since all new parameters will silently be added to the database table zz_meteoparam during import.\nEmpty or null values are not allowed for obsid, instrumentid, parameter or date_time.\nEach combination of obsid, instrumentid, parameter and date_time must be unique.\n\nContinue?""")),ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
             if sanity.result == 1:
                 from import_data_to_db_old import midv_data_importer
                 importinstance = midv_data_importer()
                 importinstance.meteo_import()
                 if importinstance.status=='True': 
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s meteorological readings were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "%s meteorological readings were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
@@ -719,14 +719,14 @@ class midvatten:
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
             if not (self.ms.settingsdict['database'] == ''):
-                longmessage = ru(QCoreApplication.translate(u'midvatten', "You are about to import water head data, water flow or water quality from FieldLogger format."))
-                sanity = utils.askuser("YesNo", ru(longmessage),ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+                longmessage = ru(QCoreApplication.translate(u'Midvatten', "You are about to import water head data, water flow or water quality from FieldLogger format."))
+                sanity = utils.askuser("YesNo", ru(longmessage),ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
                 if sanity.result == 1:
                     from import_fieldlogger import FieldloggerImport
                     importinstance = FieldloggerImport(self.iface.mainWindow(), self.ms)
                     importinstance.parse_observations_and_populate_gui()
                     if not importinstance.status == 'True' and not importinstance.status:
-                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
+                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'Midvatten', "Something failed during import"))
                     else:
                         try:
                             self.midvsettingsdialog.ClearEverything()
@@ -734,7 +734,7 @@ class midvatten:
                         except:
                             pass
             else:
-                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
+                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'Midvatten', "You have to select database first!"))
         QApplication.restoreOverrideCursor()
 
     def import_csv(self):
@@ -751,7 +751,7 @@ class midvatten:
                 importinstance = GeneralCsvImportGui(self.iface.mainWindow(), self.ms)
                 importinstance.load_gui()
                 if not importinstance.status == 'True' and not importinstance.status:
-                    utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
+                    utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'Midvatten', "Something failed during import"))
                 else:
                     try:
                         self.midvsettingsdialog.ClearEverything()
@@ -759,20 +759,20 @@ class midvatten:
                     except:
                         pass
             else:
-                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
+                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'Midvatten', "You have to select database first!"))
         QApplication.restoreOverrideCursor()
 
     def import_wqual_lab_from_interlab4(self):
         allcritical_layers = ('obs_points', 'w_qual_lab')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:        # unless none of the critical layers are in editing mode
-            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.\nSpecifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf\n\nContinue?""")),ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.\nSpecifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf\n\nContinue?""")),ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
             if sanity.result == 1:
                 from import_interlab4 import Interlab4Import
                 importinstance = Interlab4Import(self.iface.mainWindow(), self.ms)
                 importinstance.parse_observations_and_populate_gui()
                 if importinstance.status=='True':      #
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "%s water quality parameters were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "%s water quality parameters were imported to the database"))%str(importinstance.recsafter - importinstance.recsbefore))
                     try:
                         self.midvsettingsdialog.ClearEverything()
                         self.midvsettingsdialog.LoadAndSelectLastSettings()
@@ -784,8 +784,8 @@ class midvatten:
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:   
             if not (self.ms.settingsdict['database'] == ''):
-                longmessage = ru(QCoreApplication.translate(u'midvatten',
-                              (u"""You are about to import water head data, recorded with a Level Logger (e.g. Diver).\n"""
+                longmessage = ru(QCoreApplication.translate(u'Midvatten',
+                              u"""You are about to import water head data, recorded with a Level Logger (e.g. Diver).\n"""
                                u"""Data is supposed to be imported from a diveroffice file and obsid will be read from the attribute 'Location'.\n"""
                                u"""The data is supposed to be semicolon or comma separated.\n"""
                                u"""The header for the data should have column Date/time and at least one of the columns:\n"""
@@ -793,15 +793,15 @@ class midvatten:
                                u"""The column order is unimportant but the column names are.\n"""
                                u"""The data columns must be real numbers with point (.) or comma (,) as decimal separator and no separator for thousands.\n"""
                                u"""The charset is usually cp1252!\n\n"""
-                               u"""Continue?""")))
-                sanity = utils.askuser("YesNo", ru(longmessage),ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')) )
+                               u"""Continue?"""))
+                sanity = utils.askuser("YesNo", ru(longmessage),ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')) )
                 if sanity.result == 1:
                     from import_diveroffice import DiverofficeImport
                     importinstance = DiverofficeImport(self.iface.mainWindow(), self.ms)
                     importinstance.select_files_and_load_gui()
 
                     if not importinstance.status:
-                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
+                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'Midvatten', "Something failed during import"))
                     else:
                         try:
                             self.midvsettingsdialog.ClearEverything()
@@ -809,7 +809,7 @@ class midvatten:
                         except:
                             pass
             else: 
-                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
+                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'Midvatten', "You have to select database first!"))
         QApplication.restoreOverrideCursor()         
 
     def load_data_domains(self):
@@ -831,7 +831,7 @@ class midvatten:
     def loadthelayers(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
-            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""")), ru(QCoreApplication.translate(u'midvatten', 'Warning!')))
+            sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""")), ru(QCoreApplication.translate(u'Midvatten', 'Warning!')))
             if sanity.result == 1:
                 #show the user this may take a long time...
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
@@ -839,7 +839,7 @@ class midvatten:
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def new_db(self):
-        sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""")),ru(QCoreApplication.translate(u'midvatten', 'Are you sure?')))
+        sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""")),ru(QCoreApplication.translate(u'Midvatten', 'Are you sure?')))
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)
@@ -872,7 +872,7 @@ class midvatten:
         err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
         if (self.ms.settingsdict['tstable'] =='' or self.ms.settingsdict['tscolumn'] == ''):
             err_flag += 1
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Please set time series table and column in Midvatten settings."), duration =15)
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'Midvatten', "Please set time series table and column in Midvatten settings."), duration =15)
         if err_flag == 0:
             dlg = TimeSeriesPlot(qgis.utils.iface.activeLayer(), self.ms.settingsdict)
 
@@ -883,7 +883,7 @@ class midvatten:
         """
         if self.ms.settingsdict['stratigraphytable']=='':
             err_flag += 1
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Please set stratigraphy table in Midvatten settings."), duration =15)
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'Midvatten', "Please set stratigraphy table in Midvatten settings."), duration =15)
         """
         if err_flag == 0 and utils.strat_selection_check(qgis.utils.iface.activeLayer()) == 'ok':
             dlg = Stratigraphy(self.iface, qgis.utils.iface.activeLayer(), self.ms.settingsdict)
@@ -894,7 +894,7 @@ class midvatten:
         all_critical_layers=('obs_points')
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, all_critical_layers)#verify midv settings are loaded
         if not(err_flag == 0):
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Verify Midvatten settings and make sure 'obs_points' layer is not in editing mode."))
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'Midvatten', "Verify Midvatten settings and make sure 'obs_points' layer is not in editing mode."))
             return
 
         SectionLineLayer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
@@ -906,9 +906,9 @@ class midvatten:
                 if geom.wkbType() == QGis.WKBLineString:#...and that the active layer is a line vector layer
                     pass
                 else:
-                    msg = 'You must activate the vector line layer that defines the section.'
+                    msg = ru(QCoreApplication.translate(u'Midvatten', 'You must activate the vector line layer that defines the section.'))
         else:
-            msg = 'You must activate the vector line layer and select exactly one feature that defines the section'
+            msg = ru(QCoreApplication.translate(u'Midvatten', 'You must activate the vector line layer and select exactly one feature that defines the section'))
         
         #Then verify that at least two feature is selected in obs_points layer, and get a list (OBSID) of selected obs_points
         obs_points_layer = utils.find_layer('obs_points')
@@ -919,7 +919,7 @@ class midvatten:
             # Made into tuple because module sectionplot depends on obsid being a tuple
             OBSID = ru(selectedobspoints, keep_containers=True)
         else:
-            msg = 'You must select at least two objects in the obs_points layer'
+            msg = ru(QCoreApplication.translate(u'Midvatten', 'You must select at least two objects in the obs_points layer'))
         
         if msg:#if something went wrong
             utils.MessagebarAndLog.critical(bar_msg=u'Error, %s'%msg)
@@ -935,7 +935,7 @@ class midvatten:
         err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that some features are selected
         if (self.ms.settingsdict['xytable'] =='' or self.ms.settingsdict['xy_xcolumn'] == '' or (self.ms.settingsdict['xy_y1column'] == '' and self.ms.settingsdict['xy_y2column'] == '' and self.ms.settingsdict['xy_y3column'] == '')):
             err_flag += 1
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Please set xy series table and columns in Midvatten settings."), duration =15)
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'Midvatten', "Please set xy series table and columns in Midvatten settings."), duration =15)
         if err_flag == 0:
             dlg = XYPlot(qgis.utils.iface.activeLayer(), self.ms.settingsdict)
 
@@ -990,9 +990,9 @@ class midvatten:
         layername = 'obs_points'
         err_flag = utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag, layername)
         if err_flag == 0:
-            sanity = utils.askuser("AllSelected", ru(QCoreApplication.translate(u'midvatten', """Do you want to update coordinates\nfor All or Selected objects?""")))
+            sanity = utils.askuser("AllSelected", ru(QCoreApplication.translate(u'Midvatten', """Do you want to update coordinates\nfor All or Selected objects?""")))
             if sanity.result == 0:  #IF USER WANT ALL OBJECTS TO BE UPDATED
-                sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor ALL objects in the obs_points table.\nProceed?""")))
+                sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor ALL objects in the obs_points table.\nProceed?""")))
                 if sanity.result==1:
                     ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")[1]#a list of unicode strings is returned
                     observations = [None]*len(ALL_OBS)
@@ -1003,7 +1003,7 @@ class midvatten:
                     from coords_and_position import updatecoordinates
                     updatecoordinates(observations)
             elif sanity.result == 1:    #IF USER WANT ONLY SELECTED OBJECTS TO BE UPDATED
-                sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor SELECTED objects in the obs_points table.\nProceed?""")))
+                sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """Sanity check! This will alter the database.\nCoordinates will be written in fields east and north\nfor SELECTED objects in the obs_points table.\nProceed?""")))
                 if sanity.result==1:
                     layer = self.iface.activeLayer()
                     if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!
@@ -1018,9 +1018,9 @@ class midvatten:
         err_flag = utils.verify_this_layer_selected_and_not_in_edit_mode(err_flag, layername)
         if err_flag == 0:
             layer = self.iface.activeLayer()
-            sanity = utils.askuser("AllSelected", ru(QCoreApplication.translate(u'midvatten', """Do you want to update position\nfor All or Selected objects?""")))
+            sanity = utils.askuser("AllSelected", ru(QCoreApplication.translate(u'Midvatten', """Do you want to update position\nfor All or Selected objects?""")))
             if sanity.result == 0:      #IF USER WANT ALL OBJECTS TO BE UPDATED
-                sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """Sanity check! This will alter the database.\nALL objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")))
+                sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """Sanity check! This will alter the database.\nALL objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")))
                 if sanity.result==1:
                     ALL_OBS = utils.sql_load_fr_db("select distinct obsid from obs_points")[1]
                     observations = [None]*len(ALL_OBS)
@@ -1032,7 +1032,7 @@ class midvatten:
                     updateposition(observations)
                     layer.updateExtents()
             elif sanity.result == 1:    #IF USER WANT ONLY SELECTED OBJECTS TO BE UPDATED
-                sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'midvatten', """Sanity check! This will alter the database.\nSELECTED objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")))
+                sanity = utils.askuser("YesNo", ru(QCoreApplication.translate(u'Midvatten', """Sanity check! This will alter the database.\nSELECTED objects in obs_points will be moved to positions\ngiven by their coordinates in fields east and north.\nProceed?""")))
                 if sanity.result==1:
                     if utils.selection_check(layer) == 'ok':    #Checks that there are some objects selected at all!
                         observations = utils.getselectedobjectnames(layer)
@@ -1052,12 +1052,12 @@ class midvatten:
         err_flag = utils.verify_layer_selection(err_flag)#verify the selected layer has attribute "obsid" and that some feature(s) is selected
         if self.ms.settingsdict['database'] == '' or self.ms.settingsdict['wqualtable']=='' or self.ms.settingsdict['wqual_paramcolumn']=='' or self.ms.settingsdict['wqual_valuecolumn']=='':
             err_flag += 1
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Check Midvatten settings! \nSomething is probably wrong in the 'W quality report' tab!"), duration =15)
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'Midvatten', "Check Midvatten settings! \nSomething is probably wrong in the 'W quality report' tab!"), duration =15)
         if err_flag == 0:
             fail = 0
             for k in utils.getselectedobjectnames(qgis.utils.iface.activeLayer()):#all selected objects
                 if not utils.sql_load_fr_db("select obsid from %s where obsid = '%s'"%(self.ms.settingsdict['wqualtable'],str(k)))[1]:#if there is a selected object without water quality data
-                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate("Midvatten", "No water quality data for %s"))%str(k))
+                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "No water quality data for %s"))%str(k))
                     fail = 1
             if not fail == 1:#only if all objects has data
                 Wqualreport(qgis.utils.iface.activeLayer(),self.ms.settingsdict)#TEMPORARY FOR GVAB
@@ -1095,7 +1095,7 @@ class midvatten:
             zf.close()
             connection.conn.rollback()
             connection.closedb()
-            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "Database backup was written to %s "))%bkupname, duration=15)
+            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Midvatten', "Database backup was written to %s "))%bkupname, duration=15)
             QApplication.restoreOverrideCursor()
 
     def calculate_statistics_for_all_w_logger_data(self):
@@ -1119,7 +1119,7 @@ class midvatten:
             printlist.append('Obsid\tMin\tMedian\tNr of values\tMax')
             printlist.reverse()
             utils.MessagebarAndLog.info(
-                bar_msg=QCoreApplication.translate("Midvatten", 'Statistics done, see log for results.'),
+                bar_msg=QCoreApplication.translate(u'Midvatten', 'Statistics done, see log for results.'),
                 log_msg='\n'.join(printlist), duration=15, button=True)
 
         QApplication.restoreOverrideCursor()

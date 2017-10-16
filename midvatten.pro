@@ -1,21 +1,29 @@
 SOURCES = \
 ./midvatten.py \
+./midvsettingsdialog.py \
 ./definitions/midvatten_defs.py \
-./tools/import_general_csv_gui.py \
-./tools/loaddefaultlayers.py \
-./tools/import_diveroffice.py \
-./tools/customplot.py \
-./tools/import_data_to_db.py \
 ./tools/create_db.py \
+./tools/customplot.py \
 ./tools/date_utils.py \
+./tools/drillreport.py \
+./tools/export_data.py \
+./tools/export_fieldlogger2.py \
+./tools/gui_utils.py \
+./tools/import_data_to_db.py \
+./tools/import_diveroffice.py \
+./tools/import_fieldlogger.py \
+./tools/import_general_csv_gui.py \
 ./tools/import_interlab4.py \
-./tools/midvatten_utils.py
-
-
-
-midvatten_defs.py, import_general_csv_gui.py,
-        loaddefaultlayers.py, import_diveroffice.py, import_data_to_db.py, create_db.py, date_utils.py,
-        import_interlab4.py, midvatten_utils.py, customplot.py
+./tools/loaddefaultlayers.py \
+./tools/midvatten_utils.py \
+./tools/midvsettings.py \
+./tools/sectionplot.py \
+./tools/stratigraphy.py \
+./tools/tsplot.py \
+./tools/w_flow_calc_aveflow.py \
+./tools/wlevels_calc_calibr.py \
+./tools/wqualreport.py \
+./tools/xyplot.py \
 
 FORMS = \
 ui/calc_aveflow_dialog.ui \
@@ -48,5 +56,3 @@ ui/w_lvls_last_geom.ui
 TRANSLATIONS = \
 ./i18n/midvatten_pt_BR.ts \
 ./i18n/midvatten_sv_SE.ts
-
-

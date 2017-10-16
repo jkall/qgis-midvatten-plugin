@@ -417,32 +417,32 @@ class ParameterGroup(object):
         self._sublocation_suffix = PyQt4.QtGui.QLineEdit()
         self._input_field_group_list = ExtendedQPlainTextEdit(keep_sorted=False)
         self._obsid_list = ExtendedQPlainTextEdit(keep_sorted=True)
-        self.paste_from_selection_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Paste obs_points selection')))
+        self.paste_from_selection_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'ParameterGroup',u'Paste obs_points selection')))
         #------------------------------------------------------------------------
-        self._location_suffix.setToolTip(ru(QCoreApplication.translate(u'ExportToFieldLogger',
-                                        (u"""(optional)\n"""
+        self._location_suffix.setToolTip(ru(QCoreApplication.translate(u'ParameterGroup',
+                                         u"""(optional)\n"""
                                          u"""The Fieldlogger location in the Fieldlogger map will be "obsid.LOCATION SUFFIX".\n\n"""
                                          u"""Location suffix is useful for separating locations with identical obsids.\n"""
-                                         u"""ex: Location suffix 1234 --> obsid.1234"""))))
-        self._sublocation_suffix.setToolTip(ru(QCoreApplication.translate(u'ExportToFieldLogger',
-                                           (u"""(optional)\n"""
+                                         u"""ex: Location suffix 1234 --> obsid.1234""")))
+        self._sublocation_suffix.setToolTip(ru(QCoreApplication.translate(u'ParameterGroup',
+                                           u"""(optional)\n"""
                                             u"""Fieldlogger sub-location will be obsid.Location suffix.Sub-location suffix\n\n"""
                                             u"""Parameters sharing the same sub-location will be shown together.\n"""
                                             u"""Sub-location suffix is used to separate input fields into groups for the Fieldlogger user.\n"""
-                                            u"""ex: level, quality, sample, comment, flow."""))))
-        self._input_field_group_list.setToolTip(ru(QCoreApplication.translate(u'ExportToFieldLogger',
-                                       (u"""Copy and paste input fields from "Create Input Fields" to this box\n"""
+                                            u"""ex: level, quality, sample, comment, flow.""")))
+        self._input_field_group_list.setToolTip(ru(QCoreApplication.translate(u'ParameterGroup',
+                                       u"""Copy and paste input fields from "Create Input Fields" to this box\n"""
                                         u"""or from/to other input field boxes.\n"""
                                         u"""The input fields in Fieldlogger will appear in the same order as in\n"""
                                         u"""this list.\n"""
                                         u"""The topmost input field will be the first selected input field when\n"""
                                         u"""the user enters the input fields in Fieldlogger. (!!! If the input\n"""
-                                        u"""field already exists in a previous group it will end up on top!!!)"""))))
-        locations_box_tooltip = ru(QCoreApplication.translate(u'ExportToFieldLogger', 
-                               (u"""Add obsids to Locations box by selecting obsids from the table "obs_points"\n"""
+                                        u"""field already exists in a previous group it will end up on top!!!)""")))
+        locations_box_tooltip = ru(QCoreApplication.translate(u'ParameterGroup',
+                               u"""Add obsids to Locations box by selecting obsids from the table "obs_points"\n"""
                                 u"""using it's attribute table or select from map.\n"""
                                 u"""Then click the button "Paste obs_points selection"\n"""
-                                u"""Copy and paste obsids between Locations boxes.""")))
+                                u"""Copy and paste obsids between Locations boxes."""))
 
 
         self._obsid_list.setToolTip(locations_box_tooltip)
@@ -545,17 +545,17 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         self._distinct_parameter.setToolTip(par_unit_tooltip)
         self._distinct_unit.setToolTip(par_unit_tooltip)
         self._combined_name.setToolTip(ru(QCoreApplication.translate(u'ExportToFieldLogger',
-                                      (u'(mandatory)\n'
+                                      u'(mandatory)\n'
                                        u'Either supply a chosen name directly or use parameter\n'
                                        u'and unit boxes to create a name.\n'
-                                       u'ex: parameter.unit'))))
+                                       u'ex: parameter.unit')))
         self._input_type.addItem(u'')
         self._input_type.addItems([u'numberDecimal|numberSigned', u'text'])
         self._input_type.setToolTip(ru(QCoreApplication.translate(u'ExportToFieldLogger',
-                                   (u'(mandatory)\n'
+                                   u'(mandatory)\n'
                                     u'Decides the keyboard layout in the Fieldlogger app.\n'
                                     u'numberDecimal|numberSigned: Decimals with allowed "-" sign\n'
-                                    u'text: Text'))))
+                                    u'text: Text')))
         self._hint.setToolTip(ru(QCoreApplication.translate(u'ParameterBrowser', u'(optional)\nHint given to the Fieldlogger user for the parameter. Ex: "depth to water"')))
         #------------------------------------------------------------------------------------
         self._input_field_list.setToolTip(ru(QCoreApplication.translate(u'ParameterBrowser', u'Copy input fields to the "Input Fields" boxes using ctrl+c, ctrl+v.')))
