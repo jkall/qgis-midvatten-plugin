@@ -32,12 +32,7 @@ import resources  # Initialize Qt resources from file resources.py
 import os.path
 import sys
 import datetime
-import zipfile
-try:
-    import zlib
-    compression = zipfile.ZIP_DEFLATED
-except:
-    compression = zipfile.ZIP_STORED
+
 from tempfile import NamedTemporaryFile
 
 #add midvatten plugin directory to pythonpath (needed here to allow importing modules from subfolders)
@@ -788,18 +783,10 @@ class midvatten:
     def zip_db(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
         if err_flag == 0:
-            connection = db_utils.DbConnectionManager()
-            connection_ok = connection.connect2db()
+            dbconnection = db_utils.DbConnectionManager()
+            connection_ok = dbconnection.connect2db()
             if connection_ok:
-                curs = connection.cursor
-                curs.execute("begin immediate")
-                bkupname = self.ms.settingsdict['database'] + datetime.datetime.now().strftime('%Y%m%dT%H%M') + '.zip'
-                zf = zipfile.ZipFile(bkupname, mode='w')
-                zf.write(self.ms.settingsdict['database'], compress_type=compression) #compression will depend on if zlib is found or not
-                zf.close()
-                connection.conn.rollback()
-                connection.closedb()
-                utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate("Midvatten", "Database backup was written to %s ")) % bkupname, duration=15)
+                db_utils.backup_db(dbconnection)
 
     @utils.waiting_cursor
     def calculate_statistics_for_all_w_logger_data(self):

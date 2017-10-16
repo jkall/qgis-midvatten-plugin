@@ -21,6 +21,14 @@
 """
 import ast
 import os
+import zipfile
+try:
+    import zlib
+    compression = zipfile.ZIP_DEFLATED
+except:
+    compression = zipfile.ZIP_STORED
+
+import datetime
 from collections import OrderedDict
 from pyspatialite import dbapi2 as sqlite
 
@@ -523,4 +531,23 @@ def cast_date_time_as_epoch(dbconnection=None):
         return u"""CAST(strftime('%s', date_time) AS NUMERIC)"""
     else:
         return u"""extract(epoch from date_time::timestamp)"""
+
+
+def backup_db(dbconnection=None):
+    if not isinstance(dbconnection, DbConnectionManager):
+        dbconnection = DbConnectionManager()
+
+    if dbconnection.dbtype == u'spatialite':
+        curs = dbconnection.cursor
+        curs.execute("begin immediate")
+        bkupname = dbconnection.dbpath + datetime.datetime.now().strftime('%Y%m%dT%H%M') + '.zip'
+        zf = zipfile.ZipFile(bkupname, mode='w')
+        zf.write(dbconnection.dbpath,
+                 compress_type=compression)  # compression will depend on if zlib is found or not
+        zf.close()
+        dbconnection.conn.rollback()
+        utils.MessagebarAndLog.info(
+            bar_msg=utils.returnunicode(QCoreApplication.translate("backup_db", "Database backup was written to %s ")) % bkupname,
+            duration=15)
+    dbconnection.closedb()
 

@@ -382,7 +382,6 @@ def get_all_obsids(table=u'obs_points'):
     connection_ok, result = db_utils.sql_load_fr_db(u'''SELECT DISTINCT obsid FROM %s ORDER BY OBSID''' % table)
     if connection_ok:
         obsids = [row[0] for row in result]
-    print("obsids: " + str(obsids))
     return obsids
 
 
