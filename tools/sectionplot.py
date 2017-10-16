@@ -39,6 +39,9 @@ except:
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import pyspatialite.dbapi2 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
+
+from PyQt4.QtCore import QCoreApplication
 
 #from ui.secplotdockwidget_ui import Ui_SecPlotDock
 from PyQt4 import uic
@@ -78,7 +81,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 #self.connectionObject = sqlite.connect(':memory:')
                 return self.connectionObject
             except sqlite.OperationalError, Msg:
-                utils.pop_up_info("Can't connect to DataBase: %s\nError %s"%(self.path,Msg))
+                utils.pop_up_info(ru(QCoreApplication.translate(u'SectionPlot', u"Can't connect to DataBase: %s\nError %s"))%(self.path,Msg))
 
     def do_it(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
         #show the user this may take a long time...
@@ -210,7 +213,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 self.connectionObject.commit()
         except sqlite.OperationalError, Msg:
             self.connectionObject.rollback()
-            utils.pop_up_info("The SQL query\n %s\n seems to be invalid.\n\n%s" %(query,Msg), 'Error', None)
+            utils.pop_up_info(ru(QCoreApplication.translate(u'SectionPlot', "The SQL query\n %s\n seems to be invalid.\n\n%s")) %(query,Msg), 'Error', None)
             self.queryPb=True #Indicates pb with current query
             
         return header,data
@@ -334,7 +337,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         for i in range(mc.layerCount()):#find the raster layers
             layer = mc.layer(i)
             if layer.type() == layer.RasterLayer:
-                msg='please notice that DEM(s) must be single band rasters and have same crs as your selected vector line layer'
+                msg=ru(QCoreApplication.translate(u'SectionPlot', u'please notice that DEM(s) must be single band rasters and have same crs as your selected vector line layer'))
                 if layer.bandCount()==1:#only single band raster layers
                     #print('raster layer '  + layer.name() + ' has crs '+str(layer.crs().authid()[5:]))#debug
                     #print('polyline layer ' + self.sectionlinelayer.name() + ' has crs '+str(self.line_crs.authid()[5:]))#debug
@@ -342,7 +345,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                         self.rastItems[unicode(layer.name())] = layer
                         self.inData.addItem(unicode(layer.name()))
         if msg !='':
-            self.iface.messageBar().pushMessage("Info",msg, 0,duration=10)
+            self.iface.messageBar().pushMessage(ru(QCoreApplication.translate(u'SectionPlot', u"Info")),msg, 0,duration=10)
         self.get_dem_selection()
 
     def finish_plot(self):
@@ -357,8 +360,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.secax.grid(b=True, which='both', color='0.65',linestyle='-')
         self.secax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
         self.secax.xaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
-        self.secax.set_ylabel(unicode("Level, masl",'utf-8'))  #Allows international characters ('åäö') as ylabel
-        self.secax.set_xlabel(unicode("Distance along section",'utf-8'))  #Allows international characters ('åäö') as xlabel
+        self.secax.set_ylabel(ru(QCoreApplication.translate(u'SectionPlot', u"Level, masl")))  #Allows international characters ('åäö') as ylabel
+        self.secax.set_xlabel(ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")))  #Allows international characters ('åäö') as xlabel
         for label in self.secax.xaxis.get_ticklabels():
             label.set_fontsize(10)
         for label in self.secax.yaxis.get_ticklabels():
@@ -393,8 +396,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         FROM a.%s AS l, (select * from obs_points where obsid in %s) AS p
         GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptableName,u'({})'.format(u', '.join([u"'{}'".format(o) for o in obsidtuple])))
         data = self.connectionObject.cursor().execute(sql).fetchall()
-        data = utils.returnunicode(data, keep_containers=True)
-        #data = [[col.encode('utf-8') for col in row] for row in utils.returnunicode(data, keep_containers=True)]
+        data = ru(data, keep_containers=True)
+        #data = [[col.encode('utf-8') for col in row] for row in ru(data, keep_containers=True)]
         #data = utils.sql_load_fr_db(sql)[1]
         My_format = [('obs_id', np.unicode_, 32),('length', float)] #note that here is a limit of maximum 32 characters in obsid
         npdata = np.array(data, dtype=My_format)  #NDARRAY
@@ -480,11 +483,11 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                         #lists for plotting annotation 
                         self.x_txt.append(x[i])#+ self.barwidth/2)#x-coord for text
                         self.z_txt.append(Bottom[i] + recs[j][0]/2)#Z-value for text
-                        self.geology_txt.append(utils.null_2_empty_string(utils.returnunicode(recs[j][2])))
-                        self.geoshort_txt.append(utils.null_2_empty_string(utils.returnunicode(recs[j][3])))
-                        self.capacity_txt.append(utils.null_2_empty_string(utils.returnunicode(recs[j][4])))
-                        self.development_txt.append(utils.null_2_empty_string(utils.returnunicode(recs[j][5])))
-                        self.comment_txt.append(utils.null_2_empty_string(utils.returnunicode(recs[j][6])))
+                        self.geology_txt.append(utils.null_2_empty_string(ru(recs[j][2])))
+                        self.geoshort_txt.append(utils.null_2_empty_string(ru(recs[j][3])))
+                        self.capacity_txt.append(utils.null_2_empty_string(ru(recs[j][4])))
+                        self.development_txt.append(utils.null_2_empty_string(ru(recs[j][5])))
+                        self.comment_txt.append(utils.null_2_empty_string(ru(recs[j][6])))
                         #print obs + " " + Typ + " " + self.geology_txt[l] + " " + self.geoshort_txt[l] + " " + self.capacity_txt[l] + " " + self.development_txt[l] + " " + self.comment_txt[l]#debug
                         
                         i +=1
@@ -644,7 +647,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         selected_ids=[]
         if selected==True :
             if layer.selectedFeatureCount()==0:
-                utils.pop_up_info("No selected item in Qgis layer: %s)"%layer.name(),self.parent)
+                utils.pop_up_info(ru(QCoreApplication.translate(u'SectionPlot', "No selected item in Qgis layer: %s)"))%layer.name(),self.parent)
                 return False
             select_ids=layer.selectedFeaturesIds()
         #Create name for table if not provided by user
@@ -702,7 +705,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 Qsrid = QgsCoordinateReferenceSystem()
                 Qsrid.createFromId(srid)
                 if not Qsrid.isValid(): #check if crs is ok
-                    utils.pop_up_info("Destination SRID isn't valid for table %s"%layer.name(),self.parent)
+                    utils.pop_up_info(ru(QCoreApplication.translate(u'SectionPlot', "Destination SRID isn't valid for table %s"))%layer.name(),self.parent)
                     return False
                 layer.setCrs(Qsrid)
 
@@ -710,7 +713,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         allAttrs = provider.attributeIndexes()
         fldDesc = provider.fieldNameIndex("PKUID")
         if fldDesc != -1:
-            print "Pkuid already exists and will be replaced!"
+            try:
+                print("Pkuid already exists and will be replaced!")
+            except:
+                pass
             del allAttrs[fldDesc] #remove pkuid Field
             del fields[fldDesc] #remove pkuid Field
         #provider.select(allAttrs)
@@ -774,7 +780,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
         #Commit DB connection:
         self.connectionObject.commit()
-        #utils.MessagebarAndLog.info(log_msg=u'Data in new table:' + utils.returnunicode(self.execute_query(u'select * from "a".%s'%self.temptableName)[1]))
+        #utils.MessagebarAndLog.info(log_msg=u'Data in new table:' + ru(self.execute_query(u'select * from "a".%s'%self.temptableName)[1]))
         #self.connectionObject.close()#THIS WAS NOT IN QSPATIALITE CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # reload tables
         return True

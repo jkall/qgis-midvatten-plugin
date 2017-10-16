@@ -21,9 +21,11 @@ from pyspatialite import dbapi2 as sqlite
 import csv, codecs, cStringIO, os, os.path
 import db_utils
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 import qgis.utils
 from qgis.core import QgsMessageLog
+from PyQt4.QtCore import QCoreApplication
 
 class ExportData():
 
@@ -73,8 +75,7 @@ class ExportData():
             self.curs.execute(delete_srid_sql)
         except:
             utils.MessagebarAndLog.info(
-                log_msg=u'Removing srids failed using: ' + str(
-                    delete_srid_sql))
+                log_msg=ru(QCoreApplication.translate(u'ExportData', u'Removing srids failed using: %s'))%str(delete_srid_sql))
 
         conn.commit()
 
@@ -84,7 +85,7 @@ class ExportData():
         self.curs.execute(r"""DETACH DATABASE a""")
         self.curs.execute('vacuum')
 
-        utils.MessagebarAndLog.info("Export done, see differences in log message panel", "Tables with different number of rows:\n" + statistics)
+        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'ExportData', u"Export done, see differences in log message panel")), log_msg=ru(QCoreApplication.translate(u'ExportData', u"Tables with different number of rows:\n%s"))%statistics)
 
         conn.commit()
         conn.close()
@@ -133,7 +134,7 @@ class ExportData():
         return result
 
     def format_obsids(self, obsids):
-        formatted_obsids = u''.join([u'(', u', '.join([u"'{}'".format(k) for k in utils.returnunicode(obsids, True)]), u')'])
+        formatted_obsids = u''.join([u'(', u', '.join([u"'{}'".format(k) for k in ru(obsids, True)]), u')'])
         return formatted_obsids
 
     def get_number_of_obsids(self, obsids, tname):
@@ -195,7 +196,7 @@ class ExportData():
             try:
                 self.curs.execute(sql)
             except Exception, e:
-                utils.MessagebarAndLog.info(log_msg=u'INSERT failed while importing to %s.\nMsg: ' %tname + str(e))
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'INSERT failed while importing to %s.\nMsg:%s'))%(tname, str(e)))
 
         #Make a transformation for column names that are geometries #Transformation doesn't work yet.
         old_table_column_srid_dict = self.get_table_column_srid(prefix='a')
@@ -210,7 +211,7 @@ class ExportData():
         try:
             self.curs.execute(sql)
         except Exception, e:
-            utils.MessagebarAndLog.critical(bar_msg=u"Export warning: sql failed. See message log.", log_msg=sql + u"\nmsg: " + str(e))
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u"Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate(u'ExportData', u'%s\nmsg:\n%s'))%(sql, str(e)))
 
     @staticmethod
     def transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict):
@@ -241,8 +242,8 @@ class ExportData():
                 new_srid = new_table_column_srid_dict.get(tname, {}).get(column, None)
                 old_srid = old_table_column_srid_dict.get(tname, {}).get(column, None)
                 if old_srid is not None and new_srid is not None and old_srid != new_srid:
-                    transformed_column_names.append(u'ST_Transform({}, {})'.format(column, utils.returnunicode(new_srid)))
-                    utils.MessagebarAndLog.info(log_msg=u'Transformation for table "' + tname + u'" column "' + column + u'" from ' + str(old_srid) + u" to " + str(new_srid))
+                    transformed_column_names.append(u'ST_Transform({}, {})'.format(column, ru(new_srid)))
+                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'Transformation for table %s column %s from %s to %s"'))%(tname, column, str(old_srid), str(new_srid)))
                     transformed = True
                 else:
                     transformed_column_names.append(column)
@@ -254,7 +255,7 @@ class ExportData():
             old_geocol_srids = [(k, v) for k, v in old_table_column_srid_dict.get(tname, {}).iteritems()]
             new_geocol_srids = [(k, v) for k, v in new_table_column_srid_dict.get(tname, {}).iteritems()]
             if len(old_geocol_srids) != 1 and len(new_geocol_srids) != 1:
-                utils.MessagebarAndLog.critical(bar_msg=u'Export warning!, see Log Message Panel', log_msg=u'Transformation of east/north for table obs_points failed! The number of geometry columns was not == 1!')
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u'Export warning!, see Log Message Panel')), log_msg=ru(QCoreApplication.translate(u'ExportData', u'Transformation of east/north for table obs_points failed! The number of geometry columns was not == 1!')))
             else:
                 new_srid = new_geocol_srids[0][1]
                 old_geometry_column = old_geocol_srids[0][0]
@@ -292,12 +293,12 @@ class ExportData():
         try:
             self.curs.execute(sql)
         except Exception, e:
-            utils.MessagebarAndLog.info(log_msg=u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg: ' %reference_table + str(e))
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg:%s'))%(tname, str(e)))
             sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
             try:
                 self.curs.execute(sql)
             except Exception, e:
-                utils.MessagebarAndLog.critical(bar_msg=u"Export warning: sql failed. See message log.", log_msg=sql + u"\nmsg: " + str(e))
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u"Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate(u'ExportData', u'%s\nmsg:\n%s'))%(sql, str(e)))
 
     def get_foreign_keys(self, tname):
         result_list = self.curs.execute("""PRAGMA foreign_key_list(%s)"""%(tname)).fetchall()
@@ -322,7 +323,7 @@ class ExportData():
 
         new_column_names = self.get_column_names(tname)
         if new_column_names is None:
-            utils.MessagebarAndLog.critical(bar_msg=u'Export warning!, see Log Message Panel', log_msg=u"Table " + tname + u" export failed!")
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u'Export warning!, see Log Message Panel')), log_msg=ru(QCoreApplication.translate(u'ExportData', u"Table %s export failed!"))%tname)
             return None
 
         prefix = tname_with_prefix.split(u'.')[0]
@@ -345,20 +346,20 @@ class ExportData():
         utils.MessagebarAndLog.info(log_msg=u"new_columns_missing_in_old " + str(new_columns_missing_in_old))
         """
 
-        missing_columns_msg = [u'Table ' + tname + u':']
+        missing_columns_msg = [ru(QCoreApplication.translate(u'ExportData', u'Table %s:'))%tname]
         if new_columns_missing_in_old:
-            missing_columns_msg.append(u'\nNew columns missing in old database: ' + u', '.join(new_columns_missing_in_old))
+            missing_columns_msg.append(ru(QCoreApplication.translate(u'ExportData', u'\nNew columns missing in old database: %s'))%u', '.join(new_columns_missing_in_old))
         if old_columns_missing_in_new:
-            missing_columns_msg.append(u'\nOld columns missing in new database: ' + u', '.join(old_columns_missing_in_new))
+            missing_columns_msg.append(ru(QCoreApplication.translate(u'ExportData', u'\nOld columns missing in new database: %s'))%u', '.join(old_columns_missing_in_new))
         if len(missing_columns_msg) > 1:
-                utils.MessagebarAndLog.warning(bar_msg=u'Export warning, see Log Message Panel', log_msg=u''.join(missing_columns_msg))
+                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'ExportData', u'Export warning, see Log Message Panel')), log_msg=u''.join(missing_columns_msg))
 
         #Check if a primary key in the new database is missing in the old database and skip the table if there are missing primary keys.
         primary_keys = self.get_primary_keys(tname)
         missing_primary_keys = [col for col in primary_keys if col in new_columns_missing_in_old]
         if missing_primary_keys:
-            missing_pk_msg = u'Table ' + tname + u':\nPrimary keys "' + u'", "'.join(missing_primary_keys) + u'" are missing in old database. The table will not be exported!!!'
-            utils.MessagebarAndLog.critical(bar_msg=u'Export warning!, see Log Message Panel', log_msg=missing_pk_msg)
+            missing_pk_msg = ru(QCoreApplication.translate(u'ExportData', u'Table %s:\nPrimary keys are missing in old database. The table will not be exported!!!'))%(tname, u'", "'.join(missing_primary_keys))
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u'Export warning!, see Log Message Panel')), log_msg=missing_pk_msg)
             return None
 
         #Only copy columns from old to new database that exist in old database.
@@ -375,7 +376,7 @@ class ExportData():
         try:
             result_list = self.curs.execute(sql).fetchall()
         except Exception, e:
-            utils.MessagebarAndLog.critical(bar_msg=u"Export warning: sql failed. See message log.", log_msg=sql + u"\nmsg: " + str(e))
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u"Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate(u'ExportData', u'%s\nmsg:\n%s'))%(sql, str(e)))
             return None
 
         columns = [col[1] for col in result_list] #Load column names from sqlite table
@@ -398,7 +399,7 @@ class ExportData():
                 try:
                     nr_of_rows = self.curs.execute(sql).fetchall()[0][0]
                 except:
-                    utils.MessagebarAndLog.warning(log_msg=u'Sql failed while getting table row differences: ' + sql)
+                    utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'ExportData', u'Sql failed while getting table row differences: %s'))%sql)
                 else:
                     results.setdefault(tablename, {})[alias] = str(nr_of_rows)
 

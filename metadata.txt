@@ -23,7 +23,9 @@ changelog=
         - Fieldlogger import: Connected instrument id to sublocation instead of obsid.
         - Fieldlogger import: Added function for calculating level_masl directly from meas
         - Logger calibration: Fixed better error msg.
-        - Added translation support for fieldlogger import, wlevels_calc_calibr.py, gui_utils.py.
+        - Added translation support for fieldlogger import, wlevels_calc_calibr.py, gui_utils.py, export_fieldlogger2.py,
+          (piper.py didn't need it), midvsettings.py, midvatten.py, midvsettingsdialog.py, xyplot.py, wqualreport.py,
+          tsplot, stratigraphy.py, sectionplot.py, midvsettings.py, export_data.py, drillreport.py.
         Version 1.4.7:
         - Fixed bug where sql questions with special characters could cause an error.
         Version 1.4.6:

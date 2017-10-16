@@ -32,18 +32,22 @@ import db_utils
 from matplotlib.dates import datestr2num
 import numpy as np
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
 #from ui.calc_aveflow_dialog import Ui_Dialog as Calc_Ui_Dialog
 from PyQt4 import uic
+
+from PyQt4.QtCore import QCoreApplication
+
 Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_aveflow_dialog.ui'))[0]
 
 
-class calcave(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
+class Calcave(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
 
     def __init__(self, parent):
         PyQt4.QtGui.QDialog.__init__(self)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.obsid = utils.getselectedobjectnames()
-        self.setWindowTitle("Calculate average flow") # Set the title for the dialog
+        self.setWindowTitle(ru(QCoreApplication.translate(u'Calcave', u"Calculate average flow"))) # Set the title for the dialog
         self.connect(self.pushButton_All, PyQt4.QtCore.SIGNAL("clicked()"), self.calcall)
         self.connect(self.pushButton_Selected, PyQt4.QtCore.SIGNAL("clicked()"), self.calcselected)
         self.connect(self.pushButton_Cancel, PyQt4.QtCore.SIGNAL("clicked()"), self.close)
@@ -85,6 +89,6 @@ class calcave(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
                     sql = """insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('%s','%s','Aveflow','%s','%s','l/s')"""%(pyobsid,pyinstrumentid,table2.date_time[j],Aveflow)
                     db_utils.sql_alter_db(sql)
         if negativeflow:
-            self.iface.messageBar().pushMessage("Info","Please notice that negative flow was encountered.", 0, duration=5)
+            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Calcave', u"Please notice that negative flow was encountered.")))
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         self.close()

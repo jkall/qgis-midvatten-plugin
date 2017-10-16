@@ -48,8 +48,11 @@ from functools import partial # only to get combobox signals to work
 
 import db_utils
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 import locale
+
+from PyQt4.QtCore import QCoreApplication
 
 class Stratigraphy:
 
@@ -66,7 +69,10 @@ class Stratigraphy:
         try: # return from SurveyStore is stored in self.store only if no object belonging to DataError class is created
             self.store = SurveyStore(self.dataPath, self.stratitable)  
         except DataError, e: # if an object 'e' belonging to DataError is created, then do following
-            print "Load failed due: " + e.problem
+            try:
+                print "Load failed due: " + e.problem
+            except:
+                pass
             self.store = None
 
     def showSurvey(self):
@@ -74,7 +80,7 @@ class Stratigraphy:
         lyr = self.layer
         ids = lyr.selectedFeaturesIds()
         if len(ids) == 0:
-            utils.pop_up_info("No selection", "No features are selected")   
+            utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"No selection")), ru(QCoreApplication.translate(u' Stratigraphy', u"No features are selected")))
             return
         # initiate the datastore if not yet done   
         self.initStore()   
@@ -83,11 +89,11 @@ class Stratigraphy:
             data = self.store.getData(ids, lyr)    # added lyr as an argument!!!
         except DataSanityError, e: # if an object 'e' belonging to DataSanityError is created, then do following
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            utils.pop_up_info("Data sanity problem, obsid: %s\n%s" % (e.sond_id, e.message))
+            utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"Data sanity problem, obsid: %s\n%s")) % (e.sond_id, e.message))
             return
         except: # if an object 'e' belonging to DataSanityError is created, then do following
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            self.iface.messageBar().pushMessage("Error","The stratigraphy plot failed, check Midvatten plugin settings and your data!", 2,duration=10) 
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u' Stratigraphy', u"The stratigraphy plot failed, check Midvatten plugin settings and your data!")))
             return
         PyQt4.QtGui.QApplication.restoreOverrideCursor()  # Restores the mouse cursor to normal symbol
         # show widget
@@ -176,11 +182,11 @@ class SurveyStore:
                     surveys[obsid_list[i]] = SurveyInfo(obsid_list[i], toplvl_list[i], coord_list[i])
                     i = i+1
         else:
-            utils.pop_up_info("getDataStep1 failed ")  # _CHANGE_ for debugging
+            utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"getDataStep1 failed ")))  # _CHANGE_ for debugging
         return surveys
 
     @db_utils.if_connection_ok
-    def _getDataStep2(self, surveys):    
+    def _getDataStep2(self, surveys):
         """ STEP 2: get strata information for every point """
         for (obsid, survey) in surveys.iteritems():
             sql =r"""SELECT stratid, depthtop, depthbot, geology, lower(geoshort), capacity, comment, development FROM """
@@ -196,7 +202,7 @@ class SurveyStore:
                     depthtotop = record[1]  # depth to top of stratrigraphy layer
                     depthtobot = record[2]  # depth to bottom of stratrigraphy layer
                 else:
-                    raise DataSanityError(str(obsid), "Something bad with stratid, depthtop or depthbot!")
+                    raise DataSanityError(str(obsid), ru(QCoreApplication.translate(u'SurveyStore', u"Something bad with stratid, depthtop or depthbot!")))
                     stratigaphy_id = 1  # when something went wrong, put it into first layer
                     depthtotop = 0
                     depthtobot = 999#default value when something went wrong
@@ -239,8 +245,11 @@ class SurveyStore:
             # check whether there's at least one strata information
             if len(survey.strata) == 0:
                 #raise DataSanityError(str(obsid), "No strata information")
-                print(str(obsid) + " has no strata information")
-                print surveys
+                try:
+                    print(str(obsid) + " has no strata information")
+                    print surveys
+                except:
+                    pass
                 del surveys[obsid]#simply remove the item without strata info
             else:
                 # check whether the depths are valid
@@ -249,13 +258,13 @@ class SurveyStore:
                 for strato in survey.strata[1:]:
                     # top (n) < top (n+1)
                     if top1 > strato.depthTop:
-                        raise DataSanityError(str(obsid), "Top depth is incorrect (%.2f > %.2f)" % (top1, strato.depthTop))
+                        raise DataSanityError(str(obsid), ru(QCoreApplication.translate(u'SurveyStore', u"Top depth is incorrect (%.2f > %.2f)")) % (top1, strato.depthTop))
                     # bed (n) < bed (n+1)
                     if bed1 > strato.depthBot:
-                        raise DataSanityError(str(obsid), "Bed depth is incorrect (%.2f > %.2f)" % (bed1, strato.depthBot))
+                        raise DataSanityError(str(obsid), ru(QCoreApplication.translate(u'SurveyStore', u"Bed depth is incorrect (%.2f > %.2f)")) % (bed1, strato.depthBot))
                     # bed (n) = top (n+1)
                     if bed1 != strato.depthTop:
-                        raise DataSanityError(str(obsid), "Top and bed depth don't match (%.2f != %.2f)" % (bed1, strato.depthTop))
+                        raise DataSanityError(str(obsid), ru(QCoreApplication.translate(u'SurveyStore', u"Top and bed depth don't match (%.2f != %.2f)")) % (bed1, strato.depthTop))
                     
                     top1 = strato.depthTop
                     bed1 = strato.depthBot
@@ -352,7 +361,7 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
         # check whether there's a survey to show
         if len(self.sondaggio) == 0:
             p = PyQt4.QtGui.QPainter(self)
-            p.drawText(self.rect(), PyQt4.QtCore.Qt.AlignCenter | PyQt4.QtCore.Qt.AlignVCenter, "No data to display")
+            p.drawText(self.rect(), PyQt4.QtCore.Qt.AlignCenter | PyQt4.QtCore.Qt.AlignVCenter, ru(QCoreApplication.translate(u'SurveyWidget', u"No data to display")))
             return
 
         painter = PyQt4.QtGui.QPainter(self)
@@ -530,7 +539,7 @@ class SurveyDialog(PyQt4.QtGui.QDialog):
         
         self.resize(PyQt4.QtCore.QSize(500,250))
         
-        self.setWindowTitle("Identify Results")
+        self.setWindowTitle(ru(QCoreApplication.translate(u'SurveyDialog', u"Identify Results")))
         
         self.layout = PyQt4.QtGui.QVBoxLayout(self)
         self.layout.setMargin(5)
@@ -550,7 +559,7 @@ class SurveyDialog(PyQt4.QtGui.QDialog):
         spacerItem = PyQt4.QtGui.QSpacerItem(100,0)
         self.layout2.addItem(spacerItem)
         
-        self.chkShowDesc = PyQt4.QtGui.QCheckBox("Show text")
+        self.chkShowDesc = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'SurveyDialog', u"Show text")))
         self.chkShowDesc.setChecked(True)
         self.layout2.addWidget(self.chkShowDesc)
 
@@ -564,10 +573,10 @@ class SurveyDialog(PyQt4.QtGui.QDialog):
         
 
 
-        self.btnPrint = PyQt4.QtGui.QPushButton("Print")
+        self.btnPrint = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'SurveyDialog', u"Print")))
         self.layout2.addWidget(self.btnPrint)
         
-        self.btnClose = PyQt4.QtGui.QPushButton("Close")
+        self.btnClose = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'SurveyDialog', u"Close")))
         self.layout2.addWidget(self.btnClose)
         
         self.layout.addLayout(self.layout2)

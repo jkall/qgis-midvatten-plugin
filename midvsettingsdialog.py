@@ -19,7 +19,9 @@ from PyQt4.QtCore import QLocale
 from PyQt4.QtCore import QSettings
 import PyQt4
 
-from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency  
+from PyQt4.QtCore import QCoreApplication
+
+from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import os.path
 import ast
 import qgis.utils
@@ -27,6 +29,8 @@ from functools import partial # only to get combobox signals to work
 import locale
 import midvatten_utils as utils
 import gui_utils
+from midvatten_utils import returnunicode as ru
+
 from definitions import midvatten_defs
 #from ui.midvsettingsdock_ui import Ui_MidDockSettings
 midvsettingsdock_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'ui', 'midvsettingsdock.ui'))[0]
@@ -79,9 +83,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.ListOfColumns_WQUALUNIT, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualUnit))         
         self.connect(self.ListOfColumns_WQUALSORTING, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualSorting))
 
-        #tab stratigraphy  - TO BE REMOVED
-        #self.connect(self.ListOfTables_3, SIGNAL("activated(int)"), partial(self.StratigraphyTableUpdated))  # TODO: remove in version 1.4
-
         #tab piper
         self.connect(self.paramCl, SIGNAL("activated(int)"), partial(self.ChangedParamCl))
         self.connect(self.paramHCO3, SIGNAL("activated(int)"), partial(self.ChangedParamHCO3))
@@ -91,10 +92,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.connect(self.paramCa, SIGNAL("activated(int)"), partial(self.ChangedParamCa)) 
         self.connect(self.paramMg, SIGNAL("activated(int)"), partial(self.ChangedParamMg))         
         self.connect(self.MarkerComboBox, SIGNAL("activated(int)"), partial(self.ChangedPiperMarkerComboBox))
-        #tab general - TO BE REMOVED
-        #self.connect(self.locale_combobox, SIGNAL("activated(int)"), partial(self.ChangedLocale))# TODO: remove in version 1.4
-
-        #tab db
 
         #Draw the widget
         self.iface.addDockWidget(max(self.ms.settingsdict['settingslocation'],1), self)
@@ -281,13 +278,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         if searchindex >= 0:
             self.MarkerComboBox.setCurrentIndex(searchindex)
 
-    def load_and_select_last_stratigraphy_settings(self):#TODO: remove in version 1.4
-        searchindex = self.ListOfTables_3.findText(self.ms.settingsdict['stratigraphytable'])
-        print(searchindex)
-        print(self.ms.settingsdict['stratigraphytable'])
-        if searchindex >= 0:
-            self.ListOfTables_3.setCurrentIndex(searchindex)
-
     def load_and_select_last_ts_plot_settings(self):
         if len(str(self.ms.settingsdict['tstable'])):#If there is a last selected tstable. #MacOSX fix1
             notfound=0 
@@ -366,23 +356,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         else:
             self.checkBoxDataPoints_2.setChecked(False)
 
-    def load_and_select_general_settings(self):     # TODO: remove in version 1.4
-        locales = [QLocale(QLocale.Swedish, QLocale.Sweden), QLocale(QLocale.English, QLocale.UnitedStates)]
-        current_locale = utils.getcurrentlocale()[0]
-        items_set = set()
-        items_set.add(current_locale)
-        items_set.update([localeobj.name() for localeobj in locales])
-        items = [u'']
-        items.extend(sorted(list(items_set)))
-
-        self.locale_combobox.addItems(items)
-        if current_locale:
-            idx = self.locale_combobox.findText(current_locale)
-            try:
-                self.locale_combobox.setCurrentIndex(idx)
-            except:
-                pass
-
     def LoadColumnsFromTable(self, table=''):
         return db_utils.tables_columns.get(table, [])
 
@@ -393,13 +366,11 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
         self.ListOfTables.addItem('')
         self.ListOfTables_2.addItem('')
-        # self.ListOfTables_3.addItem('') #TODO: remove in version 1.4
         self.ListOfTables_WQUAL.addItem('')
 
         for table in sorted(tables):
             self.ListOfTables.addItem(table)
             self.ListOfTables_2.addItem(table)
-            #self.ListOfTables_3.addItem(row[0]) #TODO: remove in version 1.4
             self.ListOfTables_WQUAL.addItem(table)
 
     def LoadDistinctPiperParams(self):
@@ -469,19 +440,6 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         dockarea = self.parent.dockWidgetArea(self)
         self.ms.settingsdict['settingslocation']=dockarea
         self.ms.save_settings('settingslocation')
-        
-    def StratigraphyTableUpdated(self): # TODO: remove in version 1.4
-        """This method is called whenever stratigraphy table is changed"""
-        # Make sure that columns obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, comment exists
-        Needed_columns = ('comment', 'capacity', 'geology', 'geoshort', 'depthtop', 'depthbot', 'obsid', 'stratid')
-        columns = self.LoadColumnsFromTable(self.ListOfTables_3.currentText())     # For some reason it is not possible to send currentText with the SIGNAL-trigger
-        text = "<font color=green>Correct table! all the expected columns obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, comment have been found.</font>"
-        for column in Needed_columns:
-            if not column in columns:
-                text = "<font color=red>Wrong table! Column " + str(column) + " is missing.</font>"
-        self.InfoTxtStratigraphy.setText(text)
-        self.ms.settingsdict['stratigraphytable']=self.ListOfTables_3.currentText()
-        self.ms.save_settings('stratigraphytable')#save this specific setting
                 
     def TSTableUpdated(self):
         """This method is called whenever time series table is changed"""
@@ -490,9 +448,9 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         # Second, Make sure that columns obsid and date_time exists
         columns = self.LoadColumnsFromTable(self.ListOfTables.currentText())     # For some reason it is not possible to send currentText with the SIGNAL-trigger
         if ('obsid' in columns) and ('date_time' in columns):
-            text = "<font color=green>Correct table, both obsid and date_time columns have been found.</font>"
+            text = u"<font color=green>%s</font>"%ru(QCoreApplication.translate(u'midvsettingsdialogdock', u'Correct table, both obsid and date_time columns have been found.'))
         else:
-            text = "<font color=red>Wrong table! obsid and/or date_time is missing.</font>"
+            text = u"<font color=red>%s</font>"%ru(QCoreApplication.translate(u'midvsettingsdialogdock', u'Wrong table! obsid and/or date_time is missing.'))
         self.InfoTxtTSPlot.setText(text)
         #finally, save to qgis project settings
         self.ms.settingsdict['tstable']=self.ListOfTables.currentText()
@@ -555,9 +513,9 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         # Second, Make sure that column obsid exists
         columns = self.LoadColumnsFromTable(self.ListOfTables_2.currentText())     # For some reason it is not possible to send currentText with the SIGNAL-trigger
         if 'obsid' in columns:    
-            text = "<font color=green>Correct table! obsid column is found.</font>"
+            text = u"<font color=green>%s</font>"%ru(QCoreApplication.translate(u'midvsettingsdialogdock', u'Correct table! obsid column is found.'))
         else:
-            text = "<font color=red>Wrong table! obsid is missing.</font>"
+            text = u"<font color=red>%s</font>"%ru(QCoreApplication.translate(u'midvsettingsdialogdock', u'Wrong table! obsid is missing.'))
         self.InfoTxtXYPlot.setText(text)
         self.ms.settingsdict['xytable']=self.ListOfTables_2.currentText()
         self.ms.save_settings('xytable')#save this specific setting

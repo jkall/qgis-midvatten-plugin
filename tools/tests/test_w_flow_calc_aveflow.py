@@ -40,10 +40,10 @@ class TestWFlowCalcAveflow(object):
     def setUp(self):
         self.iface = DummyInterface()
         widget = QtGui.QWidget()
-        self.calcave = w_flow_calc_aveflow.calcave(widget)
+        self.calcave = w_flow_calc_aveflow.Calcave(widget)
 
     @mock.patch('w_flow_calc_aveflow.utils.sql_load_fr_db', db_all_distinct_obsids.get_v)
-    @mock.patch('w_flow_calc_aveflow.calcave.calculateaveflow', return_int.get_v)
+    @mock.patch('w_flow_calc_aveflow.Calcave.calculateaveflow', return_int.get_v)
     def test_calcall(self):
         self.calcave.calcall()
         result_list = self.calcave.observations
@@ -52,7 +52,7 @@ class TestWFlowCalcAveflow(object):
 
     @mock.patch('qgis.utils.iface', mocked_iface)
     @mock.patch('w_flow_calc_aveflow.utils.getselectedobjectnames', selected_obs.get_v)
-    @mock.patch('w_flow_calc_aveflow.calcave.calculateaveflow', return_int.get_v)
+    @mock.patch('w_flow_calc_aveflow.Calcave.calculateaveflow', return_int.get_v)
     def test_calcselected(self):
         self.calcave.calcselected()
         result_list = self.calcave.observations
