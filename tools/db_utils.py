@@ -200,9 +200,10 @@ def get_postgis_connections():
     return postgresql_connections
 
 
-def sql_load_fr_db(sql):
+def sql_load_fr_db(sql, dbconnection=None):
     try:
-        dbconnection = DbConnectionManager()
+        if not isinstance(dbconnection, DbConnectionManager):
+            dbconnection = DbConnectionManager()
         result = dbconnection.execute_and_fetchall(sql)
     except Exception as e:
         textstring = utils.returnunicode(QCoreApplication.translate(u'sql_load_fr_db', u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (utils.returnunicode(sql), utils.returnunicode(str(e)))
@@ -214,8 +215,9 @@ def sql_load_fr_db(sql):
         return True, result
 
 
-def sql_alter_db(sql):
-    dbconnection = DbConnectionManager()
+def sql_alter_db(sql, dbconnection=None):
+    if not isinstance(dbconnection, DbConnectionManager):
+        dbconnection = DbConnectionManager()
     try:
         dbconnection.execute(u'PRAGMA foreign_keys = ON')
     except:
@@ -223,10 +225,10 @@ def sql_alter_db(sql):
     try:
         dbconnection.execute_and_commit(sql)
     except Exception as e:
-        textstring = u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""" % (
+        textstring = utils.returnunicode(QCoreApplication.translate(u'sql_alter_db', u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (
         utils.returnunicode(sql), utils.returnunicode(str(e)))
         utils.MessagebarAndLog.warning(
-            bar_msg=u'Some sql failure, see log for additional info.',
+            bar_msg=utils.returnunicode(QCoreApplication.translate(u'sql_alter_db', u'Some sql failure, see log for additional info.')),
             log_msg=textstring, duration=4)
 
 
@@ -263,7 +265,7 @@ def tables_columns(table=None, dbconnection=None):
 
 def db_tables_columns_info(table=None, dbconnection=None):
     """Returns a dict like {u'tablename': (ordernumber, name, type, notnull, defaultvalue, primarykey)}"""
-    if dbconnection is None:
+    if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
 
     existing_tablenames = get_tables(dbconnection=dbconnection)
@@ -287,7 +289,7 @@ def db_tables_columns_info(table=None, dbconnection=None):
 
 
 def get_tables(dbconnection=None, skip_views=False):
-    if dbconnection is None:
+    if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
 
     if dbconnection.dbtype == u'spatialite':
@@ -309,7 +311,7 @@ def get_tables(dbconnection=None, skip_views=False):
 
 
 def get_table_info(tablename, dbconnection=None):
-    if dbconnection is None:
+    if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
 
     if dbconnection.dbtype == u'spatialite':
@@ -330,7 +332,7 @@ def get_foreign_keys(table, dbconnection=None):
     """Get foreign keys for table.
        Returns a dict like {foreign_key_table: (colname in table, colname in foreign_key_table)}
     code from http://stackoverflow.com/questions/1152260/postgres-sql-to-list-table-foreign-keys"""
-    if dbconnection is None:
+    if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
     foreign_keys = {}
     if dbconnection.dbtype == u'spatialite':
@@ -417,7 +419,7 @@ def get_sql_result_as_dict(sql, dbconnection=None):
     :param dbconnection:
     :return: A dict with the first column as key and the rest in a tuple as value
     """
-    if dbconnection is None:
+    if not isinstance(dbconnection, DbConnectionManager):
         connection_ok, result_list = sql_load_fr_db(sql)
     else:
         result_list = dbconnection.execute_and_fetchall(sql)
@@ -465,7 +467,7 @@ def delete_duplicate_values(dbconnection, tablename, primary_keys):
 
 
 def activate_foreign_keys(activated=True, dbconnection=None):
-    if dbconnection is None:
+    if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
     if dbconnection.dbtype == u'spatialite':
         if activated:
@@ -515,7 +517,7 @@ def get_dbtype(dbtype):
 
 
 def cast_date_time_as_epoch(dbconnection=None):
-    if dbconnection is None:
+    if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
     if dbconnection.dbtype == u'spatialite':
         return u"""CAST(strftime('%s', date_time) AS NUMERIC)"""

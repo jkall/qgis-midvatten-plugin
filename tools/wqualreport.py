@@ -57,6 +57,8 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         #rpt2 = rpt.encode("utf-8")
         f.write(rpt)
 
+        dbconnection = db_utils.DbConnectionManager()
+
         for i, object in enumerate(observations):
             attributes = observations[i]
             obsid = attributes[kolumnindex]
@@ -64,7 +66,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
                 print('about to get data for ' + obsid + ', at time: ' + str(time.time()))#debug
             except:
                 pass
-            ReportData = self.GetData(self.settingsdict['database'], obsid)   # one observation at a time
+            ReportData = self.GetData(self.settingsdict['database'], obsid, dbconnection)   # one observation at a time
             try:
                 print('done with getting data for ' + obsid + ', at time: ' + str(time.time()))#debug
             except:
@@ -76,6 +78,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
             except:
                 pass
 
+        dbconnection.closedb()
         #write some finishing html and close the file
         f.write("\n</body></html>")        
         f.close()
@@ -85,7 +88,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         if ReportData:
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
         
-    def GetData(self, dbPath='', obsid = ''):            # GetData method that returns a table with water quality data
+    def GetData(self, dbPath='', obsid = '', dbconnection=None):            # GetData method that returns a table with water quality data
         # Load all water quality parameters stored in two result columns: parameter, unit
         if not(unicode(self.settingsdict['wqual_unitcolumn']) ==''):          #If there is a a given column for unit 
             sql =r"""select distinct """ + self.settingsdict['wqual_paramcolumn'] + """, """
@@ -97,7 +100,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         sql += r""" where obsid = '"""
         sql += obsid  
         sql += r"""' ORDER BY """ + self.settingsdict['wqual_paramcolumn']
-        connection_ok, parameters = db_utils.sql_load_fr_db(sql)
+        connection_ok, parameters = db_utils.sql_load_fr_db(sql, dbconnection)
         if not parameters:
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'Wqualreport', u'Debug, something is wrong, no parameters are found in table w_qual_lab for %s'))%obsid)
             return False
@@ -126,7 +129,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         else:
             sql += """') ORDER BY date_time"""
         #sql2 = unicode(sql) #To get back to unicode-string
-        connection_ok, date_times = db_utils.sql_load_fr_db(sql) #Send SQL-syntax to cursor,
+        connection_ok, date_times = db_utils.sql_load_fr_db(sql, dbconnection) #Send SQL-syntax to cursor,
 
         try:
             print('loaded distinct date_time for the parameters for ' + obsid + ' at time: ' + str(time.time()))#debug
@@ -208,7 +211,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
                 if self.settingsdict['wqual_sortingcolumn']:
                     sql += """ and "%s" = '%s'"""%(self.settingsdict['wqual_sortingcolumn'], sorting)
 
-                connection_ok, recs = db_utils.sql_load_fr_db(sql)
+                connection_ok, recs = db_utils.sql_load_fr_db(sql, dbconnection)
                 #each value must be in unicode or string to be written as html report
                 if recs:
                     try:
