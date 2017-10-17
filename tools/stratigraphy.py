@@ -58,7 +58,6 @@ class Stratigraphy:
 
     def __init__(self, iface, layer=None, settingsdict={}):
         self.iface = iface
-        self.dataPath = settingsdict['database']
         self.stratitable = defs.stratigraphy_table()  #no longer an option to select other tables than 'stratigraphy'
         self.layer = layer
         self.store = None
@@ -67,7 +66,7 @@ class Stratigraphy:
 
     def initStore(self):
         try: # return from SurveyStore is stored in self.store only if no object belonging to DataError class is created
-            self.store = SurveyStore(self.dataPath, self.stratitable)  
+            self.store = SurveyStore(self.stratitable)
         except DataError, e: # if an object 'e' belonging to DataError is created, then do following
             try:
                 print "Load failed due: " + e.problem
@@ -76,9 +75,14 @@ class Stratigraphy:
             self.store = None
 
     def showSurvey(self):
+        print("Here0")
         #lyr = self.iface.activeLayer() # THIS IS TSPLOT-method, GETS THE SELECTED LAYER
         lyr = self.layer
+        print("Here1")
         ids = lyr.selectedFeaturesIds()
+        print("Here2")
+        print(str(lyr.mock_calls))
+        raise Exception()
         if len(ids) == 0:
             utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"No selection")), ru(QCoreApplication.translate(u' Stratigraphy', u"No features are selected")))
             return
@@ -97,6 +101,7 @@ class Stratigraphy:
             return
         PyQt4.QtGui.QApplication.restoreOverrideCursor()  # Restores the mouse cursor to normal symbol
         # show widget
+        print("Here")
         w = SurveyDialog()
         #w.widget.setData2_nosorting(data)  #THIS IS IF DATA IS NOT TO BE SORTED!!
         w.widget.setData(data)  #THIS IS ONLY TO SORT DATA!!
@@ -129,8 +134,7 @@ class StrataInfo:
         return "strata(%d, '%s', '%s', '%s', %f-%f)" % (self.stratid, self.hydro, self.geology, self.geo_short, self.depthTop, self.depthBot)
 
 class SurveyStore:
-    def __init__(self, path, stratitable):   
-        self.path = path
+    def __init__(self, stratitable):
         self.stratitable = stratitable  
 
     def getData(self, featureIds, vectorlayer):  # THIS FUNCTION IS ONLY CALLED FROM ARPATPLUGIN/SHOWSURVEY
@@ -580,7 +584,7 @@ class SurveyDialog(PyQt4.QtGui.QDialog):
         self.layout2.addWidget(self.btnClose)
         
         self.layout.addLayout(self.layout2)
-        
+
         self.connect(self.btnClose, PyQt4.QtCore.SIGNAL("clicked()"), self.close)
         self.connect(self.btnPrint, PyQt4.QtCore.SIGNAL("clicked()"), self.widget.printDiagram)
         self.connect(self.radGeo, PyQt4.QtCore.SIGNAL("toggled(bool)"), self.typeToggled)
