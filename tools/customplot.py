@@ -185,7 +185,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.widgetPlot.setMinimumHeight(height)
             self.widgetPlot.setMaximumHeight(height)
 
-    @db_utils.if_connection_ok
     def drawPlot_all(self):
 
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))#show the user this may take a long time...
@@ -278,7 +277,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         return nop, i
 
     def createsingleplotobject(self,sql,i,My_format,dbconnection,plottype='line', factor=1.0, offset=0.0, remove_mean=False, pandas_calc=None):
-        recs = dbconnection.execute_and_fetchall()
+        recs = dbconnection.execute_and_fetchall(sql)
         #Transform data to a numpy.recarray
         try:
             table = np.array(recs, dtype=My_format)  #NDARRAY
@@ -441,11 +440,16 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                      filter_qlistwidget.item(index).setSelected(True)
 
     def LoadTablesFromDB( self, tables_columns ):    # Open the SpatiaLite file to extract info about tables
-        tables = [table for table in tables_columns.keys() if table not in midvatten_defs.sqlite_nonplot_tables() and not table.startswith(u'zz_')]
-        for i, table_combobox in enumerate([self.table_ComboBox_1, self.table_ComboBox_2, self.table_ComboBox_3]):
+        tables = sorted([table for table in tables_columns.keys() if table not in midvatten_defs.sqlite_nonplot_tables() and not table.startswith(u'zz_')])
+        for i, table_combobox in enumerate([self.table_ComboBox_1, self.table_ComboBox_2, self.table_ComboBox_3], 1):
             table_combobox.clear()
             self.clearthings(i)
-            table_combobox.addItems(sorted(tables))
+            table_combobox.addItem('')
+            try:
+                table_combobox.addItems(tables)
+            except:
+                for table in tables:
+                    table_combobox.addItem(table)
 
     def clearthings(self,tabno=1):   #clear xcol,ycol,filter1,filter2
         xcolcombobox = 'xcol_ComboBox_' + str(tabno)
@@ -490,10 +494,14 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
     def PopulateComboBox(self, comboboxname='', table=None):
         """This method fills comboboxes with columns for selected tool and table"""
-        columns = self.tables_columns[table]    # Load all columns into a list 'columns'
+        columns = self.tables_columns.get(table, [])    # Load all columns into a list 'columnsä
         if len(columns)>0:    # Transfer information from list 'columns' to the combobox
             getattr(self, comboboxname).addItem('')
-            getattr(self, comboboxname).addItems(columns)
+            try:
+                getattr(self, comboboxname).addItems(columns)
+            except:
+                for column in columns:
+                    getattr(self, comboboxname).addItem(column)
 
     def FilterChanged(self, filterno, tabno):
         TableCombobox = 'table_ComboBox_' + str(tabno)
