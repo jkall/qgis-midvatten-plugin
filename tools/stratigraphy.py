@@ -75,14 +75,9 @@ class Stratigraphy:
             self.store = None
 
     def showSurvey(self):
-        print("Here0")
         #lyr = self.iface.activeLayer() # THIS IS TSPLOT-method, GETS THE SELECTED LAYER
         lyr = self.layer
-        print("Here1")
         ids = lyr.selectedFeaturesIds()
-        print("Here2")
-        print(str(lyr.mock_calls))
-        raise Exception()
         if len(ids) == 0:
             utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"No selection")), ru(QCoreApplication.translate(u' Stratigraphy', u"No features are selected")))
             return
@@ -101,7 +96,6 @@ class Stratigraphy:
             return
         PyQt4.QtGui.QApplication.restoreOverrideCursor()  # Restores the mouse cursor to normal symbol
         # show widget
-        print("Here")
         w = SurveyDialog()
         #w.widget.setData2_nosorting(data)  #THIS IS IF DATA IS NOT TO BE SORTED!!
         w.widget.setData(data)  #THIS IS ONLY TO SORT DATA!!
