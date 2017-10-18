@@ -2479,7 +2479,7 @@ Hover over a column header to see which database column it will go to.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="330"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1341"/>
         <source>yyyy-MM-dd HH:mm:ss</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2489,7 +2489,7 @@ Hover over a column header to see which database column it will go to.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="361"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1354"/>
         <source>select in plot</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2604,47 +2604,47 @@ Hover over a column header to see which database column it will go to.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="974"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1423"/>
         <source>Delete data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="994"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1443"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In this tab you may remove erroneous data from the database. &lt;/p&gt;&lt;p&gt;Deletion is done of water level logger data (database table w_levels_logger). &lt;/p&gt;&lt;p&gt;Set interval for deletion above (from/to) and then select to delete logger data below. (You will be asked to confirm the deletion.)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1017"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1466"/>
         <source>Delete logger data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1109"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1558"/>
         <source>Circle nodes for logger line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1135"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1584"/>
         <source>Plot the column head_cm.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1138"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1587"/>
         <source>Plot logger head (water column)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1150"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1599"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The difference between head_cm mean value and level_masl mean value is removed when plotting logger head (nothing in the database is changed).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1153"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1602"/>
         <source>Normalize head to logger line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1181"/>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1630"/>
         <source>Update plot</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2863,6 +2863,56 @@ wells file</source>
     <message>
         <location filename="../ui/import_interlab4.ui" line="14"/>
         <source>Import data from Interlab4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1363"/>
+        <source>Adjust trend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1069"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Logger node used as *1 in the equation a_L = (y2-y1) / (x2-x1) &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1062"/>
+        <source>L1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1163"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Logger node used as *2 in the equation a_L = (y2-y1) / (x2-x1) &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1088"/>
+        <source>L2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1257"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Measurement node used as *1 in the equation a_M = (y2-y1) / (x2-x1) &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1182"/>
+        <source>M1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1351"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Measurement node used as *2 in the equation a_M = (y2-y1) / (x2-x1) &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1276"/>
+        <source>M2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calibr_logger_dialog_integrated.ui" line="1405"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Adjust logger level_masl trend by changing slope to the same as measurements&lt;/p&gt;&lt;p&gt;L = L - (a_L - a_M) * (d - L1_date)&lt;/p&gt;&lt;p&gt;where&lt;/p&gt;&lt;p&gt;L = logger level_masl&lt;/p&gt;&lt;p&gt;a_L = trendline slope a for level_masl from logger data. a_L = (y2-y1) / (x2-x1)  with x* and *y from logger data&lt;/p&gt;&lt;p&gt;a_M = trendline slope a for level_masl from meas data. a_M = (y2-y1) / (x2-x1) with x* and *y from measurement data&lt;/p&gt;&lt;p&gt;d = date_time for each logger node&lt;/p&gt;&lt;p&gt;L1_date = date from selected L1 logger node.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4648,6 +4698,11 @@ and parameter: %s</source>
         <source>Note!, the value for %s [%s] at %s, %s was not readable. Check your data!</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../tools/wqualreport.py" line="52"/>
+        <source>water quality report from Midvatten plugin for QGIS</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>XYPlot</name>
@@ -4804,7 +4859,7 @@ Must write time resolution also.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="181"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="185"/>
         <source>This will calibrate all values inside the chosen period
 using the mean difference between head_cm and w_levels measurements.
 
@@ -4813,7 +4868,7 @@ The search radius is the maximum time distance allowed
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="183"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="187"/>
         <source>This will calibrate all values inside the chosen period
 using the mean difference between level_masl and w_levels measurements.
 
@@ -4822,115 +4877,120 @@ The search radius is the maximum time distance allowed
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="262"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="267"/>
         <source>ERROR: no obsid is chosen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="289"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="296"/>
         <source>No calibrated level_masl values to normalize against.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="312"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="322"/>
         <source>Last pos. for logger in %s was %s masl at %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="315"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="325"/>
         <source>There is no earlier known position for the logger in %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="359"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="369"/>
         <source>Select the observation point with logger data to be calibrated.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="499"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="508"/>
         <source>Select a date to use as &quot;from&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="509"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="513"/>
         <source>Select a date to use as &quot;to&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="550"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="553"/>
         <source>Getting last calibration failed for obsid %s, msg: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="571"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="574"/>
         <source>Select a logger node.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="579"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="582"/>
         <source>Select a y position to move to.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="583"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="586"/>
         <source>Something wrong, click &quot;Current&quot; and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="611"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="614"/>
         <source>No connection between level_masl dates and logger date could be made!
 Try again or choose a new logger line node!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="624"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="627"/>
         <source>Logger node %s selected, click &quot;new&quot; and select new level.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="635"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="637"/>
         <source>Offset is calculated, now click &quot;add&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="677"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="679"/>
         <source>There was no match found between measurements and logger values inside the chosen period.
  Try to increase the search radius!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="681"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="683"/>
         <source>There was no matched measurements or logger values inside the chosen period.
  Try to increase the search radius!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="682"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="684"/>
         <source>Calculated water level from logger: utils.calc_mean_diff(coupled_vals) didn&apos;t return a useable value.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="775"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="777"/>
         <source>Must write time resolution also, ex. %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="794"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="796"/>
         <source>Error!
  The obsid selection has been changed but the plot has not been updated. No deletion done.
 Updating plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="798"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="800"/>
         <source>Error!
  No obsid was selected. No deletion done.
 Updating plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="814"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="816"/>
         <source>Do you want to delete the period %s to %s for obsid %s from table %s?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/wlevels_calc_calibr.py" line="299"/>
+        <source>No head values to normalize against.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

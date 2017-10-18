@@ -145,7 +145,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.loggerpos_masl_or_offset_state = 1
 
         self.settingsdict = settingsdict1
-        PyQt4.QtGui.QDialog.__init__(self, parent)        
+        PyQt4.QtGui.QDialog.__init__(self, parent)
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         self.setWindowTitle(ru(QCoreApplication.translate(u'Calibrlogger', u"Calculate water level from logger"))) # Set the title for the dialog
@@ -153,7 +153,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.log_calc_manual.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/4.-Edit-data\">Midvatten manual</a>")
       
         # Create a plot window with one single subplot
-        self.calibrplotfigure = plt.figure() 
+        self.calibrplotfigure = plt.figure()
         self.axes = self.calibrplotfigure.add_subplot( 111 )
         self.canvas = FigureCanvas( self.calibrplotfigure )
         self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot )
@@ -170,6 +170,10 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.connect(self.pushButtonAdd, PyQt4.QtCore.SIGNAL("clicked()"), self.add_to_level_masl)
         self.connect(self.pushButtonFrom, PyQt4.QtCore.SIGNAL("clicked()"), self.set_from_date_from_x)
         self.connect(self.pushButtonTo, PyQt4.QtCore.SIGNAL("clicked()"), self.set_to_date_from_x)
+        self.connect(self.L1_button, PyQt4.QtCore.SIGNAL("clicked()"), self.set_L1_date_from_x)
+        self.connect(self.L2_button, PyQt4.QtCore.SIGNAL("clicked()"), self.set_L2_date_from_x)
+        self.connect(self.M1_button, PyQt4.QtCore.SIGNAL("clicked()"), self.set_M1_date_from_x)
+        self.connect(self.M2_button, PyQt4.QtCore.SIGNAL("clicked()"), self.set_M2_date_from_x)
         self.connect(self.pushButton_from_extent, PyQt4.QtCore.SIGNAL("clicked()"), lambda: self.FromDateTime.setDateTime(num2date(self.axes.get_xbound()[0])))
         self.connect(self.pushButton_to_extent, PyQt4.QtCore.SIGNAL("clicked()"), lambda: self.ToDateTime.setDateTime(num2date(self.axes.get_xbound()[1])))
         self.connect(self.pushButtonupdateplot, PyQt4.QtCore.SIGNAL("clicked()"), self.update_plot)
@@ -183,6 +187,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.connect(self.pushButtonCalcBestFit2, PyQt4.QtCore.SIGNAL("clicked()"), self.level_masl_best_fit)
         self.pushButtonCalcBestFit2.setToolTip(ru(QCoreApplication.translate(u'Calibrlogger', u'This will calibrate all values inside the chosen period\nusing the mean difference between level_masl and w_levels measurements.\n\nThe search radius is the maximum time distance allowed\n between a logger measurement and a w_level measurement.')))
         self.connect(self.pushButton_delete_logger, PyQt4.QtCore.SIGNAL("clicked()"), lambda: self.delete_selected_range(u'w_levels_logger'))
+        self.connect(self.adjust_trend_button, PyQt4.QtCore.SIGNAL("clicked()"), self.adjust_trend_func)
 
         self.get_search_radius()
 
@@ -258,7 +263,6 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         It's rather fast anyway.
         """
         obsid = self.selected_obsid
-        print(str(obsid))
         if not obsid:
             print(u'error onsid ' + str(obsid))
             #utils.pop_up_info(ru(QCoreApplication.translate(u'Calibrlogger', u"ERROR: no obsid is chosen")))
@@ -501,31 +505,24 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     @fn_timer
     def set_from_date_from_x(self):
         """ Used to set the self.FromDateTime by clicking on a line node in the plot self.canvas """
-        self.reset_plot_selects_and_calib_help()
-        self.calib_help.setText(ru(QCoreApplication.translate(u'Calibrlogger', u"Select a date to use as \"from\"")))
-        self.deactivate_pan_zoom()
-        self.canvas.setFocusPolicy(Qt.ClickFocus)
-        self.canvas.setFocus()   
-        self.cid.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, self.FromDateTime)))
+        self.set_date_from_x(self.FromDateTime, self.calib_help, ru(QCoreApplication.translate(u'Calibrlogger', u"Select a date to use as \"from\"")))
 
     @fn_timer
     def set_to_date_from_x(self):
-        """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """    
-        self.reset_plot_selects_and_calib_help()
-        self.calib_help.setText(ru(QCoreApplication.translate(u'Calibrlogger', u"Select a date to use as \"to\"")))
-        self.deactivate_pan_zoom()
-        self.canvas.setFocusPolicy(Qt.ClickFocus)
-        self.canvas.setFocus()   
-        self.cid.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, self.ToDateTime)))
+        """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """
+        self.set_date_from_x(self.ToDateTime, self.calib_help, ru(QCoreApplication.translate(u'Calibrlogger', u"Select a date to use as \"to\"")))
 
     @fn_timer
-    def set_date_from_x_onclick(self, event, date_holder):
+    def set_date_from_x_onclick(self, event, date_holder, from_node=False):
         """ Sets the date_holder to a date from a line node closest to the pick event
 
             date_holder: a QDateTimeEdit object.
         """
-        found_date = num2date(event.mouseevent.xdata)
-        date_holder.setDateTime(found_date)           
+        if from_node:
+            found_date = self.get_node_date_from_click(event)
+        else:
+            found_date = num2date(event.mouseevent.xdata)
+        date_holder.setDateTime(found_date)
         self.reset_plot_selects_and_calib_help()
     
     @fn_timer
@@ -625,11 +622,10 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     @fn_timer
     def set_log_pos_from_node_date_click(self, event):
         """ Sets self.log_pos variable to the date (x-axis) from the node nearest the pick event """
-        found_date = utils.find_nearest_date_from_event(event)
+        found_date = self.get_node_date_from_click(event)
         #self.calib_help.setText("Logger node " + str(found_date) + " selected, click button \"Calibrate by selection in plot\" again.")
         self.calib_help.setText(ru(QCoreApplication.translate(u'Calibrlogger', u"Logger node %s selected, click \"new\" and select new level."))%str(found_date))
         self.log_pos = found_date
-        self.reset_cid()
         self.pushButtonMpos.setEnabled(True)
  
     @fn_timer
@@ -824,4 +820,98 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             db_utils.sql_alter_db(sql)
             self.update_plot()
 
+    @fn_timer
+    def get_node_date_from_click(self, event):
+        found_date = utils.find_nearest_date_from_event(event)
+        self.reset_cid()
+        return found_date
 
+    @fn_timer
+    def set_date_from_x(self, datetimeedit, qlabel=None, help_msg=None, from_node=False):
+        """ Used to set the self.ToDateTime by clicking on a line node in the plot self.canvas """
+        self.reset_plot_selects_and_calib_help()
+        self.deactivate_pan_zoom()
+        if qlabel and help_msg:
+            qlabel.setText(help_msg)
+        self.canvas.setFocusPolicy(Qt.ClickFocus)
+        self.canvas.setFocus()
+        self.cid.append(self.canvas.mpl_connect('pick_event', lambda event: self.set_date_from_x_onclick(event, datetimeedit, from_node)))
+
+    @fn_timer
+    def set_L1_date_from_x(self):
+        """ Used to set the self.L1_date by clicking on a line node in the plot self.canvas """
+        self.set_date_from_x(self.L1_date, from_node=True)
+
+    @fn_timer
+    def set_L2_date_from_x(self):
+        """ Used to set the self.L2_date by clicking on a line node in the plot self.canvas """
+        self.set_date_from_x(self.L2_date, from_node=True)
+
+    @fn_timer
+    def set_M1_date_from_x(self):
+        """ Used to set the self.M1_date by clicking on a line node in the plot self.canvas """
+        self.set_date_from_x(self.M1_date, from_node=True)
+
+    @fn_timer
+    def set_M2_date_from_x(self):
+        """ Used to set the self.M2_date by clicking on a line node in the plot self.canvas """
+        self.set_date_from_x(self.M2_date, from_node=True)
+
+    @fn_timer
+    def adjust_trend_func(self):
+
+        obsid = self.load_obsid_and_init()
+        if obsid is None:
+            return None
+
+        data = {u'obsid': obsid,
+                u'adjust_start_date': long_dateformat(self.FromDateTime.dateTime().toPyDateTime()),
+                u'adjust_end_date': long_dateformat(self.ToDateTime.dateTime().toPyDateTime()),
+                u'L1_date': long_dateformat(self.L1_date.dateTime().toPyDateTime()),
+                u'L2_date': long_dateformat(self.L2_date.dateTime().toPyDateTime()),
+                u'M1_date': long_dateformat(self.M1_date.dateTime().toPyDateTime()),
+                u'M2_date': long_dateformat(self.M2_date.dateTime().toPyDateTime())}
+
+        sql = u"""
+                UPDATE w_levels_logger SET level_masl = level_masl -
+                (
+                  (
+                    (
+                      (
+                        (SELECT level_masl FROM w_levels_logger WHERE date_time = substr('{L2_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                        -
+                        (SELECT level_masl FROM w_levels_logger WHERE date_time = substr('{L1_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                      )
+                      /
+                      (
+                        (SELECT CAST(strftime('%s', date_time) AS NUMERIC) FROM w_levels_logger WHERE date_time = substr('{L2_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                        -
+                        (SELECT CAST(strftime('%s', date_time) AS NUMERIC)  FROM w_levels_logger WHERE date_time = substr('{L1_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                      )
+                    )
+                    -
+                    (
+                      (
+                        (SELECT level_masl FROM w_levels WHERE date_time = substr('{M2_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                        -
+                        (SELECT level_masl FROM w_levels WHERE date_time = substr('{M1_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                      )
+                      /
+                      (
+                        (SELECT CAST(strftime('%s', date_time) AS NUMERIC) FROM w_levels WHERE date_time = substr('{M2_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                        -
+                    (SELECT CAST(strftime('%s', date_time) AS NUMERIC)  FROM w_levels WHERE date_time = substr('{M1_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                      )
+                    )
+                  )
+                  *
+                  (
+                    CAST(strftime('%s', date_time) AS NUMERIC) -
+                    (SELECT CAST(strftime('%s', date_time) AS NUMERIC) FROM w_levels_logger WHERE date_time = substr('{L1_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                  )
+                )
+                WHERE obsid = '{obsid}' AND date_time > '{adjust_start_date}' AND date_time < '{adjust_end_date}'
+            """.format(**data)
+
+        db_utils.sql_alter_db(sql)
+        self.update_plot()
