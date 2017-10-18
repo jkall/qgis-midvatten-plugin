@@ -500,7 +500,6 @@ def create_temporary_table_for_import(dbconnection, temptable_name, fieldnames_t
         dbconnection.execute(u"""CREATE TEMPORARY table %s (%s)""" % (temptable_name, u', '.join(fieldnames_types)))
     return temptable_name
 
-
 class DatabaseLockedError(Exception):
     pass
 

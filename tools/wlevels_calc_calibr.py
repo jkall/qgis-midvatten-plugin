@@ -870,7 +870,8 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                 u'L1_date': long_dateformat(self.L1_date.dateTime().toPyDateTime()),
                 u'L2_date': long_dateformat(self.L2_date.dateTime().toPyDateTime()),
                 u'M1_date': long_dateformat(self.M1_date.dateTime().toPyDateTime()),
-                u'M2_date': long_dateformat(self.M2_date.dateTime().toPyDateTime())}
+                u'M2_date': long_dateformat(self.M2_date.dateTime().toPyDateTime()),
+                u'date_as_numeric': db_utils.cast_date_time_as_epoch()}
 
         sql = u"""
                 UPDATE w_levels_logger SET level_masl = level_masl -
@@ -884,9 +885,9 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                       )
                       /
                       (
-                        (SELECT CAST(strftime('%s', date_time) AS NUMERIC) FROM w_levels_logger WHERE date_time = substr('{L2_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                        (SELECT {date_as_numeric} FROM w_levels_logger WHERE date_time = substr('{L2_date}', 1, length(date_time)) AND obsid = '{obsid}')
                         -
-                        (SELECT CAST(strftime('%s', date_time) AS NUMERIC)  FROM w_levels_logger WHERE date_time = substr('{L1_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                        (SELECT {date_as_numeric} FROM w_levels_logger WHERE date_time = substr('{L1_date}', 1, length(date_time)) AND obsid = '{obsid}')
                       )
                     )
                     -
@@ -898,20 +899,19 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                       )
                       /
                       (
-                        (SELECT CAST(strftime('%s', date_time) AS NUMERIC) FROM w_levels WHERE date_time = substr('{M2_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                        (SELECT {date_as_numeric} FROM w_levels WHERE date_time = substr('{M2_date}', 1, length(date_time)) AND obsid = '{obsid}')
                         -
-                    (SELECT CAST(strftime('%s', date_time) AS NUMERIC)  FROM w_levels WHERE date_time = substr('{M1_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                    (SELECT {date_as_numeric}  FROM w_levels WHERE date_time = substr('{M1_date}', 1, length(date_time)) AND obsid = '{obsid}')
                       )
                     )
                   )
                   *
                   (
-                    CAST(strftime('%s', date_time) AS NUMERIC) -
-                    (SELECT CAST(strftime('%s', date_time) AS NUMERIC) FROM w_levels_logger WHERE date_time = substr('{L1_date}', 1, length(date_time)) AND obsid = '{obsid}')
+                    {date_as_numeric} -
+                    (SELECT {date_as_numeric} FROM w_levels_logger WHERE date_time = substr('{L1_date}', 1, length(date_time)) AND obsid = '{obsid}')
                   )
                 )
                 WHERE obsid = '{obsid}' AND date_time > '{adjust_start_date}' AND date_time < '{adjust_end_date}'
             """.format(**data)
-
         db_utils.sql_alter_db(sql)
         self.update_plot()

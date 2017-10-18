@@ -28,7 +28,7 @@ import utils_for_tests
 from wlevels_calc_calibr import Calibrlogger
 
 
-@attr(status='on')
+@attr(status='off')
 class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
@@ -209,4 +209,32 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
         test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'SELECT * FROM w_levels_logger'))
         ref = u'(True, [(rb1, 2017-02-01 01:00, None, None, None, 50.0, None)])'
         print(test)
+        assert test == ref
+
+    @attr(status='only')
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def test_calibrlogger_adjust_trend(self, mock_messagebar):
+        db_utils.sql_alter_db(u"INSERT INTO obs_points (obsid) VALUES ('rb1')")
+        db_utils.sql_alter_db(u"INSERT INTO w_levels_logger (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 100)")
+        db_utils.sql_alter_db(u"INSERT INTO w_levels_logger (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-10 00:00', 200)")
+        db_utils.sql_alter_db(u"INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-01 00:00', 200)")
+        db_utils.sql_alter_db(u"INSERT INTO w_levels (obsid, date_time, level_masl) VALUES ('rb1', '2017-02-10 00:00', 100)")
+
+        calibrlogger = Calibrlogger(self.iface.mainWindow(), self.ms)
+        gui_utils.set_combobox(calibrlogger.combobox_obsid, u'rb1 (uncalibrated)')
+        calibrlogger.update_plot()
+        calibrlogger.FromDateTime.setDateTime(date_utils.datestring_to_date(u'2000-01-01 00:00:00'))
+        calibrlogger.L1_date.setDateTime(date_utils.datestring_to_date(u'2017-02-01 00:00'))
+        calibrlogger.L2_date.setDateTime(date_utils.datestring_to_date(u'2017-02-10 00:00'))
+        calibrlogger.M1_date.setDateTime(date_utils.datestring_to_date(u'2017-02-01 00:00'))
+        calibrlogger.M2_date.setDateTime(date_utils.datestring_to_date(u'2017-02-10 00:00'))
+
+        calibrlogger.adjust_trend_func()
+
+        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'SELECT * FROM w_levels_logger'))
+        print(mock_messagebar.mock_calls)
+        print(test)
+        ref = u'(True, [(rb1, 2017-02-01 00:00, None, None, None, 100.0, None), (rb1, 2017-02-10 00:00, None, None, None, -2.84217094304e-14, None)])'
         assert test == ref
