@@ -20,6 +20,7 @@ deprecated=False
 
 changelog=
         Version 1.4.8:
+        - Logger calibration: Added function for adjusting trend for logger line.
         - Fieldlogger import: Connected instrument id to sublocation instead of obsid.
         - Fieldlogger import: Added function for calculating level_masl directly from meas
         - Logger calibration: Fixed better error msg.
