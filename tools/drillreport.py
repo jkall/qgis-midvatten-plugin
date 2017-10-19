@@ -191,9 +191,9 @@ class Drillreport():        # general observation point info for the selected ob
         if ru(GeneralData[0][20]) != '' and ru(GeneralData[0][20]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'onoggrannhet i höjd, avser rök (m)' + r"""</TD><TD WIDTH=50%>""" + ru(GeneralData[0][20]) + '</TD></TR>'
         if ru(GeneralData[0][13]) != '' and ru(GeneralData[0][13]) != 'NULL':
-            rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'östlig koordinat' + r"""</TD><TD WIDTH=50%>""" + ru(GeneralData[0][13]) + ' (' + CRSname  + ', EPSG:' + CRS + ')</TD></TR>'
+            rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'östlig koordinat' + r"""</TD><TD WIDTH=50%>""" + ru(GeneralData[0][13]) + ' (' + '%s'%('%s, '%CRSname if CRSname else '') + 'EPSG:' + CRS + ')</TD></TR>'
         if ru(GeneralData[0][14]) != '' and ru(GeneralData[0][14]) != 'NULL':
-            rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'nordlig koordinat' + r"""</TD><TD WIDTH=50%>""" + ru(GeneralData[0][14]) + ' (' + CRSname  + ', EPSG:' + CRS + ')</TD></TR>'
+            rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'nordlig koordinat' + r"""</TD><TD WIDTH=50%>""" + ru(GeneralData[0][14]) + ' (' + '%s'%('%s, '%CRSname if CRSname else '') + 'EPSG:' + CRS + ')</TD></TR>'
         if ru(GeneralData[0][13]) != ''  and ru(GeneralData[0][13]) != 'NULL' and ru(GeneralData[0][14]) != '' and ru(GeneralData[0][15]) != '':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'lägesonoggrannhet' + r"""</TD><TD WIDTH=50%>""" + ru(GeneralData[0][15]) + '</TD></TR>'
         if ru(GeneralData[0][7]) != '' and ru(GeneralData[0][7]) != 'NULL':
@@ -413,30 +413,9 @@ def GetStatistics(obsid = ''):
         Statistics_list[0] = min_value[0][0]
 
     #median value
-    data = {u'meas_or_level_masl': meas_or_level_masl,
-            u'obsid': obsid,
-            u'test_if_numeric': db_utils.test_if_numeric(meas_or_level_masl)}
-
-    sql = u"""SELECT x.obsid, x.{meas_or_level_masl} AS median FROM
-                (SELECT obsid, {meas_or_level_masl} FROM w_levels WHERE
-                    obsid = '{obsid}' AND {test_if_numeric}
-                ) AS x,
-                (SELECT obsid, {meas_or_level_masl} FROM w_levels WHERE
-                obsid = '{obsid}' AND {test_if_numeric}
-                ) AS Y
-            GROUP BY x.{meas_or_level_masl}
-            HAVING 
-                SUM(CASE WHEN y.{meas_or_level_masl} <= x.{meas_or_level_masl} THEN 1 ELSE 0 END)
-                >=
-                (COUNT(*)+1)/2 AND SUM(CASE WHEN y.{meas_or_level_masl} >= x.{meas_or_level_masl} THEN 1 ELSE 0 END)
-                >=
-                (COUNT(*)/2)+1
-        """.format(**data)
-    print(sql)
-    ConnectionOK, median_value = db_utils.sql_load_fr_db(sql)
     median_value = db_utils.calculate_median_value(u'w_levels', meas_or_level_masl, obsid)
     if median_value:
-        Statistics_list[1] = median_value[0][1]
+        Statistics_list[1] = median_value
 
     #max value
     if meas_or_level_masl=='meas':

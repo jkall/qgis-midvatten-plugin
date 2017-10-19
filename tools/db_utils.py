@@ -642,7 +642,7 @@ def test_if_numeric(column, dbconnection=None):
     else:
         return u"""pg_typeof(%s) in (%s)"""%(column, u', '.join([u"'%s'"%data_type for data_type in postgresql_numeric_data_types()]))
 
-def calculate_median_value(table, column, obsid, dbconnection):
+def calculate_median_value(table, column, obsid, dbconnection=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
     if dbconnection.dbtype == u'spatialite':
@@ -653,4 +653,24 @@ def calculate_median_value(table, column, obsid, dbconnection):
         sql += obsid
         sql += r"""' and (typeof(""" + column + r""")=typeof(0.01) or typeof(""" + column + r""")=typeof(1))) as y GROUP BY x.""" + column + r""" HAVING SUM(CASE WHEN y.""" + column + r""" <= x.""" + column + r""" THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.""" + column + r""" >= x.""" + column + r""" THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
         ConnectionOK, median_value = sql_load_fr_db(sql, dbconnection)
-        return median_value
+        try:
+            median_value = median_value[0][1]
+        except IndexError:
+            utils.MessagebarAndLog.warning(bar_msg=utils.returnunicode(QCoreApplication.translate(u'calculate_median_value',
+                                                                                 u'Median calculation error, see log message panel')),
+                                           log_msg=utils.returnunicode(QCoreApplication.translate(u'calculate_median_value',
+                                                                                 u'Sql failed: %s')) % sql)
+            median_value = None
+
+    else:
+        sql = u"""SELECT median(u.%s) AS median_value FROM (SELECT %s FROM %s WHERE obsid = '%s') AS u;"""%(column, column, table, obsid)
+        ConnectionOK, median_value = sql_load_fr_db(sql, dbconnection)
+        try:
+            median_value = median_value[0][0]
+        except IndexError:
+            utils.MessagebarAndLog.warning(bar_msg=utils.returnunicode(QCoreApplication.translate(u'calculate_median_value',
+                                                                                 u'Median calculation error, see log message panel')),
+                                           log_msg=utils.returnunicode(QCoreApplication.translate(u'calculate_median_value',
+                                                                                 u'Sql failed: %s')) % sql)
+            median_value = None
+    return median_value

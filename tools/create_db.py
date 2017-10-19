@@ -129,7 +129,7 @@ class NewDb():
 
         self.insert_datadomains(set_locale, dbconnection)
 
-        self.add_triggers_to_obs_points("insert_obs_points_triggers.sql", dbconnection)
+        self.execute_sqlfile(self.get_full_filename("insert_obs_points_triggers.sql"), dbconnection)
 
         self.add_metadata_to_about_db(dbconnection)
 
@@ -213,7 +213,10 @@ class NewDb():
         #db_utils.sql_alter_db(lines)
 
         self.insert_datadomains(set_locale, dbconnection)
-        self.add_triggers_to_obs_points('insert_obs_points_triggers_postgis.sql', dbconnection)
+
+        self.execute_sqlfile(self.get_full_filename(u'insert_obs_points_triggers_postgis.sql'), dbconnection)
+
+        self.execute_sqlfile(self.get_full_filename(u'insert_functions_postgis.sql'), dbconnection)
 
         self.add_metadata_to_about_db(dbconnection, created_tables_sqls)
 
@@ -267,10 +270,10 @@ class NewDb():
             filenamestring += "_sv.sql"
         else:
             filenamestring += ".sql"
-        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring), dbconnection)
+        self.execute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", filenamestring), dbconnection)
 
-    def add_triggers_to_obs_points(self, filename, dbconnection):
-        self.excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename), dbconnection)
+    def get_full_filename(self, filename):
+        return os.path.join(os.sep,os.path.dirname(__file__), "..", "definitions", filename)
 
     def add_metadata_to_about_db(self, dbconnection, created_tables_sqls=None):
         tables = sorted(db_utils.get_tables(dbconnection=dbconnection, skip_views=True))
@@ -335,7 +338,7 @@ class NewDb():
                     print(sql)
                     raise
 
-    def excecute_sqlfile(self, sqlfilename, dbconnection):
+    def execute_sqlfile(self, sqlfilename, dbconnection):
         with open(sqlfilename, 'r') as f:
             f.readline()  # first line is encoding info....
             for line in f:
