@@ -28,7 +28,7 @@ import utils_for_tests
 from wlevels_calc_calibr import Calibrlogger
 
 
-@attr(status='off')
+@attr(status='on')
 class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """

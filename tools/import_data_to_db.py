@@ -143,7 +143,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             sql = u"""INSERT INTO %s ("""%goal_table
             sql += u', '.join(sorted(existing_columns_in_goal_table))
             sql += u""") SELECT """
-            sql += u', '.join([u"""(CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE NULL END)"""%(colname, colname, colname, colname, column_headers_types[colname]) for colname in sorted(existing_columns_in_goal_table)])
+            sql += u', '.join([u"""(CASE WHEN (%s !='' AND %s !=' ' AND %s IS NOT NULL) THEN CAST(%s AS %s) ELSE %s END)""" % (colname, colname, colname, colname, column_headers_types[colname], db_utils.cast_null(column_headers_types[colname], dbconnection)) for colname in sorted(existing_columns_in_goal_table)])
             sql += u"""FROM %s""" % (self.temptable_name)
             if not_null_columns:
                 sql += u""" WHERE %s"""%u' AND '.join([u'%s IS NOT NULL'%notnullcol for notnullcol in sorted(not_null_columns)])
@@ -206,7 +206,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 continue
             else:
                 added_rows.add(concatted)
-            args = tuple([None if any([r is None, r.strip() == u'' if r is not None else None]) else r for r in row])
+            args = tuple([None if any([r is None, not r.strip() if r is not None else None]) else r for r in row])
             dbconnection.cursor.execute(sql, args)
 
         #TODO: Let's see what happens without commit

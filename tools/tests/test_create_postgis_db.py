@@ -452,3 +452,19 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestPostgisDbSv):
         assert test_string == reference_string
 
 
+@attr(status='on')
+class TestSqls(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
+
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def test_import_null_as_double(self, mock_messagebar):
+        """ Adding triggers should not automatically change the db """
+        sql = u'''INSERT INTO obs_points (obsid, length) VALUES ('rb1', CASE WHEN NULL IS NULL THEN %s END)'''%db_utils.cast_null(u'double precision')
+        db_utils.sql_alter_db(sql)
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'select obsid, length FROM obs_points'))
+        reference_string = u'(True, [(rb1, None)])'
+        print(str(mock_messagebar.mock_calls))
+        print(test_string)
+        assert test_string == reference_string

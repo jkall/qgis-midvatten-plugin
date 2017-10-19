@@ -41,8 +41,11 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
     def test_stratigraphy(self, mock_show):
         dbconnection = db_utils.DbConnectionManager()
         uri = dbconnection.uri
+        uri.setDataSource(schema, tablename, geometrycolumn, sql, keycolumn)
+        layer = QgsVectorLayer(uri.uri(), tablename, dbtype.encode('utf-8'))
         uri.setDataSource('', 'obs_points', 'geometry', '', 'obsid')
-        self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', 'spatialite')
+        print(str(uri.ur()))
+        self.vlayer = QgsVectorLayer(uri.uri(), u'TestLayer', u'spatialite'.encode('utf-8'))
         raise Exception()
         features = self.vlayer.getFeatures()
         featureids = [feature.id() for feature in features]

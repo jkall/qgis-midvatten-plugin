@@ -439,3 +439,20 @@ class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):
             db_utils.sql_load_fr_db(u'select obsid, east, north, AsText(geometry) from obs_points'))
         reference_string = u'(True, [(rb1, 1.0, 1.0, POINT(1 1)), (rb2, None, None, None), (rb3, None, None, None)])'
         assert test_string == reference_string
+
+
+@attr(status='on')
+class TestSqls(utils_for_tests.MidvattenTestSpatialiteDbSv):
+
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_import_null_as_double(self, mock_messagebar):
+        """ Adding triggers should not automatically change the db """
+        sql = u'''INSERT INTO obs_points (obsid, length) VALUES ('rb1', CASE WHEN NULL IS NULL THEN %s END)'''%db_utils.cast_null(u'double precision')
+        db_utils.sql_alter_db(sql)
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'select obsid, length FROM obs_points'))
+        reference_string = u'(True, [(rb1, None)])'
+        print(str(mock_messagebar.mock_calls))
+        print(test_string)
+        assert test_string == reference_string

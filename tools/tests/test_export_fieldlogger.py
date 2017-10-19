@@ -31,7 +31,7 @@ from nose.plugins.attrib import attr
 from utils_for_tests import create_test_string
 
 
-@attr(status='off')
+@attr(status='on')
 class TestExportFieldloggerNoDb():
     def setUp(self):
         #self.ExportToFieldLogger = ExportToFieldLogger

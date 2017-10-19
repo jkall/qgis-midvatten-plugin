@@ -120,15 +120,38 @@ class DbConnectionManager(object):
             raise TypeError(utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u'DbConnectionManager.execute: sql must be type string or a list/tuple of strings. Was %s'))%utils.returnunicode(type(sql)))
         for idx, line in enumerate(sql):
             if all_args is None:
-                self.cursor.execute(line)
+                try:
+                    self.cursor.execute(line)
+                except Exception as e:
+                    textstring = utils.returnunicode(QCoreApplication.translate(u'sql_load_fr_db', u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (utils.returnunicode(line), utils.returnunicode(str(e)))
+                    utils.MessagebarAndLog.warning(
+                        bar_msg=utils.sql_failed_msg(),
+                        log_msg=textstring)
+                    raise
             elif isinstance(all_args, (list, tuple)):
                 args = all_args[idx]
-                self.cursor.execute(line, args)
+                try:
+                    self.cursor.execute(line, args)
+                except Exception as e:
+                    textstring = utils.returnunicode(QCoreApplication.translate(u'sql_load_fr_db', u"""DB error!\n SQL causing this error:%s\nusing args %s\nMsg:\n%s""")) % (utils.returnunicode(line), utils.returnunicode(args), utils.returnunicode(str(e)))
+                    utils.MessagebarAndLog.warning(
+                        bar_msg=utils.sql_failed_msg(),
+                        log_msg=textstring)
+                    raise
             else:
                 raise TypeError(utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u'DbConnectionManager.execute: all_args must be a list/tuple. Was %s')) % utils.returnunicode(type(all_args)))
 
     def execute_and_fetchall(self, sql):
-        self.cursor.execute(sql)
+        try:
+            self.cursor.execute(sql)
+        except Exception as e:
+            textstring = utils.returnunicode(QCoreApplication.translate(u'sql_load_fr_db',
+                                                                        u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (
+                         utils.returnunicode(sql), utils.returnunicode(str(e)))
+            utils.MessagebarAndLog.warning(
+                bar_msg=utils.sql_failed_msg(),
+                log_msg=textstring)
+            raise
         return self.cursor.fetchall()
 
     def execute_and_commit(self, sql):
@@ -553,3 +576,12 @@ def backup_db(dbconnection=None):
             duration=15)
     dbconnection.closedb()
 
+
+def cast_null(data_type, dbconnection=None):
+    if not isinstance(dbconnection, DbConnectionManager):
+        dbconnection = DbConnectionManager()
+
+    if dbconnection.dbtype == u'spatialite':
+        return u'NULL'
+    else:
+        return u'NULL::%s'%data_type

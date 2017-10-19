@@ -174,6 +174,25 @@ class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, None, 1.0, None, None)])'''
         assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
+    def test_general_import_import_null(self, mock_messagebar):
+        file = [(u'obsid',u'date_time',u'head_cm'),
+                (u'rb1',u'2016-03-15 10:30:00',u'')]
+
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+
+        self.importinstance.general_import(goal_table=u'w_levels_logger', file_data=file)
+
+        test_string = utils_for_tests.create_test_string(
+            db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
+        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, None, None, None, None)])'''
+        print(str(mock_messagebar.mock_calls))
+        print(test_string)
+        assert test_string == reference_string
+
 
 @attr(status='on')
 class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
