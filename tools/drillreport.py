@@ -111,9 +111,9 @@ class Drillreport():        # general observation point info for the selected ob
         ConnectionOK, GeneralData = self.GetData(obsid, 'obs_points', 'n')#MacOSX fix1
         #utils.pop_up_info(str(ConnectionOK))#debug
         if ConnectionOK==True:
-            result2 = (db_utils.sql_load_fr_db(r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""")[1])[0][0]
+            result2 = db_utils.sql_load_fr_db(r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""")[1][0][0]
             CRS = ru(result2) #1st we need crs
-            result3 = (db_utils.sql_load_fr_db(r"""SELECT ref_sys_name FROM spatial_ref_sys where srid =""" + CRS)[1])[0][0]
+            result3 = db_utils.get_srid_name(result2)
             CRSname = ru(result3) # and crs name
             if  utils.getcurrentlocale()[0] == 'sv_SE':
                 reportdata_1 = self.rpt_upper_left_sv(GeneralData, CRS, CRSname)
@@ -413,12 +413,28 @@ def GetStatistics(obsid = ''):
         Statistics_list[0] = min_value[0][0]
 
     #median value
-    sql = r"""SELECT x.obsid, x.""" + meas_or_level_masl + r""" as median from (select obsid, """ + meas_or_level_masl + r""" FROM w_levels WHERE obsid = '"""
-    sql += obsid
-    sql += r"""' and (typeof(""" + meas_or_level_masl + r""")=typeof(0.01) or typeof(""" + meas_or_level_masl + r""")=typeof(1))) as x, (select obsid, """ + meas_or_level_masl + r""" FROM w_levels WHERE obsid = '"""
-    sql += obsid
-    sql += r"""' and (typeof(""" + meas_or_level_masl + r""")=typeof(0.01) or typeof(""" + meas_or_level_masl + r""")=typeof(1))) as y GROUP BY x.""" + meas_or_level_masl + r""" HAVING SUM(CASE WHEN y.""" + meas_or_level_masl + r""" <= x.""" + meas_or_level_masl + r""" THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.""" + meas_or_level_masl + r""" >= x.""" + meas_or_level_masl + r""" THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
+    data = {u'meas_or_level_masl': meas_or_level_masl,
+            u'obsid': obsid,
+            u'test_if_numeric': db_utils.test_if_numeric(meas_or_level_masl)}
+
+    sql = u"""SELECT x.obsid, x.{meas_or_level_masl} AS median FROM
+                (SELECT obsid, {meas_or_level_masl} FROM w_levels WHERE
+                    obsid = '{obsid}' AND {test_if_numeric}
+                ) AS x,
+                (SELECT obsid, {meas_or_level_masl} FROM w_levels WHERE
+                obsid = '{obsid}' AND {test_if_numeric}
+                ) AS Y
+            GROUP BY x.{meas_or_level_masl}
+            HAVING 
+                SUM(CASE WHEN y.{meas_or_level_masl} <= x.{meas_or_level_masl} THEN 1 ELSE 0 END)
+                >=
+                (COUNT(*)+1)/2 AND SUM(CASE WHEN y.{meas_or_level_masl} >= x.{meas_or_level_masl} THEN 1 ELSE 0 END)
+                >=
+                (COUNT(*)/2)+1
+        """.format(**data)
+    print(sql)
     ConnectionOK, median_value = db_utils.sql_load_fr_db(sql)
+    median_value = db_utils.calculate_median_value(u'w_levels', meas_or_level_masl, obsid)
     if median_value:
         Statistics_list[1] = median_value[0][1]
 

@@ -65,7 +65,7 @@ class TimeSeriesPlot:
                 for i, k in enumerate(ob):    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
                     obsid = unicode(ob[i][kolumnindex])
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
-                    sql =r"""SELECT date_time as 'date [datetime]', """
+                    sql =r"""SELECT date_time, """
                     sql += unicode(self.settingsdict['tscolumn']) #MacOSX fix1
                     sql += """ FROM """
                     sql += unicode(self.settingsdict['tstable']) #MacOSX fix1

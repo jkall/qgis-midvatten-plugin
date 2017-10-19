@@ -115,19 +115,19 @@ class Wqualreport():        # extracts water quality data for selected objects, 
                 sql += self.settingsdict['wqual_sortingcolumn']
                 sql += r""", date_time from """      #including parameters
             else:
-                sql = r"""select distinct %s, date_time from (select %s, substr(date_time,1,%s) as date_time from """%(self.settingsdict['wqual_sortingcolumn'], self.settingsdict['wqual_sortingcolumn'], len(self.settingsdict['wqual_date_time_format']))
+                sql = r"""select distinct under16.%s, under16.date_time from (select %s, substr(date_time,1,%s) as date_time from """%(self.settingsdict['wqual_sortingcolumn'], self.settingsdict['wqual_sortingcolumn'], len(self.settingsdict['wqual_date_time_format']))
         else:                     # IF no specific column exist for sorting
             if len(self.settingsdict['wqual_date_time_format'])>16:
                 sql =r"""select distinct date_time, date_time from """ # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
             else:
-                sql =r"""select distinct dummy, date_time from (select substr(date_time,1,%s) as dummy, substr(date_time,1,%s) as date_time from """%(len(self.settingsdict['wqual_date_time_format']),len(self.settingsdict['wqual_date_time_format']))      # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
+                sql =r"""select distinct under16.dummy, under16.date_time from (select substr(date_time,1,%s) as dummy, substr(date_time,1,%s) as date_time from """%(len(self.settingsdict['wqual_date_time_format']),len(self.settingsdict['wqual_date_time_format']))      # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
         sql += self.settingsdict['wqualtable']
         sql += """ where obsid = '"""
         sql += obsid
         if len(self.settingsdict['wqual_date_time_format'])>16:
             sql += """' ORDER BY date_time"""
         else:
-            sql += """') ORDER BY date_time"""
+            sql += """') AS under16 ORDER BY date_time"""
         #sql2 = unicode(sql) #To get back to unicode-string
         connection_ok, date_times = db_utils.sql_load_fr_db(sql, dbconnection) #Send SQL-syntax to cursor,
 

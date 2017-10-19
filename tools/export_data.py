@@ -93,7 +93,7 @@ class ExportData():
     def get_table_column_srid(self, prefix=None):
         """
 
-        :return: A tuple of tuples like ((tablename, columnname, srid), ...)
+        :return: A dict of tuples like {tablename: (columnname, srid), ...)
         """
 
         if prefix is None:

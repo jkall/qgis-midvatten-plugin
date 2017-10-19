@@ -591,3 +591,66 @@ def cast_null(data_type, dbconnection=None):
         return u'NULL'
     else:
         return u'NULL::%s'%data_type
+
+
+def test_not_null_and_not_empty_string(table, column, dbconnection=None):
+    if not isinstance(dbconnection, DbConnectionManager):
+        dbconnection = DbConnectionManager()
+
+    if dbconnection.dbtype == u'spatialite':
+        return u'''%s IS NOT NULL AND %s !='''''%(column, column)
+    else:
+        table_info = [col for col in get_table_info(table) if col[1] == column][0]
+        data_type = table_info[2]
+        if data_type in postgresql_numeric_data_types():
+            return u'''%s IS NOT NULL'''%(column)
+        else:
+            return u'''%s IS NOT NULL AND %s !='' ''' % (column, column)
+
+
+def postgresql_numeric_data_types():
+    #Skipped these:
+    # u'smallserial',
+    # u'serial',
+    # u'bigserial'
+    return [u'smallint',
+            u'integer',
+            u'bigint',
+            u'decimal',
+            u'numeric',
+            u'real',
+            u'double precision']
+
+
+
+def get_srid_name(srid, dbconnection=None):
+    if not isinstance(dbconnection, DbConnectionManager):
+        dbconnection = DbConnectionManager()
+    if dbconnection.dbtype == u'spatialite':
+        ref_sys_name = dbconnection.execute_and_fetchall(u"""SELECT ref_sys_name FROM spatial_ref_sys WHERE srid = '%s'"""%srid)[0][0]
+    else:
+        #I haven't found the location of the name yet for postgis. It's not in spatial_ref_sys
+        ref_sys_name = u''
+    return ref_sys_name
+
+
+def test_if_numeric(column, dbconnection=None):
+    if not isinstance(dbconnection, DbConnectionManager):
+        dbconnection = DbConnectionManager()
+    if dbconnection.dbtype == u'spatialite':
+        return u"""(typeof(%s)=typeof(0.01) OR typeof(%s)=typeof(1))"""%(column, column)
+    else:
+        return u"""pg_typeof(%s) in (%s)"""%(column, u', '.join([u"'%s'"%data_type for data_type in postgresql_numeric_data_types()]))
+
+def calculate_median_value(table, column, obsid, dbconnection):
+    if not isinstance(dbconnection, DbConnectionManager):
+        dbconnection = DbConnectionManager()
+    if dbconnection.dbtype == u'spatialite':
+        # median value
+        sql = r"""SELECT x.obsid, x.""" + column + r""" as median from (select obsid, """ + column + r""" FROM %s WHERE obsid = '"""%table
+        sql += obsid
+        sql += r"""' and (typeof(""" + column + r""")=typeof(0.01) or typeof(""" + column + r""")=typeof(1))) as x, (select obsid, """ + column + r""" FROM %s WHERE obsid = '"""%table
+        sql += obsid
+        sql += r"""' and (typeof(""" + column + r""")=typeof(0.01) or typeof(""" + column + r""")=typeof(1))) as y GROUP BY x.""" + column + r""" HAVING SUM(CASE WHEN y.""" + column + r""" <= x.""" + column + r""" THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.""" + column + r""" >= x.""" + column + r""" THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
+        ConnectionOK, median_value = sql_load_fr_db(sql, dbconnection)
+        return median_value

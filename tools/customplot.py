@@ -243,8 +243,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             remove_mean = checkBox_remove_mean.isChecked()
 
             _sql = r"""SELECT %s, %s FROM %s """% (unicode(xcol_ComboBox.currentText()), unicode(ycol_ComboBox.currentText()), unicode(table_ComboBox.currentText()))
-            _sql += r"""WHERE %s IS NOT NULL AND %s !='' """ % (unicode(xcol_ComboBox.currentText()), unicode(xcol_ComboBox.currentText()))
-            _sql += r"""AND %s IS NOT NULL AND %s !='' """ % (unicode(ycol_ComboBox.currentText()), unicode(ycol_ComboBox.currentText()))
+            _sql += r"""WHERE %s """ % db_utils.test_not_null_and_not_empty_string(unicode(table_ComboBox.currentText()), unicode(xcol_ComboBox.currentText()), dbconnection)
+            _sql += r"""AND %s """ % db_utils.test_not_null_and_not_empty_string(unicode(table_ComboBox.currentText()), unicode(ycol_ComboBox.currentText()), dbconnection)
 
             while i < len(self.p):
                 #Both filters empty
