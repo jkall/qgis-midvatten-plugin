@@ -264,7 +264,10 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         """
         obsid = self.selected_obsid
         if not obsid:
-            print(u'error onsid ' + str(obsid))
+            try:
+                print(u'error onsid ' + str(obsid))
+            except:
+                pass
             #utils.pop_up_info(ru(QCoreApplication.translate(u'Calibrlogger', u"ERROR: no obsid is chosen")))
             return None
 
@@ -411,7 +414,10 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         sql += """ AND %s > %s"""%(date_time_as_epoch, str((fr_d_t - datetime.datetime(1970,1,1)).total_seconds()))
         sql += """ AND %s < %s""" % (date_time_as_epoch, str((to_d_t - datetime.datetime(1970, 1, 1)).total_seconds()))
         dummy = db_utils.sql_alter_db(sql)
-        print(str(dummy))
+        try:
+            print(str(dummy))
+        except:
+            pass
 
     @fn_timer
     def sql_into_recarray(self, sql):

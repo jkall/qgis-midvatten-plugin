@@ -78,7 +78,10 @@ class PrepareForQgis2Threejs():
 
         for layer in layer_list:#now loop over all the layers, add them to canvas and set colors
             if not layer.isValid():
-                print(layer.name() + ' is not valid layer')
+                try:
+                    print(layer.name() + ' is not valid layer')
+                except:
+                    pass
                 pass
             else:
                 map_canvas_layer_list.append(QgsMapCanvasLayer(layer))

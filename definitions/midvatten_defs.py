@@ -332,7 +332,10 @@ def hydrocolors():
         dict_qt[k] = v[0]
     # fallback method to maintain backwards compatibility
     if not res:
-        print('using fallback method for backwards compat.')
+        try:
+            print('using fallback method for backwards compat.')
+        except:
+            pass
         dict_qt = { '': ('okant', 'gray'),
                       ' ': ('okant', 'gray'),
                       '0': ('okant', 'gray'),

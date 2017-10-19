@@ -113,7 +113,10 @@ class NewDb():
                 try:
                     dbconnection.execute(sql)
                 except:
-                    print(str(sql))
+                    try:
+                        print(str(sql))
+                    except:
+                        pass
                     raise
 
         if delete_srids:
