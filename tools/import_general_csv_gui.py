@@ -295,7 +295,6 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             return file_data
         else:
             if colnrs_to_convert:
-                print(colnrs_to_convert)
                 num_rows_before = len(file_data)
                 file_data = [[date_utils.reformat_date_time(col) if all([rownr > 0, colnr in colnrs_to_convert]) else col
                               for colnr, col in enumerate(row)]
