@@ -67,22 +67,6 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #self.setWindowTitle("Midvatten plugin - section plot") # Set the title for the dialog
         self.initUI()
 
-    def connection(self):#from qspatialite, it is only used by self.uploadQgisVectorLayer
-        """ Create connexion if not yet connected and Return connexion object for the current DB"""
-        try:
-            return self.connectionObject
-        except:
-            try:
-                #self.conn = sqlite.connect(':memory:')
-                dbpath = QgsProject.instance().readEntry("Midvatten","database")
-                self.connectionObject=sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-                curs = self.connectionObject.cursor()
-                curs.execute(u"""ATTACH DATABASE ':memory:' AS a""")
-                #self.connectionObject = sqlite.connect(':memory:')
-                return self.connectionObject
-            except sqlite.OperationalError, Msg:
-                utils.pop_up_info(ru(QCoreApplication.translate(u'SectionPlot', u"Can't connect to DataBase: %s\nError %s"))%(self.path,Msg))
-
     def do_it(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
         #show the user this may take a long time...
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))
@@ -90,7 +74,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ms = msettings
         #Draw the widget
         self.iface.addDockWidget(max(self.ms.settingsdict['secplotlocation'],1), self)
-        self.iface.mapCanvas().setRenderFlag(True)        
+        self.iface.mapCanvas().setRenderFlag(True)
+
+        self.dbconnection = db_utils.DbConnectionManager()
+        self.temptable_name = 'temporary_section_line'
 
         self.fill_combo_boxes()
         self.fill_check_boxes()
@@ -101,16 +88,18 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.capacity_txt = []
         self.development_txt = []
         self.comment_txt = []
-        self.temptableName = 'temporary_section_line'
-        self.connection()
         self.sectionlinelayer = SectionLineLayer       
         self.obsids_w_wl = []
         
         #upload vector line layer as temporary table in sqlite db
         self.line_crs = self.sectionlinelayer.crs()
-        #print(str(self.connectionObject.cursor().execute('select * from a.sqlite_master').fetchall()))
+        #print(str(self.dbconnection.cursor().execute('select * from a.sqlite_master').fetchall()))
         ok = self.upload_qgis_vector_layer(self.sectionlinelayer, self.line_crs.postgisSrid(), True, False)#loads qgis polyline layer into sqlite table
-        #print(str(self.connectionObject.cursor().execute('select * from %s'%self.temptableName).fetchall()))
+        if not ok:
+            return None
+
+        print("temptablename: %s"%self.temptable_name)
+        #print(str(self.dbconnection.cursor().execute('select * from %s'%self.temptable_name).fetchall()))
         # get sorted obsid and distance along section from sqlite db
         nF = len(OBSIDtuplein)#number of Features
         LengthAlongTable = self.get_length_along(OBSIDtuplein)#get_length_along returns a numpy view, values are returned by LengthAlongTable.obs_id or LengthAlongTable.length
@@ -122,14 +111,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #print([x for x in self.LengthAlong])
         
         self.fill_dem_list()
-        
-        #drop temporary table
-        #sql = r"""DROP TABLE %s"""%self.temptableName
-        #ok = utils.sql_alter_db(sql)
-        #sql = r"""DELETE FROM geometry_columns WHERE "f_table_name"='%s'"""%self.temptableName
-        #ok = utils.sql_alter_db(sql)
-        #sql = r"""DELETE FROM spatialite_history WHERE "table_name"='%s'"""%self.temptableName
-        #ok = utils.sql_alter_db(sql)
+
         
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
         
@@ -193,6 +175,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.write_obsid(self.ms.settingsdict['secplotlabelsplotted'])#if argument is 2, then labels will be plotted, otherwise only empty bars
 
         #labels, grid, legend etc.
+        self.dbconnection.closedb()
         self.finish_plot()
         self.save_settings()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
@@ -203,16 +186,16 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.queryPb=False
         header=[]
         data=[]
-        cursor=self.connectionObject.cursor()
+        cursor=self.dbconnection.cursor
         try:
             cursor.execute(query,params)
             if (cursor.description is not None):
                 header = [item[0] for item in cursor.description]
             data = [row for row in cursor]
             if commit:
-                self.connectionObject.commit()
+                self.dbconnection.commit()
         except sqlite.OperationalError, Msg:
-            self.connectionObject.rollback()
+            self.dbconnection.rollback()
             utils.pop_up_info(ru(QCoreApplication.translate(u'SectionPlot', "The SQL query\n %s\n seems to be invalid.\n\n%s")) %(query,Msg), 'Error', None)
             self.queryPb=True #Indicates pb with current query
             
@@ -239,53 +222,25 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.drillstoplineEdit.clear()
 
         #Fill comboxes, lineedits etc
-        query = (r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in('obs_points',
-        'obs_lines',
-        'obs_p_w_lvl',
-        'obs_p_w_qual_field',
-        'obs_p_w_qual_lab',
-        'obs_p_w_strat',
-        'seismic_data',
-        'sqlite_stat3',
-        'vlf_data',
-        'w_flow',
-        'w_qual_field_geom',
-        'zz_flowtype',
-        'w_qual_lab',
-        'w_qual_field',
-        'stratigraphy',
-        'about_db',
-        'geom_cols_ref_sys',
-        'geometry_columns',
-        'geometry_columns_time',
-        'spatial_ref_sys',
-        'spatialite_history',
-        'vector_layers',
-        'views_geometry_columns',
-        'virts_geometry_columns',
-        'geometry_columns_auth',
-        'geometry_columns_fields_infos',
-        'geometry_columns_statistics',
-        'sql_statements_log',
-        'layer_statistics',
-        'sqlite_sequence',
-        'sqlite_stat1' ,
-        'views_layer_statistics',
-        'virts_layer_statistics',
-        'vector_layers_auth',
-        'vector_layers_field_infos',
-        'vector_layers_statistics',
-        'views_geometry_columns_auth',
-        'views_geometry_columns_field_infos',
-        'views_geometry_columns_statistics',
-        'virts_geometry_columns_auth',
-        'virts_geometry_columns_field_infos',
-        'virts_geometry_columns_statistics' ,
-        'geometry_columns',
-        'spatialindex',
-        'SpatialIndex')) ORDER BY tbl_name""" )  #SQL statement to get the relevant tables in the spatialite database
-        tabeller = db_utils.sql_load_fr_db(query)[1]
-        #self.dbTables = {} 
+        tabeller = [x for x in db_utils.get_tables(dbconnection=self.dbconnection, skip_views=True)
+                           if not x.startswith(u'zz_') and x not in
+                                                        ['obs_points',
+                                                        'obs_lines',
+                                                        'obs_p_w_lvl',
+                                                        'obs_p_w_qual_field',
+                                                        'obs_p_w_qual_lab',
+                                                        'obs_p_w_strat',
+                                                        'seismic_data',
+                                                         'vlf_data',
+                                                         'w_flow',
+                                                         'w_qual_field_geom',
+                                                         'zz_flowtype',
+                                                         'w_qual_lab',
+                                                         'w_qual_field',
+                                                         'stratigraphy',
+                                                         'about_db']]
+
+
         self.wlvltableComboBox.addItem('')         
         for tabell in tabeller:
             self.wlvltableComboBox.addItem(tabell[0])
@@ -391,11 +346,11 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 
     def get_length_along(self,obsidtuple):#returns a numpy recarray with attributes obs_id and length 
         #------------First a sql clause that returns a table, but that is not what we need
-        sql = u"""SELECT obsid AS "obsid",
-        GLength(l.geometry)*ST_Line_Locate_Point(l.geometry, p.geometry) AS "abs_dist"
-        FROM a.%s AS l, (select * from obs_points where obsid in %s) AS p
-        GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptableName,u'({})'.format(u', '.join([u"'{}'".format(o) for o in obsidtuple])))
-        data = self.connectionObject.cursor().execute(sql).fetchall()
+        sql = u"""SELECT obsid,
+        GLength(l.geometry)*ST_Line_Locate_Point(l.geometry, p.geometry) AS absdist
+        FROM %s AS l, (select * from obs_points where obsid in %s) AS p
+        GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptable_name,u'({})'.format(u', '.join([u"'{}'".format(o) for o in obsidtuple])))
+        data = self.dbconnection.execute_and_fetchall(sql)
         data = ru(data, keep_containers=True)
         #data = [[col.encode('utf-8') for col in row] for row in ru(data, keep_containers=True)]
         #data = utils.sql_load_fr_db(sql)[1]
@@ -441,7 +396,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 if k<=len(self.selected_obsids):#in first Typ-loop, get some basic obs_points data - to be used for plotting obsid, empty bars etc
                     self.x_id.append(float(self.LengthAlong[q]))
                     sql = u'select h_toc, h_gs, length from obs_points where obsid = "' + obs + u'"'
-                    recs = db_utils.sql_load_fr_db(sql)[1]
+                    recs = db_utils.sql_load_fr_db(sql, self.dbconnection)[1]
                     if utils.isfloat(str(recs[0][1])) and recs[0][1]>-999:
                         self.z_id.append(recs[0][1])
                     elif utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
@@ -457,9 +412,9 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                     q +=1
                     del recs
                     
-                sql=u'select "depthbot"-"depthtop", stratid, geology, geoshort, capacity, development, comment from stratigraphy where obsid = "' + obs + u'" and lower(geoshort) ' + self.PlotTypes[Typ] + u" order by stratid"
-                if db_utils.sql_load_fr_db(sql)[1]:
-                    recs = db_utils.sql_load_fr_db(sql)[1]#[0][0]
+                sql=u'select depthbot - depthtop, stratid, geology, geoshort, capacity, development, comment from stratigraphy where obsid = "' + obs + u'" and lower(geoshort) ' + self.PlotTypes[Typ] + u" order by stratid"
+                if db_utils.sql_load_fr_db(sql, self.dbconnection)[1]:
+                    recs = db_utils.sql_load_fr_db(sql, self.dbconnection)[1]#[0][0]
                     j=0#counter for unique stratid
                     for rec in recs:#loop cleanup
                         BarLength.append(rec[0])#loop cleanup
@@ -470,16 +425,16 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                         #print('h_toc for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql02)[1])[0][0]))#debug
                         
                         if utils.isfloat(str((
-                                             db_utils.sql_load_fr_db(sql01)[1])[0][0])) and (
-                        db_utils.sql_load_fr_db(sql01)[1])[0][0]>-999:
-                            z_gs.append(float(str((db_utils.sql_load_fr_db(sql01)[1])[0][0])))
-                        elif utils.isfloat(str((db_utils.sql_load_fr_db(sql02)[1])[0][0])) and (
-                        db_utils.sql_load_fr_db(sql02)[1])[0][0]>-999:
-                            z_gs.append(float(str((db_utils.sql_load_fr_db(sql02)[1])[0][0])))
+                                             db_utils.sql_load_fr_db(sql01, self.dbconnection)[1])[0][0])) and (
+                        db_utils.sql_load_fr_db(sql01, self.dbconnection)[1])[0][0]>-999:
+                            z_gs.append(float(str((db_utils.sql_load_fr_db(sql01, self.dbconnection)[1])[0][0])))
+                        elif utils.isfloat(str((db_utils.sql_load_fr_db(sql02, self.dbconnection)[1])[0][0])) and (
+                        db_utils.sql_load_fr_db(sql02, self.dbconnection)[1])[0][0]>-999:
+                            z_gs.append(float(str((db_utils.sql_load_fr_db(sql02, self.dbconnection)[1])[0][0])))
                         else:
                             z_gs.append(0)
                         Bottom.append(z_gs[i] - float(str((
-                                                          db_utils.sql_load_fr_db(u'select "depthbot" from stratigraphy where obsid = "' + obs + u'" and stratid = ' + str(recs[j][1]) + u' and lower(geoshort) ' + self.PlotTypes[Typ])[1])[0][0])))
+                                                          db_utils.sql_load_fr_db(u'select depthbot from stratigraphy where obsid = "' + obs + u'" and stratid = ' + str(recs[j][1]) + u' and lower(geoshort) ' + self.PlotTypes[Typ], self.dbconnection)[1])[0][0])))
                         #lists for plotting annotation 
                         self.x_txt.append(x[i])#+ self.barwidth/2)#x-coord for text
                         self.z_txt.append(Bottom[i] + recs[j][0]/2)#Z-value for text
@@ -512,8 +467,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         table='seismic_data'
         if self.sectionlinelayer.name()=='obs_lines':
             obsline_id = utils.getselectedobjectnames(self.sectionlinelayer)[0]
-            sql = r"""select "%s" as x, "%s" as y1, "%s" as y2 from "%s" where obsid='%s'"""%(x, self.y1_column,self.y2_column,table,obsline_id)
-            conn_OK, recs = db_utils.sql_load_fr_db(sql)
+            sql = r"""select %s as x, %s as y1, %s as y2 from %s where obsid='%s'"""%(x, self.y1_column,self.y2_column,table,obsline_id)
+            conn_OK, recs = db_utils.sql_load_fr_db(sql, self.dbconnection)
             table = np.array(recs, dtype=My_format)  #NDARRAY
             self.obs_lines_plot_data=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write self.obs_lines_plot_data.values
         #print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id) + str(self.barlengths) + str(self.bottoms))#debug
@@ -530,7 +485,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
         if self.ms.settingsdict['secplotdrillstop']!='':
             query = r"""select obsid from obs_points where lower(drillstop) like '""" +self.ms.settingsdict['secplotdrillstop'] +r"""'"""
-            result = db_utils.sql_load_fr_db(query)
+            result = db_utils.sql_load_fr_db(query, self.dbconnection)
             if result[1]:
                 for item in result[1]:
                     self.obs_p_w_drill_stops.append(item[0])
@@ -540,8 +495,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             if obs in self.obsids_w_wl and self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0:
                 query = r"""select avg("level_masl") from """ + self.ms.settingsdict['secplotwlvltab'] + r""" where obsid = '""" + obs + r"""' and ((date_time >= '""" + min(self.ms.settingsdict['secplotdates']) + r"""' and date_time <= '""" + max(self.ms.settingsdict['secplotdates']) + r"""') or (date_time like '""" + min(self.ms.settingsdict['secplotdates']) + r"""%' or date_time like '""" + max(self.ms.settingsdict['secplotdates']) + r"""%'))"""
                 #print(query)#debug
-                recs = db_utils.sql_load_fr_db(query)[1]
-                if db_utils.sql_load_fr_db(query)[1]:
+                recs = db_utils.sql_load_fr_db(query, self.dbconnection)[1]
+                if db_utils.sql_load_fr_db(query, self.dbconnection)[1]:
                     self.obsid_wlid.append(obs)
                     self.x_id_wwl.append(float(self.LengthAlong[q]))
                     if utils.isfloat(str(recs[0][0])) and recs[0][0]>-999:
@@ -617,7 +572,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             k=0
             for obs in self.selected_obsids:
                 query = u'select level_masl from ' + self.ms.settingsdict['secplotwlvltab'] + ' where obsid = "' + obs + '" and date_time like "' + datum  +'%"' 
-                if db_utils.sql_load_fr_db(query)[1]:
+                if db_utils.sql_load_fr_db(query, self.dbconnection)[1]:
                     WL.append((db_utils.sql_load_fr_db(query)[1])[0][0])
                     x_wl.append(float(self.LengthAlong[k]))
                     if obs not in self.obsids_w_wl:
@@ -643,146 +598,52 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ms.settingsdict['secplotlocation']=dockarea
 
     def upload_qgis_vector_layer(self, layer, srid=None,selected=False, mapinfo=True,Attributes=False): #from qspatialite, with a few  changes LAST ARGUMENT IS USED TO SKIP ARGUMENTS SINCE WE ONLY WANT THE GEOMETRY TO CALCULATE DISTANCES
-        """Upload layer (QgsMapLayer) (optionnaly only selected values ) into current DB, in self.temptableName (string) with desired SRID (default layer srid if None) - user can desactivate mapinfo compatibility Date importation. Return True if operation succesfull or false in all other cases"""
-        selected_ids=[]
-        if selected==True :
-            if layer.selectedFeatureCount()==0:
-                utils.pop_up_info(ru(QCoreApplication.translate(u'SectionPlot', "No selected item in Qgis layer: %s)"))%layer.name(),self.parent)
-                return False
-            select_ids=layer.selectedFeaturesIds()
-        #Create name for table if not provided by user
-        if self.temptableName in (None,''):
-            self.temptableName=layer.name()
-        #Verify if self.temptableName already exists in DB
-        ExistingNames=self.connectionObject.cursor().execute(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""").fetchall()
-        ExistingNames_attached = self.connectionObject.cursor().execute(r"""SELECT tbl_name FROM a.sqlite_master WHERE (type='table' or type='view') and not (name = 'geom_cols_ref_sys' or name = 'geometry_columns' or name = 'geometry_columns_auth' or name = 'spatial_ref_sys' or name = 'spatialite_history' or name = 'sqlite_sequence' or name = 'sqlite_stat1' or name = 'views_geometry_columns' or name = 'virts_geometry_columns') ORDER BY tbl_name""").fetchall()
-        #ExistingNames=[table.name for table in self.tables]
-        #Propose user to automatically rename DB
-        for _ExistingNames in [ExistingNames, ExistingNames_attached]:
-            for existingname in _ExistingNames:  #this should only be needed if an earlier import failed
-                if str(existingname[0]) == str(self.temptableName):
-                    self.temptableName = '%s_2' % self.temptableName
-        #Get data charset
-        provider=layer.dataProvider()
-        #charset=provider.encoding()
-    
-        #Get fields with corresponding types
-        fields=[]
-        fieldsNames=[]
-        mapinfoDAte=[]
-        for id,name in enumerate(provider.fields().toList()):
-            fldName=unicode(name.name()).replace("'"," ").replace('"'," ")
-            #Avoid two cols with same name:
-            while fldName.upper() in fieldsNames:
-                fldName='%s_2'%fldName
-            fldType=name.type()
-            fldTypeName=unicode(name.typeName()).upper()
-            if fldTypeName=='DATE' and unicode(provider.storageType()).lower()==u'mapinfo file'and mapinfo==True: # Mapinfo DATE compatibility
-                fldType='DATE'
-                mapinfoDAte.append([id,fldName]) #stock id and name of DATE field for MAPINFO layers
-            elif fldType in (PyQt4.QtCore.QVariant.Char,PyQt4.QtCore.QVariant.String): # field type is TEXT
-                fldLength=name.length()
-                fldType='TEXT(%s)'%fldLength  #Add field Length Information
-            elif fldType in (PyQt4.QtCore.QVariant.Bool,PyQt4.QtCore.QVariant.Int,PyQt4.QtCore.QVariant.LongLong,PyQt4.QtCore.QVariant.UInt,PyQt4.QtCore.QVariant.ULongLong): # field type is INTEGER
-                fldType='INTEGER'
-            elif fldType==PyQt4.QtCore.QVariant.Double: # field type is DOUBLE
-                fldType='REAL'
-            else: # field type is not recognized by SQLITE
-                fldType=fldTypeName
-            fields.append(""" "%s" %s """%(fldName,fldType))
-            fieldsNames.append(fldName.upper())
+        """Upload layer (QgsMapLayer) (optionnaly only selected values ) into current DB, in self.temptable_name (string) with desired SRID (default layer srid if None) - user can desactivate mapinfo compatibility Date importation. Return True if operation succesfull or false in all other cases"""
 
-        # is it a geometric table ?
-        geometry=False
-        if layer.hasGeometryType():
-            #Get geometry type
-            geom=['MULTIPOINT','MULTILINESTRING','MULTIPOLYGON','UnknownGeometry']
-            geometry=geom[layer.geometryType()]
-            #Project to new SRID if specified by user:
-            if srid==None:
-                srid=layer.crs().postgisSrid()
-            else:
-                Qsrid = QgsCoordinateReferenceSystem()
-                Qsrid.createFromId(srid)
-                if not Qsrid.isValid(): #check if crs is ok
-                    utils.pop_up_info(ru(QCoreApplication.translate(u'SectionPlot', "Destination SRID isn't valid for table %s"))%layer.name(),self.parent)
-                    return False
-                layer.setCrs(Qsrid)
+        #Upload a selected feature into a table. If spatialite, make it a memory table, if postgis make it temporary.
+        #upload two fields only, one id field set to dummy and one geometry field.
 
-        #select attributes to import (remove Pkuid if already exists):
-        allAttrs = provider.attributeIndexes()
-        fldDesc = provider.fieldNameIndex("PKUID")
-        if fldDesc != -1:
-            try:
-                print("Pkuid already exists and will be replaced!")
-            except:
-                pass
-            del allAttrs[fldDesc] #remove pkuid Field
-            del fields[fldDesc] #remove pkuid Field
-        #provider.select(allAttrs)
-        #request=QgsFeatureRequest()
-        #request.setSubsetOfAttributes(allAttrs).setFlags(QgsFeatureRequest.SubsetOfAttributes)
-        
-        #Create new table in DB
-        if Attributes == False:
-            fields=[]
-        if geometry:
-            fields.insert(0,"Geometry %s"%geometry)
-        
-        fields=','.join(fields)
-        if len(fields)>0:
-            fields=', %s'%fields
+        selected_features = layer.selectedFeatures()
+        if len(selected_features) != 1:
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SectionPlot', "Must select only one feature in qgis layer: %s)"))%layer.name())
+            return False
 
-        self.connection()
-        query="""CREATE TABLE "a"."%s" ( PKUID INTEGER PRIMARY KEY AUTOINCREMENT %s )"""%(self.temptableName, fields)
-        header,data=self.execute_query(query)
-        if self.queryPb:
-            return
-        self.connectionObject.commit()
-    
-        #Recover Geometry Column:
-        if geometry:
-            header,data=self.execute_query("""SELECT RecoverGeometryColumn('a.%s','Geometry',%s,'%s',2) from %s AS a"""%(self.temptableName,srid,geometry, self.temptableName))
-        
-        # Retreive every feature
-        for feat in layer.getFeatures():
-            # selected features:
-            if selected and feat.id()not in select_ids:
-                continue 
-        
-            #PKUID and Geometry        
-            values_auto=['NULL'] #PKUID value
-            if geometry:
-                geom = feat.geometry()
-                #WKB=geom.asWkb()
-                WKT=geom.exportToWkt()
-                values_auto.append('CastToMulti(GeomFromText("%s",%s))'%(WKT,srid))
-        
-            # show all attributes and their values
-            values_perso=[]
-            for val in allAttrs: # All except PKUID
-                values_perso.append(feat[val])
-            
-            #Create line in DB table         ---------------------SOME PROBLEMS HERE WHEN THERE ARE NO ATTRIBUTES , GÅR BRA OM MAN HAR MINST ETT PAR ATTRIBUT
-            #MEN VI KAN LIKA GÄRNA STRUNTA I ATTRIBUTEN
-            if Attributes == True:
-                if len(fields)>0:
-                    query="""INSERT INTO "a"."%s" VALUES (%s,%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]),','.join('?'*len(values_perso)))
-                    header,data=self.execute_query(query,tuple([unicode(value) for value in values_perso]))
-                else: #no attribute Datas
-                    query="""INSERT INTO "a"."%s" VALUES (%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]))
-                    header,data=self.execute_query(query)
-            else:
-                query="""INSERT INTO "a"."%s" VALUES (%s)"""%(self.temptableName,','.join([unicode(value).encode('utf-8') for value in values_auto]))
-                header,data=self.execute_query(query)
-        for date in mapinfoDAte: #mapinfo compatibility: convert date in SQLITE format (2010/02/11 -> 2010-02-11 ) or rollback if any error
-            header,data=self.execute_query("""UPDATE OR ROLLBACK "a"."%s" set '%s'=replace( "%s", '/' , '-' )  """%(self.temptableName,date[1],date[1]))
+        if not layer.hasGeometryType():
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SectionPlot', u"Layer %s is missing geometry"))%layer.name())
+            return False
 
-        #Commit DB connection:
-        self.connectionObject.commit()
-        #utils.MessagebarAndLog.info(log_msg=u'Data in new table:' + ru(self.execute_query(u'select * from "a".%s'%self.temptableName)[1]))
-        #self.connectionObject.close()#THIS WAS NOT IN QSPATIALITE CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # reload tables
+        """
+        qgis geometry types:
+        0 = MULTIPOINT,
+        1 = MULTILINESTRING,
+        2 = MULTIPOLYGON,
+        3 = UnknownGeometry,
+        4 = ?
+        """
+
+        if layer.geometryType() != 1:
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SectionPlot', u"Layer %s is missing geometry type MULTILINESTRING, had %s"))%(layer.name(), str(layer.geometryType())))
+            return False
+
+        self.temptable_name = self.dbconnection.create_temporary_table_for_import(self.temptable_name, [u'dummyfield TEXT'])
+        db_utils.add_geometry_column(self.temptable_name, u'geometry', srid, u'MULTILINESTRING', self.dbconnection)
+        print(str(self.dbconnection.execute_and_fetchall(u'select * from %s')%self.temptable_name))
+
+        Qsrid = QgsCoordinateReferenceSystem()
+        Qsrid.createFromId(srid)
+        if not Qsrid.isValid():  # check if crs is ok
+            utils.pop_up_info(ru(QCoreApplication.translate(u'SectionPlot', "Destination SRID isn't valid for table %s")) % layer.name(), self.parent)
+            return False
+        layer.setCrs(Qsrid)
+
+        feature = selected_features[0]
+        geom = feature.geometry()
+        wkt = geom.exportToWkt()
+        self.dbconnection.execute(u"""INSERT INTO %s (dummyfield, geometry) VALUES ('0', ST_GeomFromText('%s', %s))"""%(self.temptable_name, wkt, srid))
+
+        #Test without commit
+        #self.dbconnection.commit()
+        
         return True
 
     def write_annotation(self):

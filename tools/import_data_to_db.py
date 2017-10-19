@@ -181,17 +181,8 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             raise exc_info[0], exc_info[1], exc_info[2]
 
     def list_to_table(self, dbconnection, file_data, primary_keys_for_concat):
-        #check if the temporary import-table already exists in DB (which only shoule be the case if an earlier import failed)
-        existing_names = db_utils.tables_columns(dbconnection=dbconnection).keys()
-        while self.temptable_name in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
-            reponse = PyQt4.QtGui.QMessageBox.question(None, ru(QCoreApplication.translate(u'midv_data_importer', u"Warning - Table name confusion!")),ru(QCoreApplication.translate(u'midv_data_importer', u'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''))%(self.temptable_name, self.temptable_name, self.temptable_name), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
-            if reponse == PyQt4.QtGui.QMessageBox.Yes:
-                self.temptable_name = '%s_2' % self.temptable_name
-            else:
-                raise UserInterruptError()
         fieldnames_types = [u'{} TEXT'.format(field_name) for field_name in file_data[0]]
-
-        self.temptable_name = db_utils.create_temporary_table_for_import(dbconnection, self.temptable_name, fieldnames_types)
+        self.temptable_name = dbconnection.create_temporary_table_for_import(self.temptable_name, fieldnames_types)
 
         placeholder_sign = db_utils.placeholder_sign(dbconnection)
 
