@@ -644,6 +644,7 @@ class midvatten:
             self.dlg = dlg# only to prevent the Qdialog from closing.
 
     def plot_section(self):
+        error = False
         all_critical_layers=('obs_points')
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, all_critical_layers)#verify midv settings are loaded
         if not(err_flag == 0):
@@ -659,9 +660,11 @@ class midvatten:
                 if geom.wkbType() == QGis.WKBLineString:#...and that the active layer is a line vector layer
                     pass
                 else:
-                    msg = QCoreApplication.translate("Midvatten", 'You must activate the vector line layer that defines the section.')
+                    utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer that defines the section.'))
+                    error = True
         else:
-            msg = QCoreApplication.translate("Midvatten", 'You must activate the vector line layer and select exactly one feature that defines the section')
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer and select exactly one feature that defines the section'))
+            error = True
         
         #Then verify that at least two feature is selected in obs_points layer, and get a list (OBSID) of selected obs_points
         obs_points_layer = utils.find_layer('obs_points')
@@ -672,11 +675,10 @@ class midvatten:
             # Made into tuple because module sectionplot depends on obsid being a tuple
             OBSID = ru(selectedobspoints, keep_containers=True)
         else:
-            msg = ru(QCoreApplication.translate("Midvatten", 'You must select at least two objects in the obs_points layer'))
-        
-        if msg:#if something went wrong
-            utils.MessagebarAndLog.critical(bar_msg=u'Error, %s'%msg)
-        else:#otherwise go
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate("Midvatten", 'You must select at least two objects in the obs_points layer')))
+            error = True
+
+        if not error:
             try:
                 self.myplot.do_it(self.ms,OBSID,SectionLineLayer)
             except:

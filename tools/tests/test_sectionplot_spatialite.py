@@ -27,6 +27,7 @@
 
 
 """
+
 import db_utils
 import utils_for_tests
 import midvatten_utils as utils
@@ -44,17 +45,22 @@ import os
 from qgis.core import QgsMapLayerRegistry, QgsDataSourceURI, QgsVectorLayer, QgsGeometry, QgsFeature, QgsApplication
 import qgis
 import sectionplot
-from PyQt4 import QtCore
+from PyQt4 import QtCore, QtGui
 
 from nose.plugins.attrib import attr
 
-@attr(status='unstable')
+
+
 class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ The test doesn't go through the whole section plot unfortunately
     """
+
+    @attr(status='unstable1')
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
-    def test_plot_section(self, mock_qgsproject_instance):
+    def test_plot_section(self, mock_messagebar):
+        qgs = QgsApplication([], True)
+        qgs.initQgis()
 
         """For now, the test only initiates the plot. Check that it does not crash """
         db_utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
@@ -62,19 +68,18 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P2", GeomFromText('POINT(6720727 016568)', 3006))''')
         db_utils.sql_alter_db(u'''insert into obs_points (obsid, geometry) values ("P3", GeomFromText('POINT(6720728 016569)', 3006))''')
 
-        uri = QgsDataSourceURI()
-        uri.setDatabase(self.TEMP_DBPATH)
+        dbconnection = db_utils.DbConnectionManager()
+        uri = dbconnection.uri
         uri.setDataSource('', 'obs_lines', 'geometry', '', 'obsid')
 
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', 'spatialite')
         features = self.vlayer.getFeatures()
 
         for feature in features:
-            print(feature)
             featureid = feature.id()
-
         self.vlayer.setSelectedFeatures([featureid])
 
+        @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test_plot_section(self, mock_iface, mock_getselectedobjectnames):
@@ -83,16 +88,18 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
             self.midvatten.plot_section()
+            print(str(mock_messagebar.mock_calls))
             self.myplot = self.midvatten.myplot
             self.myplot.drillstoplineEdit.setText(u"%berg%")
             self.myplot.draw_plot()
             self.selected_obsids = self.myplot.selected_obsids
         _test_plot_section(self)
 
+        assert False
         assert self.myplot.drillstoplineEdit.text() == u'%berg%'
         assert utils_for_tests.create_test_string(self.myplot.selected_obsids) == "[u'P1' u'P2' u'P3']"
 
-    @mock.patch('midvatten_utils.QgsProject.instance')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_with_depth(self, mock_qgsproject_instance):
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
         db_utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
@@ -121,7 +128,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
             self.midvatten.plot_section()
         _test_plot_section_with_depth(self)
 
-    @mock.patch('midvatten_utils.QgsProject.instance')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_with_w_levels(self, mock_qgsproject_instance):
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
         db_utils.sql_alter_db(u'''insert into obs_lines (obsid, geometry) values ("L1", GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
