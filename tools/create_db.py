@@ -130,7 +130,7 @@ class NewDb():
 
         self.add_metadata_to_about_db(dbconnection)
 
-        dbconnection.execute('vacuum')
+        dbconnection.vacuum()
 
         #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
         dbconnection.commit_and_closedb()
@@ -214,7 +214,7 @@ class NewDb():
 
         self.add_metadata_to_about_db(dbconnection, created_tables_sqls)
 
-        dbconnection.execute(u'vacuum')
+        dbconnection.vacuum()
 
         dbconnection.commit_and_closedb()
 

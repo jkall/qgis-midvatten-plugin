@@ -193,6 +193,12 @@ class DbConnectionManager(object):
             if os.path.exists(u'%s-journal'%self.dbpath):
                 raise DatabaseLockedError(utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u"Error, The database is already in use (a journal-file was found)")))
 
+    def vacuum(self):
+        if self.dbtype == u'spatialite':
+            self.execute(u'VACUUM')
+        else:
+            self.execute(u'VACUUM ANALYZE')
+
 
 def check_connection_ok():
     dbconnection = DbConnectionManager()

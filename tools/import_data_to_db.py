@@ -297,29 +297,6 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             if skip_obsids:
                 dbconnection.execute(u'delete from %s where obsid in (%s)' % (self.temptable_name, u', '.join([u"'{}'".format(obsid) for obsid in skip_obsids])))
 
-    @staticmethod
-    def filter_dates_from_filedata(file_data, obsid_last_imported_dates, obsid_header_name=u'obsid', date_time_header_name=u'date_time'):
-        """
-        :param file_data: a list of lists like [[u'obsid', u'date_time', ...], [obsid1, date_time1, ...]]
-        :param obsid_last_imported_dates: a dict like {u'obsid1': last_date_in_db, ...}
-        :param obsid_header_name: the name of the obsid header
-        :param date_time_header_name: the name of the date_time header
-        :return: A filtered list with only dates after last date is included for each obsid.
-
-        >>> midv_data_importer.filter_dates_from_filedata([['obsid', 'date_time'], ['obs1', '2016-09-28'], ['obs1', '2016-09-29']], {'obs1': [('2016-09-28', )]})
-        [['obsid', 'date_time'], ['obs1', '2016-09-29']]
-        """
-        if len(file_data) == 1:
-            return file_data
-
-        obsid_idx = file_data[0].index(obsid_header_name)
-        date_time_idx = file_data[0].index(date_time_header_name)
-        filtered_file_data = [row for row in file_data[1:] if datestring_to_date(row[date_time_idx]) > datestring_to_date(obsid_last_imported_dates.get(row[obsid_idx], [(u'0001-01-01 00:00:00',)])[0][0])]
-        filtered_file_data.reverse()
-        filtered_file_data.append(file_data[0])
-        filtered_file_data.reverse()
-        return filtered_file_data
-
     def import_foreign_keys(self, dbconnection, goal_table, temptablename, foreign_keys, existing_columns_in_temptable):
         #TODO: Empty foreign keys are probably imported now. Must add "case when...NULL" to a couple of sql questions here
 
@@ -360,7 +337,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u'midv_data_importer', """It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""")), ru(QCoreApplication.translate(u'midv_data_importer', 'Vacuum the database?')))
         if sanity.result == 1:
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
-            dbconnection.execute(u'vacuum')    # since a temporary table was loaded and then deleted - the db may need vacuuming
+            dbconnection.vacuum()    # since a temporary table was loaded and then deleted - the db may need vacuuming
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def import_error_msg(self):

@@ -168,7 +168,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         file_data = [[ru(field.name()) for field in active_layer.fields()]]
 
         for feature in features:
-            file_data.append([ru(attr) if attr is not None else u'' for attr in feature])
+            file_data.append([ru(attr) if all([ru(attr).strip() != u'NULL' if attr is not None else u'', attr is not None]) else u'' for attr in feature])
 
         self.file_data = file_data
         self.table_chooser.file_header = file_data[0]
@@ -284,7 +284,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         """
         table_column_dict = dict([(column[1], column[2]) for column in table_column])
         colnrs_to_convert = [colnr for colnr, col in enumerate(file_data[0]) if table_column_dict.get(col, u'').lower() in (u'double', u'double precision', u'real')]
-        file_data = [[col.replace(u',', u'.') if colnr in colnrs_to_convert and rownr > 0 else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
+        file_data = [[col.replace(u',', u'.') if all([colnr in colnrs_to_convert, rownr > 0, col is not None]) else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
         return file_data
 
     @staticmethod
@@ -310,7 +310,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
     @staticmethod
     def remove_preceding_trailing_spaces_tabs(file_data):
-        file_data = [[col.lstrip().rstrip() if rownr > 0 else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
+        file_data = [[col.lstrip().rstrip() if all([rownr > 0, col is not None]) else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
         return file_data
 
 
