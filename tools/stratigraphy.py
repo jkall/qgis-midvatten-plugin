@@ -138,7 +138,6 @@ class SurveyStore:
             DataLoadingStatus, surveys = self._getDataStep2(surveys)
         except:
             DataLoadingStatus = False
-
         if DataLoadingStatus == True:
             surveys = self.sanityCheck(surveys)
             return surveys  
@@ -181,18 +180,19 @@ class SurveyStore:
                     i = i+1
         else:
             utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"getDataStep1 failed ")))  # _CHANGE_ for debugging
+
         return surveys
 
-    @db_utils.if_connection_ok
     def _getDataStep2(self, surveys):
         """ STEP 2: get strata information for every point """
+        dbconnection = db_utils.DbConnectionManager()
         for (obsid, survey) in surveys.iteritems():
             sql =r"""SELECT stratid, depthtop, depthbot, geology, lower(geoshort), capacity, comment, development FROM """
             sql += self.stratitable #MacOSX fix1
             sql += r""" WHERE obsid = '"""
             sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRATIGRAPHY FOR CHOOSEN obsid
             sql += """' ORDER BY stratid"""
-            connection_ok, recs = db_utils.sql_load_fr_db(sql)
+            recs = dbconnection.execute_and_fetchall(sql)
             # parse attributes
             for record in recs:
                 if utils.isinteger(record[0]) and utils.isfloat(record[1]) and utils.isfloat(record[2]):
@@ -231,9 +231,9 @@ class SurveyStore:
                     insertAt += 1
                 survey.strata.insert(insertAt, st)
             DataLoadingStatus = True
-            return DataLoadingStatus, surveys
-        else:
-            return False, surveys
+        dbconnection.closedb()
+        return DataLoadingStatus, surveys
+
         
     def sanityCheck(self, surveys):
         """ does a sanity check on retreived data """
