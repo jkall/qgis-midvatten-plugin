@@ -625,10 +625,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SectionPlot', u"Layer %s is missing geometry type MULTILINESTRING, had %s"))%(layer.name(), str(layer.geometryType())))
             return False
 
-        self.temptable_name = self.dbconnection.create_temporary_table_for_import(self.temptable_name, [u'dummyfield TEXT'], autoincrement=True)
+        self.temptable_name = self.dbconnection.create_temporary_table_for_import(self.temptable_name, [u'dummyfield TEXT'], [u'geometry', u'MULTILINESTRING', srid])
         #self.dbconnection.execute("INSERT into %s VALUES ('test')"%self.temptable_name)
-        print(str(self.dbconnection.execute_and_fetchall(u'select * from %s' % self.temptable_name)))
-        db_utils.add_geometry_column(self.temptable_name, u'geometry', srid, u'MULTILINESTRING', self.dbconnection)
 
         print(str(self.dbconnection.execute_and_fetchall(u'select * from %s'%self.temptable_name)))
 

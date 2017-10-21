@@ -209,7 +209,7 @@ class DbConnectionManager(object):
         else:
             self.execute(u'VACUUM ANALYZE')
 
-    def create_temporary_table_for_import(self, temptable_name, fieldnames_types, autoincrement=False):
+    def create_temporary_table_for_import(self, temptable_name, fieldnames_types, geometry_colname_type_srid=None):
 
         if not temptable_name.startswith(u'temp_'):
             temptable_name = u'temp_%s'%temptable_name
@@ -224,14 +224,27 @@ class DbConnectionManager(object):
         if self.dbtype == u'spatialite':
             temptable_name = u'mem.' + temptable_name
             self.execute(u"""ATTACH DATABASE ':memory:' AS mem""")
-            if autoincrement:
+            if geometry_colname_type_srid is not None:
+                geom_column = geometry_colname_type_srid[0]
+                geom_type = geometry_colname_type_srid[1]
+                srid = geometry_colname_type_srid[2]
+                fieldnames_types.append(u'geometry %s'%geometry_colname_type_srid[0])
                 sql = u"""CREATE table %s (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, %s)"""%(temptable_name, u', '.join(fieldnames_types))
+                self.execute(sql)
+                sql = u"""SELECT RecoverGeometryColumn('%s','%s',%s,'%s',2) from %s AS a"""%(temptable_name, geom_column, srid, geom_type, temptable_name)
+                self.execute(sql)
             else:
                 sql = u"""CREATE table %s (%s)""" % (temptable_name, u', '.join(fieldnames_types))
-            self.execute(sql)
+                self.execute(sql)
         else:
             self.execute(u"""CREATE TEMPORARY table %s (%s)""" % (temptable_name, u', '.join(fieldnames_types)))
             self.temptables.append(temptable_name)
+            if geometry_colname_type_srid is not None:
+                geom_column = geometry_colname_type_srid[0]
+                geom_type = geometry_colname_type_srid[1]
+                srid = geometry_colname_type_srid[2]
+                sql = u"""ALTER TABLE %s ADD COLUMN %s geometry(%s, %s);""" % (temptable_name, geom_column, geom_type, srid)
+                self.execute(sql)
         return temptable_name
 
 
@@ -667,6 +680,7 @@ def test_if_numeric(column, dbconnection=None):
     else:
         return u"""pg_typeof(%s) in (%s)"""%(column, u', '.join([u"'%s'"%data_type for data_type in postgresql_numeric_data_types()]))
 
+
 def calculate_median_value(table, column, obsid, dbconnection=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
@@ -699,23 +713,3 @@ def calculate_median_value(table, column, obsid, dbconnection=None):
                                                                                  u'Sql failed: %s')) % sql)
             median_value = None
     return median_value
-
-
-def add_geometry_column(table, column, srid, geometry_name, dbconnection=None):
-    if not isinstance(dbconnection, DbConnectionManager):
-        dbconnection = DbConnectionManager()
-    if dbconnection.dbtype == u'spatialite':
-        geometry_names = {u'MULTILINESTRING': (u'LINESTRING', u'XY', 0)}
-        geometry_type = geometry_names[geometry_name]
-        #AddGeometryColumn('obs_lines', 'geometry', CHANGETORELEVANTEPSGID, 'LINESTRING', 'XY', 0);
-        sql = u"""SELECT AddGeometryColumn('%s', '%s', %s, '%s', '%s', %s);"""%(table, column, srid,
-                                                                                       geometry_type[0],
-                                                                                       geometry_type[1],
-                                                                                       geometry_type[2])
-    else:
-        geometry_names = {u'MULTILINESTRING': u'MULTILINESTRING'}
-        geometry_type = geometry_names[geometry_name]
-        sql = u"""ALTER TABLE %s ADD COLUMN %s geometry(%s, %s);"""%(table, column, geometry_type, srid)
-
-    print(str(sql))
-    dbconnection.execute(sql)
