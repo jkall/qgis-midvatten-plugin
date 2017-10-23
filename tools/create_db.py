@@ -44,9 +44,6 @@ class NewDb():
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
 
         set_locale = self.ask_for_locale()
-        if set_locale == u'cancel':
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            return utils.Cancel()
 
         if user_select_CRS=='y':
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
@@ -54,8 +51,7 @@ class NewDb():
             EPSGID=EPSG_code
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         if EPSGID=='0' or not EPSGID:
-            utils.pop_up_info(ru(QCoreApplication.translate(u'NewDb', u"Cancelling...")))
-            return utils.Cancel()
+            raise utils.UserInterruptError()
         # If a CRS is selectd, go on and create the database
 
         #path and name of new db
@@ -72,6 +68,7 @@ class NewDb():
             return u''
 
         self.db_settings = ru(utils.anything_to_string_representation({u'spatialite': {u'dbpath': dbpath}}))
+
         #dbconnection = db_utils.DbConnectionManager(self.db_settings)
         try:
             # creating/connecting the test_db
@@ -120,12 +117,8 @@ class NewDb():
                     raise
 
         if delete_srids:
-            #utils.MessagebarAndLog.info(bar_msg=u"epsgid: " + ru(EPSGID))
-            delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSGID
-            try:
-                dbconnection.execute(delete_srid_sql)
-            except:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'NewDb', u'Removing srids failed using: %s'))%ru(delete_srid_sql))
+            db_utils.delete_srids(dbconnection, EPSGID)
+
 
         self.insert_datadomains(set_locale, dbconnection)
 
@@ -154,9 +147,6 @@ class NewDb():
 
     def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):
         set_locale = self.ask_for_locale()
-        if set_locale == u'cancel':
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            return utils.Cancel()
 
         if user_select_CRS=='y':
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
@@ -164,9 +154,15 @@ class NewDb():
             EPSGID=EPSG_code
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         if EPSGID=='0' or not EPSGID:
-            return utils.Cancel()
+            raise utils.UserInterruptError()
 
         dbconnection = db_utils.DbConnectionManager()
+        db_settings = dbconnection.db_settings
+        if not isinstance(db_settings, basestring):
+            self.db_settings = ru(utils.anything_to_string_representation(dbconnection.db_settings))
+        else:
+            self.db_settings = ru(db_settings)
+
         dbconnection.execute(u'CREATE EXTENSION IF NOT EXISTS postgis;')
         result = dbconnection.execute_and_fetchall(u'select version(), PostGIS_full_version();')
         versionstext = u', '.join(result[0])
@@ -251,7 +247,7 @@ class NewDb():
         answer = question.answer
         submitted_value = ru(question.value)
         if answer == u'cancel':
-            return answer
+            raise utils.UserInterruptError()
         elif answer == u'ok':
             return submitted_value
 
@@ -262,6 +258,8 @@ class NewDb():
         else:
             default_crs = 4326
         EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, ru(QCoreApplication.translate(u'NewDb', "Select CRS")), ru(QCoreApplication.translate(u'NewDb', "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:")),default_crs)
+        if not EPSGID[1]:
+            raise utils.UserInterruptError()
         return EPSGID
 
     def insert_datadomains(self, set_locale=False, dbconnection=None):
@@ -335,7 +333,10 @@ class NewDb():
                 try:
                     dbconnection.execute(sql)
                 except:
-                    print(sql)
+                    try:
+                        print(sql)
+                    except:
+                        pass
                     raise
 
     def execute_sqlfile(self, sqlfilename, dbconnection):

@@ -62,13 +62,19 @@ class DbConnectionManager(object):
             if os.path.isfile(db_settings):
                 db_settings = {u'spatialite': {u'dbpath': db_settings}}
             else:
-                try:
-                    db_settings = ast.literal_eval(db_settings)
-                except:
-                    #TODO: Something feels off here. It should not return None, as that will just cause other hard to solve errors.
-                    #TODO An exception feels better but is uglier for the user.
-                    utils.MessagebarAndLog.critical(bar_msg=utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u'Database connection failed. Try reset settings.')))
+                if not db_settings:
+                    # TODO: Something feels off here. It should not return None, as that will just cause other hard to solve errors.
+                    # TODO An exception feels better but is uglier for the user.
+                    utils.MessagebarAndLog.critical(bar_msg=utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u'Database not chosen correctly. Check DB tab in Midvatten settings.')))
                     return None
+                else:
+                    try:
+                        db_settings = ast.literal_eval(db_settings)
+                    except:
+                        #TODO: Something feels off here. It should not return None, as that will just cause other hard to solve errors.
+                        #TODO An exception feels better but is uglier for the user.
+                        utils.MessagebarAndLog.critical(bar_msg=utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u'Database connection failed. Try reset settings.')))
+                        return None
         elif isinstance(db_settings, dict):
             pass
         else:
@@ -76,8 +82,10 @@ class DbConnectionManager(object):
 
         db_settings = utils.returnunicode(db_settings, keep_containers=True)
 
-        self.dbtype = db_settings.keys()[0]
-        self.connection_settings = db_settings.values()[0]
+        self.db_settings = db_settings
+
+        self.dbtype = self.db_settings.keys()[0]
+        self.connection_settings = self.db_settings.values()[0]
 
         self.uri = QgsDataSourceURI()
 
@@ -250,8 +258,11 @@ class DbConnectionManager(object):
 
 def check_connection_ok():
     dbconnection = DbConnectionManager()
-    connection_ok = dbconnection.connect2db()
-    dbconnection.closedb()
+    try:
+        connection_ok = dbconnection.connect2db()
+        dbconnection.closedb()
+    except:
+        connection_ok = False
     return connection_ok
 
 
@@ -722,3 +733,23 @@ def rowid_string(dbconnection=None):
         return u'ROWID'
     else:
         return u'ctid'
+
+
+def delete_srids(execute_able_object, keep_epsg_code):
+    if isinstance(execute_able_object, DbConnectionManager):
+        if not execute_able_object.dbtype == u'spatialite':
+            return None
+
+    delete_srid_sql_aux = r"""delete from spatial_ref_sys_aux where srid NOT IN ('%s', '4326')""" % keep_epsg_code
+    try:
+        execute_able_object.execute(delete_srid_sql_aux)
+    except:
+        pass
+
+    delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % keep_epsg_code
+    try:
+        execute_able_object.execute(delete_srid_sql)
+    except:
+        utils.MessagebarAndLog.info(
+            log_msg=utils.returnunicode(QCoreApplication.translate(u'delete_srids', u'Removing srids failed using: %s')) % str(
+                delete_srid_sql))

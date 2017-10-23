@@ -384,6 +384,7 @@ class midvatten:
                 
             QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
+    @utils.general_exception_handler
     def export_spatialite(self):
         allcritical_layers = tuple(midvatten_defs.get_subset_of_tables_fr_db('obs_points') + midvatten_defs.get_subset_of_tables_fr_db('obs_lines') + midvatten_defs.get_subset_of_tables_fr_db('data_domains') + midvatten_defs.get_subset_of_tables_fr_db('default_layers') +  midvatten_defs.get_subset_of_tables_fr_db('default_nonspatlayers') )#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
@@ -571,6 +572,7 @@ class midvatten:
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict)
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
+    @utils.general_exception_handler
     def new_db(self):
         sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""")), ru(QCoreApplication.translate(u"Midvatten", u'Are you sure?')))
         if sanity.result == 1:
@@ -584,17 +586,23 @@ class midvatten:
             from create_db import NewDb
             newdbinstance = NewDb()
             newdbinstance.create_new_spatialite_db(verno)
-            if not newdbinstance.db_settings=='':
-                self.ms.settingsdict['database'] = utils.anything_to_string_representation(newdbinstance.db_settings)
-                self.ms.save_settings()
 
-            about_db = db_utils.sql_load_fr_db(u'select * from about_db')
+            if newdbinstance.db_settings:
+                self.ms.settingsdict['database'] = newdbinstance.db_settings
+                self.ms.save_settings('database')
+                try:
+                    self.midvsettingsdialog.LoadAndSelectLastSettings()
+                except AttributeError:
+                    pass
+
+            #about_db = db_utils.sql_load_fr_db(u'select * from about_db')
 
             #The markdown table is for gitlab. Run the rows below when there is a change in create_db
             #markdowntable = utils.create_markdown_table_from_table(u'about_db', transposed=False, only_description=True)
             #print(markdowntable)
 
     @db_utils.if_connection_ok
+    @utils.general_exception_handler
     def new_postgis_db(self):
         sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """This will create a new empty\nMidvatten Postgis DB with predefined design.\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten",  u'Are you sure?')))
         if sanity.result == 1:
@@ -604,9 +612,13 @@ class midvatten:
             from create_db import NewDb
             newdbinstance = NewDb()
             newdbinstance.populate_postgis_db(verno)
-            if not newdbinstance.db_settings=='':
-                self.ms.settingsdict['database'] = utils.anything_to_string_representation(newdbinstance.db_settings)
-                self.ms.save_settings()
+            if newdbinstance.db_settings:
+                self.ms.settingsdict['database'] = newdbinstance.db_settings
+                self.ms.save_settings('database')
+                try:
+                    self.midvsettingsdialog.LoadAndSelectLastSettings()
+                except AttributeError:
+                    pass
 
             #The markdown table is for gitlab. Run the rows below when there is a change in create_db
             #markdowntable = utils.create_markdown_table_from_table(u'about_db', transposed=False, only_description=True)
