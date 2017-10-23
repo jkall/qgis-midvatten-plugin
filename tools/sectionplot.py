@@ -98,7 +98,6 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         if not ok:
             return None
 
-        print("temptablename: %s"%self.temptable_name)
         #print(str(self.dbconnection.cursor().execute('select * from %s'%self.temptable_name).fetchall()))
         # get sorted obsid and distance along section from sqlite db
         nF = len(OBSIDtuplein)#number of Features
@@ -175,7 +174,6 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.write_obsid(self.ms.settingsdict['secplotlabelsplotted'])#if argument is 2, then labels will be plotted, otherwise only empty bars
 
         #labels, grid, legend etc.
-        self.dbconnection.closedb()
         self.finish_plot()
         self.save_settings()
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
@@ -347,7 +345,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
     def get_length_along(self,obsidtuple):#returns a numpy recarray with attributes obs_id and length 
         #------------First a sql clause that returns a table, but that is not what we need
         sql = u"""SELECT obsid,
-        GLength(l.geometry)*ST_Line_Locate_Point(l.geometry, p.geometry) AS absdist
+        ST_Length(l.geometry)*ST_Line_Locate_Point(l.geometry, p.geometry) AS absdist
         FROM %s AS l, (select * from obs_points where obsid in %s) AS p
         GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptable_name,u'({})'.format(u', '.join([u"'{}'".format(o) for o in obsidtuple])))
         data = self.dbconnection.execute_and_fetchall(sql)
@@ -413,24 +411,24 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                     del recs
                     
                 sql=u'select depthbot - depthtop, stratid, geology, geoshort, capacity, development, comment from stratigraphy where obsid = "' + obs + u'" and lower(geoshort) ' + self.PlotTypes[Typ] + u" order by stratid"
-                if db_utils.sql_load_fr_db(sql, self.dbconnection)[1]:
-                    recs = db_utils.sql_load_fr_db(sql, self.dbconnection)[1]#[0][0]
+                _recs = db_utils.sql_load_fr_db(sql, self.dbconnection)[1]
+                if _recs:
+                    recs = _recs
                     j=0#counter for unique stratid
                     for rec in recs:#loop cleanup
                         BarLength.append(rec[0])#loop cleanup
                         x.append(float(self.LengthAlong[k]))# - self.barwidth/2)
                         sql01 = u'select "h_gs" from obs_points where obsid = "' + obs + u'"'
+                        sql01_result = db_utils.sql_load_fr_db(sql01, self.dbconnection)[1][0][0]
                         sql02 = u'select "h_toc" from obs_points where obsid = "' + obs + u'"'
+                        sql02_result = db_utils.sql_load_fr_db(sql02, self.dbconnection)[1][0][0]
                         #print('h_gs for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql01)[1])[0][0]))#debug
                         #print('h_toc for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql02)[1])[0][0]))#debug
                         
-                        if utils.isfloat(str((
-                                             db_utils.sql_load_fr_db(sql01, self.dbconnection)[1])[0][0])) and (
-                        db_utils.sql_load_fr_db(sql01, self.dbconnection)[1])[0][0]>-999:
-                            z_gs.append(float(str((db_utils.sql_load_fr_db(sql01, self.dbconnection)[1])[0][0])))
-                        elif utils.isfloat(str((db_utils.sql_load_fr_db(sql02, self.dbconnection)[1])[0][0])) and (
-                        db_utils.sql_load_fr_db(sql02, self.dbconnection)[1])[0][0]>-999:
-                            z_gs.append(float(str((db_utils.sql_load_fr_db(sql02, self.dbconnection)[1])[0][0])))
+                        if utils.isfloat(str(sql01_result)) and sql01_result >-999:
+                            z_gs.append(float(str(sql01_result)))
+                        elif utils.isfloat(str(sql02_result)) and sql02_result>-999:
+                            z_gs.append(float(str(sql02_result)))
                         else:
                             z_gs.append(0)
                         Bottom.append(z_gs[i] - float(str((
@@ -484,7 +482,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.z_ds=[]
 
         if self.ms.settingsdict['secplotdrillstop']!='':
-            query = r"""select obsid from obs_points where lower(drillstop) like '""" +self.ms.settingsdict['secplotdrillstop'] +r"""'"""
+            query = u"""select obsid from obs_points where lower(drillstop) like '%s'"""%ru(self.ms.settingsdict['secplotdrillstop'])
             result = db_utils.sql_load_fr_db(query, self.dbconnection)
             if result[1]:
                 for item in result[1]:
@@ -625,10 +623,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SectionPlot', u"Layer %s is missing geometry type MULTILINESTRING, had %s"))%(layer.name(), str(layer.geometryType())))
             return False
 
-        self.temptable_name = self.dbconnection.create_temporary_table_for_import(self.temptable_name, [u'dummyfield TEXT'], [u'geometry', u'MULTILINESTRING', srid])
+        self.temptable_name = self.dbconnection.create_temporary_table_for_import(self.temptable_name, [u'dummyfield TEXT'], [u'geometry', u'LINESTRING', srid])
         #self.dbconnection.execute("INSERT into %s VALUES ('test')"%self.temptable_name)
-
-        print(str(self.dbconnection.execute_and_fetchall(u'select * from %s'%self.temptable_name)))
 
         Qsrid = QgsCoordinateReferenceSystem()
         Qsrid.createFromId(srid)
@@ -645,7 +641,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
         #Test without commit
         #self.dbconnection.commit()
-        
+
         return True
 
     def write_annotation(self):

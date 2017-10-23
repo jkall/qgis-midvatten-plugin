@@ -37,12 +37,11 @@ from nose.plugins.attrib import attr
 import utils_for_tests
 
 
-@attr(status='stable2')
-class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
+class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
     """ The test doesn't go through the whole section plot unfortunately
     """
-
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def create_and_select_vlayer(self):
         self.qgs = QgsApplication([], True)
         self.qgs.initQgis()
@@ -59,18 +58,22 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
             featureid = feature.id()
         self.vlayer.setSelectedFeatures([featureid])
 
+    @attr(status='stable1')
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_plot_section(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash """
-        db_utils.sql_alter_db(u'''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LineString(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006))''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(6720728 016569)', 3006))''')
-
+        print(str(mock_messagebar.mock_calls))
+        print(str(db_utils.sql_load_fr_db(u'select * from obs_lines')))
         self.create_and_select_vlayer()
 
-        @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+        @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+        @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test_plot_section(self, mock_iface, mock_getselectedobjectnames):
@@ -91,9 +94,10 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert len(mock_messagebar.mock_calls) == 0
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_plot_section_with_depth(self, mock_messagebar):
-        db_utils.sql_alter_db(u'''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('MULTILINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1')''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
@@ -114,9 +118,10 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert len(mock_messagebar.mock_calls) == 0
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_plot_section_with_w_levels(self, mock_messagebar):
-        db_utils.sql_alter_db(u'''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('MULTILINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1')''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
@@ -139,11 +144,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert len(mock_messagebar.mock_calls) == 0
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_plot_section_length_along_slope(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash """
 
-        db_utils.sql_alter_db(u'''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(2 0, 10 10)', 3006))''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('MULTILINESTRING(2 0, 10 10)', 3006))''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(1 0)', 3006))''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(3 0)', 3006))''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(5 0)', 3006))''')
@@ -170,10 +176,11 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         assert len(mock_messagebar.mock_calls) == 0
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_plot_section_length_along(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash """
-        db_utils.sql_alter_db(u'''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(0 0, 1 0, 10 0)', 3006))''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('MULTILINESTRING(0 0, 1 0, 10 0)', 3006))''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(1 0)', 3006))''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(3 5)', 3006))''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(5 10)', 3006))''')

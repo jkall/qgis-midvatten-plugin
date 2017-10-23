@@ -660,7 +660,6 @@ def postgresql_numeric_data_types():
             u'double precision']
 
 
-
 def get_srid_name(srid, dbconnection=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
