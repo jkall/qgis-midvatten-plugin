@@ -373,7 +373,7 @@ def PlotTypesDict(international='no'):
     """
     #success, Dict = utils.create_dict_from_db_2_cols(('strata','geoshort','zz_strat'))
     success, Dict = db_utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
-    succss_strata, strata_order = db_utils.sql_load_fr_db('select strata from zz_stratigraphy_plots order by ROWID')
+    succss_strata, strata_order = db_utils.sql_load_fr_db('select strata from zz_stratigraphy_plots order by %s'%db_utils.rowid_string())
     if not success:
         utils.MessagebarAndLog.info(log_msg=QCoreApplication.translate(u'PlotTypesDict', u'Getting strata and geoshort from zz_strat failed, fallback method using PlotTypesDict from code'))
         if international=='no' and  utils.getcurrentlocale() == 'sv_SE':

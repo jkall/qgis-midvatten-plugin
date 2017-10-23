@@ -303,10 +303,11 @@ def sql_load_fr_db(sql, dbconnection=None):
 def sql_alter_db(sql, dbconnection=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
-    try:
-        dbconnection.execute(u'PRAGMA foreign_keys = ON')
-    except:
-        pass
+    if dbconnection.dbtype == u'spatialite':
+        try:
+            dbconnection.execute(u'PRAGMA foreign_keys = ON')
+        except:
+            pass
     try:
         dbconnection.execute_and_commit(sql)
     except Exception as e:
@@ -712,3 +713,12 @@ def calculate_median_value(table, column, obsid, dbconnection=None):
                                                                                  u'Sql failed: %s')) % sql)
             median_value = None
     return median_value
+
+
+def rowid_string(dbconnection=None):
+    if not isinstance(dbconnection, DbConnectionManager):
+        dbconnection = DbConnectionManager()
+    if dbconnection.dbtype == u'spatialite':
+        return u'ROWID'
+    else:
+        return u'ctid'

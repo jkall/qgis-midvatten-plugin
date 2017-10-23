@@ -344,15 +344,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 
     def get_length_along(self,obsidtuple):#returns a numpy recarray with attributes obs_id and length 
         #------------First a sql clause that returns a table, but that is not what we need
-        sql = u"""SELECT obsid, ST_Length(l.geometry)*ST_Line_Locate_Point(l.geometry, p.geometry) AS absdist
-                  FROM %s AS l, (select * from obs_points where obsid in %s) AS p
-                  GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptable_name,u'({})'.format(u', '.join([u"'{}'".format(o) for o in obsidtuple])))
 
-        sql = u"""SELECT line.obsid, t.length FROM (
-        
-        
-                  JOIN (SELECT obsid, ST_Length(l.geometry) as length FROM %s) as linelength
-        """
+        sql = u"""SELECT p.obsid, ST_Length((SELECT geometry FROM %s)) * ST_Line_Locate_Point((SELECT geometry FROM %s), p.geometry) AS absdist FROM obs_points AS p
+                  WHERE p.obsid in %s
+                  ORDER BY absdist"""%(self.temptable_name, self.temptable_name, u'({})'.format(u', '.join([u"'{}'".format(o) for o in obsidtuple])))
 
         data = self.dbconnection.execute_and_fetchall(sql)
         data = ru(data, keep_containers=True)
@@ -399,7 +394,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             for obs in self.selected_obsids:
                 if k<=len(self.selected_obsids):#in first Typ-loop, get some basic obs_points data - to be used for plotting obsid, empty bars etc
                     self.x_id.append(float(self.LengthAlong[q]))
-                    sql = u'select h_toc, h_gs, length from obs_points where obsid = "' + obs + u'"'
+                    sql = u"SELECT h_toc, h_gs, length FROM obs_points WHERE obsid = '%s'"%obs
                     recs = db_utils.sql_load_fr_db(sql, self.dbconnection)[1]
                     if utils.isfloat(str(recs[0][1])) and recs[0][1]>-999:
                         self.z_id.append(recs[0][1])
@@ -416,7 +411,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                     q +=1
                     del recs
                     
-                sql=u'select depthbot - depthtop, stratid, geology, geoshort, capacity, development, comment from stratigraphy where obsid = "' + obs + u'" and lower(geoshort) ' + self.PlotTypes[Typ] + u" order by stratid"
+                sql=u"select depthbot - depthtop, stratid, geology, geoshort, capacity, development, comment from stratigraphy where obsid = '" + obs + u"' and lower(geoshort) " + self.PlotTypes[Typ] + u" order by stratid"
                 _recs = db_utils.sql_load_fr_db(sql, self.dbconnection)[1]
                 if _recs:
                     recs = _recs
@@ -424,9 +419,9 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                     for rec in recs:#loop cleanup
                         BarLength.append(rec[0])#loop cleanup
                         x.append(float(self.LengthAlong[k]))# - self.barwidth/2)
-                        sql01 = u'select "h_gs" from obs_points where obsid = "' + obs + u'"'
+                        sql01 = u"select h_gs from obs_points where obsid = '" + obs + u"'"
                         sql01_result = db_utils.sql_load_fr_db(sql01, self.dbconnection)[1][0][0]
-                        sql02 = u'select "h_toc" from obs_points where obsid = "' + obs + u'"'
+                        sql02 = u"select h_toc from obs_points where obsid = '" + obs + u"'"
                         sql02_result = db_utils.sql_load_fr_db(sql02, self.dbconnection)[1][0][0]
                         #print('h_gs for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql01)[1])[0][0]))#debug
                         #print('h_toc for ' + obs + ' is ' + str((utils.sql_load_fr_db(sql02)[1])[0][0]))#debug
@@ -438,7 +433,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                         else:
                             z_gs.append(0)
                         Bottom.append(z_gs[i] - float(str((
-                                                          db_utils.sql_load_fr_db(u'select depthbot from stratigraphy where obsid = "' + obs + u'" and stratid = ' + str(recs[j][1]) + u' and lower(geoshort) ' + self.PlotTypes[Typ], self.dbconnection)[1])[0][0])))
+                                                          db_utils.sql_load_fr_db(u"select depthbot from stratigraphy where obsid = '" + obs + u"' and stratid = " + str(recs[j][1]) + u' and lower(geoshort) ' + self.PlotTypes[Typ], self.dbconnection)[1])[0][0])))
                         #lists for plotting annotation 
                         self.x_txt.append(x[i])#+ self.barwidth/2)#x-coord for text
                         self.z_txt.append(Bottom[i] + recs[j][0]/2)#Z-value for text
@@ -497,7 +492,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         q=0
         for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
             if obs in self.obsids_w_wl and self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0:
-                query = r"""select avg("level_masl") from """ + self.ms.settingsdict['secplotwlvltab'] + r""" where obsid = '""" + obs + r"""' and ((date_time >= '""" + min(self.ms.settingsdict['secplotdates']) + r"""' and date_time <= '""" + max(self.ms.settingsdict['secplotdates']) + r"""') or (date_time like '""" + min(self.ms.settingsdict['secplotdates']) + r"""%' or date_time like '""" + max(self.ms.settingsdict['secplotdates']) + r"""%'))"""
+                query = r"""select avg(level_masl) from """ + self.ms.settingsdict['secplotwlvltab'] + r""" where obsid = '""" + obs + r"""' and ((date_time >= '""" + min(self.ms.settingsdict['secplotdates']) + r"""' and date_time <= '""" + max(self.ms.settingsdict['secplotdates']) + r"""') or (date_time like '""" + min(self.ms.settingsdict['secplotdates']) + r"""%' or date_time like '""" + max(self.ms.settingsdict['secplotdates']) + r"""%'))"""
                 #print(query)#debug
                 recs = db_utils.sql_load_fr_db(query, self.dbconnection)[1]
                 if db_utils.sql_load_fr_db(query, self.dbconnection)[1]:
