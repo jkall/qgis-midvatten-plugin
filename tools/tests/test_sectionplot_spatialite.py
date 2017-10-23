@@ -57,8 +57,27 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @attr(status='unstable1')
     @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section(self, mock_messagebar):
+        #TODO:
+        """
+        midvatten settings byggs ju upp en gång och då får allt värdet för databasen. Men jag borde kunna editera midvattensettingsdict efter det.
+        """
+        #self.ms.settingsdict['secplotdrillstop'] = u'%berg%'
+        #mock_instance
+        #def side_effect(*args, **kwargs):
+        #            mock_result = mock.MagicMock()
+        #            if args[0] == u'Midvatten' and args[1] == u'database':
+        #                        return (u"{u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}", True)
+
+        #mock_instance.return_value.readEntry.side_effect = side_effect
+
+
+        #mock_instance..readEntry = utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database
+        #.readEntry("Midvatten", "database")[0]
+        #self.ms.settingsdict['secplotdrillstop']
+
         qgs = QgsApplication([], True)
         qgs.initQgis()
 
@@ -91,10 +110,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
             print(str(mock_messagebar.mock_calls))
             self.myplot = self.midvatten.myplot
             self.myplot.drillstoplineEdit.setText(u"%berg%")
+            self.myplot.ms.settingsdict['secplotdrillstop'] = u"%berg%"
             self.myplot.draw_plot()
             self.selected_obsids = self.myplot.selected_obsids
         _test_plot_section(self)
 
+        #print(str(mock_instance.mock_calls))
         assert False
         assert self.myplot.drillstoplineEdit.text() == u'%berg%'
         assert utils_for_tests.create_test_string(self.myplot.selected_obsids) == "[u'P1' u'P2' u'P3']"
