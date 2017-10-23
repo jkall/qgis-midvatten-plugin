@@ -85,7 +85,7 @@ class Stratigraphy:
         self.initStore()   
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)  # Sets the mouse cursor to wait symbol
         try:  # return from store.getData is stored in data only if no object belonging to DataSanityError class is created
-            data = self.store.getData(ids, lyr)    # added lyr as an argument!!!
+            self.data = self.store.getData(ids, lyr)    # added lyr as an argument!!!
         except DataSanityError, e: # if an object 'e' belonging to DataSanityError is created, then do following
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"Data sanity problem, obsid: %s\n%s")) % (e.sond_id, e.message))
@@ -98,7 +98,7 @@ class Stratigraphy:
         # show widget
         w = SurveyDialog()
         #w.widget.setData2_nosorting(data)  #THIS IS IF DATA IS NOT TO BE SORTED!!
-        w.widget.setData(data)  #THIS IS ONLY TO SORT DATA!!
+        w.widget.setData(self.data)  #THIS IS ONLY TO SORT DATA!!
         w.show()
         self.w = w # save reference so it doesn't get deleted immediately        This has to be done both here and also in midvatten instance
 
@@ -167,13 +167,30 @@ class SurveyStore:
                 i=0
                 for k in ob:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
                     attributes = ob[i]
-                    obsid_list[i] = unicode(str(attributes[obsid_ColNo])) # Copy value in column obsid in the attribute list 
-                    if attributes[h_gs_ColNo] and utils.isfloat(attributes[h_gs_ColNo]) and  attributes[h_gs_ColNo]>-999:  # Only get h_gs if it exists 
-                        toplvl_list[i] = attributes[h_gs_ColNo] # Copy value in column h_gs in the attribute list
-                    elif attributes[h_toc_ColNo] and utils.isfloat(attributes[h_toc_ColNo]) and attributes[h_toc_ColNo] >-999:    # else get h_toc if that exists
-                        toplvl_list[i] = attributes[h_toc_ColNo] # Copy value in column h_gs in the attribute list
-                    else:       # otherwise, if neither h_gs nor h_toc exists - plot as if h_gs is zero
-                        toplvl_list[i] = 0
+                    obsid_list[i] = ru(attributes[obsid_ColNo]) # Copy value in column obsid in the attribute list
+                    h_gs = ru(attributes[h_gs_ColNo])
+                    h_toc = ru(attributes[h_toc_ColNo])
+                    level_val = 0
+                    if h_gs:
+                        try:
+                            _level_val = float(h_gs)
+                            if _level_val <= -999:
+                                raise Exception()
+                        except Exception as e:
+                            if h_toc:
+                                try:
+                                    _level_val = float(h_toc)
+                                    if _level_val <= -999:
+                                        raise Exception()
+                                except Exception as e:
+                                    pass
+                                else:
+                                    level_val = _level_val
+                        else:
+                            level_val = _level_val
+
+                    toplvl_list[i] = level_val
+
                     coord_list[i]= k.geometry().asPoint()
                     # add to array
                     surveys[obsid_list[i]] = SurveyInfo(obsid_list[i], toplvl_list[i], coord_list[i])
@@ -235,20 +252,19 @@ class SurveyStore:
         return DataLoadingStatus, surveys
 
         
-    def sanityCheck(self, surveys):
+    def sanityCheck(self, _surveys):
         """ does a sanity check on retreived data """
-        
-        for (obsid, survey) in surveys.iteritems():  
-            
+        surveys = {}
+        for (obsid, survey) in _surveys.iteritems():
             # check whether there's at least one strata information
             if len(survey.strata) == 0:
                 #raise DataSanityError(str(obsid), "No strata information")
                 try:
                     print(str(obsid) + " has no strata information")
-                    print surveys
                 except:
                     pass
-                del surveys[obsid]#simply remove the item without strata info
+                continue
+                #del surveys[obsid]#simply remove the item without strata info
             else:
                 # check whether the depths are valid
                 top1 = survey.strata[0].depthTop
@@ -266,7 +282,8 @@ class SurveyStore:
                     
                     top1 = strato.depthTop
                     bed1 = strato.depthBot
-            return surveys
+            surveys[obsid] = survey
+        return surveys
 
 class SurveyWidget(PyQt4.QtGui.QFrame):
 
