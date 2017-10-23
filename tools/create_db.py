@@ -212,7 +212,7 @@ class NewDb():
 
         self.execute_sqlfile(self.get_full_filename(u'insert_obs_points_triggers_postgis.sql'), dbconnection)
 
-        self.execute_sqlfile(self.get_full_filename(u'insert_functions_postgis.sql'), dbconnection)
+        self.execute_sqlfile(self.get_full_filename(u'insert_functions_postgis.sql'), dbconnection, merge_newlines=True)
 
         self.add_metadata_to_about_db(dbconnection, created_tables_sqls)
 
@@ -339,15 +339,26 @@ class NewDb():
                         pass
                     raise
 
-    def execute_sqlfile(self, sqlfilename, dbconnection):
+    def execute_sqlfile(self, sqlfilename, dbconnection, merge_newlines=False):
         with open(sqlfilename, 'r') as f:
-            f.readline()  # first line is encoding info....
-            for line in f:
-                if all([line,not line.startswith("#")]):
-                    try:
-                        dbconnection.execute(line)
-                    except Exception, e:
-                        utils.MessagebarAndLog.critical(utils.sql_failed_msg(), ru(QCoreApplication.translate(u'newdb', 'sql failed:\n%s\nerror msg:\n%s\n'))%(line ,str(e)), duration=5)
+            lines = [ru(line).rstrip(u'\r').rstrip(u'\n') for rownr, line in enumerate(f) if rownr > 0]
+        lines = [line for line in lines if all([line.strip(), not line.strip().startswith(u"#")])]
+
+        if merge_newlines:
+            lines = [u'{};'.format(line) for line in u''.join(lines).split(u';') if line.strip()]
+            quoted_lines = [rownr for rownr , line in lines if u'$$' in line]
+
+
+        for line in lines:
+            if line:
+                if u'insert_functions_postgis.sql' in sqlfilename:
+                    print("\nSQL\n")
+                    print(line)
+                    print("\nSQL END\n")
+                try:
+                    dbconnection.execute(line)
+                except Exception, e:
+                    utils.MessagebarAndLog.critical(bar_msg=utils.sql_failed_msg(), log_msg=ru(QCoreApplication.translate(u'NewDb', u'sql failed:\n%s\nerror msg:\n%s\n'))%(ru(line), str(e)))
 
 
 class AddLayerStyles():

@@ -604,7 +604,7 @@ class midvatten:
     @db_utils.if_connection_ok
     @utils.general_exception_handler
     def new_postgis_db(self):
-        sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """This will create a new empty\nMidvatten Postgis DB with predefined design.\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten",  u'Are you sure?')))
+        sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """This will update the selected postgis database to a \nMidvatten Postgis DB with predefined design.\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten",  u'Are you sure?')))
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
             iniText = QSettings(filenamepath , QSettings.IniFormat)

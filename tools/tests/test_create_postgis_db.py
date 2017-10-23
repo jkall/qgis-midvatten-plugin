@@ -28,8 +28,9 @@ from nose.plugins.attrib import attr
 from definitions import midvatten_defs as defs
 
 
-@attr(status='on')
+
 class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
+    @attr(status='only')
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
@@ -50,6 +51,8 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
         assert test_string == reference_string
         current_locale = utils.getcurrentlocale()[0]
         assert current_locale == u'sv_SE'
+        print(str(mocked_messagebar.mock_calls))
+        assert len(mocked_messagebar.mock_calls) == 0
 
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
@@ -126,7 +129,6 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
                 #print(u'%s\n%s'%(test_string[charnr-printnum:charnr+printnum], reference[charnr-printnum:charnr+printnum]))
                 break
         assert test_string == reference
-
 
 
 @attr(status='on')
