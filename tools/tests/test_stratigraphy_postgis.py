@@ -31,8 +31,9 @@ import utils_for_tests
 
 
 @attr(status='off')
-class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def create_and_select_vlayer(self):
         self.qgs = QgsApplication([], True)
         self.qgs.initQgis()
@@ -50,7 +51,8 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
-    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_stratigraphy(self, mock_skippopup, mock_messagebar):
         """
         TODO: This test fails due to some values being cast as <PyQt4.QtCore.QVariant
@@ -66,12 +68,18 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         self.create_and_select_vlayer()
 
+        print(str(self.vlayer.isValid()))
+        print(str(db_utils.sql_load_fr_db(u'select * from obs_points')))
+        print(str(db_utils.sql_load_fr_db(u'select * from stratigraphy')))
         dlg = Stratigraphy(self.iface, self.vlayer, self.ms.settingsdict)
-
+        print(str(mock_messagebar.mock_calls))
+        print(str(mock_skippopup.mock_calls))
         dlg.showSurvey()
         test = utils.anything_to_string_representation(dlg.data)
         test_survey = utils.anything_to_string_representation(repr(dlg.data[u'P1']))
         test_strata = utils.anything_to_string_representation(utils.returnunicode(dlg.data[u'P1'].strata, keep_containers=True))
+
+
 
         assert len(mock_skippopup.mock_calls) == 0
         assert len(mock_messagebar.mock_calls) == 0

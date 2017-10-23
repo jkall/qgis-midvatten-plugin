@@ -18,14 +18,6 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-
- Notes:
-     * The uri = QgsDataSourceURI() doesn't reset unless given a new database
-     name (for some reason). This is the reason that the tests
-     has to be split up into several classes.
-
-
-
 """
 
 from qgis.core import QgsMapLayerRegistry, QgsVectorLayer, QgsApplication
