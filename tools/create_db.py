@@ -212,7 +212,7 @@ class NewDb():
 
         self.execute_sqlfile(self.get_full_filename(u'insert_obs_points_triggers_postgis.sql'), dbconnection)
 
-        self.execute_sqlfile(self.get_full_filename(u'insert_functions_postgis.sql'), dbconnection, merge_newlines=True)
+        self.execute_sqlfile(self.get_full_filename(u'insert_functions_postgis.sql'), dbconnection)
 
         self.add_metadata_to_about_db(dbconnection, created_tables_sqls)
 
@@ -346,15 +346,9 @@ class NewDb():
 
         if merge_newlines:
             lines = [u'{};'.format(line) for line in u''.join(lines).split(u';') if line.strip()]
-            quoted_lines = [rownr for rownr , line in lines if u'$$' in line]
-
 
         for line in lines:
             if line:
-                if u'insert_functions_postgis.sql' in sqlfilename:
-                    print("\nSQL\n")
-                    print(line)
-                    print("\nSQL END\n")
                 try:
                     dbconnection.execute(line)
                 except Exception, e:
