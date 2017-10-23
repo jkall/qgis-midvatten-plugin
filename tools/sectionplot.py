@@ -344,10 +344,16 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 
     def get_length_along(self,obsidtuple):#returns a numpy recarray with attributes obs_id and length 
         #------------First a sql clause that returns a table, but that is not what we need
-        sql = u"""SELECT obsid,
-        ST_Length(l.geometry)*ST_Line_Locate_Point(l.geometry, p.geometry) AS absdist
-        FROM %s AS l, (select * from obs_points where obsid in %s) AS p
-        GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptable_name,u'({})'.format(u', '.join([u"'{}'".format(o) for o in obsidtuple])))
+        sql = u"""SELECT obsid, ST_Length(l.geometry)*ST_Line_Locate_Point(l.geometry, p.geometry) AS absdist
+                  FROM %s AS l, (select * from obs_points where obsid in %s) AS p
+                  GROUP BY obsid ORDER BY ST_Line_Locate_Point(l.geometry, p.geometry);"""%(self.temptable_name,u'({})'.format(u', '.join([u"'{}'".format(o) for o in obsidtuple])))
+
+        sql = u"""SELECT line.obsid, t.length FROM (
+        
+        
+                  JOIN (SELECT obsid, ST_Length(l.geometry) as length FROM %s) as linelength
+        """
+
         data = self.dbconnection.execute_and_fetchall(sql)
         data = ru(data, keep_containers=True)
         #data = [[col.encode('utf-8') for col in row] for row in ru(data, keep_containers=True)]
