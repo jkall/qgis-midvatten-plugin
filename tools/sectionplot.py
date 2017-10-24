@@ -128,10 +128,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.secax.clear()
         #load user settings from the ui
         self.ms.settingsdict['secplotwlvltab'] = unicode(self.wlvltableComboBox.currentText())
-        temporarystring = self.datetimetextEdit.toPlainText() #this needs some cleanup
+        temporarystring = ru(self.datetimetextEdit.toPlainText()) #this needs some cleanup
         try:
             self.ms.settingsdict['secplotdates']=temporarystring.split()
-        except TypeError:
+        except TypeError as e:
             self.ms.settingsdict['secplotdates']=u''
         self.ms.settingsdict['secplottext'] = self.textcolComboBox.currentText()
         self.ms.settingsdict['secplotbw'] = self.barwidthdoubleSpinBox.value()
@@ -492,10 +492,9 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                     self.obs_p_w_drill_stops.append(item[0])
 
         q=0
-
         for obs in self.selected_obsids:#Finally adding obsid at top of stratigraphy
             if obs in self.obsids_w_wl and self.ms.settingsdict['secplotdates'] and len(self.ms.settingsdict['secplotdates'])>0:
-                query = r"""select avg(level_masl) from """ + self.ms.settingsdict['secplotwlvltab'] + r""" where obsid = '""" + obs + r"""' and ((date_time >= '""" + min(self.ms.settingsdict['secplotdates']) + r"""' and date_time <= '""" + max(self.ms.settingsdict['secplotdates']) + r"""') or (date_time like '""" + min(self.ms.settingsdict['secplotdates']) + r"""%' or date_time like '""" + max(self.ms.settingsdict['secplotdates']) + r"""%'))"""
+                query = u"""select avg(level_masl) from """ + self.ms.settingsdict['secplotwlvltab'] + r""" where obsid = '""" + obs + r"""' and ((date_time >= '""" + min(self.ms.settingsdict['secplotdates']) + r"""' and date_time <= '""" + max(self.ms.settingsdict['secplotdates']) + r"""') or (date_time like '""" + min(self.ms.settingsdict['secplotdates']) + r"""%' or date_time like '""" + max(self.ms.settingsdict['secplotdates']) + r"""%'))"""
                 #print(query)#debug
                 recs = db_utils.sql_load_fr_db(query, self.dbconnection)[1]
                 if recs:
@@ -505,7 +504,6 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                         self.z_id_wwl.append(recs[0][0])
                     else:
                         self.z_id_wwl.append(0)
-                print(str(recs))
                 del recs
 
                     
@@ -575,9 +573,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             x_wl=[]
             k=0
             for obs in self.selected_obsids:
-                query = u"""SELECT level_masl FROM {} WHERE obsid = '{}' AND date_time = '{}%'""".format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
-                if db_utils.sql_load_fr_db(query, self.dbconnection)[1]:
-                    WL.append((db_utils.sql_load_fr_db(query)[1])[0][0])
+                query = u"""SELECT level_masl FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
+                res = db_utils.sql_load_fr_db(query, self.dbconnection)[1]
+                if res:
+                    WL.append(res[0][0])
                     x_wl.append(float(self.LengthAlong[k]))
                     if obs not in self.obsids_w_wl:
                         self.obsids_w_wl.append(obs)
@@ -585,6 +584,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             lineplot,=self.secax.plot(x_wl, WL,  'v-', markersize = 6)#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
             self.p.append(lineplot)
             self.Labels.append(datum)
+
 
     def save_settings(self):# This is a quick-fix, should use the midvsettings class instead.
         self.ms.save_settings('secplotwlvltab')

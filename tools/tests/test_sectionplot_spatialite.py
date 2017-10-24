@@ -25,6 +25,7 @@ from qgis.core import QgsMapLayerRegistry, QgsVectorLayer, QgsApplication
 import db_utils
 import mock
 from nose.plugins.attrib import attr
+import gui_utils
 
 import utils_for_tests
 
@@ -94,14 +95,14 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
-        def _test_plot_section_with_depth(self, mock_iface, mock_getselectedobjectnames):
+        def _test(self, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
             mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
             self.midvatten.plot_section()
             self.myplot = self.midvatten.myplot
-        _test_plot_section_with_depth(self)
+        _test(self)
 
         assert len(mock_messagebar.mock_calls) == 0
 
@@ -119,14 +120,18 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
-        def _test_plot_section_with_depth(self, mock_iface, mock_getselectedobjectnames):
+        def _test(self, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
             mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
             self.midvatten.plot_section()
             self.myplot = self.midvatten.myplot
-        _test_plot_section_with_depth(self)
+            gui_utils.set_combobox(self.myplot.wlvltableComboBox, u'w_levels')
+            self.myplot.datetimetextEdit.append(u'2015')
+            self.myplot.draw_plot()
+
+        _test(self)
 
         assert len(mock_messagebar.mock_calls) == 0
 

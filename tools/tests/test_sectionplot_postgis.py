@@ -27,6 +27,7 @@ import mock
 from nose.plugins.attrib import attr
 
 import utils_for_tests
+import gui_utils
 
 
 @attr(status='on')
@@ -111,7 +112,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_plot_section_with_w_levels(self, mock_messagebar):
-        db_utils.sql_alter_db(u'''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LineString(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1')''')
         db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
@@ -122,14 +123,18 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
-        def _test_plot_section_with_depth(self, mock_iface, mock_getselectedobjectnames):
+        def _test(self, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
             mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
             self.midvatten.plot_section()
             self.myplot = self.midvatten.myplot
-        _test_plot_section_with_depth(self)
+            gui_utils.set_combobox(self.myplot.wlvltableComboBox, u'w_levels')
+            self.myplot.datetimetextEdit.append(u'2015')
+            self.myplot.draw_plot()
+
+        _test(self)
 
         assert len(mock_messagebar.mock_calls) == 0
 
