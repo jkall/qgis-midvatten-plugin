@@ -95,27 +95,27 @@ class TimeSeriesPlot:
                             p[i], = ax.plot_date(numtime, table2.values, '-',  label=obsid)
                     plabel[i] = obsid # Label for the plot
 
-                    """ Finish plot """
-                    ax.grid(True)
-                    ax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
-                    fig.autofmt_xdate()
-                    ax.set_ylabel(self.settingsdict['tscolumn']) #MacOSX fix1
-                    ax.set_title(self.settingsdict['tstable'])#MacOSX fix1
-                    leg = fig.legend(p, plabel, loc=0)#leg = fig.legend(p, plabel, 'right')
-                    leg.draggable(state=True)
-                    frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
-                    frame.set_facecolor('0.80')    # set the frame face color to light gray
-                    frame.set_fill(False)    # set the frame face color transparent                
-                    
-                    for t in leg.get_texts():
-                        t.set_fontsize(10)    # the legend text fontsize
-                    for label in ax.xaxis.get_ticklabels():
-                        label.set_fontsize(10)
-                    for label in ax.yaxis.get_ticklabels():
-                        label.set_fontsize(10)
-                    #plt.ion()#force interactivity to prevent the plot window from blocking the qgis app
-                    plt.show() 
-                    #plt.draw()
+                """ Finish plot """
+                ax.grid(True)
+                ax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
+                fig.autofmt_xdate()
+                ax.set_ylabel(self.settingsdict['tscolumn']) #MacOSX fix1
+                ax.set_title(self.settingsdict['tstable'])#MacOSX fix1
+                leg = fig.legend(p, plabel, loc=0)#leg = fig.legend(p, plabel, 'right')
+                leg.draggable(state=True)
+                frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
+                frame.set_facecolor('0.80')    # set the frame face color to light gray
+                frame.set_fill(False)    # set the frame face color transparent
+
+                for t in leg.get_texts():
+                    t.set_fontsize(10)    # the legend text fontsize
+                for label in ax.xaxis.get_ticklabels():
+                    label.set_fontsize(10)
+                for label in ax.yaxis.get_ticklabels():
+                    label.set_fontsize(10)
+                #plt.ion()#force interactivity to prevent the plot window from blocking the qgis app
+                plt.show()
+                #plt.draw()
             else:
                 utils.pop_up_info(ru(QCoreApplication.translate(u'TimeSeriesPlot', u"Please select at least one point with time series data")))
         else:

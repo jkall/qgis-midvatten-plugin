@@ -71,22 +71,27 @@ class XYPlot:
                 p=[None]*nF*nY # List for plot objects
                 plabel=[None]*nF*nY # List for label strings
 
+                i=0
                 j=0
-                for i, k in enumerate(ob):    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
+                for k in ob:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
                     attributes = ob[i]
                     obsid = attributes[kolumnindex] # Copy value in column obsid in the attribute list
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
                     sql =r"""SELECT """
                     sql += unicode(self.xcol) #MacOSX fix1
+                    sql += r""" as 'x'"""
                     if len(self.y1col):
                         sql += r""", """
                         sql += unicode(self.y1col) #MacOSX fix1
+                        sql += r""" as 'y1'"""
                     if len(self.y2col):
                         sql += r""", """
                         sql += unicode(self.y2col) #MacOSX fix1
+                        sql += r""" as 'y2'"""
                     if len(self.y3col):
                         sql += r""", """
                         sql += unicode(self.y3col) #MacOSX fix1
+                        sql += r""" as 'y3'"""
                     sql += """ FROM """
                     sql += unicode(self.table) #MacOSX fix1
                     sql += r""" WHERE obsid = '"""
@@ -124,26 +129,27 @@ class XYPlot:
                             p[j], = ax.plot(table2.x, table2.y3, marker = 'None', linestyle = '-', label=obsid)    # PLOT!!
                         plabel[j] = obsid + unicode(self.y3col) #+ str(j)# Label for the plot #MacOSX fix1
                     j = j + 1
+                    i = i+1
 
-                    """ Finish plot """
-                    ax.grid(True)
-                    ax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
-                    ax.set_xlabel(self.xcol) #MacOSX fix1
-                    ylabel = unicode(self.y1col) + ", \n" + unicode(self.y2col) + ", \n" + unicode(self.y3col) #MacOSX fix1
-                    ax.set_ylabel(ylabel)
-                    ax.set_title(self.settingsdict['xytable']) #MacOSX fix1
-                    leg = fig.legend(p, plabel, loc=0)
-                    leg.draggable(state=True)
-                    frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
-                    frame.set_facecolor('0.80')    # set the frame face color to light gray
-                    frame.set_fill(False)    # set the frame face color transparent                
-                    for t in leg.get_texts():
-                        t.set_fontsize(10)    # the legend text fontsize
-                    for label in ax.xaxis.get_ticklabels():
-                        label.set_fontsize(10)
-                    for label in ax.yaxis.get_ticklabels():
-                        label.set_fontsize(10)
-                    plt.show() # causes conflict with plugins "statist" and "chartmaker"
+                """ Finish plot """
+                ax.grid(True)
+                ax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
+                ax.set_xlabel(self.xcol) #MacOSX fix1
+                ylabel = unicode(self.y1col) + ", \n" + unicode(self.y2col) + ", \n" + unicode(self.y3col) #MacOSX fix1
+                ax.set_ylabel(ylabel)
+                ax.set_title(self.settingsdict['xytable']) #MacOSX fix1
+                leg = fig.legend(p, plabel, loc=0)
+                leg.draggable(state=True)
+                frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
+                frame.set_facecolor('0.80')    # set the frame face color to light gray
+                frame.set_fill(False)    # set the frame face color transparent
+                for t in leg.get_texts():
+                    t.set_fontsize(10)    # the legend text fontsize
+                for label in ax.xaxis.get_ticklabels():
+                    label.set_fontsize(10)
+                for label in ax.yaxis.get_ticklabels():
+                    label.set_fontsize(10)
+                plt.show() # causes conflict with plugins "statist" and "chartmaker"
             else:
                 utils.pop_up_info(ru(QCoreApplication.translate(u'XYPlot', u"Please select at least one point with xy data")))
         else:
