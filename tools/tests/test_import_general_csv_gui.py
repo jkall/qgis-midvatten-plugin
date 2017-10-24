@@ -25,7 +25,9 @@
 import midvatten_utils as utils
 from import_general_csv_gui import GeneralCsvImportGui
 from nose.plugins.attrib import attr
+
 import utils_for_tests
+
 
 @attr(status='on')
 class TestStaticMethods(object):

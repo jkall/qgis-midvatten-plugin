@@ -19,7 +19,6 @@
 """
 
 import qgis.utils
-from pyspatialite import dbapi2 as sqlite  
 import numpy as np
 
 import db_utils

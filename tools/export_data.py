@@ -57,6 +57,7 @@ class ExportData():
 
         """
         conn = sqlite.connect(target_db,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+
         self.curs = conn.cursor()
         self.curs.execute("PRAGMA foreign_keys = ON")
         self.curs.execute(r"""ATTACH DATABASE '%s' AS a"""%source_db)

@@ -24,11 +24,11 @@ from collections import OrderedDict
 
 import db_utils
 import mock
-from mock import call
 import nose
+from import_data_to_db import MidvDataImporterError
+from mock import call
 from nose.plugins.attrib import attr
 
-from import_data_to_db import MidvDataImporterError
 import utils_for_tests
 
 

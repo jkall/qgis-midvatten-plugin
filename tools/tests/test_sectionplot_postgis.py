@@ -23,11 +23,11 @@
 from qgis.core import QgsMapLayerRegistry, QgsVectorLayer, QgsApplication
 
 import db_utils
+import gui_utils
 import mock
 from nose.plugins.attrib import attr
 
 import utils_for_tests
-import gui_utils
 
 
 @attr(status='on')

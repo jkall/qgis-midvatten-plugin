@@ -23,16 +23,17 @@ import PyQt4
 import io
 import os
 from PyQt4 import QtCore
+from collections import OrderedDict
 from qgis.core import QgsApplication
 
+import db_utils
 import midvatten_utils as utils
 import mock
-from midvatten.midvatten import midvatten
-from tools.tests.mocks_for_tests import DummyInterface
-import db_utils
 from import_data_to_db import midv_data_importer
+from midvatten.midvatten import midvatten
+
 from mocks_for_tests import DummyInterface2
-from collections import OrderedDict
+from tools.tests.mocks_for_tests import DummyInterface
 
 
 class test_qapplication_is_running():

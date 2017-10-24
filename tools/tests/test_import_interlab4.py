@@ -22,16 +22,10 @@
 """
 #
 
-from collections import OrderedDict
-
-import db_utils
 import midvatten_utils as utils
-import mock
 from import_interlab4 import Interlab4Import
-from mock import MagicMock
 from nose.plugins.attrib import attr
 
-import mocks_for_tests
 import utils_for_tests
 
 

@@ -24,9 +24,10 @@ import db_utils
 import midvatten_utils as utils
 import mock
 from nose.plugins.attrib import attr
+
 import utils_for_tests
 from definitions import midvatten_defs as defs
-import os
+
 
 @attr(status='on')
 class TestCreateMemoryDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):

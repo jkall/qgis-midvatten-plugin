@@ -19,25 +19,19 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.core import QgsApplication, QgsProviderRegistry, QgsProject
 
-import db_utils
-from utils_for_tests import init_test
-from tools.tests.mocks_for_tests import DummyInterface
-from PyQt4 import QtCore, QtGui, QtTest
-from mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance, MockReturnUsingDictIn, DummyInterface2
-import midvatten_utils as utils
-from nose.tools import raises
-from mock import MagicMock
-import mock
-from midvatten.midvatten import midvatten
+import io
 import os
-import utils_for_tests
 import unittest
 from pyspatialite import dbapi2 as sqlite
-import io
-from qgis.core import QgsMapLayerRegistry, QgsDataSourceURI, QgsVectorLayer
-from export_data import ExportData
+
+import db_utils
+import midvatten_utils as utils
+import mock
+from midvatten.midvatten import midvatten
+
+import utils_for_tests
+from mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance, MockReturnUsingDictIn, DummyInterface2
 
 TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
 MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))

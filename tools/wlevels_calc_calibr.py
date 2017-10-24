@@ -39,7 +39,6 @@ except:
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import datetime
 from PyQt4.QtCore import QCoreApplication
-from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import midvatten_utils as utils
 from midvatten_utils import fn_timer, returnunicode as ru
 from date_utils import dateshift, datestring_to_date, long_dateformat

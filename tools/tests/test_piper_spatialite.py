@@ -22,16 +22,16 @@
 """
 #
 
+import db_utils
 import midvatten_utils as utils
 import mock
 import piper
 from nose.plugins.attrib import attr
 
-import db_utils
 import utils_for_tests
 
 
-@attr(status='off')
+@attr(status='on')
 class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ The test doesn't go through the whole section plot unfortunately
     """

@@ -24,12 +24,13 @@ import io
 import db_utils
 import midvatten_utils as utils
 import mock
-import utils_for_tests
 import nose
-from mock import call
 from nose.plugins.attrib import attr
+
+import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue
 from utils_for_tests import create_test_string
+
 
 @attr(status='on')
 class TestFilterNonexistingObsidsAndAsk(object):

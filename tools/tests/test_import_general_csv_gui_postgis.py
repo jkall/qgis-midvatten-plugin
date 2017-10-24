@@ -20,30 +20,22 @@
  *                                                                         *
  ***************************************************************************/
 """
+import PyQt4
+import datetime
 #
 import timeit
-import datetime
+from collections import OrderedDict
 
 import db_utils
-import utils_for_tests
 import midvatten_utils as utils
-from definitions import midvatten_defs as defs
-from date_utils import datestring_to_date
-import utils_for_tests as test_utils
-from utils_for_tests import init_test
-from tests.mocks_for_tests import DummyInterface
-from nose.tools import raises
-from mock import mock_open, patch, MagicMock, call
-from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDict, MockReturnUsingDictIn, MockQgisUtilsIface, MockNotFoundQuestion, MockQgsProjectInstance, DummyInterface2, mock_answer
 import mock
-import io
-from midvatten.midvatten import midvatten
-import os
-import PyQt4
-from nose.plugins.attrib import attr
-from collections import OrderedDict
-from import_data_to_db import midv_data_importer
+from date_utils import datestring_to_date
 from import_general_csv_gui import GeneralCsvImportGui
+from mock import MagicMock
+from nose.plugins.attrib import attr
+
+import utils_for_tests
+from mocks_for_tests import MockUsingReturnValue
 
 
 @attr(status='on')

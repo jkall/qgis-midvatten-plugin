@@ -37,7 +37,7 @@ try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 except:
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
-import pyspatialite.dbapi2 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
+import sqlite3 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 

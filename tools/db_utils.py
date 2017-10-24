@@ -96,6 +96,7 @@ class DbConnectionManager(object):
             #Create the database if it's not existing
             self.uri.setDatabase(self.dbpath)
             self.conn = sqlite.connect(self.dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
+
             try:
                 self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
             except:

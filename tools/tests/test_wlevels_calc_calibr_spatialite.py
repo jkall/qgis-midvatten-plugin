@@ -19,13 +19,14 @@
  *                                                                         *
  ***************************************************************************/
 """
-import mock
-from nose.plugins.attrib import attr
+import date_utils
 import db_utils
 import gui_utils
-import date_utils
-import utils_for_tests
+import mock
+from nose.plugins.attrib import attr
 from wlevels_calc_calibr import Calibrlogger
+
+import utils_for_tests
 
 
 @attr(status='on')

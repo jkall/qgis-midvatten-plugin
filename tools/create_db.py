@@ -28,7 +28,6 @@ from PyQt4.QtCore import QCoreApplication
 
 import os
 import locale
-from pyspatialite import dbapi2 as sqlite# pyspatialite is absolutely necessary (sqlite3 not enough) due to InitSpatialMetaData()
 import db_utils
 import datetime
 #plugin modules

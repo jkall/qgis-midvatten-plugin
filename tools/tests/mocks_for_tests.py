@@ -19,9 +19,10 @@
  *                                                                         *
  ***************************************************************************/
 """
-import mock
 from PyQt4 import QtGui
 from qgis.core import QgsMapLayerRegistry
+
+import mock
 from PyQt4.QtCore import QString
 
 

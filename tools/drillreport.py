@@ -22,7 +22,6 @@ import db_utils
 from PyQt4.QtCore import QUrl, QDir
 from PyQt4.QtGui import QDesktopServices
 
-from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import os
 import locale
 import midvatten_utils as utils

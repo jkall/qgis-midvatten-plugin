@@ -7,12 +7,11 @@ import mock
 from date_utils import datestring_to_date
 from import_fieldlogger import FieldloggerImport, InputFields, DateTimeFilter
 from mock import MagicMock, call
-
 from nose.plugins.attrib import attr
 
 import utils_for_tests
-from mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance
 from utils_for_tests import create_test_string
+
 
 @attr(status='on')
 class TestFieldLoggerImporterNoDb(object):
