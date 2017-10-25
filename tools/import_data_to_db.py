@@ -47,7 +47,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         self.csvlayer = None
         self.foreign_keys_import_question = None
 
-    def general_import(self, goal_table, file_data, allow_obs_fk_import=False):
+    def general_import(self, goal_table, file_data, allow_obs_fk_import=False, _dbconnection=None):
         """General method for importing an sqlite table into a goal_table
 
             self.temptableName must be the name of the table containing the new data to import.
@@ -64,7 +64,11 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             self.temptable_name = goal_table + u'_temp'
 
-            dbconnection = db_utils.DbConnectionManager()
+            if not isinstance(_dbconnection, db_utils.DbConnectionManager):
+                dbconnection = db_utils.DbConnectionManager()
+            else:
+                dbconnection = _dbconnection
+
             db_utils.activate_foreign_keys(activated=True, dbconnection=dbconnection)
 
             recsinfile = len(file_data[1:])
@@ -167,13 +171,22 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
             utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'%s rows imported and %s excluded for table %s. See log message panel for details'))%(nr_imported, nr_excluded, goal_table))
             utils.MessagebarAndLog.info(log_msg=u'--------------------')
-            dbconnection.commit_and_closedb()
+
+            #If an external dbconnection is supplied, do not close it.
+            if _dbconnection is None:
+                dbconnection.commit_and_closedb()
+            else:
+                dbconnection.commit()
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
         except:
             exc_info = sys.exc_info()
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             try:
-                dbconnection.closedb()
+                # If an external dbconnection is supplied, do not close it.
+                if _dbconnection is None:
+                    dbconnection.closedb()
+                else:
+                    pass
             except NameError():
                 pass
             except:
@@ -190,7 +203,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         added_rows = set()
         numskipped = 0
         sql = u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join([placeholder_sign for x in xrange(len(file_data[0]))]))
+        print("filedata: " + str(file_data))
         for row in file_data[1:]:
+            print("row " + str(row))
             concatted = u'|'.join([row[idx] for idx in concat_cols])
             if concatted in added_rows:
                 numskipped += 1

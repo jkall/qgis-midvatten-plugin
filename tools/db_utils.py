@@ -379,7 +379,7 @@ def db_tables_columns_info(table=None, dbconnection=None):
     tables_dict = {}
 
     for tablename in tablenames:
-        columns = get_table_info(tablename)
+        columns = get_table_info(tablename, dbconnection=dbconnection)
         tables_dict[tablename] = columns
     return tables_dict
 
@@ -412,7 +412,17 @@ def get_table_info(tablename, dbconnection=None):
 
     if dbconnection.dbtype == u'spatialite':
         columns_sql = """PRAGMA table_info (%s)""" % tablename
-        columns = dbconnection.execute_and_fetchall(columns_sql)
+        try:
+            columns = dbconnection.execute_and_fetchall(columns_sql)
+        except Exception as e:
+            if dbconnection.dbtype == u'spatialite':
+                columns_sql = """PRAGMA table_info ("%s")""" % tablename
+                try:
+                    columns = dbconnection.execute_and_fetchall(columns_sql)
+                except Exception as e:
+                    utils.MessagebarAndLog.warning(bar_msg=utils.sql_failed_msg(), log_msg=utils.returnunicode(
+                        QCoreApplication.translate(u'get_table_info', u'Sql failed: %s\msg:%s')) % (columns_sql, str(e)))
+                    return None
     else:
         columns_sql = u"SELECT ordinal_position, column_name, data_type, CASE WHEN is_nullable = 'NO' THEN 1 ELSE 0 END AS notnull, column_default, 0 AS primary_key FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s'"%(dbconnection.schemas(), tablename)
         columns = [list(x) for x in dbconnection.execute_and_fetchall(columns_sql)]
