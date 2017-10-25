@@ -232,11 +232,17 @@ class ExportData():
         """
         transformed = False
         #Make a transformation for column names that are geometries
+
         if tname in new_table_column_srid_dict and tname in old_table_column_srid_dict:
             transformed_column_names = []
             for column in column_names:
                 new_srid = new_table_column_srid_dict.get(tname, {}).get(column, None)
                 old_srid = old_table_column_srid_dict.get(tname, {}).get(column, None)
+                # Fix for old databases where geometry sometimes was spelled Geometry
+                if old_srid is None:
+                    old_srid = old_table_column_srid_dict.get(tname, {}).get(column.capitalize(), None)
+                    if old_srid is not None:
+                        column = column.capitalize()
                 if old_srid is not None and new_srid is not None and old_srid != new_srid:
                     transformed_column_names.append(u'ST_Transform({}, {})'.format(column, ru(new_srid)))
                     utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'Transformation for table %s column %s from %s to %s"'))%(tname, column, str(old_srid), str(new_srid)))
