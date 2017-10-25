@@ -52,7 +52,6 @@ class DbConnectionManager(object):
         """
         self.conn = None
         self.cursor = None
-        self.temptables = []
 
         if db_settings is None:
             db_settings = QgsProject.instance().readEntry("Midvatten", "database")[0]
@@ -199,14 +198,6 @@ class DbConnectionManager(object):
             return schemas[0][1]
 
     def closedb(self):
-        for table in self.temptables:
-            if table.startswith(u'temp_'):
-                self.execute(u'DROP TABLE IF EXISTS %s'%table)
-                self.execute(u"""DELETE FROM geometry_columns WHERE f_table_name = '%s'"""%table)
-                # sql = r"""DELETE FROM spatialite_history WHERE "table_name"='%s'"""%self.temptable_name
-                # ok = utils.sql_alter_db(sql)
-
-
         self.conn.close()
 
     def internal_tables(self):
@@ -255,7 +246,6 @@ class DbConnectionManager(object):
                 self.execute(sql)
         else:
             self.execute(u"""CREATE TEMPORARY table %s (%s)""" % (temptable_name, u', '.join(fieldnames_types)))
-            self.temptables.append(temptable_name)
             if geometry_colname_type_srid is not None:
                 geom_column = geometry_colname_type_srid[0]
                 geom_type = geometry_colname_type_srid[1]
