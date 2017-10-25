@@ -173,15 +173,19 @@ class MidvattenTestSpatialiteDbSvImportInstance(MidvattenTestSpatialiteDbSv):
 
 
 class MidvattenTestPostgisNotCreated(object):
+    ALL_POSTGIS_SETTINGS = {u'nosetests': {u'estimatedMetadata': u'false', u'username': u'henrik3', u'publicOnly': u'false', u'service': u'', u'database': u'nosetests', u'dontResolveType': u'false', u'saveUsername': u'true', u'sslmode': u'1', u'host': u'127.0.0.1', u'authcfg': u'', u'geometryColumnsOnly': u'false', u'allowGeometrylessTables': u'false', u'password': u'0000', u'savePassword': u'false', u'port': u'5432'}}
+    TEMP_DB_SETTINGS = {u'postgis': {u'connection': u'nosetests/127.0.0.1:5432/nosetests'}}
+    SETTINGS_DATABASE = (utils.anything_to_string_representation(TEMP_DB_SETTINGS), True)
+
     mock_postgis_connections = mock.MagicMock()
-    mock_postgis_connections.return_value = {u'nosetests': {u'estimatedMetadata': u'false', u'username': u'henrik3', u'publicOnly': u'false', u'service': u'', u'database': u'nosetests', u'dontResolveType': u'false', u'saveUsername': u'true', u'sslmode': u'1', u'host': u'127.0.0.1', u'authcfg': u'', u'geometryColumnsOnly': u'false', u'allowGeometrylessTables': u'false', u'password': u'0000', u'savePassword': u'false', u'port': u'5432'}}
+    mock_postgis_connections.return_value = ALL_POSTGIS_SETTINGS
 
     mock_instance_settings_database = mock.MagicMock()
-    mock_instance_settings_database.return_value.readEntry.return_value = (u"{u'postgis': {u'connection': u'nosetests/127.0.0.1:5432/nosetests'}}", True)
+    mock_instance_settings_database.return_value.readEntry.return_value = SETTINGS_DATABASE
 
     def __init__(self):
-        self.TEMP_DB_SETTINGS = {u'postgis': {u'connection': u'nosetests/127.0.0.1:5432/nosetests'}}
-        self.SETTINGS_DATABASE = (u"{u'postgis': {u'connection': u'nosetests/127.0.0.1:5432/nosetests'}}", True)
+        self.TEMP_DB_SETTINGS = MidvattenTestPostgisNotCreated.TEMP_DB_SETTINGS
+        self.SETTINGS_DATABASE = MidvattenTestPostgisNotCreated.SETTINGS_DATABASE
         pass
 
     @mock.patch('db_utils.get_postgis_connections', mock_postgis_connections)
