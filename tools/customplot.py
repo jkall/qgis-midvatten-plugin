@@ -101,6 +101,15 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.connect(self.plot_settings_2, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.plot_settings_2))
         self.connect(self.plot_settings_3, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.plot_settings_3))
         self.connect(self.chart_settings, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.chart_settings))
+
+        self.connect(self.select_button_t1f1, QtCore.SIGNAL("clicked()"), partial(self.select_in_filterlist_from_selection, self.Filter1_QListWidget_1, self.Filter1_ComboBox_1))
+        self.connect(self.select_button_t1f2, QtCore.SIGNAL("clicked()"), partial(self.select_in_filterlist_from_selection, self.Filter2_QListWidget_1, self.Filter2_ComboBox_1))
+        self.connect(self.select_button_t2f1, QtCore.SIGNAL("clicked()"), partial(self.select_in_filterlist_from_selection, self.Filter1_QListWidget_2, self.Filter1_ComboBox_2))
+        self.connect(self.select_button_t2f2, QtCore.SIGNAL("clicked()"), partial(self.select_in_filterlist_from_selection, self.Filter2_QListWidget_2, self.Filter2_ComboBox_2))
+        self.connect(self.select_button_t3f1, QtCore.SIGNAL("clicked()"), partial(self.select_in_filterlist_from_selection, self.Filter1_QListWidget_3, self.Filter1_ComboBox_3))
+        self.connect(self.select_button_t3f2, QtCore.SIGNAL("clicked()"), partial(self.select_in_filterlist_from_selection, self.Filter2_QListWidget_3, self.Filter2_ComboBox_3))
+
+
         self.PlotChart_QPushButton.clicked.connect(self.drawPlot_all)
         self.Redraw_pushButton.clicked.connect( self.refreshPlot )
 
@@ -646,6 +655,13 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         for child in children:
             child.setVisible(groupbox_widget.isChecked())
 
+    def select_in_filterlist_from_selection(self, filter_listwidget, filter_combobox):
+        current_column = ru(filter_combobox.currentText())
+        if not current_column:
+            return
+        selected_values = utils.getselectedobjectnames(column_name=current_column)
+        [filter_listwidget.item(nr).setSelected(True) for nr in xrange(filter_listwidget.count()) if ru(filter_listwidget.item(nr).text()) in selected_values]
+
 
 class PandasCalculations(object):
     def __init__(self, gridlayout):
@@ -687,6 +703,8 @@ class PandasCalculations(object):
         #Moving average:
         self.window_label = PyQt4.QtGui.QLabel(u'Rolling mean window')
         self.window = PyQt4.QtGui.QLineEdit(u'')
+        self.center_label = PyQt4.QtGui.QLabel(u'Rolling mean center')
+        self.center = PyQt4.QtGui.QLineEdit(u'')
         for wid in [self.window_label, self.window]:
             wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
                            u'The number of timesteps in each moving average (rolling mean) mean\n'
@@ -694,17 +712,25 @@ class PandasCalculations(object):
                            u'See Pandas pandas.rolling_mean documentation for more info.\n'
                            u'No rolling mean if field is empty.')))
 
-        for lineedit in [self.rule, self.base, self.how, self.window]:
+        for wid in [self.center_label, self.center]:
+            wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
+                           u'1/True (default) to store the rolling mean at the center timestep.\n'
+                           u'0/False to store the rolling mean at the last timestep.\n'
+                           u'See Pandas pandas.rolling_mean documentation for more info.\n'
+                           u'center=True if field is empty.')))
+
+
+        for lineedit in [self.rule, self.base, self.how, self.window, self.center]:
             #lineedit.sizeHint()setFixedWidth(122)
             lineedit.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Preferred)
 
         maximumwidth = 0
-        for label in [self.rule_label, self.base_label, self.how_label, self.window_label]:
+        for label in [self.rule_label, self.base_label, self.how_label, self.window_label, self.center_label]:
             testlabel = PyQt4.QtGui.QLabel()
             testlabel.setText(label.text())
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
-        for label in [self.rule_label, self.base_label, self.how_label, self.window_label]:
+        for label in [self.rule_label, self.base_label, self.how_label, self.window_label, self.center_label]:
             label.setFixedWidth(maximumwidth)
             #label.setMinimumWidth(maximumwidth)
             label.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Fixed)
@@ -715,7 +741,8 @@ class PandasCalculations(object):
         for col1, col2 in [(self.rule_label, self.rule),
                            (self.base_label, self.base),
                            (self.how_label, self.how),
-                           (self.window_label, self.window)]:
+                           (self.window_label, self.window),
+                           (self.center_label, self.center)]:
             current_row = gridlayout.rowCount()
 
             try:
@@ -754,7 +781,11 @@ class PandasCalculations(object):
             except ValueError:
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'PandasCalculations', u'Rolling mean window must be an integer')))
             else:
-                df = pd.rolling_mean(df, window=window, center=True)
+                if self.center.text() in (u'0', u'False'):
+                    center=False
+                else:
+                    center=True
+                df = pd.rolling_mean(df, window=window, center=center)
         return df
 
 

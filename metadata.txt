@@ -21,6 +21,8 @@ deprecated=False
 changelog=
         Version 1.5.0b:
         - Lots and lots of changes, but mostly in the background.
+        - Customplot: Buttom to select rows in filterlists from selected rows in selected layer.
+        - Customplot: Added rolling mean center parameter.
         Version 1.4.8:
         - Fieldlogger import: Connected instrument id to sublocation instead of obsid.
         - Fieldlogger import: Added function for calculating level_masl directly from meas

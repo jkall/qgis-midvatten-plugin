@@ -156,7 +156,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             try:
                 dbconnection.execute(sql)
             except Exception, e:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:\n')) % goal_table + str(e))
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:\n')) % goal_table + ru(str(e)))
                 sql = db_utils.add_insert_or_ignore_to_sql(sql, dbconnection)
                 try:
                     dbconnection.execute(sql)

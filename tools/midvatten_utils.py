@@ -406,7 +406,7 @@ def get_selected_features_as_tuple(layername=None):
     return obsidtuple
 
 
-def getselectedobjectnames(thelayer='default'):
+def getselectedobjectnames(thelayer='default', column_name=u'obsid'):
     """ Returns a list of obsid as unicode
 
         thelayer is an optional argument, if not given then activelayer is used
@@ -416,9 +416,9 @@ def getselectedobjectnames(thelayer='default'):
     if not thelayer:
         return []
     selectedobs = thelayer.selectedFeatures()
-    kolumnindex = thelayer.dataProvider().fieldNameIndex('obsid')  #OGR data provier is used to find index for column named 'obsid'
+    kolumnindex = thelayer.dataProvider().fieldNameIndex(column_name)  #OGR data provier is used to find index for column named 'obsid'
     if kolumnindex == -1:
-        kolumnindex = thelayer.dataProvider().fieldNameIndex('OBSID')  #backwards compatibility
+        kolumnindex = thelayer.dataProvider().fieldNameIndex(column_name.upper())  #backwards compatibility
     observations = [obs[kolumnindex] for obs in selectedobs] # value in column obsid is stored as unicode
     return observations
 

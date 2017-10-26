@@ -446,7 +446,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0">
+                 <item row="3" column="0">
                   <widget class="QListWidget" name="Filter1_QListWidget_1">
                    <property name="minimumSize">
                     <size>
@@ -470,7 +470,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
+                 <item row="3" column="1">
                   <widget class="QListWidget" name="Filter2_QListWidget_1">
                    <property name="minimumSize">
                     <size>
@@ -491,6 +491,20 @@
                    </property>
                    <property name="selectionMode">
                     <enum>QAbstractItemView::ExtendedSelection</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QPushButton" name="select_button_t1f1">
+                   <property name="text">
+                    <string>From selection</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QPushButton" name="select_button_t1f2">
+                   <property name="text">
+                    <string>From selection</string>
                    </property>
                   </widget>
                  </item>
@@ -938,7 +952,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0">
+                 <item row="3" column="0">
                   <widget class="QListWidget" name="Filter1_QListWidget_2">
                    <property name="minimumSize">
                     <size>
@@ -962,7 +976,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
+                 <item row="3" column="1">
                   <widget class="QListWidget" name="Filter2_QListWidget_2">
                    <property name="minimumSize">
                     <size>
@@ -983,6 +997,20 @@
                    </property>
                    <property name="selectionMode">
                     <enum>QAbstractItemView::ExtendedSelection</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QPushButton" name="select_button_t2f1">
+                   <property name="text">
+                    <string>From selection</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QPushButton" name="select_button_t2f2">
+                   <property name="text">
+                    <string>From selection</string>
                    </property>
                   </widget>
                  </item>
@@ -1431,7 +1459,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0">
+                 <item row="3" column="0">
                   <widget class="QListWidget" name="Filter1_QListWidget_3">
                    <property name="minimumSize">
                     <size>
@@ -1455,7 +1483,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
+                 <item row="3" column="1">
                   <widget class="QListWidget" name="Filter2_QListWidget_3">
                    <property name="minimumSize">
                     <size>
@@ -1476,6 +1504,20 @@
                    </property>
                    <property name="selectionMode">
                     <enum>QAbstractItemView::ExtendedSelection</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QPushButton" name="select_button_t3f1">
+                   <property name="text">
+                    <string>From selection</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QPushButton" name="select_button_t3f2">
+                   <property name="text">
+                    <string>From selection</string>
                    </property>
                   </widget>
                  </item>
