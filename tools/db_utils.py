@@ -30,6 +30,7 @@ except:
     compression = zipfile.ZIP_STORED
 
 import datetime
+import re
 from collections import OrderedDict
 from pyspatialite import dbapi2 as sqlite
 
@@ -437,7 +438,11 @@ def get_table_info(tablename, dbconnection=None):
 def get_foreign_keys(table, dbconnection=None):
     """Get foreign keys for table.
        Returns a dict like {foreign_key_table: (colname in table, colname in foreign_key_table)}
-    code from http://stackoverflow.com/questions/1152260/postgres-sql-to-list-table-foreign-keys"""
+    sql code from
+    http://stackoverflow.com/questions/1152260/postgres-sql-to-list-table-foreign-keys
+    and
+    https://stackoverflow.com/questions/39379939/how-to-access-information-schema-foreign-key-constraints-with-read-only-user-in
+    """
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
     foreign_keys = {}
@@ -446,6 +451,8 @@ def get_foreign_keys(table, dbconnection=None):
         for row in result_list:
             foreign_keys.setdefault(row[2], []).append((row[3], row[4]))
     else:
+        #Only works as administrator in postgresql
+        '''
         sql = u"""
                 SELECT
                     tc.constraint_name, tc.table_name, kcu.column_name,
@@ -458,9 +465,30 @@ def get_foreign_keys(table, dbconnection=None):
                 JOIN information_schema.constraint_column_usage AS ccu
                   ON ccu.constraint_name = tc.constraint_name
                 WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name='%s';""" % table
+        '''
+
+        #Works for non-administrators also!
+        sql = u"""
+                SELECT 
+                  conrelid::regclass AS table_from,
+                  conname,
+                  pg_get_constraintdef(c.oid) AS cdef 
+                FROM pg_constraint c 
+                JOIN pg_namespace n 
+                  ON n.oid = c.connamespace 
+                WHERE contype IN ('f') 
+                AND n.nspname = 'public' 
+                AND conrelid::regclass::text = '%s'
+                ORDER BY conrelid::regclass::text, contype DESC;
+                """%table
+
         result_list = dbconnection.execute_and_fetchall(sql)
         for row in result_list:
-            foreign_keys.setdefault(row[3], []).append((row[2], row[4]))
+            info = row[2]
+            m = re.search(r'FOREIGN KEY \(([a-zA-ZåäöÅÄÖ\-\_]+)\) REFERENCES ([a-zA-ZåäöÅÄÖ\-\_]+)\(([a-zA-ZåäöÅÄÖ\-\_]+)\)', info)
+            res = m.groups()
+            if res:
+                foreign_keys.setdefault(res[1], []).append((res[0], res[2]))
 
     return foreign_keys
 

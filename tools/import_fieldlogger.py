@@ -241,7 +241,6 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                 sublocation_groups.setdefault(length, [set()for i in xrange(length)])[index].add(splitted[index])
         return sublocation_groups
 
-    @utils.general_exception_handler
     def update_sublocations_and_inputfields_on_date_change(self):
         observations = copy.deepcopy(self.observations)
         date_time_filter = self.date_time_filter
@@ -256,7 +255,6 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         observations = self.filter_by_settings_using_shared_loop(observations, [sublocation_filter])
         input_fields.update_parameter_imports_queue(observations, stored_settings)
 
-    @utils.general_exception_handler
     def update_input_fields_from_button(self):
         self.input_fields.update_parameter_imports_queue(self.filter_by_settings_using_shared_loop(self.observations, self.settings), self.stored_settings)
 
