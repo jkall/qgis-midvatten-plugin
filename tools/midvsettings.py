@@ -10,15 +10,14 @@
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/"""
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 from qgis.core import *
-import ast
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from definitions import midvatten_defs
 
 from PyQt4.QtCore import QCoreApplication
+
+import midvatten_utils as utils
+from definitions import midvatten_defs
+from midvatten_utils import returnunicode as ru
+
 
 class midvsettings():
     def __init__(self):

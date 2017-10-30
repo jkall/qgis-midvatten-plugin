@@ -17,20 +17,17 @@
  *                                                                         *
  ***************************************************************************/
 """
+import datetime
+import locale
+import os
+import re
+from qgis.core import QGis
+
 import PyQt4.QtCore
 import PyQt4.QtGui
-from qgis.core import QGis
-import qgis.utils
-import timeit
-import re
-
 from PyQt4.QtCore import QCoreApplication
 
-import os
-import locale
 import db_utils
-import datetime
-#plugin modules
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 

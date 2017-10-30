@@ -44,9 +44,6 @@ from midvatten_utils import fn_timer, returnunicode as ru
 from date_utils import dateshift, datestring_to_date, long_dateformat
 import db_utils
 
-#from ui.calibr_logger_dialog import Ui_Dialog as Calibr_Ui_Dialog
-#from ui.calc_lvl_dialog import Ui_Dialog as Calc_Ui_Dialog
-
 Calibr_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calibr_logger_dialog_integrated.ui'))[0]
 Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_lvl_dialog.ui'))[0]
 

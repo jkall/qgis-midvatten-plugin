@@ -29,7 +29,6 @@ from PyQt4.QtCore import QCoreApplication
 
 import db_utils
 import midvatten_utils as utils
-from date_utils import datestring_to_date
 from midvatten_utils import returnunicode as ru
 from midvatten_utils import UserInterruptError
 

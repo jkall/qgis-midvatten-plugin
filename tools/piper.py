@@ -20,18 +20,14 @@ __modified_date__ = "Nov 2013"
 ***************************************************************************/
 """
 
-from PyQt4 import QtCore, QtGui
-from qgis.core import *
-from qgis.gui import *
-
-import db_utils
-from matplotlib.figure import Figure as figure
-import numpy as np
-import matplotlib.pyplot as plt
 import datetime
 import itertools
+import matplotlib.pyplot as plt
+import numpy as np
+
+import db_utils
 import midvatten_utils as utils
-from definitions import midvatten_defs
+
 
 class PiperPlot():
     def __init__(self,msettings,activelayer):

@@ -22,7 +22,6 @@ import gui_utils
 import midvatten_utils as utils
 from PyQt4.QtCore import *
 from PyQt4.QtCore import QCoreApplication
-from PyQt4.QtCore import QLocale
 from PyQt4.QtGui import *
 from midvatten_utils import returnunicode as ru
 

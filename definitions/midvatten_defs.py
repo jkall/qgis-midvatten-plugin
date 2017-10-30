@@ -18,15 +18,13 @@
  ***************************************************************************/
 """
 
-import qgis.utils
 from collections import OrderedDict
 
 import db_utils
 import midvatten_utils as utils
-
-from midvatten_utils import returnunicode as ru
-from db_utils import get_sql_result_as_dict
 from PyQt4.QtCore import QCoreApplication
+from midvatten_utils import returnunicode as ru
+
 
 def settingsdict():    #These are the default settings, they shall not be changed!!!
     dictionary = { 'database' : '',

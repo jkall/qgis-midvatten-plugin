@@ -17,19 +17,19 @@
  *                                                                         *
  ***************************************************************************/
 """
-import db_utils
+import codecs
+import os
+import time  # for debugging
+
+from PyQt4.QtCore import QCoreApplication
 from PyQt4.QtCore import QUrl, Qt, QDir
 from PyQt4.QtGui import QDesktopServices, QApplication, QCursor
 
-import os
-import locale
-import codecs
-import time #for debugging
-#midvatten modules
+import db_utils
+# midvatten modules
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 
-from PyQt4.QtCore import QCoreApplication
 
 class Wqualreport():        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     def __init__(self,layer, settingsdict = {}):

@@ -21,20 +21,19 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 """
-import numpy as np
-
-import db_utils
-import matplotlib
-import matplotlib.pyplot as plt 
-#plt.ion() #interactive mode immediately to prevent pyplot plots from blocking application
-from matplotlib.dates import datestr2num
 import datetime
+import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-import locale
+import numpy as np
+# plt.ion() #interactive mode immediately to prevent pyplot plots from blocking application
+from matplotlib.dates import datestr2num
 
 from PyQt4.QtCore import QCoreApplication
+
+import db_utils
+import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
+
 
 class TimeSeriesPlot:
 

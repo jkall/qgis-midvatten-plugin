@@ -21,27 +21,20 @@
  ***************************************************************************/
 """
 import PyQt4
-import ast
 import copy
 import io
 import os
-from collections import OrderedDict
 from datetime import datetime
-from functools import partial
-from Queue import Queue
 
 import PyQt4.QtCore
 import PyQt4.QtGui
 from PyQt4.QtCore import QCoreApplication
 
-import definitions.midvatten_defs
 import import_data_to_db
 import midvatten_utils as utils
-from date_utils import datestring_to_date, dateshift
-from definitions import midvatten_defs as defs
+from date_utils import datestring_to_date
+from gui_utils import SplitterWithHandel, RowEntry, VRowEntry, ExtendedQPlainTextEdit
 from midvatten_utils import Cancel, returnunicode as ru
-from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid, VRowEntry, ExtendedQPlainTextEdit
-
 
 import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_interlab4.ui'))[0]
 

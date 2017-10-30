@@ -39,19 +39,18 @@
  ***************************************************************************/
 """
 
+import unicodedata  # To normalize some special national characters to regular international characters
+from functools import partial  # only to get combobox signals to work
+
 import PyQt4.QtCore
 import PyQt4.QtGui
-
-import unicodedata  # To normalize some special national characters to regular international characters
-from functools import partial # only to get combobox signals to work
+from PyQt4.QtCore import QCoreApplication
 
 import db_utils
 import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
-import locale
+from midvatten_utils import returnunicode as ru
 
-from PyQt4.QtCore import QCoreApplication
 
 class Stratigraphy:
 

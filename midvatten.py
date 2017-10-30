@@ -25,15 +25,11 @@ from PyQt4.QtGui import *
 from qgis.core import *
 import qgis.utils
 import shutil
-import timeit
 import resources  # Initialize Qt resources from file resources.py
 
 # Import some general python modules
 import os.path
 import sys
-import datetime
-
-from tempfile import NamedTemporaryFile
 
 #add midvatten plugin directory to pythonpath (needed here to allow importing modules from subfolders)
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -60,7 +56,6 @@ from piper import PiperPlot
 from export_data import ExportData
 import PyQt4
 import db_utils
-from definitions import midvatten_defs as defs
 #import profilefromdem
 
 

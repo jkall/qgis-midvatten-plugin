@@ -18,20 +18,16 @@
  ***************************************************************************/
 """
 
-import qgis.utils
+import matplotlib.pyplot as plt  # THIS LINE may cause conflict with plugins "statist" and "chartmaker"  - THE ISSUE IS NOT SOLVED. May be due to matplotlib.pyplot assumes other backend by default
+import matplotlib.ticker as tick
 import numpy as np
 
+from PyQt4.QtCore import QCoreApplication
+
 import db_utils
-import matplotlib
-import matplotlib.pyplot as plt  # THIS LINE may cause conflict with plugins "statist" and "chartmaker"  - THE ISSUE IS NOT SOLVED. May be due to matplotlib.pyplot assumes other backend by default  
-#from matplotlib.dates import datestr2num
-#import datetime
-import matplotlib.ticker as tick
 import midvatten_utils as utils
-import locale
 from midvatten_utils import returnunicode as ru
 
-from PyQt4.QtCore import QCoreApplication
 
 class XYPlot:
 

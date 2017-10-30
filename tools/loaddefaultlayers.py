@@ -17,19 +17,17 @@
  *                                                                         *
  ***************************************************************************/
 """
-import db_utils
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *  
-from qgis.core import *  
+import os
+import qgis.utils
+from qgis.core import *
 from qgis.gui import *
 
-import qgis.utils
-import os
-import locale
+import db_utils
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 
-class LoadLayers():        
+
+class LoadLayers():
     def __init__(self, iface, settingsdict={},group_name='Midvatten_OBS_DB'):
         self.settingsdict = settingsdict
         self.group_name = group_name

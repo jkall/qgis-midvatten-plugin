@@ -27,9 +27,7 @@ import PyQt4.QtGui
 from qgis.core import *
 
 import numpy as np
-import sys, os
-import locale
-import matplotlib
+import os
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
@@ -48,7 +46,7 @@ from PyQt4 import uic
 Ui_SecPlotDock =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'secplotdockwidget_ui.ui'))[0]
 
 import definitions.midvatten_defs as defs
-from sampledem import qchain, create_points_at, points_along_line, sampling 
+from sampledem import qchain, sampling
 
 class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
     def __init__(self, parent1, iface1):
