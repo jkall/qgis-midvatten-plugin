@@ -685,7 +685,7 @@ def test_not_null_and_not_empty_string(table, column, dbconnection=None):
         dbconnection = DbConnectionManager()
 
     if dbconnection.dbtype == u'spatialite':
-        return u'''%s IS NOT NULL AND %s !='''''%(column, column)
+        return u"""%s IS NOT NULL AND %s !='' """%(column, column)
     else:
         table_info = [col for col in get_table_info(table) if col[1] == column][0]
         data_type = table_info[2]
