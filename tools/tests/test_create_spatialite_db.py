@@ -145,6 +145,32 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         #print(test_string)
         assert test_string == reference
 
+    @mock.patch('qgis.utils.iface')
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.Askuser')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_about_db_creation_version_string(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+        """
+        Check that version string in about_db is written correctly
+        """
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
+        mock_answer_yes.return_value.result = 1
+        mock_crs_question.return_value.__getitem__.return_value = 3006
+        mock_savefilename.return_value = self.TEMP_DBPATH
+        self.midvatten.new_db()
+
+        result = db_utils.sql_load_fr_db(u"SELECT * FROM about_db LIMIT 1")
+        test_string = utils.anything_to_string_representation(result)
+        print(test_string)
+
+        ref_strings = [u'running QGIS version',
+                        u'on top of SpatiaLite version']
+        for ref_string in ref_strings:
+            assert ref_string in test_string
+
 
 @attr(status='on')
 class TestObsPointsTriggers(utils_for_tests.MidvattenTestSpatialiteDbSv):

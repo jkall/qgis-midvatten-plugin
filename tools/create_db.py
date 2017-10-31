@@ -77,7 +77,7 @@ class NewDb():
             return ''
 
         #First, find spatialite version
-        versionstext = dbconnection.execute_and_fetchall('select spatialite_version()')[0]
+        versionstext = dbconnection.execute_and_fetchall('select spatialite_version()')[0][0]
         # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
         # then the syntax defines a Midvatten project db according to the loaded .sql-file
         if not int(versionstext[0][0]) > 3: # which file to use depends on spatialite version installed
@@ -88,12 +88,11 @@ class NewDb():
 
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
         qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
-
-        replace_word_replace_with = [('CHANGETORELEVANTEPSGID', str(EPSGID)),
-                                    ('CHANGETOPLUGINVERSION', str(verno)),
-                                    ('CHANGETOQGISVERSION', qgisverno),
-                                    ('CHANGETOSPLITEVERSION', str(versionstext[0][0])),
-                                    ('CHANGETOLOCALE', str(set_locale)),
+        replace_word_replace_with = [('CHANGETORELEVANTEPSGID', ru(EPSGID)),
+                                    ('CHANGETOPLUGINVERSION', ru(verno)),
+                                    ('CHANGETOQGISVERSION', ru(qgisverno)),
+                                    ('CHANGETODBANDVERSION', 'SpatiaLite version %s'%ru(versionstext)),
+                                    ('CHANGETOLOCALE', ru(set_locale)),
                                     (('SPATIALITE ', ''))]
 
         with open(SQLFile, 'r') as f:
@@ -160,20 +159,21 @@ class NewDb():
             self.db_settings = ru(db_settings)
 
         dbconnection.execute(u'CREATE EXTENSION IF NOT EXISTS postgis;')
+
         result = dbconnection.execute_and_fetchall(u'select version(), PostGIS_full_version();')
+
         versionstext = u', '.join(result[0])
 
         filenamestring = "create_db.sql"
 
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
         qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
-
         replace_word_replace_with = [
-            ('CHANGETORELEVANTEPSGID', str(EPSGID)),
-            ('CHANGETOPLUGINVERSION', str(verno)),
-            ('CHANGETOQGISVERSION', qgisverno),
-            ('CHANGETOSPLITEVERSION', str(versionstext[0][0])),
-            ('CHANGETOLOCALE', str(set_locale)),
+            ('CHANGETORELEVANTEPSGID', ru(EPSGID)),
+            ('CHANGETOPLUGINVERSION', ru(verno)),
+            ('CHANGETOQGISVERSION', ru(qgisverno)),
+            ('CHANGETODBANDVERSION', 'PostGIS version %s' % ru(versionstext)),
+            ('CHANGETOLOCALE', ru(set_locale)),
             ('double', 'double precision'),
             ('"', ''),
             ('rowid as rowid', 'CTID as rowid'),
