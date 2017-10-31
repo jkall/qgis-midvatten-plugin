@@ -316,11 +316,10 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     def setlastcalibration(self, obsid):
         if not obsid=='':
             self.lastcalibr = self.getlastcalibration(obsid)
+            text = ru(QCoreApplication.translate(u'Calibrlogger', u"""There is no earlier known position for the logger in %s"""))%self.selected_obsid
             if self.lastcalibr:
-                if self.lastcalibr[0][1] and self.lastcalibr[0][0]:
+                if all([self.lastcalibr[0][0], self.lastcalibr[0][1] is not None, self.lastcalibr[0][1] != u'']):
                     text = ru(QCoreApplication.translate(u'Calibrlogger', u"Last pos. for logger in %s was %s masl at %s"))%(obsid, str(self.lastcalibr[0][1]), str(self.lastcalibr[0][0]))
-            else:
-                text = ru(QCoreApplication.translate(u'Calibrlogger', u"""There is no earlier known position for the logger in %s"""))%self.selected_obsid
             self.INFO.setText(text)
 
     @fn_timer
