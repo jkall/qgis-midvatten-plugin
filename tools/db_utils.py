@@ -554,14 +554,16 @@ def get_sql_result_as_dict(sql, dbconnection=None):
     :return: A dict with the first column as key and the rest in a tuple as value
     """
     if not isinstance(dbconnection, DbConnectionManager):
-        connection_ok, result_list = sql_load_fr_db(sql)
-    else:
-        result_list = dbconnection.execute_and_fetchall(sql)
+        dbconnection = DbConnectionManager()
 
-    result_dict = {}
+    connection_ok, result_list = sql_load_fr_db(sql, dbconnection=dbconnection)
+    if not connection_ok:
+        return False, OrderedDict()
+
+    result_dict = OrderedDict()
     for res in result_list:
         result_dict.setdefault(res[0], []).append(tuple(res[1:]))
-    return True, OrderedDict(result_dict)
+    return True, result_dict
 
 
 def verify_table_exists(tablename):

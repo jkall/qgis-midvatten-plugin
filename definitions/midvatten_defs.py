@@ -261,6 +261,7 @@ def geocolorsymbols():
         return dictionary
     # new method create dict from db table
     #dict_geo1 is just a start, not yet populated with tuples of geoshorts for each strata, time to do so
+
     dictionary={}
     for strata, strata_synonyms in sorted(dict_geo1.iteritems()):
         #In general there is only one geoshort in geoshort_as_strata_synonym
@@ -277,6 +278,7 @@ def geocolorsymbols():
                     except Exception as c:
                         utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'geocolorsymbols', u'Error in geocolorsymbols, setting brush and color for strata "%s" using geoshort %s failed. Msg1:\n%s\nMsg2:\n%s\Msg3:\n%s'))%(strata, geoshort, str(a), str(b), str(c)))
                         dictionary[geoshort]=(u'NoBrush', u'white')
+
     """
     # this was temporary method to deal with zz_stratigraphy table existing in plugin version 1.3.x
     # skip "unknown"

@@ -519,7 +519,10 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
                 text = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
             # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
             elif str(type(anything)) == u"<class 'PyQt4.QtCore.QVariant'>":
-                text = returnunicode(anything.toString())
+                if anything.isNull():
+                    text = u''
+                else:
+                    text = returnunicode(anything.toString())
             # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
             elif str(type(anything)) == u"<class 'PyQt4.QtCore.QString'>":
                 text = returnunicode(unicode(anything.toUtf8(), 'utf-8'))
