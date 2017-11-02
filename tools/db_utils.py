@@ -669,6 +669,11 @@ def backup_db(dbconnection=None):
         utils.MessagebarAndLog.info(
             bar_msg=utils.returnunicode(QCoreApplication.translate("backup_db", "Database backup was written to %s ")) % bkupname,
             duration=15)
+    else:
+        utils.MessagebarAndLog.info(
+            bar_msg=utils.returnunicode(
+                QCoreApplication.translate("backup_db", u"Backup of PostGIS database not supported yet!")),
+            duration=15)
     dbconnection.closedb()
 
 
