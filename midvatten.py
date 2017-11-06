@@ -735,7 +735,14 @@ class midvatten:
     def prepare_layers_for_qgis2threejs(self):
         allcritical_layers = ('obs_points', 'stratigraphy')
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms,allcritical_layers)#verify midv settings are loaded
-        if err_flag == 0:     
+        if err_flag == 0:
+            dbconnection = db_utils.DbConnectionManager()
+            dbtype = dbconnection.dbtype
+            dbconnection.closedb()
+            if dbtype != u'spatialite':
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'prepare_layers_for_qgis2threejs', u'Only supported for spatialite.')))
+                return
+
             QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
             PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
             QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
