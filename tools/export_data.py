@@ -363,7 +363,7 @@ class ExportData():
         primary_keys = self.get_primary_keys(tname)
         missing_primary_keys = [col for col in primary_keys if col in new_columns_missing_in_old]
         if missing_primary_keys:
-            missing_pk_msg = ru(QCoreApplication.translate(u'ExportData', u'Table %s:\nPrimary keys are missing in old database. The table will not be exported!!!'))%(tname, u'", "'.join(missing_primary_keys))
+            missing_pk_msg = ru(QCoreApplication.translate(u'ExportData', u'Table %s:\nPrimary keys %s are missing in old database. The table will not be exported!!!'))%(tname, u'", "'.join(missing_primary_keys))
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u'Export warning!, see Log Message Panel')), log_msg=missing_pk_msg)
             return None
 

@@ -39,13 +39,17 @@ class NewDb():
     def create_new_spatialite_db(self, verno, user_select_CRS='y', EPSG_code=u'4326', delete_srids=True):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
 
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
         set_locale = self.ask_for_locale()
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
 
         if user_select_CRS=='y':
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
+            PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         else:
             EPSGID=EPSG_code
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+
         if EPSGID=='0' or not EPSGID:
             raise utils.UserInterruptError()
         # If a CRS is selectd, go on and create the database
@@ -141,13 +145,18 @@ class NewDb():
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
 
     def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):
+
+        PyQt4.QtGui.QApplication.restoreOverrideCursor()
         set_locale = self.ask_for_locale()
+        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
 
         if user_select_CRS=='y':
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
+            PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
         else:
             EPSGID=EPSG_code
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+
         if EPSGID=='0' or not EPSGID:
             raise utils.UserInterruptError()
 

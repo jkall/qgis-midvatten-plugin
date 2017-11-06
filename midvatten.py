@@ -411,11 +411,13 @@ class midvatten:
                 EPSG_code = str(CRS.authid()[5:])
 
                 #Let the user chose an EPSG-code for the exported database
-                user_chosen_EPSG_code = utils.ask_for_export_crs(EPSG_code) #Transformation to new epsg doesn't work yet.
+                PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                user_chosen_EPSG_code = utils.ask_for_export_crs(EPSG_code)
+                PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+
                 if not user_chosen_EPSG_code:
                     QApplication.restoreOverrideCursor()
                     return None
-                #user_chosen_EPSG_code = EPSG_code
 
                 filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
                 iniText = QSettings(filenamepath , QSettings.IniFormat)
