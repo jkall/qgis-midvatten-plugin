@@ -784,13 +784,13 @@ def delete_srids(execute_able_object, keep_epsg_code):
         if not execute_able_object.dbtype == u'spatialite':
             return None
 
-    delete_srid_sql_aux = r"""delete from spatial_ref_sys_aux where srid NOT IN ('%s', '4326')""" % keep_epsg_code
+    delete_srid_sql_aux = r"""delete from spatial_ref_sys_aux where srid NOT IN ('%s', '4326');""" % keep_epsg_code
     try:
         execute_able_object.execute(delete_srid_sql_aux)
     except:
         pass
 
-    delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % keep_epsg_code
+    delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326');""" % keep_epsg_code
     try:
         execute_able_object.execute(delete_srid_sql)
     except:

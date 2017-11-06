@@ -25,6 +25,7 @@ from PyQt4.QtGui import *
 from qgis.core import *
 import qgis.utils
 import shutil
+import ast
 import resources  # Initialize Qt resources from file resources.py
 
 # Import some general python modules
@@ -381,10 +382,18 @@ class midvatten:
 
     @utils.general_exception_handler
     def export_spatialite(self):
+
         allcritical_layers = tuple(midvatten_defs.get_subset_of_tables_fr_db('obs_points') + midvatten_defs.get_subset_of_tables_fr_db('obs_lines') + midvatten_defs.get_subset_of_tables_fr_db('data_domains') + midvatten_defs.get_subset_of_tables_fr_db('default_layers') +  midvatten_defs.get_subset_of_tables_fr_db('default_nonspatlayers') )#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
         if err_flag == 0:
+            dbconnection = db_utils.DbConnectionManager()
+            dbtype = dbconnection.dbtype
+            dbconnection.closedb()
+            if dbtype != u'spatialite':
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'export_spatialite', u'Export to spatialite only works when source db is spatialite.')))
+                return
+
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
@@ -415,9 +424,22 @@ class midvatten:
                 newdbinstance = NewDb()
                 newdbinstance.create_new_spatialite_db(verno,user_select_CRS='n', EPSG_code=user_chosen_EPSG_code, delete_srids=False)
                 if not newdbinstance.db_settings=='':
-                    newdb = newdbinstance.db_settings[u'spatialite'][u'dbpath']
+                    try:
+                        db_settings = ast.literal_eval(newdbinstance.db_settings)
+                    except Exception as e:
+                        try:
+                            msg = str(e)
+                        except:
+                            msg = u'Error message failed! Could not be converted to string!'
+
+                        utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'export_spatialite', u'Export to spatialite failed, see log message panel')),
+                                                        log_msg=ru(QCoreApplication.translate(u'export_spatialite', u'Error msg: %s'))%msg)
+                        return
+
+                    new_dbpath =  db_settings[u'spatialite'][u'dbpath']
+
                     exportinstance = ExportData(OBSID_P, OBSID_L)
-                    exportinstance.export_2_splite(newdb,self.ms.settingsdict['database'],user_chosen_EPSG_code)
+                    exportinstance.export_2_splite(new_dbpath, user_chosen_EPSG_code)
             
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 

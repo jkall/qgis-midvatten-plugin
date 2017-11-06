@@ -164,6 +164,21 @@ class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
         mock_savefilename.return_value = self.TEMP_DBPATH
         self.midvatten.new_db()
 
+class MidvattenTestSpatialiteDbEn(MidvattenTestSpatialiteNotCreated):
+    @mock.patch('qgis.utils.iface')
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.Askuser')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+        super(MidvattenTestSpatialiteDbEn, self).setUp()
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'en_US'
+        mock_answer_yes.return_value.result = 1
+        mock_crs_question.return_value.__getitem__.return_value = 3006
+        mock_savefilename.return_value = self.TEMP_DBPATH
+        self.midvatten.new_db()
 
 class MidvattenTestSpatialiteDbSvImportInstance(MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)

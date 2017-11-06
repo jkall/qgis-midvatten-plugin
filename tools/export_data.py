@@ -47,15 +47,18 @@ class ExportData():
                         db_utils.verify_table_exists)
         database.closedb()
 
-    def export_2_splite(self,target_db,source_db, EPSG_code):
+    def export_2_splite(self,target_db, EPSG_code):
         """
         Exports a datagbase to a new spatialite database file
         :param target_db: The name of the new database file
-        :param source_db: The name of the source database file
         :param EPSG_code:
         :return:
 
         """
+        dbconnection = db_utils.DbConnectionManager()
+        source_db = dbconnection.dbpath
+        dbconnection.closedb()
+
         conn = sqlite.connect(target_db,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
 
         self.curs = conn.cursor()
