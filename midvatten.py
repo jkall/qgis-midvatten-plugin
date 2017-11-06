@@ -426,19 +426,11 @@ class midvatten:
                 newdbinstance = NewDb()
                 newdbinstance.create_new_spatialite_db(verno,user_select_CRS='n', EPSG_code=user_chosen_EPSG_code, delete_srids=False)
                 if not newdbinstance.db_settings=='':
-                    try:
-                        db_settings = ast.literal_eval(newdbinstance.db_settings)
-                    except Exception as e:
-                        try:
-                            msg = str(e)
-                        except:
-                            msg = u'Error message failed! Could not be converted to string!'
-
+                    new_dbpath = db_utils.get_spatialite_db_path_from_dbsettings_string(newdbinstance.db_settings)
+                    if not new_dbpath:
                         utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'export_spatialite', u'Export to spatialite failed, see log message panel')),
-                                                        log_msg=ru(QCoreApplication.translate(u'export_spatialite', u'Error msg: %s'))%msg)
+                                                        button=True)
                         return
-
-                    new_dbpath =  db_settings[u'spatialite'][u'dbpath']
 
                     exportinstance = ExportData(OBSID_P, OBSID_L)
                     exportinstance.export_2_splite(new_dbpath, user_chosen_EPSG_code)

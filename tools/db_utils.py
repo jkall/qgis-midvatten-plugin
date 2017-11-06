@@ -780,3 +780,25 @@ def delete_srids(execute_able_object, keep_epsg_code):
         utils.MessagebarAndLog.info(
             log_msg=utils.returnunicode(QCoreApplication.translate(u'delete_srids', u'Removing srids failed using: %s')) % str(
                 delete_srid_sql))
+
+def get_spatialite_db_path_from_dbsettings_string(db_settings):
+    if isinstance(db_settings, basestring):
+        # Test if the db_setting is an old database
+        if os.path.isfile(db_settings):
+            return db_settings
+        else:
+            try:
+                db_settings = ast.literal_eval(db_settings)
+            except Exception as e:
+                try:
+                    msg = str(e)
+                except:
+                    msg = utils.returnunicode(QCoreApplication.translate(u'get_spatialite_db_path_from_dbsettings_string', u'Error message failed! Could not be converted to string!'))
+                utils.MessagebarAndLog.info(log_msg=utils.returnunicode(QCoreApplication.translate(u'get_spatialite_db_path_from_dbsettings_string', u'%s error msg from db_settings string "%s": %s')) % (u'get_spatialite_db_path_from_dbsettings_string', db_settings, msg))
+                return u''
+            else:
+                return db_settings.get(u'spatialite', {}).get(u'dbpath', u'')
+    elif isinstance(db_settings, dict):
+        return db_settings.get(u'spatialite', {}).get(u'dbpath', u'')
+    else:
+        return u''

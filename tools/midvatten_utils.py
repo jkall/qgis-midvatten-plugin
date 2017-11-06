@@ -827,13 +827,14 @@ def rstrip(word, from_string):
         new_word = from_string[0:-len(word)]
     return new_word
 
-
 def select_files(only_one_file=True, extension="csv (*.csv)"):
     """Asks users to select file(s)"""
     try:
-        dir = os.path.dirname(QgsProject.instance().readEntry("Midvatten","database")[0])
-    except:
+        dir = os.path.dirname(db_utils.get_spatialite_db_path_from_dbsettings_string(QgsProject.instance().readEntry("Midvatten","database")[0]))
+    except Exception as e:
+        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'select_files', u'Getting directory for select_files failed with msg %s'))%str(e))
         dir = u''
+
     if only_one_file:
         csvpath = [QtGui.QFileDialog.getOpenFileName(parent=None, caption=QCoreApplication.translate(u'select_files', "Select file"), directory=dir, filter=extension)]
     else:
