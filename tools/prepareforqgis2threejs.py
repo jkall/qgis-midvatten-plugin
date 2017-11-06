@@ -25,19 +25,26 @@ from PyQt4.QtGui import *
 from qgis.core import *  
 from qgis.gui import *
 
+from PyQt4.QtCore import QCoreApplication
+
 import qgis.utils
 import os
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 
+
 class PrepareForQgis2Threejs():        
-    def __init__(self, iface, settingsdict={}): 
+    def __init__(self, iface, settingsdict={}):
+
+        self.dbconnection = db_utils.DbConnectionManager()
+
         self.settingsdict = settingsdict
         self.strat_layers_dict =  defs.PlotTypesDict('english') 
         self.symbolcolors_dict = defs.PlotColorDict() # This is not used yet
         for key, v in self.strat_layers_dict.items():#make all the keys only ascii and only lower case and also add 'strat_' as prefix
             newkey = 'strat_' + utils.return_lower_ascii_string(key)
-            self.strat_layers_dict[newkey] = self.strat_layers_dict[key] 
+            self.strat_layers_dict[newkey] = self.strat_layers_dict[key]
             del self.strat_layers_dict[key]
         for key, v in self.symbolcolors_dict.items():#THIS IS NOT USED YET make all the keys only ascii and only lower case and also add 'strat_' as prefix
             newkey = 'strat_' + utils.return_lower_ascii_string(key)
@@ -51,11 +58,14 @@ class PrepareForQgis2Threejs():
         self.create_db_views()
         self.add_layers()
 
+        self.dbconnection.commit_and_closedb()
+
+
     def add_layers(self):#not tested and not ready, must fix basic styles (preferrably colors based on some definition dicitonary
         MyGroup = self.root.insertGroup(0, "stratigraphy_layers_for_qgis2threejs")#verify this is inserted at top
-        
-        uri = QgsDataSourceURI()
-        uri.setDatabase(self.settingsdict['database'])
+
+        uri = self.dbconnection.uri
+
         canvas = self.iface.mapCanvas()
         layer_list = []
         map_canvas_layer_list=[]
@@ -69,7 +79,8 @@ class PrepareForQgis2Threejs():
 
         for strat_layer_view in list_with_all_strat_layer: 
             uri.setDataSource('',strat_layer_view, 'Geometry')
-            layer = QgsVectorLayer(uri.uri(), strat_layer_view, 'spatialite') # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
+            dbtype = db_utils.get_dbtype(self.dbconnection.dbtype)
+            layer = QgsVectorLayer(uri.uri(), strat_layer_view, dbtype) # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
             layer_list.append(layer)
 
         # create a new single symbol renderer
@@ -100,15 +111,10 @@ class PrepareForQgis2Threejs():
             canvas.refresh()
 
     def create_db_views(self):
-        SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","add_spatial_views_for_gis2threejs.sql") 
+        SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","add_spatial_views_for_gis2threejs.sql")
 
-        myconnection = db_utils.DbConnectionManager()
-        myconnection.connect2db()
-        curs = myconnection.cursor
-
-        curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
-        curs.execute(r"""create view strat_obs_p_for_qgsi2threejs as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "stratigraphy" as "b" using ("obsid") where (typeof("a"."h_toc") in ('integer', 'real') or typeof("a"."h_gs") in ('integer', 'real'))""")
-        curs.execute(r"""insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) values ('strat_obs_p_for_qgsi2threejs', 'geometry', 'rowid', 'obs_points', 'geometry',1);""")
+        self.dbconnection.execute(r"""create view strat_obs_p_for_qgsi2threejs as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "stratigraphy" as "b" using ("obsid") where (typeof("a"."h_toc") in ('integer', 'real') or typeof("a"."h_gs") in ('integer', 'real'))""")
+        self.dbconnection.execute(r"""insert into views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) values ('strat_obs_p_for_qgsi2threejs', 'geometry', 'rowid', 'obs_points', 'geometry',1);""")
 
         for key in self.strat_layers_dict:
             f = open(SQLFile, 'r')
@@ -117,24 +123,23 @@ class PrepareForQgis2Threejs():
                 if linecounter > 1:    # first line is encoding info....
                     sqliteline = line.replace('CHANGETOVIEWNAME',key).replace('CHANGETOPLOTTYPESDICTVALUE',self.strat_layers_dict[key])
                     #print(sqliteline)#debug
-                    curs.execute(sqliteline) 
+                    self.dbconnection.execute(sqliteline)
                 linecounter += 1
 
-        curs.execute("PRAGMA foreign_keys = OFF")
-        myconnection.conn.commit()
-        myconnection.closedb()
+        self.dbconnection.commit_and_closedb()
 
     def drop_db_views(self):
         sql1="delete from views_geometry_columns where view_name = 'strat_obs_p_for_qgsi2threejs'"
         sql2="drop view if exists strat_obs_p_for_qgsi2threejs"
-        db_utils.sql_alter_db(sql1)
-        db_utils.sql_alter_db(sql2)
-        
-        sql1="delete from views_geometry_columns where view_name = ?"
+        db_utils.sql_alter_db(sql1, dbconnection=self.dbconnection)
+        db_utils.sql_alter_db(sql2, dbconnection=self.dbconnection)
+
+        placeholder_sign = db_utils.placeholder_sign(self.dbconnection)
+        sql1="delete from views_geometry_columns where view_name = %s"%placeholder_sign
         sql2="drop view if exists "
         for key in self.strat_layers_dict:
-            db_utils.sql_alter_db_by_param_subst(sql1, (key,))
-            db_utils.sql_alter_db(sql2 + key)
+            db_utils.sql_alter_db(sql1, dbconnection=self.dbconnection, all_args=[(key,)])
+            db_utils.sql_alter_db(sql2 + key, dbconnection=self.dbconnection)
 
     def remove_views(self):
         remove_group = self.root.findGroup("stratigraphy_layers_for_qgis2threejs")

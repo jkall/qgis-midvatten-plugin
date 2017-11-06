@@ -173,8 +173,8 @@ class DbConnectionManager(object):
             raise
         return self.cursor.fetchall()
 
-    def execute_and_commit(self, sql):
-        self.execute(sql)
+    def execute_and_commit(self, sql, all_args=None):
+        self.execute(sql, all_args=all_args)
         self.commit()
 
     def commit(self):
@@ -311,7 +311,7 @@ def sql_load_fr_db(sql, dbconnection=None):
         return True, result
 
 
-def sql_alter_db(sql, dbconnection=None):
+def sql_alter_db(sql, dbconnection=None, all_args=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
     if dbconnection.dbtype == u'spatialite':
@@ -320,30 +320,13 @@ def sql_alter_db(sql, dbconnection=None):
         except:
             pass
     try:
-        dbconnection.execute_and_commit(sql)
+        dbconnection.execute_and_commit(sql, all_args=all_args)
     except Exception as e:
         textstring = utils.returnunicode(QCoreApplication.translate(u'sql_alter_db', u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (
         utils.returnunicode(sql), utils.returnunicode(str(e)))
         utils.MessagebarAndLog.warning(
             bar_msg=utils.returnunicode(QCoreApplication.translate(u'sql_alter_db', u'Some sql failure, see log for additional info.')),
             log_msg=textstring, duration=4)
-
-
-def sql_alter_db_by_param_subst(sql='', *subst_params):
-    """
-    sql sent as unicode, result from db returned as list of unicode strings, the subst_paramss is a tuple of parameters to be substituted into the sql
-
-    #please note that the argument, subst_paramss, must be a tuple with the parameters to be substituted with ? inside the sql string
-    #simple example:
-    sql = 'select ?, ? from w_levels where obsid=?)
-    subst_params = ('date_time', 'level_masl', 'well01')
-    #and since it is a tuple, then one single parameter must be given with a tailing comma:
-    sql = 'select * from obs_points where obsid = ?'
-    subst_params = ('well01',)
-    """
-    ConnectionOK, result = execute_sql(sql=sql, foreign_keys_on=True, commit=True, fetchall=True, db_connection_manager_connection=None, *subst_params)
-    return ConnectionOK, result
-
 
 def execute_sqlfile(sqlfilename, function=sql_alter_db):
     with open(sqlfilename, 'r') as f:
