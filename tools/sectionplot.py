@@ -118,6 +118,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.draw_plot()
 
     def draw_plot(self): #replot
+
+        if not isinstance(self.dbconnection, db_utils.DbConnectionManager):
+            self.dbconnection = db_utils.DbConnectionManager()
+
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
         try:
             self.annotationtext.remove()
@@ -128,9 +132,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ms.settingsdict['secplotwlvltab'] = unicode(self.wlvltableComboBox.currentText())
         temporarystring = ru(self.datetimetextEdit.toPlainText()) #this needs some cleanup
         try:
-            self.ms.settingsdict['secplotdates']=temporarystring.split()
+            self.ms.settingsdict['secplotdates']= [x for x in temporarystring.replace(u'\r', u'').split(u'\n') if x.strip()]
         except TypeError as e:
             self.ms.settingsdict['secplotdates']=u''
+        print(str(self.ms.settingsdict['secplotdates']))
         self.ms.settingsdict['secplottext'] = self.textcolComboBox.currentText()
         self.ms.settingsdict['secplotbw'] = self.barwidthdoubleSpinBox.value()
         self.ms.settingsdict['secplotdrillstop'] = self.drillstoplineEdit.text()
@@ -174,6 +179,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #labels, grid, legend etc.
         self.finish_plot()
         self.save_settings()
+        self.dbconnection.closedb()
+        self.dbconnection = None
         PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def execute_query(self,query,params=(),commit=False):#from qspatialite, it is only used by self.uploadQgisVectorLayer
@@ -335,7 +342,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         and it will not be plotted by plt.show() - but the plot exists in self.canvas
         Please note, this do not work completely as expected under windows. 
         """
-        plt.close(self.secfig)#this closes reference to self.secfig 
+        plt.close(self.secfig)#this closes reference to self.secfig
 
     def get_dem_selection(self):
         self.rasterselection = []
@@ -566,11 +573,18 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
     def plot_water_level(self):   # Adding a plot for each water level date identified
         self.obsids_w_wl = []
-        for datum in self.ms.settingsdict['secplotdates']:
+        for _datum in self.ms.settingsdict['secplotdates']:
+            datum_obsids = _datum.split(u';')
+            datum_label = datum_obsids[0].rstrip(u']').split(u'[')
+            datum = datum_label[0]
+
+
             WL = []
             x_wl=[]
-            k=0
-            for obs in self.selected_obsids:
+            for k, obs in enumerate(self.selected_obsids):
+                if len(datum_obsids) > 1:
+                    if obs not in datum_obsids[1:]:
+                        continue
                 query = u"""SELECT level_masl FROM {} WHERE obsid = '{}' AND date_time like '{}%'""".format(self.ms.settingsdict['secplotwlvltab'], obs, datum)
                 res = db_utils.sql_load_fr_db(query, self.dbconnection)[1]
                 if res:
@@ -578,10 +592,12 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                     x_wl.append(float(self.LengthAlong[k]))
                     if obs not in self.obsids_w_wl:
                         self.obsids_w_wl.append(obs)
-                k += 1
             lineplot,=self.secax.plot(x_wl, WL,  'v-', markersize = 6)#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
             self.p.append(lineplot)
-            self.Labels.append(datum)
+            if len(datum_label) == 2:
+                self.Labels.append(datum_label[1])
+            else:
+                self.Labels.append(datum)
 
 
     def save_settings(self):# This is a quick-fix, should use the midvsettings class instead.
