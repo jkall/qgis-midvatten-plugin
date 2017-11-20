@@ -94,7 +94,7 @@ class Drillreport():        # general observation point info for the selected ob
         #T0
         rpt += r"""<TABLE WIDTH=100% BORDER=0 CELLPADDING=1 CELLSPACING=1>"""
         #T1R1C1
-        rpt += r"""<TR VALIGN=TOP><TD WIDTH=15%><h3 style="font-family:'arial';font-size:18pt; font-weight:600">"""
+        rpt += r"""<TR VALIGN=TOP><TD WIDTH=15% ROWSPAN=3><h3 style="font-family:'arial';font-size:18pt; font-weight:600">"""
         rpt += obsid
         if  utils.getcurrentlocale()[0] == 'sv_SE':
             rpt += ''.join([r'''</h3><img src="''', os.path.join(imgpath, 'for_general_report_sv.png'), r'''" /><br><img src=''', r"""'"""])
@@ -109,7 +109,7 @@ class Drillreport():        # general observation point info for the selected ob
 
 
         #T1R1C2T1R1C1
-        rpt += """<TD WIDTH=85%><TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3><TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
+        rpt += """<TD WIDTH=85%><TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3><TR VALIGN=TOP><TD WIDTH=50% ROWSPAN="2"><P><U><B>"""
         if  utils.getcurrentlocale()[0] == 'sv_SE':
             rpt += u'Allmän information'
         else:
@@ -138,8 +138,9 @@ class Drillreport():        # general observation point info for the selected ob
             # T1R1C2T1R1C2
             rpt += r"""<TD WIDTH=50%>"""
 
+            #<TR VALIGN=TOP><TD WIDTH=100%>
             # T1R1C2T1R1C2R1C1
-            rpt += r"""<TR VALIGN=TOP><TD WIDTH=100%><P><U><B>"""
+            rpt += r"""<P><U><B>"""
 
             if  utils.getcurrentlocale()[0] == 'sv_SE':
                 rpt += u'Vattennivåer'
@@ -150,6 +151,7 @@ class Drillreport():        # general observation point info for the selected ob
 
             # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
             meas_or_level_masl, statistics = GetStatistics(obsid)#MacOSX fix1
+            rpt = r"""<TABLE style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*>"""
             if  utils.getcurrentlocale()[0] == 'sv_SE':
                 reportdata_4 = self.rpt_lower_right_sv(statistics,meas_or_level_masl)
             else:
@@ -159,7 +161,7 @@ class Drillreport():        # general observation point info for the selected ob
             # Now at T1R1C2T1R1C2
 
             # T1R1C2T1R2C1
-            rpt += r"""<TR VALIGN=TOP><TD WIDTH=100%><P><U><B>"""
+            rpt += r"""<TR VALIGN=TOP><TD WIDTH=50%><P><U><B>"""
             if  utils.getcurrentlocale()[0] == 'sv_SE':
                 rpt += u'Kommentarer'
             else:
@@ -177,7 +179,7 @@ class Drillreport():        # general observation point info for the selected ob
             # T1R1C2T1
 
             #New row T1R1C2T1R2C1
-            rpt += r"""<TR VALIGN=TOP><TD WIDTH=100%><P><U><B>"""
+            rpt += r"""<TR VALIGN=TOP><TD WIDTH=100% COLSPAN=2><P><U><B>"""
             if  utils.getcurrentlocale()[0] == 'sv_SE':
                 rpt += u'Lagerföljd'
             else:
@@ -195,7 +197,7 @@ class Drillreport():        # general observation point info for the selected ob
             rpt = r"""</TABLE></TD></TR>"""
             # Now at T1R1C2T1
 
-            f.write(r"""</TABLE></TD></TR></TABLE>""")
+            f.write(r"""</TABLE></TD></TR></TABLE></TR></TABLE>""")
 
     def rpt_upper_left_sv(self, GeneralData, CRS='', CRSname=''):
         rpt = r"""<p style="font-family:'arial'; font-size:8pt; font-weight:400; font-style:normal;">"""
@@ -370,16 +372,37 @@ class Drillreport():        # general observation point info for the selected ob
             unit = u' m u rök<br>'
         else:
             unit = u' m ö h<br>'
+
+        rpt = r"""<p style="font-family:'arial'; font-size:8pt; font-weight:400; font-style:normal;">"""
+        rpt += r"""<TR VALIGN=TOP><TD WIDTH=50%>""" + r"""Antal nivåmätningar:"""
+        rpt += u' {:>20}'.format(ru(statistics[2])) +  u'<br>'
+        if ru(statistics[0]) != '':
+            rpt += u'Högsta uppmätta nivå: {:>20}'.format(ru(statistics[0]) + unit)
+        if ru(statistics[1]) != '':
+            rpt += u'Medianvärde för nivå: {:>20}'.format(ru(statistics[1]) + unit)
+        if ru(statistics[3]) != '':
+            rpt += u'Lägsta uppmätta nivå: {:>20}'.format(ru(statistics[3]) + unit)
+        rpt += r"""</p>"""
+
+        if ru(GeneralData[0][1]) != '' and ru(GeneralData[0][1]) != 'NULL' and ru(GeneralData[0][1]) != ru(
+                GeneralData[0][0]):
+            rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'originalbenämning' + r"""</TD><TD WIDTH=67%>""" + ru(
+                GeneralData[0][1]) + '</TD></TR>'
+        if ru(GeneralData[0][3]) != '' and ru(GeneralData[0][3]) != 'NULL':
+            rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'obstyp' + r"""</TD><TD WIDTH=50%>""" + ru(
+                GeneralData[0][3]) + '</TD></TR>'
+        if ru(GeneralData[0][4]) != '' and ru(GeneralData[0][4]) != 'NULL':
+            rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'djup (m fr my t botten)' + r"""</TD><TD WIDTH=50%>""" + ru(
+                GeneralData[0][4]) + '</TD></TR>'
+
+
         rpt = r"""<p style="font-family:'arial'; font-size:10pt; font-weight:400; font-style:normal;">"""
         if ru(statistics[2]) != '' and ru(statistics[2]) != '0':
-            rpt += u'Antal nivåmätningar: ' +  ru(statistics[2]) +  u'<br>'
-            if ru(statistics[0]) != '':
-                rpt += u'Högsta uppmätta nivå: ' +  ru(statistics[0]) + unit
-            if ru(statistics[1]) != '':
-                rpt += u'Medianvärde för nivå: ' +  ru(statistics[1]) + unit
-            if ru(statistics[3]) != '':
-                rpt += u'Lägsta uppmätta nivå: ' +  ru(statistics[3]) + unit
-        rpt += r"""</p>"""
+
+
+
+
+
         return rpt
 
     def rpt_lower_right(self, statistics,meas_or_level_masl):
