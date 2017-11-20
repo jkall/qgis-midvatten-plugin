@@ -127,7 +127,7 @@ class Drillreport():        # general observation point info for the selected ob
                                  u'text-indent:0px;">NULL</p>' not in obs_points_data[obs_points_cols.index(header)-1].strip()])]
 
             rpt += self.write_obsid(obsid, general_data, geo_data, strat_data, comment_data)
-            rpt += ur"""<p></p><p></p><p></p>"""
+            rpt += ur"""<p>    </p>"""
 
         rpt += ur"""</html>"""
         f.write(rpt)
@@ -155,12 +155,12 @@ class Drillreport():        # general observation point info for the selected ob
         """This part only handles writing the information. It does not do any db data collection."""
 
 
-        rpt = ur"""<TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3>"""
+        rpt = ur"""<TABLE WIDTH=100% BORDER=1 CELLPADDING=1 CELLSPACING=3>"""
 
         #Row 1, obsid header
         rpt += ur"""<TR VALIGN=TOP>"""
         rpt += ur"""<TD WIDTH=100% COLSPAN=2>"""
-        rpt += ur"""<h3 style="font-family:'arial';font-size:12pt; font-weight:600">%s</h3>"""%ru(obsid)
+        rpt += ur"""<h3 style="font-family:'Ubuntu';font-size:12pt; font-weight:600">%s</h3>"""%ru(obsid)
         rpt += ur"""</TD>"""
         rpt += ur"""</TR>"""
 
@@ -197,9 +197,9 @@ class Drillreport():        # general observation point info for the selected ob
     def write_two_col_table(self, data, table_header):
 
         rpt = ur"""<P><U><B>%s</B></U></P>"""%table_header
-        rpt += ur"""<TABLE style="font-family:'arial'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*>"""
+        rpt += ur"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*>"""
 
-        rpt += ur"""<p style="font-family:'arial'; font-size:8pt; font-weight:400; font-style:normal;">"""
+        rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
         for header, value in data:
             header = ru(header)
             value = ru(value)
@@ -225,9 +225,9 @@ class Drillreport():        # general observation point info for the selected ob
     def write_strat_data(self, strat_data, table_header):
         rpt = ur"""<P><U><B>%s</B></U></P>""" % table_header
 
-        rpt += ur"""<TABLE style="font-family:'arial'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*>"""
+        rpt += ur"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*>"""
 
-        rpt += ur"""<p style="font-family:'arial'; font-size:8pt; font-weight:400; font-style:normal;">"""
+        rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
 
         col_widths = [u'15', u'27', u'17', u'9', u'13', u'21']
 
@@ -269,7 +269,7 @@ class Drillreport():        # general observation point info for the selected ob
     def write_comment_data(self, comment_data, header):
         if comment_data:
             rpt = ur"""<P><U><B>{}</B></U></P>""".format(header)
-            rpt += ur"""<p style="font-family:'arial'; font-size:8pt; font-weight:400; font-style:normal;">"""
+            rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
             rpt += ur"""""".join([ru(x) for x in comment_data if ru(x) not in ['','NULL']])
             rpt += ur"""</p>"""
         else:
