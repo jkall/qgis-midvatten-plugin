@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="sv_SE" sourcelanguage="en_US">
+<!DOCTYPE TS>
+<TS version="2.0" language="sv_SE" sourcelanguage="en_US">
 <context>
     <name> Stratigraphy</name>
     <message>
@@ -388,7 +389,7 @@ all or only the selected objects?</source>
     <message>
         <location filename="../ui/w_flow.ui" line="48"/>
         <source>obsid</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">benämning</translation>
     </message>
     <message>
         <location filename="../ui/obs_lines_en.ui" line="90"/>
@@ -418,7 +419,7 @@ all or only the selected objects?</source>
     <message>
         <location filename="../ui/obs_points_en.ui" line="1836"/>
         <source>place</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">fastighet/plats</translation>
     </message>
     <message>
         <location filename="../ui/obs_lines_en.ui" line="306"/>
@@ -435,7 +436,7 @@ all or only the selected objects?</source>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:&apos;Arial,sans-serif&apos;; font-size:8pt; color:#000000; background-color:#ffffff;&quot;&gt;The source for the observation line,&lt;br/&gt;eg full reference to consultancy &lt;br/&gt;report or authority and year&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_lines.ui" line="96"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Unikt ID (primärnyckel i tabellen)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
@@ -475,7 +476,7 @@ all or only the selected objects?</source>
         <source>referens</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_lines.ui" line="378"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:&apos;Arial,sans-serif&apos;; font-size:8pt; color:#000000; background-color:#ffffff;&quot;&gt;Källhänvisning till observationslinjen,&lt;br/&gt;t.ex. komplett referens till konsultrapport,&lt;br/&gt;myndighetspublikation/-data eller&lt;br/&gt;utförande företag och datum&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
@@ -519,7 +520,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/obs_points_en.ui" line="184"/>
         <source>name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">originalbenämning</translation>
     </message>
     <message>
         <location filename="../ui/obs_points_en.ui" line="218"/>
@@ -552,7 +553,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/obs_points_en.ui" line="296"/>
         <source>type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">obstyp</translation>
     </message>
     <message>
         <location filename="../ui/obs_points_en.ui" line="333"/>
@@ -699,7 +700,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/obs_points.ui" line="1036"/>
         <source>east</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">östlig koordinat</translation>
     </message>
     <message>
         <location filename="../ui/obs_points.ui" line="1076"/>
@@ -709,7 +710,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/obs_points.ui" line="1113"/>
         <source>north</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">nordlig koordinat</translation>
     </message>
     <message>
         <location filename="../ui/obs_points.ui" line="1153"/>
@@ -762,7 +763,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/obs_points_en.ui" line="1435"/>
         <source>capacity</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">kapacitet/vg på spetsnivå</translation>
     </message>
     <message>
         <location filename="../ui/obs_points_en.ui" line="1472"/>
@@ -781,7 +782,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/obs_points.ui" line="1515"/>
         <source>material</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">material</translation>
     </message>
     <message>
         <location filename="../ui/obs_points_en.ui" line="1549"/>
@@ -801,7 +802,7 @@ p, li { white-space: pre-wrap; }
         <source>inner diam.</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points_en.ui" line="1628"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -899,7 +900,7 @@ p, li { white-space: pre-wrap; }
         <source>Observationspunkten</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="103"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -911,7 +912,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;svåra tecken. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="135"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -925,7 +926,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8pt;&quot;&gt;mätas vid ordinarie mätrunda&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="147"/>
         <source>ingår i mätprogram</source>
         <translation type="unfinished"></translation>
@@ -945,7 +946,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&amp;quot;bark1791109&amp;quot; osv&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="248"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -963,7 +964,7 @@ p, li { white-space: pre-wrap; }
         <source>utrustad m logger</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="333"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -975,7 +976,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;skruvborrning etc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="376"/>
         <source>Nivå och djup (m)</source>
         <translation type="unfinished"></translation>
@@ -985,7 +986,7 @@ p, li { white-space: pre-wrap; }
         <source>djup</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="446"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -997,12 +998,12 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8pt;&quot;&gt;rördrivningens spets etc.)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="490"/>
         <source>marknivå</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="524"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1011,12 +1012,12 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;markytans nivå i meter över havet&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="565"/>
         <source>rök</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="599"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1026,12 +1027,12 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;av vattennivåer&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="641"/>
         <source>höjdonoggr</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="675"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1041,12 +1042,12 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;avser Rök.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="717"/>
         <source>röm</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="754"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1056,7 +1057,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;från Rök till markytan&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="799"/>
         <source>höjdsyst</source>
         <translation type="unfinished"></translation>
@@ -1073,12 +1074,12 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;etc&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="877"/>
         <source>höjdinfo ursprung</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="911"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1092,7 +1093,7 @@ p, li { white-space: pre-wrap; }
         <source>Koord.Ref.Syst</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="996"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1103,17 +1104,17 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:10pt;&quot;&gt;som används i databasen&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="1190"/>
         <source>lägesonoggr</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="1261"/>
         <source>lägesinfo ursprung</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="1295"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1122,7 +1123,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Varifrån kommer lägesinformationen?&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="1323"/>
         <source>OBS, uppdatering av east och north påverkar ej automatiskt läget! Välj Midvatten - Edit - update...</source>
         <translation type="unfinished"></translation>
@@ -1137,7 +1138,7 @@ p, li { white-space: pre-wrap; }
         <source>borrdatum</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="1403"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1151,7 +1152,7 @@ p, li { white-space: pre-wrap; }
         <source>vg</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="1475"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1165,7 +1166,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8pt;&quot;&gt;vattenmängd (l/tim) anges.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="1552"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1184,7 +1185,7 @@ p, li { white-space: pre-wrap; }
         <source>innerdiam</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="1632"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1201,7 +1202,7 @@ p, li { white-space: pre-wrap; }
         <source>avslut</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="1713"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1219,7 +1220,7 @@ p, li { white-space: pre-wrap; }
         <source>filtertyp</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="1792"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1232,7 +1233,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8pt;&quot;&gt;18-20 m JWS 2,5mm innerdiam=118mm.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="1877"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1240,10 +1241,10 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Ubuntu&apos;; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;För brunnar och &lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;observationsrör&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;anges fastighet.<byte value="x9"/>&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;anges fastighet.	&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="1948"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1262,7 +1263,7 @@ p, li { white-space: pre-wrap; }
         <source>Kommentarer (enkel- och flerradig)</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="2036"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1273,7 +1274,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;den som etikett (label) på kartan&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/obs_points.ui" line="2067"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -1314,7 +1315,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/stratigraphy_en.ui" line="122"/>
         <source>geology, short</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">huvudfraktion</translation>
     </message>
     <message>
         <location filename="../ui/stratigraphy_en.ui" line="135"/>
@@ -1329,7 +1330,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/w_flow_en.ui" line="460"/>
         <source>comment</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">kommentar</translation>
     </message>
     <message>
         <location filename="../ui/stratigraphy.ui" line="329"/>
@@ -1386,7 +1387,7 @@ p, li { white-space: pre-wrap; }
         <source>lager nr</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/stratigraphy.ui" line="160"/>
         <source>från</source>
         <translation type="unfinished"></translation>
@@ -1396,7 +1397,7 @@ p, li { white-space: pre-wrap; }
         <source>till</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/stratigraphy.ui" line="210"/>
         <source>jordart, fullständig beskrivning med tillägg och skikt m.m.</source>
         <translation type="unfinished"></translation>
@@ -1411,7 +1412,7 @@ p, li { white-space: pre-wrap; }
         <source>VG, 1-6</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/stratigraphy.ui" line="285"/>
         <source>stänger, J/N</source>
         <translation type="unfinished"></translation>
@@ -1495,22 +1496,22 @@ p, li { white-space: pre-wrap; }
         <source>unit</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_flow.ui" line="84"/>
         <source>måste finnas i obs_points.obsid</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_flow.ui" line="153"/>
         <source>Unik beteckning för flödesmätaren</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_flow.ui" line="186"/>
         <source>Flödestyp</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_flow.ui" line="222"/>
         <source>Måste vara ngt av alternativen i tabellen zz_flowtype.
 Normalt sett någon av följande:
@@ -1519,17 +1520,17 @@ Aveflow=Medelflöde sedan senaste avläsning
 Momflow=Momentanflöde vid avläsningstillfället</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_flow.ui" line="295"/>
         <source>åååå-mm-dd hh:mm(:ss)</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_flow.ui" line="328"/>
         <source>Avläst värde</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_flow.ui" line="364"/>
         <source>Värdet på Momflow, Accvol eller Aveflow</source>
         <translation type="unfinished"></translation>
@@ -1744,29 +1745,29 @@ Do you want to stop the import? (else it will continue with the next file)</sour
 <context>
     <name>Drillreport</name>
     <message>
-        <location filename="../tools/drillreport.py" line="46"/>
+        <location filename="../tools/drillreport2.py" line="46"/>
         <source>Must select one or more obsids!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport.py" line="80"/>
+        <location filename="../tools/drillreport2.py" line="141"/>
         <source>General report from Midvatten plugin for QGIS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tools/drillreport.py" line="105"/>
         <source>General information</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Allmän information</translation>
     </message>
     <message>
         <location filename="../tools/drillreport.py" line="127"/>
         <source>Stratigraphy</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Lagerföljd</translation>
     </message>
     <message>
         <location filename="../tools/drillreport.py" line="143"/>
         <source>Comments</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Kommentar</translation>
     </message>
     <message>
         <location filename="../tools/drillreport.py" line="155"/>
@@ -1826,7 +1827,7 @@ Do you want to stop the import? (else it will continue with the next file)</sour
     <message>
         <location filename="../tools/drillreport.py" line="250"/>
         <source>material</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">material</translation>
     </message>
     <message>
         <location filename="../tools/drillreport.py" line="252"/>
@@ -1851,12 +1852,12 @@ Do you want to stop the import? (else it will continue with the next file)</sour
     <message>
         <location filename="../tools/drillreport.py" line="305"/>
         <source>capacity</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">kapacitet/vg på spetsnivå</translation>
     </message>
     <message>
         <location filename="../tools/drillreport.py" line="262"/>
         <source>place</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">fastighet/plats</translation>
     </message>
     <message>
         <location filename="../tools/drillreport.py" line="264"/>
@@ -1876,27 +1877,27 @@ Do you want to stop the import? (else it will continue with the next file)</sour
     <message>
         <location filename="../tools/drillreport.py" line="302"/>
         <source>level (m b gs)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">nivå (mumy)</translation>
     </message>
     <message>
         <location filename="../tools/drillreport.py" line="303"/>
         <source>geology, full text</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">jordart, fullst beskrivn</translation>
     </message>
     <message>
         <location filename="../tools/drillreport.py" line="304"/>
         <source>geology, short</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">huvudfraktion</translation>
     </message>
     <message>
         <location filename="../tools/drillreport.py" line="306"/>
         <source>development</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">vg</translation>
     </message>
     <message>
         <location filename="../tools/drillreport.py" line="307"/>
         <source>comment</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">kommentar</translation>
     </message>
     <message>
         <location filename="../tools/drillreport.py" line="357"/>
@@ -1927,6 +1928,222 @@ Do you want to stop the import? (else it will continue with the next file)</sour
         <location filename="../tools/drillreport.py" line="368"/>
         <source>Lowest measured water level: </source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Drillreport2</name>
+    <message>
+        <location filename="../tools/drillreport2.py" line="50"/>
+        <source>obsid</source>
+        <translation>benämning</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="51"/>
+        <source>name</source>
+        <translation>originalbenämning</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="52"/>
+        <source>place</source>
+        <translation>fastighet/plats</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="53"/>
+        <source>type</source>
+        <translation>obstyp</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="54"/>
+        <source>length</source>
+        <translation>djup (m fr my t botten)</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="55"/>
+        <source>drillstop</source>
+        <translation>borrningens avslut</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="56"/>
+        <source>diam</source>
+        <translation>innerdiameter (mm)</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="57"/>
+        <source>material</source>
+        <translation>material</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="58"/>
+        <source>screen</source>
+        <translation>Filter/spets</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="59"/>
+        <source>capacity</source>
+        <translation>Kapacitet/vg på spetsnivå</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="60"/>
+        <source>drilldate</source>
+        <translation>Borrdatum</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="61"/>
+        <source>wmeas_yn</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="62"/>
+        <source>wlogg_yn</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="63"/>
+        <source>east</source>
+        <translation>Östlig koordinat</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="64"/>
+        <source>north</source>
+        <translation>Nordlig koordinat</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="65"/>
+        <source>ne_accur</source>
+        <translation>Noggranhet i plan [m]</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="66"/>
+        <source>ne_source</source>
+        <translation>Lägesangivelsens ursprung</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="67"/>
+        <source>h_toc</source>
+        <translation>Röröverkant (möh)</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="68"/>
+        <source>h_tocags</source>
+        <translation>Röröverkant (m ö my)</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="69"/>
+        <source>h_gs</source>
+        <translation>Markytans nivå, my (möh)</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="70"/>
+        <source>h_accur</source>
+        <translation>Noggranhet i höjd [m]</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="71"/>
+        <source>h_syst</source>
+        <translation>Höjdsystem</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="72"/>
+        <source>h_source</source>
+        <translation>Höjdangivelsens ursprung</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="73"/>
+        <source>source</source>
+        <translation>Referens</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="74"/>
+        <source>com_onerow</source>
+        <translation>Kommentar</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="75"/>
+        <source>com_html</source>
+        <translation>Flerradig kommentar</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="119"/>
+        <source>XY Reference system</source>
+        <translation>Koordinatsystem</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="169"/>
+        <source>General information</source>
+        <translation>Allmän information</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="173"/>
+        <source>Geographical information</source>
+        <translation>Geografisk information</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="184"/>
+        <source>Stratigraphy</source>
+        <translation>Lagerföljd</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="186"/>
+        <source>Comments</source>
+        <translation type="obsolete">Kommentar</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="231"/>
+        <source>level (m b gs)</source>
+        <translation type="obsolete">nivå (mumy)</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="232"/>
+        <source>geology, full text</source>
+        <translation type="obsolete">jordart, fullst beskrivn</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="233"/>
+        <source>geology, short</source>
+        <translation type="obsolete">huvudfraktion</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="235"/>
+        <source>development</source>
+        <translation type="obsolete">vg</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="187"/>
+        <source>Comment</source>
+        <translation>Kommentar</translation>
+    </message>
+</context>
+<context>
+    <name>Drillreport2_strat</name>
+    <message>
+        <location filename="../tools/drillreport2.py" line="232"/>
+        <source>level (m b gs)</source>
+        <translation>nivå (mumy)</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="233"/>
+        <source>geology, full text</source>
+        <translation>jordart, fullst beskrivn</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="234"/>
+        <source>geology, short</source>
+        <translation>huvudfraktion</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="235"/>
+        <source>capacity</source>
+        <translation>vg</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="236"/>
+        <source>development</source>
+        <translation>stänger?</translation>
+    </message>
+    <message>
+        <location filename="../tools/drillreport2.py" line="237"/>
+        <source>comment</source>
+        <translation>kommentar</translation>
     </message>
 </context>
 <context>
@@ -2567,17 +2784,17 @@ Hover over a column header to see which database column it will go to.</source>
     </message>
     <message>
         <location filename="../tools/import_interlab4.py" line="267"/>
-        <source>Kalium was found more than once. The one with m&#xc3;&#xa4;tos&#xc3;&#xa4;kerhet %s was used.&quot;</source>
+        <source>Kalium was found more than once. The one with mÃ¤tosÃ¤kerhet %s was used.&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tools/import_interlab4.py" line="284"/>
-        <source>Kalium was found more than once. The one with m&#xc3;&#xa4;tv&#xc3;&#xa4;rdetext %s was used.&quot;</source>
+        <source>Kalium was found more than once. The one with mÃ¤tvÃ¤rdetext %s was used.&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../tools/import_interlab4.py" line="287"/>
-        <source>Kalium was found more than once. The high resolution one could not be found. The one with m&#xc3;&#xa4;tv&#xc3;&#xa4;rdetext %s was used.&quot;</source>
+        <source>Kalium was found more than once. The high resolution one could not be found. The one with mÃ¤tvÃ¤rdetext %s was used.&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2631,7 +2848,7 @@ Hover over a column header to see which database column it will go to.</source>
     <message>
         <location filename="../ui/calibr_logger_dialog_integrated.ui" line="98"/>
         <source>obsid</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">benämning</translation>
     </message>
     <message>
         <location filename="../ui/calibr_logger_dialog_integrated.ui" line="128"/>
@@ -3292,12 +3509,12 @@ wells file</source>
     <message>
         <location filename="../ui/midvsettingsdock.ui" line="763"/>
         <source>obsid</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">benämning</translation>
     </message>
     <message>
         <location filename="../ui/midvsettingsdock.ui" line="768"/>
         <source>type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">obstyp</translation>
     </message>
     <message>
         <location filename="../ui/midvsettingsdock.ui" line="773"/>
@@ -3523,147 +3740,147 @@ wells file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="140"/>
+        <location filename="../midvatten.py" line="145"/>
         <source>Show a general report for the selected obs point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="144"/>
+        <location filename="../midvatten.py" line="148"/>
         <source>Water quality report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="145"/>
+        <location filename="../midvatten.py" line="149"/>
         <source>Show water quality for the selected obs point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="149"/>
+        <location filename="../midvatten.py" line="153"/>
         <source>Section plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="150"/>
+        <location filename="../midvatten.py" line="154"/>
         <source>Plot a section with stratigraphy and water levels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="154"/>
+        <location filename="../midvatten.py" line="158"/>
         <source>Prepare 3D-data for Qgis2threejs plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="155"/>
+        <location filename="../midvatten.py" line="159"/>
         <source>Add spatialite views to be used by Qgis2threejs plugin to create a 3D plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="158"/>
+        <location filename="../midvatten.py" line="162"/>
         <source>Load data domain tables to qgis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="159"/>
+        <location filename="../midvatten.py" line="163"/>
         <source>Load the data domain tables from the database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="162"/>
+        <location filename="../midvatten.py" line="166"/>
         <source>Vacuum the database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="163"/>
+        <location filename="../midvatten.py" line="167"/>
         <source>Perform database vacuuming</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="166"/>
+        <location filename="../midvatten.py" line="170"/>
         <source>Backup the database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="167"/>
+        <location filename="../midvatten.py" line="171"/>
         <source>A compressed copy of the database will be placed in same directory as the db.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="170"/>
+        <location filename="../midvatten.py" line="174"/>
         <source>Export to a set of csv files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="171"/>
+        <location filename="../midvatten.py" line="175"/>
         <source>All data for the selected objects (obs_points and obs_lines) will be exported to a set of csv files.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="174"/>
+        <location filename="../midvatten.py" line="178"/>
         <source>Export to another spatialite db</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="175"/>
+        <location filename="../midvatten.py" line="179"/>
         <source>All data for the selected objects (obs_points and obs_lines) will be exported to another spatialite db.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="178"/>
+        <location filename="../midvatten.py" line="182"/>
         <source>Export to FieldLogger format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="182"/>
+        <location filename="../midvatten.py" line="186"/>
         <source>Calculate statistics for all w logger data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="186"/>
+        <location filename="../midvatten.py" line="190"/>
         <source>Calculate database table rows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="221"/>
+        <location filename="../midvatten.py" line="225"/>
         <source>&amp;Import data to database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="230"/>
+        <location filename="../midvatten.py" line="234"/>
         <source>&amp;Export data from database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="236"/>
+        <location filename="../midvatten.py" line="240"/>
         <source>&amp;Edit data in database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="245"/>
+        <location filename="../midvatten.py" line="249"/>
         <source>&amp;View plot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="255"/>
+        <location filename="../midvatten.py" line="259"/>
         <source>&amp;View report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="260"/>
+        <location filename="../midvatten.py" line="265"/>
         <source>&amp;Database management</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="267"/>
+        <location filename="../midvatten.py" line="272"/>
         <source>&amp;Utilities</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="376"/>
+        <location filename="../midvatten.py" line="390"/>
         <source>Select a folder where the csv files will be created:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="401"/>
+        <location filename="../midvatten.py" line="415"/>
         <source>This will create a new empty Midvatten DB with predefined design
 and fill the database with data from selected obs_points and obs_lines.
 
@@ -3671,44 +3888,44 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="618"/>
+        <location filename="../midvatten.py" line="632"/>
         <source>Are you sure?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="408"/>
+        <location filename="../midvatten.py" line="422"/>
         <source>Export error!
 
 Must use &quot;load default db-layers to qgis&quot; from Midvatten menu (or key F7) first!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="455"/>
+        <location filename="../midvatten.py" line="469"/>
         <source>Error! Verify Midvatten settings. Verify that no layer is in edit mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="552"/>
+        <location filename="../midvatten.py" line="566"/>
         <source>Something failed during import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="560"/>
+        <location filename="../midvatten.py" line="574"/>
         <source>You have to select database first!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="522"/>
+        <location filename="../midvatten.py" line="536"/>
         <source>%s water quality parameters were imported to the database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="468"/>
+        <location filename="../midvatten.py" line="482"/>
         <source>You are about to import water head data, water flow or water quality from FieldLogger format.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="516"/>
+        <location filename="../midvatten.py" line="530"/>
         <source>You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.
 Specifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf
 
@@ -3716,12 +3933,12 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="535"/>
+        <location filename="../midvatten.py" line="549"/>
         <source>You are about to import water head data, recorded with a Level Logger (e.g. Diver).
 Data is supposed to be imported from a diveroffice file and obsid will be read from the attribute &apos;Location&apos;.
 The data is supposed to be semicolon or comma separated.
 The header for the data should have column Date/time and at least one of the columns:
-Water head[cm], Temperature[&#xc2;&#xb0;C], Level[cm], Conductivity[mS/cm], 1:Conductivity[mS/cm], 2:Spec.cond.[mS/cm].
+Water head[cm], Temperature[Â°C], Level[cm], Conductivity[mS/cm], 1:Conductivity[mS/cm], 2:Spec.cond.[mS/cm].
 
 The column order is unimportant but the column names are.
 The data columns must be real numbers with point (.) or comma (,) as decimal separator and no separator for thousands.
@@ -3731,7 +3948,7 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="579"/>
+        <location filename="../midvatten.py" line="593"/>
         <source>This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.
 
 If any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.
@@ -3740,12 +3957,12 @@ Proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="579"/>
+        <location filename="../midvatten.py" line="593"/>
         <source>Warning!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="588"/>
+        <location filename="../midvatten.py" line="602"/>
         <source>This will create a new empty
 Midvatten DB with predefined design.
 
@@ -3753,48 +3970,48 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="651"/>
+        <location filename="../midvatten.py" line="665"/>
         <source>Please set time series table and column in Midvatten settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="674"/>
+        <location filename="../midvatten.py" line="688"/>
         <source>Verify Midvatten settings and make sure &apos;obs_points&apos; layer is not in editing mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="686"/>
+        <location filename="../midvatten.py" line="700"/>
         <source>You must activate the vector line layer that defines the section.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="689"/>
+        <location filename="../midvatten.py" line="703"/>
         <source>You must activate the vector line layer and select exactly one feature that defines the section</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="701"/>
+        <location filename="../midvatten.py" line="715"/>
         <source>You must select at least two objects in the obs_points layer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="716"/>
+        <location filename="../midvatten.py" line="730"/>
         <source>Please set xy series table and columns in Midvatten settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="784"/>
+        <location filename="../midvatten.py" line="798"/>
         <source>Check Midvatten settings! 
 Something is probably wrong in the &apos;W quality report&apos; tab!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="789"/>
+        <location filename="../midvatten.py" line="803"/>
         <source>No water quality data for %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="838"/>
+        <location filename="../midvatten.py" line="852"/>
         <source>Statistics done, see log for results.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3804,21 +4021,26 @@ Something is probably wrong in the &apos;W quality report&apos; tab!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="568"/>
+        <location filename="../midvatten.py" line="582"/>
         <source>load_data_domains err_flag: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="836"/>
-        <source>Obsid<byte value="x9"/>Min<byte value="x9"/>Median<byte value="x9"/>Nr of values<byte value="x9"/>Max</source>
+        <location filename="../midvatten.py" line="850"/>
+        <source>Obsid	Min	Median	Nr of values	Max</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="618"/>
+        <location filename="../midvatten.py" line="632"/>
         <source>This will update the selected postgis database to a 
 Midvatten Postgis DB with predefined design.
 
 Continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../midvatten.py" line="144"/>
+        <source>General report2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4216,7 +4438,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/secplotdockwidget_ui.ui" line="225"/>
         <source>Stratigraphy</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Lagerföljd</translation>
     </message>
     <message>
         <location filename="../ui/secplotdockwidget_ui.ui" line="241"/>
@@ -4394,7 +4616,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/w_lvls_last_geom.ui" line="59"/>
         <source>obsid</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">benämning</translation>
     </message>
     <message>
         <location filename="../ui/w_lvls_last_geom.ui" line="115"/>
@@ -4419,7 +4641,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../ui/w_levels_en.ui" line="235"/>
         <source>comment</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">kommentar</translation>
     </message>
     <message>
         <location filename="../ui/w_levels_en.ui" line="269"/>
@@ -4484,12 +4706,12 @@ p, li { white-space: pre-wrap; }
         <source>nedmat (m)</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_levels.ui" line="167"/>
         <source>rök (möh)</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_levels.ui" line="201"/>
         <source>nivå (möh)</source>
         <translation type="unfinished"></translation>
@@ -4499,23 +4721,23 @@ p, li { white-space: pre-wrap; }
         <source>kommentar</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_levels.ui" line="257"/>
         <source>måste finnas i obs_points.obsid</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_levels.ui" line="288"/>
         <source>åååå-mm-dd hh:mm(:ss) 
 (ej tom el null)</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_levels.ui" line="320"/>
         <source>Avstånd fr rök (eller motsvarandde) t vy (m)</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_levels.ui" line="351"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -4530,7 +4752,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;och välj: &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-style:italic;&quot;&gt;Midvatten - Edit Data - calculate w level...&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message encoding="UTF-8">
+    <message utf8="true">
         <location filename="../ui/w_levels.ui" line="392"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -4791,12 +5013,12 @@ Must write time resolution also.
 <context>
     <name>export_spatialite</name>
     <message>
-        <location filename="../midvatten.py" line="394"/>
+        <location filename="../midvatten.py" line="408"/>
         <source>Export to spatialite only works when source db is spatialite.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="431"/>
+        <location filename="../midvatten.py" line="445"/>
         <source>Export to spatialite failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5112,7 +5334,7 @@ Msg:
 <context>
     <name>prepare_layers_for_qgis2threejs</name>
     <message>
-        <location filename="../midvatten.py" line="737"/>
+        <location filename="../midvatten.py" line="751"/>
         <source>Only supported for spatialite.</source>
         <translation type="unfinished"></translation>
     </message>

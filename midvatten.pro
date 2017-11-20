@@ -6,6 +6,7 @@ SOURCES = \
 ./tools/customplot.py \
 ./tools/date_utils.py \
 ./tools/drillreport.py \
+./tools/drillreport2.py \
 ./tools/export_data.py \
 ./tools/export_fieldlogger.py \
 ./tools/gui_utils.py \
@@ -56,4 +57,6 @@ ui/w_lvls_last_geom.ui
 
 TRANSLATIONS = \
 ./i18n/midvatten_pt_BR.ts \
-./i18n/midvatten_sv_SE.ts
+./i18n/midvatten_sv_SE.ts \
+./i18n/midvatten_en_US.ts
+
