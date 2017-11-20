@@ -1935,42 +1935,42 @@ Do you want to stop the import? (else it will continue with the next file)</sour
     <message>
         <location filename="../tools/drillreport2.py" line="50"/>
         <source>obsid</source>
-        <translation>benämning</translation>
+        <translation>Benämning</translation>
     </message>
     <message>
         <location filename="../tools/drillreport2.py" line="51"/>
         <source>name</source>
-        <translation>originalbenämning</translation>
+        <translation>Originalbenämning</translation>
     </message>
     <message>
         <location filename="../tools/drillreport2.py" line="52"/>
         <source>place</source>
-        <translation>fastighet/plats</translation>
+        <translation>Fastighet/plats</translation>
     </message>
     <message>
         <location filename="../tools/drillreport2.py" line="53"/>
         <source>type</source>
-        <translation>obstyp</translation>
+        <translation>Obstyp</translation>
     </message>
     <message>
         <location filename="../tools/drillreport2.py" line="54"/>
         <source>length</source>
-        <translation>djup (m fr my t botten)</translation>
+        <translation>Djup (m fr my t botten)</translation>
     </message>
     <message>
         <location filename="../tools/drillreport2.py" line="55"/>
         <source>drillstop</source>
-        <translation>borrningens avslut</translation>
+        <translation>Borrningens avslut</translation>
     </message>
     <message>
         <location filename="../tools/drillreport2.py" line="56"/>
         <source>diam</source>
-        <translation>innerdiameter (mm)</translation>
+        <translation>Innerdiameter (mm)</translation>
     </message>
     <message>
         <location filename="../tools/drillreport2.py" line="57"/>
         <source>material</source>
-        <translation>material</translation>
+        <translation>Material</translation>
     </message>
     <message>
         <location filename="../tools/drillreport2.py" line="58"/>

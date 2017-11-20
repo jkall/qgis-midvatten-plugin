@@ -24,6 +24,7 @@ changelog=
         - Section plot Added some hidden features to "date time f w level" table:
           * 1901-01-01;Obs1;Obs2 <- Giving obsids after date includes only those obsids for that date (; as separator)
           * 1901-01-01[LABEL] <- Adding a label in brackets after the date uses the given LABEL as label instead of the date
+        - Drillreport2: Added a new drillreport format. All headers are set using translation files.
         Version 1.5.2b:
         - Fixed export to spatialite.
         - Updated PrepareForQgis2Threejs to support db_utils.
