@@ -79,6 +79,13 @@ class Drillreport():        # general observation point info for the selected ob
         >>> y = '\n'.join(["'%s'"%x + ': ' + "ru(QCoreApplication.translate('Drillreport2', '%s')),"%x for x in thelist])
         >>> print(y)
         """
+
+        #Settings:
+        #--------------
+        #The order and content of the geographical and general tables will follow general_metadata and geo_metadata list.
+        # All obs_points columns could appear here except geometry.
+        # The XY-reference system is added a bit down in the script to the list geo_data. The append has to be commented away
+        # if it's not wanted.
         general_metadata = [u'type',
                             u'h_tocags',
                             u'material',
@@ -93,8 +100,14 @@ class Drillreport():        # general observation point info for the selected ob
                         u'ne_source',
                         u'h_source',
                         u'h_toc',
-                        u'h_accur',
-                        u'h_source']
+                        u'h_accur']
+
+        #If False, the header will be written outside the table
+        header_in_table = True
+        #If True, headers/values in general_metadata and geo_metadata will be skipped if the value is empty, else they
+        #will be printed anyway
+        skip_empty = False
+        ###############
 
         dbconnection = db_utils.DbConnectionManager()
 
@@ -126,7 +139,7 @@ class Drillreport():        # general observation point info for the selected ob
                                  u'text-indent:0px;"></p>' not in obs_points_data[obs_points_cols.index(header)-1],
                                  u'text-indent:0px;">NULL</p>' not in obs_points_data[obs_points_cols.index(header)-1].strip()])]
 
-            rpt += self.write_obsid(obsid, general_data, geo_data, strat_data, comment_data)
+            rpt += self.write_obsid(obsid, general_data, geo_data, strat_data, comment_data, header_in_table=header_in_table, skip_empty=skip_empty)
             rpt += ur"""<p>    </p>"""
 
         rpt += ur"""</html>"""
@@ -151,28 +164,36 @@ class Drillreport():        # general observation point info for the selected ob
         url_status = QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
         return url_status
 
-    def write_obsid(self, obsid, general_data, geo_data, strat_data, comment_data):
+    def obsid_header(self, obsid):
+        return ur"""<h3 style="font-family:'Ubuntu';font-size:12pt; font-weight:600">%s</h3>"""%ru(obsid)
+
+    def write_obsid(self, obsid, general_data, geo_data, strat_data, comment_data, header_in_table=True, skip_empty=False):
         """This part only handles writing the information. It does not do any db data collection."""
 
+        rpt = u''
 
-        rpt = ur"""<TABLE WIDTH=100% BORDER=1 CELLPADDING=1 CELLSPACING=3>"""
+        if not header_in_table:
+            rpt += self.obsid_header(obsid)
 
+        rpt += ur"""<TABLE WIDTH=100% BORDER=1 CELLPADDING=1 CELLSPACING=3>"""
+
+        if header_in_table:
         #Row 1, obsid header
-        rpt += ur"""<TR VALIGN=TOP>"""
-        rpt += ur"""<TD WIDTH=100% COLSPAN=2>"""
-        rpt += ur"""<h3 style="font-family:'Ubuntu';font-size:12pt; font-weight:600">%s</h3>"""%ru(obsid)
-        rpt += ur"""</TD>"""
-        rpt += ur"""</TR>"""
+            rpt += ur"""<TR VALIGN=TOP>"""
+            rpt += ur"""<TD WIDTH=100% COLSPAN=2>"""
+            rpt += ur"""<h3 style="font-family:'Ubuntu';font-size:12pt; font-weight:600">%s</h3>"""%ru(obsid)
+            rpt += ur"""</TD>"""
+            rpt += ur"""</TR>"""
 
 
         #Row 2, general and geographical information
         rpt += ur"""<TR VALIGN=TOP>"""
         rpt += ur"""<TD WIDTH=60%>"""
-        rpt += self.write_two_col_table(general_data, ru(QCoreApplication.translate(u'Drillreport2', u'General information')))
+        rpt += self.write_two_col_table(general_data, ru(QCoreApplication.translate(u'Drillreport2', u'General information')), skip_empty)
         rpt += ur"""</TD>"""
 
         rpt += ur"""<TD WIDTH=40%>"""
-        rpt += self.write_two_col_table(geo_data, ru(QCoreApplication.translate(u'Drillreport2', u'Geographical information')))
+        rpt += self.write_two_col_table(geo_data, ru(QCoreApplication.translate(u'Drillreport2', u'Geographical information')), skip_empty)
         rpt += ur"""</TD>"""
         rpt += ur"""</TR>"""
 
@@ -194,7 +215,7 @@ class Drillreport():        # general observation point info for the selected ob
 
         return rpt
 
-    def write_two_col_table(self, data, table_header):
+    def write_two_col_table(self, data, table_header, skip_empty=False):
 
         rpt = ur"""<P><U><B>%s</B></U></P>"""%table_header
         rpt += ur"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*>"""
@@ -202,22 +223,31 @@ class Drillreport():        # general observation point info for the selected ob
         rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
         for header, value in data:
             header = ru(header)
-            value = ru(value)
-            if value and value != 'NULL' and value != header:
-                try:
-                    _test = float(value)
-                except ValueError:
-                    pass
+            value = ru(value) if ru(value) is not None and ru(value) != u'NULL' else u''
+            if skip_empty:
+                if value and value != 'NULL' and value != header:
+                    try:
+                        _test = float(value)
+                    except ValueError:
+                        pass
+                    else:
+                        if _test == 0.0:
+                            continue
                 else:
-                    if _test == '0.0':
-                        continue
+                    continue
 
+
+            try:
+                rpt += ur"""<TR VALIGN=TOP><TD WIDTH=33%>{}</TD><TD WIDTH=50%>{}</TD></TR>""".format(header, value)
+            except UnicodeEncodeError:
                 try:
-                    rpt += ur"""<TR VALIGN=TOP><TD WIDTH=33%>{}</TD><TD WIDTH=50%>{}</TD></TR>""".format(header, value)
-                except UnicodeEncodeError:
+                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'drillreport2', u'Writing drillreport failed, see log message panel')),
+                                                    log_msg=ru(QCoreApplication.translate(u'drillreport2', u'Writing header %s and value %s failed'))%(header, value))
                     print("header %s"%header)
                     print("value %s"%value)
-                    raise
+                except:
+                    pass
+                raise
         rpt += r"""</p>"""
         rpt += r"""</TABLE>"""
         return rpt
