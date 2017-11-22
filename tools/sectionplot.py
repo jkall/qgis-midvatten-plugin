@@ -25,6 +25,7 @@ SAKNAS:
 import PyQt4.QtCore
 import PyQt4.QtGui
 from qgis.core import *
+from functools import partial
 
 import numpy as np
 import os
@@ -309,23 +310,26 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.get_dem_selection()
 
     def finish_plot(self):
+        fontsize = int(self.legend_fontsize.text())
+        ticklabel_fontsize = int(self.ticklabel_fontsize.text())
+        axlabel_fontsize = int(self.axlabel_fontsize.text())
         leg = self.secax.legend(self.p, self.Labels,loc=0 )
         leg.draggable(state=True)
         frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
         frame.set_facecolor('1')    # set the frame face color to white                
         frame.set_fill(False)    # set the frame face color to white                
         for t in leg.get_texts():
-            t.set_fontsize(10) 
+            t.set_fontsize(fontsize)
 
         self.secax.grid(b=True, which='both', color='0.65',linestyle='-')
         self.secax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
         self.secax.xaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
-        self.secax.set_ylabel(ru(QCoreApplication.translate(u'SectionPlot', u"Level, masl")))  #Allows international characters ('åäö') as ylabel
-        self.secax.set_xlabel(ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")))  #Allows international characters ('åäö') as xlabel
+        self.secax.set_ylabel(ru(QCoreApplication.translate(u'SectionPlot', u"Level, masl")), fontsize=axlabel_fontsize)  #Allows international characters ('åäö') as ylabel
+        self.secax.set_xlabel(ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")), fontsize=axlabel_fontsize)  #Allows international characters ('åäö') as xlabel
         for label in self.secax.xaxis.get_ticklabels():
-            label.set_fontsize(10)
+            label.set_fontsize(ticklabel_fontsize)
         for label in self.secax.yaxis.get_ticklabels():
-            label.set_fontsize(10)
+            label.set_fontsize(ticklabel_fontsize)
         """
         if there is no stratigraphy data and no borehole lenght for first or last observations,
         then autscaling will fail silently since it does not consider axes.annotate (which is used for printing obsid)
@@ -530,6 +534,9 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
     def initUI(self): 
         #connect signal
         self.pushButton.clicked.connect(self.draw_plot)
+        self.redraw.clicked.connect(self.finish_plot)
+        self.connect(self.chart_settings, PyQt4.QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.chart_settings))
+        self.set_groupbox_children_visibility(self.chart_settings)
         
         # Create a plot window with one single subplot
         self.secfig = plt.figure()
@@ -555,7 +562,12 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
     def plot_drill_stop(self): 
         lineplot,=self.secax.plot(self.x_ds, self.z_ds,  '^', markersize = 8,color='black')
         self.p.append(lineplot)
-        self.Labels.append('drillstop like ' + self.ms.settingsdict['secplotdrillstop'])
+        drillstop_text = self.drillstop_text.text()
+
+        if drillstop_text:
+            self.Labels.append(drillstop_text)
+        else:
+            self.Labels.append('drillstop like ' + self.ms.settingsdict['secplotdrillstop'])
 
     def plot_geology(self):
         for Typ in self.ExistingPlotTypes:#Adding a plot for each "geoshort" that is identified
@@ -679,13 +691,24 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.annotationtext = self.secax.annotate(o,xy=(m,n),xytext=(5,0), textcoords='offset points',ha = 'left', va = 'center',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.6))#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
 
     def write_obsid(self, plot_labels=2):#annotation, and also empty bars to show drillings without stratigraphy data
+        xytext = self.xytext.text().split(u',')
+        rotation = int(self.label_rotation.text())
+        fontsize = int(self.chart_fontsize.text())
         if self.ms.settingsdict['stratigraphyplotted'] ==2:#if stratigr plot, then obsid written close to toc or gs
             plotxleftbarcorner = [i - self.barwidth/2 for i in self.x_id]#x-coord for bars at each obs
             self.p.append(self.secax.bar(plotxleftbarcorner,self.barlengths, fill=False, edgecolor='black', width = self.barwidth, bottom=self.bottoms))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
                 for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
-                    self.secax.annotate(o,xy=(m,n),xytext=(0,10), textcoords='offset points',ha = 'center', va = 'top',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.4))
+
+                    text = self.secax.annotate(o,xy=(m,n),xytext=xytext, textcoords='offset points',ha = 'center', va = 'top',fontsize=fontsize,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.4))
+                    text.set_rotation(rotation)
         else: #obsid written close to average water level (average of all water levels between given min and max date) 
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated            
                 for m,n,o in zip(self.x_id_wwl,self.z_id_wwl,self.obsid_wlid):#change last arg to the one to be written in plot
-                        self.secax.annotate(o,xy=(m,n),xytext=(0,10), textcoords='offset points',ha = 'center', va = 'top',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.4))        
+                    text = self.secax.annotate(o,xy=(m,n),xytext=xytext, textcoords='offset points',ha = 'center', va = 'top',fontsize=fontsize, bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.4))
+                    text.set_rotation(rotation)
+
+    def set_groupbox_children_visibility(self, groupbox_widget):
+        children = groupbox_widget.findChildren(PyQt4.QtGui.QWidget)
+        for child in children:
+            child.setVisible(groupbox_widget.isChecked())
