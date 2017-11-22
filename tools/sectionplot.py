@@ -554,20 +554,34 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             temp_memorylayer, xarray = qchain(self.sectionlinelayer,self.barwidth/2)
             for layername in self.ms.settingsdict['secplotselectedDEMs']:
                 DEMdata = sampling(temp_memorylayer,self.rastItems[unicode(layername)])
-                lineplot,=self.secax.plot(xarray, DEMdata, marker = 'None', linestyle = '-')#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
-                self.p.append(lineplot)
+                plotlable = self.get_plot_label_name(layername, self.Labels)
                 self.Labels.append(layername)
+                lineplot,=self.secax.plot(xarray, DEMdata, marker = 'None', linestyle = '-', label=plotlable)#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
+                self.p.append(lineplot)
+
             QgsMapLayerRegistry.instance().removeMapLayer(temp_memorylayer.id())
 
-    def plot_drill_stop(self): 
-        lineplot,=self.secax.plot(self.x_ds, self.z_ds,  '^', markersize = 8,color='black')
-        self.p.append(lineplot)
+    def plot_drill_stop(self):
         drillstop_text = self.drillstop_text.text()
 
         if drillstop_text:
-            self.Labels.append(drillstop_text)
+            label = drillstop_text
+            plotlable = self.get_plot_label_name(label, self.Labels)
+            self.Labels.append(label)
         else:
-            self.Labels.append('drillstop like ' + self.ms.settingsdict['secplotdrillstop'])
+            label = 'drillstop like ' + self.ms.settingsdict['secplotdrillstop']
+            plotlable = self.get_plot_label_name(label, self.Labels)
+            self.Labels.append(label)
+
+        lineplot,=self.secax.plot(self.x_ds, self.z_ds,  '^', markersize = 8,color='black', label=plotlable)
+        self.p.append(lineplot)
+
+    def get_plot_label_name(self, label, labels):
+        label_occurence = labels.count(label)
+        if not label_occurence:
+            return label
+        else:
+            return label + '_' + str(label_occurence + 1)
 
     def plot_geology(self):
         for Typ in self.ExistingPlotTypes:#Adding a plot for each "geoshort" that is identified
@@ -576,12 +590,16 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.Labels.append(Typ)
 
     def plot_obs_lines_data(self):
-        lineplot, = self.secax.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y1, marker = 'None', linestyle = '-')# PLOT!!
-        self.p.append(lineplot)
+        plotlable = self.get_plot_label_name(self.y1_column, self.Labels)
         self.Labels.append(self.y1_column)
-        lineplot, = self.secax.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y2, marker = 'None', linestyle = '-')# PLOT!!
+        lineplot, = self.secax.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y1, marker = 'None', linestyle = '-', label=plotlable)# PLOT!!
         self.p.append(lineplot)
+
+        plotlable = self.get_plot_label_name(self.y2_column, self.Labels)
         self.Labels.append(self.y2_column)
+        lineplot, = self.secax.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y2, marker = 'None', linestyle = '-', label=plotlable)# PLOT!!
+        self.p.append(lineplot)
+
 
     def plot_water_level(self):   # Adding a plot for each water level date identified
         self.obsids_w_wl = []
@@ -604,12 +622,20 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                     x_wl.append(float(self.LengthAlong[k]))
                     if obs not in self.obsids_w_wl:
                         self.obsids_w_wl.append(obs)
-            lineplot,=self.secax.plot(x_wl, WL,  'v-', markersize = 6)#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
-            self.p.append(lineplot)
+
+
             if len(datum_label) == 2:
-                self.Labels.append(datum_label[1])
+                label = datum_label[1]
+                plotlable = self.get_plot_label_name(label, self.Labels)
+                self.Labels.append(label)
             else:
-                self.Labels.append(datum)
+                label = datum
+                plotlable = self.get_plot_label_name(label, self.Labels)
+                self.Labels.append(label)
+
+            lineplot,=self.secax.plot(x_wl, WL,  'v-', markersize = 6, label=plotlable)#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
+            self.p.append(lineplot)
+
 
 
     def save_settings(self):# This is a quick-fix, should use the midvsettings class instead.

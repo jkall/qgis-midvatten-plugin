@@ -4,7 +4,7 @@ name=Midvatten_postgis
 qgisMinimumVersion=2.4
 qgisMaximumVersion=2.98
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.5.4b
+version=Version 1.5.5b
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 
@@ -19,7 +19,9 @@ experimental=False
 deprecated=False
 
 changelog=
-        Version 1.5.4:
+        Version 1.5.5b:
+        - Section plot: Added some plot settings and a redraw button.
+        Version 1.5.4b:
         - Fixed bug in drillreport2. Added some internal settings for the obsid-header and skipping empty values.
         Version 1.5.3b:
         - Section plot: "date time f w level" table is splitted using \n only (space and tab doesn't split now)
