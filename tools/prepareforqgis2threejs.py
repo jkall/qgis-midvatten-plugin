@@ -24,6 +24,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *  
 from qgis.core import *  
 from qgis.gui import *
+import matplotlib as mpl
 
 from PyQt4.QtCore import QCoreApplication
 
@@ -56,10 +57,8 @@ class PrepareForQgis2Threejs():
         self.remove_views()
         self.drop_db_views()
         self.create_db_views()
-        self.add_layers()
-
         self.dbconnection.commit_and_closedb()
-
+        self.add_layers()
 
     def add_layers(self):#not tested and not ready, must fix basic styles (preferrably colors based on some definition dicitonary
         MyGroup = self.root.insertGroup(0, "stratigraphy_layers_for_qgis2threejs")#verify this is inserted at top
@@ -77,17 +76,41 @@ class PrepareForQgis2Threejs():
 
         list_with_all_strat_layer.append('strat_obs_p_for_qgsi2threejs')
 
+        colors = []
+
         for strat_layer_view in list_with_all_strat_layer: 
             uri.setDataSource('',strat_layer_view, 'Geometry')
             dbtype = db_utils.get_dbtype(self.dbconnection.dbtype)
             layer = QgsVectorLayer(uri.uri(), strat_layer_view, dbtype) # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
             layer_list.append(layer)
 
+            try:
+                supplied_color = self.symbolcolors_dict[strat_layer_view]
+            except KeyError:
+                color = None
+            else:
+                try:
+                    # matplotlib 2
+                    color = mpl.colors.to_rgbsupplied_color()
+                except AttributeError:
+                    try:
+                        # matplotlib 1
+                        converter = mpl.colors.ColorConverter()
+                        color = converter.to_rgb(supplied_color)
+                        color = [x * 255 for x in color]
+                    except Exception as e:
+                        utils.MessagebarAndLog.warning(
+                            bar_msg=ru(QCoreApplication.translate(u'PrepareForQgis2Threejs', u'Setting color from dict failed')),
+                            log_msg=ru(QCoreApplication.translate(u'PrepareForQgis2Threejs', u'Error msg %s'))%str(e))
+                        color = None
+
+            colors.append(color)
+
         # create a new single symbol renderer
         symbol = QgsSymbolV2.defaultSymbol(layer.geometryType())
         renderer = QgsSingleSymbolRendererV2(symbol)
 
-        for layer in layer_list:#now loop over all the layers, add them to canvas and set colors
+        for idx, layer in enumerate(layer_list):#now loop over all the layers, add them to canvas and set colors
             if not layer.isValid():
                 try:
                     print(layer.name() + ' is not valid layer')
@@ -102,7 +125,16 @@ class PrepareForQgis2Threejs():
                 try:
                     layer.loadNamedStyle(stylefile)
                 except:
-                    pass
+                    try:
+                        print("Loading stylefile %s failed."%stylefile)
+                    except:
+                        pass
+
+                color = colors[idx]
+                if color:
+                    current_symbols = layer.rendererV2().symbols()
+                    current_symbol = current_symbols[0]
+                    current_symbol.setColor(QColor.fromRgb(color[0], color[1], color[2]))
 
                 QgsMapLayerRegistry.instance().addMapLayers([layer],False)
                 MyGroup.insertLayer(0,layer)
@@ -125,8 +157,6 @@ class PrepareForQgis2Threejs():
                     #print(sqliteline)#debug
                     self.dbconnection.execute(sqliteline)
                 linecounter += 1
-
-        self.dbconnection.commit_and_closedb()
 
     def drop_db_views(self):
         sql1="delete from views_geometry_columns where view_name = 'strat_obs_p_for_qgsi2threejs'"
