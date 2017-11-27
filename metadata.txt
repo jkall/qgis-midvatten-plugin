@@ -23,6 +23,8 @@ changelog=
         - Section plot: Added some plot settings and a redraw button.
         - PrepareForQgis2Threejs: Fixed a db closed to early bug.
         - PrepareForQgis2Threejs: Colors are now set using zz_stratigraphy_plots.
+        - Export fieldlogger: Fixed bug.
+        - Probably fixed crash occuring when access to spatialite db isn't working.
         Version 1.5.4b:
         - Fixed bug in drillreport2. Added some internal settings for the obsid-header and skipping empty values.
         Version 1.5.3b:

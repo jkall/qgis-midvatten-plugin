@@ -95,13 +95,17 @@ class DbConnectionManager(object):
 
             #Create the database if it's not existing
             self.uri.setDatabase(self.dbpath)
-            self.conn = sqlite.connect(self.dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
-
             try:
-                self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
+                self.conn = sqlite.connect(self.dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
             except:
-                pass
-            self.cursor = self.conn.cursor()
+                utils.MessagebarAndLog.critical(bar_msg=utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u'Connecting to spatialite db %s failed! Check that the file or path exists.'))%self.dbpath)
+                self.conn = None
+            else:
+                try:
+                    self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
+                except:
+                    pass
+                self.cursor = self.conn.cursor()
         elif self.dbtype == u'postgis':
             connection_name = self.connection_settings[u'connection'].split(u'/')[0]
             #print(str(get_postgis_connections().mock_calls))

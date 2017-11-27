@@ -512,10 +512,7 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         self._input_field_list = ExtendedQPlainTextEdit(keep_sorted=True)
         # ------------------------------------------------------------------------------------
 
-        tables_columns = {}
-        for table, columns_tuple in tables_columns_org.iteritems():
-            for column in columns_tuple:
-                tables_columns.setdefault(table, []).append(column[1])
+        tables_columns = tables_columns_org
 
         # ------------------------------------------------------------------------------------
         self._parameter_table.addItem(u'')
@@ -589,10 +586,10 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         combobox.clear()
         combobox.addItem(u'')
         try:
-            combobox.addItems(items)
+            combobox.addItems(ru(items, keep_containers=True))
         except TypeError:
             for item in items:
-                combobox.addItem(item)
+                combobox.addItem(ru(item))
 
     def get_settings(self):
         if not self.input_field_list:
