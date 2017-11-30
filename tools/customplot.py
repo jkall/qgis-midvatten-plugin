@@ -72,7 +72,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.setupUi( self )#due to initialisation of Ui_MainWindow instance
         self.initUI()
         self.tables_columns = db_utils.tables_columns()
-        print(u'\n'.join(sorted(self.tables_columns.keys())))
         self.LoadTablesFromDB(self.tables_columns)
         self.LastSelections()#fill comboboxes etc with last selected values
         #on close:
@@ -460,8 +459,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 table_combobox.addItems(tables)
             except:
                 for table in tables:
-                    if table == u'meteo':
-                        print("Adding meteo")
                     table_combobox.addItem(table)
 
     def clearthings(self,tabno=1):   #clear xcol,ycol,filter1,filter2
