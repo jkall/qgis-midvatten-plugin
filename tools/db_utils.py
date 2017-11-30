@@ -806,3 +806,15 @@ def get_spatialite_db_path_from_dbsettings_string(db_settings):
         return db_settings.get(u'spatialite', {}).get(u'dbpath', u'')
     else:
         return u''
+
+
+def nonplot_tables(as_tuple=False):
+    tables = ('about_db',
+                'comments',
+                'zz_flowtype',
+                'zz_meteoparam',
+                'zz_strat',
+                'zz_hydro')
+    if not as_tuple:
+        tables = u"({})".format(u', '.join([u"'{}'".format(x) for x in tables]))
+    return tables

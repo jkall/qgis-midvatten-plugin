@@ -118,3 +118,26 @@ class TestVerifyTableExist(utils_for_tests.MidvattenTestPostgisDbSv):
     def test_verify_table_exists(self):
         exists = db_utils.verify_table_exists(u'obs_points')
         assert exists
+
+
+@attr(status='on')
+class TestNonplotTables():
+    def test_as_tuple(self):
+        tables = db_utils.nonplot_tables(as_tuple=True)
+
+        assert tables == ('about_db',
+                        'comments',
+                        'zz_flowtype',
+                        'zz_meteoparam',
+                        'zz_strat',
+                        'zz_hydro')
+
+    def test_as_string(self):
+        tables = db_utils.nonplot_tables(as_tuple=False)
+
+        assert tables == r"""('about_db', 'comments', 'zz_flowtype', 'zz_meteoparam', 'zz_strat', 'zz_hydro')"""
+
+    def test_as_string_default(self):
+        tables = db_utils.nonplot_tables()
+
+        assert tables == r"""('about_db', 'comments', 'zz_flowtype', 'zz_meteoparam', 'zz_strat', 'zz_hydro')"""

@@ -451,9 +451,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                      filter_qlistwidget.item(index).setSelected(True)
 
     def LoadTablesFromDB( self, tables_columns ):    # Open the SpatiaLite file to extract info about tables
-        tables = sorted([table for table in tables_columns.keys() if table not in defs.sqlite_nonplot_tables(as_tuple=True) and not table.startswith(u'zz_')])
-        print("Tables to plot:")
-        print(u'\n'.join(tables))
+        tables = sorted([table for table in tables_columns.keys() if table not in db_utils.nonplot_tables(as_tuple=True) and not table.startswith(u'zz_')])
         for i, table_combobox in enumerate([self.table_ComboBox_1, self.table_ComboBox_2, self.table_ComboBox_3], 1):
             table_combobox.clear()
             self.clearthings(i)

@@ -565,19 +565,6 @@ def staff_list():
 def stratigraphy_table():
     return 'stratigraphy'
 
-def sqlite_nonplot_tables(as_tuple=False):
-    tables = ('about_db',
-                'comments',
-                'zz_flowtype',
-                'zz_meteoparam',
-                'zz_strat',
-                'zz_hydro')
-    if not as_tuple:
-        tables = u"({})".format(u', '.join([u"'{}'".format(x) for x in tables]))
-
-
-    return tables
-
 def w_flow_flowtypes_units():
     sql = 'select distinct flowtype, unit from w_flow'
     connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
