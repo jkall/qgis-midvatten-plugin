@@ -26,6 +26,7 @@ changelog=
         - Export fieldlogger: Fixed bug.
         - Probably fixed crash occuring when access to spatialite db isn't working.
         - Utility to calculate statistics for chosen column in chosen table.
+        - Custom plot: Added some settings and a savebutton.
         Version 1.5.4b:
         - Fixed bug in drillreport2. Added some internal settings for the obsid-header and skipping empty values.
         Version 1.5.3b:

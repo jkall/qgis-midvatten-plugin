@@ -63,6 +63,7 @@ else:
 utils.MessagebarAndLog.info(log_msg=u"Python pandas: " + str(pandas_on))
 customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..', 'ui', 'customplotdialog.ui'))[0]
 
+
 class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
     def __init__(self, parent, msettings):#, parent as second arg?
         self.ms = msettings
@@ -110,14 +111,17 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.connect(self.select_button_t3f1, QtCore.SIGNAL("clicked()"), partial(self.select_in_filterlist_from_selection, self.Filter1_QListWidget_3, self.Filter1_ComboBox_3))
         self.connect(self.select_button_t3f2, QtCore.SIGNAL("clicked()"), partial(self.select_in_filterlist_from_selection, self.Filter2_QListWidget_3, self.Filter2_ComboBox_3))
 
+        self.connect(self.save_to_eps_button, QtCore.SIGNAL("clicked()"), self.save_to_eps)
+
 
         self.PlotChart_QPushButton.clicked.connect(self.drawPlot_all)
         self.Redraw_pushButton.clicked.connect( self.refreshPlot )
 
-        # Create a plot window with one single subplot
-        self.custplotfigure = plt.figure() 
+        self.custplotfigure = plt.figure()
+
         self.axes = self.custplotfigure.add_subplot( 111 )
         self.canvas = FigureCanvas( self.custplotfigure )
+
         self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot)
         lstActions = self.mpltoolbar.actions()
         self.mpltoolbar.removeAction( lstActions[ 7 ] )
@@ -172,7 +176,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         height = self.plot_height.text()
 
         try:
-            width = int(width)
+            width = float(width)
         except ValueError:
             #self.layoutplot.setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Extended)
             #self.widgetPlot.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
@@ -186,7 +190,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.widgetPlot.setMaximumWidth(width)
 
         try:
-            height = int(height)
+            height = float(height)
         except ValueError:
             #self.widgetPlot.sizePolicy().setVerticalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
             self.widgetPlot.setMinimumHeight(100)
@@ -572,14 +576,15 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.ms.settingsdict['custplot_xtitle'] = self.axes.get_xlabel()
         self.ms.settingsdict['custplot_ytitle'] = self.axes.get_ylabel()
 
+        axes_fontsize = float(self.axex_fontsize.text())
         for label in self.axes.xaxis.get_ticklabels():
-            label.set_fontsize(10)
+            label.set_fontsize(axes_fontsize)
             try:
-                label.set_rotation(10)
+                label.set_rotation(axes_fontsize)
             except:
                 pass
         for label in self.axes.yaxis.get_ticklabels():
-            label.set_fontsize(10)
+            label.set_fontsize(axes_fontsize)
 
         #The legend
         if self.Legend_checkBox.isChecked():
@@ -598,12 +603,12 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             frame.set_facecolor('1')    # set the frame face color to white
             frame.set_fill(False)    # set the frame face color to white
             for t in leg.get_texts():
-                t.set_fontsize(10)    # the legend text fontsize
+                t.set_fontsize(float(self.legend_fontsize.text()))  # the legend text fontsize
         else:
             self.axes.legend_ = None
 
         self.canvas.draw()
-        plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
+        #plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
 
     def storesettings(self):
         self.ms.settingsdict['custplot_table1'] = unicode(self.table_ComboBox_1.currentText())
@@ -662,6 +667,14 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             return
         selected_values = utils.getselectedobjectnames(column_name=current_column)
         [filter_listwidget.item(nr).setSelected(True) for nr in xrange(filter_listwidget.count()) if ru(filter_listwidget.item(nr).text()) in selected_values]
+
+    def save_to_eps(self):
+        filename = PyQt4.QtGui.QFileDialog.getSaveFileName(parent=None, caption=ru(
+            QCoreApplication.translate(u'CustomPlot', u'Choose a file name, extension sets format')), directory='')
+        if not filename:
+            return
+        name, ext = os.path.splitext(filename)
+        self.custplotfigure.savefig(filename, format=ext.lstrip(u'.'), dpi=float(self.figure_dpi.text()))
 
 
 class PandasCalculations(object):

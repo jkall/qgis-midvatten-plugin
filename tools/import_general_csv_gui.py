@@ -57,8 +57,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.status = True
 
     def load_gui(self):
-        self.tables_columns = {k: v for (k, v) in db_utils.db_tables_columns_info().iteritems() if not k.endswith(u'_geom')}
-        self.table_chooser = ImportTableChooser(self.tables_columns, self.connect, file_header=None)
+        self.tables_columns_info = {k: v for (k, v) in db_utils.db_tables_columns_info().iteritems() if not k.endswith(u'_geom')}
+        self.table_chooser = ImportTableChooser(self.tables_columns_info, self.connect, file_header=None)
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.main_vertical_layout.addStretch()
         #General buttons
@@ -86,7 +86,8 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         self.gridLayout_buttons.addWidget(get_line(), 3, 0)
 
-        self.distinct_value_browser = DistinctValuesBrowser(self.tables_columns, self.connect)
+        tables_columns = db_utils.tables_columns()
+        self.distinct_value_browser = DistinctValuesBrowser(tables_columns, self.connect)
         self.gridLayout_buttons.addWidget(self.distinct_value_browser.widget, 4, 0)
 
         self.gridLayout_buttons.addWidget(get_line(), 5, 0)
@@ -227,7 +228,7 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         #Translate column names and add columns that appear more than once
         file_data = self.translate_and_reorder_file_data(file_data, translation_dict)
-        file_data = self.convert_comma_to_points_for_double_columns(file_data, self.tables_columns[goal_table])
+        file_data = self.convert_comma_to_points_for_double_columns(file_data, self.tables_columns_info[goal_table])
         file_data = self.remove_preceding_trailing_spaces_tabs(file_data)
         if foreign_key_obsid_table and foreign_key_obsid_table != goal_table and u'obsid' in file_data[0]:
             file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
