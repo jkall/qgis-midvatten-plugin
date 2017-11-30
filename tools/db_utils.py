@@ -108,8 +108,6 @@ class DbConnectionManager(object):
                 self.cursor = self.conn.cursor()
         elif self.dbtype == u'postgis':
             connection_name = self.connection_settings[u'connection'].split(u'/')[0]
-            #print(str(get_postgis_connections().mock_calls))
-
             self.postgis_settings = get_postgis_connections()[connection_name]
             self.uri.setConnection(self.postgis_settings[u'host'], self.postgis_settings[u'port'], self.postgis_settings[u'database'], self.postgis_settings[u'username'], self.postgis_settings[u'password'])
             try:
@@ -724,24 +722,48 @@ def test_if_numeric(column, dbconnection=None):
 
 
 def calculate_median_value(table, column, obsid, dbconnection=None):
+    """
+    Code from https://stackoverflow.com/questions/15763965/how-can-i-calculate-the-median-of-values-in-sqlite
+    :param table:
+    :param column:
+    :param obsid:
+    :param dbconnection:
+    :return:
+    """
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
     if dbconnection.dbtype == u'spatialite':
-        # median value
-        sql = r"""SELECT x.obsid, x.""" + column + r""" as median from (select obsid, """ + column + r""" FROM %s WHERE obsid = '"""%table
-        sql += obsid
-        sql += r"""' and (typeof(""" + column + r""")=typeof(0.01) or typeof(""" + column + r""")=typeof(1))) as x, (select obsid, """ + column + r""" FROM %s WHERE obsid = '"""%table
-        sql += obsid
-        sql += r"""' and (typeof(""" + column + r""")=typeof(0.01) or typeof(""" + column + r""")=typeof(1))) as y GROUP BY x.""" + column + r""" HAVING SUM(CASE WHEN y.""" + column + r""" <= x.""" + column + r""" THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.""" + column + r""" >= x.""" + column + r""" THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
+
+        data = {u'column': column,
+                u'table': table,
+                u'obsid': obsid}
+
+        sql = u'''SELECT AVG({column})
+                    FROM (SELECT {column}
+                          FROM {table}
+                          WHERE obsid = '{obsid}'
+                          ORDER BY {column}
+                          LIMIT 2 - (SELECT COUNT(*) FROM {table} WHERE obsid = '{obsid}') % 2 
+                          OFFSET (SELECT (COUNT(*) - 1) / 2
+                          FROM {table} WHERE obsid = '{obsid}'))'''.format(**data).replace(u'\n', u' ')
+
+        # median value old variant
+        #sql = r"""SELECT x.obsid, x.""" + column + r""" as median from (select obsid, """ + column + r""" FROM %s WHERE obsid = '"""%table
+        #sql += obsid
+        #sql += r"""' and (typeof(""" + column + r""")=typeof(0.01) or typeof(""" + column + r""")=typeof(1))) as x, (select obsid, """ + column + r""" FROM %s WHERE obsid = '"""%table
+        #sql += obsid
+        #sql += r"""' and (typeof(""" + column + r""")=typeof(0.01) or typeof(""" + column + r""")=typeof(1))) as y GROUP BY x.""" + column + r""" HAVING SUM(CASE WHEN y.""" + column + r""" <= x.""" + column + r""" THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.""" + column + r""" >= x.""" + column + r""" THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
+
         ConnectionOK, median_value = sql_load_fr_db(sql, dbconnection)
         try:
-            median_value = median_value[0][1]
+            median_value = median_value[0][0]
         except IndexError:
             utils.MessagebarAndLog.warning(bar_msg=utils.returnunicode(QCoreApplication.translate(u'calculate_median_value',
                                                                                  u'Median calculation error, see log message panel')),
                                            log_msg=utils.returnunicode(QCoreApplication.translate(u'calculate_median_value',
                                                                                  u'Sql failed: %s')) % sql)
             median_value = None
+
 
     else:
         sql = u"""SELECT median(u.%s) AS median_value FROM (SELECT %s FROM %s WHERE obsid = '%s') AS u;"""%(column, column, table, obsid)

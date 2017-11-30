@@ -28,7 +28,7 @@ from PyQt4.QtGui import QDesktopServices
 import db_utils
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
-from calculate_statistics import get_statistics
+from calculate_statistics import get_statistics_for_single_obsid
 
 
 class Drillreport():        # general observation point info for the selected object
@@ -157,7 +157,7 @@ class Drillreport():        # general observation point info for the selected ob
             f.write(rpt)
 
             # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
-            meas_or_level_masl, statistics = get_statistics(obsid)#MacOSX fix1
+            meas_or_level_masl, statistics = get_statistics_for_single_obsid(obsid)#MacOSX fix1
             if  utils.getcurrentlocale()[0] == 'sv_SE':
                 reportdata_4 = self.rpt_lower_right_sv(statistics,meas_or_level_masl)
             else:
