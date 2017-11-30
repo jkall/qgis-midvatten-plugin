@@ -36,6 +36,7 @@ from matplotlib.dates import datestr2num
 from matplotlib import ticker
 import matplotlib.dates as mdates
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT    
@@ -48,7 +49,7 @@ import matplotlib.ticker as tick
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from date_utils import datestring_to_date
-from definitions import midvatten_defs
+from definitions import midvatten_defs as defs
 import PyQt4
 from PyQt4.QtCore import QCoreApplication
 
@@ -71,6 +72,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.setupUi( self )#due to initialisation of Ui_MainWindow instance
         self.initUI()
         self.tables_columns = db_utils.tables_columns()
+        print(u'\n'.join(sorted(self.tables_columns.keys())))
         self.LoadTablesFromDB(self.tables_columns)
         self.LastSelections()#fill comboboxes etc with last selected values
         #on close:
@@ -449,7 +451,9 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                      filter_qlistwidget.item(index).setSelected(True)
 
     def LoadTablesFromDB( self, tables_columns ):    # Open the SpatiaLite file to extract info about tables
-        tables = sorted([table for table in tables_columns.keys() if table not in midvatten_defs.sqlite_nonplot_tables() and not table.startswith(u'zz_')])
+        tables = sorted([table for table in tables_columns.keys() if table not in defs.sqlite_nonplot_tables(as_tuple=True) and not table.startswith(u'zz_')])
+        print("Tables to plot:")
+        print(u'\n'.join(tables))
         for i, table_combobox in enumerate([self.table_ComboBox_1, self.table_ComboBox_2, self.table_ComboBox_3], 1):
             table_combobox.clear()
             self.clearthings(i)
@@ -458,6 +462,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 table_combobox.addItems(tables)
             except:
                 for table in tables:
+                    if table == u'meteo':
+                        print("Adding meteo")
                     table_combobox.addItem(table)
 
     def clearthings(self,tabno=1):   #clear xcol,ycol,filter1,filter2
