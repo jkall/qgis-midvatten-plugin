@@ -183,12 +183,12 @@ class midvatten:
         self.action_export_fieldlogger.setWhatsThis(self.export_fieldlogger.__doc__)
         QObject.connect(self.action_export_fieldlogger, SIGNAL("triggered()"), self.export_fieldlogger)
 
-        self.action_calculate_statistics_for_all_w_logger_data = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate("Midvatten","Calculate statistics for all w logger data"), self.iface.mainWindow())
-        self.action_calculate_statistics_for_all_w_logger_data.setWhatsThis(self.calculate_statistics_for_all_w_logger_data.__doc__)
-        QObject.connect(self.action_calculate_statistics_for_all_w_logger_data, SIGNAL("triggered()"), self.calculate_statistics_for_all_w_logger_data)
+        self.action_calculate_statistics_for_selected_obsids = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate("Midvatten", "Calculate statistics for selected obsids"), self.iface.mainWindow())
+        self.action_calculate_statistics_for_selected_obsids.setWhatsThis(self.calculate_statistics_for_selected_obsids.__doc__)
+        QObject.connect(self.action_calculate_statistics_for_selected_obsids, SIGNAL("triggered()"), self.calculate_statistics_for_selected_obsids)
 
         self.action_calculate_db_table_rows = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate("Midvatten","Calculate database table rows"), self.iface.mainWindow())
-        self.action_calculate_statistics_for_all_w_logger_data.setWhatsThis(self.calculate_db_table_rows.__doc__)
+        self.action_calculate_statistics_for_selected_obsids.setWhatsThis(self.calculate_db_table_rows.__doc__)
         QObject.connect(self.action_calculate_db_table_rows, SIGNAL("triggered()"), self.calculate_db_table_rows)
 
         # Add toolbar with buttons 
@@ -274,7 +274,7 @@ class midvatten:
         self.menu.utils.addAction(self.actionloaddatadomains)
         self.menu.utils.addAction(self.actionPrepareFor2Qgis2ThreeJS)
         self.menu.utils.addAction(self.actionresetSettings)
-        self.menu.utils.addAction(self.action_calculate_statistics_for_all_w_logger_data)
+        self.menu.utils.addAction(self.action_calculate_statistics_for_selected_obsids)
         self.menu.utils.addAction(self.action_calculate_db_table_rows)
 
         self.menu.addSeparator()
@@ -834,24 +834,15 @@ class midvatten:
             if connection_ok:
                 db_utils.backup_db(dbconnection)
 
-    @utils.waiting_cursor
-    def calculate_statistics_for_all_w_logger_data(self):
+    @utils.general_exception_handler
+    def calculate_statistics_for_selected_obsids(self):
         """ Calculates min, median, nr of values and max for all obsids and writes to file
 
             Uses GetStatistics from drillreport for the calculations
         """
-        connection_ok, result = db_utils.sql_load_fr_db("""select distinct obsid from w_levels_logger order by obsid""")
-        if connection_ok:
-            obsids = [row[0] for row in result]
+        from calculate_statistics import CalculateStatisticsGui
 
-            from drillreport import GetStatistics
-            printlist = [obsid + "\t" + '\t'.join([str(x) for x in GetStatistics(obsid)[1]]) for obsid in sorted(obsids)]
-            printlist.reverse()
-            printlist.append(ru(QCoreApplication.translate(u"Midvatten", 'Obsid\tMin\tMedian\tNr of values\tMax')))
-            printlist.reverse()
-            utils.MessagebarAndLog.info(
-                bar_msg=QCoreApplication.translate("Midvatten", 'Statistics done, see log for results.'),
-                log_msg='\n'.join(printlist), duration=15, button=True)
+        stats_gui = CalculateStatisticsGui(self.iface.mainWindow(), self.ms)
 
     def calculate_db_table_rows(self):
         """ Counts the number of rows for all tables in the database """

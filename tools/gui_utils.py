@@ -25,6 +25,8 @@ from PyQt4.QtCore import QCoreApplication
 
 from date_utils import datestring_to_date
 from midvatten_utils import returnunicode as ru
+from tools import db_utils, midvatten_utils as utils
+from tools.midvatten_utils import returnunicode as ru
 
 
 class SplitterWithHandel(PyQt4.QtGui.QSplitter):
@@ -169,3 +171,82 @@ def set_combobox(combobox, value):
         combobox.addItem(ru(value))
         index = combobox.findText(ru(value))
         combobox.setCurrentIndex(index)
+
+
+class DistinctValuesBrowser(VRowEntry):
+    def __init__(self, tables_columns, connect):
+        super(DistinctValuesBrowser, self).__init__()
+
+        self.browser_label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'DistinctValuesBrowser', u'DB browser:')))
+        self.table_label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'DistinctValuesBrowser', u'Table')))
+        self._table_list = PyQt4.QtGui.QComboBox()
+        self.column_label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'DistinctValuesBrowser', u'Column')))
+        self._column_list = PyQt4.QtGui.QComboBox()
+        self.distinct_value_label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'DistinctValuesBrowser', u'Distinct values')))
+        self._distinct_value = PyQt4.QtGui.QComboBox()
+        self._distinct_value.setEditable(True)
+
+
+        self._table_list.addItem(u'')
+        self._table_list.addItems(sorted(tables_columns.keys()))
+
+        connect(self._table_list, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self.replace_items(self._column_list, tables_columns.get(self.table_list, [])))
+        connect(self._column_list, PyQt4.QtCore.SIGNAL("activated(int)"),
+                     lambda: self.replace_items(self._distinct_value, self.get_distinct_values(self.table_list, self.column_list)))
+
+        for widget in [self.browser_label, self.table_label, self._table_list,
+                       self.column_label, self._column_list, self.distinct_value_label,
+                       self._distinct_value]:
+            self.layout.addWidget(widget)
+
+    @staticmethod
+    def get_distinct_values(tablename, columnname):
+        if not tablename or not columnname:
+            return []
+        sql = '''SELECT DISTINCT %s FROM %s''' % (columnname, tablename)
+        connection_ok, result = db_utils.sql_load_fr_db(sql)
+
+        if not connection_ok:
+            utils.MessagebarAndLog.critical(
+                bar_msg=utils.sql_failed_msg(),
+                log_msg=ru(QCoreApplication.translate(u'DistinctValuesBrowser', u"""Cannot get data from sql %s"""))%ru(sql))
+            return []
+
+        values = [ru(col[0]) for col in result]
+        return values
+
+    @staticmethod
+    def replace_items(combobox, items):
+        items = sorted(items)
+        combobox.clear()
+        combobox.addItem(u'')
+        try:
+            combobox.addItems(items)
+        except TypeError:
+            for item in items:
+                combobox.addItem(item)
+
+    @property
+    def table_list(self):
+        return ru(self._table_list.currentText())
+
+    @table_list.setter
+    def table_list(self, value):
+        set_combobox(self._table_list, value)
+
+    @property
+    def column_list(self):
+        return ru(self._column_list.currentText())
+
+    @column_list.setter
+    def column_list(self, value):
+        set_combobox(self._column_list, value)
+
+    @property
+    def distinct_value(self):
+        return ru(self._distinct_value.currentText())
+
+    @distinct_value.setter
+    def distinct_value(self, value):
+        set_combobox(self._distinct_value, value)

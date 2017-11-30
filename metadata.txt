@@ -25,6 +25,7 @@ changelog=
         - PrepareForQgis2Threejs: Colors are now set using zz_stratigraphy_plots.
         - Export fieldlogger: Fixed bug.
         - Probably fixed crash occuring when access to spatialite db isn't working.
+        - Utility to calculate statistics for chosen column in chosen table.
         Version 1.5.4b:
         - Fixed bug in drillreport2. Added some internal settings for the obsid-header and skipping empty values.
         Version 1.5.3b:

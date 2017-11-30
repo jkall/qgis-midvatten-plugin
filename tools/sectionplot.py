@@ -536,6 +536,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.pushButton.clicked.connect(self.draw_plot)
         self.redraw.clicked.connect(self.finish_plot)
         self.connect(self.chart_settings, PyQt4.QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.chart_settings))
+        self.connect(self.plot_width, PyQt4.QtCore.SIGNAL("editingFinished()"), partial(self.change_plot_size))
+        self.connect(self.plot_height, PyQt4.QtCore.SIGNAL("editingFinished()"), partial(self.change_plot_size))
         self.set_groupbox_children_visibility(self.chart_settings)
         
         # Create a plot window with one single subplot
@@ -600,7 +602,6 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         lineplot, = self.secax.plot(self.obs_lines_plot_data.obsline_x, self.obs_lines_plot_data.obsline_y2, marker = 'None', linestyle = '-', label=plotlable)# PLOT!!
         self.p.append(lineplot)
 
-
     def plot_water_level(self):   # Adding a plot for each water level date identified
         self.obsids_w_wl = []
         for _datum in self.ms.settingsdict['secplotdates']:
@@ -635,8 +636,6 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
             lineplot,=self.secax.plot(x_wl, WL,  'v-', markersize = 6, label=plotlable)#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
             self.p.append(lineplot)
-
-
 
     def save_settings(self):# This is a quick-fix, should use the midvsettings class instead.
         self.ms.save_settings('secplotwlvltab')
@@ -738,3 +737,31 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         children = groupbox_widget.findChildren(PyQt4.QtGui.QWidget)
         for child in children:
             child.setVisible(groupbox_widget.isChecked())
+
+    def change_plot_size(self):
+        width = self.plot_width.text()
+        height = self.plot_height.text()
+
+        try:
+            width = int(width)
+        except ValueError:
+            #self.layoutplot.setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Extended)
+            #self.widgetPlot.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
+            self.widget.setMinimumWidth(0)
+            self.widget.setMaximumWidth(16777215)
+            #self.widgetPlot.adjustSize()
+        else:
+            #self.widgetPlot.setMinimum
+            #self.widgetPlot.setFixedWidth(width)
+            self.widget.setMinimumWidth(width)
+            self.widget.setMaximumWidth(width)
+
+        try:
+            height = int(height)
+        except ValueError:
+            #self.widgetPlot.sizePolicy().setVerticalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
+            self.widget.setMinimumHeight(0)
+            self.widget.setMaximumHeight(16777215)
+        else:
+            self.widget.setMinimumHeight(height)
+            self.widget.setMaximumHeight(height)

@@ -502,7 +502,7 @@ class ParameterGroup(object):
 
 
 class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
-    def __init__(self, tables_columns_org, connect, parent=None):
+    def __init__(self, tables_columns, connect, parent=None):
         PyQt4.QtGui.QDialog.__init__(self, parent)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 
@@ -510,9 +510,6 @@ class ParameterBrowser(PyQt4.QtGui.QDialog, parameter_browser_dialog):
         # ------------------------------------------------------------------------------------
         #Other widgets in the ui-file
         self._input_field_list = ExtendedQPlainTextEdit(keep_sorted=True)
-        # ------------------------------------------------------------------------------------
-
-        tables_columns = tables_columns_org
 
         # ------------------------------------------------------------------------------------
         self._parameter_table.addItem(u'')

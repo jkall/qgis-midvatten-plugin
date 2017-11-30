@@ -18,18 +18,18 @@
  *                                                                         *
  ***************************************************************************/
 """
-import db_utils
+import codecs
+import os
+
+from PyQt4.QtCore import QCoreApplication
 from PyQt4.QtCore import QUrl, QDir
 from PyQt4.QtGui import QDesktopServices
 
-import os
-import locale
+import db_utils
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
-import codecs
-from time import sleep
+from calculate_statistics import get_statistics
 
-from PyQt4.QtCore import QCoreApplication
 
 class Drillreport():        # general observation point info for the selected object
     
@@ -157,7 +157,7 @@ class Drillreport():        # general observation point info for the selected ob
             f.write(rpt)
 
             # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
-            meas_or_level_masl, statistics = GetStatistics(obsid)#MacOSX fix1
+            meas_or_level_masl, statistics = get_statistics(obsid)#MacOSX fix1
             if  utils.getcurrentlocale()[0] == 'sv_SE':
                 reportdata_4 = self.rpt_lower_right_sv(statistics,meas_or_level_masl)
             else:
@@ -382,50 +382,4 @@ class Drillreport():        # general observation point info for the selected ob
             utils.pop_up_info(sql)
         ConnectionOK, data = db_utils.sql_load_fr_db(sql)
         return ConnectionOK, data
-
-
-def GetStatistics(obsid = ''):
-    Statistics_list = [0]*4
-
-    columns = ['meas', 'level_masl']
-    meas_or_level_masl= 'meas'#default value
-
-    #number of values, also decide wehter to use meas or level_masl in report
-    for column in columns:
-        sql = r"""select Count(""" + column + r""") from w_levels where obsid = '"""
-        sql += obsid
-        sql += r"""'"""
-        ConnectionOK, number_of_values = db_utils.sql_load_fr_db(sql)
-        if number_of_values and number_of_values[0][0] > Statistics_list[2]:#this will select meas if meas >= level_masl
-            meas_or_level_masl = column
-            Statistics_list[2] = number_of_values[0][0]
-
-    #min value
-    if meas_or_level_masl=='meas':
-        sql = r"""select min(meas) from w_levels where obsid = '"""
-    else:
-        sql = r"""select max(level_masl) from w_levels where obsid = '"""
-    sql += obsid
-    sql += r"""'"""
-    ConnectionOK, min_value = db_utils.sql_load_fr_db(sql)
-    if min_value:
-        Statistics_list[0] = min_value[0][0]
-
-    #median value
-    median_value = db_utils.calculate_median_value(u'w_levels', meas_or_level_masl, obsid)
-    if median_value:
-        Statistics_list[1] = median_value
-
-    #max value
-    if meas_or_level_masl=='meas':
-        sql = r"""select max(meas) from w_levels where obsid = '"""
-    else:
-        sql = r"""select min(level_masl) from w_levels where obsid = '"""
-    sql += obsid
-    sql += r"""'"""
-    ConnectionOK, max_value = db_utils.sql_load_fr_db(sql)
-    if max_value:
-        Statistics_list[3] = max_value[0][0]
-
-    return meas_or_level_masl, Statistics_list
 
