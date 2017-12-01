@@ -576,7 +576,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.ms.settingsdict['custplot_xtitle'] = self.axes.get_xlabel()
         self.ms.settingsdict['custplot_ytitle'] = self.axes.get_ylabel()
 
-        axes_fontsize = float(self.axex_fontsize.text())
+        axes_fontsize = float(self.axes_fontsize.text())
         for label in self.axes.xaxis.get_ticklabels():
             label.set_fontsize(axes_fontsize)
             try:
