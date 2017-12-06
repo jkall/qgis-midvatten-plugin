@@ -129,7 +129,8 @@ class StrataInfo:
 
 class SurveyStore:
     def __init__(self, stratitable):
-        self.stratitable = stratitable  
+        self.stratitable = stratitable
+        self.warning_popup = True
 
     def getData(self, featureIds, vectorlayer):  # THIS FUNCTION IS ONLY CALLED FROM ARPATPLUGIN/SHOWSURVEY
         """ get data from databases for array of features specified by their IDs  """
@@ -171,25 +172,34 @@ class SurveyStore:
                     h_gs = ru(attributes[h_gs_ColNo])
 
                     level_val = None
+
+                    error_msg = False
+
                     if h_gs:
                         try:
                             level_val = float(h_gs)
                         except ValueError:
-                            utils.MessagebarAndLog.warning(
-                                bar_msg=ru(QCoreApplication.translate(u'Stratigraphy', u"Obsid %s skipped: h_gs '%s' couldn't convert to float."))%(obsid, h_gs),
-                                duration = 90)
+                            error_msg = ru(QCoreApplication.translate(u'Stratigraphy', u'Converting to float failed.'))
                         except Exception as e:
-                            utils.MessagebarAndLog.warning(
-                                bar_msg=ru(QCoreApplication.translate(u'Stratigraphy', u"Obsid %s skipped: h_gs '%s' error, see log message panel."))%(obsid, h_gs),
-                                log_msg=ru(QCoreApplication.translate(u'Stratigraphy', u'Stratigraphy error, msg: %s'))%str(e),
-                                duration = 90)
-                    else:
-                        utils.MessagebarAndLog.warning(
-                            bar_msg=ru(QCoreApplication.translate(u'Stratigraphy', u"Obsid %s skipped: missing h_gs."))%obsid,
-                            duration = 90)
+                            error_msg = e
 
                     if level_val is None:
-                        continue
+                        h_toc = ru(attributes[h_toc_ColNo])
+                        try:
+                            level_val = float(h_toc)
+                        except:
+                            using = u'-1'
+                            level_val = -1
+                        else:
+                            using = u'h_toc'
+
+                        utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'Stratigraphy', u"Obsid %s: using h_gs '%s' failed, using '%s' instead.")) % (obsid, h_gs, using),
+                                                       log_msg=ru(QCoreApplication.translate(u'Stratigraphy', u'%s'))%error_msg,
+                                                       duration=90)
+
+                        if self.warning_popup:
+                            utils.pop_up_info(ru(QCoreApplication.translate(u'Stratigraphy', u'Warning, h_gs is missing. See messagebar.')))
+                            self.warning_popup = False
 
                     toplvl_list[i] = level_val
 

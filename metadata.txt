@@ -27,6 +27,7 @@ changelog=
         - Probably fixed crash occuring when access to spatialite db isn't working.
         - Utility to calculate statistics for chosen column in chosen table.
         - Custom plot: Added some settings and a savebutton.
+        - Stratigraphy: If h_gs is missing, h_toc is tested, if that doesn't work, stratigraphy starts at -1.
         Version 1.5.4b:
         - Fixed bug in drillreport2. Added some internal settings for the obsid-header and skipping empty values.
         Version 1.5.3b:
