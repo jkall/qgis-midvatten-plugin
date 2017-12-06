@@ -28,6 +28,8 @@ changelog=
         - Utility to calculate statistics for chosen column in chosen table.
         - Custom plot: Added some settings and a savebutton.
         - Stratigraphy: If h_gs is missing, h_toc is tested, if that doesn't work, stratigraphy starts at -1.
+        - Section plot: Added "hidden" settings for setting much more options than the buttons support in the form of a
+                        long string. Saving string in project not working at the moment.
         Version 1.5.4b:
         - Fixed bug in drillreport2. Added some internal settings for the obsid-header and skipping empty values.
         Version 1.5.3b:

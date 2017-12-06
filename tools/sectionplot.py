@@ -27,6 +27,7 @@ import PyQt4.QtGui
 from qgis.core import *
 from functools import partial
 
+import ast
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -64,6 +65,9 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.setWindowTitle("Midvatten plugin - section plot") # Set the title for the dialog
+
+        self.stored_settings_key = 'sectionplot_stored_settings'
+
         self.initUI()
 
     def do_it(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
@@ -115,6 +119,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         
         #get PlotData
         self.get_plot_data()
+
+
+        self.stored_settings = StoredSettings(self, utils.get_stored_settings(self.ms, self.stored_settings_key, default={}))
+
         #draw plot
         self.draw_plot()
 
@@ -136,7 +144,6 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.ms.settingsdict['secplotdates']= [x for x in temporarystring.replace(u'\r', u'').split(u'\n') if x.strip()]
         except TypeError as e:
             self.ms.settingsdict['secplotdates']=u''
-        print(str(self.ms.settingsdict['secplotdates']))
         self.ms.settingsdict['secplottext'] = self.textcolComboBox.currentText()
         self.ms.settingsdict['secplotbw'] = self.barwidthdoubleSpinBox.value()
         self.ms.settingsdict['secplotdrillstop'] = self.drillstoplineEdit.text()
@@ -313,19 +320,44 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         fontsize = int(self.legend_fontsize.text())
         ticklabel_fontsize = int(self.ticklabel_fontsize.text())
         axlabel_fontsize = int(self.axlabel_fontsize.text())
-        leg = self.secax.legend(self.p, self.Labels,loc=0 )
+
+        settings = self.stored_settings.settings.get('legend', {})
+        self.stored_settings.settings['legend'] = settings
+
+        defaults = [('loc', 0)]
+        for default in defaults:
+            attr, value = default
+            settings.setdefault(attr, settings.get(attr, value))
+
+        leg = self.secax.legend(self.p, self.Labels, **settings)
         leg.draggable(state=True)
-        frame  = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
-        frame.set_facecolor('1')    # set the frame face color to white                
-        frame.set_fill(False)    # set the frame face color to white                
+        frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
+
+        settings = self.stored_settings.settings.get('legend_frame', {})
+        self.stored_settings.settings['legend_frame'] = settings
+        fill = settings.get(u'fill', False)
+        if fill:
+            fill = True
+        facecolor = settings.get(u'facecolor', "1")
+
+        frame.set_facecolor(facecolor)    # set the frame face color to white
+
+        frame.set_fill(fill)    
         for t in leg.get_texts():
             t.set_fontsize(fontsize)
 
         self.secax.grid(b=True, which='both', color='0.65',linestyle='-')
         self.secax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
         self.secax.xaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
-        self.secax.set_ylabel(ru(QCoreApplication.translate(u'SectionPlot', u"Level, masl")), fontsize=axlabel_fontsize)  #Allows international characters ('åäö') as ylabel
-        self.secax.set_xlabel(ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")), fontsize=axlabel_fontsize)  #Allows international characters ('åäö') as xlabel
+
+        ylabel = self.stored_settings.settings.get(u'ylabel', ru(QCoreApplication.translate(u'SectionPlot', u"Level, masl")))
+        self.stored_settings.settings[u'ylabel'] = ylabel
+        self.secax.set_ylabel(ylabel, fontsize=axlabel_fontsize)  #Allows international characters ('åäö') as ylabel
+
+        xlabel = self.stored_settings.settings.get(u'xlabel', ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")))
+        self.stored_settings.settings[u'xlabel'] = xlabel
+        self.secax.set_xlabel(xlabel, fontsize=axlabel_fontsize)  #Allows international characters ('åäö') as xlabel
+
         for label in self.secax.xaxis.get_ticklabels():
             label.set_fontsize(ticklabel_fontsize)
         for label in self.secax.yaxis.get_ticklabels():
@@ -338,6 +370,11 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #self.secax.autoscale(enable=True, axis='both', tight=None)
         xmin, xmax = self.secax.get_xlim()
         self.secax.set_xlim(min(float(min(self.LengthAlong))-self.barwidth,xmin), max(float(max(self.LengthAlong))+self.barwidth,xmax))
+
+        settings = self.stored_settings.settings.get('subplots_adjust', {})
+        self.stored_settings.settings['subplots_adjust'] = settings
+        self.secfig.subplots_adjust(**settings)
+
         self.canvas.draw()
         """
         The plot is shown in the canvas. 
@@ -538,6 +575,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.connect(self.chart_settings, PyQt4.QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.chart_settings))
         self.connect(self.plot_width, PyQt4.QtCore.SIGNAL("editingFinished()"), partial(self.change_plot_size))
         self.connect(self.plot_height, PyQt4.QtCore.SIGNAL("editingFinished()"), partial(self.change_plot_size))
+        self.connect(self.update_stored_settings_button, PyQt4.QtCore.SIGNAL("clicked()"), self.update_stored_settings)
+        self.connect(self.clear_stored_settings_button, PyQt4.QtCore.SIGNAL("clicked()"), self.clear_stored_settings)
         self.set_groupbox_children_visibility(self.chart_settings)
         
         # Create a plot window with one single subplot
@@ -556,9 +595,24 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             temp_memorylayer, xarray = qchain(self.sectionlinelayer,self.barwidth/2)
             for layername in self.ms.settingsdict['secplotselectedDEMs']:
                 DEMdata = sampling(temp_memorylayer,self.rastItems[unicode(layername)])
+
+
                 plotlable = self.get_plot_label_name(layername, self.Labels)
-                self.Labels.append(layername)
-                lineplot,=self.secax.plot(xarray, DEMdata, marker = 'None', linestyle = '-', label=plotlable)#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
+
+                settings = self.stored_settings.settings.get('dems', {}).get(plotlable, {})
+                self.stored_settings.settings.setdefault('dems', {})[plotlable] = settings
+
+                defaults = [('marker', 'None'),
+                            ('linestyle', '-'),
+                            ('linewidth', 1)]
+                for default in defaults:
+                    attr, value = default
+                    settings.setdefault(attr, settings.get(attr, value))
+
+                label = settings.get('label', plotlable)
+                self.Labels.append(label)
+
+                lineplot, = self.secax.plot(xarray, DEMdata, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
                 self.p.append(lineplot)
 
             QgsMapLayerRegistry.instance().removeMapLayer(temp_memorylayer.id())
@@ -586,9 +640,20 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             return label + '_' + str(label_occurence + 1)
 
     def plot_geology(self):
+
+        settings = self.stored_settings.settings.get('geology', {})
+        self.stored_settings.settings['geology'] = settings
+
+        defaults = [('edgecolor', "black"),
+                    ('width', self.barwidth)]
+        for default in defaults:
+            attr, value = default
+            settings.setdefault(attr, settings.get(attr, value))
+
+
         for Typ in self.ExistingPlotTypes:#Adding a plot for each "geoshort" that is identified
             plotxleftbarcorner = [i - self.barwidth/2 for i in self.plotx[Typ]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
-            self.p.append(self.secax.bar(plotxleftbarcorner,self.plotbarlength[Typ], color=self.Colors[Typ], edgecolor='black', hatch=self.Hatches[Typ], width = self.barwidth, bottom=self.plotbottom[Typ]))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
+            self.p.append(self.secax.bar(plotxleftbarcorner,self.plotbarlength[Typ], color=self.Colors[Typ], hatch=self.Hatches[Typ], bottom=self.plotbottom[Typ], **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
             self.Labels.append(Typ)
 
     def plot_obs_lines_data(self):
@@ -634,7 +699,22 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 plotlable = self.get_plot_label_name(label, self.Labels)
                 self.Labels.append(label)
 
-            lineplot,=self.secax.plot(x_wl, WL,  'v-', markersize = 6, label=plotlable)#The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
+
+            settings = self.stored_settings.settings.get('wlevels', {}).get(plotlable, {})
+            self.stored_settings.settings.setdefault('wlevels', {})[plotlable] = settings
+
+            defaults = [('markersize', 6),
+                        ('marker', 'v'),
+                        ('linestyle', '-'),
+                        ('linewidth', 1)]
+            for default in defaults:
+                attr, value = default
+                settings.setdefault(attr, settings.get(attr, value))
+
+
+
+            lineplot, = self.secax.plot(x_wl, WL, label=plotlable, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
+
             self.p.append(lineplot)
 
     def save_settings(self):# This is a quick-fix, should use the midvsettings class instead.
@@ -765,3 +845,89 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         else:
             self.widget.setMinimumHeight(height)
             self.widget.setMaximumHeight(height)
+
+    def update_stored_settings(self):
+        self.stored_settings.ask_and_update_settings_string()
+        self.draw_plot()
+        self.change_plot_size()
+        utils.save_stored_settings(self.ms, self.stored_settings.settings, self.stored_settings_key)
+
+    def clear_stored_settings(self):
+        self.stored_settings = StoredSettings(self, settings={})
+        utils.save_stored_settings(self.ms, self.stored_settings.settings, self.stored_settings_key)
+
+
+class StoredSettings(object):
+    def __init__(self, sectionplot, settings=None):
+        self.settings = settings
+        if self.settings is None:
+            self.settings = {}
+
+        self.sectionplot = sectionplot
+
+
+        self.self_vars = ('chart_fontsize',
+                        'label_rotation',
+                        'xytext',
+                        'drillstop_text',
+                        'ticklabel_fontsize',
+                        'axlabel_fontsize',
+                        'legend_fontsize',
+                        'plot_width',
+                        'plot_height')
+
+        self_vars = self.settings.get('self_vars', {})
+        for self_var in self.self_vars:
+            if self_var not in self_vars:
+                try:
+                    attr = getattr(self.sectionplot, self_var)
+                except AttributeError:
+                    pass
+                else:
+                    value = attr.text()
+                    self_vars[self_var] = value
+        self.settings['self_vars'] = self_vars
+
+
+    def ask_and_update_settings_string(self):
+        old_string = utils.anything_to_string_representation(self.settings)
+        msg = ru(QCoreApplication.translate(u'StoredSettings', u'Replace the settings string with a new settings string.'))
+        new_string = PyQt4.QtGui.QInputDialog.getText(None, ru(QCoreApplication.translate(u'StoredSettings', "Edit settings string")), msg,
+                                                           PyQt4.QtGui.QLineEdit.Normal, old_string)
+
+        if not new_string[1]:
+            return False
+
+        new_string_text = ru(new_string[0])
+
+        try:
+            as_dict = ast.literal_eval(new_string_text)
+        except Exception as e:
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'StoredSettings', u'Translating string to dict failed, see log message panel')),
+                                           log_msg=str(e))
+        else:
+            self.settings = as_dict
+
+        """
+        Set plot/axis/legend/chart options:
+        chart_fontsize
+        label_rotation
+        xytext
+        drillstop_text
+        ticklabel_fontsize
+        axlabel_fontsize
+        legend_fontsize
+        plot_width
+        plot_height
+        """
+        self_vars = self.settings.get('self_vars', {})
+        for self_var, value in self_vars.iteritems():
+            try:
+                attr = getattr(self.sectionplot, self_var)
+            except AttributeError:
+                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'StoredSettings',
+                                                                                     u'Section plot has no attribute named %s'))%self_var)
+            else:
+                attr.setText(value)
+
+

@@ -290,6 +290,20 @@ p, li { white-space: pre-wrap; }
             <property name="sizeConstraint">
              <enum>QLayout::SetDefaultConstraint</enum>
             </property>
+            <item row="6" column="0">
+             <widget class="QPushButton" name="update_stored_settings_button">
+              <property name="text">
+               <string>Update stored settings</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="4">
+             <widget class="QLabel" name="label_18">
+              <property name="text">
+               <string>Plot height  </string>
+              </property>
+             </widget>
+            </item>
             <item row="3" column="1">
              <widget class="QLineEdit" name="xytext">
               <property name="text">
@@ -458,17 +472,24 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="2" column="4">
-             <widget class="QLabel" name="label_18">
-              <property name="text">
-               <string>Plot height  </string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="5">
              <widget class="QLineEdit" name="plot_height">
               <property name="inputMethodHints">
                <set>Qt::ImhDigitsOnly</set>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="Line" name="line">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="0">
+             <widget class="QPushButton" name="clear_stored_settings_button">
+              <property name="text">
+               <string>Clear stored settings</string>
               </property>
              </widget>
             </item>

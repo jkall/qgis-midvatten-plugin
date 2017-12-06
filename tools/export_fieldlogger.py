@@ -58,7 +58,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             if settingskey not in self.ms.settingsdict:
                 utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'%s did not exist in settingsdict'))%settingskey)
 
-        self.parameter_groups = self.create_parameter_groups_using_stored_settings(self.get_stored_settings(self.ms, self.stored_settingskey),
+        self.parameter_groups = self.create_parameter_groups_using_stored_settings(utils.get_stored_settings(self.ms, self.stored_settingskey),
                                                                                    self.connect)
         if self.parameter_groups is None or not self.parameter_groups:
             self.parameter_groups = [ParameterGroup(self.connect)]
@@ -89,7 +89,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.connect(self.parameter_browser_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda : self.parameter_browser.show())
 
-        self.update_parameter_browser_using_stored_settings(self.get_stored_settings(self.ms, self.stored_settingskey_parameterbrowser), self.parameter_browser)
+        self.update_parameter_browser_using_stored_settings(utils.get_stored_settings(self.ms, self.stored_settingskey_parameterbrowser), self.parameter_browser)
 
         self.add_parameter_group = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'More Fields and Locations')))
         self.add_parameter_group.setToolTip(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Creates an additional empty input field group.')))
@@ -108,10 +108,10 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.gridLayout_buttons.addWidget(self.save_settings_button, 3, 0)
         self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                         lambda: map(lambda x: x(),
-                                 [lambda: self.save_stored_settings(self.ms,
+                                 [lambda: utils.save_stored_settings(self.ms,
                                                             self.update_stored_settings(self.parameter_groups),
                                                             self.stored_settingskey),
-                                  lambda: self.save_stored_settings(self.ms,
+                                  lambda: utils.save_stored_settings(self.ms,
                                                                     self.update_stored_settings([self.parameter_browser]),
                                                                     self.stored_settingskey_parameterbrowser)]))
 
@@ -120,7 +120,7 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         self.gridLayout_buttons.addWidget(self.clear_settings_button, 4, 0)
         self.connect(self.clear_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(),
-                                 [lambda: self.save_stored_settings(self.ms, [], self.stored_settingskey),
+                                 [lambda: utils.save_stored_settings(self.ms, [], self.stored_settingskey),
                                   lambda: utils.pop_up_info(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Settings cleared. Restart Export to Fieldlogger dialog to complete,\nor press "Save settings" to save current input fields settings again.')))]))
 
         self.settings_strings_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Settings strings')))
@@ -189,35 +189,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
         return new_widget
 
     @staticmethod
-    def get_stored_settings(ms, settingskey):
-        """
-        Reads the settings from settingskey and returns a created dict/list/tuple using ast.literal_eval
-
-        :param ms: midvatten settings
-        :param settingskey: the key to get from midvatten settings.
-        :return: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
-        """
-        settings_string_raw = ms.settingsdict.get(settingskey, None)
-        if settings_string_raw is None:
-            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Settings key %s did not exist in midvatten settings.'))%settingskey)
-            return []
-        if not settings_string_raw:
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Settings key %s was empty.'))%settingskey)
-            return []
-
-        settings_string_raw = ru(settings_string_raw)
-
-        try:
-            stored_settings = ast.literal_eval(settings_string_raw)
-        except SyntaxError:
-            stored_settings = []
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing the settingsstring %s failed.'))%str(settings_string_raw))
-        except ValueError:
-            stored_settings = []
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing the settingsstring %s failed.'))%str(settings_string_raw))
-        return stored_settings
-
-    @staticmethod
     def create_parameter_groups_using_stored_settings(stored_settings, connect):
         """
         """
@@ -255,20 +226,6 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
     def update_stored_settings(objects_with_get_settings):
         return [[index, copy.deepcopy(an_object.get_settings())] for index, an_object in enumerate(objects_with_get_settings) if an_object.get_settings()]
 
-    @staticmethod
-    def save_stored_settings(ms, stored_settings, settingskey):
-        """
-        Saves the current parameter settings into midvatten settings
-
-        :param ms: midvattensettings
-        :param stored_settings: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
-        :return: stores a string like objname;attr1:value1;attr2:value2/objname2;attr3:value3... in midvatten settings
-        """
-        settings_string = utils.anything_to_string_representation(stored_settings)
-        ms.settingsdict[settingskey] = settings_string
-        ms.save_settings()
-        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Settings %s stored for key %s.'))%(settings_string, settingskey))
-
     def restore_default_settings(self):
         input_field_browser, input_fields_groups = defs.export_fieldlogger_defaults()
         self.update_settings(input_field_browser, self.stored_settingskey_parameterbrowser)
@@ -305,13 +262,13 @@ class ExportToFieldLogger(PyQt4.QtGui.QMainWindow, export_fieldlogger_ui_dialog)
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing settings failed, see log message panel')), log_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing settings failed using string\n%s\n%s'))%(new_string_text, str(e)))
             return False
 
-        self.save_stored_settings(self.ms, stored_settings, settingskey)
+        utils.save_stored_settings(self.ms, stored_settings, settingskey)
 
         return True
 
     @utils.waiting_cursor
     def export(self):
-        self.save_stored_settings(self.ms, self.update_stored_settings(self.parameter_groups), self.stored_settingskey)
+        utils.save_stored_settings(self.ms, self.update_stored_settings(self.parameter_groups), self.stored_settingskey)
         self.write_printlist_to_file(self.create_export_printlist(self.parameter_groups))
 
     def preview(self):

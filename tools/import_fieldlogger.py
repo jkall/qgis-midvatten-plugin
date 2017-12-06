@@ -98,7 +98,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         #self.add_line(sublocations_layout)
 
         self.stored_settingskey = u'fieldlogger_import_parameter_settings'
-        self.stored_settings = self.get_stored_settings(self.ms, self.stored_settingskey)
+        self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settingskey)
 
         #Input fields
         self.input_fields = InputFields(self.connect)
@@ -112,14 +112,14 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : map(lambda x: x(),
                                       [lambda : self.input_fields.update_stored_settings(self.stored_settings),
-                                       lambda : self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]))
+                                       lambda : utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]))
 
         self.clear_settings_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Clear settings')))
         self.clear_settings_button.setToolTip(ru(QCoreApplication.translate(u'FieldloggerImport', u'Clear all parameter settings\nReopen Fieldlogger import gui to have it reset,\nor press "Save settings" to undo.')))
         self.gridLayout_buttons.addWidget(self.clear_settings_button, 1, 0)
         self.connect(self.clear_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(),
-                                 [lambda: self.save_stored_settings(self.ms, [], self.stored_settingskey),
+                                 [lambda: utils.save_stored_settings(self.ms, [], self.stored_settingskey),
                                   lambda: utils.pop_up_info(ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings cleared. Restart import Fieldlogger dialog')))]))
 
         self.close_after_import = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'FieldloggerImport', u'Close dialog after import')))
@@ -391,46 +391,6 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             observations = setting.alter_data(observations)
         return observations
 
-    @staticmethod
-    def get_stored_settings(ms, settingskey):
-        """
-        Reads the settings from settingskey and returns a created dict/list/tuple using ast.literal_eval
-
-        :param ms: midvatten settings
-        :param settingskey: the key to get from midvatten settings.
-        :return: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
-        """
-        settings_string_raw = ms.settingsdict.get(settingskey, None)
-        if settings_string_raw is None:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings key %s did not exist in midvatten settings.'))%settingskey)
-            return []
-        if not settings_string_raw:
-            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings key %s was empty.'))%settingskey)
-            return []
-
-        settings_string_raw = ru(settings_string_raw)
-
-        try:
-            stored_settings = ast.literal_eval(settings_string_raw)
-        except SyntaxError:
-            stored_settings = []
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Getting stored settings failed for key %s, see log message panel.'))%settingskey, log_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Parsing the settingsstring %s failed'))%str(settings_string_raw))
-        return stored_settings
-
-    @staticmethod
-    def save_stored_settings(ms, stored_settings, settingskey):
-        """
-        Saves the current parameter settings into midvatten settings
-
-        :param ms: midvattensettings
-        :param stored_settings: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
-        :return: a string representation of stored_settings
-        """
-        settings_string = utils.anything_to_string_representation(stored_settings)
-        ms.settingsdict[settingskey] = settings_string
-        ms.save_settings()
-        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings %s stored for key %s'))%(settings_string, settingskey))
-
     @utils.general_exception_handler
     @import_data_to_db.import_exception_handler
     def start_import(self, observations):
@@ -443,7 +403,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         #Start by saving the parameter settings
         self.input_fields.update_stored_settings(self.stored_settings)
-        self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)
+        utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)
 
         chosen_methods = [import_method_chooser.import_method for import_method_chooser in self.input_fields.parameter_imports.values()
                           if import_method_chooser.import_method]

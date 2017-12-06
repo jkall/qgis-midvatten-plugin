@@ -33,6 +33,7 @@ import os
 import qgis.utils
 import tempfile
 import time
+import ast
 from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -1461,3 +1462,47 @@ def general_exception_handler(func):
         else:
             return result
     return new_func
+
+
+def save_stored_settings(ms, stored_settings, settingskey):
+    """
+    Saves the current parameter settings into midvatten settings
+
+    :param ms: midvattensettings
+    :param stored_settings: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
+    :return: stores a string like objname;attr1:value1;attr2:value2/objname2;attr3:value3... in midvatten settings
+    """
+    settings_string = anything_to_string_representation(stored_settings)
+    ms.settingsdict[settingskey] = settings_string
+    ms.save_settings()
+    MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'save_stored_settings', u'Settings %s stored for key %s.'))%(settings_string, settingskey))
+
+def get_stored_settings(ms, settingskey, default=None):
+    """
+    Reads the settings from settingskey and returns a created dict/list/tuple using ast.literal_eval
+
+    :param ms: midvatten settings
+    :param settingskey: the key to get from midvatten settings.
+    :return: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
+    """
+    if default is None:
+        default = []
+    settings_string_raw = ms.settingsdict.get(settingskey, None)
+    if settings_string_raw is None:
+        MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Settings key %s did not exist in midvatten settings.'))%settingskey)
+        return default
+    if not settings_string_raw:
+        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Settings key %s was empty.'))%settingskey)
+        return default
+
+    settings_string_raw = returnunicode(settings_string_raw)
+
+    try:
+        stored_settings = ast.literal_eval(settings_string_raw)
+    except SyntaxError:
+        stored_settings = default
+        MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'get_stored_settings', u'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing the settingsstring %s failed.'))%str(settings_string_raw))
+    except ValueError:
+        stored_settings = default
+        MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'get_stored_settings', u'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing the settingsstring %s failed.'))%str(settings_string_raw))
+    return stored_settings
