@@ -42,10 +42,13 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.setupUi( self )#Required by Qt4 to initialize the UI
         self.initUI()
 
-    def initUI(self):        
+    def initUI(self):
         # The settings dialog is cleared, filled with relevant information and the last selected settings are preset
         self.database_settings = DatabaseSettings(self, self.gridLayout_db)
         self.ClearEverything()
+
+        self.MarkerComboBox.addItems([u'obsid', u'type', u'date_time', u'obsid but no legend', u'simple marker'])
+
         if len(self.ms.settingsdict['database'])>0:
             self.LoadAndSelectLastSettings()
 

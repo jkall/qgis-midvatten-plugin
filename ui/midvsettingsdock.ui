@@ -35,7 +35,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="TAB_DB">
        <attribute name="title">
@@ -55,14 +55,13 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
-             <height>590</height>
+             <width>389</width>
+             <height>592</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_db_scroll">
             <item row="0" column="0">
-             <layout class="QGridLayout" name="gridLayout_db">
-             </layout>
+             <layout class="QGridLayout" name="gridLayout_db"/>
             </item>
            </layout>
            <zorder></zorder>
@@ -89,8 +88,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
-             <height>590</height>
+             <width>389</width>
+             <height>592</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_10">
@@ -247,8 +246,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
-             <height>553</height>
+             <width>389</width>
+             <height>592</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_21">
@@ -482,8 +481,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
-             <height>553</height>
+             <width>389</width>
+             <height>592</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -719,8 +718,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>377</width>
-             <height>685</height>
+             <width>389</width>
+             <height>592</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">
@@ -758,31 +757,6 @@
                 <property name="toolTip">
                  <string>select here to get unique markers</string>
                 </property>
-                <item>
-                 <property name="text">
-                  <string>obsid</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>type</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>date_time</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>obsid but no legend</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>simple marker</string>
-                 </property>
-                </item>
                </widget>
               </item>
               <item row="17" column="0">
