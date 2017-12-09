@@ -106,8 +106,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
-             <height>553</height>
+             <width>184</width>
+             <height>213</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_10">
@@ -264,8 +264,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>182</width>
-             <height>442</height>
+             <width>183</width>
+             <height>375</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_21">
@@ -499,8 +499,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>197</width>
-             <height>568</height>
+             <width>206</width>
+             <height>493</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -736,8 +736,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>377</width>
-             <height>685</height>
+             <width>370</width>
+             <height>573</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">
@@ -775,31 +775,6 @@
                 <property name="toolTip">
                  <string>select here to get unique markers</string>
                 </property>
-                <item>
-                 <property name="text">
-                  <string>obsid</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>type</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>date_time</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>obsid but no legend</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>simple marker</string>
-                 </property>
-                </item>
                </widget>
               </item>
               <item row="17" column="0">

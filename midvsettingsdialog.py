@@ -51,6 +51,8 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         if len(self.ms.settingsdict['database'])>0:
             self.LoadAndSelectLastSettings()
 
+        self.MarkerComboBox.addItems([u'obsid', u'type', u'date_time', u'obsid but no legend', u'simple marker'])
+
         #Load general settings
         #self.load_and_select_general_settings() # TODO: remove in version 1.4
 
