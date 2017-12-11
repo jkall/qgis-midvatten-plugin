@@ -19,12 +19,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-import db_utils
 import midvatten_utils as utils
 import mock
 from nose.plugins.attrib import attr
 
-import tools.db_utils
+import db_utils
 import utils_for_tests
 from definitions import midvatten_defs
 
