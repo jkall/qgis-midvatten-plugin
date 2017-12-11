@@ -25,8 +25,9 @@ from PyQt4.QtCore import QCoreApplication
 
 from date_utils import datestring_to_date
 from midvatten_utils import returnunicode as ru
-from tools import db_utils, midvatten_utils as utils
-from tools.midvatten_utils import returnunicode as ru
+import midvatten_utils as utils
+import db_utils
+from midvatten_utils import returnunicode as ru
 
 
 class SplitterWithHandel(PyQt4.QtGui.QSplitter):
