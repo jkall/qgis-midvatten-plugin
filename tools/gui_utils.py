@@ -24,7 +24,6 @@ import copy
 from PyQt4.QtCore import QCoreApplication
 
 from date_utils import datestring_to_date
-from midvatten_utils import returnunicode as ru
 import midvatten_utils as utils
 import db_utils
 from midvatten_utils import returnunicode as ru
