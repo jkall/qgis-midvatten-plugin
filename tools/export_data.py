@@ -213,7 +213,7 @@ class ExportData():
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u"Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate(u'ExportData', u'%s\nmsg:\n%s'))%(sql, str(e)))
 
     @staticmethod
-    def transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict):
+    def transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict, geom_as_text=False):
         ur"""
         Transform geometry columns to new chosen SRID
 
@@ -247,7 +247,11 @@ class ExportData():
                     if old_srid is not None:
                         column = column.capitalize()
                 if old_srid is not None and new_srid is not None and old_srid != new_srid:
-                    transformed_column_names.append(u'ST_Transform({}, {})'.format(column, ru(new_srid)))
+                    if geom_as_text:
+                        transformed_column_names.append(u'ST_AsText(ST_Transform({}, {}))'.format(column, ru(new_srid)))
+                    else:
+                        transformed_column_names.append(u'ST_Transform({}, {})'.format(column, ru(new_srid)))
+
                     utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'Transformation for table %s column %s from %s to %s"'))%(tname, column, str(old_srid), str(new_srid)))
                     transformed = True
                 else:
