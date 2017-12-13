@@ -3115,102 +3115,77 @@ wells file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="780"/>
-        <source>obsid</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/midvsettingsdock.ui" line="785"/>
-        <source>type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/midvsettingsdock.ui" line="790"/>
-        <source>date_time</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/midvsettingsdock.ui" line="795"/>
-        <source>obsid but no legend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/midvsettingsdock.ui" line="800"/>
-        <source>simple marker</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/midvsettingsdock.ui" line="808"/>
+        <location filename="../ui/midvsettingsdock.ui" line="783"/>
         <source>This feature assumes your water quality data is stored in a table &quot;w_qual_lab&quot; as in a midvatten default database. The parameters for piper diagrams must be given in mg/l and with the parameter names exactly as selected above.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="827"/>
+        <location filename="../ui/midvsettingsdock.ui" line="802"/>
         <source>parameter name for chloride (mg/l)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="845"/>
+        <location filename="../ui/midvsettingsdock.ui" line="820"/>
         <source>Mg, Magnesium parameter:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="861"/>
+        <location filename="../ui/midvsettingsdock.ui" line="836"/>
         <source>parameter name for Natrium (mg/l)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="879"/>
+        <location filename="../ui/midvsettingsdock.ui" line="854"/>
         <source>Na, Natrium parameter:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="895"/>
+        <location filename="../ui/midvsettingsdock.ui" line="870"/>
         <source>parameter name for sulfate (mg/l)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="913"/>
+        <location filename="../ui/midvsettingsdock.ui" line="888"/>
         <source>Markers unique for:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="929"/>
+        <location filename="../ui/midvsettingsdock.ui" line="904"/>
         <source>parameter name for potassium (mg/l)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="947"/>
+        <location filename="../ui/midvsettingsdock.ui" line="922"/>
         <source>Cl, Chloride parameter:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="965"/>
+        <location filename="../ui/midvsettingsdock.ui" line="940"/>
         <source>HCO3, Alcalinity parameter:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="983"/>
+        <location filename="../ui/midvsettingsdock.ui" line="958"/>
         <source>K, Potassium parameter:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="1001"/>
+        <location filename="../ui/midvsettingsdock.ui" line="976"/>
         <source>Ca, Calcium parameter:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="1017"/>
+        <location filename="../ui/midvsettingsdock.ui" line="992"/>
         <source>parameter name for alcalinity (mg/l)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="1033"/>
+        <location filename="../ui/midvsettingsdock.ui" line="1008"/>
         <source>parameter name for magnesium (mg/l)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/midvsettingsdock.ui" line="1051"/>
+        <location filename="../ui/midvsettingsdock.ui" line="1026"/>
         <source>SO4, Sulfate parameter:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5291,32 +5266,32 @@ Meanwhile, do you want to go on with this import, creating a temporary table &ap
 <context>
     <name>midvsettingsdialogdock</name>
     <message>
-        <location filename="../midvsettingsdialog.py" line="242"/>
+        <location filename="../midvsettingsdialog.py" line="244"/>
         <source>Could not recover Midvatten settings. You will have to reset.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvsettingsdialog.py" line="463"/>
+        <location filename="../midvsettingsdialog.py" line="465"/>
         <source>Select database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvsettingsdialog.py" line="485"/>
+        <location filename="../midvsettingsdialog.py" line="487"/>
         <source>Correct table, both obsid and date_time columns have been found.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvsettingsdialog.py" line="487"/>
+        <location filename="../midvsettingsdialog.py" line="489"/>
         <source>Wrong table! obsid and/or date_time is missing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvsettingsdialog.py" line="550"/>
+        <location filename="../midvsettingsdialog.py" line="552"/>
         <source>Correct table! obsid column is found.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvsettingsdialog.py" line="552"/>
+        <location filename="../midvsettingsdialog.py" line="554"/>
         <source>Wrong table! obsid is missing.</source>
         <translation type="unfinished"></translation>
     </message>
