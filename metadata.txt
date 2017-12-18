@@ -19,6 +19,9 @@ experimental=False
 deprecated=False
 
 changelog=
+        Version 1.5.6b:
+        - Support for Levelogger import.
+        - Added factor column to general csv import.
         Version 1.5.5b:
         - Section plot: Added some plot settings and a redraw button.
         - PrepareForQgis2Threejs: Fixed a db closed to early bug.

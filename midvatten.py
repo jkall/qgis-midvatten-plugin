@@ -98,8 +98,11 @@ class midvatten:
         self.action_aveflowcalculate = QAction(QIcon(":/plugins/midvatten/icons/import_wflow.png"), QCoreApplication.translate("Midvatten","Calculate Aveflow from Accvol"), self.iface.mainWindow())
         QObject.connect(self.action_aveflowcalculate , SIGNAL("triggered()"), self.aveflowcalculate)
 
-        self.action_import_diverofficedata = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), QCoreApplication.translate("Midvatten","Import logger data using Diver-Office format"), self.iface.mainWindow())
+        self.action_import_diverofficedata = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), QCoreApplication.translate("Midvatten","Import logger data using Diver-Office csv-format"), self.iface.mainWindow())
         QObject.connect(self.action_import_diverofficedata, SIGNAL("triggered()"), self.import_diverofficedata)
+        
+        self.action_import_leveloggerdata = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), QCoreApplication.translate("Midvatten","Import logger data using Levelogger csv-format"), self.iface.mainWindow())
+        QObject.connect(self.action_import_leveloggerdata, SIGNAL("triggered()"), self.import_leveloggerdata)
         
         self.action_wlvlloggcalibrate = QAction(QIcon(":/plugins/midvatten/icons/calibr_level_logger_masl.png"), QCoreApplication.translate("Midvatten","Calculate logger w level from logger water head"), self.iface.mainWindow())
         QObject.connect(self.action_wlvlloggcalibrate , SIGNAL("triggered()"), self.wlvlloggcalibrate)
@@ -227,7 +230,8 @@ class midvatten:
         self.menu.addMenu(self.menu.import_data_menu)
 
         self.menu.import_data_menu.addAction(self.actiongeneral_import_csv)
-        self.menu.import_data_menu.addAction(self.action_import_diverofficedata)     
+        self.menu.import_data_menu.addAction(self.action_import_diverofficedata)
+        self.menu.import_data_menu.addAction(self.action_import_leveloggerdata)
         self.menu.import_data_menu.addAction(self.actionimport_wqual_lab_from_interlab4)
         self.menu.import_data_menu.addAction(self.actionimport_fieldlogger)
         
@@ -572,7 +576,43 @@ class midvatten:
                             pass
             else: 
                 utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
-        QApplication.restoreOverrideCursor()         
+        QApplication.restoreOverrideCursor()    
+        
+    @utils.general_exception_handler
+    def import_leveloggerdata(self): 
+        allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:   
+            if not (self.ms.settingsdict['database'] == ''):
+                longmessage = ru(QCoreApplication.translate(u"Midvatten",
+                               u"""You are about to import water head data, recorded with a Levelogger.\n"""
+                               u"""Data is supposed to be imported from a csv file exported from the levelogger data wizard and obsid will be read from the attribute 'Location'.\n"""
+                               u"""The data is supposed to be semicolon or comma separated.\n"""
+                               u"""The header for the data should have column Date, Time and at least one of the columns:\n"""
+                               u"""LEVEL, TEMPERATURE, spec. conductivity (uS/cm), spec. conductivity (mS/cm).\n\n"""
+                               u"""The unit for LEVEL must be cm or m and the unit must be given as the "UNIT: " argument one row after "LEVEL" argument.\n"""
+                               u"""The unit for spec. conductivity is read from the spec. conductivity column head and must be mS/cm or uS/cm.\n"""
+                               u"""The column order is unimportant but the column names are.\n"""
+                               u"""The data columns must be real numbers with point (.) or comma (,) as decimal separator and no separator for thousands.\n"""
+                               u"""The charset is usually cp1252!\n\n"""
+                               u"""Continue?"""))
+                sanity = utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate(u"Midvatten", 'Are you sure?')))
+                if sanity.result == 1:
+                    from import_levelogger import LeveloggerImport
+                    importinstance = LeveloggerImport(self.iface.mainWindow(), self.ms)
+                    importinstance.select_files_and_load_gui()
+
+                    if not importinstance.status:
+                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
+                    else:
+                        try:
+                            self.midvsettingsdialog.ClearEverything()
+                            self.midvsettingsdialog.LoadAndSelectLastSettings()
+                        except:
+                            pass
+            else: 
+                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
+        QApplication.restoreOverrideCursor()  
 
     def load_data_domains(self):
         #utils.pop_up_info(msg='This feature is not yet implemented',title='Hold on...')

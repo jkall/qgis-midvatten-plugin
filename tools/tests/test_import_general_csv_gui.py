@@ -50,3 +50,5 @@ class TestStaticMethods(object):
         test_string = utils.anything_to_string_representation(GeneralCsvImportGui.convert_comma_to_points_for_double_columns(file_data, tables_columns))
         reference = u'[[u"obsid", u"date_time", u"reading"], [u"obs1,1", u"2017-04-12 11:03", u"123.456"]]'
         assert test_string == reference
+
+

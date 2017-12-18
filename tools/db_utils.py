@@ -701,6 +701,15 @@ def postgresql_numeric_data_types():
             u'double precision']
 
 
+def sqlite_numeric_data_types():
+    #Skipped these:
+    # u'smallserial',
+    # u'serial',
+    # u'bigserial'
+    return [u'integer',
+            u'double']
+
+
 def get_srid_name(srid, dbconnection=None):
     if not isinstance(dbconnection, DbConnectionManager):
         dbconnection = DbConnectionManager()
@@ -719,6 +728,15 @@ def test_if_numeric(column, dbconnection=None):
         return u"""(typeof(%s)=typeof(0.01) OR typeof(%s)=typeof(1))"""%(column, column)
     else:
         return u"""pg_typeof(%s) in (%s)"""%(column, u', '.join([u"'%s'"%data_type for data_type in postgresql_numeric_data_types()]))
+
+
+def numeric_datatypes(dbconnection=None):
+    if not isinstance(dbconnection, DbConnectionManager):
+        dbconnection = DbConnectionManager()
+    if dbconnection.dbtype == u'spatialite':
+        return sqlite_numeric_data_types()
+    else:
+        return postgresql_numeric_data_types()
 
 
 def calculate_median_value(table, column, obsid, dbconnection=None):

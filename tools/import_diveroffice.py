@@ -51,6 +51,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.table_chooser = None
         self.file_data = None
         self.status = True
+        self.parse_func = self.parse_diveroffice_file
 
     def select_files_and_load_gui(self):
         self.files = self.select_files()
@@ -113,7 +114,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
         parsed_files = []
         for selected_file in files:
-            res = self.parse_diveroffice_file(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
+            res = self.parse_func(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
             if res == u'cancel':
                 self.status = True
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()

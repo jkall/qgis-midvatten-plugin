@@ -226,9 +226,12 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
                     translation_dict[alter_colname] = [alter_colname]
 
+        columns_factors = self.table_chooser.get_columns_factors_dict
+
         #Translate column names and add columns that appear more than once
         file_data = self.translate_and_reorder_file_data(file_data, translation_dict)
         file_data = self.convert_comma_to_points_for_double_columns(file_data, self.tables_columns_info[goal_table])
+        file_data = self.multiply_by_factor(file_data, columns_factors)
         file_data = self.remove_preceding_trailing_spaces_tabs(file_data)
         if foreign_key_obsid_table and foreign_key_obsid_table != goal_table and u'obsid' in file_data[0]:
             file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
@@ -287,6 +290,17 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         return file_data
 
     @staticmethod
+    def multiply_by_factor(file_data, columns_factors):
+        """
+        Multiplies all values in the file data with a given factor for each column
+        :param file_data: a list of lists like [[u'obsid', u'date_time', u'reading'], [u'obs1', u'2017-04-12 11:03', '123,456']]
+        :param table_columns_factors: a dict like {u'reading': 10}
+        :return: file_data where the columns have been multiplied by the factor.
+        """
+        file_data = [[col * columns_factors[file_data[0][colnr]] if file_data[0][colnr] in columns_factors else col for colnr, col in enumerate(row)] if rownr > 0 else row for rownr, row in enumerate(file_data)]
+        return file_data
+
+    @staticmethod
     def reformat_date_time(file_data):
         try:
             colnrs_to_convert = [file_data[0].index(u'date_time')]
@@ -319,6 +333,7 @@ class ImportTableChooser(VRowEntry):
         self.tables_columns = tables_columns
         self.file_header = file_header
         self.columns = []
+        self.numeric_datatypes = db_utils.numeric_datatypes()
 
         chooser = RowEntry()
 
@@ -354,6 +369,12 @@ class ImportTableChooser(VRowEntry):
                 column_list.append(column_entry.db_column)
                 translation_dict[file_column_name] = column_list
         return translation_dict
+
+    def get_columns_factors_dict(self):
+        columns_factors = dict([(column_entry.db_column, column_entry.factor)
+                                for column_entry in self.columns
+                                if column_entry.db_column in self.numeric_datatypes])
+        return columns_factors
 
     @property
     def import_method(self):
@@ -393,7 +414,7 @@ class ImportTableChooser(VRowEntry):
         self.columns = []
 
         if not import_method_name:
-            self.layout.insertStretch(-1, 2)
+            self.layout.insertStretch(-1, 3)
             return None
 
         self.grid = RowEntryGrid()
@@ -402,15 +423,16 @@ class ImportTableChooser(VRowEntry):
         self.grid.layout.addWidget(PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'Column name'))), 0, 0)
         self.grid.layout.addWidget(PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'File column'))), 0, 1)
         self.grid.layout.addWidget(PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'Static value'))), 0, 2)
+        self.grid.layout.addWidget(PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'Factor'))), 0, 3)
 
         for index, tables_columns_info in enumerate(sorted(tables_columns[import_method_name], key=itemgetter(0))):
-            column = ColumnEntry(tables_columns_info, file_header, self.connect)
+            column = ColumnEntry(tables_columns_info, file_header, self.connect, self.numeric_datatypes)
             rownr = self.grid.layout.rowCount()
             for colnr, wid in enumerate(column.column_widgets):
                 self.grid.layout.addWidget(wid, rownr, colnr)
             self.columns.append(column)
 
-        self.layout.insertStretch(-1, 2)
+        self.layout.insertStretch(-1, 3)
 
     def reload(self):
         import_method = self.import_method
@@ -419,7 +441,7 @@ class ImportTableChooser(VRowEntry):
 
 
 class ColumnEntry(object):
-    def __init__(self, tables_columns_info, file_header, connect):
+    def __init__(self, tables_columns_info, file_header, connect, numeric_datatypes):
         self.tables_columns_info = tables_columns_info
         self.connect = connect
         self.obsids_from_selection = None
@@ -441,7 +463,6 @@ class ColumnEntry(object):
         self.combobox.addItem(u'')
         self.combobox.addItems(sorted(self.file_header, key=lambda s: s.lower()))
 
-
         if self.db_column == u'obsid':
             self.obsids_from_selection = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'ColumnEntry', u'Obsid from qgis selection')))
             self.obsids_from_selection.setToolTip(ru(QCoreApplication.translate(u'ColumnEntry', u'Select 1 obsid from obs_points or obs_lines attribute table or map.')))
@@ -462,6 +483,16 @@ class ColumnEntry(object):
         self.static_checkbox.setToolTip(ru(QCoreApplication.translate(u'ColumnEntry', u'The supplied string will be written to the current column name for all\nimported rows instead of being read from file column.')))
         self.column_widgets.append(self.static_checkbox)
         self._all_widgets.append(self.static_checkbox)
+
+        self._factor = PyQt4.QtGui.QLineEdit()
+        self._factor.setText(u'1')
+        self._factor.setToolTip(ru(QCoreApplication.translate(u'ColumnEntry', u'Multiply each value in the column with a factor.')))
+        self._factor.setSizePolicy(PyQt4.QtGui.QSizePolicy.Minimum, PyQt4.QtGui.QSizePolicy.Minimum)
+        self.column_widgets.append(self._factor)
+        self._all_widgets.append(self._factor)
+
+        if column_type not in numeric_datatypes:
+            self._factor.setVisible(False)
 
         self.connect(self.static_checkbox, PyQt4.QtCore.SIGNAL("clicked()"), self.static_checkbox_checked)
 
@@ -507,6 +538,21 @@ class ColumnEntry(object):
             self.combobox.setEnabled(True)
             if isinstance(self.obsids_from_selection, PyQt4.QtGui.QCheckBox):
                 self.obsids_from_selection.setChecked(False)
+
+    @property
+    def factor(self):
+        value = self._factor.text()
+        as_float = utils.to_float_or_none(value)
+        if isinstance(as_float, float):
+            return as_float
+        else:
+            return None
+
+    @factor.setter
+    def factor(self, value):
+        as_float = utils.to_float_or_none(value)
+        if isinstance(as_float, float):
+            self._factor.setText(str(as_float))
 
 
 class Obsids_from_selection(object):

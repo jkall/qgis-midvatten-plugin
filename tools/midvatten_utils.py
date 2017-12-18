@@ -1506,3 +1506,16 @@ def get_stored_settings(ms, settingskey, default=None):
         stored_settings = default
         MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'get_stored_settings', u'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing the settingsstring %s failed.'))%str(settings_string_raw))
     return stored_settings
+
+
+def to_float_or_none(anything):
+    try:
+        a_float = float(str(anything).replace(u',', u'.'))
+    except TypeError:
+        return None
+    except ValueError:
+        return None
+    except:
+        return None
+    else:
+        return a_float
