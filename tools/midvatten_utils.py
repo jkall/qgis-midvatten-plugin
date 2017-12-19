@@ -1509,13 +1509,27 @@ def get_stored_settings(ms, settingskey, default=None):
 
 
 def to_float_or_none(anything):
-    try:
-        a_float = float(str(anything).replace(u',', u'.'))
-    except TypeError:
-        return None
-    except ValueError:
-        return None
-    except:
-        return None
+    if isinstance(anything, float):
+        return anything
+    elif isinstance(anything, int):
+        return float(anything)
+    elif isinstance(anything, basestring):
+        try:
+            a_float = float(anything.replace(u',', u'.'))
+        except TypeError:
+            return None
+        except ValueError:
+            return None
+        except:
+            return None
+        else:
+            return a_float
+    elif anything is None:
+        return anything
     else:
-        return a_float
+        try:
+            a_float = float(str(anything).replace(u',', u'.'))
+        except:
+            return None
+        else:
+            return a_float
