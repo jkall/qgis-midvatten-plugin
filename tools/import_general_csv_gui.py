@@ -494,7 +494,7 @@ class ColumnEntry(object):
 
         self._factor = PyQt4.QtGui.QLineEdit()
         self._factor.setText(u'1')
-        self._factor.setToolTip(ru(QCoreApplication.translate(u'ColumnEntry', u'Multiply each value in the column with a factor.')))
+        self._factor.setToolTip(ru(QCoreApplication.translate(u'ColumnEntry', u'Multiply each imported value in the column with a factor.')))
         self._factor.setFixedWidth(40)
         self.column_widgets.append(self._factor)
         self._all_widgets.append(self._factor)
