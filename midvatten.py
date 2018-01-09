@@ -372,11 +372,9 @@ class midvatten:
     def drillreport2(self):
         allcritical_layers = ('obs_points', 'w_levels', 'w_qual_lab')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
-        err_flag = utils.verify_layer_selection(err_flag,0)#verify the selected layer has attribute "obsid" and that exactly one feature is selected
         if err_flag == 0:
-            obsids = utils.getselectedobjectnames(qgis.utils.iface.activeLayer())  # selected obs_point is now found in obsid[0]
-            from drillreport2 import Drillreport
-            Drillreport(obsids,self.ms.settingsdict)
+            from drillreport2 import DrillreportUi
+            DrillreportUi(self.iface.mainWindow(), self.ms.settingsdict)
 
     def export_csv(self):
         allcritical_layers = tuple(midvatten_defs.get_subset_of_tables_fr_db('obs_points') + midvatten_defs.get_subset_of_tables_fr_db('obs_lines') + midvatten_defs.get_subset_of_tables_fr_db('data_domains') + midvatten_defs.get_subset_of_tables_fr_db('default_layers') +  midvatten_defs.get_subset_of_tables_fr_db('default_nonspatlayers') )#none of these layers must be in editing mode

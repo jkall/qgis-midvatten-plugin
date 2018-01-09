@@ -21,19 +21,106 @@
 import db_utils
 from PyQt4.QtCore import QUrl, QDir
 from PyQt4.QtGui import QDesktopServices
+import PyQt4
 
 import os
 import locale
+from collections import OrderedDict
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 import codecs
 from time import sleep
+import qgis
 
 from PyQt4.QtCore import QCoreApplication
 
+
+drillreport_2_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'drillreport_2.ui'))[0]
+
+class DrillreportUi(PyQt4.QtGui.QMainWindow, drillreport_2_dialog):
+    def __init__(self, parent, midv_settings):
+        self.iface = parent
+
+        self.ms = midv_settings
+        PyQt4.QtGui.QDialog.__init__(self, parent)
+        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+        self.setupUi(self)  # Required by Qt4 to initialize the UI
+
+
+        #Settings:
+        #--------------
+        #The order and content of the geographical and general tables will follow general_metadata and geo_metadata list.
+        # All obs_points columns could appear here except geometry.
+        # The XY-reference system is added a bit down in the script to the list geo_data. The append has to be commented away
+        # if it's not wanted.
+        self.general_metadata.setPlainText(u'\n'.join([u'type',
+                            u'h_tocags',
+                            u'material',
+                            u'diam',
+                            u'drillstop',
+                            u'screen',
+                            u'drilldate']))
+
+        self.geo_metadata.setPlainText(u'\n'.join([u'east',
+                        u'north',
+                        u'ne_accur',
+                        u'ne_source',
+                        u'h_source',
+                        u'h_toc',
+                        u'h_accur']))
+
+        self.strat_columns.setPlainText(u'\n'.join([u'depthtop',
+                         u'depthbot',
+                         u'geology',
+                         u'geoshort',
+                         u'capacity',
+                         u'development',
+                         u'comment']))
+
+        self.general_metadata_header.setText(ru(QCoreApplication.translate(u'Drillreport2', u'General information')))
+        self.geo_metadata_header.setText(ru(QCoreApplication.translate(u'Drillreport2', u'Geographical information')))
+        self.strat_columns_header.setText(ru(QCoreApplication.translate(u'Drillreport2', u'Stratigraphy')))
+        self.comment_header.setText(ru(QCoreApplication.translate(u'Drillreport2', u'Comment')))
+        ##If False, the header will be written outside the table
+        #header_in_table = True
+        ##If True, headers/values in general_metadata and geo_metadata will be skipped if the value is empty, else they
+        ##will be printed anyway
+        #skip_empty = False
+        #include_comments = True
+        ###############
+
+        self.connect(self.pushButton_ok, PyQt4.QtCore.SIGNAL("clicked()"), self.drillreport)
+
+        self.connect(self.pushButton_cancel, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.close())
+
+        self.show()
+
+    def drillreport(self):
+        general_metadata = [x for x in self.general_metadata.toPlainText().split(u'\n') if x]
+        geo_metadata = [x for x in self.geo_metadata.toPlainText().split(u'\n') if x]
+        strat_columns = [x for x in self.strat_columns.toPlainText().split(u'\n') if x]
+        header_in_table = self.header_in_table.isChecked()
+        skip_empty = self.skip_empty.isChecked()
+        include_comments = self.include_comments.isChecked()
+        obsids = sorted(utils.getselectedobjectnames(qgis.utils.iface.activeLayer()))  # selected obs_point is now found in obsid[0]
+        general_metadata_header = self.general_metadata_header.text()
+        geo_metadata_header = self.geo_metadata_header.text()
+        strat_columns_header = self.strat_columns_header.text()
+        comment_header = self.comment_header.text()
+        empty_row_between_obsids = self.empty_row_between_obsids.isChecked()
+        if not obsids:
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Must select at least 1 obsid in selected layer')))
+        drillrep = Drillreport(obsids, self.ms, general_metadata, geo_metadata, strat_columns, header_in_table,
+                               skip_empty, include_comments, general_metadata_header, geo_metadata_header, strat_columns_header,
+                               comment_header, empty_row_between_obsids)
+
+
+
 class Drillreport():        # general observation point info for the selected object
 
-    def __init__(self, obsids=[''], settingsdict = {}):
+    def __init__(self, obsids, settingsdict, general_metadata, geo_metadata, strat_columns, header_in_table,
+         skip_empty, include_comments, general_metadata_header, geo_metadata_header, strat_columns_header,
+                 comment_header, empty_row_between_obsids):
 
         reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
         if not os.path.exists(reportfolder):
@@ -80,34 +167,6 @@ class Drillreport():        # general observation point info for the selected ob
         >>> print(y)
         """
 
-        #Settings:
-        #--------------
-        #The order and content of the geographical and general tables will follow general_metadata and geo_metadata list.
-        # All obs_points columns could appear here except geometry.
-        # The XY-reference system is added a bit down in the script to the list geo_data. The append has to be commented away
-        # if it's not wanted.
-        general_metadata = [u'type',
-                            u'h_tocags',
-                            u'material',
-                            u'diam',
-                            u'drillstop',
-                            u'screen',
-                            u'drilldate']
-
-        geo_metadata = [u'east',
-                        u'north',
-                        u'ne_accur',
-                        u'ne_source',
-                        u'h_source',
-                        u'h_toc',
-                        u'h_accur']
-
-        #If False, the header will be written outside the table
-        header_in_table = True
-        #If True, headers/values in general_metadata and geo_metadata will be skipped if the value is empty, else they
-        #will be printed anyway
-        skip_empty = False
-        ###############
 
         dbconnection = db_utils.DbConnectionManager()
 
@@ -115,8 +174,11 @@ class Drillreport():        # general observation point info for the selected ob
         all_obs_points_data = ru(db_utils.get_sql_result_as_dict(u'SELECT %s FROM obs_points WHERE obsid IN (%s) ORDER BY obsid'%(u', '.join(obs_points_cols), u', '.join([u"'{}'".format(x) for x in obsids])),
                                                             dbconnection=dbconnection)[1], keep_containers=True)
 
-        all_stratigrapy_data = ru(db_utils.get_sql_result_as_dict(u'SELECT obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development, comment FROM stratigraphy WHERE obsid IN (%s) ORDER BY obsid, stratid'%(u', '.join([u"'{}'".format(x) for x in obsids])),
-                                                            dbconnection=dbconnection)[1], keep_containers=True)
+        if strat_columns:
+            all_stratigrapy_data = ru(db_utils.get_sql_result_as_dict(u'SELECT obsid, stratid, %s FROM stratigraphy WHERE obsid IN (%s) ORDER BY obsid, stratid'%(u', '.join([_x.split(u';')[0] for _x in strat_columns if _x.split(u';')[0] not in (u'obsid', u'stratid')]), u', '.join([u"'{}'".format(x) for x in obsids])),
+                                                                dbconnection=dbconnection)[1], keep_containers=True)
+        else:
+            all_stratigrapy_data = {}
 
         crs = ru(db_utils.sql_load_fr_db(u"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""", dbconnection=dbconnection)[1][0][0])
         crsname = ru(db_utils.get_srid_name(crs, dbconnection=dbconnection))
@@ -127,26 +189,44 @@ class Drillreport():        # general observation point info for the selected ob
         rpt += ur"""<html>"""
         for obsid in obsids:
             obs_points_data = all_obs_points_data[obsid][0]
-            general_data = [(obs_points_translations.get(header, header), obs_points_data[obs_points_cols.index(header)-1]) for header in general_metadata]
-            geo_data = [(obs_points_translations.get(header, header), obs_points_data[obs_points_cols.index(header)-1]) for header in geo_metadata]
-            geo_data.append((ru(QCoreApplication.translate('Drillreport2', u'XY Reference system')), '%s'%('%s, '%crsname if crsname else '') + 'EPSG:' + crs))
+            general_data_no_rounding = [x.split(u';')[0] for x in general_metadata]
+            general_rounding = [x.split(u';')[1] if len(x.split(u';')) == 2 else None for x in general_metadata]
+            general_data = [(obs_points_translations.get(header, header), obs_points_data[obs_points_cols.index(header)-1]) for header in general_data_no_rounding]
+            if geo_metadata:
+                geo_metadata_no_rounding = [x.split(u';')[0] for x in geo_metadata]
+                geo_rounding = [x.split(u';')[1] if len(x.split(u';')) == 2 else None for x in geo_metadata]
+                geo_data = [(obs_points_translations.get(header, header), obs_points_data[obs_points_cols.index(header)-1]) for header in geo_metadata_no_rounding]
+                if u'east' in geo_metadata_no_rounding or u'north' in geo_metadata_no_rounding:
+                    geo_data.append((ru(QCoreApplication.translate('Drillreport2', u'XY Reference system')), '%s'%('%s, '%crsname if crsname else '') + 'EPSG:' + crs))
+            else:
+                geo_data = []
 
             strat_data = all_stratigrapy_data.get(obsid, None)
 
-            comment_data = [obs_points_data[obs_points_cols.index(header)-1] for header in (u'com_onerow', u'com_html') if
-                            all([obs_points_data[obs_points_cols.index(header)-1].strip(),
-                                 u'text-indent:0px;"><br /></p>' not in obs_points_data[obs_points_cols.index(header)-1],
-                                 u'text-indent:0px;"></p>' not in obs_points_data[obs_points_cols.index(header)-1],
-                                 u'text-indent:0px;">NULL</p>' not in obs_points_data[obs_points_cols.index(header)-1].strip()])]
+            if include_comments:
+                comment_data = [obs_points_data[obs_points_cols.index(header)-1] for header in (u'com_onerow', u'com_html') if
+                                all([obs_points_data[obs_points_cols.index(header)-1].strip(),
+                                     u'text-indent:0px;"><br /></p>' not in obs_points_data[obs_points_cols.index(header)-1],
+                                     u'text-indent:0px;"></p>' not in obs_points_data[obs_points_cols.index(header)-1],
+                                     u'text-indent:0px;">NULL</p>' not in obs_points_data[obs_points_cols.index(header)-1].strip()])]
+            else:
+                comment_data = []
 
-            rpt += self.write_obsid(obsid, general_data, geo_data, strat_data, comment_data, header_in_table=header_in_table, skip_empty=skip_empty)
+            rpt += self.write_obsid(obsid, general_data, geo_data, strat_data, comment_data, strat_columns,
+                                    header_in_table=header_in_table, skip_empty=skip_empty,
+                                    general_metadata_header=general_metadata_header,
+                                    geo_metadata_header=geo_metadata_header,
+                                    strat_columns_header=strat_columns_header,
+                                    comment_header=comment_header,
+                                    general_rounding=general_rounding,
+                                    geo_rounding=geo_rounding)
             rpt += ur"""<p>    </p>"""
+            if empty_row_between_obsids:
+                rpt += ur"""<p>empty_row_between_obsids</p>"""
 
         rpt += ur"""</html>"""
         f.write(rpt)
         self.close_file(f, reportpath)
-
-
 
     def open_file(self, header, reportpath):
         #open connection to report file
@@ -165,9 +245,11 @@ class Drillreport():        # general observation point info for the selected ob
         return url_status
 
     def obsid_header(self, obsid):
-        return ur"""<h3 style="font-family:'Ubuntu';font-size:12pt; font-weight:600">%s</h3>"""%ru(obsid)
+        return ur"""<h3 style="font-family:'Ubuntu';font-size:12pt; font-weight:600"><font size=4>%s</font></h3>"""%ru(obsid)
 
-    def write_obsid(self, obsid, general_data, geo_data, strat_data, comment_data, header_in_table=True, skip_empty=False):
+    def write_obsid(self, obsid, general_data, geo_data, strat_data, comment_data, strat_columns, header_in_table=True,
+                    skip_empty=False, general_metadata_header=u'', geo_metadata_header=u'', strat_columns_header=u'',
+                    comment_header=u'', general_rounding=[], geo_rounding=[]):
         """This part only handles writing the information. It does not do any db data collection."""
 
         rpt = u''
@@ -175,26 +257,33 @@ class Drillreport():        # general observation point info for the selected ob
         if not header_in_table:
             rpt += self.obsid_header(obsid)
 
-        rpt += ur"""<TABLE WIDTH=100% BORDER=1 CELLPADDING=1 CELLSPACING=3>"""
+        rpt += ur"""<TABLE WIDTH=100% BORDER=1 CELLPADDING=1 class="no-spacing" CELLSPACING=0>"""
 
         if header_in_table:
         #Row 1, obsid header
             rpt += ur"""<TR VALIGN=TOP>"""
             rpt += ur"""<TD WIDTH=100% COLSPAN=2>"""
-            rpt += ur"""<h3 style="font-family:'Ubuntu';font-size:12pt; font-weight:600">%s</h3>"""%ru(obsid)
+            rpt += self.obsid_header(obsid)
             rpt += ur"""</TD>"""
             rpt += ur"""</TR>"""
 
 
         #Row 2, general and geographical information
         rpt += ur"""<TR VALIGN=TOP>"""
-        rpt += ur"""<TD WIDTH=60%>"""
-        rpt += self.write_two_col_table(general_data, ru(QCoreApplication.translate(u'Drillreport2', u'General information')), skip_empty)
+        if geo_data:
+            rpt += ur"""<TD WIDTH=60%>"""
+        else:
+            rpt += ur"""<TD WIDTH=100%>"""
+
+
+        rpt += self.write_two_col_table(general_data, general_metadata_header, skip_empty, general_rounding)
         rpt += ur"""</TD>"""
 
-        rpt += ur"""<TD WIDTH=40%>"""
-        rpt += self.write_two_col_table(geo_data, ru(QCoreApplication.translate(u'Drillreport2', u'Geographical information')), skip_empty)
-        rpt += ur"""</TD>"""
+        if geo_data:
+            rpt += ur"""<TD WIDTH=40%>"""
+
+            rpt += self.write_two_col_table(geo_data, geo_metadata_header, skip_empty, geo_rounding)
+            rpt += ur"""</TD>"""
         rpt += ur"""</TR>"""
 
         #Row 3, stratigraphy and comments
@@ -204,10 +293,11 @@ class Drillreport():        # general observation point info for the selected ob
             rpt += ur"""<TD WIDTH=100% COLSPAN=2>"""
 
             if strat_data:
-                rpt += self.write_strat_data(strat_data, ru(QCoreApplication.translate(u'Drillreport2', u'Stratigraphy')))
+
+                rpt += self.write_strat_data(strat_data, strat_columns, strat_columns_header)
 
             if comment_data:
-                rpt += self.write_comment_data(comment_data, ru(QCoreApplication.translate(u'Drillreport2', u'Comment')))
+                rpt += self.write_comment_data(comment_data, comment_header)
 
             rpt += ur"""</TD>"""
             rpt += ur"""</TR>"""
@@ -215,13 +305,19 @@ class Drillreport():        # general observation point info for the selected ob
 
         return rpt
 
-    def write_two_col_table(self, data, table_header, skip_empty=False):
+    def write_two_col_table(self, data, table_header, skip_empty=False, column_rounding=None):
+        if column_rounding is None:
+            column_rounding = []
 
-        rpt = ur"""<P><U><B>%s</B></U></P>"""%table_header
-        rpt += ur"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*>"""
+        if table_header:
+            rpt = ur"""<P><U><B><font size=3>%s</font></B></U></P>"""%table_header
+        else:
+            rpt = ur''
+        rpt += ur"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 class="no-spacing" CELLSPACING=0><COL WIDTH=2*><COL WIDTH=3*>"""
 
         rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
-        for header, value in data:
+        for idx, header_value in enumerate(data):
+            header, value = header_value
             header = ru(header)
             value = ru(value) if ru(value) is not None and ru(value) != u'NULL' else u''
             if skip_empty:
@@ -235,10 +331,21 @@ class Drillreport():        # general observation point info for the selected ob
                             continue
                 else:
                     continue
-
+            try:
+                round = column_rounding[idx]
+            except IndexError:
+                pass
+            else:
+                if round is not None:
+                    try:
+                        _test = float(value)
+                    except ValueError:
+                        pass
+                    else:
+                        value = u'{:.{prec}f}'.format(float(value), prec=round)
 
             try:
-                rpt += ur"""<TR VALIGN=TOP><TD WIDTH=33%>{}</TD><TD WIDTH=50%>{}</TD></TR>""".format(header, value)
+                rpt += ur"""<TR VALIGN=TOP><TD WIDTH=33%><P><font size=1>{}</font></P></TD><TD WIDTH=50%><P><font size=1>{}</font></P></TD></TR>""".format(header, value)
             except UnicodeEncodeError:
                 try:
                     utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'drillreport2', u'Writing drillreport failed, see log message panel')),
@@ -252,43 +359,55 @@ class Drillreport():        # general observation point info for the selected ob
         rpt += r"""</TABLE>"""
         return rpt
 
-    def write_strat_data(self, strat_data, table_header):
-        rpt = ur"""<P><U><B>%s</B></U></P>""" % table_header
+    def write_strat_data(self, strat_data, _strat_columns, table_header):
+        if table_header:
+            rpt = ur"""<P><U><B><font size=3>%s</font></B></U></P>""" % table_header
+        else:
+            rpt = ur''
+        strat_columns = [x.split(u';')[0] for x in _strat_columns]
+        col_widths = [x.split(u';')[1] if len(x.split(u';')) == 2 else u'1*' for x in _strat_columns if u'depthbot' != x.split(u';')[0]]
 
-        rpt += ur"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=1><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*><COL WIDTH=43*>"""
-
+        rpt += ur"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 class="no-spacing" CELLSPACING=0>"""
+        for col_width in col_widths:
+            rpt += ur"""<COL WIDTH={}>""".format(col_width)
         rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
 
-        col_widths = [u'15', u'27', u'17', u'9', u'13', u'21']
-
-        headers = [ru(QCoreApplication.translate(u'Drillreport2_strat', u'level (m b gs)')),
-                   ru(QCoreApplication.translate(u'Drillreport2_strat', u'geology, full text')),
-                   ru(QCoreApplication.translate(u'Drillreport2_strat', u'geology, short')),
-                   ru(QCoreApplication.translate(u'Drillreport2_strat', u'capacity')),
-                   ru(QCoreApplication.translate(u'Drillreport2_strat', u'development')),
-                   ru(QCoreApplication.translate(u'Drillreport2_strat', u'comment'))]
+        headers_txt = OrderedDict([(u'depthtop', ru(QCoreApplication.translate(u'Drillreport2_strat', u'level (m b gs)'))),
+                                    (u'geology', ru(QCoreApplication.translate(u'Drillreport2_strat', u'geology, full text'))),
+                                    (u'geoshort', ru(QCoreApplication.translate(u'Drillreport2_strat', u'geology, short'))),
+                                    (u'capacity', ru(QCoreApplication.translate(u'Drillreport2_strat', u'capacity'))),
+                                    (u'development', ru(QCoreApplication.translate(u'Drillreport2_strat', u'development'))),
+                                    (u'comment', ru(QCoreApplication.translate(u'Drillreport2_strat', u'comment')))])
 
         if len(strat_data) > 0:
             rpt += ur"""<TR VALIGN=TOP>"""
-            for colnr, header in enumerate(headers):
-                rpt += ur"""<TD WIDTH={}%><P><u>{}</P></u></TD>""".format(col_widths[colnr], header)
+            for colnr, header in enumerate(strat_columns):
+                if header == u'depthbot':
+                    continue
+                else:
+                    rpt += ur"""<TD><P><font size=2><u>{}</font></P></u></TD>""".format(headers_txt[header])
             rpt += ur"""</TR>"""
 
-            for rownr, row in enumerate(strat_data):
+            for rownr, _row in enumerate(strat_data):
+
+                #Remove stratid
+                row = _row[1:]
+
                 rpt += ur"""<TR VALIGN=TOP>"""
-                col2 = u'' if row[1]=='NULL' else row[1]
-                col3 = u'' if row[2]=='NULL' else row[2]
-                col4 = u'' if row[3]=='NULL' else row[3]
-                col5 = u'' if row[4]=='NULL' else row[4]
-                col6 = u'' if row[5]=='NULL' else row[5]
-                col7 = u'' if row[6]=='NULL' else row[6]
-                col8 = u'' if row[7]=='NULL' else row[7]
-                rpt += ur"""<TD WIDTH={}%><P>{}</P></TD>""".format(col_widths[0], col2 + ' - ' + col3)
-                rpt += ur"""<TD WIDTH={}%><P>{}</P></TD>""".format(col_widths[1], col4)
-                rpt += ur"""<TD WIDTH={}%><P>{}</P></TD>""".format(col_widths[2], col5)
-                rpt += ur"""<TD WIDTH={}%><P>{}</P></TD>""".format(col_widths[3], col6)
-                rpt += ur"""<TD WIDTH={}%><P>{}</P></TD>""".format(col_widths[4], col7)
-                rpt += ur"""<TD WIDTH={}%><P>{}</P></TD>""".format(col_widths[5], col8)
+                for colnr, col in enumerate(strat_columns):
+                    if col == u'depthbot':
+                        continue
+                    value = u'' if row[colnr] == 'NULL' else row[colnr]
+                    if col == u'depthtop':
+                        try:
+                            depthbot_idx = strat_columns.index(u'depthbot')
+                        except ValueError:
+                            rpt += ur"""<TD><P><font size=1>{}</font></P></TD>""".format(value)
+                        else:
+                            depthbot = u'' if row[depthbot_idx] == 'NULL' else row[depthbot_idx]
+                            rpt += ur"""<TD><P><font size=1>{}</font></P></TD>""".format(value + ' - ' + depthbot)
+                    else:
+                        rpt += ur"""<TD><P><font size=1>{}</font></P></TD>""".format(value)
 
                 rpt += ur"""</TR>"""
         rpt += ur"""</p>"""
@@ -298,10 +417,14 @@ class Drillreport():        # general observation point info for the selected ob
 
     def write_comment_data(self, comment_data, header):
         if comment_data:
-            rpt = ur"""<P><U><B>{}</B></U></P>""".format(header)
-            rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
+            if header:
+                rpt = ur"""<P><U><B><font size=3>{}</font></B></U></P>""".format(header)
+            else:
+                rpt = ur''
+
+            rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;"><font size=1>"""
             rpt += ur"""""".join([ru(x) for x in comment_data if ru(x) not in ['','NULL']])
-            rpt += ur"""</p>"""
+            rpt += ur"""</font></p>"""
         else:
             rpt = u''
 
