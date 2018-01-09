@@ -1920,12 +1920,12 @@ Do you want to stop the import? (else it will continue with the next file)</sour
 <context>
     <name>Drillreport</name>
     <message>
-        <location filename="../tools/drillreport2.py" line="46"/>
+        <location filename="../tools/custom_drillreport.py" line="132"/>
         <source>Must select one or more obsids!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="156"/>
+        <location filename="../tools/custom_drillreport.py" line="242"/>
         <source>General report from Midvatten plugin for QGIS</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2108,196 +2108,224 @@ Do you want to stop the import? (else it will continue with the next file)</sour
 <context>
     <name>Drillreport2</name>
     <message>
-        <location filename="../tools/drillreport2.py" line="50"/>
+        <location filename="../tools/custom_drillreport.py" line="136"/>
         <source>obsid</source>
         <translation type="unfinished">Id ponto</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="51"/>
+        <location filename="../tools/custom_drillreport.py" line="137"/>
         <source>name</source>
         <translation type="unfinished">Nome</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="52"/>
+        <location filename="../tools/custom_drillreport.py" line="138"/>
         <source>place</source>
         <translation type="unfinished">Local</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="53"/>
+        <location filename="../tools/custom_drillreport.py" line="139"/>
         <source>type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="54"/>
+        <location filename="../tools/custom_drillreport.py" line="140"/>
         <source>length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="55"/>
+        <location filename="../tools/custom_drillreport.py" line="141"/>
         <source>drillstop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="56"/>
+        <location filename="../tools/custom_drillreport.py" line="142"/>
         <source>diam</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="57"/>
+        <location filename="../tools/custom_drillreport.py" line="143"/>
         <source>material</source>
         <translation type="unfinished">Material</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="58"/>
+        <location filename="../tools/custom_drillreport.py" line="144"/>
         <source>screen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="59"/>
+        <location filename="../tools/custom_drillreport.py" line="145"/>
         <source>capacity</source>
         <translation type="unfinished">Capacidade</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="60"/>
+        <location filename="../tools/custom_drillreport.py" line="146"/>
         <source>drilldate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="61"/>
+        <location filename="../tools/custom_drillreport.py" line="147"/>
         <source>wmeas_yn</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="62"/>
+        <location filename="../tools/custom_drillreport.py" line="148"/>
         <source>wlogg_yn</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="63"/>
+        <location filename="../tools/custom_drillreport.py" line="149"/>
         <source>east</source>
         <translation type="unfinished">leste</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="64"/>
+        <location filename="../tools/custom_drillreport.py" line="150"/>
         <source>north</source>
         <translation type="unfinished">norte</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="65"/>
+        <location filename="../tools/custom_drillreport.py" line="151"/>
         <source>ne_accur</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="66"/>
+        <location filename="../tools/custom_drillreport.py" line="152"/>
         <source>ne_source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="67"/>
+        <location filename="../tools/custom_drillreport.py" line="153"/>
         <source>h_toc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="68"/>
+        <location filename="../tools/custom_drillreport.py" line="154"/>
         <source>h_tocags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="69"/>
+        <location filename="../tools/custom_drillreport.py" line="155"/>
         <source>h_gs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="70"/>
+        <location filename="../tools/custom_drillreport.py" line="156"/>
         <source>h_accur</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="71"/>
+        <location filename="../tools/custom_drillreport.py" line="157"/>
         <source>h_syst</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="72"/>
+        <location filename="../tools/custom_drillreport.py" line="158"/>
         <source>h_source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="73"/>
+        <location filename="../tools/custom_drillreport.py" line="159"/>
         <source>source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="74"/>
+        <location filename="../tools/custom_drillreport.py" line="160"/>
         <source>com_onerow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="75"/>
+        <location filename="../tools/custom_drillreport.py" line="161"/>
         <source>com_html</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="132"/>
+        <location filename="../tools/custom_drillreport.py" line="205"/>
         <source>XY Reference system</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="193"/>
+        <location filename="../tools/custom_drillreport.py" line="79"/>
         <source>General information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="197"/>
+        <location filename="../tools/custom_drillreport.py" line="80"/>
         <source>Geographical information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="208"/>
+        <location filename="../tools/custom_drillreport.py" line="81"/>
         <source>Stratigraphy</source>
         <translation type="unfinished">Estratigraf.</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="233"/>
+        <location filename="../tools/custom_drillreport.py" line="233"/>
         <source>geology, short</source>
         <translation type="obsolete">geologia, abreviado</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="211"/>
+        <location filename="../tools/custom_drillreport.py" line="82"/>
         <source>Comment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/custom_drillreport.py" line="410"/>
+        <source>Programming error, depthtop and depthbot columns was supposed to exist</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>Drillreport2_strat</name>
     <message>
-        <location filename="../tools/drillreport2.py" line="266"/>
+        <location filename="../tools/custom_drillreport.py" line="385"/>
         <source>level (m b gs)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="267"/>
+        <location filename="../tools/custom_drillreport.py" line="385"/>
         <source>geology, full text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="268"/>
+        <location filename="../tools/custom_drillreport.py" line="385"/>
         <source>geology, short</source>
         <translation type="unfinished">geologia, abreviado</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="269"/>
+        <location filename="../tools/custom_drillreport.py" line="385"/>
         <source>capacity</source>
         <translation type="unfinished">Capacidade</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="270"/>
+        <location filename="../tools/custom_drillreport.py" line="385"/>
         <source>development</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="271"/>
+        <location filename="../tools/custom_drillreport.py" line="385"/>
         <source>comment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/custom_drillreport.py" line="385"/>
+        <source>top of layer (m b gs)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/custom_drillreport.py" line="385"/>
+        <source>bottom of layer (m b gs)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/custom_drillreport.py" line="385"/>
+        <source>Layer number</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DrillreportUi</name>
+    <message>
+        <location filename="../tools/custom_drillreport.py" line="111"/>
+        <source>Must select at least 1 obsid in selected layer</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3987,7 +4015,7 @@ arquivo de poços </translation>
         <translation>Relatório geral</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="148"/>
+        <location filename="../midvatten.py" line="143"/>
         <source>Show a general report for the selected obs point</source>
         <translation>Mostrar um relatório geral para as feições selecionadas</translation>
     </message>
@@ -4087,43 +4115,43 @@ arquivo de poços </translation>
         <translation>Calcular as linhas da tabela da base de dados</translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="606"/>
+        <location filename="../midvatten.py" line="604"/>
         <source>Something failed during import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="614"/>
+        <location filename="../midvatten.py" line="612"/>
         <source>You have to select database first!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="540"/>
+        <location filename="../midvatten.py" line="538"/>
         <source>%s water quality parameters were imported to the database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="705"/>
+        <location filename="../midvatten.py" line="703"/>
         <source>Please set time series table and column in Midvatten settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="728"/>
+        <location filename="../midvatten.py" line="726"/>
         <source>Verify Midvatten settings and make sure &apos;obs_points&apos; layer is not in editing mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="770"/>
+        <location filename="../midvatten.py" line="768"/>
         <source>Please set xy series table and columns in Midvatten settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="838"/>
+        <location filename="../midvatten.py" line="836"/>
         <source>Check Midvatten settings! 
 Something is probably wrong in the &apos;W quality report&apos; tab!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="843"/>
+        <location filename="../midvatten.py" line="841"/>
         <source>No water quality data for %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4133,12 +4161,12 @@ Something is probably wrong in the &apos;W quality report&apos; tab!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="394"/>
+        <location filename="../midvatten.py" line="392"/>
         <source>Select a folder where the csv files will be created:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="419"/>
+        <location filename="../midvatten.py" line="417"/>
         <source>This will create a new empty Midvatten DB with predefined design
 and fill the database with data from selected obs_points and obs_lines.
 
@@ -4146,29 +4174,29 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="672"/>
+        <location filename="../midvatten.py" line="670"/>
         <source>Are you sure?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="426"/>
+        <location filename="../midvatten.py" line="424"/>
         <source>Export error!
 
 Must use &quot;load default db-layers to qgis&quot; from Midvatten menu (or key F7) first!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="473"/>
+        <location filename="../midvatten.py" line="471"/>
         <source>Error! Verify Midvatten settings. Verify that no layer is in edit mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="486"/>
+        <location filename="../midvatten.py" line="484"/>
         <source>You are about to import water head data, water flow or water quality from FieldLogger format.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="534"/>
+        <location filename="../midvatten.py" line="532"/>
         <source>You are about to import water quality data from laboratory analysis, from a textfile using interlab4 format.
 Specifications http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf
 
@@ -4176,7 +4204,7 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="553"/>
+        <location filename="../midvatten.py" line="551"/>
         <source>You are about to import water head data, recorded with a Level Logger (e.g. Diver).
 Data is supposed to be imported from a diveroffice file and obsid will be read from the attribute &apos;Location&apos;.
 The data is supposed to be semicolon or comma separated.
@@ -4191,7 +4219,7 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="633"/>
+        <location filename="../midvatten.py" line="631"/>
         <source>This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.
 
 If any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.
@@ -4200,12 +4228,12 @@ Proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="633"/>
+        <location filename="../midvatten.py" line="631"/>
         <source>Warning!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="642"/>
+        <location filename="../midvatten.py" line="640"/>
         <source>This will create a new empty
 Midvatten DB with predefined design.
 
@@ -4213,17 +4241,17 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="740"/>
+        <location filename="../midvatten.py" line="738"/>
         <source>You must activate the vector line layer that defines the section.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="743"/>
+        <location filename="../midvatten.py" line="741"/>
         <source>You must activate the vector line layer and select exactly one feature that defines the section</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="755"/>
+        <location filename="../midvatten.py" line="753"/>
         <source>You must select at least two objects in the obs_points layer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4233,21 +4261,16 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="622"/>
+        <location filename="../midvatten.py" line="620"/>
         <source>load_data_domains err_flag: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="672"/>
+        <location filename="../midvatten.py" line="670"/>
         <source>This will update the selected postgis database to a 
 Midvatten Postgis DB with predefined design.
 
 Continue?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../midvatten.py" line="147"/>
-        <source>General report2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4266,7 +4289,7 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="587"/>
+        <location filename="../midvatten.py" line="585"/>
         <source>You are about to import water head data, recorded with a Levelogger.
 Data is supposed to be imported from a csv file exported from the levelogger data wizard and obsid will be read from the attribute &apos;Location&apos;.
 The data is supposed to be semicolon or comma separated.
@@ -4280,6 +4303,16 @@ The data columns must be real numbers with point (.) or comma (,) as decimal sep
 The charset is usually cp1252!
 
 Continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../midvatten.py" line="147"/>
+        <source>Custom general report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../midvatten.py" line="148"/>
+        <source>Create a user adjustable general report</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5393,59 +5426,59 @@ Must write time resolution also.
     </message>
 </context>
 <context>
-    <name>drillreport2</name>
+    <name>custom_drillreport</name>
     <message>
-        <location filename="../tools/drillreport2.py" line="50"/>
+        <location filename="../tools/custom_drillreport.py" line="50"/>
         <source>obsid</source>
         <translation type="obsolete">Id ponto</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="51"/>
+        <location filename="../tools/custom_drillreport.py" line="51"/>
         <source>name</source>
         <translation type="obsolete">Nome</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="52"/>
+        <location filename="../tools/custom_drillreport.py" line="52"/>
         <source>place</source>
         <translation type="obsolete">Local</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="57"/>
+        <location filename="../tools/custom_drillreport.py" line="57"/>
         <source>material</source>
         <translation type="obsolete">Material</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="234"/>
+        <location filename="../tools/custom_drillreport.py" line="234"/>
         <source>capacity</source>
         <translation type="obsolete">Capacidade</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="63"/>
+        <location filename="../tools/custom_drillreport.py" line="63"/>
         <source>east</source>
         <translation type="obsolete">leste</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="64"/>
+        <location filename="../tools/custom_drillreport.py" line="64"/>
         <source>north</source>
         <translation type="obsolete">norte</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="183"/>
+        <location filename="../tools/custom_drillreport.py" line="183"/>
         <source>Stratigraphy</source>
         <translation type="obsolete">Estratigraf.</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="233"/>
+        <location filename="../tools/custom_drillreport.py" line="233"/>
         <source>geology, short</source>
         <translation type="obsolete">geologia, abreviado</translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="246"/>
+        <location filename="../tools/custom_drillreport.py" line="360"/>
         <source>Writing drillreport failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/drillreport2.py" line="246"/>
+        <location filename="../tools/custom_drillreport.py" line="360"/>
         <source>Writing header %s and value %s failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5453,12 +5486,12 @@ Must write time resolution also.
 <context>
     <name>export_spatialite</name>
     <message>
-        <location filename="../midvatten.py" line="412"/>
+        <location filename="../midvatten.py" line="410"/>
         <source>Export to spatialite only works when source db is spatialite.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../midvatten.py" line="449"/>
+        <location filename="../midvatten.py" line="447"/>
         <source>Export to spatialite failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5792,7 +5825,7 @@ Msg:
 <context>
     <name>prepare_layers_for_qgis2threejs</name>
     <message>
-        <location filename="../midvatten.py" line="791"/>
+        <location filename="../midvatten.py" line="789"/>
         <source>Only supported for spatialite.</source>
         <translation type="unfinished"></translation>
     </message>

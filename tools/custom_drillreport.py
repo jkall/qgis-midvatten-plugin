@@ -35,9 +35,9 @@ import qgis
 from PyQt4.QtCore import QCoreApplication
 
 
-drillreport_2_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'drillreport_2.ui'))[0]
+custom_drillreport_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'custom_drillreport.ui'))[0]
 
-class DrillreportUi(PyQt4.QtGui.QMainWindow, drillreport_2_dialog):
+class DrillreportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
     def __init__(self, parent, midv_settings):
         self.iface = parent
 
@@ -69,8 +69,7 @@ class DrillreportUi(PyQt4.QtGui.QMainWindow, drillreport_2_dialog):
                         u'h_toc',
                         u'h_accur']))
 
-        self.strat_columns.setPlainText(u'\n'.join([u'depthtop',
-                         u'depthbot',
+        self.strat_columns.setPlainText(u'\n'.join([u'depth',
                          u'geology',
                          u'geoshort',
                          u'capacity',
@@ -175,7 +174,13 @@ class Drillreport():        # general observation point info for the selected ob
                                                             dbconnection=dbconnection)[1], keep_containers=True)
 
         if strat_columns:
-            all_stratigrapy_data = ru(db_utils.get_sql_result_as_dict(u'SELECT obsid, stratid, %s FROM stratigraphy WHERE obsid IN (%s) ORDER BY obsid, stratid'%(u', '.join([_x.split(u';')[0] for _x in strat_columns if _x.split(u';')[0] not in (u'obsid', u'stratid')]), u', '.join([u"'{}'".format(x) for x in obsids])),
+            strat_sql_columns_list = [x.split(u';')[0] for x in strat_columns]
+            if u'depth' in strat_sql_columns_list:
+                strat_sql_columns_list.extend([u'depthtop', u'depthbot'])
+                strat_sql_columns_list.remove(u'depth')
+                strat_sql_columns_list = [x for x in strat_sql_columns_list if x not in (u'obsid')]
+
+            all_stratigrapy_data = ru(db_utils.get_sql_result_as_dict(u'SELECT obsid, %s FROM stratigraphy WHERE obsid IN (%s) ORDER BY obsid, stratid'%(u', '.join(strat_sql_columns_list), u', '.join([u"'{}'".format(x) for x in obsids])),
                                                                 dbconnection=dbconnection)[1], keep_containers=True)
         else:
             all_stratigrapy_data = {}
@@ -219,7 +224,8 @@ class Drillreport():        # general observation point info for the selected ob
                                     strat_columns_header=strat_columns_header,
                                     comment_header=comment_header,
                                     general_rounding=general_rounding,
-                                    geo_rounding=geo_rounding)
+                                    geo_rounding=geo_rounding,
+                                    strat_sql_columns_list=strat_sql_columns_list)
             rpt += ur"""<p>    </p>"""
             if empty_row_between_obsids:
                 rpt += ur"""<p>empty_row_between_obsids</p>"""
@@ -249,7 +255,7 @@ class Drillreport():        # general observation point info for the selected ob
 
     def write_obsid(self, obsid, general_data, geo_data, strat_data, comment_data, strat_columns, header_in_table=True,
                     skip_empty=False, general_metadata_header=u'', geo_metadata_header=u'', strat_columns_header=u'',
-                    comment_header=u'', general_rounding=[], geo_rounding=[]):
+                    comment_header=u'', general_rounding=[], geo_rounding=[], strat_sql_columns_list=[]):
         """This part only handles writing the information. It does not do any db data collection."""
 
         rpt = u''
@@ -294,7 +300,7 @@ class Drillreport():        # general observation point info for the selected ob
 
             if strat_data:
 
-                rpt += self.write_strat_data(strat_data, strat_columns, strat_columns_header)
+                rpt += self.write_strat_data(strat_data, strat_columns, strat_columns_header, strat_sql_columns_list)
 
             if comment_data:
                 rpt += self.write_comment_data(comment_data, comment_header)
@@ -348,8 +354,8 @@ class Drillreport():        # general observation point info for the selected ob
                 rpt += ur"""<TR VALIGN=TOP><TD WIDTH=33%><P><font size=1>{}</font></P></TD><TD WIDTH=50%><P><font size=1>{}</font></P></TD></TR>""".format(header, value)
             except UnicodeEncodeError:
                 try:
-                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'drillreport2', u'Writing drillreport failed, see log message panel')),
-                                                    log_msg=ru(QCoreApplication.translate(u'drillreport2', u'Writing header %s and value %s failed'))%(header, value))
+                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'custom_drillreport', u'Writing drillreport failed, see log message panel')),
+                                                    log_msg=ru(QCoreApplication.translate(u'custom_drillreport', u'Writing header %s and value %s failed'))%(header, value))
                     print("header %s"%header)
                     print("value %s"%value)
                 except:
@@ -359,20 +365,27 @@ class Drillreport():        # general observation point info for the selected ob
         rpt += r"""</TABLE>"""
         return rpt
 
-    def write_strat_data(self, strat_data, _strat_columns, table_header):
+    def write_strat_data(self, strat_data, _strat_columns, table_header, strat_sql_columns_list):
         if table_header:
             rpt = ur"""<P><U><B><font size=3>%s</font></B></U></P>""" % table_header
         else:
             rpt = ur''
         strat_columns = [x.split(u';')[0] for x in _strat_columns]
-        col_widths = [x.split(u';')[1] if len(x.split(u';')) == 2 else u'1*' for x in _strat_columns if u'depthbot' != x.split(u';')[0]]
+
+        col_widths = [x.split(u';')[1] if len(x.split(u';')) == 2 else u'1*' for x in _strat_columns]
+
+
+
 
         rpt += ur"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 class="no-spacing" CELLSPACING=0>"""
         for col_width in col_widths:
             rpt += ur"""<COL WIDTH={}>""".format(col_width)
         rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
 
-        headers_txt = OrderedDict([(u'depthtop', ru(QCoreApplication.translate(u'Drillreport2_strat', u'level (m b gs)'))),
+        headers_txt = OrderedDict([(u'stratid', ru(QCoreApplication.translate(u'Drillreport2_strat', u'Layer number'))),
+                                   (u'depth', ru(QCoreApplication.translate(u'Drillreport2_strat', u'level (m b gs)'))),
+                                   (u'depthtop', ru(QCoreApplication.translate(u'Drillreport2_strat', u'top of layer (m b gs)'))),
+                                   (u'depthbot', ru(QCoreApplication.translate(u'Drillreport2_strat', u'bottom of layer (m b gs)'))),
                                     (u'geology', ru(QCoreApplication.translate(u'Drillreport2_strat', u'geology, full text'))),
                                     (u'geoshort', ru(QCoreApplication.translate(u'Drillreport2_strat', u'geology, short'))),
                                     (u'capacity', ru(QCoreApplication.translate(u'Drillreport2_strat', u'capacity'))),
@@ -381,32 +394,29 @@ class Drillreport():        # general observation point info for the selected ob
 
         if len(strat_data) > 0:
             rpt += ur"""<TR VALIGN=TOP>"""
-            for colnr, header in enumerate(strat_columns):
-                if header == u'depthbot':
-                    continue
-                else:
-                    rpt += ur"""<TD><P><font size=2><u>{}</font></P></u></TD>""".format(headers_txt[header])
+            for header in strat_columns:
+                rpt += ur"""<TD><P><font size=2><u>{}</font></P></u></TD>""".format(headers_txt[header])
             rpt += ur"""</TR>"""
 
-            for rownr, _row in enumerate(strat_data):
-
-                #Remove stratid
-                row = _row[1:]
+            for rownr, row in enumerate(strat_data):
 
                 rpt += ur"""<TR VALIGN=TOP>"""
-                for colnr, col in enumerate(strat_columns):
-                    if col == u'depthbot':
-                        continue
-                    value = u'' if row[colnr] == 'NULL' else row[colnr]
-                    if col == u'depthtop':
+                for col in strat_columns:
+                    if col == u'depth':
                         try:
-                            depthbot_idx = strat_columns.index(u'depthbot')
+                            depthtop_idx = strat_sql_columns_list.index(u'depthtop')
+                            depthbot_idx = strat_sql_columns_list.index(u'depthbot')
                         except ValueError:
-                            rpt += ur"""<TD><P><font size=1>{}</font></P></TD>""".format(value)
+                            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'Drillreport2',
+                                                                                                  u'Programming error, depthtop and depthbot columns was supposed to exist')))
+                            rpt += ur"""<TD><P><font size=1> </font></P></TD>""".format(value)
                         else:
+                            depthtop = u'' if row[depthtop_idx] == 'NULL' else row[depthtop_idx]
                             depthbot = u'' if row[depthbot_idx] == 'NULL' else row[depthbot_idx]
-                            rpt += ur"""<TD><P><font size=1>{}</font></P></TD>""".format(value + ' - ' + depthbot)
+                            rpt += ur"""<TD><P><font size=1>{}</font></P></TD>""".format(u' - '.join([depthtop, depthbot]))
                     else:
+                        value_idx = strat_sql_columns_list.index(col)
+                        value = u'' if row[value_idx] == 'NULL' else row[value_idx]
                         rpt += ur"""<TD><P><font size=1>{}</font></P></TD>""".format(value)
 
                 rpt += ur"""</TR>"""
@@ -423,7 +433,7 @@ class Drillreport():        # general observation point info for the selected ob
                 rpt = ur''
 
             rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;"><font size=1>"""
-            rpt += ur"""""".join([ru(x) for x in comment_data if ru(x) not in ['','NULL']])
+            rpt += ur'. '.join([ru(x) for x in comment_data if ru(x) not in ['','NULL']])
             rpt += ur"""</font></p>"""
         else:
             rpt = u''
@@ -435,13 +445,12 @@ def GetStatistics(obsid = ''):
     Statistics_list = [0]*4
 
     columns = ['meas', 'level_masl']
-    meas_or_level_masl= 'meas'#default value
+    # default value
+    meas_or_level_masl= 'meas'
 
     #number of values, also decide wehter to use meas or level_masl in report
     for column in columns:
-        sql = r"""select Count(""" + column + r""") from w_levels where obsid = '"""
-        sql += obsid
-        sql += r"""'"""
+        sql = r"""select Count(%s) from w_levels where obsid = '%s'"""%(column, obsid)
         ConnectionOK, number_of_values = db_utils.sql_load_fr_db(sql)
         if number_of_values and number_of_values[0][0] > Statistics_list[2]:#this will select meas if meas >= level_masl
             meas_or_level_masl = column
@@ -449,11 +458,10 @@ def GetStatistics(obsid = ''):
 
     #min value
     if meas_or_level_masl=='meas':
-        sql = r"""select min(meas) from w_levels where obsid = '"""
+        sql = r"""select min(meas) from w_levels where obsid = '%s'""" % obsid
     else:
-        sql = r"""select max(level_masl) from w_levels where obsid = '"""
-    sql += obsid
-    sql += r"""'"""
+        sql = r"""select max(level_masl) from w_levels where obsid = '%s'""" % obsid
+
     ConnectionOK, min_value = db_utils.sql_load_fr_db(sql)
     if min_value:
         Statistics_list[0] = min_value[0][0]
@@ -465,11 +473,9 @@ def GetStatistics(obsid = ''):
 
     #max value
     if meas_or_level_masl=='meas':
-        sql = r"""select max(meas) from w_levels where obsid = '"""
+        sql = r"""select max(meas) from w_levels where obsid = '%s' """ % obsid
     else:
-        sql = r"""select min(level_masl) from w_levels where obsid = '"""
-    sql += obsid
-    sql += r"""'"""
+        sql = r"""select min(level_masl) from w_levels where obsid = '%s' """ % obsid
     ConnectionOK, max_value = db_utils.sql_load_fr_db(sql)
     if max_value:
         Statistics_list[3] = max_value[0][0]

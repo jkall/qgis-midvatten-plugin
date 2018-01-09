@@ -6,7 +6,7 @@ SOURCES = \
 ./tools/customplot.py \
 ./tools/date_utils.py \
 ./tools/drillreport.py \
-./tools/drillreport2.py \
+./tools/custom_drillreport.py \
 ./tools/export_data.py \
 ./tools/export_fieldlogger.py \
 ./tools/gui_utils.py \

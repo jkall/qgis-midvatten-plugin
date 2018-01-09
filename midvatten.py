@@ -144,9 +144,9 @@ class midvatten:
         self.iface.registerMainWindowAction(self.actiondrillreport, "F11")   # The function should also be triggered by the F11 key
         QObject.connect(self.actiondrillreport, SIGNAL("triggered()"), self.drillreport)
 
-        self.actiondrillreport2 = QAction(QIcon(":/plugins/midvatten/icons/drill_report.png"), QCoreApplication.translate("Midvatten","General report2"), self.iface.mainWindow())
-        self.actiondrillreport2.setWhatsThis(QCoreApplication.translate("Midvatten","Show a general report for the selected obs point"))
-        QObject.connect(self.actiondrillreport2, SIGNAL("triggered()"), self.drillreport2)
+        self.action_custom_drillreport = QAction(QIcon(":/plugins/midvatten/icons/drill_report.png"), QCoreApplication.translate("Midvatten", "Custom general report"), self.iface.mainWindow())
+        self.action_custom_drillreport.setWhatsThis(QCoreApplication.translate("Midvatten", "Create a user adjustable general report"))
+        QObject.connect(self.action_custom_drillreport, SIGNAL("triggered()"), self.custom_drillreport)
 
         self.actionwqualreport = QAction(QIcon(":/plugins/midvatten/icons/wqualreport.png"), QCoreApplication.translate("Midvatten","Water quality report"), self.iface.mainWindow())
         self.actionwqualreport.setWhatsThis(QCoreApplication.translate("Midvatten","Show water quality for the selected obs point"))
@@ -263,7 +263,7 @@ class midvatten:
         self.menu.report_menu = QMenu(QCoreApplication.translate("Midvatten", "&View report"))
         self.menu.addMenu(self.menu.report_menu)
         self.menu.report_menu.addAction(self.actiondrillreport)
-        self.menu.report_menu.addAction(self.actiondrillreport2)
+        self.menu.report_menu.addAction(self.action_custom_drillreport)
         self.menu.report_menu.addAction(self.actionwqualreport)
         
         self.menu.db_manage_menu = QMenu(QCoreApplication.translate("Midvatten", "&Database management"))
@@ -369,11 +369,11 @@ class midvatten:
             from drillreport import Drillreport
             Drillreport(obsids,self.ms.settingsdict)
 
-    def drillreport2(self):
+    def custom_drillreport(self):
         allcritical_layers = ('obs_points', 'w_levels', 'w_qual_lab')#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
         if err_flag == 0:
-            from drillreport2 import DrillreportUi
+            from custom_drillreport import DrillreportUi
             DrillreportUi(self.iface.mainWindow(), self.ms.settingsdict)
 
     def export_csv(self):
