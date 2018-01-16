@@ -2023,7 +2023,7 @@ Do you want to stop the import? (else it will continue with the next file)</sour
     <message>
         <location filename="../tools/custom_drillreport.py" line="151"/>
         <source>ne_accur</source>
-        <translation>Noggranhet i plan [m]</translation>
+        <translation type="unfinished">Noggrannhet i plan [m]</translation>
     </message>
     <message>
         <location filename="../tools/custom_drillreport.py" line="152"/>
@@ -2048,7 +2048,7 @@ Do you want to stop the import? (else it will continue with the next file)</sour
     <message>
         <location filename="../tools/custom_drillreport.py" line="156"/>
         <source>h_accur</source>
-        <translation>Noggranhet i höjd [m]</translation>
+        <translation type="unfinished">Noggrannhet i höjd [m]</translation>
     </message>
     <message>
         <location filename="../tools/custom_drillreport.py" line="157"/>

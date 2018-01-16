@@ -2018,7 +2018,7 @@ Do you want to stop the import? (else it will continue with the next file)</sour
     <message>
         <location filename="../tools/custom_drillreport.py" line="150"/>
         <source>north</source>
-        <translation>northern coordinate</translation>
+        <translation type="unfinished">northern coordinate</translation>
     </message>
     <message>
         <location filename="../tools/custom_drillreport.py" line="151"/>

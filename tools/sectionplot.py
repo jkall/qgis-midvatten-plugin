@@ -93,6 +93,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.comment_txt = []
         self.sectionlinelayer = SectionLineLayer       
         self.obsids_w_wl = []
+        self.stored_settings = []
         
         #upload vector line layer as temporary table in sqlite db
         self.line_crs = self.sectionlinelayer.crs()
@@ -455,7 +456,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                     else:
                         self.barlengths.append(0)
                     self.bottoms.append(self.z_id[q]-self.barlengths[q])
-                    
+
                     q +=1
                     del recs
                     
@@ -651,6 +652,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             settings.setdefault(attr, settings.get(attr, value))
 
 
+
         for Typ in self.ExistingPlotTypes:#Adding a plot for each "geoshort" that is identified
             plotxleftbarcorner = [i - self.barwidth/2 for i in self.plotx[Typ]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
             self.p.append(self.secax.bar(plotxleftbarcorner,self.plotbarlength[Typ], color=self.Colors[Typ], hatch=self.Hatches[Typ], bottom=self.plotbottom[Typ], **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
@@ -801,7 +803,24 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         fontsize = int(self.chart_fontsize.text())
         if self.ms.settingsdict['stratigraphyplotted'] ==2:#if stratigr plot, then obsid written close to toc or gs
             plotxleftbarcorner = [i - self.barwidth/2 for i in self.x_id]#x-coord for bars at each obs
-            self.p.append(self.secax.bar(plotxleftbarcorner,self.barlengths, fill=False, edgecolor='black', width = self.barwidth, bottom=self.bottoms))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
+
+
+            indexes_barlength_not_0 = [idx for idx, length in enumerate(self.barlengths) if length]
+
+            plotxleftbarcorner = [plotxleftbarcorner[idx] for idx in indexes_barlength_not_0]
+            bottoms = [self.bottoms[idx] for idx in indexes_barlength_not_0]
+            barlengths = [self.barlengths[idx] for idx in indexes_barlength_not_0]
+
+            settings = self.stored_settings.settings.get('secax_bar', {})
+            self.stored_settings.settings['secax_bar'] = settings
+
+            defaults = [('edgecolor', 'black'),
+                        ('width', self.barwidth)]
+            for default in defaults:
+                attr, value = default
+                settings.setdefault(attr, settings.get(attr, value))
+
+            self.p.append(self.secax.bar(plotxleftbarcorner, barlengths, fill=False, bottom=bottoms, **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
                 for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
 
@@ -850,11 +869,11 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.stored_settings.ask_and_update_settings_string()
         self.draw_plot()
         self.change_plot_size()
-        utils.save_stored_settings(self.ms, self.stored_settings.settings, self.stored_settings_key)
+        #utils.save_stored_settings(self.ms, self.stored_settings.settings, self.stored_settings_key)
 
     def clear_stored_settings(self):
         self.stored_settings = StoredSettings(self, settings={})
-        utils.save_stored_settings(self.ms, self.stored_settings.settings, self.stored_settings_key)
+        #utils.save_stored_settings(self.ms, self.stored_settings.settings, self.stored_settings_key)
 
 
 class StoredSettings(object):

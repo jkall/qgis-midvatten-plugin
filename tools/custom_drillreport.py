@@ -107,11 +107,15 @@ class DrillreportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
         strat_columns_header = self.strat_columns_header.text()
         comment_header = self.comment_header.text()
         empty_row_between_obsids = self.empty_row_between_obsids.isChecked()
+        topleft_topright_colwidths = self.topleft_topright_colwidths.text().split(u';')
+        general_colwidth = self.general_colwidth.text().split(u';')
+        geo_colwidth = self.geo_colwidth.text().split(u';')
         if not obsids:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Must select at least 1 obsid in selected layer')))
         drillrep = Drillreport(obsids, self.ms, general_metadata, geo_metadata, strat_columns, header_in_table,
                                skip_empty, include_comments, general_metadata_header, geo_metadata_header, strat_columns_header,
-                               comment_header, empty_row_between_obsids)
+                               comment_header, empty_row_between_obsids, topleft_topright_colwidths, general_colwidth,
+                               geo_colwidth)
 
 
 
@@ -119,7 +123,8 @@ class Drillreport():        # general observation point info for the selected ob
 
     def __init__(self, obsids, settingsdict, general_metadata, geo_metadata, strat_columns, header_in_table,
          skip_empty, include_comments, general_metadata_header, geo_metadata_header, strat_columns_header,
-                 comment_header, empty_row_between_obsids):
+         comment_header, empty_row_between_obsids, topleft_topright_colwidths, general_colwidth,
+         geo_colwidth):
 
         reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
         if not os.path.exists(reportfolder):
@@ -166,7 +171,6 @@ class Drillreport():        # general observation point info for the selected ob
         >>> print(y)
         """
 
-
         dbconnection = db_utils.DbConnectionManager()
 
         obs_points_cols =  ["obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html"]
@@ -184,6 +188,7 @@ class Drillreport():        # general observation point info for the selected ob
                                                                 dbconnection=dbconnection)[1], keep_containers=True)
         else:
             all_stratigrapy_data = {}
+            strat_sql_columns_list = []
 
         crs = ru(db_utils.sql_load_fr_db(u"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""", dbconnection=dbconnection)[1][0][0])
         crsname = ru(db_utils.get_srid_name(crs, dbconnection=dbconnection))
@@ -205,6 +210,7 @@ class Drillreport():        # general observation point info for the selected ob
                     geo_data.append((ru(QCoreApplication.translate('Drillreport2', u'XY Reference system')), '%s'%('%s, '%crsname if crsname else '') + 'EPSG:' + crs))
             else:
                 geo_data = []
+                geo_rounding = []
 
             strat_data = all_stratigrapy_data.get(obsid, None)
 
@@ -225,7 +231,10 @@ class Drillreport():        # general observation point info for the selected ob
                                     comment_header=comment_header,
                                     general_rounding=general_rounding,
                                     geo_rounding=geo_rounding,
-                                    strat_sql_columns_list=strat_sql_columns_list)
+                                    strat_sql_columns_list=strat_sql_columns_list,
+                                    topleft_topright_colwidths=topleft_topright_colwidths,
+                                    general_colwidth=general_colwidth,
+                                    geo_colwidth=geo_colwidth)
             rpt += ur"""<p>    </p>"""
             if empty_row_between_obsids:
                 rpt += ur"""<p>empty_row_between_obsids</p>"""
@@ -255,7 +264,8 @@ class Drillreport():        # general observation point info for the selected ob
 
     def write_obsid(self, obsid, general_data, geo_data, strat_data, comment_data, strat_columns, header_in_table=True,
                     skip_empty=False, general_metadata_header=u'', geo_metadata_header=u'', strat_columns_header=u'',
-                    comment_header=u'', general_rounding=[], geo_rounding=[], strat_sql_columns_list=[]):
+                    comment_header=u'', general_rounding=[], geo_rounding=[], strat_sql_columns_list=[],
+                    topleft_topright_colwidths=[], general_colwidth=[], geo_colwidth=[]):
         """This part only handles writing the information. It does not do any db data collection."""
 
         rpt = u''
@@ -277,18 +287,24 @@ class Drillreport():        # general observation point info for the selected ob
         #Row 2, general and geographical information
         rpt += ur"""<TR VALIGN=TOP>"""
         if geo_data:
-            rpt += ur"""<TD WIDTH=60%>"""
+            if len(topleft_topright_colwidths) == 2:
+                rpt += ur"""<TD WIDTH=%s>""" % (topleft_topright_colwidths[0])
+            else:
+                rpt += ur"""<TD WIDTH=60%>"""
         else:
             rpt += ur"""<TD WIDTH=100%>"""
 
 
-        rpt += self.write_two_col_table(general_data, general_metadata_header, skip_empty, general_rounding)
+        rpt += self.write_two_col_table(general_data, general_metadata_header, skip_empty, general_rounding, general_colwidth)
         rpt += ur"""</TD>"""
 
         if geo_data:
-            rpt += ur"""<TD WIDTH=40%>"""
+            if len(topleft_topright_colwidths) == 2:
+                rpt += ur"""<TD WIDTH=%s>""" % (topleft_topright_colwidths[1])
+            else:
+                rpt += ur"""<TD WIDTH=40%>"""
 
-            rpt += self.write_two_col_table(geo_data, geo_metadata_header, skip_empty, geo_rounding)
+            rpt += self.write_two_col_table(geo_data, geo_metadata_header, skip_empty, geo_rounding, geo_colwidth)
             rpt += ur"""</TD>"""
         rpt += ur"""</TR>"""
 
@@ -311,7 +327,7 @@ class Drillreport():        # general observation point info for the selected ob
 
         return rpt
 
-    def write_two_col_table(self, data, table_header, skip_empty=False, column_rounding=None):
+    def write_two_col_table(self, data, table_header, skip_empty=False, column_rounding=None, col_widths=None):
         if column_rounding is None:
             column_rounding = []
 
@@ -319,7 +335,12 @@ class Drillreport():        # general observation point info for the selected ob
             rpt = ur"""<P><U><B><font size=3>%s</font></B></U></P>"""%table_header
         else:
             rpt = ur''
-        rpt += ur"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 class="no-spacing" CELLSPACING=0><COL WIDTH=2*><COL WIDTH=3*>"""
+
+        if not col_widths or len(col_widths) != 2:
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'Drillreport2', u'Column width not entered correctly, must be like x;y. Was %s'%str(col_widths))))
+            col_widths = [u'2*', u'3*']
+
+        rpt += ur"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 class="no-spacing" CELLSPACING=0><COL WIDTH={}><COL WIDTH={}>""".format(col_widths[0], col_widths[1])
 
         rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
         for idx, header_value in enumerate(data):
@@ -373,8 +394,6 @@ class Drillreport():        # general observation point info for the selected ob
         strat_columns = [x.split(u';')[0] for x in _strat_columns]
 
         col_widths = [x.split(u';')[1] if len(x.split(u';')) == 2 else u'1*' for x in _strat_columns]
-
-
 
 
         rpt += ur"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 class="no-spacing" CELLSPACING=0>"""

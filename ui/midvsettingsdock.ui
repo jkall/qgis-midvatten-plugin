@@ -35,7 +35,7 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="TAB_DB">
        <attribute name="title">
@@ -55,8 +55,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>389</width>
-             <height>592</height>
+             <width>391</width>
+             <height>591</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_db_scroll">
@@ -88,8 +88,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>389</width>
-             <height>592</height>
+             <width>180</width>
+             <height>241</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_10">
@@ -246,8 +246,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>389</width>
-             <height>592</height>
+             <width>178</width>
+             <height>430</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_21">
@@ -481,8 +481,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>389</width>
-             <height>592</height>
+             <width>193</width>
+             <height>556</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -718,8 +718,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>389</width>
-             <height>592</height>
+             <width>377</width>
+             <height>650</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">

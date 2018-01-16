@@ -100,7 +100,8 @@ def settingsdict():    #These are the default settings, they shall not be change
             'fieldlogger_import_parameter_settings': '',
             'fieldlogger_export_pgroups': '',
             'fieldlogger_export_pbrowser': '',
-            'fieldlogger_export': ''
+            'fieldlogger_export': '',
+            'sectionplot_stored_settings': ''
             }
     return dictionary
 
