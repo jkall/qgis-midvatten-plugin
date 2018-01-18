@@ -621,6 +621,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
     def plot_drill_stop(self):
         drillstop_text = self.drillstop_text.text()
 
+
+
         if drillstop_text:
             label = drillstop_text
             plotlable = self.get_plot_label_name(label, self.Labels)
@@ -630,7 +632,15 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             plotlable = self.get_plot_label_name(label, self.Labels)
             self.Labels.append(label)
 
-        lineplot,=self.secax.plot(self.x_ds, self.z_ds,  '^', markersize = 8,color='black', label=plotlable)
+        settings = self.stored_settings.settings.get('drillstop_secax_plot', {})
+        self.stored_settings.settings['drillstop_secax_plot'] = settings
+        self.set_defaults(settings, [('marker', '^'),
+                                     ('markersize', 8),
+                                     ('linestyle', ''),
+                                     ('color', 'black'),
+                                     ('label', plotlable)])
+
+        lineplot,=self.secax.plot(self.x_ds, self.z_ds, **settings)
         self.p.append(lineplot)
 
     def get_plot_label_name(self, label, labels):
@@ -784,6 +794,26 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         return True
 
     def write_annotation(self):
+
+        settings = self.stored_settings.settings.get('secax_annotate', {})
+        self.stored_settings.settings['secax_annotate'] = settings
+
+        defaults = [('xytext', (5,0)),
+                    ('textcoords', 'offset points'),
+                    ('ha', 'left'),
+                    ('va', 'center'),
+                    ('fontsize', 9),
+                    ('bbox', {'boxstyle':'square,pad=0.05',
+                              'fc': 'white',
+                              'edgecolor': 'white',
+                              'alpha': 0.6})]
+        for default in defaults:
+            attr, value = default
+            settings.setdefault(attr, settings.get(attr, value))
+
+
+
+
         if self.ms.settingsdict['secplottext'] == 'geology':
             annotate_txt = self.geology_txt
         elif self.ms.settingsdict['secplottext'] == 'geoshort':
@@ -795,7 +825,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         else:
             annotate_txt = self.comment_txt
         for m,n,o in zip(self.x_txt,self.z_txt,annotate_txt):#change last arg to the one to be written in plot
-            self.annotationtext = self.secax.annotate(o,xy=(m,n),xytext=(5,0), textcoords='offset points',ha = 'left', va = 'center',fontsize=9,bbox = dict(boxstyle = 'square,pad=0.05', fc = 'white', edgecolor='white', alpha = 0.6))#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
+            self.annotationtext = self.secax.annotate(o,xy=(m,n), **settings)#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
 
     def write_obsid(self, plot_labels=2):#annotation, and also empty bars to show drillings without stratigraphy data
         xytext = self.xytext.text().split(u',')
@@ -813,12 +843,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
             settings = self.stored_settings.settings.get('secax_bar', {})
             self.stored_settings.settings['secax_bar'] = settings
-
-            defaults = [('edgecolor', 'black'),
-                        ('width', self.barwidth)]
-            for default in defaults:
-                attr, value = default
-                settings.setdefault(attr, settings.get(attr, value))
+            self.set_defaults(settings, [('edgecolor', 'black'),
+                                        ('width', self.barwidth)])
 
             self.p.append(self.secax.bar(plotxleftbarcorner, barlengths, fill=False, bottom=bottoms, **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
@@ -875,6 +901,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.stored_settings = StoredSettings(self, settings={})
         #utils.save_stored_settings(self.ms, self.stored_settings.settings, self.stored_settings_key)
 
+    def set_defaults(self, settings, defaults):
+        for default in defaults:
+            attr, value = default
+            settings.setdefault(attr, settings.get(attr, value))
 
 class StoredSettings(object):
     def __init__(self, sectionplot, settings=None):

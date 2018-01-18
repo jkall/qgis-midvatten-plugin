@@ -69,7 +69,6 @@ class midvsettings():
         if not self.readingSettings:
             if key =='': #if no argument, then save all settings according to dictionary
                 for (key, value) in self.settingsdict.items():
-                    print("trying to save key %s value %s" % (key, value))
                     try: # write plugin settings to QgsProject
                         QgsProject.instance().writeEntry("Midvatten",key, value )
                     except TypeError:
@@ -78,7 +77,6 @@ class midvsettings():
                         except:
                             pass
             else:#otherwise only save specific setting as per given key
-                print("trying to save key %s value %s" % (key, self.settingsdict[key]))
                 try:
                     QgsProject.instance().writeEntry("Midvatten",key, self.settingsdict[key])
                     #print ('debug info, wrote %s value %s' %(key, self.settingsdict[key]))#debug
