@@ -121,7 +121,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
                 if foreign_keys:
                     if self.foreign_keys_import_question is None:
-                        stop_question = utils.Askuser(u"YesNo", ru(QCoreApplication.translate(u'midv_data_importer', u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""")) % (u', '.join(foreign_keys.keys())), ru(QCoreApplication.translate(u'midv_data_importer', u"Info!")))
+                        msg = ru(QCoreApplication.translate(u'midv_data_importer', u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""")) % (u', '.join(foreign_keys.keys()))
+                        utils.MessagebarAndLog.info(log_msg=msg)
+                        stop_question = utils.Askuser(u"YesNo", msg, ru(QCoreApplication.translate(u'midv_data_importer', u"Info!")))
                         if stop_question.result == 0:      # if the user wants to abort
                             raise UserInterruptError()
                         else:
@@ -139,7 +141,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             #Finally import data:
             nr_failed_import = recsinfile - nr_after
             if nr_failed_import > 0:
-                stop_question = utils.Askuser(u"YesNo", ru(QCoreApplication.translate(u'midv_data_importer', u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?""" ))% (str(nr_failed_import)), ru(QCoreApplication.translate(u'midv_data_importer', u"Warning!")))
+                msg = ru(QCoreApplication.translate(u'midv_data_importer', u"""Please note!\nThere are %s rows in your data that can not be imported!\nDo you really want to import the rest?\nAnswering yes will start, from top of the imported file and only import the first of the duplicates.\n\nProceed?""" ))% (str(nr_failed_import))
+                utils.MessagebarAndLog.info(log_msg=msg)
+                stop_question = utils.Askuser(u"YesNo", msg, ru(QCoreApplication.translate(u'midv_data_importer', u"Warning!")))
                 if stop_question.result == 0:      # if the user wants to abort
                     raise UserInterruptError()
 
