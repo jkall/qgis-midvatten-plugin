@@ -82,7 +82,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         print(str(mock_messagebar.mock_calls))
         assert self.myplot.drillstoplineEdit.text() == u'%berg%'
         assert utils_for_tests.create_test_string(self.myplot.selected_obsids) == "[u'P1' u'P2' u'P3']"
-        assert len(mock_messagebar.mock_calls) == 0
+        assert len(mock_messagebar.mock_calls) == 1
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -106,7 +106,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
             self.myplot = self.midvatten.myplot
         _test_plot_section_with_depth(self)
 
-        assert len(mock_messagebar.mock_calls) == 0
+        assert len(mock_messagebar.mock_calls) == 1
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -136,7 +136,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         _test(self)
 
-        assert len(mock_messagebar.mock_calls) == 0
+        assert len(mock_messagebar.mock_calls) == 1
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -168,7 +168,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         print(str(test_string))
         print(str(mock_messagebar.mock_calls))
         assert test_string == u"[ 0.          0.62469505  1.87408514]"
-        assert len(mock_messagebar.mock_calls) == 0
+        assert len(mock_messagebar.mock_calls) == 1
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -198,7 +198,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         test_string = utils_for_tests.create_test_string(myplot.LengthAlong)
         assert test_string == u"[ 1.  3.  5.]"
-        assert len(mock_messagebar.mock_calls) == 0
+        assert len(mock_messagebar.mock_calls) == 1
+        assert mock.call.info(log_msg=u'Hidden features, obsids and length along section:\nP1;P2;P3\\1.0;3.0;5.0') in mock_messagebar.mock_calls
 
     def tearDown(self):
         QgsMapLayerRegistry.instance().addMapLayer(self.vlayer)

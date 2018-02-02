@@ -110,9 +110,12 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.LengthAlong = LengthAlongTable.length
 
         # hidden feature, printout to python console
-        #print([x for x in self.selected_obsids])
-        #print([x for x in self.LengthAlong])
-        
+        utils.MessagebarAndLog.info(log_msg=ru(
+            QCoreApplication.translate(u'SectionPlot',
+                                       u'Hidden features, obsids and length along section:\n%s\%s'))%
+                                            (u';'.join(self.selected_obsids),
+                                             u';'.join([str(x) for x in self.LengthAlong])))
+
         self.fill_dem_list()
 
         

@@ -21,6 +21,7 @@ deprecated=False
 changelog=
         Version 1.5.7b:
         - Custom general report: More development.
+        - Sectionplot: The hidden feature that prints lengthalong now prints to log instead of python print.
         Version 1.5.6b:
         - Support for Levelogger import.
         - Added factor column to general csv import.
