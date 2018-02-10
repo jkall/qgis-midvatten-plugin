@@ -551,8 +551,8 @@ def get_sql_result_as_dict(sql, dbconnection=None):
     return True, result_dict
 
 
-def verify_table_exists(tablename):
-    return tablename in get_tables()
+def verify_table_exists(tablename, dbconnection=None):
+    return tablename in get_tables(dbconnection=dbconnection)
 
 
 def change_cast_type_for_geometry_columns(dbconnection, table_info, tablename):
