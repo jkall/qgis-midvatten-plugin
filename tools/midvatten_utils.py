@@ -1247,9 +1247,11 @@ def calculate_db_table_rows():
             log_msg=printable_msg)
 
 
-def anything_to_string_representation(anything):
+def anything_to_string_representation(anything, itemjoiner=u', ', pad=u'', dictformatter=u'{%s}',
+                                      listformatter=u'[%s]', tupleformatter=u'(%s, )'):
     ur""" Turns anything into a string used for testing
     :param anything: just about anything
+    :param itemjoiner: The string to join list/tuple/dict items with.
     :return: A unicode string
      >>> anything_to_string_representation({(u'123'): 4.5, "a": u'7'})
      u'{u"123": 4.5, "a": u"7"}'
@@ -1257,13 +1259,29 @@ def anything_to_string_representation(anything):
      u'{"a": u"7", (u"123", ): 4.5}'
      >>> anything_to_string_representation([u'1', '2', 3])
      u'[u"1", "2", 3]'
+     >>> anything_to_string_representation({u'123': 4.5, "a": u'7'}, u',\n', u'    ')
+     u'{    u"123": 4.5,\n    "a": u"7"}'
     """
     if isinstance(anything, dict):
-        aunicode = u''.join([u'{', u', '.join([u': '.join([anything_to_string_representation(k), anything_to_string_representation(v)]) for k, v in sorted(anything.iteritems())]), u'}'])
+        aunicode = dictformatter%itemjoiner.join([pad + u': '.join([anything_to_string_representation(k, itemjoiner,
+                                                                                                      pad + pad,
+                                                                                                      dictformatter,
+                                                                                                      listformatter,
+                                                                                                      tupleformatter),
+                                                                    anything_to_string_representation(v, itemjoiner,  pad + pad,
+                                                                                                      dictformatter,
+                                                                                                      listformatter,
+                                                                                                      tupleformatter)]) for k, v in sorted(anything.iteritems())])
     elif isinstance(anything, list):
-        aunicode = u''.join([u'[', u', '.join([anything_to_string_representation(x) for x in anything]), u']'])
+        aunicode = listformatter%itemjoiner.join([pad + anything_to_string_representation(x, itemjoiner, pad + pad,
+                                                                                          dictformatter,
+                                                                                          listformatter,
+                                                                                          tupleformatter) for x in anything])
     elif isinstance(anything, tuple):
-        aunicode = u''.join([u'(', u', '.join([anything_to_string_representation(x) for x in anything]), u', )'])
+        aunicode = tupleformatter%itemjoiner.join([pad + anything_to_string_representation(x, itemjoiner, pad + pad,
+                                                                                           dictformatter,
+                                                                                           listformatter,
+                                                                                           tupleformatter) for x in anything])
     elif isinstance(anything, (float, int)):
         aunicode = u'{}'.format(returnunicode(anything))
     elif isinstance(anything, unicode):
