@@ -20,7 +20,7 @@ deprecated=False
 
 changelog=
         Version 1.5.7b:
-        - Section plot: Cleaned the code and interface a lot for the customizable settings. Much easier to use now.
+        - Section plot: Cleaned the code and interface a lot for the customizable settings. Much easier to use now..
         - Custom general report: More development.
         - Sectionplot: The hidden feature that prints lengthalong now prints to log instead of python print.
         - Export csv fixed for postgis (github issue #257).
