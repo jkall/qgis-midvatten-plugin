@@ -25,6 +25,7 @@ from qgis.core import QgsMapLayerRegistry, QgsVectorLayer, QgsApplication
 import db_utils
 import gui_utils
 import mock
+from mock import call
 from nose.plugins.attrib import attr
 
 import utils_for_tests
@@ -34,6 +35,12 @@ import utils_for_tests
 class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
     """ The test doesn't go through the whole section plot unfortunately
     """
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def setUp(self):
+        super(TestSectionPlot, self).setUp()
+        self.midvatten.ms.settingsdict['secplotcustomsettings'] = ''
+    
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def create_and_select_vlayer(self):
@@ -79,10 +86,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
             self.selected_obsids = self.myplot.selected_obsids
         _test_plot_section(self)
 
-        print(str(mock_messagebar.mock_calls))
+        assert call.info(log_msg=u'Settings key secplotcustomsettings was empty.') in mock_messagebar.mock_calls
+        assert call.info(log_msg=u'Settings {"Axes_set_xlabel": {"fontsize": 10, "xlabel": u"Distance along section"}, "Axes_set_xlim": None, "Axes_set_ylabel": {"fontsize": 10, "ylabel": u"Level, masl"}, "Axes_set_ylim": None, "Figure_subplots_adjust": {}, "dems_Axes_plot": {"DEFAULT": {"linestyle": "-", "linewidth": 1, "marker": "None"}}, "drillstop_Axes_plot": {"color": "black", "linestyle": "", "marker": "^", "markersize": 8}, "geology_Axes_bar": {"edgecolor": "black"}, "grid_Axes_grid": {"b": True, "color": "0.65", "linestyle": "-", "which": "both"}, "layer_Axes_annotate": {"bbox": {"alpha": 0.6, "boxstyle": "square,pad=0.05", "edgecolor": "white", "fc": "white"}, "fontsize": 9, "ha": "left", "textcoords": "offset points", "va": "center", "xytext": (5, 0, )}, "legend_Axes_legend": {"fontsize": 10, "framealpha": 1, "loc": 0}, "legend_Frame_set_facecolor": "1", "legend_Frame_set_fill": False, "legend_Text_set_fontsize": 10, "obsid_Axes_annotate": {"bbox": {"alpha": 0.4, "boxstyle": "square,pad=0.05", "edgecolor": "white", "fc": "white"}, "fontsize": 9, "ha": "center", "rotation": 0, "textcoords": "offset points", "va": "top", "xytext": (0, 10, )}, "obsid_Axes_bar": {"edgecolor": "black", "fill": False}, "plot_height": None, "plot_width": None, "ticklabels_Text_set_fontsize": {"fontsize": 10}, "wlevels_Axes_plot": {"DEFAULT": {"linestyle": "-", "linewidth": 1, "marker": "v", "markersize": 6}}} stored for key secplotcustomsettings.') in mock_messagebar.mock_calls
+
         assert self.myplot.drillstoplineEdit.text() == u'%berg%'
         assert utils_for_tests.create_test_string(self.myplot.selected_obsids) == "[u'P1' u'P2' u'P3']"
-        assert len(mock_messagebar.mock_calls) == 1
+        assert len(mock_messagebar.mock_calls) == 4
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -106,7 +115,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
             self.myplot = self.midvatten.myplot
         _test_plot_section_with_depth(self)
 
-        assert len(mock_messagebar.mock_calls) == 1
+        assert len(mock_messagebar.mock_calls) == 3
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -136,7 +145,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         _test(self)
 
-        assert len(mock_messagebar.mock_calls) == 1
+        assert len(mock_messagebar.mock_calls) == 4
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -168,7 +177,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         print(str(test_string))
         print(str(mock_messagebar.mock_calls))
         assert test_string == u"[ 0.          0.62469505  1.87408514]"
-        assert len(mock_messagebar.mock_calls) == 1
+        assert len(mock_messagebar.mock_calls) == 4
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -198,7 +207,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
 
         test_string = utils_for_tests.create_test_string(myplot.LengthAlong)
         assert test_string == u"[ 1.  3.  5.]"
-        assert len(mock_messagebar.mock_calls) == 1
+        assert len(mock_messagebar.mock_calls) == 4
         assert mock.call.info(log_msg=u'Hidden features, obsids and length along section:\nP1;P2;P3\\1.0;3.0;5.0') in mock_messagebar.mock_calls
 
     def tearDown(self):

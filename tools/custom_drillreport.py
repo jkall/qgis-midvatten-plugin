@@ -22,6 +22,7 @@ import db_utils
 from PyQt4.QtCore import QUrl, QDir
 from PyQt4.QtGui import QDesktopServices
 import PyQt4
+import ast
 
 import os
 import locale
@@ -46,54 +47,19 @@ class DrillreportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 
-
-        #Settings:
-        #--------------
-        #The order and content of the geographical and general tables will follow general_metadata and geo_metadata list.
-        # All obs_points columns could appear here except geometry.
-        # The XY-reference system is added a bit down in the script to the list geo_data. The append has to be commented away
-        # if it's not wanted.
-        self.general_metadata.setPlainText(u'\n'.join([u'type',
-                            u'h_tocags',
-                            u'material',
-                            u'diam',
-                            u'drillstop',
-                            u'screen',
-                            u'drilldate']))
-
-        self.geo_metadata.setPlainText(u'\n'.join([u'east',
-                        u'north',
-                        u'ne_accur',
-                        u'ne_source',
-                        u'h_source',
-                        u'h_toc',
-                        u'h_accur']))
-
-        self.strat_columns.setPlainText(u'\n'.join([u'depth',
-                         u'geology',
-                         u'geoshort',
-                         u'capacity',
-                         u'development',
-                         u'comment']))
-
-        self.general_metadata_header.setText(ru(QCoreApplication.translate(u'Drillreport2', u'General information')))
-        self.geo_metadata_header.setText(ru(QCoreApplication.translate(u'Drillreport2', u'Geographical information')))
-        self.strat_columns_header.setText(ru(QCoreApplication.translate(u'Drillreport2', u'Stratigraphy')))
-        self.comment_header.setText(ru(QCoreApplication.translate(u'Drillreport2', u'Comment')))
-        ##If False, the header will be written outside the table
-        #header_in_table = True
-        ##If True, headers/values in general_metadata and geo_metadata will be skipped if the value is empty, else they
-        ##will be printed anyway
-        #skip_empty = False
-        #include_comments = True
-        ###############
+        self.stored_settings_key = u'customdrillreportstoredsettings'
+        self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settings_key, {})
+        self.update_from_stored_settings(self.stored_settings)
 
         self.connect(self.pushButton_ok, PyQt4.QtCore.SIGNAL("clicked()"), self.drillreport)
 
         self.connect(self.pushButton_cancel, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.close())
 
+        self.connect(self.pushButton_update_from_string, PyQt4.QtCore.SIGNAL("clicked()"), self.ask_and_update_stored_settings)
+
         self.show()
 
+    @utils.general_exception_handler
     def drillreport(self):
         general_metadata = [x for x in self.general_metadata.toPlainText().split(u'\n') if x]
         geo_metadata = [x for x in self.geo_metadata.toPlainText().split(u'\n') if x]
@@ -112,11 +78,139 @@ class DrillreportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
         geo_colwidth = self.geo_colwidth.text().split(u';')
         if not obsids:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Must select at least 1 obsid in selected layer')))
+            raise utils.UsageError()
+        self.save_stored_settings()
         drillrep = Drillreport(obsids, self.ms, general_metadata, geo_metadata, strat_columns, header_in_table,
                                skip_empty, include_comments, general_metadata_header, geo_metadata_header, strat_columns_header,
                                comment_header, empty_row_between_obsids, topleft_topright_colwidths, general_colwidth,
                                geo_colwidth)
 
+    @utils.general_exception_handler
+    def ask_and_update_stored_settings(self):
+        self.stored_settings = self.ask_for_stored_settings(self.stored_settings)
+        self.update_from_stored_settings(self.stored_settings)
+        self.save_stored_settings()
+
+    def update_from_stored_settings(self, stored_settings):
+        if isinstance(stored_settings, dict) and stored_settings:
+            for attr, val in stored_settings.iteritems():
+                try:
+                    selfattr = getattr(self, attr)
+                except:
+                    pass
+                else:
+                    if isinstance(selfattr, PyQt4.QtGui.QPlainTextEdit):
+                        if isinstance(val, (list, tuple)):
+                            val = u'\n'.join(val)
+                        selfattr.setPlainText(val)
+                    elif isinstance(selfattr, PyQt4.QtGui.QCheckBox):
+                        selfattr.setChecked(val)
+                    elif isinstance(selfattr, PyQt4.QtGui.QLineEdit):
+                        selfattr.setText(val)
+        else:
+            # Settings:
+            # --------------
+            # The order and content of the geographical and general tables will follow general_metadata and geo_metadata list.
+            # All obs_points columns could appear here except geometry.
+            # The XY-reference system is added a bit down in the script to the list geo_data. The append has to be commented away
+            # if it's not wanted.
+            self.general_metadata.setPlainText(u'\n'.join([u'type',
+                                                           u'h_tocags',
+                                                           u'material',
+                                                           u'diam',
+                                                           u'drillstop',
+                                                           u'screen',
+                                                           u'drilldate']))
+
+            self.geo_metadata.setPlainText(u'\n'.join([u'east',
+                                                       u'north',
+                                                       u'ne_accur',
+                                                       u'ne_source',
+                                                       u'h_source',
+                                                       u'h_toc',
+                                                       u'h_accur']))
+
+            self.strat_columns.setPlainText(u'\n'.join([u'depth',
+                                                        u'geology',
+                                                        u'geoshort',
+                                                        u'capacity',
+                                                        u'development',
+                                                        u'comment']))
+
+            self.general_metadata_header.setText(
+                ru(QCoreApplication.translate(u'Drillreport2', u'General information')))
+            self.geo_metadata_header.setText(
+                ru(QCoreApplication.translate(u'Drillreport2', u'Geographical information')))
+            self.strat_columns_header.setText(ru(QCoreApplication.translate(u'Drillreport2', u'Stratigraphy')))
+            self.comment_header.setText(ru(QCoreApplication.translate(u'Drillreport2', u'Comment')))
+            ##If False, the header will be written outside the table
+            # header_in_table = True
+            ##If True, headers/values in general_metadata and geo_metadata will be skipped if the value is empty, else they
+            ##will be printed anyway
+            # skip_empty = False
+            # include_comments = True
+            ###############
+
+    def save_stored_settings(self):
+        stored_settings = {}
+        for attrname in [u'general_metadata',
+                        u'geo_metadata',
+                        u'strat_columns',
+                        u'header_in_table',
+                        u'skip_empty',
+                        u'include_comments',
+                        u'general_metadata_header',
+                        u'geo_metadata_header',
+                        u'strat_columns_header',
+                        u'comment_header',
+                        u'empty_row_between_obsids',
+                        u'topleft_topright_colwidths',
+                        u'general_colwidth',
+                        u'geo_colwidth']:
+            try:
+                attr = getattr(self, attrname)
+            except:
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi',
+                                                                                  u"Programming error. Attribute name %s didn't exist in self.")) % attrname)
+            else:
+                if isinstance(attr, PyQt4.QtGui.QPlainTextEdit):
+                    val = [x for x in attr.toPlainText().split(u'\n') if x]
+                elif isinstance(attr, PyQt4.QtGui.QCheckBox):
+                    val = attr.isChecked()
+                elif isinstance(attr, PyQt4.QtGui.QLineEdit):
+                    val = attr.text()
+                else:
+                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Programming error. The Qt-type %s is unhandled.'))%str(type(attr)))
+                    continue
+                stored_settings[attrname] = val
+
+        self.stored_settings = stored_settings
+
+        utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settings_key)
+
+    def ask_for_stored_settings(self, stored_settings):
+        old_string = utils.anything_to_string_representation(stored_settings, itemjoiner=u',\n', pad=u'    ',
+                                                             dictformatter=u'{\n%s}',
+                                                             listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
+
+        msg = ru(QCoreApplication.translate(u'DrillreportUi', u'Replace the settings string with a new settings string.'))
+        new_string = PyQt4.QtGui.QInputDialog.getText(None, ru(QCoreApplication.translate(u'DrillreportUi', "Edit settings string")), msg,
+                                                           PyQt4.QtGui.QLineEdit.Normal, old_string)
+        if not new_string[1]:
+            raise utils.UserInterruptError()
+
+        new_string_text = ru(new_string[0])
+        if not new_string_text:
+            return {}
+
+        try:
+            as_dict = ast.literal_eval(new_string_text)
+        except Exception as e:
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Translating string to dict failed, see log message panel')),
+                                           log_msg=str(e))
+            raise utils.UsageError()
+        else:
+            return as_dict
 
 
 class Drillreport():        # general observation point info for the selected object
@@ -369,7 +463,15 @@ class Drillreport():        # general observation point info for the selected ob
                     except ValueError:
                         pass
                     else:
-                        value = u'{:.{prec}f}'.format(float(value), prec=round)
+                        #Round the numbers to the maximum given rounding.
+                        int_and_dec = value.split(u'.')
+                        if len(int_and_dec) == 2:
+                            len_dec = len(int_and_dec[1])
+                            prec = min(len_dec, int(round))
+                        else:
+                            prec = int(round)
+
+                        value = u'{:.{prec}f}'.format(float(value), prec=prec)
 
             try:
                 rpt += ur"""<TR VALIGN=TOP><TD WIDTH=33%><P><font size=1>{}</font></P></TD><TD WIDTH=50%><P><font size=1>{}</font></P></TD></TR>""".format(header, value)
@@ -377,8 +479,6 @@ class Drillreport():        # general observation point info for the selected ob
                 try:
                     utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'custom_drillreport', u'Writing drillreport failed, see log message panel')),
                                                     log_msg=ru(QCoreApplication.translate(u'custom_drillreport', u'Writing header %s and value %s failed'))%(header, value))
-                    print("header %s"%header)
-                    print("value %s"%value)
                 except:
                     pass
                 raise

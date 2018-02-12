@@ -239,6 +239,13 @@
      </layout>
     </item>
     <item>
+     <widget class="QPushButton" name="pushButton_update_from_string">
+      <property name="text">
+       <string>Update settings from string</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QPushButton" name="pushButton_cancel">

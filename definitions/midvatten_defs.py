@@ -89,6 +89,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'custplot_plottype1':'line',
             'custplot_plottype2':'line',
             'custplot_plottype3':'line',
+            'customdrillreportstoredsettings': '',
             'piper_cl':'Klorid, Cl',
             'piper_hco3':'Alkalinitet, HCO3',
             'piper_so4':'Sulfat, SO4',

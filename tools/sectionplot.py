@@ -605,7 +605,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             QgsMapLayerRegistry.instance().removeMapLayer(temp_memorylayer.id())
 
     def plot_drill_stop(self):
-        settings = copy.deepcopy(self.stored_settings.settings['drillstop_secax_plot'])
+        settings = copy.deepcopy(self.stored_settings.settings['drillstop_Axes_plot'])
         label = settings.get('label', None)
         if label is None:
             label = 'drillstop like ' + self.ms.settingsdict['secplotdrillstop']
@@ -827,7 +827,7 @@ class StoredSettings(object):
     def __init__(self, sectionplot, settings=None):
         self.settings = settings
         self.sectionplot = sectionplot
-        if not isinstance(self.settings, dict):
+        if not isinstance(self.settings, dict) or (isinstance(self.settings, dict) and not self.settings):
             self.settings = {}
 
             self.settings['ticklabels_Text_set_fontsize'] = {'fontsize': 10}
@@ -840,7 +840,7 @@ class StoredSettings(object):
             self.settings['dems_Axes_plot'] = {'DEFAULT': {'marker': 'None',
                                                            'linestyle': '-',
                                                            'linewidth': 1}}
-            self.settings['drillstop_secax_plot'] = {'marker': '^',
+            self.settings['drillstop_Axes_plot'] = {'marker': '^',
                                                      'markersize': 8,
                                                      'linestyle': '',
                                                      'color': 'black'}

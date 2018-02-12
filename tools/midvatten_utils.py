@@ -1518,12 +1518,12 @@ def get_stored_settings(ms, settingskey, default=None):
 
     try:
         stored_settings = ast.literal_eval(settings_string_raw)
-    except SyntaxError:
+    except SyntaxError as e:
         stored_settings = default
-        MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'get_stored_settings', u'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing the settingsstring %s failed.'))%str(settings_string_raw))
-    except ValueError:
+        MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=returnunicode(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing the settingsstring %s failed. Msg "%s"'))%(settings_string_raw, str(e)))
+    except ValueError as e:
         stored_settings = default
-        MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'get_stored_settings', u'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing the settingsstring %s failed.'))%str(settings_string_raw))
+        MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=returnunicode(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing the settingsstring %s failed. Msg "%s"'))%(settings_string_raw, str(e)))
     return stored_settings
 
 
