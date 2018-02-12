@@ -1492,8 +1492,9 @@ def save_stored_settings(ms, stored_settings, settingskey):
     """
     settings_string = anything_to_string_representation(stored_settings)
     ms.settingsdict[settingskey] = settings_string
-    ms.save_settings()
+    ms.save_settings(settingskey)
     MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'save_stored_settings', u'Settings %s stored for key %s.'))%(settings_string, settingskey))
+
 
 def get_stored_settings(ms, settingskey, default=None):
     """

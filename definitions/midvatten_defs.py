@@ -56,6 +56,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplotselectedDEMs':[],
             'stratigraphyplotted':2,
             'secplotlabelsplotted':0,
+            'secplotcustomsettings': '',
             'settingslocation':1,
             'custplot_tabwidget':0,
             'custplot_table1':'w_levels',

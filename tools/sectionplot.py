@@ -26,7 +26,6 @@ import PyQt4.QtCore
 import PyQt4.QtGui
 from qgis.core import *
 from functools import partial
-from collections import OrderedDict
 
 import ast
 import numpy as np
@@ -124,7 +123,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #get PlotData
         self.get_plot_data()
 
-        self.stored_settings = StoredSettings(self, OrderedDict())
+        self.stored_settings = StoredSettings(self, utils.get_stored_settings(self.ms, 'secplotcustomsettings', {}))
 
         #draw plot
         self.draw_plot()
@@ -684,6 +683,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ms.save_settings('secplotselectedDEMs')
         self.ms.save_settings('stratigraphyplotted')
         self.ms.save_settings('secplotlabelsplotted')
+        utils.save_stored_settings(self.ms, self.stored_settings.settings, 'secplotcustomsettings')
         
     def set_location(self):#not ready
         dockarea = self.parent.dockWidgetArea(self)
@@ -815,7 +815,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
     @utils.general_exception_handler
     def clear_stored_settings(self):
-        self.stored_settings = StoredSettings(self, settings=OrderedDict())
+        self.stored_settings = StoredSettings(self, settings={})
         #utils.save_stored_settings(self.ms, self.stored_settings.settings, self.stored_settings_key)
 
     def set_defaults(self, settings, defaults):
@@ -826,62 +826,61 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 class StoredSettings(object):
     def __init__(self, sectionplot, settings=None):
         self.settings = settings
-        if self.settings is None:
-            self.settings = OrderedDict()
-
         self.sectionplot = sectionplot
+        if not isinstance(self.settings, dict):
+            self.settings = {}
 
-        self.settings['ticklabels_Text_set_fontsize'] = {'fontsize': 10}
-        self.settings['Axes_set_xlabel'] = {'xlabel': ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")),
-                                            'fontsize': 10}
-        self.settings['Axes_set_xlim'] = None # Tuple like (min, max)
-        self.settings['Axes_set_ylim'] = None # Tuple like (min, max)
-        self.settings['Axes_set_ylabel'] = {'ylabel': ru(QCoreApplication.translate(u'SectionPlot', u"Level, masl")),
-                                            'fontsize': 10}
-        self.settings['dems_Axes_plot'] = {'DEFAULT': {'marker': 'None',
-                                                       'linestyle': '-',
-                                                       'linewidth': 1}}
-        self.settings['drillstop_secax_plot'] = {'marker': '^',
-                                                 'markersize': 8,
-                                                 'linestyle': '',
-                                                 'color': 'black'}
-        self.settings['geology_Axes_bar'] = {'edgecolor': 'black'}
-        self.settings['grid_Axes_grid'] = {'b': True,
-                                           'which': 'both',
-                                           'color': '0.65',
-                                           'linestyle': '-'}
-        self.settings['layer_Axes_annotate'] = {'xytext': (5,0),
-                                                'textcoords': 'offset points',
-                                                'ha': 'left',
-                                                'va': 'center',
-                                                'fontsize': 9,
-                                                'bbox': {'boxstyle':'square,pad=0.05',
-                                                         'fc': 'white',
-                                                         'edgecolor': 'white',
-                                                         'alpha': 0.6}}
-        self.settings['legend_Axes_legend'] = {'loc': 0,
-                                               'framealpha': 1,
-                                               'fontsize': 10}
-        self.settings['legend_Text_set_fontsize'] = 10
-        self.settings['legend_Frame_set_facecolor'] = '1'
-        self.settings['legend_Frame_set_fill'] = False
-        self.settings['obsid_Axes_annotate'] = {'xytext': (0,10),
-                                                'textcoords': 'offset points',
-                                                'ha': 'center',
-                                                'va': 'top',
-                                                'fontsize': 9,
-                                                'rotation': 0,
-                                                'bbox': {'boxstyle': 'square,pad=0.05', 'fc': 'white', 'edgecolor': 'white', 'alpha': 0.4}}
+            self.settings['ticklabels_Text_set_fontsize'] = {'fontsize': 10}
+            self.settings['Axes_set_xlabel'] = {'xlabel': ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")),
+                                                'fontsize': 10}
+            self.settings['Axes_set_xlim'] = None # Tuple like (min, max)
+            self.settings['Axes_set_ylim'] = None # Tuple like (min, max)
+            self.settings['Axes_set_ylabel'] = {'ylabel': ru(QCoreApplication.translate(u'SectionPlot', u"Level, masl")),
+                                                'fontsize': 10}
+            self.settings['dems_Axes_plot'] = {'DEFAULT': {'marker': 'None',
+                                                           'linestyle': '-',
+                                                           'linewidth': 1}}
+            self.settings['drillstop_secax_plot'] = {'marker': '^',
+                                                     'markersize': 8,
+                                                     'linestyle': '',
+                                                     'color': 'black'}
+            self.settings['geology_Axes_bar'] = {'edgecolor': 'black'}
+            self.settings['grid_Axes_grid'] = {'b': True,
+                                               'which': 'both',
+                                               'color': '0.65',
+                                               'linestyle': '-'}
+            self.settings['layer_Axes_annotate'] = {'xytext': (5,0),
+                                                    'textcoords': 'offset points',
+                                                    'ha': 'left',
+                                                    'va': 'center',
+                                                    'fontsize': 9,
+                                                    'bbox': {'boxstyle':'square,pad=0.05',
+                                                             'fc': 'white',
+                                                             'edgecolor': 'white',
+                                                             'alpha': 0.6}}
+            self.settings['legend_Axes_legend'] = {'loc': 0,
+                                                   'framealpha': 1,
+                                                   'fontsize': 10}
+            self.settings['legend_Text_set_fontsize'] = 10
+            self.settings['legend_Frame_set_facecolor'] = '1'
+            self.settings['legend_Frame_set_fill'] = False
+            self.settings['obsid_Axes_annotate'] = {'xytext': (0,10),
+                                                    'textcoords': 'offset points',
+                                                    'ha': 'center',
+                                                    'va': 'top',
+                                                    'fontsize': 9,
+                                                    'rotation': 0,
+                                                    'bbox': {'boxstyle': 'square,pad=0.05', 'fc': 'white', 'edgecolor': 'white', 'alpha': 0.4}}
 
-        self.settings['obsid_Axes_bar'] = {'edgecolor': 'black',
-                                           'fill': False}
-        self.settings['plot_height'] = None
-        self.settings['plot_width'] = None
-        self.settings['Figure_subplots_adjust'] = {} # {"top": 0.95, "bottom": 0.15, "left": 0.09, "right": 0.97}
-        self.settings['wlevels_Axes_plot'] = {'DEFAULT': {'markersize': 6,
-                                                'marker': 'v',
-                                                'linestyle': '-',
-                                                'linewidth': 1}}
+            self.settings['obsid_Axes_bar'] = {'edgecolor': 'black',
+                                               'fill': False}
+            self.settings['plot_height'] = None
+            self.settings['plot_width'] = None
+            self.settings['Figure_subplots_adjust'] = {} # {"top": 0.95, "bottom": 0.15, "left": 0.09, "right": 0.97}
+            self.settings['wlevels_Axes_plot'] = {'DEFAULT': {'markersize': 6,
+                                                    'marker': 'v',
+                                                    'linestyle': '-',
+                                                    'linewidth': 1}}
 
 
     def ask_and_update_settings_string(self):
