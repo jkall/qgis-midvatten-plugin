@@ -198,7 +198,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     @fn_timer
     def load_obsid_from_db(self):
         self.combobox_obsid.clear()
-        res = db_utils.sql_load_fr_db("""SELECT DISTINCT obsid, (CASE WHEN level_masl IS NULL THEN 'uncalibrated' ELSE 'calibrated' END) AS status FROM w_levels_logger ORDER BY obsid""")[1]
+        res = db_utils.sql_load_fr_db("""SELECT DISTINCT obsid, (CASE WHEN level_masl IS NULL AND head_cm IS NOT NULL THEN 'uncalibrated' ELSE 'calibrated' END) AS status FROM w_levels_logger ORDER BY obsid""")[1]
         all_obsids = {}
         for row in res:
             all_obsids.setdefault(row[0], []).append(row[1])

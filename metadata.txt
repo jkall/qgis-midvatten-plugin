@@ -24,6 +24,9 @@ changelog=
         - Custom general report: Fixed better rounding. Settings are now saved in the project.
         - Sectionplot: The hidden feature that prints lengthalong now prints to log instead of python print.
         - Export csv fixed for postgis (github issue #257).
+        - Logger calibration: Fix to only write "uncalibrated" if level_masl is null AND head_cm is NOT NULL. (instead
+                              of only check if level_masl is null). The fix is for loggers that only have conductivity
+                              or temperature.
         Version 1.5.6b:
         - Support for Levelogger import.
         - Added factor column to general csv import.
