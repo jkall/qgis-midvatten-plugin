@@ -656,6 +656,7 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
             self.dbpath = dbpath
             self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({u'spatialite': {u'dbpath': dbpath}})
             self.midvsettingsdialogdock.ms.save_settings('database')
+            self.midvsettingsdialogdock.LoadAndSelectLastSettings()
             #self.midvsettingsdialogdock.LoadAndSelectLastSettings()
         else:  # debug
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SpatialiteSettings', u"DB selection cancelled and still using database path %s"))%utils.returnunicode(self.midvsettingsdialogdock.ms.settingsdict['database']))
@@ -697,3 +698,4 @@ class PostgisSettings(gui_utils.RowEntryGrid):
     def set_db(self):
         self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({u'postgis': {u'connection': self.connection}})
         self.midvsettingsdialogdock.ms.save_settings('database')
+        self.midvsettingsdialogdock.LoadAndSelectLastSettings()
