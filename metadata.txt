@@ -20,7 +20,7 @@ deprecated=False
 
 changelog=
         Version 1.5.8b:
-        -
+        - New utility: List of obsids from selected features.
         Version 1.5.7b:
         - Section plot: Cleaned the code and interface a lot for the customizable settings. Much easier to use now..
         - Custom general report: Fixed better rounding. Settings are now saved in the project.

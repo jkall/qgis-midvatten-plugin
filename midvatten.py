@@ -191,8 +191,13 @@ class midvatten:
         QObject.connect(self.action_calculate_statistics_for_selected_obsids, SIGNAL("triggered()"), self.calculate_statistics_for_selected_obsids)
 
         self.action_calculate_db_table_rows = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate("Midvatten","Calculate database table rows"), self.iface.mainWindow())
-        self.action_calculate_statistics_for_selected_obsids.setWhatsThis(self.calculate_db_table_rows.__doc__)
+        self.action_calculate_db_table_rows.setWhatsThis(self.calculate_db_table_rows.__doc__)
         QObject.connect(self.action_calculate_db_table_rows, SIGNAL("triggered()"), self.calculate_db_table_rows)
+
+        self.action_list_of_obsids_from_selected_features = QAction(QIcon(":/plugins/midvatten/icons/calc_statistics.png"), QCoreApplication.translate("Midvatten","List of obsids from selected features"), self.iface.mainWindow())
+        self.action_list_of_obsids_from_selected_features.setWhatsThis(self.list_of_obsids_from_selected_features.__doc__)
+        QObject.connect(self.action_list_of_obsids_from_selected_features, SIGNAL("triggered()"), self.list_of_obsids_from_selected_features)
+
 
         # Add toolbar with buttons 
         self.toolBar = self.iface.addToolBar("Midvatten")
@@ -280,6 +285,7 @@ class midvatten:
         self.menu.utils.addAction(self.actionresetSettings)
         self.menu.utils.addAction(self.action_calculate_statistics_for_selected_obsids)
         self.menu.utils.addAction(self.action_calculate_db_table_rows)
+        self.menu.utils.addAction(self.action_list_of_obsids_from_selected_features)
 
         self.menu.addSeparator()
 
@@ -887,3 +893,26 @@ class midvatten:
         QApplication.setOverrideCursor(Qt.WaitCursor)
         utils.calculate_db_table_rows()
         QApplication.restoreOverrideCursor()
+
+    @utils.general_exception_handler
+    def list_of_obsids_from_selected_features(self):
+        """ Writes a concatted list of obsids from column obsid from selected features
+
+            Select features/rows in a layer containing the column obsid. A sorted list of unique obsids will
+            be written to the log. The list could be used in other layer filters or selections.
+        """
+        selected_obsids = utils.getselectedobjectnames(column_name=u'obsid')
+
+        if not selected_obsids:
+            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'list_of_obsids_from_selected_features',
+                                                                              u'No obsids selected!')))
+        else:
+            selected_obsids = sorted(set(selected_obsids))
+            nr = len(selected_obsids)
+            utils.MessagebarAndLog.info(bar_msg=ru(
+                QCoreApplication.translate(u'list_of_obsids_from_selected_features',
+                                           u'List of %s selected obsids written to log'))%str(nr),
+                                        log_msg=u'obsid IN ({})'.format(
+                                            u', '.join([u"'{}'".format(obsid)
+                                                        for obsid in sorted(selected_obsids)])))
+
