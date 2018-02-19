@@ -29,6 +29,7 @@ from Queue import Queue
 from collections import OrderedDict
 from datetime import datetime
 from functools import partial
+from time import sleep
 
 import PyQt4.QtCore
 import PyQt4.QtGui
@@ -59,7 +60,6 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.status = True
 
     def parse_observations_and_populate_gui(self):
-
         splitter = SplitterWithHandel(PyQt4.QtCore.Qt.Vertical)
         self.add_row(splitter)
 
@@ -75,8 +75,15 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.settings = []
         self.settings.append(StaffQuestion())
         self.settings.append(DateShiftQuestion())
-        self.date_time_filter = DateTimeFilter()
-        self.settings.append(self.date_time_filter) #This includes a checkbox for "include only latest
+        self.date_time_filter = DateTimeFilter(stretch=False)
+        self.date_time_filter.date_time_filter_update_button = PyQt4.QtGui.QPushButton(QCoreApplication.translate('FieldloggerImport',
+                                                                                                 u'Filter dates'))
+        self.date_time_filter.date_time_filter_update_button.setToolTip(ru(QCoreApplication.translate('FieldloggerImport',
+                                                                                     u'Filter observations using from and to dates and update gui.')))
+        self.date_time_filter.layout.addWidget(self.date_time_filter.date_time_filter_update_button)
+        self.date_time_filter.layout.addStretch()
+
+        self.settings.append(self.date_time_filter)
         for setting in self.settings:
             if hasattr(setting, u'widget'):
                 settings_layout.addWidget(setting.widget)
@@ -130,10 +137,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.gridLayout_buttons.addWidget(self.start_import_button, 3, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
 
-        self.connect(self.date_time_filter.from_datetimeedit, PyQt4.QtCore.SIGNAL("editingFinished()"),
-                     self.update_sublocations_and_inputfields_on_date_change)
-
-        self.connect(self.date_time_filter.to_datetimeedit, PyQt4.QtCore.SIGNAL("editingFinished()"),
+        self.connect(self.date_time_filter.date_time_filter_update_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      self.update_sublocations_and_inputfields_on_date_change)
 
         #Button click first filters data from the settings and then updates input fields.
@@ -141,6 +145,8 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                      self.update_input_fields_from_button)
 
         self.gridLayout_buttons.setRowStretch(4, 1)
+
+        self.setGeometry(500, 150, 950, 700)
 
         self.show()
 
@@ -242,6 +248,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         return sublocation_groups
 
     def update_sublocations_and_inputfields_on_date_change(self):
+        sleep(0.2)
         observations = copy.deepcopy(self.observations)
         date_time_filter = self.date_time_filter
         sublocation_filter = self.sublocation_filter
@@ -255,6 +262,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         observations = self.filter_by_settings_using_shared_loop(observations, [sublocation_filter])
         input_fields.update_parameter_imports_queue(observations, stored_settings)
 
+    @utils.general_exception_handler
     def update_input_fields_from_button(self):
         self.input_fields.update_parameter_imports_queue(self.filter_by_settings_using_shared_loop(self.observations, self.settings), self.stored_settings)
 
@@ -503,7 +511,6 @@ class StaffQuestion(RowEntry):
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
         if self.staff is None or not self.staff:
-            utils.pop_up_info(ru(QCoreApplication.translate(u'StaffQuestion', u'Import error, staff not given')))
             raise utils.UsageError(ru(QCoreApplication.translate(u'StaffQuestion', u'Import error, staff not given')))
 
         observation[u'staff'] = self.staff
