@@ -4,7 +4,7 @@ name=Midvatten_postgis
 qgisMinimumVersion=2.4
 qgisMaximumVersion=2.98
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.5.9b
+version=Version 1.5.10b
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 
@@ -19,7 +19,7 @@ experimental=False
 deprecated=False
 
 changelog=
-        Version 1.5.9b:
+        Version 1.5.10b:
         - Fieldlogger import: Fixed window size. Fixed a bug with the datetime filter lineedits (added filter-button).
         Version 1.5.8b:
         - New utility: List of obsids from selected features.
