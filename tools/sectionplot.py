@@ -68,8 +68,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #self.setWindowTitle("Midvatten plugin - section plot") # Set the title for the dialog
 
         self.initUI()
+        self.customized_plot_label.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-section-plot\">Customized plot</a>")
 
     def do_it(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
+
         #show the user this may take a long time...
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))
         #settings must be recieved here since plot windows may stay open (hence sectionplot instance activated) while a new qgis project is opened or midv settings are chaned 
@@ -129,6 +131,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.draw_plot()
 
     def draw_plot(self): #replot
+        try:
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Plotting using settings:\n%s'))%self.stored_settings.readable_output())
+        except:
+            pass
         if not isinstance(self.dbconnection, db_utils.DbConnectionManager):
             self.dbconnection = db_utils.DbConnectionManager()
 
@@ -191,6 +197,12 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.save_settings()
             self.dbconnection.closedb()
             self.dbconnection = None
+        except KeyError:
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Settings error, press "Restore defaults"')))
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            self.dbconnection.closedb()
+            self.dbconnection = None
+
         except:
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             self.dbconnection.closedb()
@@ -882,11 +894,13 @@ class StoredSettings(object):
                                                     'linestyle': '-',
                                                     'linewidth': 1}}
 
+    def readable_output(self):
+        return utils.anything_to_string_representation(self.settings, itemjoiner=u',\n', pad=u'    ',
+                                                dictformatter=u'{\n%s}',
+                                                listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
 
     def ask_and_update_settings_string(self):
-        old_string = utils.anything_to_string_representation(self.settings, itemjoiner=u',\n', pad=u'    ',
-                                                             dictformatter=u'{\n%s}',
-                                                             listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
+        old_string = self.readable_output()
 
         msg = ru(QCoreApplication.translate(u'StoredSettings', u'Replace the settings string with a new settings string.'))
         new_string = PyQt4.QtGui.QInputDialog.getText(None, ru(QCoreApplication.translate(u'StoredSettings', "Edit settings string")), msg,

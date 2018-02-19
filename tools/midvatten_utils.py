@@ -1517,6 +1517,12 @@ def get_stored_settings(ms, settingskey, default=None):
     settings_string_raw = returnunicode(settings_string_raw)
 
     try:
+        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Reading stored settings "%s":\n%s'))%(settingskey,
+                                                                                                                                               settings_string_raw))
+    except:
+        pass
+
+    try:
         stored_settings = ast.literal_eval(settings_string_raw)
     except SyntaxError as e:
         stored_settings = default

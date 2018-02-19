@@ -301,7 +301,7 @@ p, li { white-space: pre-wrap; }
             <item row="1" column="0">
              <widget class="QPushButton" name="update_and_plot_button">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Plot while giving the user much more freedom to customize the plot.&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Howto:&lt;/p&gt;&lt;p&gt;* When button is pressed, copy the supplied string into a text editor of choice.&lt;/p&gt;&lt;p&gt;* Change the settings already there, or add new settings.&lt;/p&gt;&lt;p&gt;* Copy the settings back from text editor into the line edit.&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Notes:&lt;/p&gt;&lt;p&gt;* Save the customized string elsewhere (ex. in a text file) to not lose it!&lt;/p&gt;&lt;p&gt;* The string will be converted as is into python code. That means that {} is a dictionary, [] a list, &amp;quot;&amp;quot; a string, 1 and integer and so on. There are no syntatic checks. If the string is not convertable to python dict or nonexisting keyword arguments are given, the result will be a python error.&lt;/p&gt;&lt;p&gt;* The majority of the settings uses the convention &amp;lt;prefix&amp;gt;_&amp;lt;Class&amp;gt;_&amp;lt;method&amp;gt;. The Class will always be capitalized. The prefix gives a clue on what the settings belong to.&lt;/p&gt;&lt;p&gt;* To see what settings can be given, google &amp;quot;Matplotlib &amp;lt;Class&amp;gt; &amp;lt;method&amp;gt;&amp;quot;. &lt;br/&gt;Ex: &amp;quot;Matplotlib Axes legend&amp;quot;. Look for the containing the &amp;quot;matplotlib.axes.Axes.legend&amp;quot;-string and the &amp;quot;Axes.legend(*args, **kwargs)&amp;quot;-string.&lt;br/&gt;The keyword arguments are beside the &amp;quot;Parameters:&amp;quot;-string.&lt;/p&gt;&lt;p&gt;* Adjust the plot padding using 'Figure_subplots_adjust' = {&amp;quot;top&amp;quot;: 0.95, &amp;quot;bottom&amp;quot;: 0.15, &amp;quot;left&amp;quot;: 0.09, &amp;quot;right&amp;quot;: 0.97}&lt;/p&gt;&lt;p&gt;* A plot_width of 469 works well as width for libre office. &lt;/p&gt;&lt;p&gt;* The bar linewidths for the full stratigraphy &amp;quot;bar&amp;quot; is changed using &amp;quot;obsid_Axes_bar&amp;quot;: {&amp;quot;linewidth&amp;quot;: 0.5}.&lt;/p&gt;&lt;p&gt;* Notes on water levels plotting (wlevels_Axes_plot): If the same date is given more than once, an order suffix is automatically added to all but the first in the wlevels_Axes_plot settings.&lt;br/&gt;Ex:&lt;br/&gt;date_time f w level:&lt;br/&gt;2017-01-01&lt;br/&gt;2017-01-01&lt;br/&gt;2017-01-01&lt;br/&gt;will result in wlevels_Axes_plot{&amp;quot;2017-01-01&amp;quot; ..., &amp;quot;2017-01-01_2&amp;quot;..., &amp;quot;2017-01-01_3&amp;quot;...} in the same order as the list.&lt;br/&gt;This is intended.&lt;/p&gt;&lt;p&gt;* Notes on dems plotting (dems_Axes_plot): Works just as the water levels plotting above, but will usually not occur. (dems usually have unique names).&lt;/p&gt;&lt;p&gt;* Notes on legend fontsizes:&lt;br/&gt;&amp;quot;legend_Text_set_fontsize&amp;quot; sets the fontsize for the text in the legend.&lt;br/&gt;&amp;quot;legend_Axes_legend&amp;quot;: {&amp;quot;fontsize&amp;quot;: 10} sets the size of the handles (the geology &amp;quot;figures&amp;quot;) in the legend.&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Update and plot</string>
@@ -319,9 +319,12 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
             <item row="0" column="0">
-             <widget class="QLabel" name="label_7">
+             <widget class="QLabel" name="customized_plot_label">
               <property name="text">
-               <string>Customized plot</string>
+               <string>Customized plot (manual)</string>
+              </property>
+              <property name="openExternalLinks">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
