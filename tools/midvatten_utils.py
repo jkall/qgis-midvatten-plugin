@@ -201,6 +201,12 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
             self._reuse_column.addItems(reuse_header_list)
             self.reuse_column_temp = reuse_column
 
+        _label = QtGui.QLabel(msg)
+        if 140 < _label.height() <= 300:
+            self.setGeometry(500, 150, self.width(), 415)
+        elif _label.height() > 300:
+            self.setGeometry(500, 150, self.width(), 600)
+
         self.exec_()
 
     @property
