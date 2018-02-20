@@ -21,6 +21,7 @@ deprecated=False
 changelog=
         Version 1.5.11b:
         - Fixed better size for NotFoundQuestion.
+        - Custom general report: User defined decimal separator. Upper left table colspan 2 if upper right table is not existing.
         Version 1.5.10b:
         - Fieldlogger import: Fixed window size. Fixed a bug with the datetime filter lineedits (added filter-button).
         Version 1.5.8b:

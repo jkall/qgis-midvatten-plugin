@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>461</width>
+    <width>455</width>
     <height>692</height>
    </rect>
   </property>
@@ -17,89 +17,10 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0" colspan="2">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Top left metadata table (usually general metadata)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" rowspan="2">
-       <widget class="QPlainTextEdit" name="general_metadata">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a list of attributes (columns) in obs_points-table that should be included in the top left cell in the custom drill report.&lt;/p&gt;&lt;p&gt;To apply rounding of a float attribute, add ';' and the number of decimals to round. Ex: east;2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Header</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="2" colspan="2">
        <widget class="QLineEdit" name="general_metadata_header">
         <property name="toolTip">
          <string>Leave bland to skip header</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1" colspan="2">
-       <widget class="QLabel" name="label_8">
-        <property name="text">
-         <string>Column widths</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="3">
-       <widget class="QLineEdit" name="general_colwidth">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;* The width of the columns can be adjusted by writing &amp;lt;col1_width&amp;gt;;&amp;lt;col2_width&amp;gt; where width is representing the html-width tag:&lt;/p&gt;&lt;p&gt;* if width is an integer, it's treated as a pixel value.&lt;/p&gt;&lt;p&gt;* if width is followed by %-sign, it's treated as percentage of the total width.&lt;/p&gt;&lt;p&gt;* if width is followed by *-sign, it's treated as relative width. (ex, given col1;1* and col2;2*, col2 will have twice the width of col1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>2*;3*</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Top right metadata table (usually geological metadata)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" rowspan="2">
-       <widget class="QPlainTextEdit" name="geo_metadata">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a list of attributes (columns) in obs_points-table that should be included in the top right cell in the custom drill report.&lt;/p&gt;&lt;p&gt;To apply rounding of a float attribute, add ';' and the number of decimals to round. Ex: east;2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Header</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="2" colspan="2">
-       <widget class="QLineEdit" name="geo_metadata_header">
-        <property name="toolTip">
-         <string>Leave bland to skip header</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1" colspan="2">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>Column widths</string>
         </property>
        </widget>
       </item>
@@ -120,10 +41,34 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
-       <widget class="QPlainTextEdit" name="strat_columns">
+      <item row="1" column="1">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Header</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QLineEdit" name="general_colwidth">
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a list of columns in stratigraphy table to include in the stratigraphy cell in custom drill report.&lt;/p&gt;&lt;p&gt;Notes:&lt;/p&gt;&lt;p&gt;* obsid can not be written as a column.&lt;/p&gt;&lt;p&gt;* If special keyword 'depth' is given then depthtop and depthbot will be combined into one column using ' - ', ex: 0 - 2 (&amp;lt;depthtop&amp;gt; - &amp;lt;depthbot&amp;gt;)&lt;/p&gt;&lt;p&gt;* The width of the columns can be adjusted by writing &amp;lt;column&amp;gt;;&amp;lt;width&amp;gt; where width is representing the html-width tag:&lt;/p&gt;&lt;p&gt;   * if width is an integer, it's treated as a pixel value.&lt;/p&gt;&lt;p&gt;   * if width is followed by %-sign, it's treated as percentage of the total width.&lt;/p&gt;&lt;p&gt;   * if width is followed by *-sign, it's treated as relative width. (ex, given col1;1* and col2;2*, col2 will have twice the width of col1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;* The width of the columns can be adjusted by writing &amp;lt;col1_width&amp;gt;;&amp;lt;col2_width&amp;gt; where width is representing the html-width tag:&lt;/p&gt;&lt;p&gt;* if width is an integer, it's treated as a pixel value.&lt;/p&gt;&lt;p&gt;* if width is followed by %-sign, it's treated as percentage of the total width.&lt;/p&gt;&lt;p&gt;* if width is followed by *-sign, it's treated as relative width. (ex, given col1;1* and col2;2*, col2 will have twice the width of col1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>2*;3*</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1" colspan="2">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Column widths</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" rowspan="2">
+       <widget class="QPlainTextEdit" name="geo_metadata">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a list of attributes (columns) in obs_points-table that should be included in the top right cell in the custom drill report.&lt;/p&gt;&lt;p&gt;To apply rounding of a float attribute, add ';' and the number of decimals to round. Ex: east;2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>
@@ -134,10 +79,65 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="1" colspan="2">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Column widths</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Header</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Top left metadata table (usually general metadata)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="2" colspan="2">
+       <widget class="QLineEdit" name="geo_metadata_header">
+        <property name="toolTip">
+         <string>Leave bland to skip header</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" rowspan="2">
+       <widget class="QPlainTextEdit" name="general_metadata">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a list of attributes (columns) in obs_points-table that should be included in the top left cell in the custom drill report.&lt;/p&gt;&lt;p&gt;To apply rounding of a float attribute, add ';' and the number of decimals to round. Ex: east;2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QPlainTextEdit" name="strat_columns">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a list of columns in stratigraphy table to include in the stratigraphy cell in custom drill report.&lt;/p&gt;&lt;p&gt;Notes:&lt;/p&gt;&lt;p&gt;* obsid can not be written as a column.&lt;/p&gt;&lt;p&gt;* If special keyword 'depth' is given then depthtop and depthbot will be combined into one column using ' - ', ex: 0 - 2 (&amp;lt;depthtop&amp;gt; - &amp;lt;depthbot&amp;gt;)&lt;/p&gt;&lt;p&gt;* The width of the columns can be adjusted by writing &amp;lt;column&amp;gt;;&amp;lt;width&amp;gt; where width is representing the html-width tag:&lt;/p&gt;&lt;p&gt;   * if width is an integer, it's treated as a pixel value.&lt;/p&gt;&lt;p&gt;   * if width is followed by %-sign, it's treated as percentage of the total width.&lt;/p&gt;&lt;p&gt;   * if width is followed by *-sign, it's treated as relative width. (ex, given col1;1* and col2;2*, col2 will have twice the width of col1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
       <item row="7" column="2" colspan="2">
        <widget class="QLineEdit" name="strat_columns_header">
         <property name="toolTip">
          <string>Leave bland to skip header</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Top right metadata table (usually geological metadata)</string>
         </property>
        </widget>
       </item>
@@ -218,6 +218,27 @@
      </widget>
     </item>
     <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QLabel" name="label_12">
+        <property name="text">
+         <string>Decimal separator</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="decimal_separator">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;* The width of the columns can be adjusted by writing &amp;lt;top left table width&amp;gt;;&amp;lt;top right table width&amp;gt; where width is representing the html-width tag:&lt;/p&gt;&lt;p&gt;* if width is an integer, it's treated as a pixel value.&lt;/p&gt;&lt;p&gt;* if width is followed by %-sign, it's treated as percentage of the total width.&lt;/p&gt;&lt;p&gt;* if width is followed by *-sign, it's treated as relative width. (ex, given col1;1* and col2;2*, col2 will have twice the width of col1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>.</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <widget class="QLabel" name="label_10">
@@ -271,7 +292,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>461</width>
+     <width>455</width>
      <height>27</height>
     </rect>
    </property>

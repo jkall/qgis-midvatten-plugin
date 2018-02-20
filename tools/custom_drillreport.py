@@ -76,6 +76,7 @@ class DrillreportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
         topleft_topright_colwidths = self.topleft_topright_colwidths.text().split(u';')
         general_colwidth = self.general_colwidth.text().split(u';')
         geo_colwidth = self.geo_colwidth.text().split(u';')
+        decimal_separator = self.decimal_separator.text()
         if not obsids:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Must select at least 1 obsid in selected layer')))
             raise utils.UsageError()
@@ -83,7 +84,7 @@ class DrillreportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
         drillrep = Drillreport(obsids, self.ms, general_metadata, geo_metadata, strat_columns, header_in_table,
                                skip_empty, include_comments, general_metadata_header, geo_metadata_header, strat_columns_header,
                                comment_header, empty_row_between_obsids, topleft_topright_colwidths, general_colwidth,
-                               geo_colwidth)
+                               geo_colwidth, decimal_separator)
 
     @utils.general_exception_handler
     def ask_and_update_stored_settings(self):
@@ -166,7 +167,8 @@ class DrillreportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
                         u'empty_row_between_obsids',
                         u'topleft_topright_colwidths',
                         u'general_colwidth',
-                        u'geo_colwidth']:
+                        u'geo_colwidth',
+                        u'decimal_separator']:
             try:
                 attr = getattr(self, attrname)
             except:
@@ -218,7 +220,7 @@ class Drillreport():        # general observation point info for the selected ob
     def __init__(self, obsids, settingsdict, general_metadata, geo_metadata, strat_columns, header_in_table,
          skip_empty, include_comments, general_metadata_header, geo_metadata_header, strat_columns_header,
          comment_header, empty_row_between_obsids, topleft_topright_colwidths, general_colwidth,
-         geo_colwidth):
+         geo_colwidth, decimal_separator):
 
         reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
         if not os.path.exists(reportfolder):
@@ -328,7 +330,8 @@ class Drillreport():        # general observation point info for the selected ob
                                     strat_sql_columns_list=strat_sql_columns_list,
                                     topleft_topright_colwidths=topleft_topright_colwidths,
                                     general_colwidth=general_colwidth,
-                                    geo_colwidth=geo_colwidth)
+                                    geo_colwidth=geo_colwidth,
+                                    decimal_separator=decimal_separator)
             rpt += ur"""<p>    </p>"""
             if empty_row_between_obsids:
                 rpt += ur"""<p>empty_row_between_obsids</p>"""
@@ -359,7 +362,7 @@ class Drillreport():        # general observation point info for the selected ob
     def write_obsid(self, obsid, general_data, geo_data, strat_data, comment_data, strat_columns, header_in_table=True,
                     skip_empty=False, general_metadata_header=u'', geo_metadata_header=u'', strat_columns_header=u'',
                     comment_header=u'', general_rounding=[], geo_rounding=[], strat_sql_columns_list=[],
-                    topleft_topright_colwidths=[], general_colwidth=[], geo_colwidth=[]):
+                    topleft_topright_colwidths=[], general_colwidth=[], geo_colwidth=[], decimal_separator=u'.'):
         """This part only handles writing the information. It does not do any db data collection."""
 
         rpt = u''
@@ -386,10 +389,11 @@ class Drillreport():        # general observation point info for the selected ob
             else:
                 rpt += ur"""<TD WIDTH=60%>"""
         else:
-            rpt += ur"""<TD WIDTH=100%>"""
+            rpt += ur"""<TD WIDTH=100% COLSPAN=2>"""
 
 
-        rpt += self.write_two_col_table(general_data, general_metadata_header, skip_empty, general_rounding, general_colwidth)
+        rpt += self.write_two_col_table(general_data, general_metadata_header, skip_empty, general_rounding,
+                                        general_colwidth, decimal_separator)
         rpt += ur"""</TD>"""
 
         if geo_data:
@@ -398,7 +402,8 @@ class Drillreport():        # general observation point info for the selected ob
             else:
                 rpt += ur"""<TD WIDTH=40%>"""
 
-            rpt += self.write_two_col_table(geo_data, geo_metadata_header, skip_empty, geo_rounding, geo_colwidth)
+            rpt += self.write_two_col_table(geo_data, geo_metadata_header, skip_empty, geo_rounding, geo_colwidth,
+                                            decimal_separator)
             rpt += ur"""</TD>"""
         rpt += ur"""</TR>"""
 
@@ -410,7 +415,8 @@ class Drillreport():        # general observation point info for the selected ob
 
             if strat_data:
 
-                rpt += self.write_strat_data(strat_data, strat_columns, strat_columns_header, strat_sql_columns_list)
+                rpt += self.write_strat_data(strat_data, strat_columns, strat_columns_header, strat_sql_columns_list,
+                                             decimal_separator)
 
             if comment_data:
                 rpt += self.write_comment_data(comment_data, comment_header)
@@ -421,7 +427,7 @@ class Drillreport():        # general observation point info for the selected ob
 
         return rpt
 
-    def write_two_col_table(self, data, table_header, skip_empty=False, column_rounding=None, col_widths=None):
+    def write_two_col_table(self, data, table_header, skip_empty=False, column_rounding=None, col_widths=None, decimal_separator=u'.'):
         if column_rounding is None:
             column_rounding = []
 
@@ -448,8 +454,9 @@ class Drillreport():        # general observation point info for the selected ob
                     except ValueError:
                         pass
                     else:
-                        if _test == 0.0:
-                            continue
+                        pass
+                        #if _test == 0.0:
+                        #    continue
                 else:
                     continue
             try:
@@ -473,6 +480,9 @@ class Drillreport():        # general observation point info for the selected ob
 
                         value = u'{:.{prec}f}'.format(float(value), prec=prec)
 
+            if decimal_separator != u'.':
+                value = value.replace(u'.', decimal_separator)
+
             try:
                 rpt += ur"""<TR VALIGN=TOP><TD WIDTH=33%><P><font size=1>{}</font></P></TD><TD WIDTH=50%><P><font size=1>{}</font></P></TD></TR>""".format(header, value)
             except UnicodeEncodeError:
@@ -486,7 +496,7 @@ class Drillreport():        # general observation point info for the selected ob
         rpt += r"""</TABLE>"""
         return rpt
 
-    def write_strat_data(self, strat_data, _strat_columns, table_header, strat_sql_columns_list):
+    def write_strat_data(self, strat_data, _strat_columns, table_header, strat_sql_columns_list, decimal_separator):
         if table_header:
             rpt = ur"""<P><U><B><font size=3>%s</font></B></U></P>""" % table_header
         else:
@@ -530,12 +540,14 @@ class Drillreport():        # general observation point info for the selected ob
                                                                                                   u'Programming error, depthtop and depthbot columns was supposed to exist')))
                             rpt += ur"""<TD><P><font size=1> </font></P></TD>""".format(value)
                         else:
-                            depthtop = u'' if row[depthtop_idx] == 'NULL' else row[depthtop_idx]
-                            depthbot = u'' if row[depthbot_idx] == 'NULL' else row[depthbot_idx]
+                            depthtop = u'' if row[depthtop_idx] == 'NULL' else row[depthtop_idx].replace(u'.', decimal_separator)
+                            depthbot = u'' if row[depthbot_idx] == 'NULL' else row[depthbot_idx].replace(u'.', decimal_separator)
                             rpt += ur"""<TD><P><font size=1>{}</font></P></TD>""".format(u' - '.join([depthtop, depthbot]))
                     else:
                         value_idx = strat_sql_columns_list.index(col)
                         value = u'' if row[value_idx] == 'NULL' else row[value_idx]
+                        if col in (u'depthtop', u'depthbot') and decimal_separator != u'.':
+                            value = value.replace(u'.', decimal_separator)
                         rpt += ur"""<TD><P><font size=1>{}</font></P></TD>""".format(value)
 
                 rpt += ur"""</TR>"""
