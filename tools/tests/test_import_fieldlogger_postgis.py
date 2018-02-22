@@ -882,4 +882,83 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             reference_string = u'{comments: (True, [(Rb1608, 2016-03-30 15:34:40, testc, teststaff), (Rb1615, 2016-03-29 15:34:13, ergv2, teststaff)]), w_flow: (True, []), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, 0.0, -555.0, ergv), (Rb1615, 2016-03-31 15:34:13, 111.0, None, None, ergv1)]), w_qual_field: (True, []), zz_staff: (True, [(teststaff, None)])}'
             assert test_string == reference_string
 
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    def test_full_integration_test_to_db_qual_depth(self):
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('Rb1202')''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('Rb1608')''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('Rb1615')''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('Rb1505')''')
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('Rb1512')''')
+        db_utils.sql_alter_db(u'''INSERT INTO zz_staff (staff) VALUES ('teststaff')''')
+
+        db_utils.sql_alter_db(u'''INSERT or ignore INTO zz_flowtype (type) VALUES ('Accvol')''')
+
+        f = [
+            u"LOCATION;DATE;TIME;VALUE;TYPE\n",
+            u"Rb1202.sample;30-03-2016;15:31:30;hej2;s.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:40;testc;l.comment\n",
+            u"Rb1615.flow;30-03-2016;15:30:09;357;f.Accvol.m3\n",
+            u"Rb1615.flow;30-03-2016;15:30:09;gick bra;f.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:13;ergv;l.comment\n",
+            u"Rb1608.level;30-03-2016;15:34:13;555;l.meas.m\n",
+            u"Rb1512.sample;30-03-2016;15:31:30;899;s.turbiditet.FNU\n",
+            u"Rb1505.quality;30-03-2016;15:29:26;hej;q.comment\n",
+            u"Rb1505.quality;30-03-2016;15:29:26;863;q.konduktivitet.µS/cm\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;test;q.comment\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;67;q.syre.mg/L\n",
+            u"Rb1512.quality;30-03-2016;15:30:39;8;q.temperatur.grC\n",
+            u"Rb1512.quality;30-03-2016;15:30:40;58;q.syre.%\n",
+            u"Rb1512.quality;30-03-2016;15:30:40;1.23;q.depth.m\n"
+            ]
+
+        with utils.tempinput(''.join(f)) as filename:
+            @mock.patch('import_fieldlogger.utils.Askuser')
+            @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
+            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
+            @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
+            @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+            @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
+            def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
+                mock_vacuum.return_value.result = 1
+                mock_charset.return_value = ('utf-8', True)
+                mock_savefilename.return_value = [filename]
+                mock_ask_instrument.return_value.value = u'testid'
+
+                ms = MagicMock()
+                ms.settingsdict = OrderedDict()
+                importer = FieldloggerImport(self.iface.mainWindow(), ms)
+                importer.parse_observations_and_populate_gui()
+
+                #Set settings:
+                for setting in importer.settings:
+                    if isinstance(setting, import_fieldlogger.StaffQuestion):
+                        setting.staff = u'teststaff'
+                    if isinstance(setting, import_fieldlogger.WLevelsImportFields):
+                        setting.calculate_level_masl = False
+
+                stored_settings = [[u's.comment', [[u'import_method', u'comments']]],
+                                   [u'l.comment', [[u'import_method', u'comments']]],
+                                   [u'f.comment', [[u'import_method', u'comments']]],
+                                   [u'q.comment', [[u'import_method', u'comments']]],
+                                   [u'l.meas.m', [[u'import_method', u'w_levels']]],
+                                   [u'q.depth.m', [[u'import_method', u'w_qual_field_depth']]],
+                                   [u'f.Accvol.m3', [[u'import_method', u'w_flow'], [u'flowtype', u'Accvol'], [u'unit', u'm3']]],
+                                   [u's.turbiditet.FNU', [[u'import_method', u'w_qual_field'], [u'parameter', u'turbiditet'], [u'unit', u'FNU'], [u'instrument', u'testid']]],
+                                   [u'q.konduktivitet.µS/cm', [[u'import_method', u'w_qual_field'], [u'parameter', u'konduktivitet'], [u'unit', u'µS/cm'], [u'instrument', u'testid']]],
+                                   [u'q.syre.mg/L', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'mg/L'], [u'instrument', u'testid']]],
+                                   [u'q.syre.%', [[u'import_method', u'w_qual_field'], [u'parameter', u'syre'], [u'unit', u'%'], [u'instrument', u'testid']]],
+                                   [u'q.temperatur.grC', [[u'import_method', u'w_qual_field'], [u'parameter', u'temperatur'], [u'unit', u'grC'], [u'instrument', u'testid']]]]
+                importer.input_fields.set_parameters_using_stored_settings(stored_settings)
+                importer.start_import(importer.observations)
+
+            _test(self, filename)
+
+            test_string = create_test_string(dict([(k, db_utils.sql_load_fr_db(u'SELECT * FROM %s' % k)) for k in (u'w_levels', u'w_qual_field', u'w_flow', u'zz_staff', u'comments')]))
+            reference_string = u'{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, 1.23, None), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
+            #print(test_string)
+            #print(reference_string)
+            assert test_string == reference_string
+
 

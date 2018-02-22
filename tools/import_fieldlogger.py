@@ -370,7 +370,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             reading_num = observation[u'value'].replace(u',', u'.')
             reading_txt = observation[u'value']
             unit = observation[u'unit']
-            depth = observation.get(u'depth', u'')
+            depth = observation.get(u'depth', u'').replace(u',', u'.')
             comment = observation.get(u'comment', u'')
             file_data_list.append([obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment])
 
@@ -437,11 +437,14 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         data_preparers = {u'w_levels': self.prepare_w_levels_data,
                           u'w_flow': self.prepare_w_flow_data,
                           u'w_qual_field': self.prepare_w_qual_field_data,
-                          u'comments': self.prepare_comments_data}
+                          u'comments': self.prepare_comments_data,
+                          u'w_qual_field_depth': lambda x: None}
 
         for import_method, observations in observations_importmethods.iteritems():
             if import_method:
                 file_data = data_preparers[import_method](observations)
+                if file_data is None:
+                    continue
 
                 importer.general_import(file_data=file_data, goal_table=import_method)
 
@@ -832,6 +835,7 @@ class ImportMethodChooser(RowEntry):
                                                   (u'comments', CommentsImportFields),
                                                   (u'w_levels', WLevelsImportFields),
                                                   (u'w_flow', WFlowImportFields),
+                                                  (u'w_qual_field_depth', WQualFieldDepthImportFields),
                                                   (u'w_qual_field', WQualFieldImportFields)))
 
         self.__import_method.addItems(self.import_method_classes.keys())
@@ -1105,9 +1109,6 @@ class WQualFieldImportFields(RowEntryGrid):
         self.__parameter.addItems(self._parameters_units.keys())
         self.label_unit = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Unit: ')))
         self.__unit = default_combobox()
-        self.label_depth = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Depth input field (optional): ')))
-        self.__depth = default_combobox()
-        self.__depth.addItems(self._import_method_chooser.parameter_names)
         self.__instrument = default_combobox()
         self.label_instrument = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Instrument: ')))
         self.parameter_instruments = {}
@@ -1122,8 +1123,6 @@ class WQualFieldImportFields(RowEntryGrid):
         self.layout.addWidget(self.__parameter, 1, 0)
         self.layout.addWidget(self.label_unit, 0, 1)
         self.layout.addWidget(self.__unit, 1, 1)
-        self.layout.addWidget(self.label_depth, 0, 2)
-        self.layout.addWidget(self.__depth, 1, 2)
         self.layout.addWidget(self.label_instrument, 0, 3)
         self.layout.addWidget(self.__instrument, 1, 3)
         self.layout.setColumnStretch(4, 1)
@@ -1149,14 +1148,6 @@ class WQualFieldImportFields(RowEntryGrid):
     @unit.setter
     def unit(self, value):
         self.__unit.setEditText(ru(value))
-
-    @property
-    def depth(self):
-        return ru(self.__depth.currentText())
-
-    @depth.setter
-    def depth(self, value):
-        self.__depth.setEditText(ru(value))
 
     @property
     def instrument(self):
@@ -1207,13 +1198,9 @@ class WQualFieldImportFields(RowEntryGrid):
         except TypeError, e:
             raise Exception("Obs: " + str(obs) + " e " + str(e))
         """
-
-        depth_dict = dict([(obs[u'date_time'], obs[u'value']) for obs in observations if obs[u'parametername'] == self.depth])
-
         for observation in observations:
             try:
                 if observation[u'parametername'] == self._import_method_chooser.parameter_name:
-                    observation[u'depth'] = depth_dict.get(observation[u'date_time'], u'')
                     observation[u'parameter'] = self.parameter
                     observation[u'instrument'] = self.instrument
                     observation[u'unit'] = self.unit
@@ -1221,6 +1208,37 @@ class WQualFieldImportFields(RowEntryGrid):
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'WQualFieldImportFields', u"Import error. See message log panel")),
                                                 log_msg=ru(QCoreApplication.translate(u'WQualFieldImportFields', u"error on observation : %s\nand parameter: %s"))%(str(observation), self.parameter))
                 raise TypeError
+        return observations
+
+
+class WQualFieldDepthImportFields(RowEntry):
+    """
+    """
+    def __init__(self, import_method_chooser, connect):
+        """
+        """
+        super(WQualFieldDepthImportFields, self).__init__()
+        self.import_method_chooser = import_method_chooser
+        self.layout.insertStretch(-1, 0)
+
+    def alter_data(self, observations):
+        #Depth should be added for all observations with the same obsid and date_time
+
+        observations = copy.deepcopy(observations)
+
+        parameter_name = self.import_method_chooser.parameter_name
+
+        dateformat = u'%Y%m%d %H:%M:%S'
+        depths = dict([((obs[u'sublocation'], datetime.strftime(obs[u'date_time'], dateformat)), obs[u'value'])
+                       for obs in observations if obs[u'parametername'] == parameter_name])
+        if not depths:
+            return observations
+
+        for observation in observations:
+            depth = depths.get((observation[u'sublocation'], datetime.strftime(observation[u'date_time'], dateformat)), None)
+            if depth is not None:
+                observation[u'depth'] = depth
+
         return observations
 
 

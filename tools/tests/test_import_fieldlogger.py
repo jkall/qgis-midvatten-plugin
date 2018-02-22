@@ -246,6 +246,39 @@ class TestFieldLoggerImporterNoDb(object):
             reference = u'[{date_time: 2016-03-30 15:29:26, parametername: q.comment, sublocation: Rb1505.quality, value: hej}, {date_time: 2016-03-30 15:30:39, parametername: q.syre.mg/L, sublocation: Rb1512.quality, value: 67}, {date_time: 2016-03-30 15:31:30, parametername: s.turbiditet.FNU, sublocation: Rb1512.sample, value: 899}, {date_time: 2016-03-30 15:29:26, parametername: q.konduktivitet.µS/cm, sublocation: Rb1505.quality, value: 863}, {date_time: 2016-03-30 15:30:09, parametername: f.comment, sublocation: Rb1615.flow, value: gick bra}, {date_time: 2016-03-30 15:30:40, parametername: q.syre.%, sublocation: Rb1512.quality, value: 58}, {date_time: 2016-03-30 15:34:13, parametername: l.meas.m, sublocation: Rb1608.level, value: 555}, {date_time: 2016-03-30 15:30:39, parametername: q.comment, sublocation: Rb1512.quality, value: test}, {date_time: 2016-03-30 15:31:30, parametername: s.comment, sublocation: Rb1202.sample, value: hej2}, {date_time: 2016-03-30 15:34:40, parametername: l.comment, sublocation: Rb1608.level, value: testc}, {date_time: 2016-03-30 15:30:09, parametername: f.Accvol.m3, sublocation: Rb1615.flow, value: 357}, {date_time: 2016-03-30 15:34:13, parametername: l.comment, sublocation: Rb1608.level, value: ergv}, {date_time: 2016-03-30 15:30:39, parametername: q.temperatur.grC, sublocation: Rb1512.quality, value: 8}]'
             assert test_string == reference
 
+    def test_prepare_w_qual_field_data(self):
+        observations = [{u'obsid': u'obs1', u'date_time': datestring_to_date(u'2016-01-01 00:00'),
+                         u'parameter': u'par1', u'unit': u'unit1', u'staff': u'staff1', u'instrument': u'inst1',
+                         u'comment': u'comment1', u'value': u'1.23'}]
+        test_string = create_test_string(FieldloggerImport.prepare_w_qual_field_data(observations))
+        reference_string = u'[[obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment], [obs1, staff1, 2016-01-01 00:00:00, inst1, par1, 1.23, 1.23, unit1, , comment1]]'
+        assert test_string == reference_string
+
+    def test_prepare_w_qual_field_data_comma_decimal(self):
+        observations = [{u'obsid': u'obs1', u'date_time': datestring_to_date(u'2016-01-01 00:00'),
+                         u'parameter': u'par1', u'unit': u'unit1', u'staff': u'staff1', u'instrument': u'inst1',
+                         u'comment': u'comment1', u'value': u'1,23'}]
+        test_string = create_test_string(FieldloggerImport.prepare_w_qual_field_data(observations))
+        reference_string = u'[[obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment], [obs1, staff1, 2016-01-01 00:00:00, inst1, par1, 1.23, 1,23, unit1, , comment1]]'
+        assert test_string == reference_string
+
+    def test_prepare_w_qual_field_data_with_depth(self):
+        observations = [{u'obsid': u'obs1', u'date_time': datestring_to_date(u'2016-01-01 00:00'),
+                         u'parameter': u'par1', u'unit': u'unit1', u'staff': u'staff1', u'instrument': u'inst1',
+                         u'comment': u'comment1', u'value': u'1.23', u'depth': u'123.4'}]
+        test_string = create_test_string(FieldloggerImport.prepare_w_qual_field_data(observations))
+        reference_string = u'[[obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment], [obs1, staff1, 2016-01-01 00:00:00, inst1, par1, 1.23, 1.23, unit1, 123.4, comment1]]'
+        assert test_string == reference_string
+
+    def test_prepare_w_qual_field_data_with_depth_comma_sep(self):
+        observations = [{u'obsid': u'obs1', u'date_time': datestring_to_date(u'2016-01-01 00:00'),
+                         u'parameter': u'par1', u'unit': u'unit1', u'staff': u'staff1', u'instrument': u'inst1',
+                         u'comment': u'comment1', u'value': u'1.23', u'depth': u'123,4'}]
+        test_string = create_test_string(FieldloggerImport.prepare_w_qual_field_data(observations))
+        reference_string = u'[[obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment], [obs1, staff1, 2016-01-01 00:00:00, inst1, par1, 1.23, 1.23, unit1, 123.4, comment1]]'
+        print(str(test_string))
+        assert test_string == reference_string
+
 @attr(status='on')
 class TestCommentsImportFields(object):
     def setUp(self):
