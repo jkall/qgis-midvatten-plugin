@@ -329,15 +329,14 @@ def hydrocolors():
     Fallback methods use color codes found in code below
     """
     res, dict_qt1 = db_utils.get_sql_result_as_dict('select a.capacity, a.explanation, b.color_qt from zz_capacity a, zz_capacity_plots b where a.capacity = b.capacity')
-    dict_qt = utils.unicode_2_utf8(dict_qt1)
-    for k,v in dict_qt.iteritems():
-        dict_qt[k] = v[0]
+
     # fallback method to maintain backwards compatibility
     if not res:
         try:
             print('using fallback method for backwards compat.')
         except:
             pass
+        utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'hydrocolors', u'Getting hydrocolors from database failed, using fallback method!')))
         dict_qt = { '': ('okant', 'gray'),
                       ' ': ('okant', 'gray'),
                       '0': ('okant', 'gray'),
@@ -363,6 +362,10 @@ def hydrocolors():
                       '6 ': ('mycket god', 'blue'),
                       '6+': ('mycket god', 'darkBlue'),
                     }
+    else:
+        dict_qt = utils.unicode_2_utf8(dict_qt1)
+        for k, v in dict_qt.iteritems():
+            dict_qt[k] = v[0]
     return dict_qt
 
 def PlotTypesDict(international='no'): 

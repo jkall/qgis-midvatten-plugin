@@ -504,6 +504,13 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
                     p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, '' if layer.geo_short=='NULL' else layer.geo_short)
                 elif self.GeoOrComment == "hydro":
                     p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, '' if layer.hydro=='NULL' else layer.hydro)
+                elif self.GeoOrComment == "hydro_expl":
+                    if layer.hydro is None or layer.hydro=='NULL':
+                        hydr = ''
+                    else:
+                        hydr = self.hydroColors.get(layer.hydro, '')[0]
+                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, hydr)
+
                 else:
                     p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, '' if layer.development=='NULL' else layer.development)
 
@@ -600,6 +607,7 @@ class SurveyDialog(PyQt4.QtGui.QDialog):
         self.GeologyOrCommentCBox.addItem('comment')
         self.GeologyOrCommentCBox.addItem('geoshort')
         self.GeologyOrCommentCBox.addItem('hydro')
+        self.GeologyOrCommentCBox.addItem('hydro_expl')
         self.GeologyOrCommentCBox.addItem('development')
         self.layout2.addWidget(self.GeologyOrCommentCBox)
         
