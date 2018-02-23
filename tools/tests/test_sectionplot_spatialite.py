@@ -27,6 +27,7 @@ import gui_utils
 import mock
 from mock import call
 from nose.plugins.attrib import attr
+from utils import returnunicode as ru
 
 import utils_for_tests
 
@@ -92,7 +93,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         #print(str(mock_instance.mock_calls))
         assert self.myplot.drillstoplineEdit.text() == u'%berg%'
         assert utils_for_tests.create_test_string(self.myplot.selected_obsids) == "[u'P1' u'P2' u'P3']"
-        assert len(mock_messagebar.mock_calls) == 4
+        assert not mock_messagebar.warning.called
+        assert not mock_messagebar.critical.called
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -116,7 +118,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         _test(self)
 
         print(str(mock_messagebar.mock_calls))
-        assert len(mock_messagebar.mock_calls) == 3
+        assert not mock_messagebar.warning.called
+        assert not mock_messagebar.critical.called
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -145,7 +148,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         _test(self)
 
-        assert len(mock_messagebar.mock_calls) == 4
+        assert not mock_messagebar.warning.called
+        assert not mock_messagebar.critical.called
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -176,7 +180,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(str(test_string))
         print(str(mock_messagebar.mock_calls))
         assert test_string == u"[ 0.          0.62469505  1.87408514]"
-        assert len(mock_messagebar.mock_calls) == 4
+        assert not mock_messagebar.warning.called
+        assert not mock_messagebar.critical.called
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -205,8 +210,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         test_string = utils_for_tests.create_test_string(myplot.LengthAlong)
         assert test_string == u"[ 1.  3.  5.]"
-        assert len(mock_messagebar.mock_calls) == 4
         assert mock.call.info(log_msg=u'Hidden features, obsids and length along section:\nP1;P2;P3\\1.0;3.0;5.0') in mock_messagebar.mock_calls
+        assert not mock_messagebar.warning.called
+        assert not mock_messagebar.critical.called
 
     def tearDown(self):
         QgsMapLayerRegistry.instance().addMapLayer(self.vlayer)
