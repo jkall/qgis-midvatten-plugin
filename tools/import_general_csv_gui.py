@@ -227,7 +227,6 @@ class GeneralCsvImportGui(PyQt4.QtGui.QMainWindow, import_ui_dialog):
                     translation_dict[alter_colname] = [alter_colname]
 
         columns_factors = self.table_chooser.get_columns_factors_dict()
-        print(str(columns_factors))
 
         #Translate column names and add columns that appear more than once
         file_data = self.translate_and_reorder_file_data(file_data, translation_dict)
