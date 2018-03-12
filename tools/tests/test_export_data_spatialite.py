@@ -344,6 +344,80 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         reference_string = u'\n'.join(reference_string)
         assert test_string == reference_string
 
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten_utils.QtGui.QInputDialog.getText')
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
+    @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten_utils.find_layer', autospec=True)
+    @mock.patch('qgis.utils.iface', autospec=True)
+    @mock.patch('export_data.utils.pop_up_info', autospec=True)
+    def test_export_spatialite_zz_tables(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify, mock_locale, mock_createdb_crs_question, mock_messagebar):
+        mock_find_layer.return_value.crs.return_value.authid.return_value = u'EPSG:3006'
+        mock_createdb_crs_question.return_value = [3006, True]
+        dbconnection = db_utils.DbConnectionManager()
+        mock_newdbpath.return_value = EXPORT_DB_PATH
+        mock_verify.return_value = 0
+
+        """
+        insert into zz_strat(geoshort,strata) values('land fill','fyll');
+        insert into zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values('torv','DarkGray','+','darkGray','NoBrush');
+        insert into zz_capacity (capacity,explanation) values('6 ','mycket god');
+        insert into zz_capacity (capacity,explanation) values('6+','mycket god');
+        insert into zz_capacity_plots (capacity,color_qt) values('', 'gray');
+        """
+
+        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''', dbconnection=dbconnection)
+        dbconnection.execute(u'''PRAGMA foreign_keys='off' ''')
+        dbconnection.execute(u'''UPDATE zz_strat SET strata = 'filling' WHERE geoshort = 'land fill' ''')
+        dbconnection.execute(u'''INSERT INTO zz_stratigraphy_plots (strata,color_mplot,hatch_mplot,color_qt,brush_qt) values ('filling','Yellow','+','darkGray','NoBrush') ''')
+        dbconnection.execute(u'''UPDATE zz_stratigraphy_plots SET color_mplot = 'OrangeFIX' WHERE strata = 'made ground' ''')
+        dbconnection.execute(u'''UPDATE zz_capacity SET explanation = 'anexpl' WHERE capacity = 0 ''')
+        dbconnection.execute(u'''UPDATE zz_capacity_plots SET color_qt = 'whiteFIX' WHERE capacity = 0 ''')
+
+        dbconnection.commit_and_closedb()
+
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'en_US'
+        self.midvatten.export_spatialite()
+
+        sql_list = [u'''SELECT geoshort, strata FROM zz_strat WHERE geoshort IN ('land fill', 'rock') ''',
+                    u'''SELECT strata, color_mplot FROM zz_stratigraphy_plots WHERE strata IN ('made ground', 'rock', 'filling') ''',
+                    u'''SELECT capacity, explanation FROM zz_capacity WHERE capacity IN (0, 1)''',
+                    u'''SELECT capacity, color_qt FROM zz_capacity_plots WHERE capacity IN (0, 1) ''']
+
+        conn = sqlite.connect(EXPORT_DB_PATH, detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        curs = conn.cursor()
+
+        test_list = []
+        for sql in sql_list:
+            test_list.append('\n' + sql + '\n')
+            test_list.append(curs.execute(sql).fetchall())
+
+        conn.commit()
+        conn.close()
+
+        test_string = utils_for_tests.create_test_string(test_list)
+
+
+        reference_string = [u'''[''',
+                            u'''SELECT geoshort, strata FROM zz_strat WHERE geoshort IN ('land fill', 'rock') ''',
+                            u''', [(land fill, filling), (rock, rock)], ''',
+                            u'''SELECT strata, color_mplot FROM zz_stratigraphy_plots WHERE strata IN ('made ground', 'rock', 'filling') ''',
+                            u''', [(filling, Yellow), (made ground, OrangeFIX), (rock, red)], ''',
+                            u'''SELECT capacity, explanation FROM zz_capacity WHERE capacity IN (0, 1)''',
+                            u''', [(0, anexpl), (1, above gwl)], ''',
+                            u'''SELECT capacity, color_qt FROM zz_capacity_plots WHERE capacity IN (0, 1) ''',
+                            u''', [(0, whiteFIX), (1, red)]]''']
+
+        reference_string = u'\n'.join(reference_string)
+        assert test_string == reference_string
+
+
+
     def tearDown(self):
         #Delete database
         try:

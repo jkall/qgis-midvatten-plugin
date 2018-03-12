@@ -296,12 +296,12 @@ class ExportData():
         ifnull_primary_keys = [''.join(["ifnull(", pk, ",'')"]) for pk in primary_keys]
         concatenated_primary_keys = ' || '.join(ifnull_primary_keys)
 
-        sql = u"""INSERT INTO %s (%s) select %s from %s where %s not in (select %s from %s)"""%(tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
+        sql = u"""INSERT INTO %s (%s) select %s from %s """ % (tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix) #where %s not in (select %s from %s)"""%(tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
         try:
             self.curs.execute(sql)
         except Exception, e:
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg:%s'))%(tname, str(e)))
-            sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'INSERT failed while importing to %s. Using INSERT OR REPLACE instead.\nMsg:%s'))%(tname, str(e)))
+            sql = sql.replace(u'INSERT', u'INSERT OR REPLACE')
             try:
                 self.curs.execute(sql)
             except Exception, e:
