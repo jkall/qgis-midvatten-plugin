@@ -198,7 +198,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.dbconnection.closedb()
             self.dbconnection = None
         except KeyError:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Settings error, press "Restore defaults"')))
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Section plot optional settings error, press "Restore defaults"')))
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             self.dbconnection.closedb()
             self.dbconnection = None
@@ -885,7 +885,8 @@ class StoredSettings(object):
                                                     'bbox': {'boxstyle': 'square,pad=0.05', 'fc': 'white', 'edgecolor': 'white', 'alpha': 0.4}}
 
             self.settings['obsid_Axes_bar'] = {'edgecolor': 'black',
-                                               'fill': False}
+                                               'fill': False,
+                                               'linewidth': 0.5}
             self.settings['plot_height'] = None
             self.settings['plot_width'] = None
             self.settings['Figure_subplots_adjust'] = {} # {"top": 0.95, "bottom": 0.15, "left": 0.09, "right": 0.97}

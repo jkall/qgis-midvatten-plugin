@@ -26,6 +26,7 @@ changelog=
         - Feature to write hydro explanation text for stratigraphy plots (gis.stackexchange.com #272315)
         - Export to spatialite: Fixed bug where new database didn't get old zz-table information.
         - Custom plot: Added function to filter list by word. Added function for dependency between the filters.
+        - Section plot: Changed bar line width to 0.5 as default for prettier plots.
         Version 1.5.10b:
         - Fieldlogger import: Fixed window size. Fixed a bug with the datetime filter lineedits (added filter-button).
         Version 1.5.8b:
