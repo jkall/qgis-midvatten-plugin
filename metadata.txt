@@ -25,6 +25,7 @@ changelog=
         - Fieldlogger import: Fixed a bug where import of depth didn't work. It's now added as an import method instead.
         - Feature to write hydro explanation text for stratigraphy plots (gis.stackexchange.com #272315)
         - Export to spatialite: Fixed bug where new database didn't get old zz-table information.
+        - Custom plot: Added function to filter list by word. Added function for dependency between the filters.
         Version 1.5.10b:
         - Fieldlogger import: Fixed window size. Fixed a bug with the datetime filter lineedits (added filter-button).
         Version 1.5.8b:

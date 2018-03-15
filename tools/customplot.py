@@ -113,6 +113,16 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
         self.connect(self.save_to_eps_button, QtCore.SIGNAL("clicked()"), self.save_to_eps)
 
+        self.connect(self.listfilter_1_1, QtCore.SIGNAL("editingFinished()"), partial(self.filter_filterlist, self.Filter1_QListWidget_1, self.listfilter_1_1))
+        self.connect(self.listfilter_2_1, QtCore.SIGNAL("editingFinished()"), partial(self.filter_filterlist, self.Filter2_QListWidget_1, self.listfilter_2_1))
+        self.connect(self.listfilter_1_2, QtCore.SIGNAL("editingFinished()"), partial(self.filter_filterlist, self.Filter1_QListWidget_2, self.listfilter_1_2))
+        self.connect(self.listfilter_2_2, QtCore.SIGNAL("editingFinished()"), partial(self.filter_filterlist, self.Filter2_QListWidget_2, self.listfilter_2_2))
+        self.connect(self.listfilter_1_3, QtCore.SIGNAL("editingFinished()"), partial(self.filter_filterlist, self.Filter1_QListWidget_3, self.listfilter_1_3))
+        self.connect(self.listfilter_2_3, QtCore.SIGNAL("editingFinished()"), partial(self.filter_filterlist, self.Filter2_QListWidget_3, self.listfilter_2_3))
+        self.connect(self.filtersettings1, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.filtersettings1))
+        self.connect(self.filtersettings2, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.filtersettings2))
+        self.connect(self.filtersettings3, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.filtersettings3))
+
 
         self.PlotChart_QPushButton.clicked.connect(self.drawPlot_all)
         self.Redraw_pushButton.clicked.connect( self.refreshPlot )
@@ -149,7 +159,13 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         #self.custplotfigure.tight_layout()
 
         self.chart_settings.setChecked(False)
+        self.filtersettings1.setChecked(False)
+        self.filtersettings2.setChecked(False)
+        self.filtersettings3.setChecked(False)
         self.set_groupbox_children_visibility(self.chart_settings)
+        self.set_groupbox_children_visibility(self.filtersettings1)
+        self.set_groupbox_children_visibility(self.filtersettings2)
+        self.set_groupbox_children_visibility(self.filtersettings3)
         for plot_item_settings in [self.plot_settings_1, self.plot_settings_2, self.plot_settings_3]:
             plot_item_settings.setChecked(False)
             self.set_groupbox_children_visibility(plot_item_settings)
@@ -453,6 +469,15 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 if filter_qlistwidget.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
                      filter_qlistwidget.item(index).setSelected(True)
 
+    def filter_filterlist(self, filterlist, lineedit):
+        words = lineedit.text().split(u';')
+
+        listcount = filterlist.count()
+        if words:
+            [filterlist.item(idx).setHidden(False) if any([word.lower() in filterlist.item(idx).text().lower() for word in words]) else filterlist.item(idx).setHidden(True) for idx in xrange(listcount)]
+        else:
+            [filterlist.item(idx).setHidden(False) for idx in xrange(listcount)]
+
     def LoadTablesFromDB( self, tables_columns ):    # Open the SpatiaLite file to extract info about tables
         tables = sorted([table for table in tables_columns.keys() if table not in db_utils.nonplot_tables(as_tuple=True) and not table.startswith(u'zz_')])
         for i, table_combobox in enumerate([self.table_ComboBox_1, self.table_ComboBox_2, self.table_ComboBox_3], 1):
@@ -521,9 +546,20 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         TableCombobox = 'table_ComboBox_' + str(tabno)
         FilterCombobox = 'Filter' + str(filterno) + '_ComboBox_' + str(tabno)
         FilterQListWidget = 'Filter' + str(filterno) + '_QListWidget_' + str(tabno)
+
+        other_filterno = {2:1, 1:2}[filterno]
+        other_FilterCombobox = 'Filter' + str(other_filterno) + '_ComboBox_' + str(tabno)
+        other_FilterQListWidget = 'Filter' + str(other_filterno) + '_QListWidget_' + str(tabno)
+
+        dependent_filtering_box = getattr(self, 'dependent_filtering' + str(tabno), None)
+
         getattr(self,FilterQListWidget).clear()
         if not getattr(self,FilterCombobox).currentText()=='':
-            self.PopulateFilterList(getattr(self,TableCombobox).currentText(),FilterQListWidget,getattr(self,FilterCombobox).currentText())
+            self.PopulateFilterList(getattr(self,TableCombobox).currentText(), FilterQListWidget,
+                                    getattr(self,FilterCombobox).currentText(),
+                                    other_FilterQListWidget,
+                                    getattr(self,other_FilterCombobox).currentText(),
+                                    dependent_filtering_box)
         
     def Filter1_1Changed(self):
         self.FilterChanged(1,1)
@@ -543,8 +579,29 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
     def Filter2_3Changed(self):
         self.FilterChanged(2,3)
                         
-    def PopulateFilterList(self, table, QListWidgetname='', filtercolumn=None):
+    def PopulateFilterList(self, table, QListWidgetname='', filtercolumn=None, other_QListWidget=None,
+                           other_filtercolumn=None, dependent_filtering_box=None):
+
         sql = "select distinct " + unicode(filtercolumn) + " from " + table + " order by " + unicode(filtercolumn)
+
+        if dependent_filtering_box is not None:
+            dependent_filtering = dependent_filtering_box.isChecked()
+        else:
+            dependent_filtering = False
+
+
+        if other_QListWidget is not None and other_filtercolumn and dependent_filtering:
+            other_QListWidget_wid = getattr(self, other_QListWidget)
+            selected = ru([item.text() for item in other_QListWidget_wid.selectedItems() if item.text()], keep_containers=True)
+            if selected:
+                sql = u"SELECT DISTINCT {} FROM {} WHERE {} IN ({}) ORDER BY {}".format(
+                                                                                unicode(filtercolumn),
+                                                                                table,
+                                                                                other_filtercolumn,
+                                                                                u', '.join([u"'{}'".format(item)
+                                                                                            for item in selected]),
+                                                                                unicode(filtercolumn),)
+
         ConnectionOK, list_data= db_utils.sql_load_fr_db(sql)
         for post in list_data:
             item = QtGui.QListWidgetItem(unicode(post[0]))
