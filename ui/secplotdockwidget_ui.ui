@@ -284,7 +284,7 @@ p, li { white-space: pre-wrap; }
           </sizepolicy>
          </property>
          <property name="title">
-          <string>Optional settings</string>
+          <string>Templates</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -298,39 +298,79 @@ p, li { white-space: pre-wrap; }
             <property name="sizeConstraint">
              <enum>QLayout::SetDefaultConstraint</enum>
             </property>
-            <item row="1" column="0">
-             <widget class="QPushButton" name="update_and_plot_button">
+            <item row="1" column="2">
+             <widget class="QPushButton" name="edit_button">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit current loaded template.&lt;/p&gt;&lt;p&gt;Note: Changes are not saved to a template file. Use Save as... to save changes to file.&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
-               <string>Update and plot</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QPushButton" name="clear_stored_settings_button">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Restores customized settings to default settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string>Restore defaults</string>
+               <string>Edit</string>
               </property>
              </widget>
             </item>
             <item row="0" column="0">
-             <widget class="QLabel" name="customized_plot_label">
+             <widget class="QLabel" name="template_plot_label">
               <property name="text">
-               <string>Customized plot (manual)</string>
+               <string>(manual)</string>
               </property>
               <property name="openExternalLinks">
                <bool>true</bool>
               </property>
              </widget>
             </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QPushButton" name="load_button">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Load the selected template.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Load</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" rowspan="5">
+             <widget class="QListWidget" name="template_list"/>
+            </item>
+            <item row="4" column="2">
+             <widget class="QPushButton" name="import_button">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Import template files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Import</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="2">
+             <widget class="QPushButton" name="remove_button">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remove a template from the list.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Note:&lt;/p&gt;&lt;p&gt;* Saved template files will not be removed from disk.&lt;/p&gt;&lt;p&gt;* Templates in default template folder will reappear again next time Section plot is used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Remove</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2">
+             <widget class="QPushButton" name="save_as_button">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the loaded template to file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Save as...</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
-          <item row="1" column="1">
+          <item row="1" column="2">
            <spacer name="horizontalSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>

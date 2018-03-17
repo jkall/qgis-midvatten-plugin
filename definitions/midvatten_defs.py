@@ -56,7 +56,8 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplotselectedDEMs':[],
             'stratigraphyplotted':2,
             'secplotlabelsplotted':0,
-            'secplotcustomsettings': '',
+            'secplot_loaded_template': '',
+            'secplot_templates': '',
             'settingslocation':1,
             'custplot_tabwidget':0,
             'custplot_table1':'w_levels',
@@ -713,3 +714,65 @@ def db_setup_as_string():
         table_info = db_utils.get_table_info(table)
         res.append(table_info)
     return utils.anything_to_string_representation(res)
+
+def secplot_default_template():
+        loaded_template = {}
+        loaded_template['ticklabels_Text_set_fontsize'] = {'fontsize': 10}
+        loaded_template['Axes_set_xlabel'] = {
+            'xlabel': ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")),
+            'fontsize': 10}
+        loaded_template['Axes_set_xlim'] = None  # Tuple like (min, max)
+        loaded_template['Axes_set_ylim'] = None  # Tuple like (min, max)
+        loaded_template['Axes_set_ylabel'] = {
+            'ylabel': ru(QCoreApplication.translate(u'SectionPlot', u"Level, masl")),
+            'fontsize': 10}
+        loaded_template['dems_Axes_plot'] = {'DEFAULT': {'marker': 'None',
+                                                              'linestyle': '-',
+                                                              'linewidth': 1}}
+        loaded_template['drillstop_Axes_plot'] = {'marker': '^',
+                                                       'markersize': 8,
+                                                       'linestyle': '',
+                                                       'color': 'black'}
+        loaded_template['geology_Axes_bar'] = {'edgecolor': 'black'}
+        loaded_template['grid_Axes_grid'] = {'b': True,
+                                                  'which': 'both',
+                                                  'color': '0.65',
+                                                  'linestyle': '-'}
+        loaded_template['layer_Axes_annotate'] = {'xytext': (5, 0),
+                                                       'textcoords': 'offset points',
+                                                       'ha': 'left',
+                                                       'va': 'center',
+                                                       'fontsize': 9,
+                                                       'bbox': {'boxstyle': 'square,pad=0.05',
+                                                                'fc': 'white',
+                                                                'edgecolor': 'white',
+                                                                'alpha': 0.6}}
+        loaded_template['legend_Axes_legend'] = {'loc': 0,
+                                                      'framealpha': 1,
+                                                      'fontsize': 10}
+        loaded_template['legend_Text_set_fontsize'] = 10
+        loaded_template['legend_Frame_set_facecolor'] = '1'
+        loaded_template['legend_Frame_set_fill'] = False
+        loaded_template['obsid_Axes_annotate'] = {'xytext': (0, 10),
+                                                       'textcoords': 'offset points',
+                                                       'ha': 'center',
+                                                       'va': 'top',
+                                                       'fontsize': 9,
+                                                       'rotation': 0,
+                                                       'bbox': {'boxstyle': 'square,pad=0.05', 'fc': 'white',
+                                                                'edgecolor': 'white', 'alpha': 0.4}}
+
+        loaded_template['obsid_Axes_bar'] = {'edgecolor': 'black',
+                                                  'fill': False,
+                                                  'linewidth': 0.5}
+        loaded_template['plot_height'] = None
+        loaded_template['plot_width'] = None
+        loaded_template[
+            'Figure_subplots_adjust'] = {}  # {"top": 0.95, "bottom": 0.15, "left": 0.09, "right": 0.97}
+        loaded_template['wlevels_Axes_plot'] = {'DEFAULT': {'markersize': 6,
+                                                                 'marker': 'v',
+                                                                 'linestyle': '-',
+                                                                 'linewidth': 1}}
+        return loaded_template
+
+

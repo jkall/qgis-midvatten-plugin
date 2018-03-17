@@ -27,6 +27,8 @@ changelog=
         - Export to spatialite: Fixed bug where new database didn't get old zz-table information.
         - Custom plot: Added function to filter list by word. Added function for dependency between the filters.
         - Section plot: Changed bar line width to 0.5 as default for prettier plots.
+        - Section plot: Renamed "customized plots" into Templates. Also changed the user interaction with the templates.
+                        The templates them selves are still the same.
         Version 1.5.10b:
         - Fieldlogger import: Fixed window size. Fixed a bug with the datetime filter lineedits (added filter-button).
         Version 1.5.8b:

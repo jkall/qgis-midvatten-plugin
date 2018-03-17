@@ -30,7 +30,9 @@ from functools import partial
 import ast
 import numpy as np
 import os
+import io
 import copy
+from operator import itemgetter
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
@@ -68,7 +70,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #self.setWindowTitle("Midvatten plugin - section plot") # Set the title for the dialog
 
         self.initUI()
-        self.customized_plot_label.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-section-plot\">Customized plot</a>")
+        self.template_plot_label.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-section-plot\">Templates manual</a>")
 
     def do_it(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
 
@@ -94,7 +96,6 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.comment_txt = []
         self.sectionlinelayer = SectionLineLayer       
         self.obsids_w_wl = []
-        self.stored_settings = []
         
         #upload vector line layer as temporary table in sqlite db
         self.line_crs = self.sectionlinelayer.crs()
@@ -125,18 +126,22 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #get PlotData
         self.get_plot_data()
 
-        self.stored_settings = StoredSettings(self, utils.get_stored_settings(self.ms, 'secplotcustomsettings', {}))
+        self.secplot_templates = SecplotTemplates(self, self.template_list, self.ms)
 
         #draw plot
         self.draw_plot()
 
     def draw_plot(self): #replot
         try:
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Plotting using settings:\n%s'))%self.stored_settings.readable_output())
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Plotting using settings:\n%s'))%self.secplot_templates.readable_output())
         except:
             pass
         if not isinstance(self.dbconnection, db_utils.DbConnectionManager):
             self.dbconnection = db_utils.DbConnectionManager()
+
+        width = self.secplot_templates.loaded_template.get('plot_width', None)
+        height = self.secplot_templates.loaded_template.get('plot_height', None)
+        self.change_plot_size(width, height)
 
         try:
             PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
@@ -337,36 +342,36 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.get_dem_selection()
 
     def finish_plot(self):
-        leg = self.secax.legend(self.p, self.Labels, **self.stored_settings.settings['legend_Axes_legend'])
+        leg = self.secax.legend(self.p, self.Labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
         leg.draggable(state=True)
         frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
-        frame.set_facecolor(self.stored_settings.settings['legend_Frame_set_facecolor'])    # set the frame face color to white
-        frame.set_fill(self.stored_settings.settings['legend_Frame_set_fill'])
+        frame.set_facecolor(self.secplot_templates.loaded_template['legend_Frame_set_facecolor'])    # set the frame face color to white
+        frame.set_fill(self.secplot_templates.loaded_template['legend_Frame_set_fill'])
         for t in leg.get_texts():
-            t.set_fontsize(self.stored_settings.settings['legend_Text_set_fontsize'])
+            t.set_fontsize(self.secplot_templates.loaded_template['legend_Text_set_fontsize'])
 
-        self.secax.grid(**self.stored_settings.settings['grid_Axes_grid'])
+        self.secax.grid(**self.secplot_templates.loaded_template['grid_Axes_grid'])
 
         self.secax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
         self.secax.xaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
 
-        Axes_set_ylabel = dict([(k, v) for k, v in self.stored_settings.settings['Axes_set_ylabel'].iteritems() if k != 'ylabel'])
-        self.secax.set_ylabel(self.stored_settings.settings['Axes_set_ylabel']['ylabel'], **Axes_set_ylabel)  #Allows international characters ('åäö') as ylabel
+        Axes_set_ylabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template['Axes_set_ylabel'].iteritems() if k != 'ylabel'])
+        self.secax.set_ylabel(self.secplot_templates.loaded_template['Axes_set_ylabel']['ylabel'], **Axes_set_ylabel)  #Allows international characters ('åäö') as ylabel
 
-        Axes_set_xlabel = dict([(k, v) for k, v in self.stored_settings.settings['Axes_set_xlabel'].iteritems() if k != 'xlabel'])
-        self.secax.set_xlabel(self.stored_settings.settings['Axes_set_xlabel']['xlabel'], **Axes_set_xlabel)  #Allows international characters ('åäö') as xlabel
+        Axes_set_xlabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template['Axes_set_xlabel'].iteritems() if k != 'xlabel'])
+        self.secax.set_xlabel(self.secplot_templates.loaded_template['Axes_set_xlabel']['xlabel'], **Axes_set_xlabel)  #Allows international characters ('åäö') as xlabel
 
         for label in self.secax.xaxis.get_ticklabels():
-            label.set_fontsize(**self.stored_settings.settings['ticklabels_Text_set_fontsize'])
+            label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
         for label in self.secax.yaxis.get_ticklabels():
-            label.set_fontsize(**self.stored_settings.settings['ticklabels_Text_set_fontsize'])
+            label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
         """
         if there is no stratigraphy data and no borehole lenght for first or last observations,
         then autscaling will fail silently since it does not consider axes.annotate (which is used for printing obsid)
         hence this special treatment to check if xlim are less than expected from lengthalong
         """
         #self.secax.autoscale(enable=True, axis='both', tight=None)
-        xmin_xmax = self.stored_settings.settings['Axes_set_xlim']
+        xmin_xmax = self.secplot_templates.loaded_template['Axes_set_xlim']
         if xmin_xmax is None:
             _xmin, _xmax = self.secax.get_xlim()
             xmin = min(float(min(self.LengthAlong))-self.barwidth,_xmin)
@@ -375,13 +380,13 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             xmin, xmax = xmin_xmax
         self.secax.set_xlim(xmin, xmax)
 
-        ymin_ymax = self.stored_settings.settings['Axes_set_ylim']
+        ymin_ymax = self.secplot_templates.loaded_template['Axes_set_ylim']
         if ymin_ymax is not None:
             ymin, ymax = ymin_ymax
             self.secax.set_ylim(ymin, ymax)
 
-        if self.stored_settings.settings['Figure_subplots_adjust']:
-            self.secfig.subplots_adjust(**self.stored_settings.settings['Figure_subplots_adjust'])
+        if self.secplot_templates.loaded_template['Figure_subplots_adjust']:
+            self.secfig.subplots_adjust(**self.secplot_templates.loaded_template['Figure_subplots_adjust'])
 
         self.canvas.draw()
         """
@@ -391,6 +396,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         and it will not be plotted by plt.show() - but the plot exists in self.canvas
         Please note, this do not work completely as expected under windows. 
         """
+
         plt.close(self.secfig)#this closes reference to self.secfig
 
     def get_dem_selection(self):
@@ -581,8 +587,6 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.pushButton.clicked.connect(self.draw_plot)
         self.redraw.clicked.connect(self.finish_plot)
         self.connect(self.chart_settings, PyQt4.QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.chart_settings))
-        self.connect(self.update_and_plot_button, PyQt4.QtCore.SIGNAL("clicked()"), self.update_stored_settings_and_plot)
-        self.connect(self.clear_stored_settings_button, PyQt4.QtCore.SIGNAL("clicked()"), self.clear_stored_settings)
         self.set_groupbox_children_visibility(self.chart_settings)
         
         # Create a plot window with one single subplot
@@ -604,10 +608,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
                 plotlable = self.get_plot_label_name(layername, self.Labels)
 
-                settings = self.stored_settings.settings['dems_Axes_plot'].get(plotlable,
-                                                                               self.stored_settings.settings['dems_Axes_plot']['DEFAULT'])
-                self.stored_settings.settings['dems_Axes_plot'][plotlable] = copy.deepcopy(settings)
-                settings = self.stored_settings.settings['dems_Axes_plot'][plotlable]
+                settings = self.secplot_templates.loaded_template['dems_Axes_plot'].get(plotlable,
+                                                                                 self.secplot_templates.loaded_template['dems_Axes_plot']['DEFAULT'])
+                self.secplot_templates.loaded_template['dems_Axes_plot'][plotlable] = copy.deepcopy(settings)
+                settings = self.secplot_templates.loaded_template['dems_Axes_plot'][plotlable]
                 settings['label'] = settings.get('label', plotlable)
                 self.Labels.append(settings['label'])
 
@@ -617,7 +621,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             QgsMapLayerRegistry.instance().removeMapLayer(temp_memorylayer.id())
 
     def plot_drill_stop(self):
-        settings = copy.deepcopy(self.stored_settings.settings['drillstop_Axes_plot'])
+        settings = copy.deepcopy(self.secplot_templates.loaded_template['drillstop_Axes_plot'])
         label = settings.get('label', None)
         if label is None:
             label = 'drillstop like ' + self.ms.settingsdict['secplotdrillstop']
@@ -634,7 +638,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             return label + '_' + str(label_occurence + 1)
 
     def plot_geology(self):
-        settings = copy.deepcopy(self.stored_settings.settings['geology_Axes_bar'])
+        settings = copy.deepcopy(self.secplot_templates.loaded_template['geology_Axes_bar'])
         settings['width'] = settings.get('width', self.barwidth)
         for Typ in self.ExistingPlotTypes:#Adding a plot for each "geoshort" that is identified
             plotxleftbarcorner = [i - self.barwidth/2 for i in self.plotx[Typ]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
@@ -674,11 +678,11 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
             plotlable = self.get_plot_label_name(datum, self.Labels)
 
-            settings = self.stored_settings.settings['wlevels_Axes_plot'].get(plotlable,
-                                                                           self.stored_settings.settings[
+            settings = self.secplot_templates.loaded_template['wlevels_Axes_plot'].get(plotlable,
+                                                                                self.secplot_templates.loaded_template[
                                                                                'wlevels_Axes_plot']['DEFAULT'])
-            self.stored_settings.settings['wlevels_Axes_plot'][plotlable] = copy.deepcopy(settings)
-            settings = self.stored_settings.settings['wlevels_Axes_plot'][plotlable]
+            self.secplot_templates.loaded_template['wlevels_Axes_plot'][plotlable] = copy.deepcopy(settings)
+            settings = self.secplot_templates.loaded_template['wlevels_Axes_plot'][plotlable]
             settings['label'] = settings.get('label', plotlable)
             self.Labels.append(settings['label'])
             lineplot, = self.secax.plot(x_wl, WL, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
@@ -695,7 +699,9 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ms.save_settings('secplotselectedDEMs')
         self.ms.save_settings('stratigraphyplotted')
         self.ms.save_settings('secplotlabelsplotted')
-        utils.save_stored_settings(self.ms, self.stored_settings.settings, 'secplotcustomsettings')
+        utils.save_stored_settings(self.ms, self.secplot_templates.loaded_template, 'secplot_loaded_template')
+        self.ms.save_settings('secplot_templates')
+
         
     def set_location(self):#not ready
         dockarea = self.parent.dockWidgetArea(self)
@@ -762,7 +768,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         else:
             annotate_txt = self.comment_txt
         for m,n,o in zip(self.x_txt,self.z_txt,annotate_txt):#change last arg to the one to be written in plot
-            self.annotationtext = self.secax.annotate(o,xy=(m,n), **self.stored_settings.settings['layer_Axes_annotate'])#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
+            self.annotationtext = self.secax.annotate(o, xy=(m,n), **self.secplot_templates.loaded_template['layer_Axes_annotate'])#textcoords = 'offset points' makes the text being written xytext points from the data point xy (xy positioned with respect to axis values and then the text is offset a specific number of points from that point
 
     def write_obsid(self, plot_labels=2):#annotation, and also empty bars to show drillings without stratigraphy data
         if self.ms.settingsdict['stratigraphyplotted'] ==2:#if stratigr plot, then obsid written close to toc or gs
@@ -774,17 +780,17 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             bottoms = [self.bottoms[idx] for idx in indexes_barlength_not_0]
             barlengths = [self.barlengths[idx] for idx in indexes_barlength_not_0]
 
-            obsid_Axes_bar = copy.deepcopy(self.stored_settings.settings['obsid_Axes_bar'])
+            obsid_Axes_bar = copy.deepcopy(self.secplot_templates.loaded_template['obsid_Axes_bar'])
             obsid_Axes_bar['width'] = obsid_Axes_bar.get('width', self.barwidth)
             obsid_Axes_bar['bottom'] = obsid_Axes_bar.get('bottom', bottoms)
             self.p.append(self.secax.bar(plotxleftbarcorner, barlengths, **obsid_Axes_bar))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
                 for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
-                    text = self.secax.annotate(o,xy=(m,n), **self.stored_settings.settings['obsid_Axes_annotate'])
+                    text = self.secax.annotate(o, xy=(m,n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
         else: #obsid written close to average water level (average of all water levels between given min and max date) 
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated            
                 for m,n,o in zip(self.x_id_wwl,self.z_id_wwl,self.obsid_wlid):#change last arg to the one to be written in plot
-                    text = self.secax.annotate(o,xy=(m,n), **self.stored_settings.settings['obsid_Axes_annotate'])
+                    text = self.secax.annotate(o, xy=(m,n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
 
     def set_groupbox_children_visibility(self, groupbox_widget):
         children = groupbox_widget.findChildren(PyQt4.QtGui.QWidget)
@@ -816,108 +822,169 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.widget.setMinimumHeight(height)
             self.widget.setMaximumHeight(height)
 
-    @utils.general_exception_handler
-    def update_stored_settings_and_plot(self):
-        self.stored_settings.ask_and_update_settings_string()
-        width = self.stored_settings.settings.get('plot_width', None)
-        height = self.stored_settings.settings.get('plot_height', None)
-        self.change_plot_size(width, height)
-        self.draw_plot()
-        #utils.save_stored_settings(self.ms, self.stored_settings.settings, self.stored_settings_key)
 
-    @utils.general_exception_handler
-    def clear_stored_settings(self):
-        self.stored_settings = StoredSettings(self, settings={})
-        #utils.save_stored_settings(self.ms, self.stored_settings.settings, self.stored_settings_key)
-
-    def set_defaults(self, settings, defaults):
-        for default in defaults:
-            attr, value = default
-            settings.setdefault(attr, settings.get(attr, value))
-
-class StoredSettings(object):
-    def __init__(self, sectionplot, settings=None):
-        self.settings = settings
+class SecplotTemplates(object):
+    def __init__(self, sectionplot, template_list, msettings=None):
+        self.ms = msettings
+        self.templates = {}
+        self.loaded_template = {}
         self.sectionplot = sectionplot
-        if not isinstance(self.settings, dict) or (isinstance(self.settings, dict) and not self.settings):
-            self.settings = {}
+        self.template_list = template_list
 
-            self.settings['ticklabels_Text_set_fontsize'] = {'fontsize': 10}
-            self.settings['Axes_set_xlabel'] = {'xlabel': ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")),
-                                                'fontsize': 10}
-            self.settings['Axes_set_xlim'] = None # Tuple like (min, max)
-            self.settings['Axes_set_ylim'] = None # Tuple like (min, max)
-            self.settings['Axes_set_ylabel'] = {'ylabel': ru(QCoreApplication.translate(u'SectionPlot', u"Level, masl")),
-                                                'fontsize': 10}
-            self.settings['dems_Axes_plot'] = {'DEFAULT': {'marker': 'None',
-                                                           'linestyle': '-',
-                                                           'linewidth': 1}}
-            self.settings['drillstop_Axes_plot'] = {'marker': '^',
-                                                     'markersize': 8,
-                                                     'linestyle': '',
-                                                     'color': 'black'}
-            self.settings['geology_Axes_bar'] = {'edgecolor': 'black'}
-            self.settings['grid_Axes_grid'] = {'b': True,
-                                               'which': 'both',
-                                               'color': '0.65',
-                                               'linestyle': '-'}
-            self.settings['layer_Axes_annotate'] = {'xytext': (5,0),
-                                                    'textcoords': 'offset points',
-                                                    'ha': 'left',
-                                                    'va': 'center',
-                                                    'fontsize': 9,
-                                                    'bbox': {'boxstyle':'square,pad=0.05',
-                                                             'fc': 'white',
-                                                             'edgecolor': 'white',
-                                                             'alpha': 0.6}}
-            self.settings['legend_Axes_legend'] = {'loc': 0,
-                                                   'framealpha': 1,
-                                                   'fontsize': 10}
-            self.settings['legend_Text_set_fontsize'] = 10
-            self.settings['legend_Frame_set_facecolor'] = '1'
-            self.settings['legend_Frame_set_fill'] = False
-            self.settings['obsid_Axes_annotate'] = {'xytext': (0,10),
-                                                    'textcoords': 'offset points',
-                                                    'ha': 'center',
-                                                    'va': 'top',
-                                                    'fontsize': 9,
-                                                    'rotation': 0,
-                                                    'bbox': {'boxstyle': 'square,pad=0.05', 'fc': 'white', 'edgecolor': 'white', 'alpha': 0.4}}
+        self.templates = {}
 
-            self.settings['obsid_Axes_bar'] = {'edgecolor': 'black',
-                                               'fill': False,
-                                               'linewidth': 0.5}
-            self.settings['plot_height'] = None
-            self.settings['plot_width'] = None
-            self.settings['Figure_subplots_adjust'] = {} # {"top": 0.95, "bottom": 0.15, "left": 0.09, "right": 0.97}
-            self.settings['wlevels_Axes_plot'] = {'DEFAULT': {'markersize': 6,
-                                                    'marker': 'v',
-                                                    'linestyle': '-',
-                                                    'linewidth': 1}}
+        self.import_saved_templates()
+        self.import_from_template_folder()
 
-    def readable_output(self):
-        return utils.anything_to_string_representation(self.settings, itemjoiner=u',\n', pad=u'    ',
-                                                dictformatter=u'{\n%s}',
-                                                listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
 
-    def ask_and_update_settings_string(self):
-        old_string = self.readable_output()
+
+
+        default_filename = os.path.join(os.path.dirname(__file__), '..', 'ui', 'definitions', 'secplot_templates', 'default.txt')
+
+        try:
+            self.loaded_template = self.string_to_dict(self.ms.settingsdict['secplot_loaded_template'])
+        except:
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Failed to load saved template, loading default template instead.')))
+
+        if not self.loaded_template:
+            try:
+                self.load(self.templates[default_filename]['template'])
+            except:
+                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'SecplotTemplates',
+                                                                                     u'Failed to load default template, loading hard coded default template.')))
+
+        if not self.loaded_template:
+            self.loaded_template = defs.secplot_default_template()
+
+        sectionplot.connect(sectionplot.edit_button, PyQt4.QtCore.SIGNAL("clicked()"), self.edit)
+        sectionplot.connect(sectionplot.load_button, PyQt4.QtCore.SIGNAL("clicked()"), self.load)
+        sectionplot.connect(sectionplot.save_as_button, PyQt4.QtCore.SIGNAL("clicked()"), self.save_as)
+        sectionplot.connect(sectionplot.import_button, PyQt4.QtCore.SIGNAL("clicked()"), self.import_templates)
+        sectionplot.connect(sectionplot.remove_button, PyQt4.QtCore.SIGNAL("clicked()"), self.remove)
+
+    @utils.general_exception_handler
+    def edit(self):
+        old_string = self.readable_output(self.loaded_template)
 
         msg = ru(QCoreApplication.translate(u'StoredSettings', u'Replace the settings string with a new settings string.'))
-        new_string = PyQt4.QtGui.QInputDialog.getText(None, ru(QCoreApplication.translate(u'StoredSettings', "Edit settings string")), msg,
+        new_string = PyQt4.QtGui.QInputDialog.getText(None, ru(QCoreApplication.translate(u'StoredSettings', "Edit settings")), msg,
                                                            PyQt4.QtGui.QLineEdit.Normal, old_string)
         if not new_string[1]:
             raise utils.UserInterruptError()
 
-        new_string_text = ru(new_string[0])
+        as_dict = self.string_to_dict(ru(new_string[0]))
 
+        self.loaded_template = as_dict
+
+    @utils.general_exception_handler
+    def load(self, template=None):
+        if isinstance(template, dict):
+            self.loaded_template = template
+        else:
+            selected = self.template_list.selectedItems()
+            if selected:
+                filename = selected[0].filename
+                self.loaded_template = self.templates[filename]['template']
+
+    @utils.general_exception_handler
+    def save_as(self):
+        filename = PyQt4.QtGui.QFileDialog.getSaveFileName(parent=None, caption=ru(QCoreApplication.translate(u'SecplotTemplates', u'Choose a file name')), directory='', filter='txt (*.txt)')
+        if filename is None or not filename:
+            raise utils.UserInterruptError()
+        as_str = self.readable_output(self.loaded_template)
+        with io.open(filename, 'w', encoding='utf8') as of:
+            of.write(as_str)
+
+        name = os.path.splitext(os.path.basename(filename))[0]
+        template = copy.deepcopy(self.loaded_template)
+        self.templates[filename] = {'filename': filename, 'template': template, 'name': name}
+
+        self.update_settingsdict()
+        self.update_template_list()
+
+    @utils.general_exception_handler
+    def import_templates(self, filenames=None):
+        if filenames is None:
+            filenames = utils.select_files(only_one_file=False, extension='')
+        if filenames is None or not filenames:
+            raise utils.UserInterruptError()
+        templates = {}
+        if filenames:
+            for filename in filenames:
+                processed_before = any([os.path.samefile(filename, fname) for fname in self.templates.keys()])
+                processed_now = any([os.path.samefile(filename, fname) for fname in templates.keys()])
+                if not processed_before and not processed_now:
+                    template = self.parse_template(filename)
+                    templates[filename] = template
+                
+        self.templates.update(templates)
+        self.update_settingsdict()
+        self.update_template_list()
+
+    @utils.general_exception_handler
+    def remove(self):
+        selected = self.template_list.selectedItems()
+        if selected:
+            filename = selected[0].filename
+            del self.templates[filename]
+            self.update_settingsdict()
+            self.update_template_list()
+
+    @utils.general_exception_handler
+    def import_from_template_folder(self):
+        secplot_templates_folder = os.path.join(os.path.dirname(__file__), '..', 'definitions', 'secplot_templates')
+        for root, dirs, files in os.walk(secplot_templates_folder):
+            if files:
+                filenames = [os.path.join(root, filename) for filename in files]
+                self.import_templates(filenames)
+
+    @utils.general_exception_handler
+    def import_saved_templates(self):
+        filenames = self.ms.settingsdict['secplot_templates'].split(';')
+        utils.MessagebarAndLog.info(
+            log_msg=ru(QCoreApplication.translate(u'', u'Loading saved templates %s')) % u'\n'.join(filenames))
+        if filenames:
+            self.import_templates(filenames)
+
+    def parse_template(self, filename):
+        name = os.path.splitext(os.path.basename(filename))[0]
+        if not os.path.isfile(filename):
+            raise utils.UsageError(ru(QCoreApplication.translate(u'SecplotTemplates', u'"%s" was not a file.')) % filename)
         try:
-            as_dict = ast.literal_eval(new_string_text)
+            with io.open(filename, 'rt', encoding='utf-8') as f:
+                template = self.string_to_dict(u''.join(f.readlines()))
+        except Exception as e:
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SecplotTemplates',
+                                                                                  u'Loading template %s failed, see log message panel')) % filename,
+                                            log_msg=ru(str(e)))
+            raise
+        return {'filename': filename, 'template': template, 'name': name}
+
+    def update_settingsdict(self):
+        self.ms.settingsdict['secplot_templates'] = u';'.join(self.templates.keys())
+        self.ms.save_settings('secplot_templates')
+
+    def update_template_list(self):
+        self.template_list.clear()
+        for filename, template in sorted(self.templates.iteritems(), key=lambda x: os.path.basename(x[0])):
+            qlistwidgetitem = PyQt4.QtGui.QListWidgetItem()
+            qlistwidgetitem.setText(template['name'])
+            qlistwidgetitem.filename = template['filename']
+            self.template_list.addItem(qlistwidgetitem)
+
+    def readable_output(self, a_dict=None):
+        if a_dict is None:
+            a_dict = self.loaded_template
+        return utils.anything_to_string_representation(a_dict, itemjoiner=u',\n', pad=u'    ',
+                                                dictformatter=u'{\n%s}',
+                                                listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
+
+    def string_to_dict(self, the_string):
+        the_string = ru(the_string)
+        try:
+            as_dict = ast.literal_eval(the_string)
         except Exception as e:
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'StoredSettings', u'Translating string to dict failed, see log message panel')),
-                                           log_msg=str(e))
+                                           log_msg=ru(QCoreApplication.translate(u'StoredSettings', u'Error %s\nfor string\n%s'))%(str(e), the_string))
         else:
-            self.settings = as_dict
-
-
-
+            return as_dict
