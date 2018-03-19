@@ -202,8 +202,9 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.save_settings()
             self.dbconnection.closedb()
             self.dbconnection = None
-        except KeyError:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Section plot optional settings error, press "Restore defaults"')))
+        except KeyError as e:
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Section plot optional settings error, press "Restore defaults"')),
+                                            log_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Error msg: %s'))%e)
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             self.dbconnection.closedb()
             self.dbconnection = None
@@ -355,11 +356,13 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.secax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
         self.secax.xaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
 
-        Axes_set_ylabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template['Axes_set_ylabel'].iteritems() if k != 'ylabel'])
-        self.secax.set_ylabel(self.secplot_templates.loaded_template['Axes_set_ylabel']['ylabel'], **Axes_set_ylabel)  #Allows international characters ('åäö') as ylabel
+        Axes_set_ylabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_ylabel', {}).iteritems() if k != 'ylabel'])
+        ylabel = self.secplot_templates.loaded_template.get('Axes_set_ylabel', {}).get('ylabel', defs.secplot_default_template()['Axes_set_ylabel']['ylabel'])
+        self.secax.set_ylabel(ylabel, **Axes_set_ylabel)  #Allows international characters ('åäö') as ylabel
 
-        Axes_set_xlabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template['Axes_set_xlabel'].iteritems() if k != 'xlabel'])
-        self.secax.set_xlabel(self.secplot_templates.loaded_template['Axes_set_xlabel']['xlabel'], **Axes_set_xlabel)  #Allows international characters ('åäö') as xlabel
+        Axes_set_xlabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).iteritems() if k != 'xlabel'])
+        xlabel = self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).get('xlabel', defs.secplot_default_template()['Axes_set_xlabel']['xlabel'])
+        self.secax.set_xlabel(xlabel, **Axes_set_xlabel)  #Allows international characters ('åäö') as xlabel
 
         for label in self.secax.xaxis.get_ticklabels():
             label.set_fontsize(**self.secplot_templates.loaded_template['ticklabels_Text_set_fontsize'])
@@ -836,25 +839,34 @@ class SecplotTemplates(object):
         self.import_saved_templates()
         self.import_from_template_folder()
 
-
-
-
-        default_filename = os.path.join(os.path.dirname(__file__), '..', 'ui', 'definitions', 'secplot_templates', 'default.txt')
-
         try:
             self.loaded_template = self.string_to_dict(self.ms.settingsdict['secplot_loaded_template'])
         except:
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Failed to load saved template, loading default template instead.')))
+        if self.loaded_template:
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Loaded template from midvatten settings secplot_loaded_template.')))
+
+        default_filename = os.path.join(os.path.dirname(__file__), '..', 'definitions', 'secplot_templates', 'default.txt')
 
         if not self.loaded_template:
-            try:
-                self.load(self.templates[default_filename]['template'])
-            except:
+            if not os.path.isfile(default_filename):
                 utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'SecplotTemplates',
-                                                                                     u'Failed to load default template, loading hard coded default template.')))
+                                                                                     u'Default template not found, loading hard coded default template.')))
+            else:
+                try:
+                    self.load(self.templates[default_filename]['template'])
+                except Exception as e:
+                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'SecplotTemplates',
+                                                                                         u'Failed to load default template, loading hard coded default template.')),
+                                                   log_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Error msg %s'))%str(e))
+            if self.loaded_template:
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Loaded template from default template file.')))
 
         if not self.loaded_template:
             self.loaded_template = defs.secplot_default_template()
+            if self.loaded_template:
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Loaded template from default hard coded template.')))
+
 
         sectionplot.connect(sectionplot.edit_button, PyQt4.QtCore.SIGNAL("clicked()"), self.edit)
         sectionplot.connect(sectionplot.load_button, PyQt4.QtCore.SIGNAL("clicked()"), self.load)
@@ -911,11 +923,15 @@ class SecplotTemplates(object):
         templates = {}
         if filenames:
             for filename in filenames:
+                if not filename:
+                    continue
                 processed_before = any([os.path.samefile(filename, fname) for fname in self.templates.keys()])
                 processed_now = any([os.path.samefile(filename, fname) for fname in templates.keys()])
                 if not processed_before and not processed_now:
                     template = self.parse_template(filename)
-                    templates[filename] = template
+                    if template:
+                        templates[filename] = template
+                        print(str(templates))
                 
         self.templates.update(templates)
         self.update_settingsdict()
@@ -940,10 +956,10 @@ class SecplotTemplates(object):
 
     @utils.general_exception_handler
     def import_saved_templates(self):
-        filenames = self.ms.settingsdict['secplot_templates'].split(';')
-        utils.MessagebarAndLog.info(
-            log_msg=ru(QCoreApplication.translate(u'', u'Loading saved templates %s')) % u'\n'.join(filenames))
+        filenames = [x for x in self.ms.settingsdict['secplot_templates'].split(';') if x]
         if filenames:
+            utils.MessagebarAndLog.info(
+                log_msg=ru(QCoreApplication.translate(u'', u'Loading saved templates %s')) % u'\n'.join(filenames))
             self.import_templates(filenames)
 
     def parse_template(self, filename):
@@ -952,13 +968,26 @@ class SecplotTemplates(object):
             raise utils.UsageError(ru(QCoreApplication.translate(u'SecplotTemplates', u'"%s" was not a file.')) % filename)
         try:
             with io.open(filename, 'rt', encoding='utf-8') as f:
-                template = self.string_to_dict(u''.join(f.readlines()))
+                lines = u''.join([line for line in f if line])
         except Exception as e:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SecplotTemplates',
                                                                                   u'Loading template %s failed, see log message panel')) % filename,
-                                            log_msg=ru(str(e)))
+                                            log_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Reading file failed, msg:\n%s'))%ru(str(e)))
             raise
-        return {'filename': filename, 'template': template, 'name': name}
+
+        if lines:
+            try:
+                template = self.string_to_dict(u''.join(lines))
+            except Exception as e:
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SecplotTemplates',
+                                                                                      u'Loading template %s failed, see log message panel')) % filename,
+                                                log_msg=ru(QCoreApplication.translate(u'SecplotTemplates',
+                                                                                      u'Parsing file rows failed, msg:\n%s')) % ru(str(e)))
+                raise
+            else:
+                return {'filename': filename, 'template': template, 'name': name}
+        else:
+            return {}
 
     def update_settingsdict(self):
         self.ms.settingsdict['secplot_templates'] = u';'.join(self.templates.keys())
@@ -981,6 +1010,8 @@ class SecplotTemplates(object):
 
     def string_to_dict(self, the_string):
         the_string = ru(the_string)
+        if not the_string:
+            return u''
         try:
             as_dict = ast.literal_eval(the_string)
         except Exception as e:

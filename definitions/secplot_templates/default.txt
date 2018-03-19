@@ -1,11 +1,9 @@
 {
     "Axes_set_xlabel": {
-        "fontsize": 10,
-        "xlabel": u"Avstånd längs profillinje"},
+        "fontsize": 10},
     "Axes_set_xlim": None,
     "Axes_set_ylabel": {
-        "fontsize": 10,
-        "ylabel": u"Nivå, m ö.h."},
+        "fontsize": 10},
     "Axes_set_ylim": None,
     "Figure_subplots_adjust": {
     },
@@ -73,5 +71,4 @@
                 "linestyle": "-",
                 "linewidth": 1,
                 "marker": "v",
-                "markersize": 6}}
-}
+                "markersize": 6}}}

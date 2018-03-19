@@ -1,11 +1,9 @@
 {
     "Axes_set_xlabel": {
-        "fontsize": 8,
-        "xlabel": u"Avstånd längs profillinje"},
+        "fontsize": 8},
     "Axes_set_xlim": None,
     "Axes_set_ylabel": {
-        "fontsize": 8,
-        "ylabel": u"Nivå, m ö.h."},
+        "fontsize": 8},
     "Axes_set_ylim": None,
     "Figure_subplots_adjust": {
         "bottom": 0.1,
@@ -80,24 +78,6 @@
     "ticklabels_Text_set_fontsize": {
         "fontsize": 8},
     "wlevels_Axes_plot": {
-        u"1900-01-01": {
-                "label": u"1900-01-01",
-                "linestyle": "-",
-                "linewidth": 1,
-                "marker": "v",
-                "markersize": 6},
-        u"2017-11-23": {
-                "label": u"2017-11-23",
-                "linestyle": "-",
-                "linewidth": 1,
-                "marker": "v",
-                "markersize": 6},
-        u"2017-11-23_2": {
-                "label": u"2017-11-23_2",
-                "linestyle": "-",
-                "linewidth": 1,
-                "marker": "v",
-                "markersize": 6},
         "DEFAULT": {
                 "linestyle": "-",
                 "linewidth": 1,

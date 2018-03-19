@@ -39,7 +39,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self):
         super(TestSectionPlot, self).setUp()
-        self.midvatten.ms.settingsdict['secplotcustomsettings'] = ''
+        self.midvatten.ms.settingsdict['secplot_loaded_template'] = ''
+        self.midvatten.ms.settingsdict['secplot_templates'] = ''
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def create_and_select_vlayer(self):
@@ -69,7 +70,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         self.create_and_select_vlayer()
 
-
         @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
@@ -86,9 +86,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
             self.selected_obsids = self.myplot.selected_obsids
         _test_plot_section(self)
 
-        assert call.info(log_msg=u'Settings key secplotcustomsettings was empty.') in mock_messagebar.mock_calls
-        assert call.info(log_msg=u'Settings {"Axes_set_xlabel": {"fontsize": 10, "xlabel": u"Distance along section"}, "Axes_set_xlim": None, "Axes_set_ylabel": {"fontsize": 10, "ylabel": u"Level, masl"}, "Axes_set_ylim": None, "Figure_subplots_adjust": {}, "dems_Axes_plot": {"DEFAULT": {"linestyle": "-", "linewidth": 1, "marker": "None"}}, "drillstop_Axes_plot": {"color": "black", "linestyle": "", "marker": "^", "markersize": 8}, "geology_Axes_bar": {"edgecolor": "black"}, "grid_Axes_grid": {"b": True, "color": "0.65", "linestyle": "-", "which": "both"}, "layer_Axes_annotate": {"bbox": {"alpha": 0.6, "boxstyle": "square,pad=0.05", "edgecolor": "white", "fc": "white"}, "fontsize": 9, "ha": "left", "textcoords": "offset points", "va": "center", "xytext": (5, 0, )}, "legend_Axes_legend": {"fontsize": 10, "framealpha": 1, "loc": 0}, "legend_Frame_set_facecolor": "1", "legend_Frame_set_fill": False, "legend_Text_set_fontsize": 10, "obsid_Axes_annotate": {"bbox": {"alpha": 0.4, "boxstyle": "square,pad=0.05", "edgecolor": "white", "fc": "white"}, "fontsize": 9, "ha": "center", "rotation": 0, "textcoords": "offset points", "va": "top", "xytext": (0, 10, )}, "obsid_Axes_bar": {"edgecolor": "black", "fill": False}, "plot_height": None, "plot_width": None, "ticklabels_Text_set_fontsize": {"fontsize": 10}, "wlevels_Axes_plot": {"DEFAULT": {"linestyle": "-", "linewidth": 1, "marker": "v", "markersize": 6}}} stored for key secplotcustomsettings.') in mock_messagebar.mock_calls
-
+        assert call.info(log_msg=u'Settings {"Axes_set_xlabel": {"fontsize": 10}, "Axes_set_xlim": None, "Axes_set_ylabel": {"fontsize": 10}, "Axes_set_ylim": None, "Figure_subplots_adjust": {}, "dems_Axes_plot": {"DEFAULT": {"linestyle": "-", "linewidth": 1, "marker": "None"}}, "drillstop_Axes_plot": {"color": "black", "linestyle": "", "marker": "^", "markersize": 8}, "geology_Axes_bar": {"edgecolor": "black"}, "grid_Axes_grid": {"b": True, "color": "0.65", "linestyle": "-", "which": "both"}, "layer_Axes_annotate": {"bbox": {"alpha": 0.6, "boxstyle": "square,pad=0.05", "edgecolor": "white", "fc": "white"}, "fontsize": 9, "ha": "left", "textcoords": "offset points", "va": "center", "xytext": (5, 0, )}, "legend_Axes_legend": {"fontsize": 10, "framealpha": 1, "loc": 0}, "legend_Frame_set_facecolor": "1", "legend_Frame_set_fill": False, "legend_Text_set_fontsize": 10, "obsid_Axes_annotate": {"bbox": {"alpha": 0.4, "boxstyle": "square,pad=0.05", "edgecolor": "white", "fc": "white"}, "fontsize": 9, "ha": "center", "rotation": 0, "textcoords": "offset points", "va": "top", "xytext": (0, 10, )}, "obsid_Axes_bar": {"edgecolor": "black", "fill": False, "linewidth": 0.5}, "plot_height": None, "plot_width": None, "ticklabels_Text_set_fontsize": {"fontsize": 10}, "wlevels_Axes_plot": {"DEFAULT": {"linestyle": "-", "linewidth": 1, "marker": "v", "markersize": 6}}} stored for key secplot_loaded_template.') in mock_messagebar.mock_calls
 
         #print(str(mock_instance.mock_calls))
         assert self.myplot.drillstoplineEdit.text() == u'%berg%'
@@ -148,6 +146,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         _test(self)
 
+        print(str(mock_messagebar.mock_calls))
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
 
