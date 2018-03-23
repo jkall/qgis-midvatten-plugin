@@ -2,6 +2,7 @@ SOURCES = \
 ./midvatten.py \
 ./midvsettingsdialog.py \
 ./definitions/midvatten_defs.py \
+./tools/calculate_statistics.py \
 ./tools/create_db.py \
 ./tools/customplot.py \
 ./tools/date_utils.py \
@@ -15,6 +16,7 @@ SOURCES = \
 ./tools/import_fieldlogger.py \
 ./tools/import_general_csv_gui.py \
 ./tools/import_interlab4.py \
+./tools/import_levelogger.py \
 ./tools/loaddefaultlayers.py \
 ./tools/midvatten_utils.py \
 ./tools/midvsettings.py \

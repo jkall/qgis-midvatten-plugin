@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS><TS version="2.0" language="pt_BR" sourcelanguage="">
 <context>
+    <name></name>
+    <message>
+        <location filename="../tools/sectionplot.py" line="963"/>
+        <source>Loading saved templates %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name> Stratigraphy</name>
     <message>
         <location filename="../tools/stratigraphy.py" line="80"/>
@@ -57,6 +65,14 @@
     <message>
         <location filename="../tools/wlevels_calc_calibr.py" line="125"/>
         <source>Calculation aborted! There seems to be NULL values in your table obs_points, column h_toc.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CalculateStatisticsGui</name>
+    <message>
+        <location filename="../tools/calculate_statistics.py" line="61"/>
+        <source>Calculation failed, make sure you&apos;ve selected a table, a column and features with a column obsid.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -206,33 +222,33 @@ Updating plot.</source>
 <context>
     <name>ColumnEntry</name>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="477"/>
+        <location filename="../tools/import_general_csv_gui.py" line="476"/>
         <source>Obsid from qgis selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="478"/>
+        <location filename="../tools/import_general_csv_gui.py" line="477"/>
         <source>Select 1 obsid from obs_points or obs_lines attribute table or map.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="493"/>
+        <location filename="../tools/import_general_csv_gui.py" line="492"/>
         <source>The supplied string will be written to the current column name for all
 imported rows instead of being read from file column.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="523"/>
+        <location filename="../tools/import_general_csv_gui.py" line="522"/>
         <source>Import error, the column %s must have a value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="526"/>
+        <location filename="../tools/import_general_csv_gui.py" line="525"/>
         <source>Import error, the chosen file column for the column %s did not exist in the file header.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="499"/>
+        <location filename="../tools/import_general_csv_gui.py" line="498"/>
         <source>Multiply each imported value in the column with a factor.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -240,7 +256,7 @@ imported rows instead of being read from file column.</source>
 <context>
     <name>CustomPlot</name>
     <message>
-        <location filename="../tools/customplot.py" line="672"/>
+        <location filename="../tools/customplot.py" line="729"/>
         <source>Choose a file name, extension sets format</source>
         <translation type="unfinished"></translation>
     </message>
@@ -286,17 +302,17 @@ imported rows instead of being read from file column.</source>
 <context>
     <name>DateShiftQuestion</name>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="523"/>
+        <location filename="../tools/import_fieldlogger.py" line="526"/>
         <source>Shift dates, supported format ex. &quot;%s&quot;:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="538"/>
+        <location filename="../tools/import_fieldlogger.py" line="541"/>
         <source>Dateshift specification wrong format, se log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="540"/>
+        <location filename="../tools/import_fieldlogger.py" line="543"/>
         <source>Dateshift specification must be made using format &quot;step step_length&quot;, ex: &quot;%s&quot;, &quot;%s&quot;, &quot;%s&quot; etc.
 Supported step lengths: %s</source>
         <translation type="unfinished"></translation>
@@ -2401,12 +2417,6 @@ msg:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/export_data.py" line="303"/>
-        <source>INSERT failed while importing to %s. Using INSERT OR IGNORE instead.
-Msg:%s</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../tools/export_data.py" line="333"/>
         <source>Table %s export failed!</source>
         <translation type="unfinished"></translation>
@@ -2442,6 +2452,12 @@ Old columns missing in new database: %s</source>
         <location filename="../tools/export_data.py" line="368"/>
         <source>Table %s:
 Primary keys %s are missing in old database. The table will not be exported!!!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/export_data.py" line="303"/>
+        <source>INSERT failed while importing to %s. Using INSERT OR REPLACE instead.
+Msg:%s</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2821,18 +2837,18 @@ from active layer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="261"/>
+        <location filename="../tools/import_general_csv_gui.py" line="260"/>
         <source>Import error on row number %s:
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="404"/>
+        <location filename="../tools/import_general_csv_gui.py" line="403"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="326"/>
+        <location filename="../tools/import_general_csv_gui.py" line="325"/>
         <source>%s rows without parsable date_time format skipped during import</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2848,33 +2864,33 @@ from active layer</source>
 <context>
     <name>ImportTableChooser</name>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="346"/>
+        <location filename="../tools/import_general_csv_gui.py" line="345"/>
         <source>Import to table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="404"/>
+        <location filename="../tools/import_general_csv_gui.py" line="403"/>
         <source>Layer %s is currently in editing mode.
 Please exit this mode before proceeding with this operation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="432"/>
+        <location filename="../tools/import_general_csv_gui.py" line="431"/>
         <source>Column name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="433"/>
+        <location filename="../tools/import_general_csv_gui.py" line="432"/>
         <source>File column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="434"/>
+        <location filename="../tools/import_general_csv_gui.py" line="433"/>
         <source>Static value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_general_csv_gui.py" line="435"/>
+        <location filename="../tools/import_general_csv_gui.py" line="434"/>
         <source>Factor</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2882,27 +2898,27 @@ Please exit this mode before proceeding with this operation.</source>
 <context>
     <name>InputFields</name>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="643"/>
+        <location filename="../tools/import_fieldlogger.py" line="646"/>
         <source>Specify import methods for input fields</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="649"/>
+        <location filename="../tools/import_fieldlogger.py" line="652"/>
         <source>Update input fields</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="650"/>
+        <location filename="../tools/import_fieldlogger.py" line="653"/>
         <source>Update input fields using the observations remaining after filtering by date and sublocation selection.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="753"/>
+        <location filename="../tools/import_fieldlogger.py" line="756"/>
         <source>Setting parameters using stored settings: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="779"/>
+        <location filename="../tools/import_fieldlogger.py" line="782"/>
         <source>Setting parameter %s for %s to value %s failed, msg:
 %s</source>
         <translation type="unfinished"></translation>
@@ -3012,6 +3028,34 @@ Hover over a column header to see which database column it will go to.</source>
     </message>
 </context>
 <context>
+    <name>LeveloggerImport</name>
+    <message>
+        <location filename="../tools/import_levelogger.py" line="38"/>
+        <source>Levelogger import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_levelogger.py" line="79"/>
+        <source>File %s could not be parsed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_levelogger.py" line="115"/>
+        <source>The unit for level wasn&apos;t m or cm, a factor of %s was used. Check the imported data.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_levelogger.py" line="147"/>
+        <source>No data in file %s.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/import_levelogger.py" line="154"/>
+        <source>Dateformat in file %s could not be parsed.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <location filename="../ui/export_fieldlogger_ui_dialog.ui" line="14"/>
@@ -3058,172 +3102,172 @@ arquivo de poços </translation>
         <translation>Tab 1</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1208"/>
+        <location filename="../ui/customplotdialog.ui" line="1307"/>
         <source>Table:</source>
         <translation>Tabela:</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1232"/>
+        <location filename="../ui/customplotdialog.ui" line="1331"/>
         <source>x-axis:</source>
         <translation>eixo-x:</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1283"/>
+        <location filename="../ui/customplotdialog.ui" line="1382"/>
         <source>y-axis:</source>
         <translation>eixo-y:</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1374"/>
+        <location filename="../ui/customplotdialog.ui" line="1648"/>
         <source>Filter #1</source>
         <translation>Filtro #1</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1407"/>
+        <location filename="../ui/customplotdialog.ui" line="1681"/>
         <source>Filter #2</source>
         <translation>Filtro #2</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1539"/>
+        <location filename="../ui/customplotdialog.ui" line="1452"/>
         <source>Plot type</source>
         <translation>Tipo de gráfico</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1552"/>
+        <location filename="../ui/customplotdialog.ui" line="1465"/>
         <source>line</source>
         <translation>linha</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1557"/>
+        <location filename="../ui/customplotdialog.ui" line="1470"/>
         <source>line and marker</source>
         <translation>linha e marcador</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1562"/>
+        <location filename="../ui/customplotdialog.ui" line="1475"/>
         <source>line and cross</source>
         <translation>linha e cruz</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1567"/>
+        <location filename="../ui/customplotdialog.ui" line="1480"/>
         <source>marker</source>
         <translation>marcador</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1572"/>
+        <location filename="../ui/customplotdialog.ui" line="1485"/>
         <source>step-pre</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1577"/>
+        <location filename="../ui/customplotdialog.ui" line="1490"/>
         <source>step-post</source>
         <translation>step-pos</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1582"/>
+        <location filename="../ui/customplotdialog.ui" line="1495"/>
         <source>frequency</source>
         <translation>frequência</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1592"/>
+        <location filename="../ui/customplotdialog.ui" line="1505"/>
         <source>Show plot settings</source>
         <translation>Mostrar config. gráfico</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1606"/>
+        <location filename="../ui/customplotdialog.ui" line="1519"/>
         <source>Remove mean</source>
         <translation>Excluir média</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1622"/>
+        <location filename="../ui/customplotdialog.ui" line="1535"/>
         <source>y scaling factor (gain)</source>
         <translation>fator de escala y</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1635"/>
+        <location filename="../ui/customplotdialog.ui" line="1548"/>
         <source>a in y=ax+b</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1667"/>
+        <location filename="../ui/customplotdialog.ui" line="1580"/>
         <source>b in y=ax+b</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1654"/>
+        <location filename="../ui/customplotdialog.ui" line="1567"/>
         <source>y offset</source>
         <translation>deslocamento y</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="682"/>
+        <location filename="../ui/customplotdialog.ui" line="733"/>
         <source>Tab 2</source>
         <translation>Tab 2</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1183"/>
+        <location filename="../ui/customplotdialog.ui" line="1282"/>
         <source>Tab 3</source>
         <translation>Tab 3</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1756"/>
+        <location filename="../ui/customplotdialog.ui" line="1903"/>
         <source>Show chart settings</source>
         <translation>Mostra config. gráfico</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1802"/>
+        <location filename="../ui/customplotdialog.ui" line="1949"/>
         <source>ymax  </source>
         <translation>ymax</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1823"/>
+        <location filename="../ui/customplotdialog.ui" line="1970"/>
         <source>xmin  </source>
         <translation>xmin</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1882"/>
+        <location filename="../ui/customplotdialog.ui" line="2029"/>
         <source>xmax  </source>
         <translation>xmax</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1903"/>
+        <location filename="../ui/customplotdialog.ui" line="2050"/>
         <source>ymin  </source>
         <translation>ymin</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1934"/>
+        <location filename="../ui/customplotdialog.ui" line="2081"/>
         <source>Plot width  </source>
         <translation>Plotar largura</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1967"/>
+        <location filename="../ui/customplotdialog.ui" line="2114"/>
         <source>Grid</source>
         <translation>Grade</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1985"/>
+        <location filename="../ui/customplotdialog.ui" line="2132"/>
         <source>Legend x-pos  </source>
         <translation>Posição leg. x</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2000"/>
+        <location filename="../ui/customplotdialog.ui" line="2147"/>
         <source>Legend</source>
         <translation>Legenda</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2148"/>
+        <location filename="../ui/customplotdialog.ui" line="2295"/>
         <source>Plot height  </source>
         <translation>Altura gráfico</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2033"/>
+        <location filename="../ui/customplotdialog.ui" line="2180"/>
         <source>Legend y-pos  </source>
         <translation>Posição leg. y</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2051"/>
+        <location filename="../ui/customplotdialog.ui" line="2198"/>
         <source>Please note! Although xmin and xmax are dates, both time series plots and xy scatter series can be plotted.</source>
         <translation>Atenção! Embora xmin e xmax sejam datas, ambos gráfico (série temporal e scatter xy) podem ser gerados.</translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2081"/>
+        <location filename="../ui/customplotdialog.ui" line="2228"/>
         <source>Redraw</source>
         <translation>Redesenhar</translation>
     </message>
@@ -3488,48 +3532,73 @@ arquivo de poços </translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="1523"/>
+        <location filename="../ui/customplotdialog.ui" line="1804"/>
         <source>From selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2111"/>
+        <location filename="../ui/customplotdialog.ui" line="2258"/>
         <source>80</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2098"/>
+        <location filename="../ui/customplotdialog.ui" line="2245"/>
         <source>Dpi</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2091"/>
+        <location filename="../ui/customplotdialog.ui" line="2238"/>
         <source>Savefig</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2158"/>
+        <location filename="../ui/customplotdialog.ui" line="2305"/>
         <source>Axes fontsize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2182"/>
+        <location filename="../ui/customplotdialog.ui" line="2329"/>
         <source>10</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2175"/>
+        <location filename="../ui/customplotdialog.ui" line="2322"/>
         <source>Label fontsize</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2088"/>
+        <location filename="../ui/customplotdialog.ui" line="2235"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Saves figure.&lt;/p&gt;&lt;p&gt;Output format decided from file extension:&lt;/p&gt;&lt;p&gt;.png = png format (saves with dpi given from Dpi lineedit )&lt;/p&gt;&lt;p&gt;.svg = svg format&lt;/p&gt;&lt;p&gt;etc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/customplotdialog.ui" line="2105"/>
+        <location filename="../ui/customplotdialog.ui" line="2252"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dpi when savings as &amp;quot;.png&amp;quot; using button Savefig&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/customplotdialog.ui" line="1766"/>
+        <source>Filtersettings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/customplotdialog.ui" line="1778"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only show items that remains after filtering using the other filter selection.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Ex:&lt;/p&gt;&lt;p&gt;1. Choose filter 1 or 2 and select items.&lt;/p&gt;&lt;p&gt;2. Choose the other filter. The list is now filled with items from the chosen filter that isn&apos;t excluded by the other filter.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Reselecting the filter column resets the selection for current filter list.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/customplotdialog.ui" line="1781"/>
+        <source>Dependent filtering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/customplotdialog.ui" line="1801"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select items in list with from selected features in the selected layer containing a column with the same name as the selected filter column.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/customplotdialog.ui" line="1818"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter list for words containg given string.&lt;/p&gt;&lt;p&gt;Supply a list of words separated by ;&lt;/p&gt;&lt;p&gt;Ex: Rb;Br&lt;/p&gt;&lt;p&gt;Ex: Chlor;Sodi;Calc&lt;/p&gt;&lt;p&gt;Case insensitive.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4365,6 +4434,16 @@ Continue?</source>
         <source>List of obsids from selected features</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../tools/calculate_statistics.py" line="67"/>
+        <source>Obsid;Min;Median;Average;Max;Nr of values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/calculate_statistics.py" line="69"/>
+        <source>Statistics for table %s column %s done, see log for results.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NewDb</name>
@@ -4434,7 +4513,7 @@ error msg:
 <context>
     <name>ObsidFilter</name>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="487"/>
+        <location filename="../tools/import_fieldlogger.py" line="490"/>
         <source>No observations returned from obsid verification. Were all skipped?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4442,7 +4521,7 @@ error msg:
 <context>
     <name>PandasCalculations</name>
     <message>
-        <location filename="../tools/customplot.py" line="689"/>
+        <location filename="../tools/customplot.py" line="746"/>
         <source>Steplength for resampling, ex:
 &quot;10S&quot; = 10 seconds
 &quot;20T&quot; = 20 minutes
@@ -4454,7 +4533,7 @@ See pandas pandas.DataFrame.resample documentation for more info.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="702"/>
+        <location filename="../tools/customplot.py" line="759"/>
         <source>The hour to start each timestep when rule &quot;evenly subdivide 1 day&quot; (for example Rule = 24h)
 Ex: 7 (= 07:00). Default is 0 (00:00)
 See pandas pandas.DataFrame.resample documentation for more info:
@@ -4463,14 +4542,14 @@ For example, for &quot;5min&quot; frequency, base could range from 0 through 4. 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="712"/>
+        <location filename="../tools/customplot.py" line="769"/>
         <source>How to make the resample, ex. &quot;mean&quot; (default), &quot;first&quot;, &quot;last&quot;, &quot;sum&quot;.
 See pandas pandas.DataFrame.resample documentation for more info
 (though &quot;how&quot; is not explained a lot)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="723"/>
+        <location filename="../tools/customplot.py" line="780"/>
         <source>The number of timesteps in each moving average (rolling mean) mean
 The result is stored at the center timestep of each mean.
 See Pandas pandas.rolling_mean documentation for more info.
@@ -4478,17 +4557,17 @@ No rolling mean if field is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="786"/>
+        <location filename="../tools/customplot.py" line="843"/>
         <source>Resample base must be an integer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="796"/>
+        <location filename="../tools/customplot.py" line="853"/>
         <source>Rolling mean window must be an integer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="730"/>
+        <location filename="../tools/customplot.py" line="787"/>
         <source>1/True (default) to store the rolling mean at the center timestep.
 0/False to store the rolling mean at the last timestep.
 See Pandas pandas.rolling_mean documentation for more info.
@@ -4657,7 +4736,7 @@ Copy and paste obsids between Locations boxes.</source>
 <context>
     <name>PlotColorDict</name>
     <message>
-        <location filename="../definitions/midvatten_defs.py" line="474"/>
+        <location filename="../definitions/midvatten_defs.py" line="478"/>
         <source>Getting strata and color_mplot form zz_stratigraphy_plots failed, fallback method with PlotColorDict from code</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4665,7 +4744,7 @@ Copy and paste obsids between Locations boxes.</source>
 <context>
     <name>PlotHatchDict</name>
     <message>
-        <location filename="../definitions/midvatten_defs.py" line="518"/>
+        <location filename="../definitions/midvatten_defs.py" line="522"/>
         <source>Getting strata and hatch_mplot from zz_stratigraphy_plots failed, fallback method with PlotHatchDict from code</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4673,7 +4752,7 @@ Copy and paste obsids between Locations boxes.</source>
 <context>
     <name>PlotTypesDict</name>
     <message>
-        <location filename="../definitions/midvatten_defs.py" line="381"/>
+        <location filename="../definitions/midvatten_defs.py" line="385"/>
         <source>Getting strata and geoshort from zz_strat failed, fallback method using PlotTypesDict from code</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4805,39 +4884,134 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <location filename="../ui/secplotdockwidget_ui.ui" line="287"/>
-        <source>Optional settings</source>
+        <source>Templates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/secplotdockwidget_ui.ui" line="304"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit current loaded template.&lt;/p&gt;&lt;p&gt;Note: Changes are not saved to a template file. Use Save as... to save changes to file.&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/secplotdockwidget_ui.ui" line="307"/>
-        <source>Update and plot</source>
+        <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/secplotdockwidget_ui.ui" line="314"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Restores customized settings to default settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <source>(manual)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/secplotdockwidget_ui.ui" line="317"/>
-        <source>Restore defaults</source>
+        <location filename="../ui/secplotdockwidget_ui.ui" line="331"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Load the selected template.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/secplotdockwidget_ui.ui" line="324"/>
-        <source>Customized plot (manual)</source>
+        <location filename="../ui/secplotdockwidget_ui.ui" line="334"/>
+        <source>Load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/secplotdockwidget_ui.ui" line="344"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Import template files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/secplotdockwidget_ui.ui" line="347"/>
+        <source>Import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/secplotdockwidget_ui.ui" line="354"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remove a template from the list.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Note:&lt;/p&gt;&lt;p&gt;* Saved template files will not be removed from disk.&lt;/p&gt;&lt;p&gt;* Templates in default template folder will reappear again next time Section plot is used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/secplotdockwidget_ui.ui" line="357"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/secplotdockwidget_ui.ui" line="364"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save the loaded template to file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/secplotdockwidget_ui.ui" line="367"/>
+        <source>Save as...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SecplotTemplates</name>
+    <message>
+        <location filename="../tools/sectionplot.py" line="847"/>
+        <source>Failed to load saved template, loading default template instead.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/sectionplot.py" line="849"/>
+        <source>Loaded template from midvatten settings secplot_loaded_template.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/sectionplot.py" line="855"/>
+        <source>Default template not found, loading hard coded default template.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/sectionplot.py" line="861"/>
+        <source>Failed to load default template, loading hard coded default template.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/sectionplot.py" line="861"/>
+        <source>Error msg %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/sectionplot.py" line="865"/>
+        <source>Loaded template from default template file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/sectionplot.py" line="870"/>
+        <source>Loaded template from default hard coded template.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/sectionplot.py" line="905"/>
+        <source>Choose a file name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/sectionplot.py" line="970"/>
+        <source>&quot;%s&quot; was not a file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/sectionplot.py" line="984"/>
+        <source>Loading template %s failed, see log message panel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/sectionplot.py" line="975"/>
+        <source>Reading file failed, msg:
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/sectionplot.py" line="984"/>
+        <source>Parsing file rows failed, msg:
+%s</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>SectionPlot</name>
     <message>
-        <location filename="../tools/sectionplot.py" line="231"/>
+        <location filename="../tools/sectionplot.py" line="237"/>
         <source>The SQL query
  %s
  seems to be invalid.
@@ -4846,60 +5020,65 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="330"/>
+        <location filename="../tools/sectionplot.py" line="336"/>
         <source>please notice that DEM(s) must be single band rasters and have same crs as your selected vector line layer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="338"/>
+        <location filename="../tools/sectionplot.py" line="344"/>
         <source>Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="852"/>
+        <location filename="../definitions/midvatten_defs.py" line="728"/>
         <source>Level, masl</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="848"/>
+        <location filename="../definitions/midvatten_defs.py" line="723"/>
         <source>Distance along section</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="740"/>
+        <location filename="../tools/sectionplot.py" line="749"/>
         <source>Destination SRID isn&apos;t valid for table %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="714"/>
+        <location filename="../tools/sectionplot.py" line="723"/>
         <source>Must select only one feature in qgis layer: %s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="718"/>
+        <location filename="../tools/sectionplot.py" line="727"/>
         <source>Layer %s is missing geometry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="731"/>
+        <location filename="../tools/sectionplot.py" line="740"/>
         <source>Layer %s is missing geometry type MULTILINESTRING, had %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="114"/>
+        <location filename="../tools/sectionplot.py" line="115"/>
         <source>Hidden features, obsids and length along section:
 %s%s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="135"/>
+        <location filename="../tools/sectionplot.py" line="136"/>
         <source>Plotting using settings:
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="202"/>
-        <source>Settings error, press &quot;Restore defaults&quot;</source>
+        <location filename="../tools/sectionplot.py" line="207"/>
+        <source>Section plot optional settings error, press &quot;Restore defaults&quot;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/sectionplot.py" line="207"/>
+        <source>Error msg: %s</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4919,12 +5098,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>StaffQuestion</name>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="494"/>
+        <location filename="../tools/import_fieldlogger.py" line="497"/>
         <source>Staff who did the measurement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="514"/>
+        <location filename="../tools/import_fieldlogger.py" line="517"/>
         <source>Import error, staff not given</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4932,18 +5111,25 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>StoredSettings</name>
     <message>
-        <location filename="../tools/sectionplot.py" line="907"/>
+        <location filename="../tools/sectionplot.py" line="883"/>
         <source>Replace the settings string with a new settings string.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="908"/>
-        <source>Edit settings string</source>
+        <location filename="../tools/sectionplot.py" line="1021"/>
+        <source>Translating string to dict failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="918"/>
-        <source>Translating string to dict failed, see log message panel</source>
+        <location filename="../tools/sectionplot.py" line="884"/>
+        <source>Edit settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/sectionplot.py" line="1021"/>
+        <source>Error %s
+for string
+%s</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4978,22 +5164,22 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>SurveyDialog</name>
     <message>
-        <location filename="../tools/stratigraphy.py" line="575"/>
+        <location filename="../tools/stratigraphy.py" line="584"/>
         <source>Identify Results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/stratigraphy.py" line="595"/>
+        <location filename="../tools/stratigraphy.py" line="604"/>
         <source>Show text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/stratigraphy.py" line="609"/>
+        <location filename="../tools/stratigraphy.py" line="619"/>
         <source>Print</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/stratigraphy.py" line="612"/>
+        <location filename="../tools/stratigraphy.py" line="622"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5229,12 +5415,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>WFlowImportFields</name>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="1073"/>
+        <location filename="../tools/import_fieldlogger.py" line="1077"/>
         <source>Import error, flowtype not given</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="1075"/>
+        <location filename="../tools/import_fieldlogger.py" line="1079"/>
         <source>Import error, unit not given</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5242,12 +5428,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>WLevelsImportFields</name>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="937"/>
+        <location filename="../tools/import_fieldlogger.py" line="941"/>
         <source>Calculate level_masl from meas and h_toc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="938"/>
+        <location filename="../tools/import_fieldlogger.py" line="942"/>
         <source>If h_toc is not NULL in table obs_points, level_masl is calculated as h_toc - meas.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5255,37 +5441,32 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>WQualFieldImportFields</name>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="1102"/>
+        <location filename="../tools/import_fieldlogger.py" line="1106"/>
         <source>Parameter: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="1106"/>
+        <location filename="../tools/import_fieldlogger.py" line="1110"/>
         <source>Unit: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="1108"/>
-        <source>Depth input field (optional): </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../tools/import_fieldlogger.py" line="1112"/>
+        <location filename="../tools/import_fieldlogger.py" line="1113"/>
         <source>Instrument: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="1195"/>
+        <location filename="../tools/import_fieldlogger.py" line="1186"/>
         <source>Import error, parameter not given</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="1221"/>
+        <location filename="../tools/import_fieldlogger.py" line="1208"/>
         <source>Import error. See message log panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/import_fieldlogger.py" line="1221"/>
+        <location filename="../tools/import_fieldlogger.py" line="1208"/>
         <source>error on observation : %s
 and parameter: %s</source>
         <translation type="unfinished"></translation>
@@ -5558,12 +5739,12 @@ Supported date formats:
 <context>
     <name>geocolorsymbols</name>
     <message>
-        <location filename="../definitions/midvatten_defs.py" line="121"/>
+        <location filename="../definitions/midvatten_defs.py" line="122"/>
         <source>Reading zz_strat* tables failed. Using default dictionary instead</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../definitions/midvatten_defs.py" line="281"/>
+        <location filename="../definitions/midvatten_defs.py" line="282"/>
         <source>Error in geocolorsymbols, setting brush and color for strata &quot;%s&quot; using geoshort %s failed. Msg1:
 %s
 Msg2:
@@ -5631,6 +5812,14 @@ Msg2:
         <location filename="../tools/midvatten_utils.py" line="1544"/>
         <source>Reading stored settings &quot;%s&quot;:
 %s</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>hydrocolors</name>
+    <message>
+        <location filename="../definitions/midvatten_defs.py" line="341"/>
+        <source>Getting hydrocolors from database failed, using fallback method!</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -5838,17 +6027,17 @@ Msg:
 <context>
     <name>plotsqlitewindow</name>
     <message>
-        <location filename="../tools/customplot.py" line="303"/>
+        <location filename="../tools/customplot.py" line="319"/>
         <source>Plotting date_time failed, msg: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="304"/>
+        <location filename="../tools/customplot.py" line="320"/>
         <source>Customplot, transforming to recarray with date_time as x-axis failed, msg: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/customplot.py" line="347"/>
+        <location filename="../tools/customplot.py" line="363"/>
         <source>Pandas calculate failed.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5932,12 +6121,12 @@ Msg:
 <context>
     <name>staff_list</name>
     <message>
-        <location filename="../definitions/midvatten_defs.py" line="563"/>
+        <location filename="../definitions/midvatten_defs.py" line="567"/>
         <source>Sql failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../definitions/midvatten_defs.py" line="563"/>
+        <location filename="../definitions/midvatten_defs.py" line="567"/>
         <source>Failed to get existing staff from staff table from sql %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6016,12 +6205,12 @@ Please exit this mode before proceeding with this operation.</source>
 <context>
     <name>w_flow_flowtypes_units</name>
     <message>
-        <location filename="../definitions/midvatten_defs.py" line="576"/>
+        <location filename="../definitions/midvatten_defs.py" line="580"/>
         <source>Error, sql failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../definitions/midvatten_defs.py" line="576"/>
+        <location filename="../definitions/midvatten_defs.py" line="580"/>
         <source>Cannot get data from sql %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6029,12 +6218,12 @@ Please exit this mode before proceeding with this operation.</source>
 <context>
     <name>w_qual_field_parameter_units</name>
     <message>
-        <location filename="../definitions/midvatten_defs.py" line="586"/>
+        <location filename="../definitions/midvatten_defs.py" line="590"/>
         <source>Error, sql failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../definitions/midvatten_defs.py" line="586"/>
+        <location filename="../definitions/midvatten_defs.py" line="590"/>
         <source>Cannot get data from sql %s</source>
         <translation type="unfinished"></translation>
     </message>
