@@ -504,7 +504,7 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
                     p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, '' if layer.geo_short=='NULL' else layer.geo_short)
                 elif self.GeoOrComment == "hydro":
                     p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, '' if layer.hydro=='NULL' else layer.hydro)
-                elif self.GeoOrComment == "hydro_expl":
+                elif self.GeoOrComment == "hydro expl":
                     if layer.hydro is None or layer.hydro=='NULL':
                         hydr = ''
                     else:
@@ -577,7 +577,8 @@ class SurveyDialog(PyQt4.QtGui.QDialog):
         PyQt4.QtGui.QDialog.__init__(self, parent)
         
         self.resize(PyQt4.QtCore.QSize(500,250))
-        
+        self.setWindowFlags(PyQt4.QtCore.Qt.Window | PyQt4.QtCore.Qt.WindowMinimizeButtonHint | PyQt4.QtCore.Qt.WindowMaximizeButtonHint | PyQt4.QtCore.Qt.WindowCloseButtonHint);
+
         self.setWindowTitle(ru(QCoreApplication.translate(u'SurveyDialog', u"Identify Results")))
         
         self.layout = PyQt4.QtGui.QVBoxLayout(self)
@@ -607,7 +608,7 @@ class SurveyDialog(PyQt4.QtGui.QDialog):
         self.GeologyOrCommentCBox.addItem('comment')
         self.GeologyOrCommentCBox.addItem('geoshort')
         self.GeologyOrCommentCBox.addItem('hydro')
-        self.GeologyOrCommentCBox.addItem('hydro_expl')
+        self.GeologyOrCommentCBox.addItem('hydro expl')
         self.GeologyOrCommentCBox.addItem('development')
         self.layout2.addWidget(self.GeologyOrCommentCBox)
         
