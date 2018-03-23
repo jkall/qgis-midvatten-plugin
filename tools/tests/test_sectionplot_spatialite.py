@@ -178,7 +178,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         test_string = utils_for_tests.create_test_string(self.myplot.LengthAlong)
         print(str(test_string))
         print(str(mock_messagebar.mock_calls))
-        assert test_string == u"[ 0.          0.62469505  1.87408514]"
+        assert any([test_string == u"[ 0.          0.62469505  1.87408514]",
+                    test_string == u"[0.         0.62469505 1.87408514]"])
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
 
@@ -208,7 +209,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         myplot = _test(self.midvatten, self.vlayer)
 
         test_string = utils_for_tests.create_test_string(myplot.LengthAlong)
-        assert test_string == u"[ 1.  3.  5.]"
+        assert any([test_string == u"[ 1.  3.  5.]", test_string == u"[1. 3. 5.]"])
         assert mock.call.info(log_msg=u'Hidden features, obsids and length along section:\nP1;P2;P3\\1.0;3.0;5.0') in mock_messagebar.mock_calls
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called

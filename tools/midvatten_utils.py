@@ -533,6 +533,9 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
             # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
             elif str(type(anything)) == u"<class 'PyQt4.QtCore.QString'>":
                 text = returnunicode(unicode(anything.toUtf8(), 'utf-8'))
+            # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
+            elif str(type(anything)) == u"<class 'PyQt4.QtCore.QPyNullVariant'>":
+                return u''
             else:
                 text = anything
 

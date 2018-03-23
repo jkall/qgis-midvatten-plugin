@@ -6,9 +6,9 @@
         "fontsize": 8},
     "Axes_set_ylim": None,
     "Figure_subplots_adjust": {
-        "bottom": 0.15,
+        "bottom": 0.12,
         "left": 0.09,
-        "right": 0.97,
+        "right": 0.95,
         "top": 0.95},
     "dems_Axes_plot": {
         "DEFAULT": {

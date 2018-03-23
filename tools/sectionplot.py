@@ -931,7 +931,6 @@ class SecplotTemplates(object):
                     template = self.parse_template(filename)
                     if template:
                         templates[filename] = template
-                        print(str(templates))
                 
         self.templates.update(templates)
         self.update_settingsdict()

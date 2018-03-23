@@ -34,6 +34,7 @@ import re
 from collections import OrderedDict
 from pyspatialite import dbapi2 as sqlite
 
+import  qgis.core
 from PyQt4.QtCore import QCoreApplication
 from PyQt4.QtCore import QSettings
 

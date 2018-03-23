@@ -19,6 +19,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+import qgis.core
 import PyQt4
 import io
 import os
@@ -102,7 +103,7 @@ def create_test_string(anything=None):
     elif isinstance(anything, (basestring, float, int)):
         aunicode = utils.returnunicode(anything)
     elif isinstance(anything, PyQt4.QtCore.QVariant):
-        print("Was varaint")
+        print("Was variant")
         aunicode = utils.returnunicode(anything.toString().data())
     else:
         aunicode = utils.returnunicode(str(anything))

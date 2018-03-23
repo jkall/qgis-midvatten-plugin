@@ -8,7 +8,7 @@
     "Figure_subplots_adjust": {
         "bottom": 0.17,
         "left": 0.09,
-        "right": 0.97,
+        "right": 0.95,
         "top": 0.95},
     "dems_Axes_plot": {
         "DEFAULT": {

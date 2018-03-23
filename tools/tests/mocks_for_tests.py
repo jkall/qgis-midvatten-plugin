@@ -19,11 +19,15 @@
  *                                                                         *
  ***************************************************************************/
 """
+import  qgis.core
 from PyQt4 import QtGui
 from qgis.core import QgsMapLayerRegistry
 
 import mock
-from PyQt4.QtCore import QString
+try:
+    from PyQt4.QtCore import QString
+except:
+    pass
 
 
 class MockUsingReturnValue(object):
@@ -68,8 +72,12 @@ class MockReturnUsingDictIn(object):
         if isinstance(self.args_idx, int):
             for k, v in self.adict.iteritems():
                 a = args[self.args_idx]
-                if isinstance(a, QString):
-                    a = str(a)
+                try:
+                    if isinstance(a, QString):
+                        a = str(a)
+                except:
+                    if str(type(a)) == 'PyQt4.QtCore.QString':
+                        a = str(a)
                 if a.startswith(k):
                    return_value = v
         elif isinstance(self.args_idx, basestring):
