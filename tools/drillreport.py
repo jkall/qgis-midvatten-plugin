@@ -18,18 +18,18 @@
  *                                                                         *
  ***************************************************************************/
 """
+import codecs
+import os
+
+from PyQt4.QtCore import QCoreApplication
 from PyQt4.QtCore import QUrl, QDir
 from PyQt4.QtGui import QDesktopServices
 
-from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
-import os
-import locale
+import db_utils
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
-import codecs
-from time import sleep
+from calculate_statistics import get_statistics_for_single_obsid
 
-from PyQt4.QtCore import QCoreApplication
 
 class Drillreport():        # general observation point info for the selected object
     
@@ -49,7 +49,7 @@ class Drillreport():        # general observation point info for the selected ob
             merged_question = False
         else:
             #Due to problems regarding speed when opening many tabs, only the merge mode is used.
-            #merged_question = utils.askuser(question='YesNo', msg="Do you want to open all drill reports merged on the same tab?\n"
+            #merged_question = utils.Askuser(question='YesNo', msg="Do you want to open all drill reports merged on the same tab?\n"
             #                                    "Else they will be opened separately.\n\n(If answering no, creating drill reports for many obsids take 0.2 seconds per obsid.\nIt might fail if the computer is to slow.\nIf it fails, try to select only one obsid at the time)").result
             merged_question = True
 
@@ -110,9 +110,9 @@ class Drillreport():        # general observation point info for the selected ob
         ConnectionOK, GeneralData = self.GetData(obsid, 'obs_points', 'n')#MacOSX fix1
         #utils.pop_up_info(str(ConnectionOK))#debug
         if ConnectionOK==True:
-            result2 = (utils.sql_load_fr_db(r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""")[1])[0][0]
+            result2 = db_utils.sql_load_fr_db(r"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""")[1][0][0]
             CRS = ru(result2) #1st we need crs
-            result3 = (utils.sql_load_fr_db(r"""SELECT ref_sys_name FROM spatial_ref_sys where srid =""" + CRS)[1])[0][0]
+            result3 = db_utils.get_srid_name(result2)
             CRSname = ru(result3) # and crs name
             if  utils.getcurrentlocale()[0] == 'sv_SE':
                 reportdata_1 = self.rpt_upper_left_sv(GeneralData, CRS, CRSname)
@@ -157,7 +157,7 @@ class Drillreport():        # general observation point info for the selected ob
             f.write(rpt)
 
             # WATER LEVEL STATISTICS LOWER RIGHT QUADRANT
-            meas_or_level_masl, statistics = GetStatistics(obsid)#MacOSX fix1
+            meas_or_level_masl, statistics = get_statistics_for_single_obsid(obsid)#MacOSX fix1
             if  utils.getcurrentlocale()[0] == 'sv_SE':
                 reportdata_4 = self.rpt_lower_right_sv(statistics,meas_or_level_masl)
             else:
@@ -190,9 +190,9 @@ class Drillreport():        # general observation point info for the selected ob
         if ru(GeneralData[0][20]) != '' and ru(GeneralData[0][20]) != 'NULL':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'onoggrannhet i höjd, avser rök (m)' + r"""</TD><TD WIDTH=50%>""" + ru(GeneralData[0][20]) + '</TD></TR>'
         if ru(GeneralData[0][13]) != '' and ru(GeneralData[0][13]) != 'NULL':
-            rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'östlig koordinat' + r"""</TD><TD WIDTH=50%>""" + ru(GeneralData[0][13]) + ' (' + CRSname  + ', EPSG:' + CRS + ')</TD></TR>'
+            rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'östlig koordinat' + r"""</TD><TD WIDTH=50%>""" + ru(GeneralData[0][13]) + ' (' + '%s'%('%s, '%CRSname if CRSname else '') + 'EPSG:' + CRS + ')</TD></TR>'
         if ru(GeneralData[0][14]) != '' and ru(GeneralData[0][14]) != 'NULL':
-            rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'nordlig koordinat' + r"""</TD><TD WIDTH=50%>""" + ru(GeneralData[0][14]) + ' (' + CRSname  + ', EPSG:' + CRS + ')</TD></TR>'
+            rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'nordlig koordinat' + r"""</TD><TD WIDTH=50%>""" + ru(GeneralData[0][14]) + ' (' + '%s'%('%s, '%CRSname if CRSname else '') + 'EPSG:' + CRS + ')</TD></TR>'
         if ru(GeneralData[0][13]) != ''  and ru(GeneralData[0][13]) != 'NULL' and ru(GeneralData[0][14]) != '' and ru(GeneralData[0][15]) != '':
             rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%>""" + u'lägesonoggrannhet' + r"""</TD><TD WIDTH=50%>""" + ru(GeneralData[0][15]) + '</TD></TR>'
         if ru(GeneralData[0][7]) != '' and ru(GeneralData[0][7]) != 'NULL':
@@ -380,57 +380,6 @@ class Drillreport():        # general observation point info for the selected ob
             sql += r""" order by stratid"""
         if debug == 'y':
             utils.pop_up_info(sql)
-        ConnectionOK, data = utils.sql_load_fr_db(sql)
+        ConnectionOK, data = db_utils.sql_load_fr_db(sql)
         return ConnectionOK, data
-
-
-def GetStatistics(obsid = ''):
-    Statistics_list = [0]*4
-
-    columns = ['meas', 'level_masl']
-    meas_or_level_masl= 'meas'#default value
-
-    #number of values, also decide wehter to use meas or level_masl in report
-    for column in columns:
-        sql = r"""select Count(""" + column + r""") from w_levels where obsid = '"""
-        sql += obsid
-        sql += r"""'"""
-        ConnectionOK, number_of_values = utils.sql_load_fr_db(sql)
-        if number_of_values and number_of_values[0][0] > Statistics_list[2]:#this will select meas if meas >= level_masl
-            meas_or_level_masl = column
-            Statistics_list[2] = number_of_values[0][0]
-
-    #min value
-    if meas_or_level_masl=='meas':
-        sql = r"""select min(meas) from w_levels where obsid = '"""
-    else:
-        sql = r"""select max(level_masl) from w_levels where obsid = '"""
-    sql += obsid
-    sql += r"""'"""
-    ConnectionOK, min_value = utils.sql_load_fr_db(sql)
-    if min_value:
-        Statistics_list[0] = min_value[0][0]
-
-    #median value
-    sql = r"""SELECT x.obsid, x.""" + meas_or_level_masl + r""" as median from (select obsid, """ + meas_or_level_masl + r""" FROM w_levels WHERE obsid = '"""
-    sql += obsid
-    sql += r"""' and (typeof(""" + meas_or_level_masl + r""")=typeof(0.01) or typeof(""" + meas_or_level_masl + r""")=typeof(1))) as x, (select obsid, """ + meas_or_level_masl + r""" FROM w_levels WHERE obsid = '"""
-    sql += obsid
-    sql += r"""' and (typeof(""" + meas_or_level_masl + r""")=typeof(0.01) or typeof(""" + meas_or_level_masl + r""")=typeof(1))) as y GROUP BY x.""" + meas_or_level_masl + r""" HAVING SUM(CASE WHEN y.""" + meas_or_level_masl + r""" <= x.""" + meas_or_level_masl + r""" THEN 1 ELSE 0 END)>=(COUNT(*)+1)/2 AND SUM(CASE WHEN y.""" + meas_or_level_masl + r""" >= x.""" + meas_or_level_masl + r""" THEN 1 ELSE 0 END)>=(COUNT(*)/2)+1"""
-    ConnectionOK, median_value = utils.sql_load_fr_db(sql)
-    if median_value:
-        Statistics_list[1] = median_value[0][1]
-
-    #max value
-    if meas_or_level_masl=='meas':
-        sql = r"""select max(meas) from w_levels where obsid = '"""
-    else:
-        sql = r"""select min(level_masl) from w_levels where obsid = '"""
-    sql += obsid
-    sql += r"""'"""
-    ConnectionOK, max_value = utils.sql_load_fr_db(sql)
-    if max_value:
-        Statistics_list[3] = max_value[0][0]
-
-    return meas_or_level_masl, Statistics_list
 

@@ -20,17 +20,14 @@ __modified_date__ = "Nov 2013"
 ***************************************************************************/
 """
 
-from PyQt4 import QtCore, QtGui
-from qgis.core import *
-from qgis.gui import *
-from matplotlib.figure import Figure as figure
-import numpy as np
-import matplotlib.pyplot as plt
 import datetime
-from pyspatialite import dbapi2 as sqlite
 import itertools
+import matplotlib.pyplot as plt
+import numpy as np
+
+import db_utils
 import midvatten_utils as utils
-from definitions import midvatten_defs
+
 
 class PiperPlot():
     def __init__(self,msettings,activelayer):
@@ -50,19 +47,25 @@ class PiperPlot():
             self.create_markers()
         self.get_piper_data()
         #here is a simple printout (to python console) to let the user see the piper plt.plot data
-        print """obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na+K_meqPl, Ca_meqPl, Mg_meqPl"""
+        try:
+            print("""obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na+K_meqPl, Ca_meqPl, Mg_meqPl""")
+        except:
+            pass
         for row in self.obsrecarray:
             #print ','.join([unicode(col).encode('utf-8') for col in row])
             try:
                 print ','.join([utils.returnunicode(col) for col in row])
             except:
-                print "failed printing piper data..."
+                try:
+                    print "failed printing piper data..."
+                except:
+                    pass
         self.make_the_plot()
 
     def big_sql(self):
         # Data must be stored as mg/l in the database since it is converted to meq/l in code here...
         sql = r"""select a.obsid as obsid, date_time, obs_points.type as type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl + K_meqPl as NaK_meqPl, Ca_meqPl, Mg_meqPl
-        from (select obsid, date_time, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl, K_meqPl, Ca_meqPl, Mg_meqPl
+        from (select u.obsid, u.date_time, u.Cl_meqPl, u.HCO3_meqPl, u.SO4_meqPl, u.Na_meqPl, u.K_meqPl, u.Ca_meqPl, u.Mg_meqPl
             from (
                   select obsid, date_time, 
                       (max (case when %s then reading_num end))/35.453 as Cl_meqPl,
@@ -74,8 +77,8 @@ class PiperPlot():
                       2*(max (case when %s then reading_num end))/24.305 as Mg_meqPl
                   from w_qual_lab where obsid in %s 
                   group by obsid, date_time
-                )
-            where Ca_meqPl is not null and Mg_meqPl is not null and Na_meqPl is not null and K_meqPl is not null and HCO3_meqPl is not null and Cl_meqPl is not null and SO4_meqPl is not null
+                ) AS u
+            where u.Ca_meqPl is not null and u.Mg_meqPl is not null and u.Na_meqPl is not null and u.K_meqPl is not null and u.HCO3_meqPl is not null and u.Cl_meqPl is not null and u.SO4_meqPl is not null
             ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(self.ParameterList[0],self.ParameterList[1],self.ParameterList[2],self.ParameterList[3],self.ParameterList[4],self.ParameterList[5],self.ParameterList[6],(str(self.observations)).encode('utf-8').replace('[','(').replace(']',')'))
         return sql
 
@@ -120,7 +123,7 @@ class PiperPlot():
     def get_selected_datetimes(self):
         sql1 = self.big_sql()
         sql2 = r""" select distinct date_time from (""" + sql1 + r""") order by date_time"""
-        ConnOK, self.date_times = utils.sql_load_fr_db(sql2)
+        ConnOK, self.date_times = db_utils.sql_load_fr_db(sql2)
         
     def get_selected_observations(self):
         obsar = utils.getselectedobjectnames(self.activelayer)
@@ -133,17 +136,17 @@ class PiperPlot():
 
     def get_selected_obstypes(self):
         sql = "select obsid, type from obs_points where obsid in " +  str(self.observations).encode('utf-8').replace('[','(').replace(']',')')
-        ConnOK, types = utils.sql_load_fr_db(sql)
+        ConnOK, types = db_utils.sql_load_fr_db(sql)
         self.typedict = dict(types)#make it a dictionary
         sql = "select distinct type from obs_points where obsid in " +  str(self.observations).encode('utf-8').replace('[','(').replace(']',')')
-        ConnOK, self.distincttypes = utils.sql_load_fr_db(sql)
+        ConnOK, self.distincttypes = db_utils.sql_load_fr_db(sql)
         
     def get_piper_data(self):
         #These observations are supposed to be in mg/l and must be stored in a Midvatten database, table w_qual_lab
         sql = self.big_sql()
         print(sql)#debug
         # get data into a list: obsid, date_time, type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na+K_meqPl, Ca_meqPl, Mg_meqPl
-        obsimport = utils.sql_load_fr_db(sql)[1]
+        obsimport = db_utils.sql_load_fr_db(sql)[1]
         #convert to numpy ndarray W/O format specified
         self.obsnp_nospecformat = np.array(obsimport)
         #define format

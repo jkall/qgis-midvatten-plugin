@@ -1,5 +1,5 @@
-﻿﻿﻿﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
-SELECT InitSpatialMetadata(1);
+﻿﻿# -*- coding: utf-8 -*- This line is just for your information, the python plugin will not use the first line
+SPATIALITE SELECT InitSpatialMetadata(1);
 CREATE TABLE about_db /*A status log for the tables in the db*/(
 tablename text --Name of a table in the db
 , columnname text --Name of column
@@ -12,10 +12,10 @@ tablename text --Name of a table in the db
 , upd_date text --Date for last update
 , upd_sign text --Person responsible for update
 );
-INSERT INTO about_db VALUES('*', '*', '', '', '', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION, running QGIS version CHANGETOQGISVERSION on top of SpatiaLite version CHANGETOSPLITEVERSION', '', '');
+INSERT INTO about_db VALUES('*', '*', '', '', '', '', '', 'This db was created by Midvatten plugin CHANGETOPLUGINVERSION, running QGIS version CHANGETOQGISVERSION on top of CHANGETODBANDVERSION', '', '');
 INSERT INTO about_db VALUES('*', '*', '', '', '', '', '', 'locale:CHANGETOLOCALE', '', '');
 CREATE TABLE zz_staff /*Data domain for field staff used when importing data*/(
-staff text --Initials of the field staff
+staff text NOT NULL--Initials of the field staff
 , name text --Name of the field staff
 , PRIMARY KEY(staff)
 );
@@ -82,7 +82,8 @@ obsid text NOT NULL --ID for the observation point
 , com_html text --Multiline formatted comment in html format
 , PRIMARY KEY (obsid)
 );
-SELECT AddGeometryColumn('obs_points', 'geometry', CHANGETORELEVANTEPSGID, 'POINT', 'XY', 0);
+SPATIALITE SELECT AddGeometryColumn('obs_points', 'geometry', CHANGETORELEVANTEPSGID, 'POINT', 'XY', 0);
+POSTGIS ALTER TABLE obs_points ADD COLUMN geometry geometry(Point,CHANGETORELEVANTEPSGID);
 CREATE TABLE obs_lines /*One of the two main tables. This table holds all line observation objects.*/(
 obsid text  NOT NULL --ID for observation line
 , name text --Ordinary name for the observation
@@ -91,7 +92,8 @@ obsid text  NOT NULL --ID for observation line
 , source text --The origin for the observation
 , PRIMARY KEY (obsid)
 );
-SELECT AddGeometryColumn('obs_lines', 'geometry', CHANGETORELEVANTEPSGID, 'LINESTRING', 'XY', 0);
+SPATIALITE SELECT AddGeometryColumn('obs_lines', 'geometry', CHANGETORELEVANTEPSGID, 'LINESTRING', 'XY', 0);
+POSTGIS ALTER TABLE obs_lines ADD COLUMN geometry geometry(Linestring,CHANGETORELEVANTEPSGID);
 CREATE TABLE w_levels /*Manual water level measurements*/(
 obsid text NOT NULL --Obsid linked to obs_points.obsid
 , date_time text NOT NULL --Date and Time for the observation
@@ -206,22 +208,30 @@ obsid text NOT NULL --Obsid linked to obs_points.obsid
 , PRIMARY KEY(obsid, date_time)
 , FOREIGN KEY(obsid) REFERENCES obs_points(obsid), FOREIGN KEY(staff) REFERENCES zz_staff(staff)
 );
-CREATE VIEW obs_p_w_qual_field AS SELECT DISTINCT a.rowid AS rowid, a.obsid AS obsid, a.geometry AS geometry FROM obs_points AS a JOIN w_qual_field AS b using (obsid);
-CREATE VIEW obs_p_w_qual_lab AS SELECT DISTINCT a.rowid AS rowid, a.obsid AS obsid, a.geometry AS geometry FROM obs_points AS a JOIN w_qual_lab AS b using (obsid);
-CREATE VIEW obs_p_w_strat AS SELECT DISTINCT a.rowid AS rowid, a.obsid AS obsid, a.h_toc AS h_toc, a.h_gs AS h_gs, a.geometry AS geometry FROM obs_points AS a JOIN stratigraphy AS b using (obsid);
-CREATE VIEW obs_p_w_lvl AS SELECT DISTINCT a.rowid AS rowid, a.obsid AS obsid, a.geometry AS geometry FROM obs_points AS a JOIN w_levels AS b USING (obsid);
-CREATE VIEW w_lvls_last_geom AS SELECT b.rowid AS rowid, a.obsid AS obsid, MAX(a.date_time) AS date_time,  a.meas AS meas,  a.level_masl AS level_masl, b.geometry AS geometry FROM w_levels AS a JOIN obs_points AS b using (obsid) GROUP BY obsid;
-CREATE VIEW w_qual_field_geom AS SELECT w_qual_field.rowid AS rowid, w_qual_field.obsid AS obsid, w_qual_field.staff AS staff, w_qual_field.date_time AS date_time, w_qual_field.instrument AS instrument, w_qual_field.parameter AS parameter, w_qual_field.reading_num AS reading_num, w_qual_field.reading_txt AS reading_txt, w_qual_field.unit AS unit, w_qual_field.comment AS comment, obs_points.geometry AS geometry FROM w_qual_field AS w_qual_field left join obs_points using (obsid);
-CREATE VIEW w_qual_lab_geom AS SELECT w_qual_lab.rowid AS rowid, w_qual_lab.obsid, w_qual_lab.depth, w_qual_lab.report, w_qual_lab.staff, w_qual_lab.date_time, w_qual_lab.anameth, w_qual_lab.parameter, w_qual_lab.reading_txt, w_qual_lab.reading_num, w_qual_lab.unit, obs_points.geometry AS geometry  FROM w_qual_lab, obs_points where w_qual_lab.obsid=obs_points.obsid;
-CREATE VIEW w_levels_geom AS SELECT b.rowid AS rowid, a.obsid AS obsid, a.date_time AS date_time,  a.meas AS meas,  a.h_toc AS h_toc,  a.level_masl AS level_masl, b.geometry AS geometry FROM w_levels AS a join obs_points AS b using (obsid);
-INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('obs_p_w_qual_field', 'geometry', 'rowid', 'obs_points', 'geometry',1);
-INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('obs_p_w_qual_lab', 'geometry', 'rowid', 'obs_points', 'geometry',1);
-INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('obs_p_w_strat', 'geometry', 'rowid', 'obs_points', 'geometry',1);
-INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('obs_p_w_lvl', 'geometry', 'rowid', 'obs_points', 'geometry',1);
-INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('w_lvls_last_geom', 'geometry', 'rowid', 'obs_points', 'geometry',1);
-INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('w_qual_field_geom', 'geometry', 'rowid', 'obs_points', 'geometry',1);
-INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('w_qual_lab_geom', 'geometry', 'rowid', 'obs_points', 'geometry',1);
-INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('w_levels_geom', 'geometry', 'rowid', 'obs_points', 'geometry',1);
+SPATIALITE CREATE VIEW obs_p_w_qual_field AS SELECT DISTINCT a.rowid AS rowid, a.obsid AS obsid, a.geometry AS geometry FROM obs_points AS a JOIN w_qual_field AS b using (obsid);
+SPATIALITE CREATE VIEW obs_p_w_qual_lab AS SELECT DISTINCT a.rowid AS rowid, a.obsid AS obsid, a.geometry AS geometry FROM obs_points AS a JOIN w_qual_lab AS b using (obsid);
+SPATIALITE CREATE VIEW obs_p_w_strat AS SELECT DISTINCT a.rowid AS rowid, a.obsid AS obsid, a.h_toc AS h_toc, a.h_gs AS h_gs, a.geometry AS geometry FROM obs_points AS a JOIN stratigraphy AS b using (obsid);
+SPATIALITE CREATE VIEW obs_p_w_lvl AS SELECT DISTINCT a.rowid AS rowid, a.obsid AS obsid, a.geometry AS geometry FROM obs_points AS a JOIN w_levels AS b USING (obsid);
+SPATIALITE CREATE VIEW w_lvls_last_geom AS SELECT b.rowid AS rowid, a.obsid AS obsid, MAX(a.date_time) AS date_time,  a.meas AS meas,  a.level_masl AS level_masl, b.geometry AS geometry FROM w_levels AS a JOIN obs_points AS b using (obsid) GROUP BY obsid;
+SPATIALITE CREATE VIEW w_qual_field_geom AS SELECT w_qual_field.rowid AS rowid, w_qual_field.obsid AS obsid, w_qual_field.staff AS staff, w_qual_field.date_time AS date_time, w_qual_field.instrument AS instrument, w_qual_field.parameter AS parameter, w_qual_field.reading_num AS reading_num, w_qual_field.reading_txt AS reading_txt, w_qual_field.unit AS unit, w_qual_field.comment AS comment, obs_points.geometry AS geometry FROM w_qual_field AS w_qual_field left join obs_points using (obsid);
+SPATIALITE CREATE VIEW w_qual_lab_geom AS SELECT w_qual_lab.rowid AS rowid, w_qual_lab.obsid, w_qual_lab.depth, w_qual_lab.report, w_qual_lab.staff, w_qual_lab.date_time, w_qual_lab.anameth, w_qual_lab.parameter, w_qual_lab.reading_txt, w_qual_lab.reading_num, w_qual_lab.unit, obs_points.geometry AS geometry  FROM w_qual_lab, obs_points where w_qual_lab.obsid=obs_points.obsid;
+SPATIALITE CREATE VIEW w_levels_geom AS SELECT b.rowid AS rowid, a.obsid AS obsid, a.date_time AS date_time,  a.meas AS meas,  a.h_toc AS h_toc,  a.level_masl AS level_masl, b.geometry AS geometry FROM w_levels AS a join obs_points AS b using (obsid);
+SPATIALITE INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('obs_p_w_qual_field', 'geometry', 'rowid', 'obs_points', 'geometry',1);
+SPATIALITE INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('obs_p_w_qual_lab', 'geometry', 'rowid', 'obs_points', 'geometry',1);
+SPATIALITE INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('obs_p_w_strat', 'geometry', 'rowid', 'obs_points', 'geometry',1);
+SPATIALITE INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('obs_p_w_lvl', 'geometry', 'rowid', 'obs_points', 'geometry',1);
+SPATIALITE INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('w_lvls_last_geom', 'geometry', 'rowid', 'obs_points', 'geometry',1);
+SPATIALITE INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('w_qual_field_geom', 'geometry', 'rowid', 'obs_points', 'geometry',1);
+SPATIALITE INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('w_qual_lab_geom', 'geometry', 'rowid', 'obs_points', 'geometry',1);
+SPATIALITE INSERT INTO views_geometry_columns (view_name, view_geometry, view_rowid, f_table_name, f_geometry_column, read_only) VALUES ('w_levels_geom', 'geometry', 'rowid', 'obs_points', 'geometry',1);
+POSTGIS CREATE VIEW obs_p_w_qual_field AS SELECT DISTINCT a.obsid AS obsid, a.geometry AS geometry FROM obs_points AS a JOIN w_qual_field AS b using (obsid);
+POSTGIS CREATE VIEW obs_p_w_qual_lab AS SELECT DISTINCT a.obsid AS obsid, a.geometry AS geometry FROM obs_points AS a JOIN w_qual_lab AS b using (obsid);
+POSTGIS CREATE VIEW obs_p_w_strat AS SELECT DISTINCT a.obsid AS obsid, a.h_toc AS h_toc, a.h_gs AS h_gs, a.geometry AS geometry FROM obs_points AS a JOIN stratigraphy AS b using (obsid);
+POSTGIS CREATE VIEW obs_p_w_lvl AS SELECT DISTINCT a.obsid AS obsid, a.geometry AS geometry FROM obs_points AS a JOIN w_levels AS b USING (obsid);
+POSTGIS CREATE VIEW w_lvls_last_geom AS SELECT a.obsid AS obsid, a.date_time AS date_time, a.meas AS meas, a.level_masl AS level_masl, c.geometry AS geometry FROM w_levels AS a JOIN (SELECT obsid, max(date_time) as date_time FROM w_levels GROUP BY obsid) as b ON a.obsid=b.obsid and a.date_time=b.date_time JOIN obs_points AS c ON a.obsid=c.obsid;
+POSTGIS CREATE VIEW w_qual_field_geom AS SELECT w_qual_field.obsid AS obsid, w_qual_field.staff AS staff, w_qual_field.date_time AS date_time, w_qual_field.instrument AS instrument, w_qual_field.parameter AS parameter, w_qual_field.reading_num AS reading_num, w_qual_field.reading_txt AS reading_txt, w_qual_field.unit AS unit, w_qual_field.comment AS comment, obs_points.geometry AS geometry FROM w_qual_field AS w_qual_field left join obs_points using (obsid);
+POSTGIS CREATE VIEW w_qual_lab_geom AS SELECT w_qual_lab.obsid, w_qual_lab.depth, w_qual_lab.report, w_qual_lab.staff, w_qual_lab.date_time, w_qual_lab.anameth, w_qual_lab.parameter, w_qual_lab.reading_txt, w_qual_lab.reading_num, w_qual_lab.unit, obs_points.geometry AS geometry FROM w_qual_lab, obs_points where w_qual_lab.obsid=obs_points.obsid;
+POSTGIS CREATE VIEW w_levels_geom AS SELECT a.obsid AS obsid, a.date_time AS date_time,  a.meas AS meas,  a.h_toc AS h_toc,  a.level_masl AS level_masl, b.geometry AS geometry FROM w_levels AS a join obs_points AS b using (obsid);
 CREATE VIEW w_flow_momflow AS SELECT obsid AS obsid,instrumentid AS instrumentid,date_time AS date_time,reading AS reading, unit AS unit, comment AS comment FROM w_flow where flowtype='Momflow';
 CREATE VIEW w_flow_aveflow AS SELECT obsid AS obsid,instrumentid AS instrumentid,date_time AS date_time,reading AS reading, unit AS unit, comment AS comment FROM w_flow where flowtype='Aveflow';
 CREATE VIEW w_flow_accvol AS SELECT obsid AS obsid,instrumentid AS instrumentid,date_time AS date_time,reading AS reading, unit AS unit, comment AS comment FROM w_flow where flowtype='Accvol';

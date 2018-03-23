@@ -6,8 +6,9 @@ SOURCES = \
 ./tools/customplot.py \
 ./tools/date_utils.py \
 ./tools/drillreport.py \
+./tools/custom_drillreport.py \
 ./tools/export_data.py \
-./tools/export_fieldlogger2.py \
+./tools/export_fieldlogger.py \
 ./tools/gui_utils.py \
 ./tools/import_data_to_db.py \
 ./tools/import_diveroffice.py \
@@ -17,6 +18,7 @@ SOURCES = \
 ./tools/loaddefaultlayers.py \
 ./tools/midvatten_utils.py \
 ./tools/midvsettings.py \
+./tools/prepareforqgis2threejs.py \
 ./tools/sectionplot.py \
 ./tools/stratigraphy.py \
 ./tools/tsplot.py \
@@ -55,4 +57,6 @@ ui/w_lvls_last_geom.ui
 
 TRANSLATIONS = \
 ./i18n/midvatten_pt_BR.ts \
-./i18n/midvatten_sv_SE.ts
+./i18n/midvatten_sv_SE.ts \
+./i18n/midvatten_en_US.ts
+

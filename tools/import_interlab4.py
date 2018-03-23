@@ -21,28 +21,20 @@
  ***************************************************************************/
 """
 import PyQt4
-import ast
 import copy
 import io
 import os
-from collections import OrderedDict
 from datetime import datetime
-from functools import partial
-from Queue import Queue
-import re
 
 import PyQt4.QtCore
 import PyQt4.QtGui
 from PyQt4.QtCore import QCoreApplication
 
-import definitions.midvatten_defs
 import import_data_to_db
 import midvatten_utils as utils
-from date_utils import datestring_to_date, dateshift
-from definitions import midvatten_defs as defs
+from date_utils import datestring_to_date
+from gui_utils import SplitterWithHandel, RowEntry, VRowEntry, ExtendedQPlainTextEdit
 from midvatten_utils import Cancel, returnunicode as ru
-from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid, VRowEntry, ExtendedQPlainTextEdit
-
 
 import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_interlab4.ui'))[0]
 
@@ -66,12 +58,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             return Cancel()
         
         self.all_lab_results = self.parse(filenames)
-        if self.all_lab_results == u'cancel':
-            self.status = False
-            return Cancel()
-        elif isinstance(self.all_lab_results, Cancel):
-            return self.all_lab_results
-        
+
         splitter = SplitterWithHandel(PyQt4.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(splitter)
 
@@ -110,6 +97,8 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         self.show()
 
+    @utils.general_exception_handler
+    @import_data_to_db.import_exception_handler
     def start_import(self, all_lab_results, lablitteras_to_import):
         all_lab_results = copy.deepcopy(all_lab_results)
         all_lab_results = dict([(lablittera, v) for lablittera, v in all_lab_results.iteritems() if lablittera in lablitteras_to_import])
@@ -140,15 +129,9 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         all_lab_results = _all_lab_results
 
         self.wquallab_data_table = self.to_table(all_lab_results)
-        if self.wquallab_data_table in [u'cancel', u'error']:
-            self.status = False
-            return Cancel()
 
         importer = import_data_to_db.midv_data_importer()
-        answer = importer.send_file_data_to_importer(self.wquallab_data_table, partial(importer.general_csv_import, goal_table=u'w_qual_lab'))
-        if isinstance(answer, Cancel):
-            self.status = True
-            return answer
+        answer = importer.general_import(goal_table=u'w_qual_lab', file_data=self.wquallab_data_table)
 
         importer.SanityCheckVacuumDB()
 
@@ -166,8 +149,6 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         for filename in filenames:
             file_settings = self.parse_filesettings(filename)
-            if isinstance(file_settings, Cancel):
-                return file_settings
             file_error, version, encoding, decimalsign, quotechar = file_settings
             if file_error:
                 utils.pop_up_info(ru(QCoreApplication.translate(u'Interlab4Import', u"Warning: The file information %s could not be read. Skipping file"))%filename)
@@ -343,7 +324,8 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         if encoding is None:
             encoding = utils.ask_for_charset(default_charset='utf-16', msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Give charset used in the file %s'))%filename)
         if encoding is None or not encoding:
-            return Cancel()
+            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Charset not given, stopping.')))
+            raise utils.UserInterruptError()
 
         #Parse the filedescriptor
         with io.open(filename, 'r', encoding=encoding) as f:

@@ -4,7 +4,7 @@ name=Midvatten
 qgisMinimumVersion=2.4
 qgisMaximumVersion=2.98
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.4.10
+version=Version 1.5.11b
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
 
@@ -19,6 +19,62 @@ experimental=False
 deprecated=False
 
 changelog=
+        Version 1.5.11b:
+        - Fixed better size for NotFoundQuestion.
+        - Custom general report: User defined decimal separator. Upper left table colspan 2 if upper right table is not existing.
+        - Fieldlogger import: Fixed a bug where import of depth didn't work. It's now added as an import method instead.
+        - Feature to write hydro explanation text for stratigraphy plots (gis.stackexchange.com #272315)
+        - Export to spatialite: Fixed bug where new database didn't get old zz-table information.
+        - Custom plot: Added function to filter list by word. Added function for dependency between the filters.
+        - Section plot: Changed bar line width to 0.5 as default for prettier plots.
+        - Section plot: Renamed "customized plots" into Templates. Also changed the user interaction with the templates.
+                        The templates them selves are still the same.
+        Version 1.5.10b:
+        - Fieldlogger import: Fixed window size. Fixed a bug with the datetime filter lineedits (added filter-button).
+        Version 1.5.8b:
+        - New utility: List of obsids from selected features.
+        - Setting db from a new unsaved project now loads the default settings for midvatten settings dialog.
+        Version 1.5.7b:
+        - Section plot: Cleaned the code and interface a lot for the customizable settings. Much easier to use now..
+        - Custom general report: Fixed better rounding. Settings are now saved in the project.
+        - Sectionplot: The hidden feature that prints lengthalong now prints to log instead of python print.
+        - Export csv fixed for postgis (github issue #257).
+        - Logger calibration: Fix to only write "uncalibrated" if level_masl is null AND head_cm is NOT NULL. (instead
+                              of only check if level_masl is null). The fix is for loggers that only have conductivity
+                              or temperature.
+        Version 1.5.6b:
+        - Support for Levelogger import.
+        - Added factor column to general csv import.
+        Version 1.5.5b:
+        - Section plot: Added some plot settings and a redraw button.
+        - PrepareForQgis2Threejs: Fixed a db closed to early bug.
+        - PrepareForQgis2Threejs: Colors are now set using zz_stratigraphy_plots.
+        - Export fieldlogger: Fixed bug.
+        - Probably fixed crash occuring when access to spatialite db isn't working.
+        - Utility to calculate statistics for chosen column in chosen table.
+        - Custom plot: Added some settings and a savebutton.
+        - Stratigraphy: If h_gs is missing, h_toc is tested, if that doesn't work, stratigraphy starts at -1.
+        - Section plot: Added "hidden" settings for setting much more options than the buttons support in the form of a
+                        long string. Saving string in project not working at the moment.
+        Version 1.5.4b:
+        - Fixed bug in custom_drillreport. Added some internal settings for the obsid-header and skipping empty values.
+        Version 1.5.3b:
+        - Section plot: "date time f w level" table is splitted using \n only (space and tab doesn't split now)
+        - Section plot Added some hidden features to "date time f w level" table:
+          * 1901-01-01;Obs1;Obs2 <- Giving obsids after date includes only those obsids for that date (; as separator)
+          * 1901-01-01[LABEL] <- Adding a label in brackets after the date uses the given LABEL as label instead of the date
+        - Drillreport2: Added a new drillreport format. All headers are set using translation files.
+        Version 1.5.2b:
+        - Fixed export to spatialite.
+        - Updated PrepareForQgis2Threejs to support db_utils.
+        Version 1.5.1b:
+        - Stratigrpahy and section plots fixed getting geocolorsymbols where zz_-tables were missing.
+		- Stratigraphy plot: Skipped obsids where h_gs is NULL.
+		- Stratigraphy plot: Added empty layers where there is gaps in stratigraphy.
+        Version 1.5.0b:
+        - Lots and lots of changes, but mostly in the background.
+        - Customplot: Buttom to select rows in filterlists from selected rows in selected layer.
+        - Customplot: Added rolling mean center parameter.
         Version 1.4.10
         - Piper: Fixed bug where list objects for piper markers were automatically translated
         Version 1.4.9:

@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>455</width>
+    <height>692</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Custom general report</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="2" colspan="2">
+       <widget class="QLineEdit" name="general_metadata_header">
+        <property name="toolTip">
+         <string>Leave bland to skip header</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="3">
+       <widget class="QLineEdit" name="geo_colwidth">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;* The width of the columns can be adjusted by writing &amp;lt;col1_width&amp;gt;;&amp;lt;col2_width&amp;gt; where width is representing the html-width tag:&lt;/p&gt;&lt;p&gt;* if width is an integer, it's treated as a pixel value.&lt;/p&gt;&lt;p&gt;* if width is followed by %-sign, it's treated as percentage of the total width.&lt;/p&gt;&lt;p&gt;* if width is followed by *-sign, it's treated as relative width. (ex, given col1;1* and col2;2*, col2 will have twice the width of col1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>2*;3*</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Stratigraphy columns</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Header</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QLineEdit" name="general_colwidth">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;* The width of the columns can be adjusted by writing &amp;lt;col1_width&amp;gt;;&amp;lt;col2_width&amp;gt; where width is representing the html-width tag:&lt;/p&gt;&lt;p&gt;* if width is an integer, it's treated as a pixel value.&lt;/p&gt;&lt;p&gt;* if width is followed by %-sign, it's treated as percentage of the total width.&lt;/p&gt;&lt;p&gt;* if width is followed by *-sign, it's treated as relative width. (ex, given col1;1* and col2;2*, col2 will have twice the width of col1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>2*;3*</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1" colspan="2">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Column widths</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" rowspan="2">
+       <widget class="QPlainTextEdit" name="geo_metadata">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a list of attributes (columns) in obs_points-table that should be included in the top right cell in the custom drill report.&lt;/p&gt;&lt;p&gt;To apply rounding of a float attribute, add ';' and the number of decimals to round. Ex: east;2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Header</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Column widths</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Header</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Top left metadata table (usually general metadata)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="2" colspan="2">
+       <widget class="QLineEdit" name="geo_metadata_header">
+        <property name="toolTip">
+         <string>Leave bland to skip header</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" rowspan="2">
+       <widget class="QPlainTextEdit" name="general_metadata">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a list of attributes (columns) in obs_points-table that should be included in the top left cell in the custom drill report.&lt;/p&gt;&lt;p&gt;To apply rounding of a float attribute, add ';' and the number of decimals to round. Ex: east;2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QPlainTextEdit" name="strat_columns">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a list of columns in stratigraphy table to include in the stratigraphy cell in custom drill report.&lt;/p&gt;&lt;p&gt;Notes:&lt;/p&gt;&lt;p&gt;* obsid can not be written as a column.&lt;/p&gt;&lt;p&gt;* If special keyword 'depth' is given then depthtop and depthbot will be combined into one column using ' - ', ex: 0 - 2 (&amp;lt;depthtop&amp;gt; - &amp;lt;depthbot&amp;gt;)&lt;/p&gt;&lt;p&gt;* The width of the columns can be adjusted by writing &amp;lt;column&amp;gt;;&amp;lt;width&amp;gt; where width is representing the html-width tag:&lt;/p&gt;&lt;p&gt;   * if width is an integer, it's treated as a pixel value.&lt;/p&gt;&lt;p&gt;   * if width is followed by %-sign, it's treated as percentage of the total width.&lt;/p&gt;&lt;p&gt;   * if width is followed by *-sign, it's treated as relative width. (ex, given col1;1* and col2;2*, col2 will have twice the width of col1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="2" colspan="2">
+       <widget class="QLineEdit" name="strat_columns_header">
+        <property name="toolTip">
+         <string>Leave bland to skip header</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Top right metadata table (usually geological metadata)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_9">
+      <item>
+       <widget class="QCheckBox" name="include_comments">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check to write obs_points 'com_onerow' and 'com_html' below the stratigraphy table.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Comments</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_8">
+        <item>
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Header</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="comment_header">
+          <property name="toolTip">
+           <string>Leave bland to skip header</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="header_in_table">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check to write the obsid in a top cell in the table&lt;/p&gt;&lt;p&gt;Uncheck to write it above the table.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>Obsid header in table (else between tables)</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="skip_empty">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check to only write the attributes in the metadata tables (top left and right cells) that have values and where the values are not string 'NULL'.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>Skip empty attributes</string>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="empty_row_between_obsids">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check to write the string empty_row_between_obsids after each table. Use search-replace in editor of choice to replace this with an empty string.&lt;/p&gt;&lt;p&gt;(this is a fix for an issue when copying the tables to libre office writer).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>Extra row between obsids</string>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QLabel" name="label_12">
+        <property name="text">
+         <string>Decimal separator</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="decimal_separator">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;* The width of the columns can be adjusted by writing &amp;lt;top left table width&amp;gt;;&amp;lt;top right table width&amp;gt; where width is representing the html-width tag:&lt;/p&gt;&lt;p&gt;* if width is an integer, it's treated as a pixel value.&lt;/p&gt;&lt;p&gt;* if width is followed by %-sign, it's treated as percentage of the total width.&lt;/p&gt;&lt;p&gt;* if width is followed by *-sign, it's treated as relative width. (ex, given col1;1* and col2;2*, col2 will have twice the width of col1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>.</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Top left;Top right colwidth</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="topleft_topright_colwidths">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;* The width of the columns can be adjusted by writing &amp;lt;top left table width&amp;gt;;&amp;lt;top right table width&amp;gt; where width is representing the html-width tag:&lt;/p&gt;&lt;p&gt;* if width is an integer, it's treated as a pixel value.&lt;/p&gt;&lt;p&gt;* if width is followed by %-sign, it's treated as percentage of the total width.&lt;/p&gt;&lt;p&gt;* if width is followed by *-sign, it's treated as relative width. (ex, given col1;1* and col2;2*, col2 will have twice the width of col1.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>60%;40%</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_update_from_string">
+      <property name="text">
+       <string>Update settings from string</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="pushButton_cancel">
+        <property name="text">
+         <string>Cancel</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_ok">
+        <property name="text">
+         <string>Ok</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>455</width>
+     <height>27</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

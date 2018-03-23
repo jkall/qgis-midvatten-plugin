@@ -21,26 +21,20 @@
  ***************************************************************************/
 """
 import PyQt4
-import copy
 import io
 import os
-from functools import partial
-from operator import itemgetter
 from collections import OrderedDict
 from datetime import datetime
 
 import PyQt4.QtCore
 import PyQt4.QtGui
-
 from PyQt4.QtCore import QCoreApplication
 
 import import_data_to_db
 import midvatten_utils as utils
-from definitions import midvatten_defs as defs
-from midvatten_utils import returnunicode as ru, Cancel
-from gui_utils import RowEntry, VRowEntry, get_line, DateTimeFilter
 from date_utils import find_date_format, datestring_to_date
-
+from gui_utils import VRowEntry, get_line, DateTimeFilter
+from midvatten_utils import returnunicode as ru
 
 import_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -57,12 +51,12 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         self.table_chooser = None
         self.file_data = None
         self.status = True
+        self.parse_func = self.parse_diveroffice_file
 
     def select_files_and_load_gui(self):
         self.files = self.select_files()
         if not self.files:
-            self.status = 'True'
-            return u'cancel'
+            raise utils.UserInterruptError()
 
         self.date_time_filter = DateTimeFilter(calendar=True)
         self.add_row(self.date_time_filter.widget)
@@ -112,13 +106,15 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
         files = utils.select_files(only_one_file=False, extension="csv (*.csv)")
         return files
 
+    @utils.general_exception_handler
+    @import_data_to_db.import_exception_handler
     def start_import(self, files, skip_rows_without_water_level, confirm_names, import_all_data, from_date=None, to_date=None):
         """
         """
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
         parsed_files = []
         for selected_file in files:
-            res = self.parse_diveroffice_file(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
+            res = self.parse_func(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
             if res == u'cancel':
                 self.status = True
                 PyQt4.QtGui.QApplication.restoreOverrideCursor()
@@ -150,15 +146,11 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
 
         existing_obsids = utils.get_all_obsids()
         filename_location_obsid = utils.filter_nonexisting_values_and_ask(file_data=filename_location_obsid, header_value=u'obsid', existing_values=existing_obsids, try_capitalize=try_capitalize, always_ask_user=confirm_names)
-        if filename_location_obsid == u'cancel':
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            self.status = 'True'
-            return Cancel()
-        elif len(filename_location_obsid) < 2:
+
+        if len(filename_location_obsid) < 2:
             utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', u'Warning. All files were skipped, nothing imported!'))
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             return False
-
 
         filenames_obsid = dict([(x[0], x[2]) for x in filename_location_obsid[1:]])
 
@@ -183,11 +175,7 @@ class DiverofficeImport(PyQt4.QtGui.QMainWindow, import_ui_dialog):
             return True
 
         importer = import_data_to_db.midv_data_importer()
-        answer = importer.send_file_data_to_importer(file_to_import_to_db, partial(importer.general_csv_import, goal_table=u'w_levels_logger'))
-        if isinstance(answer, Cancel):
-            self.status = 'True'
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
-            return answer
+        answer = importer.general_import(u'w_levels_logger', file_to_import_to_db)
 
         PyQt4.QtGui.QApplication.restoreOverrideCursor()
         importer.SanityCheckVacuumDB()

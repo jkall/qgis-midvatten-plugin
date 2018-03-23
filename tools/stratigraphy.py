@@ -39,24 +39,23 @@
  ***************************************************************************/
 """
 
+import unicodedata  # To normalize some special national characters to regular international characters
+from functools import partial  # only to get combobox signals to work
+
 import PyQt4.QtCore
 import PyQt4.QtGui
-
-from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
-import unicodedata  # To normalize some special national characters to regular international characters
-from functools import partial # only to get combobox signals to work
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from definitions import midvatten_defs as defs
-import locale
-
 from PyQt4.QtCore import QCoreApplication
+
+import db_utils
+import midvatten_utils as utils
+from definitions import midvatten_defs as defs
+from midvatten_utils import returnunicode as ru
+
 
 class Stratigraphy:
 
     def __init__(self, iface, layer=None, settingsdict={}):
         self.iface = iface
-        self.dataPath = settingsdict['database']
         self.stratitable = defs.stratigraphy_table()  #no longer an option to select other tables than 'stratigraphy'
         self.layer = layer
         self.store = None
@@ -65,7 +64,7 @@ class Stratigraphy:
 
     def initStore(self):
         try: # return from SurveyStore is stored in self.store only if no object belonging to DataError class is created
-            self.store = SurveyStore(self.dataPath, self.stratitable)  
+            self.store = SurveyStore(self.stratitable)
         except DataError, e: # if an object 'e' belonging to DataError is created, then do following
             try:
                 print "Load failed due: " + e.problem
@@ -78,18 +77,20 @@ class Stratigraphy:
         lyr = self.layer
         ids = lyr.selectedFeaturesIds()
         if len(ids) == 0:
-            utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"No selection")), ru(QCoreApplication.translate(u' Stratigraphy', u"No features are selected")))   
+            utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"No selection")), ru(QCoreApplication.translate(u' Stratigraphy', u"No features are selected")))
             return
         # initiate the datastore if not yet done   
         self.initStore()   
         PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)  # Sets the mouse cursor to wait symbol
         try:  # return from store.getData is stored in data only if no object belonging to DataSanityError class is created
-            data = self.store.getData(ids, lyr)    # added lyr as an argument!!!
+            self.data = self.store.getData(ids, lyr)    # added lyr as an argument!!!
         except DataSanityError, e: # if an object 'e' belonging to DataSanityError is created, then do following
+            print("DataSanityError %s"%str(e))
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"Data sanity problem, obsid: %s\n%s")) % (e.sond_id, e.message))
             return
-        except: # if an object 'e' belonging to DataSanityError is created, then do following
+        except Exception as e: # if an object 'e' belonging to DataSanityError is created, then do following
+            print("exception : %s"%str(e))
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u' Stratigraphy', u"The stratigraphy plot failed, check Midvatten plugin settings and your data!")))
             return
@@ -97,7 +98,7 @@ class Stratigraphy:
         # show widget
         w = SurveyDialog()
         #w.widget.setData2_nosorting(data)  #THIS IS IF DATA IS NOT TO BE SORTED!!
-        w.widget.setData(data)  #THIS IS ONLY TO SORT DATA!!
+        w.widget.setData(self.data)  #THIS IS ONLY TO SORT DATA!!
         w.show()
         self.w = w # save reference so it doesn't get deleted immediately        This has to be done both here and also in midvatten instance
 
@@ -114,7 +115,7 @@ class SurveyInfo:   # This class is to define the data structure...
         return "SURVEY('%s', %f, '%s')" % (unicode(self.obsid), self.top_lvl, self.coord) # _CHANGE_
 
 class StrataInfo:
-    def __init__(self, stratid=0, depthTop=0, depthBot=0, geology='',  geo_short='', hydro='', Comment='', development=''): 
+    def __init__(self, stratid=0, depthTop=0, depthBot=0, geology='',  geo_short='', hydro='', Comment='', development=''):
         self.stratid = stratid  # This is id no for the geological information (1 = uppermost stratigraphy layer)
         self.geology = geology # This is full text description of stratigraphy (the geologic descripition, e.g. "sandy till")
         self.depthTop = depthTop  # This is depth to top of the stratigraphy layer
@@ -127,14 +128,17 @@ class StrataInfo:
         return "strata(%d, '%s', '%s', '%s', %f-%f)" % (self.stratid, self.hydro, self.geology, self.geo_short, self.depthTop, self.depthBot)
 
 class SurveyStore:
-    def __init__(self, path, stratitable):   
-        self.path = path
-        self.stratitable = stratitable  
+    def __init__(self, stratitable):
+        self.stratitable = stratitable
+        self.warning_popup = True
 
     def getData(self, featureIds, vectorlayer):  # THIS FUNCTION IS ONLY CALLED FROM ARPATPLUGIN/SHOWSURVEY
         """ get data from databases for array of features specified by their IDs  """
         surveys = self._getDataStep1(featureIds, vectorlayer)
-        DataLoadingStatus, surveys = self._getDataStep2(surveys)
+        try:
+            DataLoadingStatus, surveys = self._getDataStep2(surveys)
+        except:
+            DataLoadingStatus = False
         if DataLoadingStatus == True:
             surveys = self.sanityCheck(surveys)
             return surveys  
@@ -161,97 +165,122 @@ class SurveyStore:
                 obsid_list=[None]*nF # List for obsid
                 toplvl_list=[None]*nF # List for top_lvl
                 coord_list=[None]*nF # List for coordinates
-                i=0
-                for k in ob:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
+                for i, k in enumerate(ob):    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
                     attributes = ob[i]
-                    obsid_list[i] = unicode(str(attributes[obsid_ColNo])) # Copy value in column obsid in the attribute list 
-                    if attributes[h_gs_ColNo] and utils.isfloat(attributes[h_gs_ColNo]) and  attributes[h_gs_ColNo]>-999:  # Only get h_gs if it exists 
-                        toplvl_list[i] = attributes[h_gs_ColNo] # Copy value in column h_gs in the attribute list
-                    elif attributes[h_toc_ColNo] and utils.isfloat(attributes[h_toc_ColNo]) and attributes[h_toc_ColNo] >-999:    # else get h_toc if that exists
-                        toplvl_list[i] = attributes[h_toc_ColNo] # Copy value in column h_gs in the attribute list
-                    else:       # otherwise, if neither h_gs nor h_toc exists - plot as if h_gs is zero
-                        toplvl_list[i] = 0
+                    obsid = ru(attributes[obsid_ColNo])
+                    obsid_list[i] = obsid # Copy value in column obsid in the attribute list
+                    h_gs = ru(attributes[h_gs_ColNo])
+
+                    level_val = None
+
+                    error_msg = False
+
+                    if h_gs:
+                        try:
+                            level_val = float(h_gs)
+                        except ValueError:
+                            error_msg = ru(QCoreApplication.translate(u'Stratigraphy', u'Converting to float failed.'))
+                        except Exception as e:
+                            error_msg = e
+
+                    if level_val is None:
+                        h_toc = ru(attributes[h_toc_ColNo])
+                        try:
+                            level_val = float(h_toc)
+                        except:
+                            using = u'-1'
+                            level_val = -1
+                        else:
+                            using = u'h_toc'
+
+                        utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'Stratigraphy', u"Obsid %s: using h_gs '%s' failed, using '%s' instead.")) % (obsid, h_gs, using),
+                                                       log_msg=ru(QCoreApplication.translate(u'Stratigraphy', u'%s'))%error_msg,
+                                                       duration=90)
+
+                        if self.warning_popup:
+                            utils.pop_up_info(ru(QCoreApplication.translate(u'Stratigraphy', u'Warning, h_gs is missing. See messagebar.')))
+                            self.warning_popup = False
+
+                    toplvl_list[i] = level_val
+
                     coord_list[i]= k.geometry().asPoint()
                     # add to array
                     surveys[obsid_list[i]] = SurveyInfo(obsid_list[i], toplvl_list[i], coord_list[i])
-                    i = i+1
         else:
-            utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"getDataStep1 failed ")))  # _CHANGE_ for debugging
+            utils.pop_up_info(ru(QCoreApplication.translate(u'Stratigraphy', u"getDataStep1 failed")))  # _CHANGE_ for debugging
+
         return surveys
 
-    def _getDataStep2(self, surveys):    
+    def _getDataStep2(self, surveys):
         """ STEP 2: get strata information for every point """
-        myconnection = utils.dbconnection()
-        if myconnection.connect2db() == True:
-            # create a cursor
-            curs = myconnection.conn.cursor()
-            for (obsid, survey) in surveys.iteritems(): 
-                sql =r"""SELECT stratid, depthtop, depthbot, geology, lower(geoshort), capacity, comment, development FROM """
-                sql += self.stratitable #MacOSX fix1
-                sql += r""" WHERE obsid = '"""    
-                sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRATIGRAPHY FOR CHOOSEN obsid
-                sql += """' ORDER BY stratid"""
-                rs = curs.execute(sql) #Send SQL-syntax to cursor
-                recs = rs.fetchall()  # All data are stored in recs            
-                # parse attributes
-                for record in recs:
-                    if utils.isinteger(record[0]) and utils.isfloat(record[1]) and utils.isfloat(record[2]):
-                        stratigaphy_id = record[0]  # Stratigraphy layer no
-                        depthtotop = record[1]  # depth to top of stratrigraphy layer
-                        depthtobot = record[2]  # depth to bottom of stratrigraphy layer
-                    else:
-                        raise DataSanityError(str(obsid), ru(QCoreApplication.translate(u'SurveyStore', u"Something bad with stratid, depthtop or depthbot!")))
-                        stratigaphy_id = 1  # when something went wrong, put it into first layer
-                        depthtotop = 0
-                        depthtobot = 999#default value when something went wrong
-                    if record[3]: # Must check since it is not possible to print null values as text in qt widget
-                        geology = record[3]  # Geology full text 
-                    else:
-                        geology = " " 
-                    geo_short_txt = record[4]  # geo_short might contain national special characters
-                    if geo_short_txt:   # Must not try to encode an empty field
-                        geo_short = unicodedata.normalize('NFKD', geo_short_txt).encode('ascii','ignore')  # geo_short normalized for symbols and color
-                    else:  # If the field is empty, then store an empty string
-                        geo_short = ''
-                    hydro = record[5] # waterloss (hydrogeo parameter) for color
-                    if record[6]:  # Must check since it is not possible to print null values as text in qt widget
-                        comment = record[6] # 
-                    else: 
-                        comment = " " 
-                    if record[7]:  # Must check since it is not possible to print null values as text in qt widget
-                        development = record[7] # 
-                    else: 
-                        development = " " 
-                    st = StrataInfo(stratigaphy_id, depthtotop, depthtobot, geology, geo_short, hydro, comment, development)
-                    # add strata information (in right order) 
-                    insertAt = 0
-                    for a in survey.strata:
-                        if a.stratid > stratigaphy_id:
-                            break
-                        insertAt += 1
-                    survey.strata.insert(insertAt, st)
-            """ Close SQLite-connections """
-            rs.close() # First close the table 
-            myconnection.closedb()# then close the database
+        dbconnection = db_utils.DbConnectionManager()
+        for (obsid, survey) in surveys.iteritems():
+            sql =r"""SELECT stratid, depthtop, depthbot, geology, lower(geoshort), capacity, comment, development FROM """
+            sql += self.stratitable #MacOSX fix1
+            sql += r""" WHERE obsid = '"""
+            sql += str(obsid)   # THIS IS WHERE THE KEY IS GIVEN TO LOAD STRATIGRAPHY FOR CHOOSEN obsid
+            sql += """' ORDER BY stratid"""
+            recs = dbconnection.execute_and_fetchall(sql)
+            # parse attributes
+            prev_depthbot = 0
+            for record in recs:
+                if utils.isinteger(record[0]) and utils.isfloat(record[1]) and utils.isfloat(record[2]):
+                    stratigaphy_id = record[0]  # Stratigraphy layer no
+                    depthtotop = record[1]  # depth to top of stratrigraphy layer
+                    depthtobot = record[2]  # depth to bottom of stratrigraphy layer
+                else:
+                    raise DataSanityError(str(obsid), ru(QCoreApplication.translate(u'SurveyStore', u"Something bad with stratid, depthtop or depthbot!")))
+                    stratigaphy_id = 1  # when something went wrong, put it into first layer
+                    depthtotop = 0
+                    depthtobot = 999#default value when something went wrong
+                if record[3]: # Must check since it is not possible to print null values as text in qt widget
+                    geology = record[3]  # Geology full text
+                else:
+                    geology = " "
+                geo_short_txt = record[4]  # geo_short might contain national special characters
+                if geo_short_txt:   # Must not try to encode an empty field
+                    geo_short = unicodedata.normalize('NFKD', geo_short_txt).encode('ascii','ignore')  # geo_short normalized for symbols and color
+                else:  # If the field is empty, then store an empty string
+                    geo_short = ''
+                hydro = record[5] # waterloss (hydrogeo parameter) for color
+                if record[6]:  # Must check since it is not possible to print null values as text in qt widget
+                    comment = record[6] #
+                else:
+                    comment = " "
+                if record[7]:  # Must check since it is not possible to print null values as text in qt widget
+                    development = record[7] #
+                else:
+                    development = " "
+
+                #Add layer if there is a gap
+                if depthtotop != prev_depthbot:
+                    stratid = len(survey.strata) + 1
+                    st = StrataInfo(stratid, prev_depthbot, depthtotop)
+                    survey.strata.append(st)
+
+                stratid = len(survey.strata) + 1
+                st = StrataInfo(stratid, depthtotop, depthtobot, geology, geo_short, hydro, comment, development)
+                survey.strata.append(st)
+                prev_depthbot = depthtobot
+
             DataLoadingStatus = True
-            return DataLoadingStatus, surveys
-        else:
-            return False, surveys
+        dbconnection.closedb()
+        return DataLoadingStatus, surveys
+
         
-    def sanityCheck(self, surveys):
+    def sanityCheck(self, _surveys):
         """ does a sanity check on retreived data """
-        
-        for (obsid, survey) in surveys.iteritems():  
-            
+        surveys = {}
+        for (obsid, survey) in _surveys.iteritems():
             # check whether there's at least one strata information
             if len(survey.strata) == 0:
                 #raise DataSanityError(str(obsid), "No strata information")
                 try:
                     print(str(obsid) + " has no strata information")
-                    print surveys
                 except:
                     pass
-                del surveys[obsid]#simply remove the item without strata info
+                continue
+                #del surveys[obsid]#simply remove the item without strata info
             else:
                 # check whether the depths are valid
                 top1 = survey.strata[0].depthTop
@@ -269,7 +298,8 @@ class SurveyStore:
                     
                     top1 = strato.depthTop
                     bed1 = strato.depthBot
-            return surveys
+            surveys[obsid] = survey
+        return surveys
 
 class SurveyWidget(PyQt4.QtGui.QFrame):
 
@@ -474,6 +504,13 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
                     p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, '' if layer.geo_short=='NULL' else layer.geo_short)
                 elif self.GeoOrComment == "hydro":
                     p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, '' if layer.hydro=='NULL' else layer.hydro)
+                elif self.GeoOrComment == "hydro_expl":
+                    if layer.hydro is None or layer.hydro=='NULL':
+                        hydr = ''
+                    else:
+                        hydr = self.hydroColors.get(layer.hydro, '')[0]
+                    p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, hydr)
+
                 else:
                     p.drawText(tRect, PyQt4.QtCore.Qt.AlignVCenter, '' if layer.development=='NULL' else layer.development)
 
@@ -502,6 +539,7 @@ class SurveyWidget(PyQt4.QtGui.QFrame):
     def geoToSymbol(self, id=''):    # A function to return fill type for the box representing the stratigraphy layer
         """ returns Symbol from the specified text """
         #if id.lower() in self.geoColorSymbols:
+
         if id in self.geoColorSymbols:
             #return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id.lower()][0])   # Or possibly [0]?
             return getattr(PyQt4.QtCore.Qt, self.geoColorSymbols[id][0])   # Or possibly [0]?
@@ -569,6 +607,7 @@ class SurveyDialog(PyQt4.QtGui.QDialog):
         self.GeologyOrCommentCBox.addItem('comment')
         self.GeologyOrCommentCBox.addItem('geoshort')
         self.GeologyOrCommentCBox.addItem('hydro')
+        self.GeologyOrCommentCBox.addItem('hydro_expl')
         self.GeologyOrCommentCBox.addItem('development')
         self.layout2.addWidget(self.GeologyOrCommentCBox)
         
@@ -581,7 +620,7 @@ class SurveyDialog(PyQt4.QtGui.QDialog):
         self.layout2.addWidget(self.btnClose)
         
         self.layout.addLayout(self.layout2)
-        
+
         self.connect(self.btnClose, PyQt4.QtCore.SIGNAL("clicked()"), self.close)
         self.connect(self.btnPrint, PyQt4.QtCore.SIGNAL("clicked()"), self.widget.printDiagram)
         self.connect(self.radGeo, PyQt4.QtCore.SIGNAL("toggled(bool)"), self.typeToggled)

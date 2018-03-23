@@ -10,16 +10,16 @@
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/"""
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 from qgis.core import *
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from definitions import midvatten_defs
 
 from PyQt4.QtCore import QCoreApplication
 
-class midvsettings(): 
+import midvatten_utils as utils
+from definitions import midvatten_defs
+from midvatten_utils import returnunicode as ru
+
+
+class midvsettings():
     def __init__(self):
         # settings...
         self.settingsareloaded = False
@@ -68,7 +68,7 @@ class midvsettings():
     def save_settings(self,key = ''):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
         if not self.readingSettings:
             if key =='': #if no argument, then save all settings according to dictionary
-                for (key, value) in self.settingsdict.items():        
+                for (key, value) in self.settingsdict.items():
                     try: # write plugin settings to QgsProject
                         QgsProject.instance().writeEntry("Midvatten",key, value )
                     except TypeError:

@@ -46,9 +46,7 @@ def getTranslate(namePlugin, nameDir=None):
 
     qmPathFile = "/i18n/{0}_{1}.qm".format( namePlugin, localeFullName )
     pp = userPluginPath if QFileInfo(userPluginPath).exists() else systemPluginPath
-    print(pp)
     translationFile = "{0}{1}".format( pp, qmPathFile )
-    print(translationFile)
 
     if QFileInfo( translationFile ).exists():
         translator = QTranslator()

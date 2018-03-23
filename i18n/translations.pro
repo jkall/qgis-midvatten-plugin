@@ -1,0 +1,3 @@
+FORMS = ../ui/w_flow_en.ui ../ui/midvsettingsdock.ui ../ui/obs_points_en.ui ../ui/customplotdialog.ui ../ui/w_lvls_last_geom.ui ../ui/w_flow.ui ../ui/export_fieldlogger_ui_dialog.ui ../ui/obs_points.ui ../ui/import_fieldlogger.ui ../ui/w_levels.ui ../ui/calibr_logger_dialog_integrated.ui ../ui/stratigraphy.ui ../ui/calc_lvl_dialog.ui ../ui/w_levels_en.ui ../ui/obs_lines_en.ui ../ui/not_found_gui.ui ../ui/w_lvls_last_geom_en.ui ../ui/simpleplotdialog.ui ../ui/secplotdockwidget_ui.ui ../ui/calc_aveflow_dialog.ui ../ui/stratigraphy_en.ui ../ui/fieldlogger_parameter_browser.ui ../ui/obs_lines.ui 
+SOURCES = ../tools/import_data_to_db.py ../tools/create_db.py
+TRANSLATIONS = default_eng.ts

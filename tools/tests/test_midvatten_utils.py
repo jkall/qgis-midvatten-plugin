@@ -19,23 +19,20 @@
  *                                                                         *
  ***************************************************************************/
 """
+import io
+
+import db_utils
 import midvatten_utils as utils
 import mock
-from mock import call
-from midvatten.midvatten import midvatten
-from import_data_to_db import midv_data_importer
+import nose
+from nose.plugins.attrib import attr
+
 import utils_for_tests
+from mocks_for_tests import MockUsingReturnValue
 from utils_for_tests import create_test_string
-from mocks_for_tests import MockNotFoundQuestion, MockUsingReturnValue, MockQgsProjectInstance, MockQgisUtilsIface, MockReturnUsingDictIn, DummyInterface2, mock_answer
-import io
-import os
-
-TEMP_DB_PATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
-MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH]}[(x, y)]
-MOCK_DBPATH = MockUsingReturnValue(MockQgsProjectInstance([TEMP_DB_PATH]))
-DBPATH_QUESTION = MockUsingReturnValue(TEMP_DB_PATH)
 
 
+@attr(status='on')
 class TestFilterNonexistingObsidsAndAsk(object):
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
@@ -57,9 +54,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             mock_notfound.return_value.reuse_column = u'obsid'
             file_data = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
             existing_obsids = [u'2', u'3', u'10', u'1_g', u'1 a']
-            filtered_file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', existing_obsids)
-            reference_list = [[u'obsid', u'ae'], [u'1', u'b'], [u'2', u'c'], [u'3', u'd'], [u'10', u'e'], [u'1_g', u'f'], [u'1 a', u'g'], [u'21', u'h']]
-            assert filtered_file_data == u'cancel'
+            nose.tools.assert_raises(utils.UserInterruptError, utils.filter_nonexisting_values_and_ask, file_data, u'obsid', existing_obsids)
 
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
@@ -134,7 +129,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             #The mock should only be called twice. First for 1, then for 21, and then 1 again should use the already given answer.
             assert len(mock_notfound.mock_calls) == 2
 
-
+@attr(status='on')
 class TestTempinput(object):
     def test_tempinput(self):
         rows = u'543\n21'
@@ -144,78 +139,40 @@ class TestTempinput(object):
         reference_list = [u'543\n', u'21']
         assert res == reference_list
 
-
+@attr(status='on')
 class TestAskUser(object):
     PyQt4_QtGui_QInputDialog_getText = MockUsingReturnValue([u'-1 hours'])
     cancel = MockUsingReturnValue([u''])
 
     @mock.patch('PyQt4.QtGui.QInputDialog.getText', PyQt4_QtGui_QInputDialog_getText.get_v)
     def test_askuser_dateshift(self):
-        question = utils.askuser('DateShift')
+        question = utils.Askuser('DateShift')
         assert question.result == ['-1', 'hours']
 
     @mock.patch('PyQt4.QtGui.QInputDialog.getText', cancel.get_v)
     def test_askuser_dateshift_cancel(self):
-        question = utils.askuser('DateShift')
+        question = utils.Askuser('DateShift')
         assert question.result == u'cancel'
 
-
-class TestGetFunctions(object):
-    answer_yes_obj = MockUsingReturnValue()
-    answer_yes_obj.result = 1
-    answer_no_obj = MockUsingReturnValue()
-    answer_no_obj.result = 0
-    answer_yes = MockUsingReturnValue(answer_yes_obj)
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
-    skip_popup = MockUsingReturnValue('')
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance')
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
-    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
-        mock_crsquestion.return_value = [3006]
-        mock_savefilename.return_value = TEMP_DB_PATH
-        mock_qgsproject_instance.return_value.instance.readEntry.return_value = [u'en_US']
-
-        self.dummy_iface = DummyInterface2()
-        self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten(self.iface)
-
-        try:
-            os.remove(TEMP_DB_PATH)
-        except OSError:
-            pass
-        mock_locale.return_value.answer = u'ok'
-        mock_locale.return_value.value = u'sv_SE'
-        self.midvatten.new_db()
-        self.importinstance = midv_data_importer()
-
-    def tearDown(self):
-        #Delete database
-        os.remove(TEMP_DB_PATH)
-
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
+@attr(status='on')
+class TestGetFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_get_last_logger_dates(self):
-        utils.sql_alter_db('''insert into obs_points (obsid) values ('rb1')''')
-        utils.sql_alter_db('''insert into obs_points (obsid) values ('rb2')''')
-        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2015-01-01 00:00')''')
-        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2015-01-01 00:00:00')''')
-        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb1', '2014-01-01 00:00:00')''')
-        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2013-01-01 00:00:00')''')
-        utils.sql_alter_db('''insert into w_levels_logger (obsid, date_time) values ('rb2', '2016-01-01 00:00')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb1', '2015-01-01 00:00')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb1', '2015-01-01 00:00:00')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb1', '2014-01-01 00:00:00')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb2', '2013-01-01 00:00:00')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time) VALUES ('rb2', '2016-01-01 00:00')''')
 
         test_string = create_test_string(utils.get_last_logger_dates())
         reference_string = u'''{rb1: [(2015-01-01 00:00:00)], rb2: [(2016-01-01 00:00)]}'''
         assert test_string == reference_string
 
-
+@attr(status='on')
 class TestSqlToParametersUnitsTuple(object):
-    @mock.patch('midvatten_utils.sql_load_fr_db', autospec=True)
+    @mock.patch('db_utils.sql_load_fr_db', autospec=True)
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
         mock_sqlload.return_value = (True, [(u'par1', u'un1'), (u'par2', u'un2')])
 
@@ -223,45 +180,11 @@ class TestSqlToParametersUnitsTuple(object):
         reference_string = u'''((par1, (un1)), (par2, (un2)))'''
         assert test_string == reference_string
 
-
-class TestCalculateDbTableRows(object):
-    answer_yes = mock_answer('yes')
-    answer_no = mock_answer('no')
-    CRS_question = MockUsingReturnValue([3006])
-    mocked_iface = MockQgisUtilsIface()  #Used for not getting messageBar errors
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v()}, 1)
-    mock_encoding = MockUsingReturnValue([True, u'utf-8'])
-
-    @mock.patch('create_db.utils.NotFoundQuestion')
-    @mock.patch('midvatten_utils.askuser', answer_yes.get_v)
-    @mock.patch('midvatten_utils.QgsProject.instance')
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
-    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
-    def setUp(self, mock_savefilename, mock_crsquestion, mock_qgsproject_instance, mock_locale):
-        mock_crsquestion.return_value = [3006]
-        mock_savefilename.return_value = TEMP_DB_PATH
-        mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
-
-        self.dummy_iface = DummyInterface2()
-        self.iface = self.dummy_iface.mock
-        self.midvatten = midvatten(self.iface)
-
-        try:
-            os.remove(TEMP_DB_PATH)
-        except OSError:
-            pass
-        mock_locale.return_value.answer = u'ok'
-        mock_locale.return_value.value = u'sv_SE'
-        self.midvatten.new_db()
-        self.importinstance = midv_data_importer()
-
-    def tearDown(self):
-        #Delete database
-        os.remove(TEMP_DB_PATH)
-
-    @mock.patch('midvatten_utils.QgsProject.instance', MOCK_DBPATH.get_v)
-    @mock.patch('qgis.utils.iface', autospec=True)
-    def test_get_db_statistics(self, mock_iface):
+@attr(status='on')
+class TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_get_db_statistics(self, mock_messagebar):
         """
         Test that calculate_db_table_rows can be run without major error
         :param mock_iface:
@@ -269,12 +192,9 @@ class TestCalculateDbTableRows(object):
         """
         utils.calculate_db_table_rows()
 
-        calls = [str(call) for call in mock_iface.mock_calls]
+        assert len(str(mock_messagebar.mock_calls[0])) > 1500 and u'about_db' in str(mock_messagebar.mock_calls[0])
 
-        assert """call.messageBar().createMessage(u'Some sql failure, see log for additional info.')""" not in calls
-        assert """call.messageBar().createMessage(u'Calculation done, see log for results.')""" in calls
-
-
+@attr(status='on')
 class TestGetCurrentLocale(object):
     @mock.patch('locale.getdefaultlocale')
     @mock.patch('midvatten_utils.get_locale_from_db')
@@ -286,7 +206,7 @@ class TestGetCurrentLocale(object):
         reference_string = u'[a_lang, an_enc]'
         assert test_string == reference_string
         
-
+@attr(status='on')
 class TestGetDelimiter(object):
     def test_get_delimiter_only_one_column(self):
         file = [u'obsid',

@@ -19,6 +19,7 @@
 """
 from pyspatialite import dbapi2 as sqlite
 import csv, codecs, cStringIO, os, os.path
+import db_utils
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
@@ -33,26 +34,32 @@ class ExportData():
         self.ID_obs_lines = OBSID_L
 
     def export_2_csv(self,exportfolder):
-        database = utils.dbconnection()
-        database.connect2db() #establish connection to the current midv db
-        self.curs = database.conn.cursor()#get a cursor
-
+        dbconnection = db_utils.DbConnectionManager()
+        dbconnection.connect2db() #establish connection to the current midv db
+        self.curs = dbconnection.cursor#get a cursor
         self.exportfolder = exportfolder
-        self.write_data(self.to_csv, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='obs_points'), utils.verify_table_exists)
-        self.write_data(self.to_csv, self.ID_obs_lines, defs.get_subset_of_tables_fr_db(category='obs_lines'), utils.verify_table_exists)
-        self.write_data(self.zz_to_csv, u'no_obsids', defs.get_subset_of_tables_fr_db(category='data_domains'), utils.verify_table_exists)
-        database.closedb()
+        self.write_data(self.to_csv, self.ID_obs_points, defs.get_subset_of_tables_fr_db(category='obs_points'),
+                        lambda x: db_utils.verify_table_exists(x, dbconnection=dbconnection))
+        self.write_data(self.to_csv, self.ID_obs_lines, defs.get_subset_of_tables_fr_db(category='obs_lines'),
+                        lambda x: db_utils.verify_table_exists(x, dbconnection=dbconnection))
+        self.write_data(self.zz_to_csv, u'no_obsids', defs.get_subset_of_tables_fr_db(category='data_domains'),
+                        lambda x: db_utils.verify_table_exists(x, dbconnection=dbconnection))
+        dbconnection.closedb()
 
-    def export_2_splite(self,target_db,source_db, EPSG_code):
+    def export_2_splite(self,target_db, EPSG_code):
         """
         Exports a datagbase to a new spatialite database file
         :param target_db: The name of the new database file
-        :param source_db: The name of the source database file
         :param EPSG_code:
         :return:
 
         """
+        dbconnection = db_utils.DbConnectionManager()
+        source_db = dbconnection.dbpath
+        dbconnection.closedb()
+
         conn = sqlite.connect(target_db,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+
         self.curs = conn.cursor()
         self.curs.execute("PRAGMA foreign_keys = ON")
         self.curs.execute(r"""ATTACH DATABASE '%s' AS a"""%source_db)
@@ -66,12 +73,7 @@ class ExportData():
         self.write_data(self.zz_to_sql, u'no_obsids', defs.get_subset_of_tables_fr_db(category='data_domains'), self.verify_table_in_attached_db, 'a.')
         conn.commit()
 
-        delete_srid_sql = r"""delete from spatial_ref_sys where srid NOT IN ('%s', '4326')""" % EPSG_code
-        try:
-            self.curs.execute(delete_srid_sql)
-        except:
-            utils.MessagebarAndLog.info(
-                log_msg=ru(QCoreApplication.translate(u'ExportData', u'Removing srids failed using: %s'))%str(delete_srid_sql))
+        db_utils.delete_srids(self.curs, EPSG_code)
 
         conn.commit()
 
@@ -89,7 +91,7 @@ class ExportData():
     def get_table_column_srid(self, prefix=None):
         """
 
-        :return: A tuple of tuples like ((tablename, columnname, srid), ...)
+        :return: A dict of tuples like {tablename: (columnname, srid), ...)
         """
 
         if prefix is None:
@@ -134,8 +136,8 @@ class ExportData():
         return formatted_obsids
 
     def get_number_of_obsids(self, obsids, tname):
-        no_of_obs_cursor = self.curs.execute(u"select count(obsid) from %s where obsid in %s" %(tname, self.format_obsids(obsids)))
-        no_of_obs = no_of_obs_cursor.fetchall()
+        self.curs.execute(u"select count(obsid) from %s where obsid in %s" %(tname, self.format_obsids(obsids)))
+        no_of_obs = self.curs.fetchall()
         return no_of_obs
 
     def write_data(self, to_writer, obsids, ptabs, verify_table_exists, tname_prefix=''):
@@ -144,7 +146,6 @@ class ExportData():
                 tname_with_prefix = tname_prefix + tname
                 if not verify_table_exists(tname):
                     continue
-
                 if obsids != u'no_obsids':
                     no_of_obs = self.get_number_of_obsids(obsids, tname_with_prefix)
 
@@ -210,7 +211,7 @@ class ExportData():
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u"Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate(u'ExportData', u'%s\nmsg:\n%s'))%(sql, str(e)))
 
     @staticmethod
-    def transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict):
+    def transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict, geom_as_text=False):
         ur"""
         Transform geometry columns to new chosen SRID
 
@@ -232,13 +233,23 @@ class ExportData():
         """
         transformed = False
         #Make a transformation for column names that are geometries
+
         if tname in new_table_column_srid_dict and tname in old_table_column_srid_dict:
             transformed_column_names = []
             for column in column_names:
                 new_srid = new_table_column_srid_dict.get(tname, {}).get(column, None)
                 old_srid = old_table_column_srid_dict.get(tname, {}).get(column, None)
+                # Fix for old databases where geometry sometimes was spelled Geometry
+                if old_srid is None:
+                    old_srid = old_table_column_srid_dict.get(tname, {}).get(column.capitalize(), None)
+                    if old_srid is not None:
+                        column = column.capitalize()
                 if old_srid is not None and new_srid is not None and old_srid != new_srid:
-                    transformed_column_names.append(u'ST_Transform({}, {})'.format(column, ru(new_srid)))
+                    if geom_as_text:
+                        transformed_column_names.append(u'ST_AsText(ST_Transform({}, {}))'.format(column, ru(new_srid)))
+                    else:
+                        transformed_column_names.append(u'ST_Transform({}, {})'.format(column, ru(new_srid)))
+
                     utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'Transformation for table %s column %s from %s to %s"'))%(tname, column, str(old_srid), str(new_srid)))
                     transformed = True
                 else:
@@ -285,12 +296,12 @@ class ExportData():
         ifnull_primary_keys = [''.join(["ifnull(", pk, ",'')"]) for pk in primary_keys]
         concatenated_primary_keys = ' || '.join(ifnull_primary_keys)
 
-        sql = u"""INSERT INTO %s (%s) select %s from %s where %s not in (select %s from %s)"""%(tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
+        sql = u"""INSERT INTO %s (%s) select %s from %s """ % (tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix) #where %s not in (select %s from %s)"""%(tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
         try:
             self.curs.execute(sql)
         except Exception, e:
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead.\nMsg:%s'))%(tname, str(e)))
-            sql = sql.replace(u'INSERT', u'INSERT OR IGNORE')
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'INSERT failed while importing to %s. Using INSERT OR REPLACE instead.\nMsg:%s'))%(tname, str(e)))
+            sql = sql.replace(u'INSERT', u'INSERT OR REPLACE')
             try:
                 self.curs.execute(sql)
             except Exception, e:
@@ -354,7 +365,7 @@ class ExportData():
         primary_keys = self.get_primary_keys(tname)
         missing_primary_keys = [col for col in primary_keys if col in new_columns_missing_in_old]
         if missing_primary_keys:
-            missing_pk_msg = ru(QCoreApplication.translate(u'ExportData', u'Table %s:\nPrimary keys are missing in old database. The table will not be exported!!!'))%(tname, u'", "'.join(missing_primary_keys))
+            missing_pk_msg = ru(QCoreApplication.translate(u'ExportData', u'Table %s:\nPrimary keys %s are missing in old database. The table will not be exported!!!'))%(tname, u'", "'.join(missing_primary_keys))
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u'Export warning!, see Log Message Panel')), log_msg=missing_pk_msg)
             return None
 

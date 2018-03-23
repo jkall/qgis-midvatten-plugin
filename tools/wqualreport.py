@@ -17,19 +17,19 @@
  *                                                                         *
  ***************************************************************************/
 """
+import codecs
+import os
+import time  # for debugging
+
+from PyQt4.QtCore import QCoreApplication
 from PyQt4.QtCore import QUrl, Qt, QDir
 from PyQt4.QtGui import QDesktopServices, QApplication, QCursor
 
-from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
-import os
-import locale
-import codecs
-import time #for debugging
-#midvatten modules
+import db_utils
+# midvatten modules
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 
-from PyQt4.QtCore import QCoreApplication
 
 class Wqualreport():        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     def __init__(self,layer, settingsdict = {}):
@@ -56,6 +56,8 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         #rpt2 = rpt.encode("utf-8")
         f.write(rpt)
 
+        dbconnection = db_utils.DbConnectionManager()
+
         for i, object in enumerate(observations):
             attributes = observations[i]
             obsid = attributes[kolumnindex]
@@ -63,7 +65,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
                 print('about to get data for ' + obsid + ', at time: ' + str(time.time()))#debug
             except:
                 pass
-            ReportData = self.GetData(self.settingsdict['database'], obsid)   # one observation at a time
+            ReportData = self.GetData(self.settingsdict['database'], obsid, dbconnection)   # one observation at a time
             try:
                 print('done with getting data for ' + obsid + ', at time: ' + str(time.time()))#debug
             except:
@@ -75,6 +77,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
             except:
                 pass
 
+        dbconnection.closedb()
         #write some finishing html and close the file
         f.write("\n</body></html>")        
         f.close()
@@ -84,13 +87,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         if ReportData:
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
         
-    def GetData(self, dbPath='', obsid = ''):            # GetData method that returns a table with water quality data
-        #conn = sqlite.connect(dbPath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-        myconnection = utils.dbconnection()
-        myconnection.connect2db()
-        # skapa en cursor
-        curs = myconnection.conn.cursor()
-
+    def GetData(self, dbPath='', obsid = '', dbconnection=None):            # GetData method that returns a table with water quality data
         # Load all water quality parameters stored in two result columns: parameter, unit
         if not(unicode(self.settingsdict['wqual_unitcolumn']) ==''):          #If there is a a given column for unit 
             sql =r"""select distinct """ + self.settingsdict['wqual_paramcolumn'] + """, """
@@ -102,12 +99,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         sql += r""" where obsid = '"""
         sql += obsid  
         sql += r"""' ORDER BY """ + self.settingsdict['wqual_paramcolumn']
-        parameters_cursor = curs.execute(sql) #Send SQL-syntax to cursor
-        try:
-            print(sql)#debug
-        except:
-            pass
-        parameters = parameters_cursor.fetchall()
+        connection_ok, parameters = db_utils.sql_load_fr_db(sql, dbconnection)
         if not parameters:
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'Wqualreport', u'Debug, something is wrong, no parameters are found in table w_qual_lab for %s'))%obsid)
             return False
@@ -122,32 +114,26 @@ class Wqualreport():        # extracts water quality data for selected objects, 
                 sql += self.settingsdict['wqual_sortingcolumn']
                 sql += r""", date_time from """      #including parameters
             else:
-                sql = r"""select distinct %s, date_time from (select %s, substr(date_time,1,%s) as date_time from """%(self.settingsdict['wqual_sortingcolumn'], self.settingsdict['wqual_sortingcolumn'], len(self.settingsdict['wqual_date_time_format']))
+                sql = r"""select distinct under16.%s, under16.date_time from (select %s, substr(date_time,1,%s) as date_time from """%(self.settingsdict['wqual_sortingcolumn'], self.settingsdict['wqual_sortingcolumn'], len(self.settingsdict['wqual_date_time_format']))
         else:                     # IF no specific column exist for sorting
             if len(self.settingsdict['wqual_date_time_format'])>16:
                 sql =r"""select distinct date_time, date_time from """ # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
             else:
-                sql =r"""select distinct dummy, date_time from (select substr(date_time,1,%s) as dummy, substr(date_time,1,%s) as date_time from """%(len(self.settingsdict['wqual_date_time_format']),len(self.settingsdict['wqual_date_time_format']))      # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
+                sql =r"""select distinct under16.dummy, under16.date_time from (select substr(date_time,1,%s) as dummy, substr(date_time,1,%s) as date_time from """%(len(self.settingsdict['wqual_date_time_format']),len(self.settingsdict['wqual_date_time_format']))      # The twice selection of date_time is a dummy to keep same structure (2 cols) of sql-answer as if reportnr exists
         sql += self.settingsdict['wqualtable']
         sql += """ where obsid = '"""
         sql += obsid
         if len(self.settingsdict['wqual_date_time_format'])>16:
             sql += """' ORDER BY date_time"""
         else:
-            sql += """') ORDER BY date_time"""
+            sql += """') AS under16 ORDER BY date_time"""
         #sql2 = unicode(sql) #To get back to unicode-string
+        connection_ok, date_times = db_utils.sql_load_fr_db(sql, dbconnection) #Send SQL-syntax to cursor,
+
         try:
-            date_times_cursor = curs.execute(sql) #Send SQL-syntax to cursor,
-        except Exception, e:
-            raise Exception("Error. SQL :" + sql + "\ne:\n" + str(e))
-        date_times = date_times_cursor.fetchall()
-        try:
-            print(date_times)
-            print (sql)#debug
             print('loaded distinct date_time for the parameters for ' + obsid + ' at time: ' + str(time.time()))#debug
         except:
             pass
-
         if not date_times:
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'Wqualreport', u"Debug, Something is wrong, no parameters are found in table w_qual_lab for %s"))%obsid)
             return
@@ -224,10 +210,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
                 if self.settingsdict['wqual_sortingcolumn']:
                     sql += """ and "%s" = '%s'"""%(self.settingsdict['wqual_sortingcolumn'], sorting)
 
-                rs = curs.execute(sql) #Send SQL-syntax to cursor, NOTE: here we send sql which was utf-8 already from interpreting it
-                #print (sql)#debug
-                #print('time: ' + str(time.time()))#debug
-                recs = rs.fetchall()  # All data are stored in recs
+                connection_ok, recs = db_utils.sql_load_fr_db(sql, dbconnection)
                 #each value must be in unicode or string to be written as html report
                 if recs:
                     try:
@@ -239,11 +222,6 @@ class Wqualreport():        # extracts water quality data for selected objects, 
                     ReportTable[parametercounter][datecounter] =' '
 
         self.htmlcols = datecounter + 1    # to be able to set a relevant width to the table
-        parameters_cursor.close()
-        date_times_cursor.close()
-        rs.close()
-        #conn.close()
-        myconnection.closedb()
         return ReportTable
         
     def WriteHTMLReport(self, ReportData, f):

@@ -25,25 +25,24 @@ import copy
 import csv
 import datetime
 import difflib
-from operator import itemgetter
-import locale
 import io
+import locale
 import math
 import numpy as np
 import os
 import qgis.utils
 import tempfile
 import time
-import matplotlib.pyplot as plt
+import ast
 from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
 from contextlib import contextmanager
-from pyspatialite import dbapi2 as sqlite #must use pyspatialite since spatialite-specific sql clauses may be sent by sql_alter_db and sql_load_fr_db
-from pyspatialite.dbapi2 import IntegrityError, OperationalError
+from functools import wraps
+from operator import itemgetter
 from qgis.core import *
 from qgis.gui import *
+
 from PyQt4.QtCore import QCoreApplication
-from functools import wraps
 
 try:
     import pandas as pd
@@ -54,51 +53,9 @@ else:
 
 from matplotlib.dates import num2date
 
-not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'not_found_gui.ui'))[0]
+import db_utils
 
-class dbconnection():
-    def __init__(self, db=''):
-        if db == '':
-            self.dbpath = QgsProject.instance().readEntry("Midvatten","database")[0]
-        else:
-            self.dbpath = db
-    
-    def connect2db(self):
-        if os.path.exists(self.dbpath):
-            if check_db_is_locked(self.dbpath):
-                ConnectionOK = False
-            else:
-                try:#verify this is an existing sqlite database
-                    self.conn = sqlite.connect(self.dbpath,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-                    self.conn.cursor().execute("select count(*) from sqlite_master")
-                    ConnectionOK = True
-                except:
-                    pop_up_info(returnunicode(QCoreApplication.translate(u'dbconnection', "Could not connect to %s\nYou will have to reset Midvatten settings for this project!"))%(self.dbpath))
-                    ConnectionOK = False
-        else:
-            pop_up_info(returnunicode(QCoreApplication.translate(u'dbconnection', "The file %s does not exist.\nYou will have to reset Midvatten settings for this project!"))%self.dbpath)
-            ConnectionOK = False
-        return ConnectionOK
-        
-    def closedb(self):
-            self.conn.close()
-
-
-def check_db_is_locked(dbpath):
-    if os.path.exists(dbpath + u'-journal'):
-        MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'check_db_is_locked', u"Error, The database is already in use (a journal-file was found)"))
-        return True
-    else:
-        return False
-
-def show_message_log(pop_error=False):
-    """
-    Source: qgis code
-     """
-    if pop_error:
-        qgis.utils.iface.messageBar().popWidget()
-
-    qgis.utils.iface.openMessageLog()
+not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__), '..', 'ui', 'not_found_gui.ui'))[0]
 
 
 class MessagebarAndLog():
@@ -172,7 +129,7 @@ def write_qgs_log_to_file(message, tag, level):
         QgsLogger.logMessageToFile(u'{}: {}({}): {} '.format(u'%s'%(returnunicode(get_date_time())), returnunicode(tag), returnunicode(level), u'%s'%(returnunicode(message))))
 
 
-class askuser(QtGui.QDialog):
+class Askuser(QtGui.QDialog):
     def __init__(self, question="YesNo", msg = '', dialogtitle=QCoreApplication.translate(u'askuser', 'User input needed'), parent=None):
         self.result = ''
         if question == 'YesNo':         #  Yes/No dialog 
@@ -194,7 +151,7 @@ class askuser(QtGui.QDialog):
             msgBox.addButton(btnSelected, QtGui.QMessageBox.ActionRole)
             msgBox.addButton(QtGui.QMessageBox.Cancel)
             reply = msgBox.exec_()
-            self.result = reply # ALL=0, SELECTED=1
+            self.result = reply  # ALL=0, SELECTED=1
         elif question == 'DateShift':
             supported_units = [u'microseconds', u'milliseconds', u'seconds', u'minutes', u'hours', u'days', u'weeks']
             while True:
@@ -244,6 +201,12 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
             self._reuse_column.addItems(reuse_header_list)
             self.reuse_column_temp = reuse_column
 
+        _label = QtGui.QLabel(msg)
+        if 140 < _label.height() <= 300:
+            self.setGeometry(500, 150, self.width(), 415)
+        elif _label.height() > 300:
+            self.setGeometry(500, 150, self.width(), 600)
+
         self.exec_()
 
     @property
@@ -270,7 +233,7 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
         self.reuse_column = self._reuse_column.currentText()
 
     def closeEvent(self, event):
-        if self.answer == None:
+        if self.answer is None:
             self.set_answer_and_value(u'cancel')
         super(NotFoundQuestion, self).closeEvent(event)
 
@@ -295,7 +258,7 @@ class HtmlDialog(QtGui.QDialog):
         self.closeButton = QtGui.QPushButton()
         self.closeButton.setText(QCoreApplication.translate(u'HtmlDialog', "Close"))
         self.closeButton.setMaximumWidth(150)
-        self.horizontalLayout= QtGui.QHBoxLayout()
+        self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setSpacing(2)
         self.horizontalLayout.setMargin(0)
         self.horizontalLayout.addStretch(1000)
@@ -375,59 +338,68 @@ class UnicodeWriter:
             self.writerow(row)
 
 
+def show_message_log(pop_error=False):
+    """
+    Source: qgis code
+     """
+    if pop_error:
+        qgis.utils.iface.messageBar().popWidget()
+
+    qgis.utils.iface.openMessageLog()
+
+
 def ask_user_about_stopping(question):
     """
     Asks the user a question and returns 'failed' or 'continue' as yes or no
     :param question: A string to write at the dialog box.
     :return: The string 'failed' or 'continue' as yes/no
     """
-    answer = askuser("YesNo", question)
+    answer = Askuser("YesNo", question)
     if answer.result:
         return u'cancel'
     else:
         return u'ignore'
 
+
 def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-table)
     sqlstring = r"""select %s, %s from %s"""%(params)
-    connection_ok, list_of_tuples= sql_load_fr_db(sqlstring)
+    connection_ok, list_of_tuples= db_utils.sql_load_fr_db(sqlstring)
 
     if not connection_ok:
         textstring = returnunicode(QCoreApplication.translate(u'create_dict_from_db_2_cols', """Cannot create dictionary from columns %s and %s in table %s!"""))%(params)#col1,col2,table)
-        #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)        
+        #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
         MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'create_dict_from_db_2_cols', 'Some sql failure, see log for additional info.'), log_msg=textstring, duration=4,button=True)
         return False, {'':''}
 
     adict = dict([(k, v) for k, v in list_of_tuples])
     return True, adict
 
+
 def find_layer(layer_name):
     for name, search_layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():
         if search_layer.name() == layer_name:
             return search_layer
 
+
 def get_all_obsids(table=u'obs_points'):
     """ Returns all obsids from obs_points
     :return: All obsids from obs_points
     """
-    myconnection = dbconnection()
     obsids = []
-    if myconnection.connect2db() == True:
-        # skapa en cursor
-        curs = myconnection.conn.cursor()
-        rs=curs.execute('''select distinct obsid from "%s" order by obsid'''%table)
-
-        obsids = [row[0] for row in curs]
-        rs.close()
-        myconnection.closedb()
+    connection_ok, result = db_utils.sql_load_fr_db(u'''SELECT DISTINCT obsid FROM %s ORDER BY OBSID''' % table)
+    if connection_ok:
+        obsids = [row[0] for row in result]
     return obsids
+
 
 def get_date_time():
     """returns date and time as a string in a pre-formatted format"""
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    
+
+
 def get_selected_features_as_tuple(layername=None):
     """ Returns all selected features from layername
-     
+
         Returns a tuple of obsids stored as unicode
     """
     if layername is not None:
@@ -438,11 +410,12 @@ def get_selected_features_as_tuple(layername=None):
     #module midv_exporting depends on obsid being a tuple
     #we cannot send unicode as string to sql because it would include the u' so str() is used
     obsidtuple = tuple([returnunicode(id) for id in selected_obs_points])
-    return obsidtuple      
+    return obsidtuple
 
-def getselectedobjectnames(thelayer='default'):
+
+def getselectedobjectnames(thelayer='default', column_name=u'obsid'):
     """ Returns a list of obsid as unicode
-    
+
         thelayer is an optional argument, if not given then activelayer is used
     """
     if thelayer == 'default':
@@ -450,11 +423,12 @@ def getselectedobjectnames(thelayer='default'):
     if not thelayer:
         return []
     selectedobs = thelayer.selectedFeatures()
-    kolumnindex = thelayer.dataProvider().fieldNameIndex('obsid')  #OGR data provier is used to find index for column named 'obsid'
+    kolumnindex = thelayer.dataProvider().fieldNameIndex(column_name)  #OGR data provier is used to find index for column named 'obsid'
     if kolumnindex == -1:
-        kolumnindex = thelayer.dataProvider().fieldNameIndex('OBSID')  #backwards compatibility
+        kolumnindex = thelayer.dataProvider().fieldNameIndex(column_name.upper())  #backwards compatibility
     observations = [obs[kolumnindex] for obs in selectedobs] # value in column obsid is stored as unicode
     return observations
+
 
 def getQgisVectorLayers():
     """Return list of all valid QgsVectorLayer in QgsMapLayerRegistry"""
@@ -465,19 +439,22 @@ def getQgisVectorLayers():
                 layerlist.append( layer )
     return layerlist
 
+
 def isfloat(str):
     try: float(str)
     except ValueError: return False
     return True
+
 
 def isinteger(str):
     try: int(str)
     except ValueError: return False
     return True
 
+
 def isdate(str):
     result = False
-    formats = ['%Y-%m-%d','%Y-%m-%d %H','%Y-%m-%d %H:%M','%Y-%m-%d %H:%M:%S']
+    formats = ['%Y-%m-%d', '%Y-%m-%d %H', '%Y-%m-%d %H:%M', '%Y-%m-%d %H:%M:%S']
     for fmt in formats:
         try:
             time.strptime(str, fmt)
@@ -486,22 +463,26 @@ def isdate(str):
             pass
     return result
 
+
 def null_2_empty_string(input_string):
-    return(input_string.replace('NULL','').replace('null',''))
+    return(input_string.replace('NULL', '').replace('null', ''))
+
 
 def pop_up_info(msg='',title=QCoreApplication.translate(u'pop_up_info', 'Information'),parent=None):
     """Display an info message via Qt box"""
     QtGui.QMessageBox.information(parent, title, '%s' % (msg))
 
+
 def return_lower_ascii_string(textstring):
     def onlyascii(char):
-        if ord(char) < 48 or ord(char) > 127: 
+        if ord(char) < 48 or ord(char) > 127:
             return ''
-        else: 
+        else:
             return char
     filtered_string=filter(onlyascii, textstring)
     filtered_string = filtered_string.lower()
     return filtered_string
+
 
 def returnunicode(anything, keep_containers=False): #takes an input and tries to return it as unicode
     ur"""
@@ -545,7 +526,10 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
                 text = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
             # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
             elif str(type(anything)) == u"<class 'PyQt4.QtCore.QVariant'>":
-                text = returnunicode(anything.toString())
+                if anything.isNull():
+                    text = u''
+                else:
+                    text = returnunicode(anything.toString())
             # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
             elif str(type(anything)) == u"<class 'PyQt4.QtCore.QString'>":
                 text = returnunicode(unicode(anything.toUtf8(), 'utf-8'))
@@ -576,129 +560,11 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
             text = unicode(QCoreApplication.translate(u'returnunicode', 'data type unknown, check database'))
     return text
 
-def sql_load_fr_db(sql=''):#sql sent as unicode, result from db returned as list of unicode strings
-    t0 = time.time()
-
-    dbpath = QgsProject.instance().readEntry("Midvatten","database")
-    if os.path.exists(dbpath[0]):
-        try:
-            conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)#dbpath[0] is unicode already #MacOSC fix1 
-            curs = conn.cursor()
-            resultfromsql = curs.execute(sql) #Send SQL-syntax to cursor #MacOSX fix1
-            result = resultfromsql.fetchall()
-            resultfromsql.close()
-            conn.close()
-            ConnectionOK = True
-        except:
-            #pop_up_info("Could not connect to DB, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
-            textstring = returnunicode(QCoreApplication.translate(u'sql_load_fr_db', """DB error!\nDB call causing this error:%s\n"""))%(sql)
-            #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15)
-            MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'sql_load_fr_db', 'Some sql failure, see log for additional info.'), log_msg=textstring, duration=4,button=True)
-            ConnectionOK = False
-            result = ''
-            try:
-                conn.close()
-            except:
-                pass
-    else:
-        #pop_up_info("Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n"+sql)
-        textstring = returnunicode(QCoreApplication.translate(u'sql_load_fr_db', """Could not connect to db %s!\nDB call causing this error:%s\n"""))%(dbpath[0],sql)
-        #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=15)
-        MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'sql_load_fr_db', 'Db connection failure, see log for additional info.'), log_msg=textstring, duration=4,button=True)
-        ConnectionOK = False
-        result = ''
-    try:
-        print("sql_load_fr_db: running time: %s, sql: %s"%(str(time.time()-t0), returnunicode(sql)))
-    except:
-        pass
-    return ConnectionOK, result
-
-def sql_alter_db(sql=''):
-    t0 = time.time()
-    dbpath = QgsProject.instance().readEntry("Midvatten","database")
-    conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-    curs = conn.cursor()
-    sql2 = sql 
-    curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
-
-    if isinstance(sql2, basestring):
-        try:
-            resultfromsql = curs.execute(sql2) #Send SQL-syntax to cursor
-        except IntegrityError, e:
-            try:
-                conn.close()
-            except:
-                pass
-            raise IntegrityError(returnunicode(QCoreApplication.translate(u'sql_alter_db', "The sql failed:\n%s\nmsg:\n%s"))%(sql2, str(e)))
-        except OperationalError, e:
-            try:
-                conn.close()
-            except:
-                pass
-            raise OperationalError(returnunicode(QCoreApplication.translate(u'sql_alter_db', "The sql failed:\n%s\nmsg:\n%s"))%(sql2, str(e)))
-    else:
-        try:
-            resultfromsql = curs.executemany(sql2[0], sql2[1])
-        except IntegrityError, e:
-            raise IntegrityError(str(e))
-
-    result = resultfromsql.fetchall()
-    conn.commit()   # This one is absolutely needed when altering a db, python will not really write into db until given the commit command
-    resultfromsql.close()
-    conn.close()
-    try:
-        print("sql_alter_db: running time: %s, sql: %s"%(str(time.time()-t0), returnunicode(sql)))
-    except:
-        pass
-    return result
-
-def sql_alter_db_by_param_subst(sql='',*subst_params):
-    """
-    sql sent as unicode, result from db returned as list of unicode strings, the subst_paramss is a tuple of parameters to be substituted into the sql
-
-    #please note that the argument, subst_paramss, must be a tuple with the parameters to be substituted with ? inside the sql string
-    #simple example:
-    sql = 'select ?, ? from w_levels where obsid=?)
-    subst_params = ('date_time', 'level_masl', 'well01')
-    #and since it is a tuple, then one single parameter must be given with a tailing comma:
-    sql = 'select * from obs_points where obsid = ?'
-    subst_params = ('well01',) 
-    """ 
-    dbpath = QgsProject.instance().readEntry("Midvatten","database")
-    if os.path.exists(dbpath[0]):
-        #print('debug info about the tuple %s'%(subst_params[0],))#debug
-        try:
-            conn = sqlite.connect(dbpath[0],detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-            curs = conn.cursor()
-            try:
-                curs.execute("PRAGMA foreign_keys = ON")    #Foreign key constraints are disabled by default (for backwards compatibility), so must be enabled separately for each database connection separately.
-                
-                resultfromsql = curs.execute(sql,subst_params[0])#please note, index 0 is pointing to the first optional argument, not index in tuple 
-                #det får antagligen inte vara något annat än själva värdena i subst_params, strängen som anger kolumner och obsid-namn osv för select är nog string-concatenation som vanligt, det är alltså bara input värdena som ska använda parameter substs            
-            
-            except:#in case it is an sql without parameter substitution
-                print('debugging info: failed loading with parameter substitution, trying the sql without any parameters at all')#debug
-                resultfromsql = curs.execute(sql) 
-            result = resultfromsql.fetchall()
-            conn.commit()
-            
-            resultfromsql.close()
-            conn.close()
-            ConnectionOK = True
-        except:
-            pop_up_info(returnunicode(QCoreApplication.translate(u'sql_alter_db_by_param_subst', "Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n%s"))%sql)
-            ConnectionOK = False
-            result = ''
-    else:
-        pop_up_info(returnunicode(QCoreApplication.translate(u'sql_alter_db_by_param_subst', "Could not connect to the database, please reset Midvatten settings!\n\nDB call causing this error (debug info):\n%s"))%sql)
-        ConnectionOK = False
-        result = ''
-    return ConnectionOK, result
 
 def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatures=0 is for a check if any features are selected at all, the number is unimportant
     if layer.dataProvider().fieldNameIndex('obsid')  > -1 or layer.dataProvider().fieldNameIndex('OBSID')  > -1: # 'OBSID' to get backwards compatibility
         if selectedfeatures == 0 and layer.selectedFeatureCount() > 0:
-            return 'ok'        
+            return 'ok'
         elif not(selectedfeatures==0) and layer.selectedFeatureCount()==selectedfeatures:
             return 'ok'
         elif selectedfeatures == 0 and not(layer.selectedFeatureCount() > 0):
@@ -708,11 +574,13 @@ def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatur
     else:
         pop_up_info(QCoreApplication.translate(u'selection_check', "Select a qgis layer that has a field obsid!"))
 
+
 def strat_selection_check(layer=''):
     if layer.dataProvider().fieldNameIndex('h_gs')  > -1 or layer.dataProvider().fieldNameIndex('h_toc')  > -1  or layer.dataProvider().fieldNameIndex('SURF_LVL')  > -1: # SURF_LVL to enable backwards compatibility
-            return 'ok'        
+            return 'ok'
     else:
         MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'strat_selection_check', u'Error, select a qgis layer with field h_gs!')))
+
 
 def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
     ur"""
@@ -748,11 +616,12 @@ def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
         text = returnunicode(QCoreApplication.translate(u'unicode_2_utf8', u'data type unknown, check database')).encode('utf-8')
     return text
 
+
 def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=('')):
     errorsignal = 0
     if not mset.settingsareloaded:
-        mset.loadSettings()    
-        
+        mset.loadSettings()
+
     for layername in allcritical_layers:
         layerexists = find_layer(str(layername))
         if layerexists:
@@ -761,19 +630,22 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
                 #pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", "Warning")
                 errorsignal += 1
 
-    dbpath = mset.settingsdict['database']
-    if not dbpath:
+    if not mset.settingsdict['database']:
         MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u"Error, No database found. Please check your Midvatten Settings. Reset if needed."))
         errorsignal += 1
     else:
-        if not os.path.isfile(dbpath):
-            MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u"Error, The selected database doesn't exist. Please check your Midvatten Settings and database location. Reset if needed."))
+        try:
+            connection_ok = db_utils.check_connection_ok()
+        except db_utils.DatabaseLockedError:
+            MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u'Databas is already in use'))
             errorsignal += 1
         else:
-            if check_db_is_locked(dbpath):
+            if not connection_ok:
+                MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u"Error, The selected database doesn't exist. Please check your Midvatten Settings and database location. Reset if needed."))
                 errorsignal += 1
 
     return errorsignal
+
 
 def verify_layer_selection(errorsignal,selectedfeatures=0):
     layer = get_active_layer()
@@ -789,12 +661,14 @@ def verify_layer_selection(errorsignal,selectedfeatures=0):
         errorsignal += 1
     return errorsignal
 
+
 def get_active_layer():
     iface = qgis.utils.iface
     if iface is not None:
         return iface.activeLayer()
     else:
         return False
+
 
 def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
     layer = get_active_layer()
@@ -809,24 +683,11 @@ def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
         MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'verify_this_layer_selected_and_not_in_edit_mode', u'Error, you have to select/activate %s layer!'))%layername)
     return errorsignal
 
-def verify_table_exists(tablename):
-    tablename = returnunicode(tablename)
-    sql = u"""SELECT name FROM sqlite_master WHERE type='table' AND name='%s'"""%(tablename)
-    sql_result = sql_load_fr_db(sql.encode('utf-8'))
-    connection_ok, result_list = sql_result
-
-    if not connection_ok:
-        return False
-
-    if result_list:
-        return True
-    else:
-        return False
 
 @contextmanager
 def tempinput(data, charset=u'UTF-8'):
     """ Creates and yields a temporary file from data
-    
+
         The file can't be deleted in windows for some strange reason.
         There shouldn't be so many temporary files using this function
         for it to be a major problem though. Relying on windows temp file
@@ -840,40 +701,43 @@ def tempinput(data, charset=u'UTF-8'):
     yield temp.name
     #os.unlink(temp.name) #TODO: This results in an error: WindowsError: [Error 32] Det går inte att komma åt filen eftersom den används av en annan process: 'c:\\users\\dator\\appdata\\local\\temp\\tmpxvcfna.csv'
 
-def find_nearest_date_from_event(event): 
+
+def find_nearest_date_from_event(event):
     """ Returns the nearest date from a picked list event artist from mouse click
-    
+
         The x-axis of the artist is assumed to be a date as float or int.
         The found date float is then converted into datetime and returned.
     """
     line_nodes = np.array(zip(event.artist.get_xdata(), event.artist.get_ydata()))
     xy_click = np.array((event.mouseevent.xdata, event.mouseevent.ydata))
-    nearest_xy = find_nearest_using_pythagoras(xy_click, line_nodes)    
+    nearest_xy = find_nearest_using_pythagoras(xy_click, line_nodes)
     nearest_date = num2date(nearest_xy[0])
-    return nearest_date 
+    return nearest_date
+
 
 def find_nearest_using_pythagoras(xy_point, xy_array):
     """ Finds the point in xy_array that is nearest xy_point
 
         xy_point: tuple with two floats representing x and y
-        xy_array: list of tuples with floats representing x and y points 
-    
+        xy_array: list of tuples with floats representing x and y points
+
         The search is using pythagoras theorem.
         If the search becomes very slow when the xy_array gets long,
         it could probably we rewritten using numpy methods.
 
         >>> find_nearest_using_pythagoras((1, 2), ((4, 5), (3, 5), (-1, 1)))
         (-1, 1)
-    """    
+    """
     distances = [math.sqrt((float(xy_point[0]) - float(xy_array[x][0]))**2 + (float(xy_point[1]) - float(xy_array[x][1]))**2) for x in xrange(len(xy_array))]
     min_index = distances.index(min(distances))
     return xy_array[min_index]
+
 
 def ts_gen(ts):
     """ A generator that supplies one tuple from a list of tuples at a time
 
         ts: a list of tuples where the tuple contains two positions.
-        
+
         Usage:
         a = ts_gen(ts)
         b = next(a)
@@ -881,13 +745,14 @@ def ts_gen(ts):
         >>> for x in ts_gen(((1, 2), ('a', 'b'))): print x
         (1, 2)
         ('a', 'b')
-    """        
+    """
     for idx in xrange(len(ts)):
-        yield (ts[idx][0], ts[idx][1])  
+        yield (ts[idx][0], ts[idx][1])
+
 
 def calc_mean_diff(coupled_vals):
-    """ Calculates the mean difference for all value couples in a list of tuples 
-    
+    """ Calculates the mean difference for all value couples in a list of tuples
+
         Nan-values are excluded from the mean.
 
     >>> calc_mean_diff(([5, 2] , [8, 1]))
@@ -895,24 +760,28 @@ def calc_mean_diff(coupled_vals):
     """
     return np.mean([float(m) - float(l) for m, l in coupled_vals if not math.isnan(m) or math.isnan(l)])
 
+
 def get_latlon_for_all_obsids():
     """
     Returns lat, lon for all obsids
     :return: A dict of tuples with like {'obsid': (lat, lon)} for all obsids in obs_points
     """
-    latlon_dict = get_sql_result_as_dict('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')[1]
+    latlon_dict = db_utils.get_sql_result_as_dict('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')[1]
     latlon_dict = dict([(obsid, lat_lon[0]) for obsid, lat_lon in latlon_dict.iteritems()])
     return latlon_dict
+
 
 def get_last_used_flow_instruments():
     """ Returns flow instrumentids
     :return: A dict like {obsid: (flowtype, instrumentid, last date used for obsid)
     """
-    return get_sql_result_as_dict('SELECT obsid, flowtype, instrumentid, max(date_time) FROM w_flow GROUP BY obsid, flowtype, instrumentid')
+    return db_utils.get_sql_result_as_dict('SELECT obsid, flowtype, instrumentid, max(date_time) FROM w_flow GROUP BY obsid, flowtype, instrumentid')
+
 
 def get_last_logger_dates():
-    ok_or_not, obsid_last_imported_dates = get_sql_result_as_dict('select obsid, max(date_time) from w_levels_logger group by obsid')
+    ok_or_not, obsid_last_imported_dates = db_utils.get_sql_result_as_dict('select obsid, max(date_time) from w_levels_logger group by obsid')
     return returnunicode(obsid_last_imported_dates, True)
+
 
 def get_quality_instruments():
     """
@@ -920,7 +789,7 @@ def get_quality_instruments():
     :return: A tuple with instrument ids from w_qual_field
     """
     sql = 'SELECT distinct instrument from w_qual_field'
-    sql_result = sql_load_fr_db(sql)
+    sql_result = db_utils.sql_load_fr_db(sql)
     connection_ok, result_list = sql_result
 
     if not connection_ok:
@@ -929,23 +798,6 @@ def get_quality_instruments():
 
     return True, returnunicode([x[0] for x in result_list], True)
 
-def get_sql_result_as_dict(sql):
-    """
-    Runs sql and returns result as dict
-    :param sql: The sql command to run
-    :return: A dict with the first column as key and the rest in a tuple as value
-    """
-    sql_result = sql_load_fr_db(sql)
-    connection_ok, result_list = sql_result
-
-    if not connection_ok:
-        MessagebarAndLog.critical(bar_msg=sql_failed_msg(), log_msg=returnunicode(QCoreApplication.translate(u'get_sql_result_as_dict', u'Cannot create dictionary from sql\n%s'))%sql)
-        return False, {}
-    
-    result_dict = {}
-    for res in result_list:
-        result_dict.setdefault(res[0], []).append(tuple(res[1:]))
-    return True, OrderedDict(result_dict)
 
 def lstrip(word, from_string):
     """
@@ -963,6 +815,7 @@ def lstrip(word, from_string):
     if from_string.startswith(word):
         new_word = from_string[len(word):]
     return new_word
+
 
 def rstrip(word, from_string):
     """
@@ -984,15 +837,18 @@ def rstrip(word, from_string):
 def select_files(only_one_file=True, extension="csv (*.csv)"):
     """Asks users to select file(s)"""
     try:
-        dir = os.path.dirname(QgsProject.instance().readEntry("Midvatten","database")[0])
-    except:
+        dir = os.path.dirname(db_utils.get_spatialite_db_path_from_dbsettings_string(QgsProject.instance().readEntry("Midvatten","database")[0]))
+    except Exception as e:
+        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'select_files', u'Getting directory for select_files failed with msg %s'))%str(e))
         dir = u''
+
     if only_one_file:
         csvpath = [QtGui.QFileDialog.getOpenFileName(parent=None, caption=QCoreApplication.translate(u'select_files', "Select file"), directory=dir, filter=extension)]
     else:
         csvpath = QtGui.QFileDialog.getOpenFileNames(parent=None, caption=QCoreApplication.translate(u'select_files', "Select files"), directory=dir, filter=extension)
     csvpath = [returnunicode(p) for p in csvpath if p]
     return csvpath
+
 
 def ask_for_charset(default_charset=None, msg=None):
     try:#MacOSX fix2
@@ -1014,8 +870,10 @@ def ask_for_charset(default_charset=None, msg=None):
 
     return str(charsetchoosen)
 
+
 def ask_for_export_crs(default_crs=u''):
     return str(QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_export_crs',"Set export crs"), QCoreApplication.translate(u'ask_for_export_crs', "Give the crs for the exported database.\n"),QtGui.QLineEdit.Normal,default_crs)[0])
+
 
 def lists_to_string(alist_of_lists, quote=False):
     ur'''
@@ -1077,6 +935,7 @@ def lists_to_string(alist_of_lists, quote=False):
         return_string = returnunicode(alist_of_lists)
     return return_string
 
+
 def find_similar(word, wordlist, hits=5):
     ur"""
 
@@ -1120,12 +979,13 @@ def find_similar(word, wordlist, hits=5):
 
     return matches
 
+
 def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existing_values=None, try_capitalize=False, always_ask_user=False):
     """
 
     The class NotFoundQuestion is used with 4 buttons; u'Ignore', u'Cancel', u'Ok', u'Skip'.
     Ignore = use the chosen value and move to the next obsid.
-    Cancel = Returns u'cancel' to the calling function.
+    Cancel = raises UserInterruptError
     Ok = Tries the currently submitted obsid against the existing once. If it doesn't exist, it asks again.
     Skip = None is used as obsid and the row is removed from the file_data
 
@@ -1222,7 +1082,7 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
         submitted_value = returnunicode(question.value)
         reuse_column = returnunicode(question.reuse_column)
         if answer == u'cancel':
-            return answer
+            raise UserInterruptError()
         elif answer == u'ok':
             current_value = submitted_value
         elif answer == u'skip':
@@ -1237,7 +1097,8 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
 
     return filtered_data
 
-def add_triggers_to_obs_points():
+
+def add_triggers_to_obs_points(filename):
     """
     /*
     * These are quick-fixes for updating coords from geometry and the other way around
@@ -1282,25 +1143,18 @@ def add_triggers_to_obs_points():
     END;
     :return:
     """
-    excecute_sqlfile(os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","insert_obs_points_triggers.sql"), sql_alter_db)
+    db_utils.execute_sqlfile(os.path.join(os.sep, os.path.dirname(__file__), "..", "definitions", filename),
+                     db_utils.sql_alter_db)
 
-def excecute_sqlfile(sqlfilename, function=sql_alter_db):
-    with open(sqlfilename, 'r') as f:
-        f.readline()  # first line is encoding info....
-        for line in f:
-            if not line:
-                continue
-            if line.startswith("#"):
-                continue
-            function(line)
 
 def sql_to_parameters_units_tuple(sql):
-    parameters_from_table = returnunicode(sql_load_fr_db(sql)[1], True)
+    parameters_from_table = returnunicode(db_utils.sql_load_fr_db(sql)[1], True)
     parameters_dict = {}
     for parameter, unit in parameters_from_table:
         parameters_dict.setdefault(parameter, []).append(unit)
     parameters = tuple([(k, tuple(v)) for k, v in sorted(parameters_dict.iteritems())])
     return parameters
+
 
 def scale_nparray(x, a=1, b=0):
     """
@@ -1323,6 +1177,7 @@ def scale_nparray(x, a=1, b=0):
     """
     return a * copy.deepcopy(x) + b
 
+
 def remove_mean_from_nparray(x):
     """
 
@@ -1336,9 +1191,8 @@ def remove_mean_from_nparray(x):
     #     x[colnr] = x[colnr] - np.mean(x[colnr])
     return x
 
-def getcurrentlocale():
-    #saved_locale = locale.getlocale() #TODO: remove?
 
+def getcurrentlocale():
     db_locale = get_locale_from_db()
 
     if db_locale is not None and db_locale:
@@ -1346,8 +1200,9 @@ def getcurrentlocale():
     else:
         return locale.getdefaultlocale()[:2]
 
+
 def get_locale_from_db():
-    connection_ok, locale_row = sql_load_fr_db(u"select description from about_db where description like 'locale:%'")
+    connection_ok, locale_row = db_utils.sql_load_fr_db(u"SELECT description FROM about_db WHERE description LIKE 'locale:%'")
     if connection_ok:
         try:
             locale_setting = returnunicode(locale_row, keep_containers=True)[0][0].split(u':')
@@ -1361,27 +1216,20 @@ def get_locale_from_db():
         else:
             return locale_setting
     else:
+        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'get_locale_from_db', u'Connection to db failed when getting locale from db.')))
         return None
+
 
 def calculate_db_table_rows():
     results = {}
 
-    sql = u"""SELECT name FROM sqlite_master WHERE type='table'"""
-    sql_result = sql_load_fr_db(sql)
-    connection_ok, tablenames = sql_result
-
-    if not connection_ok:
-        MessagebarAndLog.warning(
-            bar_msg=sql_failed_msg(),
-            log_msg=returnunicode(QCoreApplication.translate(u'calculate_db_table_rows', u'Sql failed:\n%s'))%sql)
-        return None
+    tablenames = db_utils.tables_columns().keys()
 
     sql_failed = []
-    for tablename in tablenames:
-        tablename = tablename[0]
+    for tablename in sorted(tablenames):
         sql = u"""SELECT count(*) FROM %s""" % (tablename)
 
-        sql_result = sql_load_fr_db(sql)
+        sql_result = db_utils.sql_load_fr_db(sql)
         connection_ok, nr_of_rows = sql_result
 
         if not connection_ok:
@@ -1404,9 +1252,12 @@ def calculate_db_table_rows():
             bar_msg=QCoreApplication.translate(u'calculate_db_table_rows', 'Calculation done, see log for results.'),
             log_msg=printable_msg)
 
-def anything_to_string_representation(anything):
+
+def anything_to_string_representation(anything, itemjoiner=u', ', pad=u'', dictformatter=u'{%s}',
+                                      listformatter=u'[%s]', tupleformatter=u'(%s, )'):
     ur""" Turns anything into a string used for testing
     :param anything: just about anything
+    :param itemjoiner: The string to join list/tuple/dict items with.
     :return: A unicode string
      >>> anything_to_string_representation({(u'123'): 4.5, "a": u'7'})
      u'{u"123": 4.5, "a": u"7"}'
@@ -1414,13 +1265,29 @@ def anything_to_string_representation(anything):
      u'{"a": u"7", (u"123", ): 4.5}'
      >>> anything_to_string_representation([u'1', '2', 3])
      u'[u"1", "2", 3]'
+     >>> anything_to_string_representation({u'123': 4.5, "a": u'7'}, u',\n', u'    ')
+     u'{    u"123": 4.5,\n    "a": u"7"}'
     """
     if isinstance(anything, dict):
-        aunicode = u''.join([u'{', u', '.join([u': '.join([anything_to_string_representation(k), anything_to_string_representation(v)]) for k, v in sorted(anything.iteritems())]), u'}'])
+        aunicode = dictformatter%itemjoiner.join([pad + u': '.join([anything_to_string_representation(k, itemjoiner,
+                                                                                                      pad + pad,
+                                                                                                      dictformatter,
+                                                                                                      listformatter,
+                                                                                                      tupleformatter),
+                                                                    anything_to_string_representation(v, itemjoiner,  pad + pad,
+                                                                                                      dictformatter,
+                                                                                                      listformatter,
+                                                                                                      tupleformatter)]) for k, v in sorted(anything.iteritems())])
     elif isinstance(anything, list):
-        aunicode = u''.join([u'[', u', '.join([anything_to_string_representation(x) for x in anything]), u']'])
+        aunicode = listformatter%itemjoiner.join([pad + anything_to_string_representation(x, itemjoiner, pad + pad,
+                                                                                          dictformatter,
+                                                                                          listformatter,
+                                                                                          tupleformatter) for x in anything])
     elif isinstance(anything, tuple):
-        aunicode = u''.join([u'(', u', '.join([anything_to_string_representation(x) for x in anything]), u', )'])
+        aunicode = tupleformatter%itemjoiner.join([pad + anything_to_string_representation(x, itemjoiner, pad + pad,
+                                                                                           dictformatter,
+                                                                                           listformatter,
+                                                                                           tupleformatter) for x in anything])
     elif isinstance(anything, (float, int)):
         aunicode = u'{}'.format(returnunicode(anything))
     elif isinstance(anything, unicode):
@@ -1433,12 +1300,6 @@ def anything_to_string_representation(anything):
         aunicode = returnunicode(str(anything))
     return aunicode
 
-def get_foreign_keys(tname):
-    result_list = sql_load_fr_db(u"""PRAGMA foreign_key_list(%s)"""%(tname))[1]
-    foreign_keys = {}
-    for row in result_list:
-        foreign_keys.setdefault(row[2], []).append((row[3], row[4]))
-    return foreign_keys
 
 def waiting_cursor(func):
     def func_wrapper(*args, **kwargs):
@@ -1466,15 +1327,15 @@ class Cancel(object):
         pass
 
 
-def get_delimiter(filename=None, charset=u'utf-8', delimiters=None, num_fields=None):
+def get_delimiter(filename, charset=u'utf-8', delimiters=None, num_fields=None):
     if filename is None:
-        MessagebarAndLog.critical(QCoreApplication.translate(u'get_delimiter', u'Must give filename'))
-        return None
+        raise TypeError(QCoreApplication.translate(u'get_delimiter', u'Must give filename'))
     with io.open(filename, 'r', encoding=charset) as f:
         rows = f.readlines()
 
     delimiter = get_delimiter_from_file_rows(rows, filename=filename, delimiters=None, num_fields=None)
     return delimiter
+
 
 def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_fields=None):
     if filename is None:
@@ -1497,8 +1358,6 @@ def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_field
         # No delimiter worked
         if not tested_delim:
             _delimiter = ask_for_delimiter(question=returnunicode(QCoreApplication.translate(u'get_delimiter_from_file_rows', u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):"))% filename)
-            if isinstance(_delimiter, Cancel):
-                return _delimiter
             delimiter = _delimiter[0]
         else:
             if delimiter is None:
@@ -1514,10 +1373,9 @@ def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_field
 
                 if lenght == 1 or len(more_than_one_delimiter) > 1:
                     _delimiter = ask_for_delimiter(question=returnunicode(QCoreApplication.translate(u'get_delimiter_from_file_rows', u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):")) % filename)
-                    if isinstance(_delimiter, Cancel):
-                        return _delimiter
                     delimiter = _delimiter[0]
     return delimiter
+
 
 def ask_for_delimiter(header=QCoreApplication.translate(u'ask_for_delimiter', u'Give delimiter'), question=u'', default=u';'):
     _delimiter = PyQt4.QtGui.QInputDialog.getText(None,
@@ -1526,7 +1384,8 @@ def ask_for_delimiter(header=QCoreApplication.translate(u'ask_for_delimiter', u'
                                                   PyQt4.QtGui.QLineEdit.Normal,
                                                   default)
     if not _delimiter[1]:
-        return Cancel()
+        MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate(u'ask_for_delimiter', u'Delimiter not given. Stopping.')))
+        raise UserInterruptError()
     else:
         delimiter = _delimiter[0]
     return delimiter
@@ -1554,23 +1413,27 @@ def create_markdown_table_from_table(tablename, transposed=False, only_descripti
     printlist.extend([u'|{}|'.format(u' | '.join([item if item is not None else u'' for item in row])) for row in table_contents])
     return u'\n'.join(printlist)
 
+
 def list_of_lists_from_table(tablename):
     list_of_lists = []
-    table_info = sql_load_fr_db(u'''PRAGMA table_info(%s)''' % tablename)[1]
+    table_info = db_utils.get_table_info(tablename)
     table_info = returnunicode(table_info, keep_containers=True)
     column_names = [x[1] for x in table_info]
     list_of_lists.append(column_names)
-    table_contents = sql_load_fr_db(u'SELECT * FROM %s'%tablename)[1]
+    table_contents = db_utils.sql_load_fr_db(u'SELECT * FROM %s'%tablename)[1]
     table_contents = returnunicode(table_contents, keep_containers=True)
     list_of_lists.extend(table_contents)
     return list_of_lists
+
 
 def transpose_lists_of_lists(list_of_lists):
     outlist_of_lists = [[row[colnr] for row in list_of_lists] for colnr in xrange(len(list_of_lists[0]))]
     return outlist_of_lists
 
+
 def sql_failed_msg():
     return QCoreApplication.translate(u'sql_failed_msg', u'Sql failed, see log message panel.')
+
 
 def fn_timer(function):
     """from http://www.marinamele.com/7-tips-to-time-python-scripts-and-control-memory-and-cpu-usage"""
@@ -1581,7 +1444,7 @@ def fn_timer(function):
         t1 = time.time()
         #logging.debug("Total time running %s: %s seconds" %
         #       (function.func_name, str(t1-t0))
-        #       
+        #
         try:
             print ("Total time running %s: %s seconds" %
                   (function.func_name, str(t1-t0))
@@ -1591,3 +1454,113 @@ def fn_timer(function):
 
         return result
     return function_timer
+
+
+class UserInterruptError(Exception):
+    pass
+
+class UsageError(Exception):
+    pass
+
+
+def general_exception_handler(func):
+    """
+    If UsageError is raised without message, it is assumed that the programmer has used MessagebarAndLog for the messages
+    and no additional message will be printed.
+
+    UserInterruptError is assumed to never have an error text.
+
+    :param func:
+    :return:
+    """
+    def new_func(*args, **kwargs):
+        try:
+            result = func(*args, **kwargs)
+        except UserInterruptError:
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        except UsageError as e:
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            msg = str(e)
+            if msg:
+                MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'general_exception_handler', u'Usage error: %s'))%str(e))
+        else:
+            return result
+    return new_func
+
+
+def save_stored_settings(ms, stored_settings, settingskey):
+    """
+    Saves the current parameter settings into midvatten settings
+
+    :param ms: midvattensettings
+    :param stored_settings: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
+    :return: stores a string like objname;attr1:value1;attr2:value2/objname2;attr3:value3... in midvatten settings
+    """
+    settings_string = anything_to_string_representation(stored_settings)
+    ms.settingsdict[settingskey] = settings_string
+    ms.save_settings(settingskey)
+    MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'save_stored_settings', u'Settings %s stored for key %s.'))%(settings_string, settingskey))
+
+
+def get_stored_settings(ms, settingskey, default=None):
+    """
+    Reads the settings from settingskey and returns a created dict/list/tuple using ast.literal_eval
+
+    :param ms: midvatten settings
+    :param settingskey: the key to get from midvatten settings.
+    :return: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
+    """
+    if default is None:
+        default = []
+    settings_string_raw = ms.settingsdict.get(settingskey, None)
+    if settings_string_raw is None:
+        MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Settings key %s did not exist in midvatten settings.'))%settingskey)
+        return default
+    if not settings_string_raw:
+        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Settings key %s was empty.'))%settingskey)
+        return default
+
+    settings_string_raw = returnunicode(settings_string_raw)
+
+    try:
+        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Reading stored settings "%s":\n%s'))%(settingskey,
+                                                                                                                                               settings_string_raw))
+    except:
+        pass
+
+    try:
+        stored_settings = ast.literal_eval(settings_string_raw)
+    except SyntaxError as e:
+        stored_settings = default
+        MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=returnunicode(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing the settingsstring %s failed. Msg "%s"'))%(settings_string_raw, str(e)))
+    except ValueError as e:
+        stored_settings = default
+        MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=returnunicode(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing the settingsstring %s failed. Msg "%s"'))%(settings_string_raw, str(e)))
+    return stored_settings
+
+
+def to_float_or_none(anything):
+    if isinstance(anything, float):
+        return anything
+    elif isinstance(anything, int):
+        return float(anything)
+    elif isinstance(anything, basestring):
+        try:
+            a_float = float(anything.replace(u',', u'.'))
+        except TypeError:
+            return None
+        except ValueError:
+            return None
+        except:
+            return None
+        else:
+            return a_float
+    elif anything is None:
+        return anything
+    else:
+        try:
+            a_float = float(str(anything).replace(u',', u'.'))
+        except:
+            return None
+        else:
+            return a_float

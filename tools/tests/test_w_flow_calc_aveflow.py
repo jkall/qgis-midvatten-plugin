@@ -18,11 +18,15 @@
  *                                                                         *
  ***************************************************************************/
 """
-from tools.tests.mocks_for_tests import DummyInterface
-from PyQt4 import QtCore, QtGui, QtTest
-from mocks_for_tests import MockUsingReturnValue, MockQgisUtilsIface, MockReturnUsingDictIn
+from PyQt4 import QtGui
+
 import mock
 import w_flow_calc_aveflow
+
+from mocks_for_tests import MockUsingReturnValue, MockQgisUtilsIface, MockReturnUsingDictIn
+from tools.tests.mocks_for_tests import DummyInterface
+
+
 #
 
 class TestWFlowCalcAveflow(object):

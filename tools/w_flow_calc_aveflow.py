@@ -23,10 +23,10 @@ import PyQt4.QtGui
 
 import qgis.utils
 
-
-from pyspatialite import dbapi2 as sqlite #could have used sqlite3 (or pysqlite2) but since pyspatialite needed in plugin overall it is imported here as well for consistency
 import datetime
 import os
+
+import db_utils
 from matplotlib.dates import datestr2num
 import numpy as np
 import midvatten_utils as utils
@@ -51,7 +51,7 @@ class Calcave(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
         self.connect(self.pushButton_Cancel, PyQt4.QtCore.SIGNAL("clicked()"), self.close)
 
     def calcall(self):
-        obsar = utils.sql_load_fr_db('select distinct obsid from w_flow where flowtype="Accvol"')[1]
+        obsar = db_utils.sql_load_fr_db('select distinct obsid from w_flow where flowtype="Accvol"')[1]
         self.observations = [str(obs[0]) for obs in obsar] #we cannot send unicode as string to sql because it would include the u'
         self.calculateaveflow()
 
@@ -67,11 +67,11 @@ class Calcave(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
         #Identify distinct set of obsid and instrumentid with Accvol-data and within the user-defined date_time-interval:
         sql= """select distinct obsid, instrumentid from(select * from w_flow where flowtype = "Accvol" and date_time >="%s" and date_time <="%s" and obsid IN %s)"""%(date_from,date_to,(str(self.observations)).encode('utf-8').replace('[','(').replace(']',')'))
         #utils.pop_up_info(sql)#debug
-        uniqueset = utils.sql_load_fr_db(sql)[1]  # The unique set of obsid and instrumentid is kept in uniqueset
+        uniqueset = db_utils.sql_load_fr_db(sql)[1]  # The unique set of obsid and instrumentid is kept in uniqueset
         negativeflow = False
         for pyobsid, pyinstrumentid in uniqueset:
             sql= """select date_time, reading from w_flow where flowtype = 'Accvol' and obsid='%s' and instrumentid='%s' and date_time >='%s' and date_time <='%s' order by date_time"""%(pyobsid,pyinstrumentid,date_from,date_to)
-            recs = utils.sql_load_fr_db(sql)[1] 
+            recs = db_utils.sql_load_fr_db(sql)[1]
             """Transform data to a numpy.recarray"""
             My_format = [('date_time', datetime.datetime), ('values', float)] #Define format with help from function datetime
             table = np.array(recs, dtype=My_format)  #NDARRAY
@@ -85,7 +85,7 @@ class Calcave(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
                     if Aveflow<0:
                         negativeflow = True
                     sql = """insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('%s','%s','Aveflow','%s','%s','l/s')"""%(pyobsid,pyinstrumentid,table2.date_time[j],Aveflow)
-                    utils.sql_alter_db(sql)
+                    db_utils.sql_alter_db(sql)
         if negativeflow:
             utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Calcave', u"Please notice that negative flow was encountered.")))
         PyQt4.QtGui.QApplication.restoreOverrideCursor()

@@ -13,9 +13,9 @@ class ATestClass():
         mock_qgsproject_instance.return_value.readEntry = MIDV_DICT
 
 
-#Mock answers from import_data_to_db.utils.askuser:
+#Mock answers from import_data_to_db.utils.Askuser:
 #----------------------------
-@mock.patch('import_data_to_db.utils.askuser')
+@mock.patch('import_data_to_db.utils.Askuser')
 def x(mock_askuser):
     def side_effect(*args, **kwargs):
         mock_result = mock.MagicMock()
@@ -71,3 +71,9 @@ for answer, value, reuse_column in [[u'ok', u'rb1', u'location'],
     mocks_notfoundquestion.append(a_mock)
 
 mock_notfoundquestion.side_effect = mocks_notfoundquestion
+
+#print("\nRef\n" + reference_string + "\ntest\n" + test_string)
+
+Postgis tests require both of these:
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)

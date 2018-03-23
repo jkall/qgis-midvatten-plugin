@@ -105,10 +105,11 @@ def dateshift(adate, n, step_lenght):
     new_date = adate + td
     return new_date
 
-def datestring_to_date(astring, now=datetime.datetime.now()):
+def datestring_to_date(astring, now=datetime.datetime.now(), df=None):
     """
     Takes a string representing a date and converts it to datetime
     :param astring: A string or a datetime-object representing a date, ex: '2015-01-01 12:00' or an epoch number.
+    :param: df: a date format
     :return: A datetime object representing the string/datetime astring
 
     If astring is a datetime object, it is untouched and returned.
@@ -123,7 +124,10 @@ def datestring_to_date(astring, now=datetime.datetime.now()):
     if isinstance(astring, datetime.date):
         return astring
     else:
-        format = find_date_format(astring)
+        if df is not None:
+            format = df
+        else:
+            format = find_date_format(astring)
         if format is not None:
             adate = datetime.datetime.strptime(astring, find_date_format(astring))
         else:
@@ -138,8 +142,8 @@ def datestring_to_date(astring, now=datetime.datetime.now()):
                     adate = None
     return adate
 
-def long_dateformat(astring):
-    return datetime.datetime.strftime(datestring_to_date(astring), '%Y-%m-%d %H:%M:%S')
+def long_dateformat(astring, dateformat=None):
+    return datetime.datetime.strftime(datestring_to_date(astring, df=dateformat), '%Y-%m-%d %H:%M:%S')
 
 def date_to_epoch(astring):
     return datestring_to_date(astring) - datetime.datetime(1970, 1, 1)

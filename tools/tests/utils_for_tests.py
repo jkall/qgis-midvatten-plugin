@@ -19,14 +19,20 @@
  *                                                                         *
  ***************************************************************************/
 """
-import io
-
-from PyQt4 import QtCore
 import PyQt4
-from PyQt4.QtCore import QVariant
+import io
+import os
+from PyQt4 import QtCore
+from collections import OrderedDict
 from qgis.core import QgsApplication
 
+import db_utils
 import midvatten_utils as utils
+import mock
+from import_data_to_db import midv_data_importer
+from midvatten.midvatten import midvatten
+
+from mocks_for_tests import DummyInterface2
 from tools.tests.mocks_for_tests import DummyInterface
 
 
@@ -111,3 +117,149 @@ class ContextualStringIO(io.StringIO):
         self.close() # icecrime does it, so I guess I should, too
         return False # Indicate that we haven't handled the exception, if received
 
+
+class MidvattenTestSpatialiteNotCreated(object):
+    mock_instance_settings_database = mock.MagicMock()
+    mock_instance_settings_database.return_value.readEntry.return_value = (u"{u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}", True)
+
+    def __init__(self):
+        self.TEMP_DB_SETTINGS = {u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}
+        self.TEMP_DBPATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
+
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_instance_settings_database)
+    def setUp(self):
+
+        #self.iface = mock.MagicMock()
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
+        self.midvatten = midvatten(self.iface)
+        self.ms = mock.MagicMock()
+        self.ms.settingsdict = OrderedDict()
+        try:
+            os.remove(self.TEMP_DBPATH)
+        except OSError:
+            pass
+
+    def tearDown(self):
+        #Delete database
+        try:
+            os.remove(self.TEMP_DBPATH)
+        except OSError:
+            pass
+
+
+class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
+    @mock.patch('qgis.utils.iface')
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.Askuser')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+        super(MidvattenTestSpatialiteDbSv, self).setUp()
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
+        mock_answer_yes.return_value.result = 1
+        mock_crs_question.return_value.__getitem__.return_value = 3006
+        mock_savefilename.return_value = self.TEMP_DBPATH
+        self.midvatten.new_db()
+
+class MidvattenTestSpatialiteDbEn(MidvattenTestSpatialiteNotCreated):
+    @mock.patch('qgis.utils.iface')
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.Askuser')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+        super(MidvattenTestSpatialiteDbEn, self).setUp()
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'en_US'
+        mock_answer_yes.return_value.result = 1
+        mock_crs_question.return_value.__getitem__.return_value = 3006
+        mock_savefilename.return_value = self.TEMP_DBPATH
+        self.midvatten.new_db()
+
+class MidvattenTestSpatialiteDbSvImportInstance(MidvattenTestSpatialiteDbSv):
+    @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def setUp(self):
+        super(MidvattenTestSpatialiteDbSvImportInstance, self).setUp()
+        self.importinstance = midv_data_importer()
+
+
+class MidvattenTestPostgisNotCreated(object):
+    ALL_POSTGIS_SETTINGS = {u'nosetests': {u'estimatedMetadata': u'false', u'username': u'henrik3', u'publicOnly': u'false', u'service': u'', u'database': u'nosetests', u'dontResolveType': u'false', u'saveUsername': u'true', u'sslmode': u'1', u'host': u'127.0.0.1', u'authcfg': u'', u'geometryColumnsOnly': u'false', u'allowGeometrylessTables': u'false', u'password': u'0000', u'savePassword': u'false', u'port': u'5432'}}
+    TEMP_DB_SETTINGS = {u'postgis': {u'connection': u'nosetests/127.0.0.1:5432/nosetests'}}
+    SETTINGS_DATABASE = (utils.anything_to_string_representation(TEMP_DB_SETTINGS), True)
+
+    mock_postgis_connections = mock.MagicMock()
+    mock_postgis_connections.return_value = ALL_POSTGIS_SETTINGS
+
+    mock_instance_settings_database = mock.MagicMock()
+    mock_instance_settings_database.return_value.readEntry.return_value = SETTINGS_DATABASE
+
+    def __init__(self):
+        self.TEMP_DB_SETTINGS = MidvattenTestPostgisNotCreated.TEMP_DB_SETTINGS
+        self.SETTINGS_DATABASE = MidvattenTestPostgisNotCreated.SETTINGS_DATABASE
+        pass
+
+    @mock.patch('db_utils.get_postgis_connections', mock_postgis_connections)
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_instance_settings_database)
+    def setUp(self):
+        #self.iface = mock.MagicMock()
+        self.dummy_iface = DummyInterface2()
+        self.iface = self.dummy_iface.mock
+        self.midvatten = midvatten(self.iface)
+        self.ms = mock.MagicMock()
+        self.ms.settingsdict = OrderedDict()
+
+        #Clear the database
+        try:
+            db_utils.sql_alter_db(u'DROP SCHEMA public CASCADE;')
+            db_utils.sql_alter_db(u'CREATE SCHEMA public;')
+        except Exception as e:
+            print("Failure resetting db: " + str(e))
+
+    @mock.patch('db_utils.get_postgis_connections', mock_postgis_connections)
+    @mock.patch('midvatten_utils.QgsProject.instance', mock_instance_settings_database)
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    def tearDown(self, mock_messagebar):
+        #mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
+        #Clear the database
+        try:
+            db_utils.sql_alter_db(u'DROP SCHEMA public CASCADE;')
+            db_utils.sql_alter_db(u'CREATE SCHEMA public;')
+        except Exception as e:
+            print("Failure resetting db: " + str(e))
+            print("MidvattenTestPostgisNotCreated tearDownproblem: " + str(mock_messagebar.mock_calls))
+
+
+class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):
+    @mock.patch('db_utils.get_postgis_connections', MidvattenTestPostgisNotCreated.mock_postgis_connections)
+    @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    @mock.patch('qgis.utils.iface')
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.Askuser')
+    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    def setUp(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
+        super(MidvattenTestPostgisDbSv, self).setUp()
+        mock_locale.return_value.answer = u'ok'
+        mock_locale.return_value.value = u'sv_SE'
+        mock_answer_yes.return_value.result = 1
+        mock_crs_question.return_value.__getitem__.return_value = 3006
+        self.midvatten.new_postgis_db()
+
+
+class MidvattenTestPostgisDbSvImportInstance(MidvattenTestPostgisDbSv):
+    @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestPostgisNotCreated.mock_instance_settings_database)
+    def setUp(self):
+        super(MidvattenTestPostgisDbSvImportInstance, self).setUp()
+        self.importinstance = midv_data_importer()
+
+
+
+def foreign_key_test_from_exception(e, dbtype):
+    if dbtype == u'spatialite':
+        return str(e) == u'FOREIGN KEY constraint failed'
+    elif dbtype == u'postgis':
+        return u'is not present in table' in str(e)

@@ -18,18 +18,17 @@
  ***************************************************************************/
 """
 
-import locale
 from collections import OrderedDict
-from operator import itemgetter
-import qgis.utils
 
+import db_utils
 import midvatten_utils as utils
-
-from midvatten_utils import get_sql_result_as_dict, returnunicode as ru
 from PyQt4.QtCore import QCoreApplication
+from midvatten_utils import returnunicode as ru
+
 
 def settingsdict():    #These are the default settings, they shall not be changed!!!
     dictionary = { 'database' : '',
+            'temp_postgis_passwords': '',
             'tstable' : 'w_levels',
             'tscolumn' : 'level_masl',
             'tsdotmarkers' : 0,
@@ -57,6 +56,8 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplotselectedDEMs':[],
             'stratigraphyplotted':2,
             'secplotlabelsplotted':0,
+            'secplot_loaded_template': '',
+            'secplot_templates': '',
             'settingslocation':1,
             'custplot_tabwidget':0,
             'custplot_table1':'w_levels',
@@ -89,6 +90,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'custplot_plottype1':'line',
             'custplot_plottype2':'line',
             'custplot_plottype3':'line',
+            'customdrillreportstoredsettings': '',
             'piper_cl':'Klorid, Cl',
             'piper_hco3':'Alkalinitet, HCO3',
             'piper_so4':'Sulfat, SO4',
@@ -101,7 +103,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'fieldlogger_import_parameter_settings': '',
             'fieldlogger_export_pgroups': '',
             'fieldlogger_export_pbrowser': '',
-            'fieldlogger_export': ''
+            'fieldlogger_export': '',
             }
     return dictionary
 
@@ -112,8 +114,8 @@ def geocolorsymbols():
     Predefined Qt colors are allowed (http://doc.qt.io/qt-4.8/qcolor.html#predefined-colors) and so is also svg 1.0 names (https://www.w3.org/TR/SVG/types.html#ColorKeywords)
     Fallback methods use color codes and brush styles found in code below
     """
-    res1, dict_qt = utils.get_sql_result_as_dict('select strata, brush_qt, color_qt from zz_stratigraphy_plots')
-    res2, dict_geo1 = utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
+    res1, dict_qt = db_utils.get_sql_result_as_dict('select strata, brush_qt, color_qt from zz_stratigraphy_plots')
+    res2, dict_geo1 = db_utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
     # fallback method to maintain backwards compatibility
     if not (res1 and res2):
         # Fallback method - if using old databases where zz_strat is missing, then you may change the code below to reflect your own GEOLOGIC CODES, SYMBOLS AND COLORS
@@ -262,6 +264,7 @@ def geocolorsymbols():
         return dictionary
     # new method create dict from db table
     #dict_geo1 is just a start, not yet populated with tuples of geoshorts for each strata, time to do so
+
     dictionary={}
     for strata, strata_synonyms in sorted(dict_geo1.iteritems()):
         #In general there is only one geoshort in geoshort_as_strata_synonym
@@ -278,6 +281,7 @@ def geocolorsymbols():
                     except Exception as c:
                         utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'geocolorsymbols', u'Error in geocolorsymbols, setting brush and color for strata "%s" using geoshort %s failed. Msg1:\n%s\nMsg2:\n%s\Msg3:\n%s'))%(strata, geoshort, str(a), str(b), str(c)))
                         dictionary[geoshort]=(u'NoBrush', u'white')
+
     """
     # this was temporary method to deal with zz_stratigraphy table existing in plugin version 1.3.x
     # skip "unknown"
@@ -325,13 +329,15 @@ def hydrocolors():
     Default method is to read the database table zz_capacity, the user may change zz_capacity table to change the stratigraphy plots
     Fallback methods use color codes found in code below
     """
-    res, dict_qt1 = utils.get_sql_result_as_dict('select a.capacity, a.explanation, b.color_qt from zz_capacity a, zz_capacity_plots b where a.capacity = b.capacity')
-    dict_qt = utils.unicode_2_utf8(dict_qt1)
-    for k,v in dict_qt.iteritems():
-        dict_qt[k] = v[0]
+    res, dict_qt1 = db_utils.get_sql_result_as_dict('select a.capacity, a.explanation, b.color_qt from zz_capacity a, zz_capacity_plots b where a.capacity = b.capacity')
+
     # fallback method to maintain backwards compatibility
     if not res:
-        print('using fallback method for backwards compat.')
+        try:
+            print('using fallback method for backwards compat.')
+        except:
+            pass
+        utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'hydrocolors', u'Getting hydrocolors from database failed, using fallback method!')))
         dict_qt = { '': ('okant', 'gray'),
                       ' ': ('okant', 'gray'),
                       '0': ('okant', 'gray'),
@@ -357,6 +363,10 @@ def hydrocolors():
                       '6 ': ('mycket god', 'blue'),
                       '6+': ('mycket god', 'darkBlue'),
                     }
+    else:
+        dict_qt = utils.unicode_2_utf8(dict_qt1)
+        for k, v in dict_qt.iteritems():
+            dict_qt[k] = v[0]
     return dict_qt
 
 def PlotTypesDict(international='no'): 
@@ -368,8 +378,8 @@ def PlotTypesDict(international='no'):
     Fallback method use dictionary defined in the code below
     """
     #success, Dict = utils.create_dict_from_db_2_cols(('strata','geoshort','zz_strat'))
-    success, Dict = utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
-    succss_strata, strata_order = utils.sql_load_fr_db('select strata from zz_stratigraphy_plots order by ROWID')
+    success, Dict = db_utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
+    succss_strata, strata_order = db_utils.sql_load_fr_db('select strata from zz_stratigraphy_plots order by %s'%db_utils.rowid_string())
     if not success:
         utils.MessagebarAndLog.info(log_msg=QCoreApplication.translate(u'PlotTypesDict', u'Getting strata and geoshort from zz_strat failed, fallback method using PlotTypesDict from code'))
         if international=='no' and  utils.getcurrentlocale() == 'sv_SE':
@@ -549,7 +559,7 @@ def staff_list():
     :return: A list of staff members from the staff table
     """
     sql = 'SELECT distinct staff from zz_staff'
-    sql_result = utils.sql_load_fr_db(sql)
+    sql_result = db_utils.sql_load_fr_db(sql)
     connection_ok, result_list = sql_result
 
     if not connection_ok:
@@ -560,54 +570,10 @@ def staff_list():
 
 def stratigraphy_table():
     return 'stratigraphy'
-    
-def SQLiteInternalTables():
-    return r"""('ElementaryGeometries',
-                'geom_cols_ref_sys',
-                'geometry_columns',
-                'geometry_columns_time',
-                'spatial_ref_sys',
-                'spatial_ref_sys_aux',
-                'spatial_ref_sys_all',
-                'spatialite_history',
-                'vector_layers',
-                'views_geometry_columns',
-                'virts_geometry_columns',
-                'geometry_columns_auth',
-                'geometry_columns_fields_infos',
-                'geometry_columns_field_infos',
-                'geometry_columns_statistics',
-                'sql_statements_log',
-                'layer_statistics',
-                'sqlite_sequence',
-                'sqlite_stat1',
-                'sqlite_stat3',
-                'views_layer_statistics',
-                'virts_layer_statistics',
-                'vector_layers_auth',
-                'vector_layers_field_infos',
-                'vector_layers_statistics',
-                'views_geometry_columns_auth',
-                'views_geometry_columns_field_infos',
-                'views_geometry_columns_statistics',
-                'virts_geometry_columns_auth',
-                'virts_geometry_columns_field_infos',
-                'virts_geometry_columns_statistics' ,
-                'geometry_columns',
-                'spatialindex',
-                'SpatialIndex')"""
-
-def sqlite_nonplot_tables():
-    return r"""('about_db',
-                'comments',
-                'zz_flowtype',
-                'zz_meteoparam',
-                'zz_strat',
-                'zz_hydro')"""
 
 def w_flow_flowtypes_units():
     sql = 'select distinct flowtype, unit from w_flow'
-    connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
+    connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
 
     if not connection_ok:
         utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'w_flow_flowtypes_units', u"Error, sql failed, see log message panel"), log_msg=ru(QCoreApplication.translate(u'w_flow_flowtypes_units', u'Cannot get data from sql %s'))%ru(sql))
@@ -617,7 +583,7 @@ def w_flow_flowtypes_units():
 
 def w_qual_field_parameter_units():
     sql = 'select distinct parameter, unit from w_qual_field'
-    connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
+    connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
 
     if not connection_ok:
         utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'w_qual_field_parameter_units', u'Error, sql failed, see log message panel'), log_msg=ru(QCoreApplication.translate(u'w_qual_field_parameter_units', u'Cannot get data from sql %s'))%ru(sql))
@@ -625,27 +591,6 @@ def w_qual_field_parameter_units():
 
     return ru(result_dict, keep_containers=True)
 
-def tables_columns():
-    tables_sql = (r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + SQLiteInternalTables() + r""") ORDER BY tbl_name""")
-    connection_ok, tables = utils.sql_load_fr_db(tables_sql)
-
-    if not connection_ok:
-        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'tables_columns', u'Error, sql failed, see log message panel'), log_msg=ru(QCoreApplication.translate(u'tables_columns', u'Cannot get data from sql %s'))%ru(tables_sql))
-        return []
-
-    tables_dict = {}
-
-    tablenames = [col[0] for col in tables]
-    for tablename in tablenames:
-        columns_sql = """PRAGMA table_info (%s)""" % tablename
-        connection_ok, columns = utils.sql_load_fr_db(columns_sql)
-
-        if not connection_ok:
-            utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'tables_columns', u'Error, sql failed, see log message panel'), log_msg=ru(QCoreApplication.translate(u'tables_columns', u'Cannot get data from sql %s'))%ru(columns_sql))
-            continue
-        tables_dict[tablename] = tuple(sorted(tuple(columns), key=itemgetter(1)))
-
-    return tables_dict
 
 def get_last_used_quality_instruments():
     """
@@ -653,7 +598,7 @@ def get_last_used_quality_instruments():
     :return: A tuple with instrument ids from w_qual_field
     """
     sql = 'select parameter, unit, instrument, staff, max(date_time) from w_qual_field group by parameter, unit, instrument, staff'
-    connection_ok, result_dict = utils.get_sql_result_as_dict(sql)
+    connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
     return ru(result_dict, True)
 
 specific_table_info = {u'obs_lines': u'The geometry column supports WKT ("well known text") of type LINESTRING and\nthe geometries must correspond to SRID in the database.',
@@ -761,12 +706,73 @@ def export_fieldlogger_defaults():
     return input_field_browser, input_fields_groups
 
 def db_setup_as_string():
-    tables = utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + SQLiteInternalTables() + r""") ORDER BY tbl_name""")[1]
+    tables = db_utils.get_tables()
+    #tables = db_utils.sql_load_fr_db(r"""SELECT tbl_name FROM sqlite_master WHERE (type='table' or type='view') and not (name in""" + db_utils.sqlite_internal_tables() + r""") ORDER BY tbl_name""")[1]
     res = []
-    for table in tables:
-        if table == u'about_db':
-            continue
-        res.append(table)
-        table_info = utils.sql_load_fr_db(u'''PRAGMA table_info(%s)''' % table)[1]
+    for table in sorted(tables):
+        res.append((table,))
+        table_info = db_utils.get_table_info(table)
         res.append(table_info)
     return utils.anything_to_string_representation(res)
+
+def secplot_default_template():
+        loaded_template = {}
+        loaded_template['ticklabels_Text_set_fontsize'] = {'fontsize': 10}
+        loaded_template['Axes_set_xlabel'] = {
+            'xlabel': ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")),
+            'fontsize': 10}
+        loaded_template['Axes_set_xlim'] = None  # Tuple like (min, max)
+        loaded_template['Axes_set_ylim'] = None  # Tuple like (min, max)
+        loaded_template['Axes_set_ylabel'] = {
+            'ylabel': ru(QCoreApplication.translate(u'SectionPlot', u"Level, masl")),
+            'fontsize': 10}
+        loaded_template['dems_Axes_plot'] = {'DEFAULT': {'marker': 'None',
+                                                              'linestyle': '-',
+                                                              'linewidth': 1}}
+        loaded_template['drillstop_Axes_plot'] = {'marker': '^',
+                                                       'markersize': 8,
+                                                       'linestyle': '',
+                                                       'color': 'black'}
+        loaded_template['geology_Axes_bar'] = {'edgecolor': 'black'}
+        loaded_template['grid_Axes_grid'] = {'b': True,
+                                                  'which': 'both',
+                                                  'color': '0.65',
+                                                  'linestyle': '-'}
+        loaded_template['layer_Axes_annotate'] = {'xytext': (5, 0),
+                                                       'textcoords': 'offset points',
+                                                       'ha': 'left',
+                                                       'va': 'center',
+                                                       'fontsize': 9,
+                                                       'bbox': {'boxstyle': 'square,pad=0.05',
+                                                                'fc': 'white',
+                                                                'edgecolor': 'white',
+                                                                'alpha': 0.6}}
+        loaded_template['legend_Axes_legend'] = {'loc': 0,
+                                                      'framealpha': 1,
+                                                      'fontsize': 10}
+        loaded_template['legend_Text_set_fontsize'] = 10
+        loaded_template['legend_Frame_set_facecolor'] = '1'
+        loaded_template['legend_Frame_set_fill'] = False
+        loaded_template['obsid_Axes_annotate'] = {'xytext': (0, 10),
+                                                       'textcoords': 'offset points',
+                                                       'ha': 'center',
+                                                       'va': 'top',
+                                                       'fontsize': 9,
+                                                       'rotation': 0,
+                                                       'bbox': {'boxstyle': 'square,pad=0.05', 'fc': 'white',
+                                                                'edgecolor': 'white', 'alpha': 0.4}}
+
+        loaded_template['obsid_Axes_bar'] = {'edgecolor': 'black',
+                                                  'fill': False,
+                                                  'linewidth': 0.5}
+        loaded_template['plot_height'] = None
+        loaded_template['plot_width'] = None
+        loaded_template[
+            'Figure_subplots_adjust'] = {}  # {"top": 0.95, "bottom": 0.15, "left": 0.09, "right": 0.97}
+        loaded_template['wlevels_Axes_plot'] = {'DEFAULT': {'markersize': 6,
+                                                                 'marker': 'v',
+                                                                 'linestyle': '-',
+                                                                 'linewidth': 1}}
+        return loaded_template
+
+

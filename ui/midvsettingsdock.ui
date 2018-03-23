@@ -16,57 +16,6 @@
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout_9">
     <item row="0" column="0">
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="txtpath">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>selected midvatten plugin database</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="btnSetDB">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>40</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>40</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-          <weight>50</weight>
-          <bold>false</bold>
-         </font>
-        </property>
-        <property name="text">
-         <string>DB</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="sizePolicy">
        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
@@ -86,8 +35,41 @@
        <enum>QTabWidget::North</enum>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
+      <widget class="QWidget" name="TAB_DB">
+       <attribute name="title">
+        <string>DB</string>
+       </attribute>
+       <attribute name="toolTip">
+        <string>Database settings</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_db_main">
+        <item row="0" column="0">
+         <widget class="QScrollArea" name="scrollArea_db">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_db">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>391</width>
+             <height>591</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_db_scroll">
+            <item row="0" column="0">
+             <layout class="QGridLayout" name="gridLayout_db"/>
+            </item>
+           </layout>
+           <zorder></zorder>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="TAB_TSPLOT_2">
        <attribute name="title">
         <string>TSplot</string>
@@ -106,8 +88,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>184</width>
-             <height>213</height>
+             <width>180</width>
+             <height>241</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_10">
@@ -264,8 +246,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>183</width>
-             <height>375</height>
+             <width>178</width>
+             <height>430</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_21">
@@ -499,8 +481,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>206</width>
-             <height>493</height>
+             <width>193</width>
+             <height>556</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_7">
@@ -736,8 +718,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>370</width>
-             <height>573</height>
+             <width>377</width>
+             <height>650</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_11">

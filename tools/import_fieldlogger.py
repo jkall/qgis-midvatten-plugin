@@ -29,6 +29,7 @@ from Queue import Queue
 from collections import OrderedDict
 from datetime import datetime
 from functools import partial
+from time import sleep
 
 import PyQt4.QtCore
 import PyQt4.QtGui
@@ -36,12 +37,12 @@ from PyQt4.QtCore import QCoreApplication
 
 import definitions.midvatten_defs
 import import_data_to_db
+import db_utils
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from date_utils import datestring_to_date, dateshift
 from definitions import midvatten_defs as defs
 from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid
-from midvatten_utils import Cancel
 from gui_utils import DateTimeFilter
 
 
@@ -59,16 +60,12 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.status = True
 
     def parse_observations_and_populate_gui(self):
-
         splitter = SplitterWithHandel(PyQt4.QtCore.Qt.Vertical)
         self.add_row(splitter)
 
         self.observations = self.select_file_and_parse_rows(self.parse_rows)
-        if isinstance(self.observations, Cancel):
-            self.status = True
-            return u'cancel'
-        elif self.observations is None:
-            return u'cancel'
+        if self.observations is None:
+            return None
 
         #Filters and general settings
         settings_widget = PyQt4.QtGui.QWidget()
@@ -78,8 +75,15 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.settings = []
         self.settings.append(StaffQuestion())
         self.settings.append(DateShiftQuestion())
-        self.date_time_filter = DateTimeFilter()
-        self.settings.append(self.date_time_filter) #This includes a checkbox for "include only latest
+        self.date_time_filter = DateTimeFilter(stretch=False)
+        self.date_time_filter.date_time_filter_update_button = PyQt4.QtGui.QPushButton(QCoreApplication.translate('FieldloggerImport',
+                                                                                                 u'Filter dates'))
+        self.date_time_filter.date_time_filter_update_button.setToolTip(ru(QCoreApplication.translate('FieldloggerImport',
+                                                                                     u'Filter observations using from and to dates and update gui.')))
+        self.date_time_filter.layout.addWidget(self.date_time_filter.date_time_filter_update_button)
+        self.date_time_filter.layout.addStretch()
+
+        self.settings.append(self.date_time_filter)
         for setting in self.settings:
             if hasattr(setting, u'widget'):
                 settings_layout.addWidget(setting.widget)
@@ -101,7 +105,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         #self.add_line(sublocations_layout)
 
         self.stored_settingskey = u'fieldlogger_import_parameter_settings'
-        self.stored_settings = self.get_stored_settings(self.ms, self.stored_settingskey)
+        self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settingskey)
 
         #Input fields
         self.input_fields = InputFields(self.connect)
@@ -115,14 +119,14 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                          lambda : map(lambda x: x(),
                                       [lambda : self.input_fields.update_stored_settings(self.stored_settings),
-                                       lambda : self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]))
+                                       lambda : utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]))
 
         self.clear_settings_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Clear settings')))
         self.clear_settings_button.setToolTip(ru(QCoreApplication.translate(u'FieldloggerImport', u'Clear all parameter settings\nReopen Fieldlogger import gui to have it reset,\nor press "Save settings" to undo.')))
         self.gridLayout_buttons.addWidget(self.clear_settings_button, 1, 0)
         self.connect(self.clear_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      lambda: map(lambda x: x(),
-                                 [lambda: self.save_stored_settings(self.ms, [], self.stored_settingskey),
+                                 [lambda: utils.save_stored_settings(self.ms, [], self.stored_settingskey),
                                   lambda: utils.pop_up_info(ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings cleared. Restart import Fieldlogger dialog')))]))
 
         self.close_after_import = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'FieldloggerImport', u'Close dialog after import')))
@@ -133,10 +137,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.gridLayout_buttons.addWidget(self.start_import_button, 3, 0)
         self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
 
-        self.connect(self.date_time_filter.from_datetimeedit, PyQt4.QtCore.SIGNAL("editingFinished()"),
-                     self.update_sublocations_and_inputfields_on_date_change)
-
-        self.connect(self.date_time_filter.to_datetimeedit, PyQt4.QtCore.SIGNAL("editingFinished()"),
+        self.connect(self.date_time_filter.date_time_filter_update_button, PyQt4.QtCore.SIGNAL("clicked()"),
                      self.update_sublocations_and_inputfields_on_date_change)
 
         #Button click first filters data from the settings and then updates input fields.
@@ -145,13 +146,16 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         self.gridLayout_buttons.setRowStretch(4, 1)
 
+        self.setGeometry(500, 150, 950, 700)
+
         self.show()
 
     @staticmethod
+    @utils.general_exception_handler
     def select_file_and_parse_rows(row_parser):
         filenames = utils.select_files(only_one_file=False, extension="csv (*.csv)")
         if filenames is None or not filenames:
-            return Cancel()
+            raise utils.UserInterruptError()
 
         observations = []
         for filename in filenames:
@@ -163,8 +167,6 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                     delimiter = utils.get_delimiter(filename=filename, charset=encoding, delimiters=[u';', u','], num_fields=5)
                     if delimiter is None:
                         return None
-                    elif isinstance(delimiter, Cancel):
-                        return delimiter
 
                     with io.open(filename, 'rt', encoding=encoding) as f:
                         #Skip header
@@ -246,6 +248,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         return sublocation_groups
 
     def update_sublocations_and_inputfields_on_date_change(self):
+        sleep(0.2)
         observations = copy.deepcopy(self.observations)
         date_time_filter = self.date_time_filter
         sublocation_filter = self.sublocation_filter
@@ -259,6 +262,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         observations = self.filter_by_settings_using_shared_loop(observations, [sublocation_filter])
         input_fields.update_parameter_imports_queue(observations, stored_settings)
 
+    @utils.general_exception_handler
     def update_input_fields_from_button(self):
         self.input_fields.update_parameter_imports_queue(self.filter_by_settings_using_shared_loop(self.observations, self.settings), self.stored_settings)
 
@@ -336,7 +340,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                                   combobox_label=ru(QCoreApplication.translate(u'FieldloggerImport', u'Instrument id:s in database for obsid %s.\nThe last used instrument id for obsid %s is prefilled:'))%(obsid, obsid))
                 answer = question.answer
                 if answer == u'cancel':
-                    return Cancel()
+                    raise utils.UserInterruptError()
                 instrumentid = ru(question.value)
                 already_asked_instruments[sublocation] = instrumentid
 
@@ -366,7 +370,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             reading_num = observation[u'value'].replace(u',', u'.')
             reading_txt = observation[u'value']
             unit = observation[u'unit']
-            depth = observation.get(u'depth', u'')
+            depth = observation.get(u'depth', u'').replace(u',', u'.')
             comment = observation.get(u'comment', u'')
             file_data_list.append([obsid, staff, date_time, instrument, parameter, reading_num, reading_txt, unit, depth, comment])
 
@@ -374,17 +378,13 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
     @staticmethod
     def filter_by_settings_using_shared_loop(observations, settings):
-        if isinstance(observations, Cancel):
-            return observations
 
         observations = copy.deepcopy(observations)
         filtered_observations = []
         for observation in observations:
             for setting in settings:
                 observation = setting.alter_data(observation)
-                if isinstance(observation, Cancel):
-                    return observation
-                elif observation is None:
+                if observation is None:
                     break
             if observation is not None:
                 filtered_observations.append(observation)
@@ -393,56 +393,14 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
     @staticmethod
     def filter_by_settings_using_own_loop(observations, settings_with_own_loop):
-        if isinstance(observations, Cancel):
-            return observations
 
         observations = copy.deepcopy(observations)
         for setting in settings_with_own_loop:
             observations = setting.alter_data(observations)
-            if isinstance(observations, Cancel):
-                return observations
         return observations
 
-    @staticmethod
-    def get_stored_settings(ms, settingskey):
-        """
-        Reads the settings from settingskey and returns a created dict/list/tuple using ast.literal_eval
-
-        :param ms: midvatten settings
-        :param settingskey: the key to get from midvatten settings.
-        :return: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
-        """
-        settings_string_raw = ms.settingsdict.get(settingskey, None)
-        if settings_string_raw is None:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings key %s did not exist in midvatten settings.'))%settingskey)
-            return []
-        if not settings_string_raw:
-            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings key %s was empty.'))%settingskey)
-            return []
-
-        settings_string_raw = ru(settings_string_raw)
-
-        try:
-            stored_settings = ast.literal_eval(settings_string_raw)
-        except SyntaxError:
-            stored_settings = []
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Getting stored settings failed for key %s, see log message panel.'))%settingskey, log_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Parsing the settingsstring %s failed'))%str(settings_string_raw))
-        return stored_settings
-
-    @staticmethod
-    def save_stored_settings(ms, stored_settings, settingskey):
-        """
-        Saves the current parameter settings into midvatten settings
-
-        :param ms: midvattensettings
-        :param stored_settings: a tuple like ((objname', ((attr1, value1), (attr2, value2))), (objname2, ((attr3, value3), ...)
-        :return: a string representation of stored_settings
-        """
-        settings_string = utils.anything_to_string_representation(stored_settings)
-        ms.settingsdict[settingskey] = settings_string
-        ms.save_settings()
-        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings %s stored for key %s'))%(settings_string, settingskey))
-
+    @utils.general_exception_handler
+    @import_data_to_db.import_exception_handler
     def start_import(self, observations):
         """
 
@@ -453,7 +411,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         #Start by saving the parameter settings
         self.input_fields.update_stored_settings(self.stored_settings)
-        self.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)
+        utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)
 
         chosen_methods = [import_method_chooser.import_method for import_method_chooser in self.input_fields.parameter_imports.values()
                           if import_method_chooser.import_method]
@@ -464,17 +422,9 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         #Update the observations using the general settings, filters and parameter settings
         observations = self.input_fields.filter_import_methods_not_set(observations)
-        if isinstance(observations, Cancel):
-            return observations
         observations = self.filter_by_settings_using_shared_loop(observations, self.settings)
-        if isinstance(observations, Cancel):
-            return observations
         observations = self.filter_by_settings_using_own_loop(observations, self.settings_with_own_loop)
-        if isinstance(observations, Cancel):
-            return observations
         observations = self.input_fields.update_observations(observations)
-        if isinstance(observations, Cancel):
-            return observations
 
         if not observations:
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u"No observations left to import after filtering")))
@@ -487,18 +437,16 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         data_preparers = {u'w_levels': self.prepare_w_levels_data,
                           u'w_flow': self.prepare_w_flow_data,
                           u'w_qual_field': self.prepare_w_qual_field_data,
-                          u'comments': self.prepare_comments_data}
+                          u'comments': self.prepare_comments_data,
+                          u'w_qual_field_depth': lambda x: None}
 
         for import_method, observations in observations_importmethods.iteritems():
             if import_method:
                 file_data = data_preparers[import_method](observations)
-                if isinstance(file_data, Cancel):
-                    return file_data
+                if file_data is None:
+                    continue
 
-                answer = importer.send_file_data_to_importer(file_data, partial(importer.general_csv_import, goal_table=import_method))
-                if isinstance(answer, Cancel):
-                    self.status = True
-                    return answer
+                importer.general_import(file_data=file_data, goal_table=import_method)
 
         importer.SanityCheckVacuumDB()
 
@@ -526,8 +474,6 @@ class ObsidFilter(object):
             obsids.reverse()
 
             answer = utils.filter_nonexisting_values_and_ask(obsids, u'new_obsid', existing_values=existing_obsids, try_capitalize=False)
-            if answer == u'cancel':
-                return Cancel()
 
             if answer is not None:
                 if isinstance(answer, (list, tuple)):
@@ -541,9 +487,7 @@ class ObsidFilter(object):
             observations = [observation for observation in observations if all([observation[u'obsid'] is not None, observation[u'obsid']])]
 
         if len(observations) == 0:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'No observations imported, see log message panel')),
-                                           log_msg=ru(QCoreApplication.translate(u'FieldloggerImport', u'No observations returned from obsid verification. Were all skipped?')))
-            return Cancel()
+            raise utils.UsageError(ru(QCoreApplication.translate(u'ObsidFilter', u'No observations returned from obsid verification. Were all skipped?')))
         return observations
 
 
@@ -570,9 +514,7 @@ class StaffQuestion(RowEntry):
     def alter_data(self, observation):
         observation = copy.deepcopy(observation)
         if self.staff is None or not self.staff:
-            utils.MessagebarAndLog.critical(log_msg=ru(QCoreApplication.translate(u'StaffQuestion', u'Import error, staff not given')))
-            utils.pop_up_info(ru(QCoreApplication.translate(u'StaffQuestion', u'Import error, staff not given')))
-            return Cancel()
+            raise utils.UsageError(ru(QCoreApplication.translate(u'StaffQuestion', u'Import error, staff not given')))
 
         observation[u'staff'] = self.staff
         return observation
@@ -602,18 +544,18 @@ class DateShiftQuestion(RowEntry):
 
         if len(step_steplength) != 2:
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
-            return Cancel()
+            raise utils.UsageError()
         try:
             step = float(step_steplength[0])
             steplength = step_steplength[1]
         except:
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
-            return Cancel()
+            raise utils.UsageError()
 
         test_shift = dateshift('2015-02-01', step, steplength)
         if test_shift == None:
             utils.MessagebarAndLog.warning(bar_msg=bar_msg, log_msg=log_msg)
-            return Cancel()
+            raise utils.UsageError()
 
         observation[u'date_time'] = dateshift(observation[u'date_time'], step, steplength)
 
@@ -730,8 +672,6 @@ class InputFields(RowEntry):
 
         if stored_settings is None:
             stored_settings = []
-        if isinstance(observations, Cancel):
-            return observations
 
         #Remove and close all widgets
         while self.parameter_imports:
@@ -774,8 +714,6 @@ class InputFields(RowEntry):
         #utils.MessagebarAndLog.info(log_msg=u"All children parents:\n" + u'\n'.join([u': '.join([str(w), str(w.parentWidget())]) for w in self.all_children]))
 
     def update_observations(self, observations):
-        if isinstance(observations, Cancel):
-            return observations
 
         observations = copy.deepcopy(observations)
         for parameter_name, import_method_chooser in self.parameter_imports.iteritems():
@@ -783,13 +721,9 @@ class InputFields(RowEntry):
             if parameter_import_fields is not None:
                 observations = parameter_import_fields.alter_data(
                     observations)
-                if isinstance(observations, Cancel):
-                    return observations
         return observations
 
     def filter_import_methods_not_set(self, observations):
-        if isinstance(observations, Cancel):
-            return observations
 
         observations = copy.deepcopy(observations)
         #Order the observations under the import methods, and filter out the parameters not set.
@@ -901,6 +835,7 @@ class ImportMethodChooser(RowEntry):
                                                   (u'comments', CommentsImportFields),
                                                   (u'w_levels', WLevelsImportFields),
                                                   (u'w_flow', WFlowImportFields),
+                                                  (u'w_qual_field_depth', WQualFieldDepthImportFields),
                                                   (u'w_qual_field', WQualFieldImportFields)))
 
         self.__import_method.addItems(self.import_method_classes.keys())
@@ -1058,7 +993,7 @@ class WLevelsImportFields(RowEntryGrid):
 
                     if self.calculate_level_masl:
                         if self.h_toc_dict is None:
-                            self.h_toc_dict = dict([(obsid_h_toc[0], obsid_h_toc[1]) for obsid_h_toc in utils.sql_load_fr_db(u'SELECT obsid, h_toc FROM obs_points WHERE h_toc IS NOT NULL')[1]])
+                            self.h_toc_dict = dict([(obsid_h_toc[0], obsid_h_toc[1]) for obsid_h_toc in db_utils.sql_load_fr_db(u'SELECT obsid, h_toc FROM obs_points WHERE h_toc IS NOT NULL')[1]])
                         h_toc = self.h_toc_dict.get(observation[u'obsid'], None)
                         if h_toc is not None:
                             observation[u'level_masl'] = str(float(h_toc) - float(observation[u'meas']))
@@ -1139,11 +1074,9 @@ class WFlowImportFields(RowEntryGrid):
 
     def alter_data(self, observations):
         if not self.flowtype:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'WFlowImportFields', u'Import error, flowtype not given')))
-            return Cancel()
+            raise utils.UsageError(ru(QCoreApplication.translate(u'WFlowImportFields', u'Import error, flowtype not given')))
         if not self.unit:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'WFlowImportFields', u'Import error, unit not given')))
-            return Cancel()
+            raise utils.UsageError(ru(QCoreApplication.translate(u'WFlowImportFields', u'Import error, unit not given')))
 
         observations = copy.deepcopy(observations)
         for observation in observations:
@@ -1176,9 +1109,6 @@ class WQualFieldImportFields(RowEntryGrid):
         self.__parameter.addItems(self._parameters_units.keys())
         self.label_unit = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Unit: ')))
         self.__unit = default_combobox()
-        self.label_depth = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Depth input field (optional): ')))
-        self.__depth = default_combobox()
-        self.__depth.addItems(self._import_method_chooser.parameter_names)
         self.__instrument = default_combobox()
         self.label_instrument = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Instrument: ')))
         self.parameter_instruments = {}
@@ -1193,8 +1123,6 @@ class WQualFieldImportFields(RowEntryGrid):
         self.layout.addWidget(self.__parameter, 1, 0)
         self.layout.addWidget(self.label_unit, 0, 1)
         self.layout.addWidget(self.__unit, 1, 1)
-        self.layout.addWidget(self.label_depth, 0, 2)
-        self.layout.addWidget(self.__depth, 1, 2)
         self.layout.addWidget(self.label_instrument, 0, 3)
         self.layout.addWidget(self.__instrument, 1, 3)
         self.layout.setColumnStretch(4, 1)
@@ -1220,14 +1148,6 @@ class WQualFieldImportFields(RowEntryGrid):
     @unit.setter
     def unit(self, value):
         self.__unit.setEditText(ru(value))
-
-    @property
-    def depth(self):
-        return ru(self.__depth.currentText())
-
-    @depth.setter
-    def depth(self, value):
-        self.__depth.setEditText(ru(value))
 
     @property
     def instrument(self):
@@ -1263,8 +1183,7 @@ class WQualFieldImportFields(RowEntryGrid):
 
     def alter_data(self, observations):
         if not self.parameter:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Import error, parameter not given')))
-            return Cancel()
+            raise utils.UsageError(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Import error, parameter not given')))
 
         observations = copy.deepcopy(observations)
 
@@ -1279,13 +1198,9 @@ class WQualFieldImportFields(RowEntryGrid):
         except TypeError, e:
             raise Exception("Obs: " + str(obs) + " e " + str(e))
         """
-
-        depth_dict = dict([(obs[u'date_time'], obs[u'value']) for obs in observations if obs[u'parametername'] == self.depth])
-
         for observation in observations:
             try:
                 if observation[u'parametername'] == self._import_method_chooser.parameter_name:
-                    observation[u'depth'] = depth_dict.get(observation[u'date_time'], u'')
                     observation[u'parameter'] = self.parameter
                     observation[u'instrument'] = self.instrument
                     observation[u'unit'] = self.unit
@@ -1293,6 +1208,37 @@ class WQualFieldImportFields(RowEntryGrid):
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'WQualFieldImportFields', u"Import error. See message log panel")),
                                                 log_msg=ru(QCoreApplication.translate(u'WQualFieldImportFields', u"error on observation : %s\nand parameter: %s"))%(str(observation), self.parameter))
                 raise TypeError
+        return observations
+
+
+class WQualFieldDepthImportFields(RowEntry):
+    """
+    """
+    def __init__(self, import_method_chooser, connect):
+        """
+        """
+        super(WQualFieldDepthImportFields, self).__init__()
+        self.import_method_chooser = import_method_chooser
+        self.layout.insertStretch(-1, 0)
+
+    def alter_data(self, observations):
+        #Depth should be added for all observations with the same obsid and date_time
+
+        observations = copy.deepcopy(observations)
+
+        parameter_name = self.import_method_chooser.parameter_name
+
+        dateformat = u'%Y%m%d %H:%M:%S'
+        depths = dict([((obs[u'sublocation'], datetime.strftime(obs[u'date_time'], dateformat)), obs[u'value'])
+                       for obs in observations if obs[u'parametername'] == parameter_name])
+        if not depths:
+            return observations
+
+        for observation in observations:
+            depth = depths.get((observation[u'sublocation'], datetime.strftime(observation[u'date_time'], dateformat)), None)
+            if depth is not None:
+                observation[u'depth'] = depth
+
         return observations
 
 
