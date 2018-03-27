@@ -61,69 +61,74 @@ class Calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
         self.connect(self.pushButton_Cancel, PyQt4.QtCore.SIGNAL("clicked()"), self.close)
         self.layer = layerin
 
+    def calc(self, obsids):
+        fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
+        to_d_t = self.ToDateTime.dateTime().toPyDateTime()
+        sql = u"""SELECT obsid FROM obs_points WHERE obsid IN ({}) AND h_toc IS NULL""".format(u', '.join([u"'{}'".format(x) for x in obsids]))
+
+        obsid_with_h_toc_null = db_utils.sql_load_fr_db(sql)[1]
+        if obsid_with_h_toc_null:
+            obsid_with_h_toc_null = [x[0] for x in obsid_with_h_toc_null]
+            if self.checkBox_stop_if_null.isChecked():
+                any_nulls = [obsid for obsid in obsids if obsid in obsid_with_h_toc_null]
+                if any_nulls:
+                    utils.pop_up_info(ru(QCoreApplication.translate(u'Calclvl', u'Adjustment aborted! There seems to be NULL values in your table obs_points, column h_toc.')), ru(QCoreApplication.translate(u'Calclvl', 'Error')))
+                    return None
+
+            else:
+                obsids = [obsid for obsid in obsids if obsid not in obsid_with_h_toc_null]
+
+            if not obsids:
+                utils.pop_up_info(ru(QCoreApplication.translate(u'Calclvl',
+                                                                u'Adjustment aborted! All h_tocs were NULL.')),
+                                  ru(QCoreApplication.translate(u'Calclvl', 'Error')))
+                return None
+
+        formatted_obsids = u', '.join([u"'{}'".format(x) for x in obsids])
+        where_args = {'fr_dt': str(fr_d_t), 'to_dt': str(to_d_t), 'obsids': formatted_obsids}
+        where_sql = u"""meas IS NOT NULL AND date_time >= '{fr_dt}' AND date_time <= '{to_dt}' AND obsid IN ({obsids})""".format(**where_args)
+        if not self.checkBox_overwrite_prev.isChecked():
+            where_sql += u""" AND level_masl IS NULL """
+
+        sql1 = u"""UPDATE w_levels SET h_toc = (SELECT obs_points.h_toc FROM obs_points WHERE w_levels.obsid = obs_points.obsid) WHERE {}""".format(where_sql)
+        self.updated_h_tocs = self.log_msg(where_sql)
+        db_utils.sql_alter_db(sql1)
+
+        where_sql += u""" AND h_toc IS NOT NULL"""
+        sql2 = u"""UPDATE w_levels SET level_masl = h_toc - meas WHERE h_toc IS NOT NULL AND {}""".format(where_sql)
+        self.updated_level_masl = self.log_msg(where_sql)
+        db_utils.sql_alter_db(sql2)
+
+        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Calclvl', u'Calculation done, see log message panel')),
+                                    log_msg=ru(QCoreApplication.translate(u'Calclvl', u'H_toc added and level_masl calculated for\nobsid;min date;max date;calculated number of measurements: \n%s'))%(self.updated_level_masl))
+
     @fn_timer
     def calcall(self):
-        fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
-        to_d_t = self.ToDateTime.dateTime().toPyDateTime()
-        
-#        sanity1 = db_utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.h_toc""")[1]
-        sanity1 = db_utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid""")[1]
-        sanity2 = db_utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.h_toc NOT NULL""")[1]
-
-        if len(sanity1) == len(sanity2): #only if h_toc exists for all objects!!
-            sql1 = """UPDATE w_levels SET h_toc = (SELECT obs_points.h_toc FROM obs_points WHERE w_levels.obsid = obs_points.obsid) WHERE """
-            sql1 += """date_time >= '"""
-            sql1 += str(fr_d_t)
-            sql1 += """' AND date_time <= '"""
-            sql1 += str(to_d_t)
-            sql1 += """' """
-            db_utils.sql_alter_db(sql1)
-            sql2 = """UPDATE w_levels SET level_masl = h_toc - meas WHERE """
-            sql2 += """date_time >= '"""
-            sql2 += str(fr_d_t)
-            sql2 += """' AND date_time <= '"""
-            sql2 += str(to_d_t)
-            sql2 += """' """        
-            db_utils.sql_alter_db(sql2)
-            self.close()
+        obsids = db_utils.sql_load_fr_db(u"""SELECT DISTINCT obsid FROM w_levels""")[1]
+        if obsids:
+            obsids = [x[0] for x in obsids]
+            self.calc(obsids)
         else:
-            utils.pop_up_info(ru(QCoreApplication.translate(u'Calclvl', u'Adjustment aborted! There seems to be NULL values in your table obs_points, column h_toc.')), ru(QCoreApplication.translate(u'Calclvl', 'Error')))
-            self.close()
-            
+            utils.pop_up_info(ru(QCoreApplication.translate(u'Calclvl',
+                                                            u'Adjustment aborted! No obsids in w_levels.')),
+                              ru(QCoreApplication.translate(u'Calclvl', 'Error')))
+        self.close()
+
+    @fn_timer
     def calcselected(self):
-        obsar = utils.getselectedobjectnames(self.layer)
-        observations = obsar
-        i=0
-        for obs in obsar:
-                observations[i] = obs.encode('utf-8') #turn into a list of python byte strings
-                i += 1
-        fr_d_t = self.FromDateTime.dateTime().toPyDateTime()
-        to_d_t = self.ToDateTime.dateTime().toPyDateTime()
-
-        sanity1 = db_utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.obsid IN """ + (str(observations)).encode('utf-8').replace('[','(').replace(']',')'))[1]
-        sanity2 = db_utils.sql_load_fr_db("""SELECT obs_points.h_toc FROM obs_points LEFT JOIN w_levels WHERE w_levels.obsid = obs_points.obsid AND obs_points.h_toc NOT NULL  AND obs_points.obsid IN """ + (str(observations)).encode('utf-8').replace('[','(').replace(']',')'))[1]
-
-        if len(sanity1) == len(sanity2): #only if h_toc exists for all objects
-            sql1 = """UPDATE w_levels SET h_toc = (SELECT obs_points.h_toc FROM obs_points WHERE w_levels.obsid = obs_points.obsid) WHERE obsid IN """
-            sql1 += str(observations)
-            sql1 += """ AND date_time >= '"""
-            sql1 += str(fr_d_t)
-            sql1 += """' AND date_time <= '"""
-            sql1 += str(to_d_t)
-            sql1 += """' """   
-            db_utils.sql_alter_db(sql1.replace("[","(").replace("]",")"))
-            sql2 = """UPDATE w_levels SET level_masl = h_toc - meas WHERE obsid IN """
-            sql2 += str(observations)
-            sql2 += """ AND date_time >= '"""
-            sql2 += str(fr_d_t)
-            sql2 += """' AND date_time <= '"""
-            sql2 += str(to_d_t)
-            sql2 += """' and meas is not null and h_toc is not null """
-            db_utils.sql_alter_db(sql2.replace("[","(").replace("]",")"))
-            self.close()        
+        obsids = ru(utils.getselectedobjectnames(self.layer), keep_containers=True)
+        if not obsids:
+            utils.pop_up_info(ru(QCoreApplication.translate(u'Calclvl',
+                                                            u'Adjustment aborted! No obsids selected.')),
+                              ru(QCoreApplication.translate(u'Calclvl', 'Error')))
         else:
-            utils.pop_up_info(ru(QCoreApplication.translate(u'Calclvl', u'Calculation aborted! There seems to be NULL values in your table obs_points, column h_toc.')),ru(QCoreApplication.translate(u'Calclvl', 'Error')))
-            self.close()
+            self.calc(obsids)
+        self.close()
+
+    def log_msg(self, where_sql):
+        res_sql = u"""SELECT DISTINCT obsid, min(date_time), max(date_time), count(obsid) FROM w_levels WHERE {} GROUP BY obsid"""
+        log_msg = u'\n'.join([u';'.join(ru(row, keep_containers=True)) for row in db_utils.sql_load_fr_db(res_sql.format(where_sql))[1]])
+        return log_msg
 
 
 class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of the class Calibr_Ui_Dialog is created same time as instance of calibrlogger is created

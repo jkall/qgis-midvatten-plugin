@@ -13,7 +13,7 @@
     <x>0</x>
     <y>0</y>
     <width>379</width>
-    <height>241</height>
+    <height>301</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -43,6 +43,31 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
+     <item row="9" column="1">
+      <widget class="QPushButton" name="pushButton_All">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>All</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="0" colspan="4">
       <widget class="QLabel" name="Instructions">
        <property name="sizePolicy">
@@ -276,7 +301,7 @@ obs_points.h_toc - w_levels.meas
        </property>
       </widget>
      </item>
-     <item row="4" column="0" colspan="4">
+     <item row="7" column="0" colspan="4">
       <widget class="Line" name="line_2">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -300,7 +325,7 @@ obs_points.h_toc - w_levels.meas
        </property>
       </widget>
      </item>
-     <item row="5" column="0" colspan="4">
+     <item row="8" column="0" colspan="4">
       <widget class="QLabel" name="label">
        <property name="sizePolicy">
         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -329,32 +354,7 @@ all or only the selected objects?</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
-      <widget class="QPushButton" name="pushButton_All">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="font">
-        <font>
-         <family>Arial</family>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>All</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="2">
+     <item row="9" column="2">
       <widget class="QPushButton" name="pushButton_Selected">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -379,7 +379,7 @@ all or only the selected objects?</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="3">
+     <item row="9" column="3">
       <widget class="QPushButton" name="pushButton_Cancel">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -401,6 +401,56 @@ all or only the selected objects?</string>
        </property>
        <property name="text">
         <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0" colspan="4">
+      <widget class="QCheckBox" name="checkBox_overwrite_prev">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Checked: H_toc and level_masl will be calculated for all rows.&lt;br/&gt;Unchecked: H_toc and level_masl will only be calculated for rows where level_masl is NULL.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Overwrite previous calculations</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0" colspan="4">
+      <widget class="Line" name="line_3">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+        </font>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0" colspan="4">
+      <widget class="QCheckBox" name="checkBox_stop_if_null">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Checked: If obs_points.h_toc is NULL for any obsid included in calculation, the calculation will not be performed for any obsid.&lt;br/&gt;Unchecked: Obsids where obs_points.h_toc is NULL will be skipped and calculation will be performed for the rest.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Stop if h_toc is null</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

@@ -53,18 +53,40 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="90"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="75"/>
         <source>Adjustment aborted! There seems to be NULL values in your table obs_points, column h_toc.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="125"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="121"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="125"/>
-        <source>Calculation aborted! There seems to be NULL values in your table obs_points, column h_toc.</source>
+        <location filename="../tools/wlevels_calc_calibr.py" line="82"/>
+        <source>Adjustment aborted! All h_tocs were NULL.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/wlevels_calc_calibr.py" line="102"/>
+        <source>Calculation done, see log message panel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/wlevels_calc_calibr.py" line="102"/>
+        <source>H_toc added and level_masl calculated for
+obsid;min date;max date;calculated number of measurements: 
+%s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/wlevels_calc_calibr.py" line="112"/>
+        <source>Adjustment aborted! No obsids in w_levels.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../tools/wlevels_calc_calibr.py" line="121"/>
+        <source>Adjustment aborted! No obsids selected.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -79,17 +101,17 @@
 <context>
     <name>Calibrlogger</name>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="147"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="152"/>
         <source>Calculate water level from logger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="148"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="153"/>
         <source>Select the observation point with logger data to be adjusted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="180"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="185"/>
         <source>This will calibrate all values inside the chosen period
 using the mean difference between head_cm and w_levels measurements.
 
@@ -98,7 +120,7 @@ The search radius is the maximum time distance allowed
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="182"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="187"/>
         <source>This will calibrate all values inside the chosen period
 using the mean difference between level_masl and w_levels measurements.
 
@@ -107,114 +129,114 @@ The search radius is the maximum time distance allowed
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="294"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="299"/>
         <source>No calibrated level_masl values to normalize against.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="297"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="302"/>
         <source>No head values to normalize against.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="319"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="324"/>
         <source>There is no earlier known position for the logger in %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="322"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="327"/>
         <source>Last pos. for logger in %s was %s masl at %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="366"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="371"/>
         <source>Select the observation point with logger data to be calibrated.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="507"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="512"/>
         <source>Select a date to use as &quot;from&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="512"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="517"/>
         <source>Select a date to use as &quot;to&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="552"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="557"/>
         <source>Getting last calibration failed for obsid %s, msg: %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="573"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="578"/>
         <source>Select a logger node.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="581"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="586"/>
         <source>Select a y position to move to.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="585"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="590"/>
         <source>Something wrong, click &quot;Current&quot; and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="613"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="618"/>
         <source>No connection between level_masl dates and logger date could be made!
 Try again or choose a new logger line node!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="626"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="631"/>
         <source>Logger node %s selected, click &quot;new&quot; and select new level.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="636"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="641"/>
         <source>Offset is calculated, now click &quot;add&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="678"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="683"/>
         <source>There was no match found between measurements and logger values inside the chosen period.
  Try to increase the search radius!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="682"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="687"/>
         <source>There was no matched measurements or logger values inside the chosen period.
  Try to increase the search radius!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="683"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="688"/>
         <source>Calculated water level from logger: utils.calc_mean_diff(coupled_vals) didn&apos;t return a useable value.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="776"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="781"/>
         <source>Must write time resolution also, ex. %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="795"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="800"/>
         <source>Error!
  The obsid selection has been changed but the plot has not been updated. No deletion done.
 Updating plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="799"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="804"/>
         <source>Error!
  No obsid was selected. No deletion done.
 Updating plot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="817"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="822"/>
         <source>Do you want to delete the period %s to %s for obsid %s from table %s?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -346,17 +368,17 @@ Aveflow is to be calculated for Accvol observations within this interval:</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calc_lvl_dialog.ui" line="131"/>
+        <location filename="../ui/calc_lvl_dialog.ui" line="156"/>
         <source>From:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calc_lvl_dialog.ui" line="272"/>
+        <location filename="../ui/calc_lvl_dialog.ui" line="297"/>
         <source>yyyy-MM-dd HH:mm:ss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calc_lvl_dialog.ui" line="162"/>
+        <location filename="../ui/calc_lvl_dialog.ui" line="187"/>
         <source>To:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -366,7 +388,7 @@ Aveflow is to be calculated for Accvol observations within this interval:</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calc_lvl_dialog.ui" line="353"/>
+        <location filename="../ui/calc_lvl_dialog.ui" line="67"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
@@ -381,7 +403,7 @@ Aveflow is to be calculated for Accvol observations within this interval:</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calc_lvl_dialog.ui" line="70"/>
+        <location filename="../ui/calc_lvl_dialog.ui" line="95"/>
         <source>Water levels (in meter above sea level) will be calculated as:
 
 obs_points.h_toc - w_levels.meas
@@ -389,7 +411,7 @@ obs_points.h_toc - w_levels.meas
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/calc_lvl_dialog.ui" line="324"/>
+        <location filename="../ui/calc_lvl_dialog.ui" line="349"/>
         <source>Do you want the db table w_levels to be updated for
 all or only the selected objects?</source>
         <translation type="unfinished"></translation>
@@ -1576,6 +1598,26 @@ Momflow=Momentanflöde vid avläsningstillfället</source>
     <message>
         <location filename="../ui/w_flow.ui" line="502"/>
         <source>Ytterligare information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calc_lvl_dialog.ui" line="410"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Checked: H_toc and level_masl will be calculated for all rows.&lt;br/&gt;Unchecked: H_toc and level_masl will only be calculated for rows where level_masl is NULL.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calc_lvl_dialog.ui" line="413"/>
+        <source>Overwrite previous calculations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calc_lvl_dialog.ui" line="447"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Checked: If obs_points.h_toc is NULL for any obsid included in calculation, the calculation will not be performed for any obsid.&lt;br/&gt;Unchecked: Obsids where obs_points.h_toc is NULL will be skipped and calculation will be performed for the rest.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/calc_lvl_dialog.ui" line="450"/>
+        <source>Stop if h_toc is null</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

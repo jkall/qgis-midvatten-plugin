@@ -21,6 +21,7 @@ deprecated=False
 changelog=
         Version 1.5.12b:
         - Stratigraphy: Button for minimizing and maximizing stratigraphy plot (Thanks to Simon O'Connor!)
+        - Calculate w-levels: Added checkboxes for more finegrained filtration.
         Version 1.5.11b:
         - Fixed better size for NotFoundQuestion.
         - Custom general report: User defined decimal separator. Upper left table colspan 2 if upper right table is not existing.
