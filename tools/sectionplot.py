@@ -833,6 +833,7 @@ class SecplotTemplates(object):
         self.loaded_template = {}
         self.sectionplot = sectionplot
         self.template_list = template_list
+        self.template_folder = os.path.join(os.path.split(os.path.dirname(__file__))[0], 'definitions', 'secplot_templates')
 
         self.templates = {}
 
@@ -846,7 +847,7 @@ class SecplotTemplates(object):
         if self.loaded_template:
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SecplotTemplates', u'Loaded template from midvatten settings secplot_loaded_template.')))
 
-        default_filename = os.path.join(os.path.dirname(__file__), '..', 'definitions', 'secplot_templates', 'default.txt')
+        default_filename = os.path.join(self.template_folder, 'default.txt')
 
         if not self.loaded_template:
             if not os.path.isfile(default_filename):
@@ -925,8 +926,10 @@ class SecplotTemplates(object):
             for filename in filenames:
                 if not filename:
                     continue
-                processed_before = any([os.path.samefile(filename, fname) for fname in self.templates.keys()])
-                processed_now = any([os.path.samefile(filename, fname) for fname in templates.keys()])
+
+                processed_before = filename in self.templates.keys()
+                processed_now = filename in templates.keys()
+
                 if not processed_before and not processed_now:
                     template = self.parse_template(filename)
                     if template:
@@ -947,8 +950,7 @@ class SecplotTemplates(object):
 
     @utils.general_exception_handler
     def import_from_template_folder(self):
-        secplot_templates_folder = os.path.join(os.path.dirname(__file__), '..', 'definitions', 'secplot_templates')
-        for root, dirs, files in os.walk(secplot_templates_folder):
+        for root, dirs, files in os.walk(self.template_folder):
             if files:
                 filenames = [os.path.join(root, filename) for filename in files]
                 self.import_templates(filenames)
