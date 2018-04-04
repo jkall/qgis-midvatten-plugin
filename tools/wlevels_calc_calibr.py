@@ -101,6 +101,7 @@ class Calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
 
         utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Calclvl', u'Calculation done, see log message panel')),
                                     log_msg=ru(QCoreApplication.translate(u'Calclvl', u'H_toc added and level_masl calculated for\nobsid;min date;max date;calculated number of measurements: \n%s'))%(self.updated_level_masl))
+        self.close()
 
     @fn_timer
     def calcall(self):
@@ -112,7 +113,7 @@ class Calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
             utils.pop_up_info(ru(QCoreApplication.translate(u'Calclvl',
                                                             u'Adjustment aborted! No obsids in w_levels.')),
                               ru(QCoreApplication.translate(u'Calclvl', 'Error')))
-        self.close()
+
 
     @fn_timer
     def calcselected(self):
@@ -123,7 +124,6 @@ class Calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
                               ru(QCoreApplication.translate(u'Calclvl', 'Error')))
         else:
             self.calc(obsids)
-        self.close()
 
     def log_msg(self, where_sql):
         res_sql = u"""SELECT DISTINCT obsid, min(date_time), max(date_time), count(obsid) FROM w_levels WHERE {} GROUP BY obsid"""
