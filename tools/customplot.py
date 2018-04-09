@@ -842,7 +842,10 @@ class PandasCalculations(object):
             except ValueError:
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'PandasCalculations', u'Resample base must be an integer')))
             else:
-                df = df.resample(rule, how=how, base=int(base))
+				try:#new api for pandas >=0.18
+					df = getattr(df.resample(rule,base=int(base)),how)()
+				except:#old pandas
+					df = df.resample(rule, how=how, base=int(base))
 
         #Rolling mean
         window = self.window.text()
