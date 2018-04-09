@@ -39,7 +39,8 @@
         "va": "center",
         "xytext": (
                 5,
-                0, )},
+                0, ),
+        "zorder": 10},
     "legend_Axes_legend": {
         "fontsize": 10,
         "framealpha": 1,

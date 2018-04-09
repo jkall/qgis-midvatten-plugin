@@ -43,7 +43,8 @@
         "va": "center",
         "xytext": (
                 5,
-                0, )},
+                0, ),
+        "zorder": 10},
     "legend_Axes_legend": {
         "borderpad": 0.1,
         "columnspacing": 0.1,
