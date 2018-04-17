@@ -63,7 +63,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         obsids = utils.getselectedobjectnames()
         report_data = self.get_data(skip_reports_with_parameters, obsids, dbconnection)
 
-        col_step = 10
+        col_step = 8
 
         for startcol in xrange(1, len(report_data[0]), col_step):
             printlist = [[row[0]] for row in report_data]
@@ -75,13 +75,6 @@ class Wqualreport():        # extracts water quality data for selected objects, 
 
             self.htmlcols = len(filtered[0])
             self.WriteHTMLReport(filtered, f)
-
-
-
-
-
-
-
 
         dbconnection.closedb()
         # write some finishing html and close the file
@@ -164,7 +157,8 @@ class Wqualreport():        # extracts water quality data for selected objects, 
                     pass
             f.write(rpt)
         f.write("\n</table><p></p><p></p>")
-        f.write("""<p>empty_row_between_tables</p>""")
+        #f.write("""<p>empty_row_between_tables</p>""")
+        f.write("""<p style="page-break-before: always">""")
 
 
 def sql_list(alist):
