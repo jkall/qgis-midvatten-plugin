@@ -207,12 +207,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         numskipped = 0
         sql = u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join([placeholder_sign for x in xrange(len(file_data[0]))]))
         for row in file_data[1:]:
-            concatted = u'|'.join([row[idx] for idx in concat_cols])
-            if concatted in added_rows:
-                numskipped += 1
-                continue
-            else:
-                added_rows.add(concatted)
+            if  primary_keys_for_concat:
+                concatted = u'|'.join([row[idx] for idx in concat_cols])
+                if concatted in added_rows:
+                    numskipped += 1
+                    continue
+                else:
+                    added_rows.add(concatted)
             args = tuple([None if any([r is None, not r.strip() if r is not None else None]) else r for r in row])
             dbconnection.cursor.execute(sql, args)
 
