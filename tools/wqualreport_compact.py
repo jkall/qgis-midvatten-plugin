@@ -21,20 +21,162 @@ import codecs
 import os
 import time  # for debugging
 
+import PyQt4
+import ast
 from PyQt4.QtCore import QCoreApplication
 from PyQt4.QtCore import QUrl, Qt, QDir
 from PyQt4.QtGui import QDesktopServices, QApplication, QCursor
 
 import db_utils
+import qgis
 # midvatten modules
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from midvatten_utils import general_exception_handler
 
+custom_drillreport_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'compact_w_qual_report.ui'))[0]
+
+class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
+    def __init__(self, parent, midv_settings):
+        self.iface = parent
+
+        self.ms = midv_settings
+        PyQt4.QtGui.QDialog.__init__(self, parent)
+        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+        self.setupUi(self)  # Required by Qt4 to initialize the UI
+
+        self.stored_settings_key = u'compactwqualreport'
+        self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settings_key, {})
+        self.update_from_stored_settings(self.stored_settings)
+
+        self.connect(self.pushButton_ok, PyQt4.QtCore.SIGNAL("clicked()"), self.drillreport)
+
+        #self.connect(self.pushButton_cancel, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.close())
+
+        self.connect(self.pushButton_update_from_string, PyQt4.QtCore.SIGNAL("clicked()"), self.ask_and_update_stored_settings)
+
+        self.show()
+
+
+    @utils.general_exception_handler
+    def wqualreport(self):
+
+        num_data_cols = int(self.num_data_cols.text())
+        rowheader_colwidth_percent = int(self.rowheader_colwidth_percent.setText('15'))
+        empty_row_between_tables = self.empty_row_between_tables.isChecked()
+        page_break_between_tables = self.page_break_between_tables.isChecked()
+        skip_reports_with_parameters = {'NOT IN': ru(self.skip_reports.text()).split(u';'),
+                                        'IN': ru(self.keep_reports.text()).split(u';')}
+
+
+        obsids = sorted(utils.getselectedobjectnames(qgis.utils.iface.activeLayer()))  # selected obs_point is now found in obsid[0]
+
+        if not obsids:
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'CompactWqualReportUi', u'Must select at least 1 obsid in selected layer')))
+            raise utils.UsageError()
+        self.save_stored_settings()
+
+        wqual = Wqualreport(self.ms, obsids, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
+                            page_break_between_tables, skip_reports_with_parameters)
+
+    def update_from_stored_settings(self, stored_settings):
+        if isinstance(stored_settings, dict) and stored_settings:
+            for attr, val in stored_settings.iteritems():
+                try:
+                    selfattr = getattr(self, attr)
+                except:
+                    pass
+                else:
+                    if isinstance(selfattr, PyQt4.QtGui.QPlainTextEdit):
+                        if isinstance(val, (list, tuple)):
+                            val = u'\n'.join(val)
+                        selfattr.setPlainText(val)
+                    elif isinstance(selfattr, PyQt4.QtGui.QCheckBox):
+                        selfattr.setChecked(val)
+                    elif isinstance(selfattr, PyQt4.QtGui.QLineEdit):
+                        selfattr.setText(val)
+        else:
+            self.num_data_cols.setText('10')
+            self.rowheader_colwidth_percent.setText('15')
+            self.empty_row_between_tables.setChecked(False)
+            self.page_break_between_tables.setChecked(True)
+            self.skip_reports = ''
+            self.keep_reports = ''
+
+    @utils.general_exception_handler
+    def ask_and_update_stored_settings(self):
+        self.stored_settings = self.ask_for_stored_settings(self.stored_settings)
+        self.update_from_stored_settings(self.stored_settings)
+        self.save_stored_settings()
+
+    def save_stored_settings(self):
+        stored_settings = {}
+        for attrname in [u'general_metadata',
+                        u'geo_metadata',
+                        u'strat_columns',
+                        u'header_in_table',
+                        u'skip_empty',
+                        u'include_comments',
+                        u'general_metadata_header',
+                        u'geo_metadata_header',
+                        u'strat_columns_header',
+                        u'comment_header',
+                        u'empty_row_between_obsids',
+                        u'topleft_topright_colwidths',
+                        u'general_colwidth',
+                        u'geo_colwidth',
+                        u'decimal_separator']:
+            try:
+                attr = getattr(self, attrname)
+            except:
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi',
+                                                                                  u"Programming error. Attribute name %s didn't exist in self.")) % attrname)
+            else:
+                if isinstance(attr, PyQt4.QtGui.QPlainTextEdit):
+                    val = [x for x in attr.toPlainText().split(u'\n') if x]
+                elif isinstance(attr, PyQt4.QtGui.QCheckBox):
+                    val = attr.isChecked()
+                elif isinstance(attr, PyQt4.QtGui.QLineEdit):
+                    val = attr.text()
+                else:
+                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Programming error. The Qt-type %s is unhandled.'))%str(type(attr)))
+                    continue
+                stored_settings[attrname] = val
+
+        self.stored_settings = stored_settings
+
+        utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settings_key)
+
+    def ask_for_stored_settings(self, stored_settings):
+        old_string = utils.anything_to_string_representation(stored_settings, itemjoiner=u',\n', pad=u'    ',
+                                                             dictformatter=u'{\n%s}',
+                                                             listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
+
+        msg = ru(QCoreApplication.translate(u'CompactWqualReportUi', u'Replace the settings string with a new settings string.'))
+        new_string = PyQt4.QtGui.QInputDialog.getText(None, ru(QCoreApplication.translate(u'DrillreportUi', "Edit settings string")), msg,
+                                                           PyQt4.QtGui.QLineEdit.Normal, old_string)
+        if not new_string[1]:
+            raise utils.UserInterruptError()
+
+        new_string_text = ru(new_string[0])
+        if not new_string_text:
+            return {}
+
+        try:
+            as_dict = ast.literal_eval(new_string_text)
+        except Exception as e:
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'CompactWqualReportUi', u'Translating string to dict failed, see log message panel')),
+                                           log_msg=str(e))
+            raise utils.UsageError()
+        else:
+            return as_dict
+
+
 
 class Wqualreport():        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     @general_exception_handler
-    def __init__(self, settingsdict = {}):
+    def __init__(self, settingsdict, obsids, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
+                            page_break_between_tables, skip_reports_with_parameters):
         #show the user this may take a long time...
         QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
 
@@ -59,22 +201,26 @@ class Wqualreport():        # extracts water quality data for selected objects, 
 
         dbconnection = db_utils.DbConnectionManager()
 
-        skip_reports_with_parameters = [u'Bly', u'Benso(ghi)perylen']
-        obsids = utils.getselectedobjectnames()
+        #skip_reports_with_parameters = {'IN': [u'Bly', u'Benso(ghi)perylen']}
+        #obsids = utils.getselectedobjectnames()
         report_data = self.get_data(skip_reports_with_parameters, obsids, dbconnection)
 
-        col_step = 8
+        #num_data_cols = 17
+        #rowheader_colwidth_percent = 11
+        #empty_row_between_tables = False
+        #page_break_between_tables = True
 
-        for startcol in xrange(1, len(report_data[0]), col_step):
+        for startcol in xrange(1, len(report_data[0]), num_data_cols):
             printlist = [[row[0]] for row in report_data]
-            print(printlist)
+            #print(printlist)
             for rownr, row in enumerate(report_data):
-                printlist[rownr].extend(row[startcol:min(startcol+col_step, len(row))])
+                printlist[rownr].extend(row[startcol:min(startcol+num_data_cols, len(row))])
 
             filtered = [row for row in printlist if any(row[1:])]
 
             self.htmlcols = len(filtered[0])
-            self.WriteHTMLReport(filtered, f)
+            self.WriteHTMLReport(filtered, f, rowheader_colwidth_percent, empty_row_between_tables=empty_row_between_tables,
+                        page_break_between_tables=page_break_between_tables)
 
         dbconnection.closedb()
         # write some finishing html and close the file
@@ -86,15 +232,24 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         if report_data:
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
 
-    def get_data(self, skip_reports_with_parameters, obsids, dbconnection):
-        if skip_reports_with_parameters is not None:
-            skip_reports = r""" AND report NOT IN (SELECT DISTINCT report FROM {table}
+    def get_data(self, skip_or_keep_reports_with_parameters, obsids, dbconnection):
+        """
+
+        :param skip_or_keep_reports_with_parameters: a dict like {'IN': ['par1', 'par2'], 'NOT IN': ['par3', 'par4']}
+        The parameter skip_or_keep_reports_with_parameters is used to filter reports.
+        :param obsids:
+        :param dbconnection:
+        :return:
+        """
+        skip_reports = ''
+
+        for in_or_not_in, thelist in skip_or_keep_reports_with_parameters.iteritems():
+            skip_reports += r""" AND report {IN or NOT IN} (SELECT DISTINCT report FROM {table}
                                 WHERE {parameter} IN ({skip_parameters}))
                             """.format(**{'table': self.settingsdict['wqualtable'],
                                           'parameter': self.settingsdict['wqual_paramcolumn'],
-                                          'skip_parameters': sql_list(skip_reports_with_parameters)})
-        else:
-            skip_reports = ''
+                                          'skip_parameters': sql_list(thelist),
+                                          'IN or NOT IN': in_or_not_in})
 
         sql = '''SELECT obsid, date_time, report, {parameter} || ', ' ||
                  CASE WHEN {unit} IS NULL THEN '' ELSE {unit} END,
@@ -133,32 +288,59 @@ class Wqualreport():        # extracts water quality data for selected objects, 
 
         return outlist
 
-    def WriteHTMLReport(self, ReportData, f):
-        tabellbredd = 180 + 75*self.htmlcols
-        rpt = "<table width=\""
-        rpt += str(tabellbredd) # set table total width from no of water quality analyses
-        rpt += "\" border=\"1\">\n"
+    def WriteHTMLReport(self, ReportData, f, rowheader_colwidth_percent, empty_row_between_tables=False,
+                        page_break_between_tables=False):
+        #tabellbredd = 180 + 75*self.htmlcols
+        rpt = u"""<TABLE WIDTH=100% BORDER=1 CELLPADDING=1 class="no-spacing" CELLSPACING=0 PADDING-BOTTOM=0 PADDING=0>"""
+        #rpt = "<table width=\""
+        #rpt += str(tabellbredd) # set table total width from no of water quality analyses
+        #rpt += "\" border=\"1\">\n"
         f.write(rpt)
 
         for counter, sublist in enumerate(ReportData):
+            sublist = ru(sublist, keep_containers=True)
             try:
                 if counter < self.nr_header_rows:
-                    rpt = "  <tr><th>"
-                    rpt += "    </th><th width =\"75\">".join(sublist)
-                    rpt += "  </th></tr>\n"
+                    rpt = u"<tr><TH WIDTH={}%><font size=1>{}</font></th>".format(str(rowheader_colwidth_percent), sublist[0])
+
+                    data_colwidth = (100.0 - float(rowheader_colwidth_percent)) / len(sublist[1:])
+
+                    coltext = u"<th width ={colwidth}%><font size=1>{data}</font></th>"
+                    rpt += "".join([coltext.format(**{u"colwidth": str(data_colwidth),
+                                                      u"data": x}) for x in sublist[1:]])
+
+                    #Same columns on last table:
+                    #if len(sublist[1:]) < len(ReportData[0][1:]):
+                    #    rpt += u"".join([coltext.format(" ") for x in xrange(len(ReportData[0][1:]) - len(sublist[1:]))])
+
+                    rpt += u"</tr>\n"
                 else:
-                    rpt = "  <tr><td>"
-                    rpt += "    </td><td align=\"right\">".join(sublist)
-                    rpt += "  </td></tr>\n"
+                    rpt = u"<tr>"
+                    rpt += u"""<td align=\"left\"><font size=1>{}</font></td>""".format(sublist[0])
+                    coltext = u"""<td align=\"right\"><font size=1>{}</font></td>"""
+                    rpt += u"".join([coltext.format(x) for x in sublist[1:]])
+
+                    #Same columns on last table:
+                    #if len(sublist[1:]) < len(ReportData[0][1:]):
+                    #    rpt += u"".join([coltext.format(" ") for x in xrange(len(ReportData[0][1:]) - len(sublist[1:]))])
+
+                    rpt += u"</tr>\n"
             except:
                 try:
                     print("here was an error: %s"%sublist)
                 except:
                     pass
             f.write(rpt)
+
+        #All in one table:
+        if empty_row_between_tables:
+            f.write("""<tr><td>empty_row_between_tables</td></tr>""")
+
         f.write("\n</table><p></p><p></p>")
-        #f.write("""<p>empty_row_between_tables</p>""")
-        f.write("""<p style="page-break-before: always">""")
+
+        #Separate tables:
+        if page_break_between_tables:
+            f.write("""<p style="page-break-before: always">""")
 
 
 def sql_list(alist):

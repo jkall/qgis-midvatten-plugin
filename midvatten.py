@@ -44,7 +44,7 @@ from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
 from wqualreport import Wqualreport
-from wqualreport_compact import Wqualreport as Wqualreportcompact
+from wqualreport_compact import CompactWqualReportUi
 from loaddefaultlayers import LoadLayers
 from prepareforqgis2threejs import PrepareForQgis2Threejs
 import midvatten_utils as utils
@@ -862,7 +862,7 @@ class midvatten:
             err_flag += 1
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Check Midvatten settings! \nSomething is probably wrong in the 'W quality report' tab!"), duration =15)
         if err_flag == 0:
-            Wqualreportcompact(self.ms.settingsdict)
+            CompactWqualReportUi(self.ms.settingsdict)
 
     def wlvlcalculate(self):
         allcritical_layers = ('obs_points', 'w_levels')     #Check that none of these layers are in editing mode

@@ -59,6 +59,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplot_loaded_template': '',
             'secplot_templates': '',
             'settingslocation':1,
+            'compactwqualreport':'',
             'custplot_tabwidget':0,
             'custplot_table1':'w_levels',
             'custplot_table2':'',
