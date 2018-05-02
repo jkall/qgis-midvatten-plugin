@@ -862,7 +862,7 @@ class midvatten:
             err_flag += 1
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Check Midvatten settings! \nSomething is probably wrong in the 'W quality report' tab!"), duration =15)
         if err_flag == 0:
-            CompactWqualReportUi(self.ms.settingsdict)
+            CompactWqualReportUi(self.iface.mainWindow(), self.ms)
 
     def wlvlcalculate(self):
         allcritical_layers = ('obs_points', 'w_levels')     #Check that none of these layers are in editing mode

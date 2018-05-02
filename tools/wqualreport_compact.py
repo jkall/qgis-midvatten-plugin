@@ -44,12 +44,14 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
         PyQt4.QtGui.QDialog.__init__(self, parent)
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
+        self.setWindowTitle(ru(QCoreApplication.translate(u'CompactWqualReportUi',
+                                                          u"Compact Drillreport")))  # Set the title for the dialog
 
         self.stored_settings_key = u'compactwqualreport'
         self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settings_key, {})
         self.update_from_stored_settings(self.stored_settings)
 
-        self.connect(self.pushButton_ok, PyQt4.QtCore.SIGNAL("clicked()"), self.drillreport)
+        self.connect(self.pushButton_ok, PyQt4.QtCore.SIGNAL("clicked()"), self.wqualreport)
 
         #self.connect(self.pushButton_cancel, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.close())
 
@@ -62,11 +64,13 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
     def wqualreport(self):
 
         num_data_cols = int(self.num_data_cols.text())
-        rowheader_colwidth_percent = int(self.rowheader_colwidth_percent.setText('15'))
+        rowheader_colwidth_percent = int(self.rowheader_colwidth_percent.text())
         empty_row_between_tables = self.empty_row_between_tables.isChecked()
         page_break_between_tables = self.page_break_between_tables.isChecked()
-        skip_reports_with_parameters = {'NOT IN': ru(self.skip_reports.text()).split(u';'),
-                                        'IN': ru(self.keep_reports.text()).split(u';')}
+        skip = ru(self.skip_reports.text()).split(u';')
+        keep = ru(self.keep_reports.text()).split(u';')
+        skip_reports_with_parameters = {'NOT IN': skip if any(skip) else [],
+                                        'IN': keep if any(keep) else []}
 
 
         obsids = sorted(utils.getselectedobjectnames(qgis.utils.iface.activeLayer()))  # selected obs_point is now found in obsid[0]
@@ -76,7 +80,7 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
             raise utils.UsageError()
         self.save_stored_settings()
 
-        wqual = Wqualreport(self.ms, obsids, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
+        wqual = Wqualreport(self.ms.settingsdict, obsids, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
                             page_break_between_tables, skip_reports_with_parameters)
 
     def update_from_stored_settings(self, stored_settings):
@@ -100,8 +104,8 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
             self.rowheader_colwidth_percent.setText('15')
             self.empty_row_between_tables.setChecked(False)
             self.page_break_between_tables.setChecked(True)
-            self.skip_reports = ''
-            self.keep_reports = ''
+            self.skip_reports.setText('')
+            self.keep_reports.setText('')
 
     @utils.general_exception_handler
     def ask_and_update_stored_settings(self):
@@ -111,21 +115,12 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
 
     def save_stored_settings(self):
         stored_settings = {}
-        for attrname in [u'general_metadata',
-                        u'geo_metadata',
-                        u'strat_columns',
-                        u'header_in_table',
-                        u'skip_empty',
-                        u'include_comments',
-                        u'general_metadata_header',
-                        u'geo_metadata_header',
-                        u'strat_columns_header',
-                        u'comment_header',
-                        u'empty_row_between_obsids',
-                        u'topleft_topright_colwidths',
-                        u'general_colwidth',
-                        u'geo_colwidth',
-                        u'decimal_separator']:
+        for attrname in [u'num_data_cols',
+                        u'rowheader_colwidth_percent',
+                        u'empty_row_between_tables',
+                        u'page_break_between_tables',
+                        u'skip_reports',
+                        u'keep_reports']:
             try:
                 attr = getattr(self, attrname)
             except:
@@ -172,7 +167,6 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
             return as_dict
 
 
-
 class Wqualreport():        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     @general_exception_handler
     def __init__(self, settingsdict, obsids, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
@@ -204,7 +198,6 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         #skip_reports_with_parameters = {'IN': [u'Bly', u'Benso(ghi)perylen']}
         #obsids = utils.getselectedobjectnames()
         report_data = self.get_data(skip_reports_with_parameters, obsids, dbconnection)
-
         #num_data_cols = 17
         #rowheader_colwidth_percent = 11
         #empty_row_between_tables = False
@@ -244,6 +237,8 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         skip_reports = ''
 
         for in_or_not_in, thelist in skip_or_keep_reports_with_parameters.iteritems():
+            if not thelist:
+                continue
             skip_reports += r""" AND report {IN or NOT IN} (SELECT DISTINCT report FROM {table}
                                 WHERE {parameter} IN ({skip_parameters}))
                             """.format(**{'table': self.settingsdict['wqualtable'],
