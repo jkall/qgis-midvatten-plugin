@@ -196,6 +196,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         f.write(rpt)
 
         if from_active_layer:
+            utils.pop_up_info(ru(QCoreApplication.translate(u'CompactWqualReport', u'Check that exported number of rows are identical to expected number of rows!\nFeatures in layers from sql queries can be invalid and then excluded from the report!')), 'Warning!')
             w_qual_lab_layer = qgis.utils.iface.activeLayer()
             if w_qual_lab_layer is None:
                 raise utils.UsageError(ru(QCoreApplication.translate(u'CompactWqualReport', u'Must select a layer!')))
