@@ -1480,12 +1480,17 @@ def general_exception_handler(func):
         try:
             result = func(*args, **kwargs)
         except UserInterruptError:
+            # The user interrupted the process.
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            pass
         except UsageError as e:
             PyQt4.QtGui.QApplication.restoreOverrideCursor()
             msg = str(e)
             if msg:
                 MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'general_exception_handler', u'Usage error: %s'))%str(e))
+        except:
+            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            raise
         else:
             return result
     return new_func

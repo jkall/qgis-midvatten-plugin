@@ -20,6 +20,7 @@
 import codecs
 import os
 import time  # for debugging
+from functools import partial
 
 import PyQt4
 import ast
@@ -28,6 +29,7 @@ from PyQt4.QtCore import QUrl, Qt, QDir
 from PyQt4.QtGui import QDesktopServices, QApplication, QCursor
 
 import db_utils
+import gui_utils
 import qgis
 # midvatten modules
 import midvatten_utils as utils
@@ -45,9 +47,15 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
         self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle(ru(QCoreApplication.translate(u'CompactWqualReportUi',
-                                                          u"Compact Drillreport")))  # Set the title for the dialog
+                                                          u"Compact water quality report")))  # Set the title for the dialog
+
+        tables = db_utils.tables_columns().keys()
+        self.sql_table.addItems(sorted(tables))
+        #Use w_qual_lab as default.
+        gui_utils.set_combobox(self.sql_table, u'w_qual_lab', add_if_not_exists=False)
 
         self.stored_settings_key = u'compactwqualreport'
+
         self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settings_key, {})
         self.update_from_stored_settings(self.stored_settings)
 
@@ -57,8 +65,9 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
 
         self.connect(self.pushButton_update_from_string, PyQt4.QtCore.SIGNAL("clicked()"), self.ask_and_update_stored_settings)
 
-        self.show()
+        self.connect(self.sql_table, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),lambda: self.from_sql_table.setChecked(True))
 
+        self.show()
 
     @utils.general_exception_handler
     def wqualreport(self):
@@ -67,21 +76,22 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
         rowheader_colwidth_percent = int(self.rowheader_colwidth_percent.text())
         empty_row_between_tables = self.empty_row_between_tables.isChecked()
         page_break_between_tables = self.page_break_between_tables.isChecked()
-        skip = ru(self.skip_reports.text()).split(u';')
-        keep = ru(self.keep_reports.text()).split(u';')
-        skip_reports_with_parameters = {'NOT IN': skip if any(skip) else [],
-                                        'IN': keep if any(keep) else []}
+        from_active_layer = self.from_active_layer.isChecked()
+        from_sql_table = self.from_sql_table.isChecked()
+        sql_table = self.sql_table.currentText()
 
+        save_attrnames = [u'num_data_cols',
+                         u'rowheader_colwidth_percent',
+                         u'empty_row_between_tables',
+                         u'page_break_between_tables',
+                         u'from_active_layer',
+                         u'from_sql_table',
+                         u'sql_table']
 
-        obsids = sorted(utils.getselectedobjectnames(qgis.utils.iface.activeLayer()))  # selected obs_point is now found in obsid[0]
+        self.save_stored_settings(save_attrnames)
 
-        if not obsids:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'CompactWqualReportUi', u'Must select at least 1 obsid in selected layer')))
-            raise utils.UsageError()
-        self.save_stored_settings()
-
-        wqual = Wqualreport(self.ms.settingsdict, obsids, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
-                            page_break_between_tables, skip_reports_with_parameters)
+        wqual = Wqualreport(self.ms.settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
+                            page_break_between_tables, from_active_layer, sql_table)
 
     def update_from_stored_settings(self, stored_settings):
         if isinstance(stored_settings, dict) and stored_settings:
@@ -95,17 +105,12 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
                         if isinstance(val, (list, tuple)):
                             val = u'\n'.join(val)
                         selfattr.setPlainText(val)
-                    elif isinstance(selfattr, PyQt4.QtGui.QCheckBox):
+                    elif isinstance(selfattr, (PyQt4.QtGui.QCheckBox, PyQt4.QtGui.QRadioButton)):
                         selfattr.setChecked(val)
                     elif isinstance(selfattr, PyQt4.QtGui.QLineEdit):
                         selfattr.setText(val)
-        else:
-            self.num_data_cols.setText('10')
-            self.rowheader_colwidth_percent.setText('15')
-            self.empty_row_between_tables.setChecked(False)
-            self.page_break_between_tables.setChecked(True)
-            self.skip_reports.setText('')
-            self.keep_reports.setText('')
+                    elif isinstance(selfattr, PyQt4.QtGui.QComboBox):
+                        gui_utils.set_combobox(selfattr, val, add_if_not_exists=False)
 
     @utils.general_exception_handler
     def ask_and_update_stored_settings(self):
@@ -113,14 +118,9 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
         self.update_from_stored_settings(self.stored_settings)
         self.save_stored_settings()
 
-    def save_stored_settings(self):
+    def save_stored_settings(self, save_attrnames):
         stored_settings = {}
-        for attrname in [u'num_data_cols',
-                        u'rowheader_colwidth_percent',
-                        u'empty_row_between_tables',
-                        u'page_break_between_tables',
-                        u'skip_reports',
-                        u'keep_reports']:
+        for attrname in save_attrnames:
             try:
                 attr = getattr(self, attrname)
             except:
@@ -129,10 +129,12 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
             else:
                 if isinstance(attr, PyQt4.QtGui.QPlainTextEdit):
                     val = [x for x in attr.toPlainText().split(u'\n') if x]
-                elif isinstance(attr, PyQt4.QtGui.QCheckBox):
+                elif isinstance(attr, (PyQt4.QtGui.QCheckBox, PyQt4.QtGui.QRadioButton)):
                     val = attr.isChecked()
                 elif isinstance(attr, PyQt4.QtGui.QLineEdit):
                     val = attr.text()
+                elif isinstance(attr, PyQt4.QtGui.QComboBox):
+                    val = attr.currentText()
                 else:
                     utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Programming error. The Qt-type %s is unhandled.'))%str(type(attr)))
                     continue
@@ -169,8 +171,8 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
 
 class Wqualreport():        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     @general_exception_handler
-    def __init__(self, settingsdict, obsids, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
-                            page_break_between_tables, skip_reports_with_parameters):
+    def __init__(self, settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
+                            page_break_between_tables, from_active_layer, sql_table):
         #show the user this may take a long time...
         QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
 
@@ -193,15 +195,20 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         #rpt2 = rpt.encode("utf-8")
         f.write(rpt)
 
-        dbconnection = db_utils.DbConnectionManager()
+        if from_active_layer:
+            w_qual_lab_layer = qgis.utils.iface.activeLayer()
+            if w_qual_lab_layer is None:
+                raise utils.UsageError(ru(QCoreApplication.translate(u'CompactWqualReport', u'Must select a layer!')))
+            if not w_qual_lab_layer.selectedFeatureCount():
+                w_qual_lab_layer.selectAll()
+            data = self.get_data_from_qgislayer(w_qual_lab_layer)
+        else:
+            data = self.get_data_from_sql(sql_table, utils.getselectedobjectnames())
 
-        #skip_reports_with_parameters = {'IN': [u'Bly', u'Benso(ghi)perylen']}
-        #obsids = utils.getselectedobjectnames()
-        report_data = self.get_data(skip_reports_with_parameters, obsids, dbconnection)
-        #num_data_cols = 17
-        #rowheader_colwidth_percent = 11
-        #empty_row_between_tables = False
-        #page_break_between_tables = True
+
+
+        report_data = self.data_to_printlist(data)
+        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'CompactWqualReport', u'Created report from %s number of rows.'))%str(len(report_data[self.nr_header_rows:])))
 
         for startcol in xrange(1, len(report_data[0]), num_data_cols):
             printlist = [[row[0]] for row in report_data]
@@ -215,7 +222,6 @@ class Wqualreport():        # extracts water quality data for selected objects, 
             self.WriteHTMLReport(filtered, f, rowheader_colwidth_percent, empty_row_between_tables=empty_row_between_tables,
                         page_break_between_tables=page_break_between_tables)
 
-        dbconnection.closedb()
         # write some finishing html and close the file
         f.write("\n</body></html>")
         f.close()
@@ -225,7 +231,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         if report_data:
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))
 
-    def get_data(self, skip_or_keep_reports_with_parameters, obsids, dbconnection):
+    def get_data_from_sql(self, table, obsids):
         """
 
         :param skip_or_keep_reports_with_parameters: a dict like {'IN': ['par1', 'par2'], 'NOT IN': ['par3', 'par4']}
@@ -234,33 +240,47 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         :param dbconnection:
         :return:
         """
-        skip_reports = ''
+        sql = '''SELECT obsid, date_time, report, parameter, unit reading_txt FROM %s'''%table
+        if obsids:
+            sql += ''' WHERE obsid in (%s)'''%sql_list(obsids)
 
-        for in_or_not_in, thelist in skip_or_keep_reports_with_parameters.iteritems():
-            if not thelist:
-                continue
-            skip_reports += r""" AND report {IN or NOT IN} (SELECT DISTINCT report FROM {table}
-                                WHERE {parameter} IN ({skip_parameters}))
-                            """.format(**{'table': self.settingsdict['wqualtable'],
-                                          'parameter': self.settingsdict['wqual_paramcolumn'],
-                                          'skip_parameters': sql_list(thelist),
-                                          'IN or NOT IN': in_or_not_in})
-
-        sql = '''SELECT obsid, date_time, report, {parameter} || ', ' ||
-                 CASE WHEN {unit} IS NULL THEN '' ELSE {unit} END,
-                 reading_txt 
-                 FROM {table} WHERE obsid in ({obsids}) {skip_reports}
-              '''.format(**{'parameter': self.settingsdict['wqual_paramcolumn'],
-                            'unit': self.settingsdict['wqual_unitcolumn'],
-                            'table': self.settingsdict['wqualtable'],
-                            'obsids': sql_list(obsids),
-                            'skip_reports': skip_reports})
-
-        rows = db_utils.sql_load_fr_db(sql, dbconnection=dbconnection)[1]
+        rows = db_utils.sql_load_fr_db(sql)[1]
 
         data = {}
         for row in rows:
             data.setdefault(row[0], {}).setdefault(row[1], {}).setdefault(row[2], {})[row[3]] = row[4]
+
+        return data
+
+    def get_data_from_qgislayer(self, w_qual_lab_layer):
+        """
+        obsid, date_time, report, {parameter} || ', ' ||
+                 CASE WHEN {unit} IS NULL THEN '' ELSE {unit} END,
+                 reading_txt 
+        """
+        fields = w_qual_lab_layer.fields()
+        fieldnames = [field.name() for field in fields]
+        columns = ['obsid', 'date_time', 'report', 'parameter', 'unit', 'reading_txt']
+        for column in columns:
+            if not column in fieldnames:
+                raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', u'The chosen layer must contain column %s'))%column)
+
+        indexes = {column: fields.indexFromName(column) for column in columns}
+
+        data = {}
+        for feat in w_qual_lab_layer.selectedFeaturesIterator():
+            attrs = feat.attributes()
+            obsid = attrs[indexes['obsid']]
+            date_time = attrs[indexes['date_time']]
+            report = attrs[indexes['report']]
+            parameter = attrs[indexes['parameter']]
+            unit = attrs[indexes['unit']]
+            reading_txt = attrs[indexes['reading_txt']]
+            par_unit = u', '.join([x for x in [parameter, unit] if x])
+            data.setdefault(obsid, {}).setdefault(date_time, {}).setdefault(report, {})[par_unit] = reading_txt
+        return data
+
+    def data_to_printlist(self, data):
 
         distinct_parameters = sorted(set([p for obsid, date_times in data.iteritems()
                                     for date_time, reports in date_times.iteritems()
