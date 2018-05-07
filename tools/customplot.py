@@ -78,6 +78,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         #on close:
         #del self.axes.collections[:]#this should delete all plot objects related to axes and hence not intefere with following tsplots
         self.drawn = False
+        self.used_format = None
         
     def initUI(self):
         self.table_ComboBox_1.clear()  
@@ -215,7 +216,20 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.widgetPlot.setMinimumHeight(height)
             self.widgetPlot.setMaximumHeight(height)
 
-    def drawPlot_all(self):
+    def test_drawPlot_all(self, *args, **kwargs):
+        print(str(args))
+        print(str(kwargs))
+        self.drawPlot_all()
+
+    @utils.general_exception_handler
+    def drawPlot_all(self, *args):
+        """
+
+        :param args: Needed when using general_exception_handler for some reason?!?
+        :return:
+        """
+
+        self.used_format = None
 
         QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))#show the user this may take a long time...
 
@@ -233,7 +247,9 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         nop, i = self.drawPlot(dbconnection, nop, i, My_format, self.table_ComboBox_1, self.xcol_ComboBox_1, self.ycol_ComboBox_1, self.Filter1_ComboBox_1, self.Filter1_QListWidget_1, self.Filter2_ComboBox_1, self.Filter2_QListWidget_1, self.PlotType_comboBox_1, self.pandas_calc_1, self.checkBox_remove_mean1, self.LineEditFactor1, self.LineEditOffset1)
         nop, i = self.drawPlot(dbconnection, nop, i, My_format, self.table_ComboBox_2, self.xcol_ComboBox_2, self.ycol_ComboBox_2, self.Filter1_ComboBox_2, self.Filter1_QListWidget_2, self.Filter2_ComboBox_2, self.Filter2_QListWidget_2, self.PlotType_comboBox_2, self.pandas_calc_2, self.checkBox_remove_mean2, self.LineEditFactor2, self.LineEditOffset2)
         nop, i = self.drawPlot(dbconnection, nop, i, My_format, self.table_ComboBox_3, self.xcol_ComboBox_3, self.ycol_ComboBox_3, self.Filter1_ComboBox_3, self.Filter1_QListWidget_3, self.Filter2_ComboBox_3, self.Filter2_QListWidget_3, self.PlotType_comboBox_3, self.pandas_calc_3, self.checkBox_remove_mean3, self.LineEditFactor3, self.LineEditOffset3)
-
+        if not self.p:
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('CustomPlot', 'Plot not updated.')))
+            return None
         self.xaxis_formatters = (self.axes.xaxis.get_major_formatter(), self.axes.xaxis.get_major_locator())
     
         self.axes.set_title(self.ms.settingsdict['custplot_title'])
@@ -280,16 +296,29 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 #Both filters empty
                 if (not filter1.strip() or not filter1list) and (not filter2.strip() or not filter2list):
                     sql = _sql + r""" ORDER BY %s"""%unicode(xcol_ComboBox.currentText())
-                    self.plabels[i] = unicode(ycol_ComboBox.currentText())+""", """+unicode(table_ComboBox.currentText())
-                    self.createsingleplotobject(sql, i, My_format, dbconnection, PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
+                    recs = dbconnection.execute_and_fetchall(sql)
+                    label = unicode(ycol_ComboBox.currentText())+""", """+unicode(table_ComboBox.currentText())
+                    if not recs:
+                        utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('CustomPlot', 'No plottable data for %s.'))%label)
+                        i += 1
+                        continue
+                    self.plabels[i] = label
+                    self.createsingleplotobject(recs, i, My_format, PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
                     i += 1
                 #Both filters in use
                 elif all((filter1.strip(), filter1list, filter2.strip(), filter2list)):
                     for item1 in filter1list:
                         for item2 in filter2list:
                             sql = _sql + r""" AND %s = '%s' AND %s = '%s' ORDER BY %s"""%(filter1, unicode(item1.text()), filter2, unicode(item2.text()), unicode(xcol_ComboBox.currentText()))
-                            self.plabels[i] = unicode(item1.text()) + """, """ + unicode(item2.text())
-                            self.createsingleplotobject(sql, i, My_format, dbconnection, PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
+                            recs = dbconnection.execute_and_fetchall(sql)
+                            label = unicode(item1.text()) + """, """ + unicode(item2.text())
+                            if not recs:
+                                utils.MessagebarAndLog.warning(bar_msg=ru(
+                                    QCoreApplication.translate('CustomPlot', 'No plottable data for %s.')) % label)
+                                i += 1
+                                continue
+                            self.plabels[i] = label
+                            self.createsingleplotobject(recs, i, My_format, PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
                             i += 1
                 #One filter in use
                 else:
@@ -299,15 +328,22 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                         else:
                             for item in filterlist:
                                 sql = _sql + r""" AND %s = '%s' ORDER BY %s"""%(filter, unicode(item.text()), unicode(xcol_ComboBox.currentText()))
-                                self.plabels[i] = unicode(item.text())
-                                self.createsingleplotobject(sql, i, My_format, dbconnection, PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
+                                recs = dbconnection.execute_and_fetchall(sql)
+                                label = unicode(item.text())
+                                if not recs:
+                                    utils.MessagebarAndLog.warning(bar_msg=ru(
+                                        QCoreApplication.translate('CustomPlot', 'No plottable data for %s.')) % label)
+                                    i += 1
+                                    continue
+                                self.plabels[i] = label
+                                self.createsingleplotobject(recs, i, My_format, PlotType_comboBox.currentText(), factor, offset, remove_mean, pandas_calc)
                                 i += 1
 
 
         return nop, i
 
-    def createsingleplotobject(self,sql,i,My_format,dbconnection,plottype='line', factor=1.0, offset=0.0, remove_mean=False, pandas_calc=None):
-        recs = dbconnection.execute_and_fetchall(sql)
+    def createsingleplotobject(self,recs,i,My_format,plottype='line', factor=1.0, offset=0.0, remove_mean=False, pandas_calc=None):
+
         #Transform data to a numpy.recarray
         try:
             table = np.array(recs, dtype=My_format)  #NDARRAY
@@ -318,11 +354,20 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         except Exception, e:
             utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u'Plotting date_time failed, msg: %s'))%str(e))
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u"Customplot, transforming to recarray with date_time as x-axis failed, msg: %s"))%ru(str(e)))
+            #recs = [x for x in recs if all(x)]
+
             table = np.array(recs, dtype=[('numx', float), ('values', float)])  #NDARRAY #define a format for xy-plot (to use if not datetime on x-axis)
 
             table2=table.view(np.recarray)   # RECARRAY transform the 2 cols into callable objects
+
             FlagTimeXY = 'XY'
             numtime = list(table2.numx)
+
+        if self.used_format is None:
+            self.used_format = FlagTimeXY
+        else:
+            if self.used_format != FlagTimeXY:
+                raise utils.UsageError(ru(QCoreApplication.translate(u'CustomPlot', u"Plotting both xy and time plot at the same time doesn't work! Check the x-y axix settings in all tabs!")))
 
         # from version 0.2 there is a possibility to make discontinuous plot if timestep bigger than maxtstep
         if self.spnmaxtstep.value() > 0: # if user selected a time step bigger than zero than thre may be discontinuous plots
@@ -607,25 +652,28 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             item = QtGui.QListWidgetItem(unicode(post[0]))
             getattr(self, QListWidgetname).addItem(item)
 
+    @utils.general_exception_handler
     def refreshPlot( self ):
         #If the user has not pressed "draw" before, do nothing
         if not self.drawn:
             return None
 
         self.storesettings()    #all custom plot related settings are stored when plotting data (or pressing "redraw")
-        datemin = self.spnMinX.dateTime().toPyDateTime()
-        datemax = self.spnMaxX.dateTime().toPyDateTime()
-        if datemin == datemax: #xaxis-limits
-            pass
-        else:
-            self.axes.set_xlim(min(datemin, datemax),max(datemin, datemax))            
-        if self.spnMinY.value() == self.spnMaxY.value(): #yaxis-limits
-            pass
-        else:
-            self.axes.set_ylim(min(self.spnMaxY.value(), self.spnMinY.value()),max(self.spnMaxY.value(), self.spnMinY.value()))            
-        self.axes.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))#yaxis-format
-        self.axes.xaxis.set_major_formatter(self.xaxis_formatters[0])
-        self.axes.xaxis.set_major_locator(self.xaxis_formatters[1])
+
+        if self.used_format == 'time':
+            datemin = self.spnMinX.dateTime().toPyDateTime()
+            datemax = self.spnMaxX.dateTime().toPyDateTime()
+            if datemin == datemax: #xaxis-limits
+                pass
+            else:
+                self.axes.set_xlim(min(datemin, datemax),max(datemin, datemax))
+            if self.spnMinY.value() == self.spnMaxY.value(): #yaxis-limits
+                pass
+            else:
+                self.axes.set_ylim(min(self.spnMaxY.value(), self.spnMinY.value()),max(self.spnMaxY.value(), self.spnMinY.value()))
+            self.axes.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))#yaxis-format
+            self.axes.xaxis.set_major_formatter(self.xaxis_formatters[0])
+            self.axes.xaxis.set_major_locator(self.xaxis_formatters[1])
 
         self.axes.grid(self.Grid_checkBox.isChecked() )#grid
 
