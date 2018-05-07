@@ -3,7 +3,7 @@
 <context>
     <name></name>
     <message>
-        <location filename="../tools/sectionplot.py" line="962"/>
+        <location filename="../tools/sectionplot.py" line="964"/>
         <source>Loading saved templates %s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -58,7 +58,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="121"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="122"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -80,12 +80,12 @@ obsid;min date;max date;calculated number of measurements:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="112"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="113"/>
         <source>Adjustment aborted! No obsids in w_levels.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/wlevels_calc_calibr.py" line="121"/>
+        <location filename="../tools/wlevels_calc_calibr.py" line="122"/>
         <source>Adjustment aborted! No obsids selected.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4713,63 +4713,63 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>SecplotTemplates</name>
     <message>
-        <location filename="../tools/sectionplot.py" line="847"/>
+        <location filename="../tools/sectionplot.py" line="848"/>
         <source>Failed to load saved template, loading default template instead.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="849"/>
+        <location filename="../tools/sectionplot.py" line="850"/>
         <source>Loaded template from midvatten settings secplot_loaded_template.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="855"/>
+        <location filename="../tools/sectionplot.py" line="856"/>
         <source>Default template not found, loading hard coded default template.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="861"/>
+        <location filename="../tools/sectionplot.py" line="862"/>
         <source>Failed to load default template, loading hard coded default template.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="861"/>
+        <location filename="../tools/sectionplot.py" line="862"/>
         <source>Error msg %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="865"/>
+        <location filename="../tools/sectionplot.py" line="866"/>
         <source>Loaded template from default template file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="870"/>
+        <location filename="../tools/sectionplot.py" line="871"/>
         <source>Loaded template from default hard coded template.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="905"/>
+        <location filename="../tools/sectionplot.py" line="906"/>
         <source>Choose a file name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="969"/>
+        <location filename="../tools/sectionplot.py" line="971"/>
         <source>&quot;%s&quot; was not a file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="983"/>
+        <location filename="../tools/sectionplot.py" line="985"/>
         <source>Loading template %s failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="974"/>
+        <location filename="../tools/sectionplot.py" line="976"/>
         <source>Reading file failed, msg:
 %s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="983"/>
+        <location filename="../tools/sectionplot.py" line="985"/>
         <source>Parsing file rows failed, msg:
 %s</source>
         <translation type="unfinished"></translation>
@@ -4878,22 +4878,22 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>StoredSettings</name>
     <message>
-        <location filename="../tools/sectionplot.py" line="883"/>
+        <location filename="../tools/sectionplot.py" line="884"/>
         <source>Replace the settings string with a new settings string.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="1020"/>
+        <location filename="../tools/sectionplot.py" line="1022"/>
         <source>Translating string to dict failed, see log message panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="884"/>
+        <location filename="../tools/sectionplot.py" line="885"/>
         <source>Edit settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../tools/sectionplot.py" line="1020"/>
+        <location filename="../tools/sectionplot.py" line="1022"/>
         <source>Error %s
 for string
 %s</source>

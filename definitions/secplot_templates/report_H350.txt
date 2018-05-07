@@ -14,7 +14,8 @@
         "DEFAULT": {
                 "linestyle": "-",
                 "linewidth": 1,
-                "marker": "None"}},
+                "marker": "None",
+                "zorder": 3}},
     "drillstop_Axes_plot": {
         "color": "black",
         "linestyle": "",
@@ -22,12 +23,14 @@
         "markersize": 8},
     "geology_Axes_bar": {
         "edgecolor": "black",
-        "linewidth": 0.5},
+        "linewidth": 0.5,
+        "zorder": 5},
     "grid_Axes_grid": {
         "b": True,
         "color": "0.65",
         "linestyle": "-",
-        "which": "both"},
+        "which": "both",
+        "zorder": 0},
     "layer_Axes_annotate": {
         "bbox": {
                 "alpha": 0.6,
@@ -40,7 +43,8 @@
         "va": "center",
         "xytext": (
                 5,
-                0, )},
+                0, ),
+        "zorder": 10},
     "legend_Axes_legend": {
         "borderpad": 0.1,
         "columnspacing": 0.1,
@@ -72,7 +76,8 @@
     "obsid_Axes_bar": {
         "edgecolor": "black",
         "fill": False,
-        "linewidth": 0.5},
+        "linewidth": 0.5,
+        "zorder": 5},
     "plot_height": 350,
     "plot_width": 469,
     "ticklabels_Text_set_fontsize": {
@@ -82,5 +87,6 @@
                 "linestyle": "-",
                 "linewidth": 1,
                 "marker": "v",
-                "markersize": 6}}
+                "markersize": 6,
+                "zorder": 8}}
 }

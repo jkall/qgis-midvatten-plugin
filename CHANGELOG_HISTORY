@@ -8,6 +8,12 @@ THIS FILE ONLY FOR HISTORICAL RESONS, IF I NEED TO PICK UP A PARTICULAR VERSION 
 [-] remove/bugfix
 
 2018-05-07 changes until 1.5
+        Version 1.5.15b:
+        - Calculate w-levels: Fix so that the dialog only closes when a calculation has been made.
+        Version 1.5.14b:
+        - Section plot: Moved grid lines behind the plots as default
+        Version 1.5.13b:
+        - Section plot: Fixed bug where os.path.samefile was used but doesn't exist in windows.
         Version 1.5.12b:
         - Stratigraphy: Button for minimizing and maximizing stratigraphy plot (Thanks to Simon O'Connor!)
         - Calculate w-levels: Added checkboxes for more finegrained filtration.
