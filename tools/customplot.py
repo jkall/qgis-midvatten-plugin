@@ -243,11 +243,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.widgetPlot.setMinimumHeight(height)
             self.widgetPlot.setMaximumHeight(height)
 
-    def test_drawPlot_all(self, *args, **kwargs):
-        print(str(args))
-        print(str(kwargs))
-        self.drawPlot_all()
-
     @utils.general_exception_handler
     def drawPlot_all(self, *args):
         """
@@ -332,7 +327,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                     recs = dbconnection.execute_and_fetchall(sql)
                     label = unicode(ycol_ComboBox.currentText())+""", """+unicode(table_ComboBox.currentText())
                     if not recs:
-                        utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('CustomPlot', 'No plottable data for %s.'))%label)
                         i += 1
                         continue
                     self.plabels[i] = label

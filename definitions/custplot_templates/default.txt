@@ -23,7 +23,8 @@
     "legend_Axes_legend": {
         "fontsize": 10,
         "framealpha": 1,
-        "loc": 10},
+        "loc": 10,
+        "numpoints": 1},
     "legend_Frame_set_facecolor": "1",
     "legend_Frame_set_fill": False,
     "legend_Text_set_fontsize": 10,
