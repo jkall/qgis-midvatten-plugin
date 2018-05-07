@@ -59,6 +59,7 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplot_loaded_template': '',
             'secplot_templates': '',
             'settingslocation':1,
+            'compactwqualreport':'',
             'custplot_tabwidget':0,
             'custplot_table1':'w_levels',
             'custplot_table2':'',
@@ -90,6 +91,8 @@ def settingsdict():    #These are the default settings, they shall not be change
             'custplot_plottype1':'line',
             'custplot_plottype2':'line',
             'custplot_plottype3':'line',
+            'custplot_templates': '',
+            'custplot_loaded_template': '',
             'customdrillreportstoredsettings': '',
             'piper_cl':'Klorid, Cl',
             'piper_hco3':'Alkalinitet, HCO3',
@@ -774,5 +777,8 @@ def secplot_default_template():
                                                                  'linestyle': '-',
                                                                  'linewidth': 1}}
         return loaded_template
+
+def custplot_default_template():
+    return u'{}'
 
 

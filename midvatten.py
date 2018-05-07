@@ -44,6 +44,7 @@ from tsplot import TimeSeriesPlot
 from stratigraphy import Stratigraphy
 from xyplot import XYPlot
 from wqualreport import Wqualreport
+from wqualreport_compact import CompactWqualReportUi
 from loaddefaultlayers import LoadLayers
 from prepareforqgis2threejs import PrepareForQgis2Threejs
 import midvatten_utils as utils
@@ -152,6 +153,10 @@ class midvatten:
         self.actionwqualreport.setWhatsThis(QCoreApplication.translate("Midvatten","Show water quality for the selected obs point"))
         self.iface.registerMainWindowAction(self.actionwqualreport, "F12")   # The function should also be triggered by the F12 key
         QObject.connect(self.actionwqualreport, SIGNAL("triggered()"), self.waterqualityreport)
+
+        self.actionwqualreportcompact = QAction(QIcon(":/plugins/midvatten/icons/wqualreport.png"), QCoreApplication.translate("Midvatten","Compact water quality report for report attachments"), self.iface.mainWindow())
+        self.actionwqualreportcompact.setWhatsThis(QCoreApplication.translate("Midvatten","Show water quality for the selected obs point"))
+        QObject.connect(self.actionwqualreportcompact, SIGNAL("triggered()"), self.waterqualityreportcompact)
 
         self.actionPlotSection = QAction(QIcon(":/plugins/midvatten/icons/PlotSection.png"), QCoreApplication.translate("Midvatten","Section plot"), self.iface.mainWindow())
         self.actionPlotSection.setWhatsThis(QCoreApplication.translate("Midvatten","Plot a section with stratigraphy and water levels"))
@@ -270,6 +275,7 @@ class midvatten:
         self.menu.report_menu.addAction(self.actiondrillreport)
         self.menu.report_menu.addAction(self.action_custom_drillreport)
         self.menu.report_menu.addAction(self.actionwqualreport)
+        self.menu.report_menu.addAction(self.actionwqualreportcompact)
         
         self.menu.db_manage_menu = QMenu(QCoreApplication.translate("Midvatten", "&Database management"))
         self.menu.addMenu(self.menu.db_manage_menu)
@@ -848,6 +854,14 @@ class midvatten:
                     fail = 1
             if not fail == 1:#only if all objects has data
                 Wqualreport(qgis.utils.iface.activeLayer(),self.ms.settingsdict)#TEMPORARY FOR GVAB
+
+    def waterqualityreportcompact(self):
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
+        if self.ms.settingsdict['database'] == '' or self.ms.settingsdict['wqualtable']=='' or self.ms.settingsdict['wqual_paramcolumn']=='' or self.ms.settingsdict['wqual_valuecolumn']=='':
+            err_flag += 1
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "Check Midvatten settings! \nSomething is probably wrong in the 'W quality report' tab!"), duration =15)
+        if err_flag == 0:
+            CompactWqualReportUi(self.iface.mainWindow(), self.ms)
 
     def wlvlcalculate(self):
         allcritical_layers = ('obs_points', 'w_levels')     #Check that none of these layers are in editing mode
