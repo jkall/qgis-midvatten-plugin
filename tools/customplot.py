@@ -173,14 +173,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                                              defs.custplot_default_template(),
                                              msettings=self.ms)
 
-        w = self.templates.loaded_template.get('plot_width', None)
-        if w is not None:
-            self.width.setText(str(w))
-
-        h = self.templates.loaded_template.get('plot_height', None)
-        if h is not None:
-            self.width.setText(str(h))
-
         self.chart_settings.setChecked(False)
         self.template_wid.setChecked(False)
         self.filtersettings1.setChecked(False)
@@ -217,7 +209,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         width = self.plot_width.text()
         height = self.plot_height.text()
         self.templates.loaded_template['plot_width'] = width
-        self.templates.loaded_template['plot_width'] = height
+        self.templates.loaded_template['plot_height'] = height
 
         try:
             width = float(width)
@@ -340,7 +332,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                             recs = dbconnection.execute_and_fetchall(sql)
                             label = unicode(item1.text()) + """, """ + unicode(item2.text())
                             if not recs:
-                                utils.MessagebarAndLog.warning(bar_msg=ru(
+                                utils.MessagebarAndLog.warning(log_msg=ru(
                                     QCoreApplication.translate('CustomPlot', 'No plottable data for %s.')) % label)
                                 i += 1
                                 continue
@@ -685,7 +677,12 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             getattr(self, QListWidgetname).addItem(item)
 
     @utils.general_exception_handler
-    def refreshPlot( self ):
+    def refreshPlot( self, *args):
+        """
+
+        :param args: Needed when using general_exception_handler for some reason?!?
+        :return:
+        """
         #If the user has not pressed "draw" before, do nothing
         if not self.drawn:
             return None
@@ -766,6 +763,16 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
         if self.templates.loaded_template['Figure_subplots_adjust']:
             self.custplotfigure.subplots_adjust(**self.templates.loaded_template['Figure_subplots_adjust'])
+
+        w = self.templates.loaded_template.get('plot_width', None)
+        if w is not None:
+            self.plot_width.setText(str(w))
+
+        h = self.templates.loaded_template.get('plot_height', None)
+        if h is not None:
+            self.plot_height.setText(str(h))
+
+        self.change_plot_size()
 
         self.canvas.draw()
         #plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
