@@ -332,7 +332,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                             recs = dbconnection.execute_and_fetchall(sql)
                             label = unicode(item1.text()) + """, """ + unicode(item2.text())
                             if not recs:
-                                utils.MessagebarAndLog.warning(log_msg=ru(
+                                utils.MessagebarAndLog.info(log_msg=ru(
                                     QCoreApplication.translate('CustomPlot', 'No plottable data for %s.')) % label)
                                 i += 1
                                 continue
@@ -350,7 +350,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                                 recs = dbconnection.execute_and_fetchall(sql)
                                 label = unicode(item.text())
                                 if not recs:
-                                    utils.MessagebarAndLog.warning(bar_msg=ru(
+                                    utils.MessagebarAndLog.warning(log_msg=ru(
                                         QCoreApplication.translate('CustomPlot', 'No plottable data for %s.')) % label)
                                     i += 1
                                     continue
@@ -420,7 +420,11 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
                 df = pandas_calc.calculate(df)
                 if df is not None:
-                    table = np.array(zip(df.index, df[u'values']), dtype=My_format)
+                    try:
+                        table = np.array(zip(df.index, df[u'values']), dtype=My_format)
+                    except TypeError:
+                        utils.MessagebarAndLog.info(log_msg=str(df))
+                        raise
                     table2 = table.view(np.recarray)  # RECARRAY transform the 2 cols into callable objects
                     numtime = table2.date_time
                 else:
