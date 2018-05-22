@@ -49,10 +49,20 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
         self.setWindowTitle(ru(QCoreApplication.translate(u'CompactWqualReportUi',
                                                           u"Compact water quality report")))  # Set the title for the dialog
 
+        self.manual_label.setText(u"<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-compact-water-quality-report\">%s</a>"%QCoreApplication.translate(u'CompactWqualReportUi', u'(manual)'))
+
         tables = db_utils.tables_columns().keys()
         self.sql_table.addItems(sorted(tables))
         #Use w_qual_lab as default.
         gui_utils.set_combobox(self.sql_table, u'w_qual_lab', add_if_not_exists=False)
+
+        self.save_attrnames = [u'num_data_cols',
+                         u'rowheader_colwidth_percent',
+                         u'empty_row_between_tables',
+                         u'page_break_between_tables',
+                         u'from_active_layer',
+                         u'from_sql_table',
+                         u'sql_table']
 
         self.stored_settings_key = u'compactwqualreport'
 
@@ -67,6 +77,11 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
 
         self.connect(self.sql_table, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),lambda: self.from_sql_table.setChecked(True))
 
+        self.connect(self.empty_row_between_tables, PyQt4.QtCore.SIGNAL("clicked()"),
+                     lambda: self.page_break_between_tables.setChecked(False) if self.empty_row_between_tables.isChecked() else True)
+        self.connect(self.page_break_between_tables, PyQt4.QtCore.SIGNAL("clicked()"),
+                     lambda: self.empty_row_between_tables.setChecked(False) if self.page_break_between_tables.isChecked() else True)
+
         self.show()
 
     @utils.general_exception_handler
@@ -80,15 +95,7 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
         from_sql_table = self.from_sql_table.isChecked()
         sql_table = self.sql_table.currentText()
 
-        save_attrnames = [u'num_data_cols',
-                         u'rowheader_colwidth_percent',
-                         u'empty_row_between_tables',
-                         u'page_break_between_tables',
-                         u'from_active_layer',
-                         u'from_sql_table',
-                         u'sql_table']
-
-        self.save_stored_settings(save_attrnames)
+        self.save_stored_settings(self.save_attrnames)
 
         wqual = Wqualreport(self.ms.settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
                             page_break_between_tables, from_active_layer, sql_table)
@@ -116,7 +123,7 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
     def ask_and_update_stored_settings(self):
         self.stored_settings = self.ask_for_stored_settings(self.stored_settings)
         self.update_from_stored_settings(self.stored_settings)
-        self.save_stored_settings()
+        self.save_stored_settings(self.save_attrnames)
 
     def save_stored_settings(self, save_attrnames):
         stored_settings = {}
@@ -176,23 +183,18 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         #show the user this may take a long time...
         QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
 
-        self.settingsdict = settingsdict
-
         self.nr_header_rows = 3
 
         reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
         if not os.path.exists(reportfolder):
             os.makedirs(reportfolder)
         reportpath = os.path.join(reportfolder, "w_qual_report.html")
-        #f = open(reportpath, "wb" )
         f = codecs.open(reportpath, "wb", "utf-8")
 
         #write some initiating html
         rpt = r"""<head><title>%s</title></head>"""%ru(QCoreApplication.translate(u'Wqualreport', u'water quality report from Midvatten plugin for QGIS'))
         rpt += r""" <meta http-equiv="content-type" content="text/html; charset=utf-8" />""" #NOTE, all report data must be in 'utf-8'
         rpt += "<html><body>"
-        #rpt += "<table width=\"100%\" border=\"1\">\n"
-        #rpt2 = rpt.encode("utf-8")
         f.write(rpt)
 
         if from_active_layer:
@@ -206,14 +208,11 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         else:
             data = self.get_data_from_sql(sql_table, utils.getselectedobjectnames())
 
-
-
-        report_data = self.data_to_printlist(data)
-        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'CompactWqualReport', u'Created report from %s number of rows.'))%str(len(report_data[self.nr_header_rows:])))
+        report_data, num_data = self.data_to_printlist(data)
+        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'CompactWqualReport', u'Created report from %s number of rows.'))%str(num_data))
 
         for startcol in xrange(1, len(report_data[0]), num_data_cols):
             printlist = [[row[0]] for row in report_data]
-            #print(printlist)
             for rownr, row in enumerate(report_data):
                 printlist[rownr].extend(row[startcol:min(startcol+num_data_cols, len(row))])
 
@@ -241,7 +240,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         :param dbconnection:
         :return:
         """
-        sql = '''SELECT obsid, date_time, report, parameter, unit reading_txt FROM %s'''%table
+        sql = '''SELECT obsid, date_time, report, parameter, unit, reading_txt FROM %s'''%table
         if obsids:
             sql += ''' WHERE obsid in (%s)'''%sql_list(obsids)
 
@@ -249,7 +248,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
 
         data = {}
         for row in rows:
-            data.setdefault(row[0], {}).setdefault(row[1], {}).setdefault(row[2], {})[row[3]] = row[4]
+            data.setdefault(row[0], {}).setdefault(row[1], {}).setdefault(row[2], {})[u', '.join([x for x in [row[3], row[4]] if x])] = row[5]
 
         return data
 
@@ -282,16 +281,17 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         return data
 
     def data_to_printlist(self, data):
+        num_data = 0
 
-        distinct_parameters = sorted(set([p for obsid, date_times in data.iteritems()
-                                    for date_time, reports in date_times.iteritems()
+        distinct_parameters = set([p for obsid, date_times in data.iteritems()
+                                   for date_time, reports in date_times.iteritems()
                                         for reports, parameters in reports.iteritems()
-                                            for p in parameters.keys()]))
+                                            for p in parameters.keys()])
 
         outlist = [['obsid'], ['date_time'], ['report']]
-        outlist.extend([[p] for p in distinct_parameters])
+        outlist.extend([[p] for p in sorted(distinct_parameters, key=lambda s: s.lower())])
 
-        for obsid, date_times in sorted(data.iteritems()):
+        for obsid, date_times in sorted(data.iteritems(), key=lambda s: s[0].lower()):
             for date_time, reports in sorted(date_times.iteritems()):
                 for report, parameters in sorted(reports.iteritems()):
                     outlist[0].append(obsid)
@@ -299,18 +299,18 @@ class Wqualreport():        # extracts water quality data for selected objects, 
                     outlist[2].append(report)
 
                     for parameterlist in outlist[3:]:
-                        reading_txt = parameters.get(parameterlist[0], '')
+                        if parameterlist[0] in parameters:
+                            reading_txt = parameters[parameterlist[0]]
+                            num_data += 1
+                        else:
+                            reading_txt = ''
                         parameterlist.append(reading_txt)
 
-        return outlist
+        return outlist, num_data
 
     def WriteHTMLReport(self, ReportData, f, rowheader_colwidth_percent, empty_row_between_tables=False,
                         page_break_between_tables=False):
-        #tabellbredd = 180 + 75*self.htmlcols
         rpt = u"""<TABLE WIDTH=100% BORDER=1 CELLPADDING=1 class="no-spacing" CELLSPACING=0 PADDING-BOTTOM=0 PADDING=0>"""
-        #rpt = "<table width=\""
-        #rpt += str(tabellbredd) # set table total width from no of water quality analyses
-        #rpt += "\" border=\"1\">\n"
         f.write(rpt)
 
         for counter, sublist in enumerate(ReportData):
@@ -325,20 +325,12 @@ class Wqualreport():        # extracts water quality data for selected objects, 
                     rpt += "".join([coltext.format(**{u"colwidth": str(data_colwidth),
                                                       u"data": x}) for x in sublist[1:]])
 
-                    #Same columns on last table:
-                    #if len(sublist[1:]) < len(ReportData[0][1:]):
-                    #    rpt += u"".join([coltext.format(" ") for x in xrange(len(ReportData[0][1:]) - len(sublist[1:]))])
-
                     rpt += u"</tr>\n"
                 else:
                     rpt = u"<tr>"
                     rpt += u"""<td align=\"left\"><font size=1>{}</font></td>""".format(sublist[0])
                     coltext = u"""<td align=\"right\"><font size=1>{}</font></td>"""
                     rpt += u"".join([coltext.format(x) for x in sublist[1:]])
-
-                    #Same columns on last table:
-                    #if len(sublist[1:]) < len(ReportData[0][1:]):
-                    #    rpt += u"".join([coltext.format(" ") for x in xrange(len(ReportData[0][1:]) - len(sublist[1:]))])
 
                     rpt += u"</tr>\n"
             except:
