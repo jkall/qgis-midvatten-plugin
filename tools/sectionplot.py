@@ -35,6 +35,7 @@ import copy
 from operator import itemgetter
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
+from matplotlib import container, patches
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
@@ -138,6 +139,11 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             pass
         if not isinstance(self.dbconnection, db_utils.DbConnectionManager):
             self.dbconnection = db_utils.DbConnectionManager()
+
+        # Only set to stored xlim if the plot has been drawn before
+        if self.secax.get_xlim()[0] and self.secax.get_xlim()[1] != 1:
+            self.secplot_templates.loaded_template["Axes_set_xlim"] = self.secax.get_xlim()
+            self.secplot_templates.loaded_template["Axes_set_ylim"] = self.secax.get_ylim()
 
         width = self.secplot_templates.loaded_template.get('plot_width', None)
         height = self.secplot_templates.loaded_template.get('plot_height', None)
@@ -246,7 +252,12 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         if self.ms.settingsdict['secplotlabelsplotted']==2:
             self.Labels_checkBox.setChecked(True)
         else:
-            self.Labels_checkBox.setChecked(False)        
+            self.Labels_checkBox.setChecked(False)
+
+        if self.ms.settingsdict['secplotwidthofplot'] == 2:
+            self.width_of_plot.setChecked(True)
+        else:
+            self.width_of_profile.setChecked(True)
 
     def fill_combo_boxes(self): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
@@ -390,6 +401,12 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
         if self.secplot_templates.loaded_template['Figure_subplots_adjust']:
             self.secfig.subplots_adjust(**self.secplot_templates.loaded_template['Figure_subplots_adjust'])
+
+        if self.width_of_plot.isChecked():
+            self.ms.settingsdict['secplotwidthofplot'] = 2
+            self.update_barwidths_from_plot()
+        else:
+            self.ms.settingsdict['secplotwidthofplot'] = 1
 
         self.canvas.draw()
         """
@@ -702,9 +719,14 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ms.save_settings('secplotselectedDEMs')
         self.ms.save_settings('stratigraphyplotted')
         self.ms.save_settings('secplotlabelsplotted')
-        utils.save_stored_settings(self.ms, self.secplot_templates.loaded_template, 'secplot_loaded_template')
-        self.ms.save_settings('secplot_templates')
+        self.ms.save_settings('secplotwidthofplot')
 
+        #Don't save plot min/max for next plot. If a specific is to be used, it should be set in a saved template file.
+        loaded_template = copy.deepcopy(self.secplot_templates.loaded_template)
+        loaded_template["Axes_set_xlim"] = None
+        loaded_template["Axes_set_ylim"] = None
+        utils.save_stored_settings(self.ms, loaded_template, 'secplot_loaded_template')
+        self.ms.save_settings('secplot_templates')
         
     def set_location(self):#not ready
         dockarea = self.parent.dockWidgetArea(self)
@@ -825,6 +847,18 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             self.widget.setMinimumHeight(height)
             self.widget.setMaximumHeight(height)
 
+    def update_barwidths_from_plot(self):
+        used_xmin, used_xmax = self.secax.get_xlim()
+        total_width = float(used_xmax) - float(used_xmin)
+        barwidth = total_width * float(self.ms.settingsdict['secplotbw']) * 0.01
+        for p in self.p:
+            if isinstance(p, container.BarContainer):
+                children = p.get_children()
+                for child in children:
+                    if isinstance(child, patches.Rectangle):
+                        prev_middle = child.get_x() + child.get_width()/2
+                        child.set_width(barwidth)
+                        child.set_x(prev_middle - child.get_width()/2)
 
 class SecplotTemplates(object):
     def __init__(self, sectionplot, template_list, msettings=None):
