@@ -50,6 +50,7 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
                                                           u"Compact water quality report")))  # Set the title for the dialog
 
         self.manual_label.setText(u"<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-compact-water-quality-report\">%s</a>"%QCoreApplication.translate(u'CompactWqualReportUi', u'(manual)'))
+        self.manual_label.setOpenExternalLinks(True)
 
         tables = db_utils.tables_columns().keys()
         self.sql_table.addItems(sorted(tables))
