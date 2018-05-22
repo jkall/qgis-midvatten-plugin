@@ -104,6 +104,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.connect(self.plot_settings_2, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.plot_settings_2))
         self.connect(self.plot_settings_3, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.plot_settings_3))
         self.connect(self.chart_settings, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.chart_settings))
+        self.connect(self.template_wid, PyQt4.QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.template_wid))
 
         self.connect(self.select_button_t1f1, QtCore.SIGNAL("clicked()"), partial(self.select_in_filterlist_from_selection, self.Filter1_QListWidget_1, self.Filter1_ComboBox_1))
         self.connect(self.select_button_t1f2, QtCore.SIGNAL("clicked()"), partial(self.select_in_filterlist_from_selection, self.Filter2_QListWidget_1, self.Filter2_ComboBox_1))
@@ -123,7 +124,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.connect(self.filtersettings1, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.filtersettings1))
         self.connect(self.filtersettings2, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.filtersettings2))
         self.connect(self.filtersettings3, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.filtersettings3))
-
 
         self.PlotChart_QPushButton.clicked.connect(self.drawPlot_all)
         self.Redraw_pushButton.clicked.connect( self.refreshPlot )
@@ -159,7 +159,22 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
         #self.custplotfigure.tight_layout()
 
+        self.templates = utils.PlotTemplates(self,
+                                             self.template_list,
+                                             self.edit_button,
+                                             self.load_button,
+                                             self.save_as_button,
+                                             self.import_button,
+                                             self.remove_button,
+                                             os.path.join(os.path.split(os.path.dirname(__file__))[0], 'definitions',
+                                                          'custplot_templates'),
+                                             'custplot_templates',
+                                             'custplot_loaded_template',
+                                             defs.custplot_default_template(),
+                                             msettings=self.ms)
+
         self.chart_settings.setChecked(False)
+        self.template_wid.setChecked(False)
         self.filtersettings1.setChecked(False)
         self.filtersettings2.setChecked(False)
         self.filtersettings3.setChecked(False)
@@ -170,6 +185,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         for plot_item_settings in [self.plot_settings_1, self.plot_settings_2, self.plot_settings_3]:
             plot_item_settings.setChecked(False)
             self.set_groupbox_children_visibility(plot_item_settings)
+
+        self.set_groupbox_children_visibility(self.template_wid)
 
         self.show()
 
@@ -191,6 +208,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
     def change_plot_size(self):
         width = self.plot_width.text()
         height = self.plot_height.text()
+        self.templates.loaded_template['plot_width'] = width
+        self.templates.loaded_template['plot_height'] = height
 
         try:
             width = float(width)
@@ -215,11 +234,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         else:
             self.widgetPlot.setMinimumHeight(height)
             self.widgetPlot.setMaximumHeight(height)
-
-    def test_drawPlot_all(self, *args, **kwargs):
-        print(str(args))
-        print(str(kwargs))
-        self.drawPlot_all()
 
     @utils.general_exception_handler
     def drawPlot_all(self, *args):
@@ -251,10 +265,16 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('CustomPlot', 'Plot not updated.')))
             return None
         self.xaxis_formatters = (self.axes.xaxis.get_major_formatter(), self.axes.xaxis.get_major_locator())
-    
-        self.axes.set_title(self.ms.settingsdict['custplot_title'])
-        self.axes.set_xlabel(self.ms.settingsdict['custplot_xtitle'])
-        self.axes.set_ylabel(self.ms.settingsdict['custplot_ytitle'])
+
+        title = self.templates.loaded_template['Axes_set_title']
+        if 'label' in title:
+            self.axes.set_title(**title)
+        xlabel = self.templates.loaded_template['Axes_set_xlabel']
+        if 'xlabel' in xlabel:
+            self.axes.set_xlabel(**xlabel)
+        ylabel = self.templates.loaded_template['Axes_set_ylabel']
+        if 'ylabel' in ylabel:
+            self.axes.set_ylabel(**ylabel)
     
         self.drawn = True
     
@@ -299,7 +319,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                     recs = dbconnection.execute_and_fetchall(sql)
                     label = unicode(ycol_ComboBox.currentText())+""", """+unicode(table_ComboBox.currentText())
                     if not recs:
-                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('CustomPlot', 'No plottable data for %s.'))%label)
                         i += 1
                         continue
                     self.plabels[i] = label
@@ -331,7 +350,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                                 recs = dbconnection.execute_and_fetchall(sql)
                                 label = unicode(item.text())
                                 if not recs:
-                                    utils.MessagebarAndLog.warning(bar_msg=ru(
+                                    utils.MessagebarAndLog.warning(log_msg=ru(
                                         QCoreApplication.translate('CustomPlot', 'No plottable data for %s.')) % label)
                                     i += 1
                                     continue
@@ -404,7 +423,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                     try:
                         table = np.array(zip(df.index, df[u'values']), dtype=My_format)
                     except TypeError:
-                        utils.MessagebarAndLog.critical(log_msg=str(df))
+                        utils.MessagebarAndLog.info(log_msg=str(df))
                         raise
                     table2 = table.view(np.recarray)  # RECARRAY transform the 2 cols into callable objects
                     numtime = table2.date_time
@@ -412,29 +431,33 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                     utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u"Pandas calculate failed.")))
 
         color_list = [_num[0] for _num in np.random.rand(3,1).tolist()]
+
+        plot_date_settings = self.templates.loaded_template['dates_Axes_plot_date']['DEFAULT']
+        plot_settings = self.templates.loaded_template['xyplot_Axes_plot']['DEFAULT']
+
         if FlagTimeXY == "time" and plottype == "step-pre":
-            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-pre', linestyle='-', marker='None',c=color_list,label=self.plabels[i])# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
+            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-pre', linestyle='-', marker='None',c=color_list,label=self.plabels[i], **plot_date_settings)# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
         elif FlagTimeXY == "time" and plottype == "step-post":
-            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-post', linestyle='-', marker='None',c=color_list,label=self.plabels[i])
+            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-post', linestyle='-', marker='None',c=color_list,label=self.plabels[i], **plot_date_settings)
         elif FlagTimeXY == "time" and plottype == "line and cross":
-            self.p[i], = self.axes.plot_date(numtime, table2.values,  MarkVar,markersize = 6, label=self.plabels[i])
+            self.p[i], = self.axes.plot_date(numtime, table2.values,  MarkVar,markersize = 6, label=self.plabels[i], **plot_date_settings)
         elif FlagTimeXY == "time" and plottype == "frequency":
             try:
-                self.p[i], = self.axes.plot_date(numtime, table2.values,  MarkVar,markersize = 6, label='frequency '+str(self.plabels[i]))
+                self.p[i], = self.axes.plot_date(numtime, table2.values,  MarkVar,markersize = 6, label='frequency '+str(self.plabels[i]), **plot_date_settings)
                 self.plabels[i]='frequency '+str(self.plabels[i])
             except:
                 self.p[i], = self.axes.plot_date(np.array([]),np.array([]),  MarkVar,markersize = 6, label='frequency '+str(self.plabels[i]))
                 self.plabels[i]='frequency '+str(self.plabels[i])
         elif FlagTimeXY == "time":
-            self.p[i], = self.axes.plot_date(numtime, table2.values,  MarkVar,label=self.plabels[i])
+            self.p[i], = self.axes.plot_date(numtime, table2.values,  MarkVar,label=self.plabels[i], **plot_date_settings)
         elif FlagTimeXY == "XY" and plottype == "step-pre":
-            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-pre', linestyle='-', marker='None',c=color_list,label=self.plabels[i])
+            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-pre', linestyle='-', marker='None',c=color_list,label=self.plabels[i], **plot_settings)
         elif FlagTimeXY == "XY" and plottype == "step-post":
-            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-post', linestyle='-', marker='None',c=color_list,label=self.plabels[i])
+            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-post', linestyle='-', marker='None',c=color_list,label=self.plabels[i], **plot_settings)
         elif FlagTimeXY == "XY" and plottype == "line and cross":
-            self.p[i], = self.axes.plot(numtime, table2.values,  MarkVar,markersize = 6, label=self.plabels[i])
+            self.p[i], = self.axes.plot(numtime, table2.values,  MarkVar,markersize = 6, label=self.plabels[i], **plot_settings)
         else: 
-            self.p[i], = self.axes.plot(numtime, table2.values,  MarkVar,label=self.plabels[i])
+            self.p[i], = self.axes.plot(numtime, table2.values,  MarkVar,label=self.plabels[i], **plot_settings)
 
     def LastSelections(self):#set same selections as last plot
 
@@ -487,7 +510,8 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.Legend_checkBox.setChecked(True)
         else:
             self.Legend_checkBox.setChecked(False)
-        if self.ms.settingsdict['custplot_grid']==2:
+
+        if self.templates.loaded_template['grid_Axes_grid']:
             self.Grid_checkBox.setChecked(True)
         else:
             self.Grid_checkBox.setChecked(False)
@@ -657,7 +681,12 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             getattr(self, QListWidgetname).addItem(item)
 
     @utils.general_exception_handler
-    def refreshPlot( self ):
+    def refreshPlot( self, *args):
+        """
+
+        :param args: Needed when using general_exception_handler for some reason?!?
+        :return:
+        """
         #If the user has not pressed "draw" before, do nothing
         if not self.drawn:
             return None
@@ -679,42 +708,75 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.axes.xaxis.set_major_formatter(self.xaxis_formatters[0])
             self.axes.xaxis.set_major_locator(self.xaxis_formatters[1])
 
-        self.axes.grid(self.Grid_checkBox.isChecked() )#grid
+        if self.Grid_checkBox.isChecked():
+            self.templates.loaded_template['grid_Axes_grid']['b'] = True
+        else:
+            self.templates.loaded_template['grid_Axes_grid']['b'] = False
 
-        self.ms.settingsdict['custplot_title'] = self.axes.get_title()
-        self.ms.settingsdict['custplot_xtitle'] = self.axes.get_xlabel()
-        self.ms.settingsdict['custplot_ytitle'] = self.axes.get_ylabel()
+        self.axes.grid(**self.templates.loaded_template['grid_Axes_grid'])#grid
 
-        axes_fontsize = float(self.axes_fontsize.text())
-        for label in self.axes.xaxis.get_ticklabels():
-            label.set_fontsize(axes_fontsize)
-            try:
-                label.set_rotation(axes_fontsize)
-            except:
-                pass
-        for label in self.axes.yaxis.get_ticklabels():
-            label.set_fontsize(axes_fontsize)
+        self.templates.loaded_template['Axes_set_title']['label'] = self.axes.get_title()
+        self.templates.loaded_template['Axes_set_xlabel']['xlabel'] = self.axes.get_xlabel()
+        self.templates.loaded_template['Axes_set_ylabel']['ylabel'] = self.axes.get_ylabel()
+
+        for tick_params in [self.templates.loaded_template.get('Axes_tick_param', None),
+                            self.templates.loaded_template.get('x_Axes_tick_param', None),
+                            self.templates.loaded_template.get('y_Axes_tick_param', None)]:
+            if tick_params is not None and tick_params:
+                try:
+                    self.axes.tick_params(**tick_params)
+                except ValueError:
+                    tp = {k: v for k, v in tick_params.iteritems() if k != 'labelrotation'}
+                    self.axes.tick_params(**tp)
+
+                    if 'labelrotation' in tick_params:
+                        if tp['axis'] in ('both', 'x'):
+                            for label in self.axes.xaxis.get_ticklabels():
+                                label.set_rotation(tick_params['labelrotation'])
+                        if tp['axis'] in ('both', 'y'):
+                            for label in self.axes.yaxis.get_ticklabels():
+                                label.set_rotation(tick_params['labelrotation'])
 
         #The legend
         if self.Legend_checkBox.isChecked():
-            if self.axes.legend_ is None:
-                if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
-                    leg = self.axes.legend(self.p, self.plabels)
-                else:
-                    leg = self.axes.legend(self.p, self.plabels, bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
+            leg_settings = self.templates.loaded_template.get('legend_Axes_legend', None)
+            if leg_settings is not None:
+                leg = self.axes.legend(self.p, self.plabels, **leg_settings)
             else:
-                if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
-                    leg = self.axes.legend()
+                if self.axes.legend_ is None:
+                    if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
+                        leg = self.axes.legend(self.p, self.plabels)
+                    else:
+                        leg = self.axes.legend(self.p, self.plabels, bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
                 else:
-                    leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
+                    if (self.spnLegX.value() ==0 ) and (self.spnLegY.value() ==0):
+                        leg = self.axes.legend()
+                    else:
+                        leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
+
             leg.draggable(state=True)
+
             frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
-            frame.set_facecolor('1')    # set the frame face color to white
-            frame.set_fill(False)    # set the frame face color to white
+
+            frame.set_facecolor(self.templates.loaded_template['legend_Frame_set_facecolor'])    # set the frame face color to white
+            frame.set_fill(self.templates.loaded_template['legend_Frame_set_fill'])    # set the frame face color to white
             for t in leg.get_texts():
-                t.set_fontsize(float(self.legend_fontsize.text()))  # the legend text fontsize
+                t.set_fontsize(float(self.templates.loaded_template['legend_Text_set_fontsize']))
         else:
             self.axes.legend_ = None
+
+        if self.templates.loaded_template['Figure_subplots_adjust']:
+            self.custplotfigure.subplots_adjust(**self.templates.loaded_template['Figure_subplots_adjust'])
+
+        w = self.templates.loaded_template.get('plot_width', None)
+        if w is not None:
+            self.plot_width.setText(str(w))
+
+        h = self.templates.loaded_template.get('plot_height', None)
+        if h is not None:
+            self.plot_height.setText(str(h))
+
+        self.change_plot_size()
 
         self.canvas.draw()
         #plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
@@ -758,12 +820,15 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.ms.settingsdict['custplot_plottype3']=unicode(self.PlotType_comboBox_3.currentText())
         self.ms.settingsdict['custplot_maxtstep'] = self.spnmaxtstep.value()
         self.ms.settingsdict['custplot_legend']=self.Legend_checkBox.checkState()
-        self.ms.settingsdict['custplot_grid']=self.Grid_checkBox.checkState()
-        self.ms.settingsdict['custplot_title'] = unicode(self.axes.get_title())
-        self.ms.settingsdict['custplot_xtitle'] = unicode(self.axes.get_xlabel())
-        self.ms.settingsdict['custplot_ytitle'] = unicode(self.axes.get_ylabel())
+        #self.ms.settingsdict['custplot_grid']=self.Grid_checkBox.checkState()
+        #self.ms.settingsdict['custplot_title'] = unicode(self.axes.get_title())
+        #self.ms.settingsdict['custplot_xtitle'] = unicode(self.axes.get_xlabel())
+        #self.ms.settingsdict['custplot_ytitle'] = unicode(self.axes.get_ylabel())
         self.ms.settingsdict['custplot_tabwidget'] = self.tabWidget.currentIndex()
         self.ms.save_settings()
+
+        utils.save_stored_settings(self.ms, self.templates.loaded_template, 'custplot_loaded_template')
+        self.ms.save_settings('custplot_templates')
 
     def set_groupbox_children_visibility(self, groupbox_widget):
         children = groupbox_widget.findChildren(PyQt4.QtGui.QWidget)

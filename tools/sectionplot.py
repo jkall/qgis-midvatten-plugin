@@ -1,4 +1,4 @@
-﻿#! /usr/bin/env python
+﻿﻿#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
@@ -121,7 +121,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.fill_dem_list()
 
         
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+        PyQt4.QtGui.QApplication.restoreOverrideCursor() #now this long process is done and the cursor is back as normal
         
         #get PlotData
         self.get_plot_data()

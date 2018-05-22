@@ -22,6 +22,7 @@ changelog=
         Version 1.5.1:
         - Custom plot: Bug fix for when XY plot contained NaN-values.
         - New water quality report.
+        - Fix for database import to be able to import to tables without primary key.
         Version 1.5:
         - Final release
         For changes until ver 1.5, see separate document changelog_history
