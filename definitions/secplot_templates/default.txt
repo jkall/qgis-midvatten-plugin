@@ -19,8 +19,9 @@
         "marker": "^",
         "markersize": 8},
     "geology_Axes_bar": {
-        "edgecolor": "black",
-        "zorder": 5},
+        "DEFAULT": {
+            "edgecolor": "black",
+            "zorder": 5}},
     "grid_Axes_grid": {
         "b": True,
         "color": "0.65",
