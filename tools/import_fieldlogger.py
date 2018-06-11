@@ -20,8 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-import PyQt4
-import ast
+
 import copy
 import io
 import os
@@ -31,8 +30,8 @@ from datetime import datetime
 from functools import partial
 from time import sleep
 
-import PyQt4.QtCore
-import PyQt4.QtGui
+
+import PyQt4
 from PyQt4.QtCore import QCoreApplication
 
 import definitions.midvatten_defs

@@ -29,8 +29,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.dates import datestr2num, num2date
 import numpy as np
 
-import PyQt4.QtCore
-import PyQt4.QtGui
+import PyQt4
 from PyQt4.QtCore import QCoreApplication, Qt
 from PyQt4.QtGui import QCursor
 
