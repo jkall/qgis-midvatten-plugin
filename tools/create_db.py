@@ -286,13 +286,13 @@ class NewDb(object):
 
         #Matches comment inside /* */
         #create_table_sql CREATE TABLE meteo /*meteorological observations*/(
-        table_descr_reg = re.compile(ur'/\*(.+)\*/', re.MULTILINE)
+        table_descr_reg = re.compile(r'/\*(.+)\*/', re.MULTILINE)
         #Matches comment after --:
         # strata text NOT NULL --clay etc
         #, color_mplot text NOT NULL --color codes for matplotlib plots
-        column_descr_reg = re.compile(ur'([A-Za-z_]+)[ ]+[A-Za-z ]*--(.+)', re.MULTILINE)
+        column_descr_reg = re.compile(r'([A-Za-z_]+)[ ]+[A-Za-z ]*--(.+)', re.MULTILINE)
 
-        table_name_reg = re.compile(ur'([A-Za-z_]+)[ ]+[A-Za-z ]*--(.+)', re.MULTILINE)
+        table_name_reg = re.compile(r'([A-Za-z_]+)[ ]+[A-Za-z ]*--(.+)', re.MULTILINE)
         for table in tables:
 
             #Get table and column comments

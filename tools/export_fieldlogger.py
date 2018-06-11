@@ -90,7 +90,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.parameter_browser = ParameterBrowser(tables_columns, self.connect, self.widget)
         self.parameter_browser_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Create Input Fields')))
         self.gridLayout_buttons.addWidget(self.parameter_browser_button, 0, 0)
-        self.connect(self.parameter_browser_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.parameter_browser_button.clicked.connect(
                      lambda : self.parameter_browser.show())
 
         self.update_parameter_browser_using_stored_settings(utils.get_stored_settings(self.ms, self.stored_settingskey_parameterbrowser), self.parameter_browser)
@@ -99,7 +99,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.add_parameter_group.setToolTip(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Creates an additional empty input field group.')))
         self.gridLayout_buttons.addWidget(self.add_parameter_group, 1, 0)
         #Lambda and map is used to run several functions for every button click
-        self.connect(self.add_parameter_group, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.add_parameter_group.clicked.connect(
                      lambda: [x() for x in [lambda: self.parameter_groups.append(ParameterGroup(self.connect)),
                                   lambda: self.add_parameter_group_to_gui(self.widgets_layouts, self.parameter_groups[-1])]])
 
@@ -109,7 +109,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.save_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Save settings')))
         self.save_settings_button.setToolTip(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Saves the current input fields settings.')))
         self.gridLayout_buttons.addWidget(self.save_settings_button, 3, 0)
-        self.connect(self.save_settings_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.save_settings_button.clicked.connect(
                         lambda: [x() for x in [lambda: utils.save_stored_settings(self.ms,
                                                             self.update_stored_settings(self.parameter_groups),
                                                             self.stored_settingskey),
@@ -120,19 +120,19 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.clear_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Clear settings')))
         self.clear_settings_button.setToolTip(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Clear all input fields settings.')))
         self.gridLayout_buttons.addWidget(self.clear_settings_button, 4, 0)
-        self.connect(self.clear_settings_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.clear_settings_button.clicked.connect(
                      lambda: [x() for x in [lambda: utils.save_stored_settings(self.ms, [], self.stored_settingskey),
                                   lambda: utils.pop_up_info(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Settings cleared. Restart Export to Fieldlogger dialog to complete,\nor press "Save settings" to save current input fields settings again.')))]])
 
         self.settings_strings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Settings strings')))
         self.settings_strings_button.setToolTip(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Access the settings strings ("Create input fields" and input fields) to copy and paste all settings between different qgis projects.\n Usage: Select string and copy to a text editor or directly into Settings strings dialog of another qgis project.')))
         self.gridLayout_buttons.addWidget(self.settings_strings_button, 5, 0)
-        self.connect(self.settings_strings_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.settings_strings_dialogs)
+        self.settings_strings_button.clicked.connect(self.settings_strings_dialogs)
 
         self.default_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Default settings')))
         self.default_settings_button.setToolTip(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Updates "Create input fields" and input fields to default settings.')))
         self.gridLayout_buttons.addWidget(self.default_settings_button, 6, 0)
-        self.connect(self.default_settings_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.restore_default_settings)
+        self.default_settings_button.clicked.connect(self.restore_default_settings)
 
         self.gridLayout_buttons.addWidget(get_line(), 7, 0)
 
@@ -140,13 +140,13 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.preview_button.setToolTip(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'View a preview of the Fieldlogger location file as pop-up info.')))
         self.gridLayout_buttons.addWidget(self.preview_button, 8, 0)
         # Lambda and map is used to run several functions for every button click
-        self.connect(self.preview_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.preview)
+        self.preview_button.clicked.connect(self.preview)
 
         self.export_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Export')))
         self.export_button.setToolTip(ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Exports the current combination of locations and input fields to a Fieldlogger location file.')))
         self.gridLayout_buttons.addWidget(self.export_button, 9, 0)
         # Lambda and map is used to run several functions for every button click
-        self.connect(self.export_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.export)
+        self.export_button.clicked.connect(self.export)
 
         self.gridLayout_buttons.setRowStretch(10, 1)
 
@@ -408,7 +408,7 @@ class ParameterGroup(object):
         self.paste_from_selection_button.setToolTip(locations_box_tooltip)
 
         #-------------------------------------------------------------------------------------
-        connect(self.paste_from_selection_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        connect(self.paste_from_selection_button.clicked.connect(
                          lambda : self._obsid_list.paste_data(utils.get_selected_features_as_tuple('obs_points')))
 
     def get_settings(self):
@@ -472,23 +472,23 @@ class ParameterBrowser(qgis.PyQt.QtWidgets.QDialog, parameter_browser_dialog):
         # ------------------------------------------------------------------------------------
         self._parameter_table.addItem(u'')
         self._parameter_table.addItems(sorted(tables_columns.keys()))
-        connect(self._parameter_table, qgis.PyQt.QtCore.SIGNAL("activated(int)"),
+        self._parameter_table.currentIndexChanged.connect(
                      lambda: self.replace_items(self._parameter_columns, tables_columns.get(self.parameter_table, [])))
-        connect(self._parameter_columns, qgis.PyQt.QtCore.SIGNAL("activated(int)"),
+        self._parameter_columns.currentIndexChanged.connect(
                      lambda: self.replace_items(self._distinct_parameter, self.get_distinct_values(self.parameter_table, self.parameter_columns)))
         self._unit_table.addItem(u'')
         self._unit_table.addItems(sorted(tables_columns.keys()))
-        connect(self._unit_table, qgis.PyQt.QtCore.SIGNAL("activated(int)"),
+        self._unit_table.currentIndexChanged.connect(
                      lambda: self.replace_items(self._unit_columns, tables_columns.get(self.unit_table, [])))
-        connect(self._unit_columns, qgis.PyQt.QtCore.SIGNAL("activated(int)"),
+        self._unit_columns.currentIndexChanged.connect(
                      lambda: self.replace_items(self._distinct_unit, self.get_distinct_values(self.unit_table, self.unit_columns)))
 
-        connect(self._distinct_parameter, qgis.PyQt.QtCore.SIGNAL("editTextChanged(const QString&)"),
+        self._distinct_parameter.editTextChanged.connect(
                      lambda: self._combined_name.setText(u'.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
-        connect(self._distinct_unit, qgis.PyQt.QtCore.SIGNAL("editTextChanged(const QString&)"),
+        self._distinct_unit.editTextChanged.connect(
                      lambda: self._combined_name.setText(u'.'.join([self.distinct_parameter, self.distinct_unit]) if self.distinct_parameter and self.distinct_unit else None))
 
-        connect(self._add_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self._add_button.clicked.connect(
                 lambda : self.combine_name(self.combined_name, self.input_type, self.hint))
 
         # ------------------------------------------------------------------------------------

@@ -194,9 +194,9 @@ class DistinctValuesBrowser(VRowEntry):
         self._table_list.addItem(u'')
         self._table_list.addItems(sorted(tables_columns.keys()))
 
-        connect(self._table_list, qgis.PyQt.QtCore.SIGNAL("activated(int)"),
+        connect(self._table_list.currentIndexChanged.connect(
                      lambda: self.replace_items(self._column_list, tables_columns.get(self.table_list, [])))
-        connect(self._column_list, qgis.PyQt.QtCore.SIGNAL("activated(int)"),
+        connect(self._column_list.currentIndexChanged.connect(
                      lambda: self.replace_items(self._distinct_value, self.get_distinct_values(self.table_list, self.column_list)))
 
         for widget in [self.browser_label, self.table_label, self._table_list,

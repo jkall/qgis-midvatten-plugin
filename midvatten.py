@@ -648,7 +648,7 @@ class midvatten(object):
                 QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     @utils.general_exception_handler
-    def new_db(self):
+    def new_db(self, *args):
         sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """This will create a new empty\nMidvatten DB with predefined design.\n\nContinue?""")), ru(QCoreApplication.translate(u"Midvatten", u'Are you sure?')))
         if sanity.result == 1:
             filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )

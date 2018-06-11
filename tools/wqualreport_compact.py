@@ -76,17 +76,17 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settings_key, {})
         self.update_from_stored_settings(self.stored_settings)
 
-        self.connect(self.pushButton_ok, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.wqualreport)
+        self.pushButton_ok.clicked.connect(self.wqualreport)
 
-        #self.connect(self.pushButton_cancel, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.close())
+        #self.pushButton_cancel, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.close())
 
-        self.connect(self.pushButton_update_from_string, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.ask_and_update_stored_settings)
+        self.pushButton_update_from_string.clicked.connect(self.ask_and_update_stored_settings)
 
-        self.connect(self.sql_table, qgis.PyQt.QtCore.SIGNAL("currentIndexChanged(const QString&)"),lambda: self.from_sql_table.setChecked(True))
+        self.sql_table.currentIndexChanged.connect(lambda: self.from_sql_table.setChecked(True))
 
-        self.connect(self.empty_row_between_tables, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.empty_row_between_tables.clicked.connect(
                      lambda: self.page_break_between_tables.setChecked(False) if self.empty_row_between_tables.isChecked() else True)
-        self.connect(self.page_break_between_tables, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.page_break_between_tables.clicked.connect(
                      lambda: self.empty_row_between_tables.setChecked(False) if self.page_break_between_tables.isChecked() else True)
 
         self.show()

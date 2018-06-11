@@ -48,9 +48,9 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.obsid = utils.getselectedobjectnames()
         self.setWindowTitle(ru(QCoreApplication.translate(u'Calcave', u"Calculate average flow"))) # Set the title for the dialog
-        self.connect(self.pushButton_All, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.calcall)
-        self.connect(self.pushButton_Selected, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.calcselected)
-        self.connect(self.pushButton_Cancel, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.close)
+        self.pushButton_All.clicked.connect(self.calcall)
+        self.pushButton_Selected.clicked.connect(self.calcselected)
+        self.pushButton_Cancel.clicked.connect(self.close)
 
     def calcall(self):
         obsar = db_utils.sql_load_fr_db('select distinct obsid from w_flow where flowtype="Accvol"')[1]

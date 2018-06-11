@@ -627,12 +627,12 @@ class SurveyDialog(qgis.PyQt.QtWidgets.QDialog):
         
         self.layout.addLayout(self.layout2)
 
-        self.connect(self.btnClose, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.close)
-        self.connect(self.btnPrint, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.widget.printDiagram)
-        self.connect(self.radGeo, qgis.PyQt.QtCore.SIGNAL("toggled(bool)"), self.typeToggled)
-        self.connect(self.radHydro, qgis.PyQt.QtCore.SIGNAL("toggled(bool)"), self.typeToggled)
-        self.connect(self.chkShowDesc, qgis.PyQt.QtCore.SIGNAL("toggled(bool)"), self.widget.setShowDesc)
-        self.connect(self.GeologyOrCommentCBox, qgis.PyQt.QtCore.SIGNAL("currentIndexChanged(int)"), partial(self.ComboBoxUpdated)) 
+        self.btnClose.clicked.connect(self.close)
+        self.btnPrint.clicked.connect(self.widget.printDiagram)
+        self.radGeo.toggled.connect( self.typeToggled)
+        self.radHydro.toggled.connect( self.typeToggled)
+        self.chkShowDesc.toggled.connect( self.widget.setShowDesc)
+        self.GeologyOrCommentCBox.currentIndexChanged.connect( partial(self.ComboBoxUpdated))
         # whenever the combobox is changed, function partial is used due to problems with currentindexChanged and Combobox)
         
     def close(self):

@@ -61,34 +61,34 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.dockLocationChanged.connect(self.set_location)
 
         #tab TS
-        self.ListOfTables.triggered.connect(partial(self.TSTableUpdated))
-        self.ListOfColumns.triggered.connect(partial(self.ChangedListOfColumns))
+        self.ListOfTables.currentIndexChanged.connect(partial(self.TSTableUpdated))
+        self.ListOfColumns.currentIndexChanged.connect(partial(self.ChangedListOfColumns))
         self.checkBoxDataPoints.stateChanged.connect(self.ChangedCheckBoxDataPoints)
         self.checkBoxStepPlot.stateChanged.connect(self.ChangedCheckBoxStepPlot)
         #tab XY
-        self.ListOfTables_2.triggered.connect(partial(self.XYTableUpdated))
-        self.ListOfColumns_2.triggered.connect(partial(self.ChangedListOfColumns2))
-        self.ListOfColumns_3.triggered.connect(partial(self.ChangedListOfColumns3))
-        self.ListOfColumns_4.triggered.connect(partial(self.ChangedListOfColumns4))
-        self.ListOfColumns_5.triggered.connect(partial(self.ChangedListOfColumns5))
+        self.ListOfTables_2.currentIndexChanged.connect(partial(self.XYTableUpdated))
+        self.ListOfColumns_2.currentIndexChanged.connect(partial(self.ChangedListOfColumns2))
+        self.ListOfColumns_3.currentIndexChanged.connect(partial(self.ChangedListOfColumns3))
+        self.ListOfColumns_4.currentIndexChanged.connect(partial(self.ChangedListOfColumns4))
+        self.ListOfColumns_5.currentIndexChanged.connect(partial(self.ChangedListOfColumns5))
         self.checkBoxDataPoints_2.stateChanged.connect(self.ChangedCheckBoxDataPoints2)
         #tab wqualreport
-        self.ListOfTables_WQUAL.triggered.connect(partial(self.WQUALTableUpdated))
-        self.ListOfColumns_WQUALPARAM.triggered.connect(partial(self.ChangedListOfColumnsWQualParam))
-        self.ListOfColumns_WQUALVALUE.triggered.connect(partial(self.ChangedListOfColumnsWQualValue))
-        self.ListOfdate_time_format.triggered.connect(partial(self.ChangedListOfdate_time_format))
-        self.ListOfColumns_WQUALUNIT.triggered.connect(partial(self.ChangedListOfColumnsWQualUnit))
-        self.ListOfColumns_WQUALSORTING.triggered.connect(partial(self.ChangedListOfColumnsWQualSorting))
+        self.ListOfTables_WQUAL.currentIndexChanged.connect(partial(self.WQUALTableUpdated))
+        self.ListOfColumns_WQUALPARAM.currentIndexChanged.connect(partial(self.ChangedListOfColumnsWQualParam))
+        self.ListOfColumns_WQUALVALUE.currentIndexChanged.connect(partial(self.ChangedListOfColumnsWQualValue))
+        self.ListOfdate_time_format.currentIndexChanged.connect(partial(self.ChangedListOfdate_time_format))
+        self.ListOfColumns_WQUALUNIT.currentIndexChanged.connect(partial(self.ChangedListOfColumnsWQualUnit))
+        self.ListOfColumns_WQUALSORTING.currentIndexChanged.connect(partial(self.ChangedListOfColumnsWQualSorting))
 
         #tab piper
-        self.paramCl.triggered.connect(partial(self.ChangedParamCl))
-        self.paramHCO3.triggered.connect(partial(self.ChangedParamHCO3))
-        self.paramSO4.triggered.connect(partial(self.ChangedParamSO4))
-        self.paramNa.triggered.connect(partial(self.ChangedParamNa))
-        self.paramK.triggered.connect(partial(self.ChangedParamK))
-        self.paramCa.triggered.connect(partial(self.ChangedParamCa))
-        self.paramMg.triggered.connect(partial(self.ChangedParamMg))
-        self.MarkerComboBox.triggered.connect(partial(self.ChangedPiperMarkerComboBox))
+        self.paramCl.currentIndexChanged.connect(partial(self.ChangedParamCl))
+        self.paramHCO3.currentIndexChanged.connect(partial(self.ChangedParamHCO3))
+        self.paramSO4.currentIndexChanged.connect(partial(self.ChangedParamSO4))
+        self.paramNa.currentIndexChanged.connect(partial(self.ChangedParamNa))
+        self.paramK.currentIndexChanged.connect(partial(self.ChangedParamK))
+        self.paramCa.currentIndexChanged.connect(partial(self.ChangedParamCa))
+        self.paramMg.currentIndexChanged.connect(partial(self.ChangedParamMg))
+        self.MarkerComboBox.currentIndexChanged.connect(partial(self.ChangedPiperMarkerComboBox))
 
         #Draw the widget
         self.iface.addDockWidget(max(self.ms.settingsdict['settingslocation'],1), self)
@@ -181,7 +181,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def changed_combobox(self, combobox, settings_string):
         """All "ChangedX" that are comboboxed should be replaced to this one
         Usage:
-        self.connect(self.paramHCO3, SIGNAL("activated(int)"), partial(self.changed_combobox, self.paramHCO3, 'piper_hco3'))
+        self.paramHCO3, SIGNAL("activated(int)"), partial(self.changed_combobox, self.paramHCO3, 'piper_hco3'))
         """
         self.ms.settingsdict[settings_string] = combobox.currentText()
         self.ms.save_settings(settings_string)
@@ -539,7 +539,8 @@ class DatabaseSettings(object):
 
         self.child_widgets = []
 
-        self.midvsettingsdialogdock.connect(self._dbtype_combobox, qgis.PyQt.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_dbtype)
+        self._dbtype_combobox.currentIndexChanged.connect(self.choose_dbtype)
+
 
         self.layout.setRowStretch(self.layout.rowCount(), 1)
 
@@ -642,7 +643,7 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
         self.layout.addWidget(self._dbpath, 0, 1)
 
         #select file
-        self.midvsettingsdialogdock.connect(self.btnSetDB, SIGNAL("clicked()"), self.select_file)
+        self.btnSetDB.clicked.connect(self.select_file)
 
     @property
     def dbpath(self):
@@ -680,10 +681,7 @@ class PostgisSettings(gui_utils.RowEntryGrid):
         connection_names = [u'/'.join([k, u':'.join([v.get(u'host', u''), v.get(u'port', u'')]), v.get(u'database', u'')]) for k, v in postgis_connections.items()]
         self._connection.addItems(sorted(connection_names))
 
-        self.midvsettingsdialogdock.connect(self._connection,
-                                            qgis.PyQt.QtCore.SIGNAL(
-                                                "currentIndexChanged(const QString&)"),
-                                            self.set_db)
+        self._connection.currentIndexChanged.connect(self.set_db)
 
         self.layout.addWidget(self.label, 0, 0)
         self.layout.addWidget(self._connection, 0, 1)

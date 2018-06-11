@@ -121,14 +121,14 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
         #General buttons
         self.save_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Save settings')))
         self.gridLayout_buttons.addWidget(self.save_settings_button, 0, 0)
-        self.connect(self.save_settings_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.save_settings_button.clicked.connect(
                          lambda : [x() for x in [lambda : self.input_fields.update_stored_settings(self.stored_settings),
                                        lambda : utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]])
 
         self.clear_settings_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Clear settings')))
         self.clear_settings_button.setToolTip(ru(QCoreApplication.translate(u'FieldloggerImport', u'Clear all parameter settings\nReopen Fieldlogger import gui to have it reset,\nor press "Save settings" to undo.')))
         self.gridLayout_buttons.addWidget(self.clear_settings_button, 1, 0)
-        self.connect(self.clear_settings_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.clear_settings_button.clicked.connect(
                      lambda: [x() for x in [lambda: utils.save_stored_settings(self.ms, [], self.stored_settingskey),
                                   lambda: utils.pop_up_info(ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings cleared. Restart import Fieldlogger dialog')))]])
 
@@ -138,13 +138,13 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
 
         self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 3, 0)
-        self.connect(self.start_import_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
+        self.start_import_button.clicked.connect(lambda : self.start_import(self.observations))
 
-        self.connect(self.date_time_filter.date_time_filter_update_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.date_time_filter.date_time_filter_update_button.clicked.connect(
                      self.update_sublocations_and_inputfields_on_date_change)
 
         #Button click first filters data from the settings and then updates input fields.
-        self.connect(self.input_fields.update_parameters_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.input_fields.update_parameters_button.clicked.connect(
                      self.update_input_fields_from_button)
 
         self.gridLayout_buttons.setRowStretch(4, 1)
@@ -843,7 +843,7 @@ class ImportMethodChooser(RowEntry):
 
         self.__import_method.addItems(list(self.import_method_classes.keys()))
 
-        self.connect(self.__import_method, qgis.PyQt.QtCore.SIGNAL("currentIndexChanged(const QString&)"),
+        self.__import_method.currentIndexChanged.connect(
                      lambda: self.choose_method(self.import_method_classes))
 
         for widget in [self.label, self.__import_method]:
@@ -950,7 +950,7 @@ class WLevelsImportFields(RowEntryGrid):
         self.layout.addWidget(self._calculate_level_masl_checkbox, 1, 1)
         self.layout.setColumnStretch(1, 2)
 
-        self.connect(self._value_column, qgis.PyQt.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.set_calculate_level_masl_visibility)
+        self._value_column.currentIndexChanged.connect( self.set_calculate_level_masl_visibility)
 
         self.set_calculate_level_masl_visibility()
 
@@ -1028,7 +1028,7 @@ class WFlowImportFields(RowEntryGrid):
         self.__flowtype.addItems(sorted(self._flowtypes_units.keys()))
         self.label_unit = qgis.PyQt.QtWidgets.QLabel(u'Unit: ')
         self.__unit = default_combobox()
-        self.connect(self.__flowtype, qgis.PyQt.QtCore.SIGNAL("editTextChanged(const QString&)"),
+        self.__flowtype.editTextChanged.connect(
                      lambda : self.fill_list(self.__unit, self.flowtype, self._flowtypes_units))
 
         self.layout.addWidget(self.label_flowtype, 0, 0)
@@ -1130,10 +1130,10 @@ class WQualFieldImportFields(RowEntryGrid):
         self.layout.addWidget(self.__instrument, 1, 3)
         self.layout.setColumnStretch(4, 1)
 
-        self.connect(self.__parameter, qgis.PyQt.QtCore.SIGNAL("editTextChanged(const QString&)"),
+        self.__parameter.editTextChanged.connect(
                      lambda : self.fill_list(self.__unit, self.parameter, self._parameters_units))
 
-        self.connect(self.__parameter, qgis.PyQt.QtCore.SIGNAL("editTextChanged(const QString&)"),
+        self.__parameter.editTextChanged.connect(
                      lambda: self.fill_list(self.__instrument, self.parameter, self.parameter_instruments))
 
     @property

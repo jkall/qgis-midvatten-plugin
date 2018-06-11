@@ -91,7 +91,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(QCoreApplication.translate('DiverofficeImport', u'Start import'))
         self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
-        self.connect(self.start_import_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda : self.start_import(files=self.files, skip_rows_without_water_level=self.skip_rows.checked, confirm_names=self.confirm_names.checked, import_all_data=self.import_all_data.checked, from_date=self.date_time_filter.from_date, to_date=self.date_time_filter.to_date))
+        self.start_import_button.clicked.connect(lambda : self.start_import(files=self.files, skip_rows_without_water_level=self.skip_rows.checked, confirm_names=self.confirm_names.checked, import_all_data=self.import_all_data.checked, from_date=self.date_time_filter.from_date, to_date=self.date_time_filter.to_date))
 
         self.gridLayout_buttons.setRowStretch(2, 1)
 

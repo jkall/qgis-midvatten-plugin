@@ -69,7 +69,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.iface = iface1
         #self.location = PyQt4.QtCore.Qt.Qt.BottomDockWidgetArea#should be loaded from settings instead
         #self.location = int(self.ms.settingsdict['secplotlocation'])
-        self.connect(self, qgis.PyQt.QtCore.SIGNAL("dockLocationChanged(Qt::DockWidgetArea)"), self.set_location)#not really implemented yet
+        self.dockLocationChanged.connect(self.set_location)#not really implemented yet
 
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.setWindowTitle("Midvatten plugin - section plot") # Set the title for the dialog
@@ -619,7 +619,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         #connect signal
         self.pushButton.clicked.connect(self.draw_plot)
         self.redraw.clicked.connect(self.finish_plot)
-        self.connect(self.chart_settings, qgis.PyQt.QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.chart_settings))
+        self.chart_settings.clicked.connect(partial(self.set_groupbox_children_visibility, self.chart_settings))
         self.set_groupbox_children_visibility(self.chart_settings)
         
         # Create a plot window with one single subplot

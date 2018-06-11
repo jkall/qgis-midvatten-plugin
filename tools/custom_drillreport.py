@@ -54,11 +54,11 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
         self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settings_key, {})
         self.update_from_stored_settings(self.stored_settings)
 
-        self.connect(self.pushButton_ok, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.drillreport)
+        self.pushButton_ok.clicked.connect(self.drillreport)
 
-        self.connect(self.pushButton_cancel, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda : self.close())
+        self.pushButton_cancel.clicked.connect(lambda : self.close())
 
-        self.connect(self.pushButton_update_from_string, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.ask_and_update_stored_settings)
+        self.pushButton_update_from_string.clicked.connect(self.ask_and_update_stored_settings)
 
         self.show()
 

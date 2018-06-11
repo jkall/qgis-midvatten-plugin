@@ -198,7 +198,7 @@ class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
             button = QtWidgets.QPushButton(button_name)
             button.setObjectName(button_name.lower())
             self.buttonBox.addButton(button, QtWidgets.QDialogButtonBox.ActionRole)
-            self.connect(button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.button_clicked)
+            button.clicked.connect(self.button_clicked)
 
         self.reuse_label = qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate(u'NotFoundQuestion', u'Reuse answer for all identical'))
         self._reuse_column = qgis.PyQt.QtWidgets.QComboBox()
@@ -272,7 +272,7 @@ class HtmlDialog(QtWidgets.QDialog):
         self.horizontalLayout.setMargin(0)
         self.horizontalLayout.addStretch(1000)
         self.horizontalLayout.addWidget(self.closeButton)
-        QtCore.QObject.connect(self.closeButton, QtCore.SIGNAL("clicked()"), self.closeWindow)
+        self.closeButton.clicked.connect(self.closeWindow)
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.setLayout(self.verticalLayout)
         url = QtCore.QUrl(filepath)
@@ -1646,11 +1646,11 @@ class PlotTemplates(object):
             if self.loaded_template:
                 MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Loaded template from default hard coded template.')))
 
-        plot_object.connect(self.edit_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.edit)
-        plot_object.connect(self.load_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.load)
-        plot_object.connect(self.save_as_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.save_as)
-        plot_object.connect(self.import_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.import_templates)
-        plot_object.connect(self.remove_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.remove)
+        self.edit_button.clicked.connect(self.edit)
+        self.load_button.clicked.connect(self.load)
+        self.save_as_button.clicked.connect(self.save_as)
+        self.import_button.clicked.connect(self.import_templates)
+        self.remove_button.clicked.connect(self.remove)
 
     @general_exception_handler
     def edit(self):

@@ -70,11 +70,11 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         self.metadata_filter = MetadataFilter(self.all_lab_results, self.connect)
         splitter.addWidget(self.metadata_filter.widget)
 
-        self.connect(self.metadata_filter.update_selection_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda : self.metadata_filter.set_selection(self.specific_meta_filter.get_items_dict()))
+        self.metadata_filter.update_selection_button.clicked.connect(lambda : self.metadata_filter.set_selection(self.specific_meta_filter.get_items_dict()))
 
         self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'Interlab4Import', u'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
-        self.connect(self.start_import_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras()))
+        self.start_import_button.clicked.connect(lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras()))
 
         self.help_label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'Interlab4Import', u'Instructions')))
         self.help_label.setToolTip(ru(QCoreApplication.translate(u'Interlab4Import',
@@ -534,7 +534,7 @@ class MetadataFilter(VRowEntry):
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setSortingEnabled(True)
 
-        self.connect(self.table, qgis.PyQt.QtCore.SIGNAL("itemSelectionChanged()"), self.update_nr_of_selected)
+        self.table, qgis.PyQt.QtCore.SIGNAL("itemSelectionChanged()"), self.update_nr_of_selected)
 
         self.table_items = {}
 

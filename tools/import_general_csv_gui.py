@@ -68,7 +68,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         #General buttons
         self.select_file_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Load data from file')))
         self.gridLayout_buttons.addWidget(self.select_file_button, 0, 0)
-        self.connect(self.select_file_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.select_file_button.clicked.connect(
                      lambda: [x() for x in [lambda: self.load_files(),
                                                  lambda: self.table_chooser.reload(),
                                                  lambda: self.file_data_loaded_popup()]])
@@ -76,14 +76,14 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         self.import_all_features_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Load data from all features\nfrom active layer')))
         self.gridLayout_buttons.addWidget(self.import_all_features_button, 1, 0)
-        self.connect(self.import_all_features_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.import_all_features_button.clicked.connect(
                      lambda: [x() for x in [lambda: self.load_from_active_layer(only_selected=False),
                                                  lambda: self.table_chooser.reload(),
                                                  lambda: self.file_data_loaded_popup()]])
 
         self.import_selected_features_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Load data from selected features\nfrom active layer')))
         self.gridLayout_buttons.addWidget(self.import_selected_features_button, 2, 0)
-        self.connect(self.import_selected_features_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.import_selected_features_button.clicked.connect(
                      lambda: [x() for x in [lambda: self.load_from_active_layer(only_selected=True),
                                                  lambda: self.table_chooser.reload(),
                                                  lambda: self.file_data_loaded_popup()]])
@@ -102,7 +102,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 7, 0)
-        self.connect(self.start_import_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+        self.start_import_button.clicked.connect(
                      self.start_import)
 
         self.gridLayout_buttons.setRowStretch(8, 1)
@@ -351,7 +351,7 @@ class ImportTableChooser(VRowEntry):
         self.__import_method.addItem(u'')
         self.__import_method.addItems(sorted(list(tables_columns.keys()), key=lambda s: s.lower()))
 
-        self.connect(self.__import_method, qgis.PyQt.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_method)
+        self.__import_method.currentIndexChanged.connect( self.choose_method)
 
         for widget in [self.label, self.__import_method]:
             chooser.layout.addWidget(widget)
@@ -477,7 +477,7 @@ class ColumnEntry(object):
         if self.db_column == u'obsid':
             self.obsids_from_selection = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate(u'ColumnEntry', u'Obsid from qgis selection')))
             self.obsids_from_selection.setToolTip(ru(QCoreApplication.translate(u'ColumnEntry', u'Select 1 obsid from obs_points or obs_lines attribute table or map.')))
-            self.connect(self.obsids_from_selection, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.obsids_from_selection_checked)
+            self.obsids_from_selection.clicked.connect(self.obsids_from_selection_checked)
 
             self.obsid_widget = RowEntry()
             self.obsid_widget.layout.addWidget(self.obsids_from_selection)
@@ -505,7 +505,7 @@ class ColumnEntry(object):
         if self.column_type not in numeric_datatypes:
             self._factor.setVisible(False)
 
-        self.connect(self.static_checkbox, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.static_checkbox_checked)
+        self.static_checkbox.clicked.connect(self.static_checkbox_checked)
 
         #This line prefills the columns if the header names matches the database column names
         self.file_column_name = self.db_column
