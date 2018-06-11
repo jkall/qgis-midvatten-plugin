@@ -25,7 +25,7 @@ import datetime
 import locale
 import os
 import re
-from qgis.core import QGis
+from qgis.core import Qgis
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication

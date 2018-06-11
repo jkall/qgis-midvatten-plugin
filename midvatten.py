@@ -27,7 +27,7 @@ import qgis.utils
 import shutil
 import sys
 # Import the PyQt and QGIS libraries
-from qgis.core import QGis, QgsMessageLog
+from qgis.core import Qgis, QgsMessageLog
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication, QDir, QObject, QSettings, QUrl, Qt
 from qgis.PyQt.QtWidgets import QAction, QApplication, QFileDialog, QMenu

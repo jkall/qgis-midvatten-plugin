@@ -15,7 +15,7 @@ and qchainage plugin (C) 2012 by Werner Macho
 """
 
 import qgis.PyQt
-from qgis.core import QGis, QgsFeature, QgsField, QgsFields, QgsProject, QgsMessageLog, QgsRaster, QgsVectorLayer
+from qgis.core import Qgis, QgsFeature, QgsField, QgsFields, QgsProject, QgsMessageLog, QgsRaster, QgsVectorLayer
 
 
 def qchain(sectionlinelayer, distance): #original start function from qchainage
