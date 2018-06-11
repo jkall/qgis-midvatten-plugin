@@ -25,7 +25,7 @@ changelog=
         - Fix for database import to be able to import to tables without primary key.
         - Sectionplot: Barwidths can be set as % of plot window.
         - Customplot: Added template support.
-        - New feature: Compact water quality report. Used for creating water quality reports for use as report attachments.
+        - New feature: Compact water quality report. Used for creating water quality reports for use as report attachments..
         Version 1.5:
         - Final release
         For changes until ver 1.5, see separate document changelog_history
