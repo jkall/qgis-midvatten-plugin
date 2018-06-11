@@ -265,7 +265,7 @@ class NewDb(object):
             default_crs = 3006
         else:
             default_crs = 4326
-        EPSGID = qgis.PyQt.QtWidgets.QInputDialog.getInteger(None, ru(QCoreApplication.translate(u'NewDb', "Select CRS")), ru(QCoreApplication.translate(u'NewDb', "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:")),default_crs)
+        EPSGID = qgis.PyQt.QtWidgets.QInputDialog.getInt(None, ru(QCoreApplication.translate(u'NewDb', "Select CRS")), ru(QCoreApplication.translate(u'NewDb', "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:")),default_crs)
         if not EPSGID[1]:
             raise utils.UserInterruptError()
         return EPSGID

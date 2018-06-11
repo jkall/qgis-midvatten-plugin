@@ -408,7 +408,7 @@ class ParameterGroup(object):
         self.paste_from_selection_button.setToolTip(locations_box_tooltip)
 
         #-------------------------------------------------------------------------------------
-        connect(self.paste_from_selection_button.clicked.connect(
+        self.paste_from_selection_button.clicked.connect(
                          lambda : self._obsid_list.paste_data(utils.get_selected_features_as_tuple('obs_points')))
 
     def get_settings(self):

@@ -157,7 +157,7 @@ class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInt')
     @mock.patch('create_db.PyQt4.QtWidgets.QFileDialog.getSaveFileName')
     @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
@@ -173,7 +173,7 @@ class MidvattenTestSpatialiteDbEn(MidvattenTestSpatialiteNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInt')
     @mock.patch('create_db.PyQt4.QtWidgets.QFileDialog.getSaveFileName')
     @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
@@ -245,7 +245,7 @@ class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInt')
     def setUp(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         super(MidvattenTestPostgisDbSv, self).setUp()
         mock_locale.return_value.answer = u'ok'
