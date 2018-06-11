@@ -1,6 +1,6 @@
 ; mandatory entries
 
-; [general]
+[general]
 name=Midvatten
 qgisMinimumVersion=3.0
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
