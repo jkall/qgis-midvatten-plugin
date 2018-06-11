@@ -1,6 +1,5 @@
 [general]
-
-
+; mandatory entries
 name=Midvatten
 qgisMinimumVersion=3.0
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data
@@ -23,12 +22,9 @@ tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
 icon=icons/MidvSettings.png
 ; authorName=Josef Kallgården
 
-
 changelog=
         Version 2.0b1:
         - Update for QGIS3.
         For changes until ver 2.0, see separate document changelog_history
 
-;for the new plugin repo
-about=
 
