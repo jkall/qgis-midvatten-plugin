@@ -32,8 +32,8 @@ from qgis.PyQt.QtCore import QCoreApplication
 
 import db_utils
 import midvatten_utils as utils
-from .midvatten_utils import returnunicode as ru
-from .midvatten_utils import UserInterruptError
+from midvatten_utils import returnunicode as ru
+from midvatten_utils import UserInterruptError
 
 
 class midv_data_importer(object):  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction

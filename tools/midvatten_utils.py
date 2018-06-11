@@ -42,12 +42,12 @@ import os
 import qgis.utils
 import tempfile
 import time
-from qgis.PyQt import QtCore, QtGui, uic
+from qgis.PyQt import QtCore, QtGui, uic, QtWidgets
 from collections import OrderedDict
 from contextlib import contextmanager
 from functools import wraps
 from operator import itemgetter
-from qgis.core import QgsLogger, QgsMapLayer, QgsProject, QgsMessageLog, QgsProject
+from qgis.core import QgsLogger, QgsMapLayer, QgsProject, QgsMessageLog, QgsProject, Qgis
 from qgis.gui import QgsMessageBar, QtCore
 
 import numpy as np
@@ -100,7 +100,7 @@ class MessagebarAndLog(object):
         pass
 
     @staticmethod
-    def log(bar_msg=None, log_msg=None, duration=10, messagebar_level=QgsMessageBar.INFO, log_level=QgsMessageLog.INFO, button=True):
+    def log(bar_msg=None, log_msg=None, duration=10, messagebar_level=Qgis.Info, log_level=Qgis.Info, button=True):
         if qgis.utils.iface is None:
             return None
         if bar_msg is not None:
@@ -121,15 +121,15 @@ class MessagebarAndLog(object):
 
     @staticmethod
     def info(bar_msg=None, log_msg=None, duration=10, button=True, optional_bar=False):
-        MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.INFO, QgsMessageLog.INFO, button)
+        MessagebarAndLog.log(bar_msg, log_msg, duration, Qgis.Info, Qgis.Info, button)
 
     @staticmethod
     def warning(bar_msg=None, log_msg=None, duration=10, button=True, optional_bar=False):
-        MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.WARNING, QgsMessageLog.WARNING, button)
+        MessagebarAndLog.log(bar_msg, log_msg, duration, Qgis.Warning, Qgis.Warning, button)
 
     @staticmethod
     def critical(bar_msg=None, log_msg=None, duration=10, button=True, optional_bar=False):
-        MessagebarAndLog.log(bar_msg, log_msg, duration, QgsMessageBar.CRITICAL, QgsMessageLog.CRITICAL, button)
+        MessagebarAndLog.log(bar_msg, log_msg, duration, Qgis.Critical, Qgis.Critical, button)
 
 
 def write_qgs_log_to_file(message, tag, level):
@@ -138,7 +138,7 @@ def write_qgs_log_to_file(message, tag, level):
         QgsLogger.logMessageToFile(u'{}: {}({}): {} '.format(u'%s'%(returnunicode(get_date_time())), returnunicode(tag), returnunicode(level), u'%s'%(returnunicode(message))))
 
 
-class Askuser(QtGui.QDialog):
+class Askuser(QtWidgets.QDialog):
     def __init__(self, question="YesNo", msg = '', dialogtitle=QCoreApplication.translate(u'askuser', 'User input needed'), parent=None):
         self.result = ''
         if question == 'YesNo':         #  Yes/No dialog 
@@ -180,9 +180,9 @@ class Askuser(QtGui.QDialog):
                         pop_up_info(QCoreApplication.translate(u'askuser', "Failure:\nMust write time resolution also.\n"))
 
 
-class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
+class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
     def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None, button_names=[u'Ignore', u'Cancel', u'Ok'], combobox_label=u'Similar values found in db (choose or edit):', reuse_header_list=None, reuse_column=u''):
-        QtGui.QDialog.__init__(self, parent)
+        QtWidgets.QDialog.__init__(self, parent)
         self.answer = None
         self.setupUi(self)
         self.setWindowTitle(dialogtitle)
@@ -197,7 +197,7 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
         for button_name in button_names:
             button = QtGui.QPushButton(button_name)
             button.setObjectName(button_name.lower())
-            self.buttonBox.addButton(button, QtGui.QDialogButtonBox.ActionRole)
+            self.buttonBox.addButton(button, QtWidgets.QDialogButtonBox.ActionRole)
             self.connect(button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.button_clicked)
 
         self.reuse_label = qgis.PyQt.QtGui.QLabel(QCoreApplication.translate(u'NotFoundQuestion', u'Reuse answer for all identical'))
@@ -249,10 +249,10 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
         #self.close()
 
 
-class HtmlDialog(QtGui.QDialog):
+class HtmlDialog(QtWidgets.QDialog):
 
     def __init__(self, title='', filepath=''):
-        QtGui.QDialog.__init__(self)
+        QtWidgets.QDialog.__init__(self)
         self.setModal(True)
         self.setupUi(title, filepath)
 
@@ -856,9 +856,9 @@ def select_files(only_one_file=True, extension="csv (*.csv)"):
         dir = u''
 
     if only_one_file:
-        csvpath = [QtGui.QFileDialog.getOpenFileName(parent=None, caption=QCoreApplication.translate(u'select_files', "Select file"), directory=dir, filter=extension)]
+        csvpath = [QtWidgets.QFileDialog.getOpenFileName(parent=None, caption=QCoreApplication.translate(u'select_files', "Select file"), directory=dir, filter=extension)]
     else:
-        csvpath = QtGui.QFileDialog.getOpenFileNames(parent=None, caption=QCoreApplication.translate(u'select_files', "Select files"), directory=dir, filter=extension)
+        csvpath = QtWidgets.QFileDialog.getOpenFileNames(parent=None, caption=QCoreApplication.translate(u'select_files', "Select files"), directory=dir, filter=extension)
     csvpath = [returnunicode(p) for p in csvpath if p]
     return csvpath
 
@@ -1680,7 +1680,7 @@ class PlotTemplates(object):
 
     @general_exception_handler
     def save_as(self):
-        filename = qgis.PyQt.QtGui.QFileDialog.getSaveFileName(parent=None, caption=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Choose a file name')), directory='', filter='txt (*.txt)')
+        filename = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Choose a file name')), directory='', filter='txt (*.txt)')
         if filename is None or not filename:
             raise UserInterruptError()
         as_str = self.readable_output(self.loaded_template)

@@ -44,7 +44,7 @@ class Ui_Dialog(object):
 if __name__ == "__main__":
     import sys
     app = QtGui.QApplication(sys.argv)
-    Dialog = QtGui.QDialog()
+    Dialog = QtWidgets.QDialog()
     ui = Ui_Dialog()
     ui.setupUi(Dialog)
     Dialog.show()

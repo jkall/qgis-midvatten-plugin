@@ -31,7 +31,7 @@ import os
 import locale
 from collections import OrderedDict
 import midvatten_utils as utils
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 import codecs
 from time import sleep
 import qgis
@@ -41,12 +41,12 @@ from qgis.PyQt.QtCore import QCoreApplication
 
 custom_drillreport_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'custom_drillreport.ui'))[0]
 
-class DrillreportUi(qgis.PyQt.QtGui.QMainWindow, custom_drillreport_dialog):
+class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
     def __init__(self, parent, midv_settings):
         self.iface = parent
 
         self.ms = midv_settings
-        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 
@@ -103,7 +103,7 @@ class DrillreportUi(qgis.PyQt.QtGui.QMainWindow, custom_drillreport_dialog):
                 except:
                     pass
                 else:
-                    if isinstance(selfattr, qgis.PyQt.QtGui.QPlainTextEdit):
+                    if isinstance(selfattr, qgis.PyQt.QtWidgets.QPlainTextEdit):
                         if isinstance(val, (list, tuple)):
                             val = u'\n'.join(val)
                         selfattr.setPlainText(val)
@@ -178,7 +178,7 @@ class DrillreportUi(qgis.PyQt.QtGui.QMainWindow, custom_drillreport_dialog):
                 utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi',
                                                                                   u"Programming error. Attribute name %s didn't exist in self.")) % attrname)
             else:
-                if isinstance(attr, qgis.PyQt.QtGui.QPlainTextEdit):
+                if isinstance(attr, qgis.PyQt.QtWidgets.QPlainTextEdit):
                     val = [x for x in attr.toPlainText().split(u'\n') if x]
                 elif isinstance(attr, qgis.PyQt.QtGui.QCheckBox):
                     val = attr.isChecked()

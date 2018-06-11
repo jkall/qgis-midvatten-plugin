@@ -33,7 +33,7 @@ from qgis.PyQt.QtGui import QColor
 
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 
 
 class PrepareForQgis2Threejs(object):        

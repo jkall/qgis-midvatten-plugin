@@ -44,19 +44,19 @@ except:
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import datetime
 import midvatten_utils as utils
-from .midvatten_utils import fn_timer, returnunicode as ru
-from .date_utils import dateshift, datestring_to_date, long_dateformat
+from midvatten_utils import fn_timer, returnunicode as ru
+from date_utils import dateshift, datestring_to_date, long_dateformat
 import db_utils
 
 Calibr_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calibr_logger_dialog_integrated.ui'))[0]
 Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_lvl_dialog.ui'))[0]
 
 
-class Calclvl(qgis.PyQt.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
+class Calclvl(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
 
     @fn_timer
     def __init__(self, parent,layerin):
-        qgis.PyQt.QtGui.QDialog.__init__(self)
+        qgis.PyQt.QtWidgets.QDialog.__init__(self)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.obsid = utils.getselectedobjectnames()
         self.setWindowTitle(ru(QCoreApplication.translate(u'Calclvl', u"Calculate levels"))) # Set the title for the dialog
@@ -135,7 +135,7 @@ class Calclvl(qgis.PyQt.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the cla
         return log_msg
 
 
-class Calibrlogger(qgis.PyQt.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of the class Calibr_Ui_Dialog is created same time as instance of calibrlogger is created
+class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An instance of the class Calibr_Ui_Dialog is created same time as instance of calibrlogger is created
 
     @fn_timer
     def __init__(self, parent, settingsdict1={}, obsid=''):
@@ -150,7 +150,7 @@ class Calibrlogger(qgis.PyQt.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance
         self.loggerpos_masl_or_offset_state = 1
 
         self.settingsdict = settingsdict1
-        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         self.setWindowTitle(ru(QCoreApplication.translate(u'Calibrlogger', u"Calculate water level from logger"))) # Set the title for the dialog

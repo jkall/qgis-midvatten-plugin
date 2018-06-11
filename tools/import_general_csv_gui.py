@@ -40,19 +40,19 @@ import import_data_to_db
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 from .gui_utils import RowEntry, VRowEntry, get_line, RowEntryGrid
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 from .gui_utils import DistinctValuesBrowser
 
 import_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
 
-class GeneralCsvImportGui(qgis.PyQt.QtGui.QMainWindow, import_ui_dialog):
+class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
     def __init__(self, parent, msettings=None):
         self.status = False
         self.iface = parent
         self.ms = msettings
         self.ms.loadSettings()
-        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle(ru(QCoreApplication.translate(u'GeneralCsvImportGui', "Csv import")))  # Set the title for the dialog
@@ -271,11 +271,11 @@ class GeneralCsvImportGui(qgis.PyQt.QtGui.QMainWindow, import_ui_dialog):
         # horizontalLineWidget.setFixedHeight(2)
         # horizontalLineWidget.setSizePolicy(PyQt4.QtGui.QSizePolicy.Expanding, PyQt4.QtGui.QSizePolicy.Fixed)
         # horizontalLineWidget.setStyleSheet(PyQt4.QtCore.QString("background-color: #c0c0c0;"));
-        line = qgis.PyQt.QtGui.QFrame()
+        line = qgis.PyQt.QtWidgets.QFrame()
         # line.setObjectName(QString::fromUtf8("line"));
         line.setGeometry(qgis.PyQt.QtCore.QRect(320, 150, 118, 3))
-        line.setFrameShape(qgis.PyQt.QtGui.QFrame.HLine)
-        line.setFrameShadow(qgis.PyQt.QtGui.QFrame.Sunken)
+        line.setFrameShape(qgis.PyQt.QtWidgets.QFrame.HLine)
+        line.setFrameShadow(qgis.PyQt.QtWidgets.QFrame.Sunken)
         if layout is None:
             self.add_row(line)
         else:

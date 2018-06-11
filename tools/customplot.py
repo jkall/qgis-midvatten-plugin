@@ -47,7 +47,7 @@ import datetime
 import matplotlib.ticker as tick
 
 import midvatten_utils as utils
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 import qgis.PyQt
 
@@ -62,11 +62,11 @@ utils.MessagebarAndLog.info(log_msg=u"Python pandas: " + str(pandas_on))
 customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..', 'ui', 'customplotdialog.ui'))[0]
 
 
-class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
+class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
     def __init__(self, parent, msettings):#, parent as second arg?
         self.ms = msettings
         self.ms.loadSettings()
-        QtGui.QDialog.__init__(self, parent)        
+        QtWidgets.QDialog.__init__(self, parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setupUi( self )#due to initialisation of Ui_MainWindow instance
         self.initUI()
@@ -841,7 +841,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         [filter_listwidget.item(nr).setSelected(True) for nr in range(filter_listwidget.count()) if ru(filter_listwidget.item(nr).text()) in selected_values]
 
     def save_to_eps(self):
-        filename = qgis.PyQt.QtGui.QFileDialog.getSaveFileName(parent=None, caption=ru(
+        filename = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption=ru(
             QCoreApplication.translate(u'CustomPlot', u'Choose a file name, extension sets format')), directory='')
         if not filename:
             return
@@ -979,8 +979,8 @@ class PandasCalculations(object):
 
 
 def horizontal_line():
-    line = qgis.PyQt.QtGui.QFrame()
+    line = qgis.PyQt.QtWidgets.QFrame()
     line.setGeometry(qgis.PyQt.QtCore.QRect(320, 150, 118, 3))
-    line.setFrameShape(qgis.PyQt.QtGui.QFrame.HLine)
-    line.setFrameShadow(qgis.PyQt.QtGui.QFrame.Sunken)
+    line.setFrameShape(qgis.PyQt.QtWidgets.QFrame.HLine)
+    line.setFrameShadow(qgis.PyQt.QtWidgets.QFrame.Sunken)
     return line

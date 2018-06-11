@@ -29,7 +29,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 
 import db_utils
 import midvatten_utils as utils
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 
 
 class XYPlot(object):

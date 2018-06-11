@@ -400,7 +400,7 @@ class midvatten(object):
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
 
             #sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u"Midvatten", """You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""")), ru(QCoreApplication.translate(u"Midvatten", u'Are you sure?')))
-            #exportfolder =    QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
+            #exportfolder =    QtWidgets.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtWidgets.QFileDialog.ShowDirsOnly)
             exportfolder = QFileDialog.getExistingDirectory(None, ru(QCoreApplication.translate("Midvatten", 'Select a folder where the csv files will be created:')), '.',QFileDialog.ShowDirsOnly)
             if len(exportfolder) > 0:
                 exportinstance = ExportData(OBSID_P, OBSID_L)

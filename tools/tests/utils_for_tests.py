@@ -158,7 +158,7 @@ class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
-    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    @mock.patch('create_db.PyQt4.QtWidgets.QFileDialog.getSaveFileName')
     @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         super(MidvattenTestSpatialiteDbSv, self).setUp()
@@ -174,7 +174,7 @@ class MidvattenTestSpatialiteDbEn(MidvattenTestSpatialiteNotCreated):
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
     @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
-    @mock.patch('create_db.PyQt4.QtGui.QFileDialog.getSaveFileName')
+    @mock.patch('create_db.PyQt4.QtWidgets.QFileDialog.getSaveFileName')
     @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         super(MidvattenTestSpatialiteDbEn, self).setUp()

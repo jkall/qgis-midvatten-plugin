@@ -32,7 +32,7 @@ import db_utils
 from matplotlib.dates import datestr2num
 import numpy as np
 import midvatten_utils as utils
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 #from ui.calc_aveflow_dialog import Ui_Dialog as Calc_Ui_Dialog
 from qgis.PyQt import uic
 
@@ -41,10 +41,10 @@ from qgis.PyQt.QtCore import QCoreApplication
 Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_aveflow_dialog.ui'))[0]
 
 
-class Calcave(qgis.PyQt.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
+class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
 
     def __init__(self, parent):
-        qgis.PyQt.QtGui.QDialog.__init__(self)
+        qgis.PyQt.QtWidgets.QDialog.__init__(self)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.obsid = utils.getselectedobjectnames()
         self.setWindowTitle(ru(QCoreApplication.translate(u'Calcave', u"Calculate average flow"))) # Set the title for the dialog

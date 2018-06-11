@@ -25,13 +25,13 @@ import qgis.PyQt
 import copy
 from qgis.PyQt.QtCore import QCoreApplication
 
-from .date_utils import datestring_to_date
+from date_utils import datestring_to_date
 import midvatten_utils as utils
 import db_utils
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 
 
-class SplitterWithHandel(qgis.PyQt.QtGui.QSplitter):
+class SplitterWithHandel(qgis.PyQt.QtWidgets.QSplitter):
     """
     Creates a splitter with a handle
 
@@ -44,9 +44,9 @@ class SplitterWithHandel(qgis.PyQt.QtGui.QSplitter):
         layout = qgis.PyQt.QtGui.QVBoxLayout(handle)
         layout.setSpacing(0)
         layout.setMargin(0)
-        line = qgis.PyQt.QtGui.QFrame(handle)
-        line.setFrameShape(qgis.PyQt.QtGui.QFrame.HLine)
-        line.setFrameShadow(qgis.PyQt.QtGui.QFrame.Sunken)
+        line = qgis.PyQt.QtWidgets.QFrame(handle)
+        line.setFrameShape(qgis.PyQt.QtWidgets.QFrame.HLine)
+        line.setFrameShadow(qgis.PyQt.QtWidgets.QFrame.Sunken)
         layout.addWidget(line)
 
 
@@ -71,7 +71,7 @@ class RowEntryGrid(object):
         self.widget.setLayout(self.layout)
 
 
-class ExtendedQPlainTextEdit(qgis.PyQt.QtGui.QPlainTextEdit):
+class ExtendedQPlainTextEdit(qgis.PyQt.QtWidgets.QPlainTextEdit):
     """
 
     """
@@ -103,10 +103,10 @@ class ExtendedQPlainTextEdit(qgis.PyQt.QtGui.QPlainTextEdit):
 
 
 def get_line():
-    line = qgis.PyQt.QtGui.QFrame()
+    line = qgis.PyQt.QtWidgets.QFrame()
     line.setGeometry(qgis.PyQt.QtCore.QRect(320, 150, 118, 3))
-    line.setFrameShape(qgis.PyQt.QtGui.QFrame.HLine)
-    line.setFrameShadow(qgis.PyQt.QtGui.QFrame.Sunken)
+    line.setFrameShape(qgis.PyQt.QtWidgets.QFrame.HLine)
+    line.setFrameShadow(qgis.PyQt.QtWidgets.QFrame.Sunken)
     return line
 
 

@@ -34,17 +34,17 @@ import db_utils
 import definitions.midvatten_defs as defs
 import midvatten_utils as utils
 from .gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit, get_line, set_combobox
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 
 export_fieldlogger_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 parameter_browser_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'fieldlogger_parameter_browser.ui'))[0]
 
-class ExportToFieldLogger(qgis.PyQt.QtGui.QMainWindow, export_fieldlogger_ui_dialog):
+class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui_dialog):
     def __init__(self, parent, midv_settings):
         self.iface = parent
 
         self.ms = midv_settings
-        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle(ru(QCoreApplication.translate(u'ExportToFieldLogger', u"Export to Fieldlogger dialog"))) # Set the title for the dialog
@@ -352,7 +352,7 @@ class ExportToFieldLogger(qgis.PyQt.QtGui.QMainWindow, export_fieldlogger_ui_dia
 
     @staticmethod
     def write_printlist_to_file(printlist):
-        filename = qgis.PyQt.QtGui.QFileDialog.getSaveFileName(parent=None, caption=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Choose a file name')), directory='', filter='csv (*.csv)')
+        filename = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Choose a file name')), directory='', filter='csv (*.csv)')
         if not filename:
             return
         if os.path.splitext(filename)[1] != u'.csv':
@@ -459,9 +459,9 @@ class ParameterGroup(object):
             self._input_field_group_list.paste_data(paste_list=value.split(u'\n'))
 
 
-class ParameterBrowser(qgis.PyQt.QtGui.QDialog, parameter_browser_dialog):
+class ParameterBrowser(qgis.PyQt.QtWidgets.QDialog, parameter_browser_dialog):
     def __init__(self, tables_columns, connect, parent=None):
-        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 
         #Widgets:

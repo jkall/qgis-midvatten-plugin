@@ -33,19 +33,19 @@ from qgis.PyQt.QtCore import QCoreApplication
 
 import import_data_to_db
 import midvatten_utils as utils
-from .date_utils import datestring_to_date
+from date_utils import datestring_to_date
 from .gui_utils import SplitterWithHandel, RowEntry, VRowEntry, ExtendedQPlainTextEdit
-from .midvatten_utils import Cancel, returnunicode as ru
+from midvatten_utils import Cancel, returnunicode as ru
 
 import_fieldlogger_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_interlab4.ui'))[0]
 
-class Interlab4Import(qgis.PyQt.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
+class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dialog):
     def __init__(self, parent, msettings=None):
         self.status = False
         self.iface = parent
         self.ms = msettings
         self.ms.loadSettings()
-        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setWindowTitle(ru(QCoreApplication.translate(u'Interlab4Import', "Import interlab4 data to w_qual_lab table"))) # Set the title for the dialog
         #self.MainWindow.setWindowTitle("Import interlab4 data to w_qual_lab table")
@@ -474,11 +474,11 @@ class Interlab4Import(qgis.PyQt.QtGui.QMainWindow, import_fieldlogger_ui_dialog)
         #horizontalLineWidget.setFixedHeight(2)
         #horizontalLineWidget.setSizePolicy(PyQt4.QtGui.QSizePolicy.Expanding, PyQt4.QtGui.QSizePolicy.Fixed)
         #horizontalLineWidget.setStyleSheet(PyQt4.QtCore.QString("background-color: #c0c0c0;"));
-        line = qgis.PyQt.QtGui.QFrame()
+        line = qgis.PyQt.QtWidgets.QFrame()
         #line.setObjectName(QString::fromUtf8("line"));
         line.setGeometry(qgis.PyQt.QtCore.QRect(320, 150, 118, 3))
-        line.setFrameShape(qgis.PyQt.QtGui.QFrame.HLine);
-        line.setFrameShadow(qgis.PyQt.QtGui.QFrame.Sunken);
+        line.setFrameShape(qgis.PyQt.QtWidgets.QFrame.HLine);
+        line.setFrameShadow(qgis.PyQt.QtWidgets.QFrame.Sunken);
         if layout is None:
             self.add_row(line)
         else:

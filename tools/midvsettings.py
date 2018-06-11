@@ -19,7 +19,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 
 import midvatten_utils as utils
 from definitions import midvatten_defs
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 
 
 class midvsettings(object):

@@ -26,7 +26,7 @@ import sqlite3 as sqlite
 import csv, codecs, io, os, os.path
 import db_utils
 import midvatten_utils as utils
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 import qgis.utils
 from qgis.core import QgsMessageLog

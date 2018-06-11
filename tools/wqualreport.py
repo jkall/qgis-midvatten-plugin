@@ -34,7 +34,7 @@ from qgis.PyQt.QtWidgets import QApplication
 import db_utils
 # midvatten modules
 import midvatten_utils as utils
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 
 
 class Wqualreport(object):        # extracts water quality data for selected objects, selected db and given table, results shown in html report

@@ -24,18 +24,18 @@ from qgis.PyQt.QtCore import QCoreApplication
 
 import db_utils
 import midvatten_utils as utils
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 import gui_utils
 
 
 calculate_statistics_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calculate_statistics_ui.ui'))[0]
 
-class CalculateStatisticsGui(qgis.PyQt.QtGui.QMainWindow, calculate_statistics_dialog):
+class CalculateStatisticsGui(qgis.PyQt.QtWidgets.QMainWindow, calculate_statistics_dialog):
     def __init__(self, parent, midv_settings):
         self.iface = parent
 
         self.ms = midv_settings
-        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 

@@ -21,7 +21,7 @@ from __future__ import absolute_import
 from builtins import str
 import datetime
 import midvatten_utils as utils
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 from qgis.PyQt.QtCore import QCoreApplication
 
 def find_date_format(datestring):

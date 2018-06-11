@@ -32,7 +32,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 
 import db_utils
 import midvatten_utils as utils
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 
 
 class NewDb(object):
@@ -58,7 +58,7 @@ class NewDb(object):
         # If a CRS is selectd, go on and create the database
 
         #path and name of new db
-        dbpath = ru(qgis.PyQt.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)"))
+        dbpath = ru(qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)"))
         if not dbpath:
             qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
             return u''

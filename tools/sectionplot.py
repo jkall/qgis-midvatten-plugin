@@ -10,16 +10,6 @@
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/
 """
-"""
-Major parts of the code is re-used from the profiletool plugin:
-# Copyright (C) 2008  Borys Jurgiel
-# Copyright (C) 2012  Patrice Verchere 
-Code is also re-used from the qprof plugin by Mauro Alberti, Marco Zanieri
-
-SAKNAS:
-1. (input och plottning av seismik, vlf etc längs med linjen) - efter release alpha
-2. ((input och plottning av markyta från DEM)) - efter release beta
-"""
 from __future__ import absolute_import
 from builtins import zip
 from builtins import str
@@ -44,8 +34,8 @@ except:
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import sqlite3 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
 import midvatten_utils as utils
-from .midvatten_utils import returnunicode as ru
-from .midvatten_utils import PlotTemplates
+from midvatten_utils import returnunicode as ru
+from midvatten_utils import PlotTemplates
 
 from qgis.PyQt.QtCore import QCoreApplication
 
@@ -54,7 +44,19 @@ from qgis.PyQt import uic
 Ui_SecPlotDock =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'secplotdockwidget_ui.ui'))[0]
 
 import definitions.midvatten_defs as defs
-from .sampledem import qchain, sampling
+from sampledem import qchain, sampling
+
+"""
+Major parts of the code is re-used from the profiletool plugin:
+# Copyright (C) 2008  Borys Jurgiel
+# Copyright (C) 2012  Patrice Verchere 
+Code is also re-used from the qprof plugin by Mauro Alberti, Marco Zanieri
+
+SAKNAS:
+1. (input och plottning av seismik, vlf etc längs med linjen) - efter release alpha
+2. ((input och plottning av markyta från DEM)) - efter release beta
+"""
+
 
 class SectionPlot(qgis.PyQt.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
     def __init__(self, parent1, iface1):

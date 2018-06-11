@@ -53,7 +53,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 import db_utils
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 
 
 class Stratigraphy(object):
@@ -306,11 +306,11 @@ class SurveyStore(object):
             surveys[obsid] = survey
         return surveys
 
-class SurveyWidget(qgis.PyQt.QtGui.QFrame):
+class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
 
     def __init__(self, parent = None):
-        qgis.PyQt.QtGui.QFrame.__init__(self, parent)
-        self.setFrameShape(qgis.PyQt.QtGui.QFrame.StyledPanel)
+        qgis.PyQt.QtWidgets.QFrame.__init__(self, parent)
+        self.setFrameShape(qgis.PyQt.QtWidgets.QFrame.StyledPanel)
         self.setLineWidth(3)
         self.sondaggio = {}
         # In the original ARPAT plugin the following convention was used F = points, T = vertical lines and  C = horizontal lines
@@ -392,7 +392,7 @@ class SurveyWidget(qgis.PyQt.QtGui.QFrame):
     def paintEvent(self, event):
         """ redraws the whole widget's area """
         
-        qgis.PyQt.QtGui.QFrame.paintEvent(self,event)
+        qgis.PyQt.QtWidgets.QFrame.paintEvent(self,event)
 
         # check whether there's a survey to show
         if len(self.sondaggio) == 0:
@@ -563,7 +563,7 @@ class SurveyWidget(qgis.PyQt.QtGui.QFrame):
         
         # show print dialog
         dlg = qgis.PyQt.QtGui.QPrintDialog(printer, self)
-        if dlg.exec_() != qgis.PyQt.QtGui.QDialog.Accepted:
+        if dlg.exec_() != qgis.PyQt.QtWidgets.QDialog.Accepted:
             return
         
         p = qgis.PyQt.QtGui.QPainter()
@@ -576,10 +576,10 @@ class SurveyWidget(qgis.PyQt.QtGui.QFrame):
         
         p.end()
 
-class SurveyDialog(qgis.PyQt.QtGui.QDialog):
+class SurveyDialog(qgis.PyQt.QtWidgets.QDialog):
     
     def __init__(self, parent=None):
-        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
         
         self.resize(qgis.PyQt.QtCore.QSize(500,250))
         self.setWindowFlags(qgis.PyQt.QtCore.Qt.Window | qgis.PyQt.QtCore.Qt.WindowMinimizeButtonHint | qgis.PyQt.QtCore.Qt.WindowMaximizeButtonHint | qgis.PyQt.QtCore.Qt.WindowCloseButtonHint);

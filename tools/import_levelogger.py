@@ -30,7 +30,7 @@ import import_diveroffice
 from qgis.PyQt.QtCore import QCoreApplication
 import midvatten_utils as utils
 import date_utils
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 
 
 class LeveloggerImport(import_diveroffice.DiverofficeImport):

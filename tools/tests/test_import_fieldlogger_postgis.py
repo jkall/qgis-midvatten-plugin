@@ -50,7 +50,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
             ]
 
         with utils.tempinput(''.join(f)) as filename:
-            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -99,7 +99,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -174,7 +174,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -249,7 +249,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -325,7 +325,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -401,7 +401,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -481,7 +481,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -580,7 +580,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -681,7 +681,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -759,7 +759,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -840,7 +840,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -917,7 +917,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.Askuser')
             @mock.patch('import_fieldlogger.utils.NotFoundQuestion')
-            @mock.patch('import_fieldlogger.utils.QtGui.QFileDialog.getOpenFileNames')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
             @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)

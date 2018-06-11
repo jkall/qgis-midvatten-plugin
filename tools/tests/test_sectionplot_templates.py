@@ -168,7 +168,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         with utils.tempinput('', u'utf-8') as save_file:
             with utils.tempinput(afile, u'utf-8') as f1:
-                @mock.patch('PyQt4.QtGui.QFileDialog.getSaveFileName')
+                @mock.patch('PyQt4.QtWidgets.QFileDialog.getSaveFileName')
                 @mock.patch('midvatten_utils.select_files')
                 @mock.patch('midvatten_utils.MessagebarAndLog')
                 @mock.patch('os.path.join')

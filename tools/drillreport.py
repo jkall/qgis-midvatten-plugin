@@ -29,7 +29,7 @@ from qgis.PyQt.QtGui import QDesktopServices
 
 import db_utils
 import midvatten_utils as utils
-from .midvatten_utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 from .calculate_statistics import get_statistics_for_single_obsid
 
 
