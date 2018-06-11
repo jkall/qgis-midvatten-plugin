@@ -106,6 +106,13 @@ class DbConnectionManager(object):
                 self.conn = None
             else:
                 try:
+                    self.conn.enable_load_extension(True)
+                    self.conn.load_extension('mod_spatialite')
+                except:
+                    utils.MessagebarAndLog.critical(
+                        bar_msg=utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u'Failed to load spatialite extension!')))
+
+                try:
                     self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
                 except:
                     pass

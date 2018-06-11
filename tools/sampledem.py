@@ -98,10 +98,10 @@ def points_along_line(layerout, startpoint, endpoint, distance, layer):#,selecte
     virt_layer.startEditing()   # actually writes attributes
     units = layer.crs().mapUnits()
     unit_dic = {
-        QGis.Degrees: 'Degrees',
-        QGis.Meters: 'Meters',
-        QGis.Feet: 'Feet',
-        QGis.UnknownUnit: 'Unknown'}
+        Qgis.Degrees: 'Degrees',
+        Qgis.Meters: 'Meters',
+        Qgis.Feet: 'Feet',
+        Qgis.UnknownUnit: 'Unknown'}
     unit = unit_dic.get(units, 'Unknown')
     provider.addAttributes([QgsField("fid", qgis.PyQt.QtCore.QVariant.Int)])
     provider.addAttributes([QgsField("cum_dist", qgis.PyQt.QtCore.QVariant.Int)])
@@ -146,7 +146,7 @@ def sampling(pointsamplinglayer, rastersamplinglayer): # main process from point
     for pointFeat in pointProvider.getFeatures():
         np += 1
         pointGeom = pointFeat.geometry()
-        if pointGeom.wkbType() == QGis.WKBMultiPoint:
+        if pointGeom.wkbType() == Qgis.WKBMultiPoint:
             pointPoint = pointGeom.asMultiPoint()[0]
         else:
             pointPoint = pointGeom.asPoint()

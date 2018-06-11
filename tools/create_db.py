@@ -58,10 +58,15 @@ class NewDb(object):
         # If a CRS is selectd, go on and create the database
 
         #path and name of new db
-        dbpath = ru(qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)"))
+        dbpath, _filter = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption="New DB",
+                                                                    directory="midv_obsdb.sqlite",
+                                                                    filter="Spatialite (*.sqlite)")
+        dbpath = ru(dbpath)
+        print(str(dbpath))
         if not dbpath:
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return u''
+
         #create Spatialite database
 
         #delete the file if exists
@@ -94,7 +99,7 @@ class NewDb(object):
         filenamestring = "create_db.sql"
 
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
-        qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
+        qgisverno = Qgis.QGIS_VERSION#We want to store info about which qgis-version that created the db
         replace_word_replace_with = [('CHANGETORELEVANTEPSGID', ru(EPSGID)),
                                     ('CHANGETOPLUGINVERSION', ru(verno)),
                                     ('CHANGETOQGISVERSION', ru(qgisverno)),
@@ -179,7 +184,7 @@ class NewDb(object):
         filenamestring = "create_db.sql"
 
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filenamestring)
-        qgisverno = QGis.QGIS_VERSION#We want to store info about which qgis-version that created the db
+        qgisverno = Qgis.QGIS_VERSION#We want to store info about which qgis-version that created the db
         replace_word_replace_with = [
             ('CHANGETORELEVANTEPSGID', ru(EPSGID)),
             ('CHANGETOPLUGINVERSION', ru(verno)),
