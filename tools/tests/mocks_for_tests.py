@@ -23,7 +23,7 @@ from builtins import str
 from builtins import object
 import  qgis.core
 from qgis.PyQt import QtGui
-from qgis.core import QgsMapLayerRegistry
+from qgis.core import QgsProject
 
 import mock
 try:
@@ -153,7 +153,7 @@ class DummyInterface(object):
         raise StopIteration
     def layers(self):
         # simulate iface.legendInterface().layers()
-        return list(QgsMapLayerRegistry.instance().mapLayers().values())
+        return list(QgsProject.instance().mapLayers().values())
 
 
 class DummyInterface2(object):
@@ -169,7 +169,7 @@ class DummyInterface2(object):
         self.widget = QtGui.QWidget()
         self.mainwindow = QtGui.QMainWindow(self.widget)
         self.mock.mainWindow.return_value = self.mainwindow
-        self.mock.layers.return_value = list(QgsMapLayerRegistry.instance().mapLayers().values())
+        self.mock.layers.return_value = list(QgsProject.instance().mapLayers().values())
 
 
 def mock_answer(yes_or_no='yes'):

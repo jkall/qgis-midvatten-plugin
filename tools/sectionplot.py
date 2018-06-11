@@ -31,7 +31,7 @@ import os
 from functools import partial
 from matplotlib import container, patches
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from qgis.core import QgsCoordinateReferenceSystem, QgsMapLayerRegistry
+from qgis.core import QgsCoordinateReferenceSystem, QgsProject
 
 import qgis.PyQt
 import numpy as np
@@ -649,7 +649,7 @@ class SectionPlot(qgis.PyQt.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDo
                 lineplot, = self.secax.plot(xarray, DEMdata, **settings)  # The comma is terribly annoying and also different from a bar plot, see http://stackoverflow.com/questions/11983024/matplotlib-legends-not-working and http://stackoverflow.com/questions/10422504/line-plotx-sinx-what-does-comma-stand-for?rq=1
                 self.p.append(lineplot)
 
-            QgsMapLayerRegistry.instance().removeMapLayer(temp_memorylayer.id())
+            QgsProject.instance().removeMapLayer(temp_memorylayer.id())
 
     def plot_drill_stop(self):
         settings = copy.deepcopy(self.secplot_templates.loaded_template['drillstop_Axes_plot'])
@@ -806,7 +806,7 @@ class SectionPlot(qgis.PyQt.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDo
 
         feature = selected_features[0]
         geom = feature.geometry()
-        wkt = geom.exportToWkt()
+        wkt = geom.asWkt()
         self.dbconnection.execute(u"""INSERT INTO %s (dummyfield, geometry) VALUES ('0', ST_GeomFromText('%s', %s))"""%(self.temptable_name, wkt, srid))
 
         #Test without commit

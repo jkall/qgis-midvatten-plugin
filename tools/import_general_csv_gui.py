@@ -167,7 +167,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtGui.QMainWindow, import_ui_dialog):
         if not only_selected:
             active_layer.selectAll()
 
-        features = active_layer.selectedFeaturesIterator()
+        features = active_layer.getSelectedFeatures()
         file_data = [[ru(field.name()) for field in active_layer.fields()]]
 
         for feature in features:

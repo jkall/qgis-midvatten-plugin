@@ -22,7 +22,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from builtins import str
-from qgis.core import QgsMapLayerRegistry, QgsVectorLayer, QgsApplication
+from qgis.core import QgsProject, QgsVectorLayer, QgsApplication
 
 import db_utils
 import midvatten_utils as utils
@@ -50,7 +50,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
-        self.vlayer.setSelectedFeatures(feature_ids)
+        self.vlayer.selectByIds(feature_ids)
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
@@ -166,6 +166,6 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
 
 
     def tearDown(self):
-        QgsMapLayerRegistry.instance().addMapLayer(self.vlayer)
-        QgsMapLayerRegistry.instance().removeMapLayer(self.vlayer.id())
+        QgsProject.instance().addMapLayer(self.vlayer)
+        QgsProject.instance().removeMapLayer(self.vlayer.id())
         super(self.__class__, self).tearDown()

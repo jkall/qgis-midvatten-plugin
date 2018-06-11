@@ -26,8 +26,7 @@ from builtins import object
 from . import db_utils
 import matplotlib as mpl
 import os
-from qgis.core import QgsMapLayerRegistry, QgsProject, QgsSingleSymbolRendererV2, QgsSymbolV2, QgsVectorLayer
-from qgis.gui import QgsMapCanvasLayer
+from qgis.core import QgsProject, QgsSingleSymbolRenderer, QgsSymbol, QgsVectorLayer
 
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtGui import QColor
@@ -109,8 +108,8 @@ class PrepareForQgis2Threejs(object):
             colors.append(color)
 
         # create a new single symbol renderer
-        symbol = QgsSymbolV2.defaultSymbol(layer.geometryType())
-        renderer = QgsSingleSymbolRendererV2(symbol)
+        symbol = QgsSymbol.defaultSymbol(layer.geometryType())
+        renderer = QgsSingleSymbolRenderer(symbol)
 
         for idx, layer in enumerate(layer_list):#now loop over all the layers, add them to canvas and set colors
             if not layer.isValid():
@@ -120,7 +119,8 @@ class PrepareForQgis2Threejs(object):
                     pass
                 pass
             else:
-                map_canvas_layer_list.append(QgsMapCanvasLayer(layer))
+                # TODO: Made this a comment, but there might be some hidden feature thats still needed!
+                #map_canvas_layer_list.append(QgsMapCanvasLayer(layer))
 
                 #now try to load the style file
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + ".qml")
@@ -138,7 +138,7 @@ class PrepareForQgis2Threejs(object):
                     current_symbol = current_symbols[0]
                     current_symbol.setColor(QColor.fromRgb(color[0], color[1], color[2]))
 
-                QgsMapLayerRegistry.instance().addMapLayers([layer],False)
+                QgsProject.instance().addMapLayers([layer],False)
                 MyGroup.insertLayer(0,layer)
                                 
             #finally refresh canvas

@@ -80,7 +80,7 @@ class Stratigraphy(object):
     def showSurvey(self):
         #lyr = self.iface.activeLayer() # THIS IS TSPLOT-method, GETS THE SELECTED LAYER
         lyr = self.layer
-        ids = lyr.selectedFeaturesIds()
+        ids = lyr.selectedFeatureIds()
         if len(ids) == 0:
             utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"No selection")), ru(QCoreApplication.translate(u' Stratigraphy', u"No features are selected")))
             return

@@ -47,7 +47,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 from functools import wraps
 from operator import itemgetter
-from qgis.core import QgsLogger, QgsMapLayer, QgsMapLayerRegistry, QgsMessageLog, QgsProject
+from qgis.core import QgsLogger, QgsMapLayer, QgsProject, QgsMessageLog, QgsProject
 from qgis.gui import QgsMessageBar, QtCore
 
 import numpy as np
@@ -385,7 +385,7 @@ def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-tab
 
 
 def find_layer(layer_name):
-    for name, search_layer in QgsMapLayerRegistry.instance().mapLayers().items():
+    for name, search_layer in QgsProject.instance().mapLayers().items():
         if search_layer.name() == layer_name:
             return search_layer
 
@@ -440,8 +440,8 @@ def getselectedobjectnames(thelayer='default', column_name=u'obsid'):
 
 
 def getQgisVectorLayers():
-    """Return list of all valid QgsVectorLayer in QgsMapLayerRegistry"""
-    layermap = QgsMapLayerRegistry.instance().mapLayers()
+    """Return list of all valid QgsVectorLayer in QgsProject"""
+    layermap = QgsProject.instance().mapLayers()
     layerlist = []
     for name, layer in layermap.items():
         if layer.isValid() and layer.type() == QgsMapLayer.VectorLayer:

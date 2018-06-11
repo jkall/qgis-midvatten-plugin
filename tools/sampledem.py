@@ -15,7 +15,7 @@ and qchainage plugin (C) 2012 by Werner Macho
 """
 
 import qgis.PyQt
-from qgis.core import QGis, QgsFeature, QgsField, QgsFields, QgsMapLayerRegistry, QgsMessageLog, QgsRaster, QgsVectorLayer
+from qgis.core import QGis, QgsFeature, QgsField, QgsFields, QgsProject, QgsMessageLog, QgsRaster, QgsVectorLayer
 
 
 def qchain(sectionlinelayer, distance): #original start function from qchainage
@@ -125,7 +125,7 @@ def points_along_line(layerout, startpoint, endpoint, distance, layer):#,selecte
         provider.addFeatures(features)
         virt_layer.updateExtents()
 
-    QgsMapLayerRegistry.instance().addMapLayers([virt_layer])
+    QgsProject.instance().addMapLayers([virt_layer])
     virt_layer.commitChanges()
     virt_layer.reload()
     virt_layer.triggerRepaint()

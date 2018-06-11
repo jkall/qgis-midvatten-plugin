@@ -22,7 +22,7 @@
 from __future__ import absolute_import
 from builtins import str
 
-from qgis.core import QgsMapLayerRegistry, QgsVectorLayer, QgsApplication
+from qgis.core import QgsProject, QgsVectorLayer, QgsApplication
 
 import db_utils
 import gui_utils
@@ -60,7 +60,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         features = self.vlayer.getFeatures()
         for feature in features:
             featureid = feature.id()
-        self.vlayer.setSelectedFeatures([featureid])
+        self.vlayer.selectByIds([featureid])
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -217,8 +217,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         assert not mock_messagebar.critical.called
 
     def tearDown(self):
-        QgsMapLayerRegistry.instance().addMapLayer(self.vlayer)
-        QgsMapLayerRegistry.instance().removeMapLayer(self.vlayer.id())
+        QgsProject.instance().addMapLayer(self.vlayer)
+        QgsProject.instance().removeMapLayer(self.vlayer.id())
         super(self.__class__, self).tearDown()
 
 

@@ -22,8 +22,7 @@ from builtins import str
 from builtins import object
 import os
 import qgis.utils
-from qgis.core import QgsDataSourceURI, QgsMapLayerRegistry, QgsProject, QgsVectorLayer
-from qgis.gui import QgsMapCanvasLayer
+from qgis.core import QgsDataSourceURI, QgsProject, QgsVectorLayer
 
 from . import db_utils
 from . import midvatten_utils as utils
@@ -80,13 +79,14 @@ class LoadLayers(object):
 
         #now loop over all the layers and set styles etc
         for layer in layer_list:
-            map_canvas_layer_list.append(QgsMapCanvasLayer(layer))
+            # TODO: Made this a comment, but there might be some hidden feature thats still needed!
+            #map_canvas_layer_list.append(QgsMapCanvasLayer(layer))
             try:#qgis>=2.4
-                QgsMapLayerRegistry.instance().addMapLayers([layer],False)
+                QgsProject.instance().addMapLayers([layer],False)
                 MyGroup.insertLayer(0,layer)
                 #MyGroup.addLayer(layer)
             except:#qgis<2.4
-                QgsMapLayerRegistry.instance().addMapLayers([layer])
+                QgsProject.instance().addMapLayers([layer])
                 group_index = self.legend.groups().index(self.group_name)
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
 
@@ -155,7 +155,7 @@ class LoadLayers(object):
             if not layer.isValid():
                 utils.MessagebarAndLog.critical(bar_msg=u'Error, Failed to load layer %s!'%tablename)
             else:
-                QgsMapLayerRegistry.instance().addMapLayers([layer])
+                QgsProject.instance().addMapLayers([layer])
                 group_index = self.legend.groups().index('Midvatten_OBS_DB') 
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
                 filename = tablename + ".qml"       #  load styles
@@ -197,7 +197,7 @@ class LoadLayers(object):
                     if tablename in ('obs_points','obs_lines'):
                         formlogic = "form_logics." + tablename + "_form_open"
                         layer.setEditFormInit(formlogic)     
-                QgsMapLayerRegistry.instance().addMapLayers([layer])
+                QgsProject.instance().addMapLayers([layer])
                 group_index = self.legend.groups().index('Midvatten_OBS_DB')   # SIPAPI UPDATE 2.0
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
                 if tablename == 'obs_points':#zoom to obs_points extent
@@ -216,7 +216,7 @@ class LoadLayers(object):
                 for lyr in ALL_LAYERS:
                     name = lyr.name()
                     if (name in self.default_layers) or (name in self.default_nonspatlayers):
-                        QgsMapLayerRegistry.instance().removeMapLayers( [lyr.id()] )
+                        QgsProject.instance().removeMapLayers( [lyr.id()] )
                     """ THEN remove old group """
             elif self.group_name == 'Midvatten_data_domains':
                 conn_ok, dd_tables = db_utils.sql_load_fr_db("select name from sqlite_master where name like 'zz_%'")
@@ -226,7 +226,7 @@ class LoadLayers(object):
                 for lyr in ALL_LAYERS:         
                     name = lyr.name()
                     if name in d_domain_tables:
-                        QgsMapLayerRegistry.instance().removeMapLayers( [lyr.id()] )                    
+                        QgsProject.instance().removeMapLayers( [lyr.id()] )
             while self.group_name in self.legend.groups():
                 group_index = self.legend.groups().index(self.group_name) 
                 self.legend.removeGroup(group_index)
