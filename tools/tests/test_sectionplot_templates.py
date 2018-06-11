@@ -20,30 +20,35 @@
  ***************************************************************************/
 """
 
-from qgis.core import QgsMapLayerRegistry, QgsVectorLayer, QgsApplication
-
-import db_utils
-import gui_utils
+import PyQt4
 import ast
 import io
 import os
+
 import mock
+import midvatten_utils as utils
+from midvatten_utils import PlotTemplates
 from mock import call
 from nose.plugins.attrib import attr
-from utils import returnunicode as ru
-import PyQt4
 
 import utils_for_tests
-import utils
-import sectionplot
 from definitions import midvatten_defs as defs
 
-@attr(status='on')
+
+@attr(status='only')
 class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
     def setUp(self):
         super(self.__class__, self).setUp()
         self.template_list = PyQt4.QtGui.QListWidget()
+
+        self.edit_button = PyQt4.QtGui.QPushButton()
+        self.load_button = PyQt4.QtGui.QPushButton()
+        self.save_as_button = PyQt4.QtGui.QPushButton()
+        self.import_button = PyQt4.QtGui.QPushButton()
+        self.remove_button = PyQt4.QtGui.QPushButton()
+        self.template_folder = os.path.join(os.path.split(os.path.split(os.path.dirname(__file__))[0])[0], 'definitions', 'secplot_templates')
+
         self.sectionplot = mock.MagicMock()
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
@@ -52,7 +57,10 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         self.midvatten.ms.settingsdict['secplot_loaded_template'] = test_str
         self.midvatten.ms.settingsdict['secplot_templates'] = ''
 
-        secplottemplates = sectionplot.SecplotTemplates(self.sectionplot, self.template_list, self.midvatten.ms)
+        secplottemplates = PlotTemplates(self.sectionplot, self.template_list, self.edit_button, self.load_button,
+                                               self.save_as_button, self.import_button, self.remove_button,
+                                               self.template_folder, 'secplot_templates', 'secplot_loaded_template',
+                                               defs.secplot_default_template(), self.midvatten.ms)
 
         assert call.info(log_msg=u'Loaded template from midvatten settings secplot_loaded_template.') in mock_messagebar.mock_calls
         assert utils.anything_to_string_representation(secplottemplates.loaded_template) == test_str
@@ -70,7 +78,12 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             def _test(self, filename, mock_join, mock_messagebar):
                 mock_join.return_value = filename
                 self.midvatten.ms.settingsdict['secplot_templates'] = filename
-                secplottemplates = sectionplot.SecplotTemplates(self.sectionplot, self.template_list, self.midvatten.ms)
+                secplottemplates = PlotTemplates(self.sectionplot, self.template_list, self.edit_button,
+                                                 self.load_button,
+                                                 self.save_as_button, self.import_button, self.remove_button,
+                                                 self.template_folder, 'secplot_templates', 'secplot_loaded_template',
+                                                 defs.secplot_default_template(), self.midvatten.ms)
+
                 return secplottemplates, mock_messagebar
 
             secplottemplates, mock_messagebar = _test(self, f1)
@@ -93,7 +106,11 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                 mock_join.return_value = ''
                 mock_select_files.return_value = [filename]
                 self.midvatten.ms.settingsdict['secplot_templates'] = ''
-                secplottemplates = sectionplot.SecplotTemplates(self.sectionplot, self.template_list, self.midvatten.ms)
+                secplottemplates = PlotTemplates(self.sectionplot, self.template_list, self.edit_button,
+                                                 self.load_button,
+                                                 self.save_as_button, self.import_button, self.remove_button,
+                                                 self.template_folder, 'secplot_templates', 'secplot_loaded_template',
+                                                 defs.secplot_default_template(), self.midvatten.ms)
                 secplottemplates.import_templates()
                 item = [self.template_list.item(idx) for idx in xrange(self.template_list.count())][0]
                 item.setSelected(True)
@@ -123,7 +140,11 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             def _test(self, filename, mock_join, mock_messagebar):
                 mock_join.return_value = filename
                 self.midvatten.ms.settingsdict['secplot_templates'] = filename
-                secplottemplates = sectionplot.SecplotTemplates(self.sectionplot, self.template_list, self.midvatten.ms)
+                secplottemplates = PlotTemplates(self.sectionplot, self.template_list, self.edit_button,
+                                                 self.load_button,
+                                                 self.save_as_button, self.import_button, self.remove_button,
+                                                 self.template_folder, 'secplot_templates', 'secplot_loaded_template',
+                                                 defs.secplot_default_template(), self.midvatten.ms)
                 return secplottemplates, mock_messagebar
 
             secplottemplates, mock_messagebar = _test(self, f1)
@@ -153,8 +174,12 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                     mock_select_files.return_value = [filename]
                     mock_save_filename.return_value = save_file
                     self.midvatten.ms.settingsdict['secplot_templates'] = ''
-                    secplottemplates = sectionplot.SecplotTemplates(self.sectionplot, self.template_list,
-                                                                    self.midvatten.ms)
+                    secplottemplates = PlotTemplates(self.sectionplot, self.template_list, self.edit_button,
+                                                     self.load_button,
+                                                     self.save_as_button, self.import_button, self.remove_button,
+                                                     self.template_folder, 'secplot_templates',
+                                                     'secplot_loaded_template',
+                                                     defs.secplot_default_template(), self.midvatten.ms)
                     secplottemplates.import_templates()
                     item = [self.template_list.item(idx) for idx in xrange(self.template_list.count())][0]
                     item.setSelected(True)
@@ -181,7 +206,11 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         test_dict = {"hardcoded": 1}
         mock_hardcoded_template.return_value = test_dict
 
-        secplottemplates = sectionplot.SecplotTemplates(self.sectionplot, self.template_list, self.midvatten.ms)
+        secplottemplates = PlotTemplates(self.sectionplot, self.template_list, self.edit_button,
+                                         self.load_button,
+                                         self.save_as_button, self.import_button, self.remove_button,
+                                         self.template_folder, 'secplot_templates', 'secplot_loaded_template',
+                                         defs.secplot_default_template(), self.midvatten.ms)
         test = utils.anything_to_string_representation(secplottemplates.loaded_template)
         reference = utils.anything_to_string_representation(test_dict)
 
@@ -189,7 +218,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert call.info(log_msg=u'Loaded template from default hard coded template.') in mock_messagebar.mock_calls
         assert test == reference
 
-@attr(status='on')
+@attr(status='only')
 class TestDefaultHardcodedTemplate(object):
     def test_secplot_default_template(self):
         adict = defs.secplot_default_template()
