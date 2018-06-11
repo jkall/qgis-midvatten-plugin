@@ -19,6 +19,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
 
 import db_utils
 import midvatten_utils as utils
@@ -30,7 +31,7 @@ import piper
 from nose.plugins.attrib import attr
 import calculate_statistics
 
-import utils_for_tests
+from . import utils_for_tests
 
 @attr(status='on')
 class TestCalculateStatistics(utils_for_tests.MidvattenTestPostgisDbSv):

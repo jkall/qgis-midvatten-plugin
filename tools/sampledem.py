@@ -14,7 +14,7 @@ This code is inspired from the PointSamplingTool plugin Copyright (C) 2008 Borys
 and qchainage plugin (C) 2012 by Werner Macho
 """
 
-import PyQt4
+import qgis.PyQt
 from qgis.core import QGis, QgsFeature, QgsField, QgsFields, QgsMapLayerRegistry, QgsMessageLog, QgsRaster, QgsVectorLayer
 
 
@@ -26,7 +26,7 @@ def qchain(sectionlinelayer, distance): #original start function from qchainage
     #selectedOnly = self.selectOnlyRadioBtn.isChecked()
 
     projectionSettingKey = "Projections/defaultBehaviour"
-    qgisSettings = PyQt4.QtCore.QSettings()
+    qgisSettings = qgis.PyQt.QtCore.QSettings()
     oldProjectionSetting = qgisSettings.value(projectionSettingKey)
     qgisSettings.setValue(projectionSettingKey, "useGlobal")
     qgisSettings.sync()
@@ -55,9 +55,9 @@ def create_points_at(startpoint, endpoint, distance, geom, fid,unit): #original 
     # set the first point at startpoint
     point = geom.interpolate(startpoint)
 
-    field_id = QgsField(name="id", type=PyQt4.QtCore.QVariant.Int)
-    field = QgsField(name="dist", type=PyQt4.QtCore.QVariant.Double)
-    field2 = QgsField(name="unit", type=PyQt4.QtCore.QVariant.String)
+    field_id = QgsField(name="id", type=qgis.PyQt.QtCore.QVariant.Int)
+    field = QgsField(name="dist", type=qgis.PyQt.QtCore.QVariant.Double)
+    field2 = QgsField(name="unit", type=qgis.PyQt.QtCore.QVariant.String)
     fields = QgsFields()
 
     fields.append(field_id)
@@ -103,9 +103,9 @@ def points_along_line(layerout, startpoint, endpoint, distance, layer):#,selecte
         QGis.Feet: 'Feet',
         QGis.UnknownUnit: 'Unknown'}
     unit = unit_dic.get(units, 'Unknown')
-    provider.addAttributes([QgsField("fid", PyQt4.QtCore.QVariant.Int)])
-    provider.addAttributes([QgsField("cum_dist", PyQt4.QtCore.QVariant.Int)])
-    provider.addAttributes([QgsField("unit", PyQt4.QtCore.QVariant.String)])
+    provider.addAttributes([QgsField("fid", qgis.PyQt.QtCore.QVariant.Int)])
+    provider.addAttributes([QgsField("cum_dist", qgis.PyQt.QtCore.QVariant.Int)])
+    provider.addAttributes([QgsField("unit", qgis.PyQt.QtCore.QVariant.String)])
 
 
     def get_features():

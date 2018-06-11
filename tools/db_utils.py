@@ -19,10 +19,13 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 import ast
 import os
 import zipfile
-import PyQt4
+import qgis.PyQt
 try:
     import zlib
     compression = zipfile.ZIP_DEFLATED
@@ -35,14 +38,14 @@ from collections import OrderedDict
 from pyspatialite import dbapi2 as sqlite
 
 import  qgis.core
-from PyQt4.QtCore import QCoreApplication
-from PyQt4.QtCore import QSettings
+from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QSettings
 
 from qgis._core import QgsProject, QgsDataSourceURI
 import db_manager.db_plugins.postgis.connector as postgis_connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
 
-import midvatten_utils as utils
+from . import midvatten_utils as utils
 
 class DbConnectionManager(object):
     def __init__(self, db_settings=None):
@@ -58,7 +61,7 @@ class DbConnectionManager(object):
         if db_settings is None:
             db_settings = QgsProject.instance().readEntry("Midvatten", "database")[0]
 
-        if isinstance(db_settings, basestring):
+        if isinstance(db_settings, str):
             #Test if the db_setting is an old database
             if os.path.isfile(db_settings):
                 db_settings = {u'spatialite': {u'dbpath': db_settings}}
@@ -85,8 +88,8 @@ class DbConnectionManager(object):
 
         self.db_settings = db_settings
 
-        self.dbtype = self.db_settings.keys()[0]
-        self.connection_settings = self.db_settings.values()[0]
+        self.dbtype = list(self.db_settings.keys())[0]
+        self.connection_settings = list(self.db_settings.values())[0]
 
         self.uri = QgsDataSourceURI()
 
@@ -136,7 +139,7 @@ class DbConnectionManager(object):
         corresponding sql.
         :return:
         """
-        if isinstance(sql, basestring):
+        if isinstance(sql, str):
             sql = [sql]
         elif not isinstance(sql, (list, tuple)):
             raise TypeError(utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u'DbConnectionManager.execute: sql must be type string or a list/tuple of strings. Was %s'))%utils.returnunicode(type(sql)))
@@ -225,10 +228,10 @@ class DbConnectionManager(object):
 
         if not temptable_name.startswith(u'temp_'):
             temptable_name = u'temp_%s'%temptable_name
-        existing_names = tables_columns(dbconnection=self).keys()
+        existing_names = list(tables_columns(dbconnection=self).keys())
         while temptable_name in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
-            reponse = PyQt4.QtGui.QMessageBox.question(None, utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u"Warning - Table name confusion!")),utils.returnunicode(QCoreApplication.translate(u'midv_data_importer', u'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''))%(self.temptable_name, self.temptable_name, self.temptable_name), PyQt4.QtGui.QMessageBox.Yes | PyQt4.QtGui.QMessageBox.No)
-            if reponse == PyQt4.QtGui.QMessageBox.Yes:
+            reponse = qgis.PyQt.QtGui.QMessageBox.question(None, utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u"Warning - Table name confusion!")),utils.returnunicode(QCoreApplication.translate(u'midv_data_importer', u'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''))%(self.temptable_name, self.temptable_name, self.temptable_name), qgis.PyQt.QtGui.QMessageBox.Yes | qgis.PyQt.QtGui.QMessageBox.No)
+            if reponse == qgis.PyQt.QtGui.QMessageBox.Yes:
                 self.temptable_name = '%s_2' % self.temptable_name
             else:
                 raise utils.UserInterruptError()
@@ -343,7 +346,7 @@ def execute_sqlfile(sqlfilename, function=sql_alter_db):
 
 
 def tables_columns(table=None, dbconnection=None):
-    return dict([(k, [col[1] for col in v]) for k, v in db_tables_columns_info(table=table, dbconnection=dbconnection).iteritems()])
+    return dict([(k, [col[1] for col in v]) for k, v in db_tables_columns_info(table=table, dbconnection=dbconnection).items()])
 
 
 def db_tables_columns_info(table=None, dbconnection=None):
@@ -827,7 +830,7 @@ def delete_srids(execute_able_object, keep_epsg_code):
                 delete_srid_sql))
 
 def get_spatialite_db_path_from_dbsettings_string(db_settings):
-    if isinstance(db_settings, basestring):
+    if isinstance(db_settings, str):
         # Test if the db_setting is an old database
         if os.path.isfile(db_settings):
             return db_settings

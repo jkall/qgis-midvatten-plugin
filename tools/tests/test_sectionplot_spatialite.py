@@ -19,6 +19,9 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
 
 from qgis.core import QgsMapLayerRegistry, QgsVectorLayer, QgsApplication
 
@@ -29,7 +32,7 @@ from mock import call
 from nose.plugins.attrib import attr
 from utils import returnunicode as ru
 
-import utils_for_tests
+from . import utils_for_tests
 
 
 @attr(status='on')

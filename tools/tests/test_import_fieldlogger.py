@@ -1,3 +1,7 @@
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 
@@ -9,8 +13,8 @@ from import_fieldlogger import FieldloggerImport, InputFields, DateTimeFilter
 from mock import MagicMock, call
 from nose.plugins.attrib import attr
 
-import utils_for_tests
-from utils_for_tests import create_test_string
+from . import utils_for_tests
+from .utils_for_tests import create_test_string
 
 
 @attr(status='on')
@@ -363,10 +367,10 @@ def _test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units
     input_fields.set_parameters_using_stored_settings(stored_settings)
 
     settings = []
-    for k, v in input_fields.parameter_imports.iteritems():
+    for k, v in input_fields.parameter_imports.items():
         try:
             setting = v.parameter_import_fields.get_settings()
-        except Exception, e:
+        except Exception as e:
             pass
         else:
             settings.append((k, setting))

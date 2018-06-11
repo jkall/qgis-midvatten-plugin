@@ -19,6 +19,8 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import str
 
 from qgis.core import QgsMapLayerRegistry, QgsVectorLayer, QgsApplication
 
@@ -28,7 +30,7 @@ import mock
 from mock import call
 from nose.plugins.attrib import attr
 
-import utils_for_tests
+from . import utils_for_tests
 
 
 @attr(status='on')

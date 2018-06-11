@@ -19,12 +19,14 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import absolute_import
 import db_utils
 import midvatten_utils as utils
 import mock
 from nose.plugins.attrib import attr
 
-import utils_for_tests
+from . import utils_for_tests
 from definitions import midvatten_defs
 
 
@@ -36,8 +38,8 @@ class TestDefsFunctions(utils_for_tests.MidvattenTestPostgisDbSv):
         res = db_utils.db_tables_columns_info()
         assert res
         assert isinstance(res, dict)
-        for k, v in res.iteritems():
-            assert isinstance(k, unicode)
+        for k, v in res.items():
+            assert isinstance(k, str)
             assert isinstance(v, (tuple, list))
             for x in v:
                 assert isinstance(x, (tuple, list))

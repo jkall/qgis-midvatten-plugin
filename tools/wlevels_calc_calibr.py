@@ -20,44 +20,49 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import next
+from builtins import str
+from builtins import range
 import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
 import os
-from PyQt4 import uic
+from qgis.PyQt import uic
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.dates import datestr2num, num2date
 import numpy as np
 
-import PyQt4
-from PyQt4.QtCore import QCoreApplication, Qt
-from PyQt4.QtGui import QCursor
+import qgis.PyQt
+from qgis.PyQt.QtCore import QCoreApplication, Qt
+from qgis.PyQt.QtGui import QCursor
 
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 except:
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import datetime
-import midvatten_utils as utils
-from midvatten_utils import fn_timer, returnunicode as ru
-from date_utils import dateshift, datestring_to_date, long_dateformat
-import db_utils
+from . import midvatten_utils as utils
+from .midvatten_utils import fn_timer, returnunicode as ru
+from .date_utils import dateshift, datestring_to_date, long_dateformat
+from . import db_utils
 
 Calibr_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calibr_logger_dialog_integrated.ui'))[0]
 Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_lvl_dialog.ui'))[0]
 
 
-class Calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
+class Calclvl(qgis.PyQt.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
 
     @fn_timer
     def __init__(self, parent,layerin):
-        PyQt4.QtGui.QDialog.__init__(self)
+        qgis.PyQt.QtGui.QDialog.__init__(self)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.obsid = utils.getselectedobjectnames()
         self.setWindowTitle(ru(QCoreApplication.translate(u'Calclvl', u"Calculate levels"))) # Set the title for the dialog
-        self.connect(self.pushButton_All, PyQt4.QtCore.SIGNAL("clicked()"), self.calcall)
-        self.connect(self.pushButton_Selected, PyQt4.QtCore.SIGNAL("clicked()"), self.calcselected)
-        self.connect(self.pushButton_Cancel, PyQt4.QtCore.SIGNAL("clicked()"), self.close)
+        self.connect(self.pushButton_All, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.calcall)
+        self.connect(self.pushButton_Selected, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.calcselected)
+        self.connect(self.pushButton_Cancel, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.close)
         self.layer = layerin
 
     def calc(self, obsids):
@@ -130,11 +135,11 @@ class Calclvl(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
         return log_msg
 
 
-class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of the class Calibr_Ui_Dialog is created same time as instance of calibrlogger is created
+class Calibrlogger(qgis.PyQt.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of the class Calibr_Ui_Dialog is created same time as instance of calibrlogger is created
 
     @fn_timer
     def __init__(self, parent, settingsdict1={}, obsid=''):
-        PyQt4.QtGui.QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
+        qgis.PyQt.QtGui.QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
         self.obsid = obsid
         self.log_pos = None
         self.y_pos = None
@@ -145,8 +150,8 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.loggerpos_masl_or_offset_state = 1
 
         self.settingsdict = settingsdict1
-        PyQt4.QtGui.QDialog.__init__(self, parent)
-        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         self.setWindowTitle(ru(QCoreApplication.translate(u'Calibrlogger', u"Calculate water level from logger"))) # Set the title for the dialog
         self.INFO.setText(ru(QCoreApplication.translate(u'Calibrlogger', u"Select the observation point with logger data to be adjusted.")))
@@ -166,38 +171,38 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
 
         self.cid =[]
                 
-        self.connect(self.pushButtonSet, PyQt4.QtCore.SIGNAL("clicked()"), self.set_logger_pos)
-        self.connect(self.pushButtonAdd, PyQt4.QtCore.SIGNAL("clicked()"), self.add_to_level_masl)
-        self.connect(self.pushButtonFrom, PyQt4.QtCore.SIGNAL("clicked()"), self.set_from_date_from_x)
-        self.connect(self.pushButtonTo, PyQt4.QtCore.SIGNAL("clicked()"), self.set_to_date_from_x)
-        self.connect(self.L1_button, PyQt4.QtCore.SIGNAL("clicked()"), self.set_L1_date_from_x)
-        self.connect(self.L2_button, PyQt4.QtCore.SIGNAL("clicked()"), self.set_L2_date_from_x)
-        self.connect(self.M1_button, PyQt4.QtCore.SIGNAL("clicked()"), self.set_M1_date_from_x)
-        self.connect(self.M2_button, PyQt4.QtCore.SIGNAL("clicked()"), self.set_M2_date_from_x)
-        self.connect(self.pushButton_from_extent, PyQt4.QtCore.SIGNAL("clicked()"), lambda: self.FromDateTime.setDateTime(num2date(self.axes.get_xbound()[0])))
-        self.connect(self.pushButton_to_extent, PyQt4.QtCore.SIGNAL("clicked()"), lambda: self.ToDateTime.setDateTime(num2date(self.axes.get_xbound()[1])))
-        self.connect(self.pushButtonupdateplot, PyQt4.QtCore.SIGNAL("clicked()"), self.update_plot)
-        self.connect(self.pushButtonLpos, PyQt4.QtCore.SIGNAL("clicked()"), self.catch_old_level)
-        self.connect(self.pushButtonMpos, PyQt4.QtCore.SIGNAL("clicked()"), self.catch_new_level)
+        self.connect(self.pushButtonSet, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.set_logger_pos)
+        self.connect(self.pushButtonAdd, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.add_to_level_masl)
+        self.connect(self.pushButtonFrom, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.set_from_date_from_x)
+        self.connect(self.pushButtonTo, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.set_to_date_from_x)
+        self.connect(self.L1_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.set_L1_date_from_x)
+        self.connect(self.L2_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.set_L2_date_from_x)
+        self.connect(self.M1_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.set_M1_date_from_x)
+        self.connect(self.M2_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.set_M2_date_from_x)
+        self.connect(self.pushButton_from_extent, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda: self.FromDateTime.setDateTime(num2date(self.axes.get_xbound()[0])))
+        self.connect(self.pushButton_to_extent, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda: self.ToDateTime.setDateTime(num2date(self.axes.get_xbound()[1])))
+        self.connect(self.pushButtonupdateplot, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.update_plot)
+        self.connect(self.pushButtonLpos, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.catch_old_level)
+        self.connect(self.pushButtonMpos, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.catch_new_level)
         self.pushButtonMpos.setEnabled(False)
-        self.connect(self.pushButtonCalcBestFit, PyQt4.QtCore.SIGNAL("clicked()"), self.logger_pos_best_fit)
+        self.connect(self.pushButtonCalcBestFit, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.logger_pos_best_fit)
         self.pushButtonCalcBestFit.setToolTip(ru(QCoreApplication.translate(u'Calibrlogger', u'This will calibrate all values inside the chosen period\nusing the mean difference between head_cm and w_levels measurements.\n\nThe search radius is the maximum time distance allowed\n between a logger measurement and a w_level measurement.')))
-        self.connect(self.pushButtonCalcBestFit2, PyQt4.QtCore.SIGNAL("clicked()"), self.level_masl_best_fit)
+        self.connect(self.pushButtonCalcBestFit2, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.level_masl_best_fit)
         self.pushButtonCalcBestFit2.setToolTip(ru(QCoreApplication.translate(u'Calibrlogger', u'This will calibrate all values inside the chosen period\nusing the mean difference between level_masl and w_levels measurements.\n\nThe search radius is the maximum time distance allowed\n between a logger measurement and a w_level measurement.')))
-        self.connect(self.pushButton_delete_logger, PyQt4.QtCore.SIGNAL("clicked()"), lambda: self.delete_selected_range(u'w_levels_logger'))
-        self.connect(self.adjust_trend_button, PyQt4.QtCore.SIGNAL("clicked()"), self.adjust_trend_func)
+        self.connect(self.pushButton_delete_logger, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda: self.delete_selected_range(u'w_levels_logger'))
+        self.connect(self.adjust_trend_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.adjust_trend_func)
 
         self.get_search_radius()
 
         # Populate combobox with obsid from table w_levels_logger
         self.load_obsid_from_db()
 
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     @property
     def selected_obsid(self):
         uncalibrated_str = u' (uncalibrated)'
-        return unicode(self.combobox_obsid.currentText().replace(uncalibrated_str, u''))
+        return str(self.combobox_obsid.currentText().replace(uncalibrated_str, u''))
 
     @fn_timer
     def load_obsid_from_db(self):
@@ -207,7 +212,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         for row in res:
             all_obsids.setdefault(row[0], []).append(row[1])
         self.combobox_obsid.addItems(sorted(all_obsids))
-        obsids_with_uncalibrated_data = [_obsid for _obsid, status in all_obsids.iteritems() if 'uncalibrated' in status]
+        obsids_with_uncalibrated_data = [_obsid for _obsid, status in all_obsids.items() if 'uncalibrated' in status]
         self.update_combobox_with_calibration_info(_obsids_with_uncalibrated_data=obsids_with_uncalibrated_data)
 
     @fn_timer
@@ -234,7 +239,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         elif _obsids_with_uncalibrated_data is not None:
             obsids_with_uncalibrated_data = _obsids_with_uncalibrated_data
 
-        for idx in xrange(num_entries):
+        for idx in range(num_entries):
             current_obsid = self.combobox_obsid.itemText(idx).replace(uncalibrated_str, u'')
 
             if obsid is not None:
@@ -354,7 +359,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
     def calibrate(self, obsid=None):
         self.calib_help.setText("Calibrating")
 
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
         if obsid is None:
             obsid = self.load_obsid_and_init()
         if not obsid=='':
@@ -369,7 +374,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         else:
             self.INFO.setText(ru(QCoreApplication.translate(u'Calibrlogger', u"Select the observation point with logger data to be calibrated.")))
         self.calib_help.setText("")
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
 
     @fn_timer
     def update_level_masl_from_level_masl(self, obsid, fr_d_t, to_d_t, newzref):
@@ -434,11 +439,11 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         """ Plots self.level_masl_ts, self.meas_ts and maybe self.head_ts """
         self.reset_plot_selects_and_calib_help()
         self.calib_help.setText("Updating plot")
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
         last_used_obsid = self.obsid
         obsid = self.load_obsid_and_init()
         if obsid == None:
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
             self.calib_help.setText("")
             return
         self.axes.clear()
@@ -456,18 +461,18 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             logger_line_style = '-'                
 
         logger_time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(self.level_masl_ts))
-        self.plot_recarray(self.axes, self.level_masl_ts, obsid + unicode(' logger', 'utf-8'), logger_line_style, picker=5, time_list=logger_time_list)
+        self.plot_recarray(self.axes, self.level_masl_ts, obsid + str(' logger', 'utf-8'), logger_line_style, picker=5, time_list=logger_time_list)
 
         #Plot the original head_cm
         if self.plot_logger_head.isChecked():
-            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + unicode(' original logger head', 'utf-8'), logger_line_style, picker=5, time_list=logger_time_list)
+            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + str(' original logger head', 'utf-8'), logger_line_style, picker=5, time_list=logger_time_list)
 
         """ Finish plot """
         self.axes.grid(True)
         self.axes.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
         self.calibrplotfigure.autofmt_xdate()
-        self.axes.set_ylabel(unicode('Level (masl)', 'utf-8'))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
-        self.axes.set_title(unicode('Plot for ', 'utf-8') + str(obsid))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
+        self.axes.set_ylabel(str('Level (masl)', 'utf-8'))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
+        self.axes.set_title(str('Plot for ', 'utf-8') + str(obsid))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
         for label in self.axes.xaxis.get_ticklabels():
             label.set_fontsize(10)
         for label in self.axes.yaxis.get_ticklabels():
@@ -476,7 +481,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         self.calibrplotfigure.tight_layout()
         self.canvas.draw()
         plt.close(self.calibrplotfigure)#this closes reference to self.calibrplotfigure
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
         self.calib_help.setText("")
 
         if last_used_obsid == self.obsid:
@@ -494,7 +499,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
         
     @fn_timer
     def a_recarray_to_timestring_list(self, a_recarray):
-        return [a_recarray.date_time[idx] for idx in xrange(len(a_recarray))]
+        return [a_recarray.date_time[idx] for idx in range(len(a_recarray))]
         
     @fn_timer
     def timestring_list_to_time_list(self, timestring_list):
@@ -596,7 +601,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             5. Run calibration.
         """            
         if self.log_pos is not None and self.y_pos is not None:
-            PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+            qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
 
             logger_ts = self.level_masl_ts
             
@@ -618,7 +623,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             else:
                 self.Add2Levelmasl.setText(str(float(y_pos) - float(logger_value)))
 
-                PyQt4.QtGui.QApplication.restoreOverrideCursor()
+                qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
 
         self.pushButtonMpos.setEnabled(False)
         
@@ -675,7 +680,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
             text_field = self.Add2Levelmasl
             calib_func = self.add_to_level_masl
 
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
 
         coupled_vals = self.match_ts_values(self.meas_ts, logger_ts, search_radius)
         if not coupled_vals:
@@ -689,7 +694,7 @@ class Calibrlogger(PyQt4.QtGui.QMainWindow, Calibr_Ui_Dialog): # An instance of 
                 text_field.setText(calculated_diff)
                 calib_func(obsid)
 
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
      
     @fn_timer
     def match_ts_values(self, meas_ts, logger_ts, search_radius_tuple):

@@ -18,9 +18,18 @@
  *                                                                         *
  ***************************************************************************/
 """
-import PyQt4
+from __future__ import print_function
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import filter
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import object
+import qgis.PyQt
 import ast
-import cStringIO
+import io
 import codecs
 import copy
 import csv
@@ -33,7 +42,7 @@ import os
 import qgis.utils
 import tempfile
 import time
-from PyQt4 import QtCore, QtGui, QtWebKit, uic
+from qgis.PyQt import QtCore, QtGui, uic
 from collections import OrderedDict
 from contextlib import contextmanager
 from functools import wraps
@@ -42,7 +51,7 @@ from qgis.core import QgsLogger, QgsMapLayer, QgsMapLayerRegistry, QgsMessageLog
 from qgis.gui import QgsMessageBar, QtCore
 
 import numpy as np
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication
 
 try:
     import pandas as pd
@@ -53,12 +62,12 @@ else:
 
 from matplotlib.dates import num2date
 
-import db_utils
+from . import db_utils
 
 not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__), '..', 'ui', 'not_found_gui.ui'))[0]
 
 
-class MessagebarAndLog():
+class MessagebarAndLog(object):
     """ Class that sends logmessages to messageBar and or to QgsMessageLog
 
     Usage: MessagebarAndLog.info(bar_msg='a', log_msg='b', duration=10,
@@ -155,7 +164,7 @@ class Askuser(QtGui.QDialog):
         elif question == 'DateShift':
             supported_units = [u'microseconds', u'milliseconds', u'seconds', u'minutes', u'hours', u'days', u'weeks']
             while True:
-                answer = str(PyQt4.QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'askuser', "User input needed"), returnunicode(QCoreApplication.translate(u'askuser', "Give needed adjustment of date/time for the data.\nSupported format: +- X <resolution>\nEx: 1 hours, -1 hours, -1 days\nSupported units:\n%s"))%', '.join(supported_units), PyQt4.QtGui.QLineEdit.Normal, u'0 hours')[0])
+                answer = str(qgis.PyQt.QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'askuser', "User input needed"), returnunicode(QCoreApplication.translate(u'askuser', "Give needed adjustment of date/time for the data.\nSupported format: +- X <resolution>\nEx: 1 hours, -1 hours, -1 days\nSupported units:\n%s"))%', '.join(supported_units), qgis.PyQt.QtGui.QLineEdit.Normal, u'0 hours')[0])
                 if not answer:
                     self.result = u'cancel'
                     break
@@ -178,7 +187,7 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
         self.setupUi(self)
         self.setWindowTitle(dialogtitle)
         self.label.setText(msg)
-        self.label.setTextInteractionFlags(PyQt4.QtCore.Qt.TextSelectableByMouse)
+        self.label.setTextInteractionFlags(qgis.PyQt.QtCore.Qt.TextSelectableByMouse)
         self.comboBox.addItem(default_value)
         self.label_2.setText(combobox_label)
         if existing_list is not None:
@@ -189,10 +198,10 @@ class NotFoundQuestion(QtGui.QDialog, not_found_dialog):
             button = QtGui.QPushButton(button_name)
             button.setObjectName(button_name.lower())
             self.buttonBox.addButton(button, QtGui.QDialogButtonBox.ActionRole)
-            self.connect(button, PyQt4.QtCore.SIGNAL("clicked()"), self.button_clicked)
+            self.connect(button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.button_clicked)
 
-        self.reuse_label = PyQt4.QtGui.QLabel(QCoreApplication.translate(u'NotFoundQuestion', u'Reuse answer for all identical'))
-        self._reuse_column = PyQt4.QtGui.QComboBox()
+        self.reuse_label = qgis.PyQt.QtGui.QLabel(QCoreApplication.translate(u'NotFoundQuestion', u'Reuse answer for all identical'))
+        self._reuse_column = qgis.PyQt.QtGui.QComboBox()
         self._reuse_column.addItem(u'')
         if isinstance(reuse_header_list, (list, tuple)):
             self.reuse_layout.addWidget(self.reuse_label)
@@ -273,7 +282,7 @@ class HtmlDialog(QtGui.QDialog):
         self.close()
 
 
-class UTF8Recoder:
+class UTF8Recoder(object):
     """
     Iterator that reads an encoded stream and reencodes the input to UTF-8
     """
@@ -287,7 +296,7 @@ class UTF8Recoder:
         return self.reader.next().encode("utf-8")
 
 
-class UnicodeReader:
+class UnicodeReader(object):
     """
     A CSV reader which will iterate over lines in the CSV file "f",
     which is encoded in the given encoding.
@@ -298,17 +307,17 @@ class UnicodeReader:
         self.reader = csv.reader(f, dialect=dialect, **kwds)
 
     def next(self):
-        row = self.reader.next()
-        return [unicode(s, "utf-8") for s in row]
+        row = next(self.reader)
+        return [str(s, "utf-8") for s in row]
 
     def read(self):
-        self.next()
+        next(self)
 
     def __iter__(self):
         return self
 
 
-class UnicodeWriter:
+class UnicodeWriter(object):
     """
     A CSV writer which will write rows to CSV file "f",
     which is encoded in the given encoding.
@@ -316,7 +325,7 @@ class UnicodeWriter:
 
     def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
         # Redirect output to a queue
-        self.queue = cStringIO.StringIO()
+        self.queue = io.StringIO()
         self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
         self.stream = f
         self.encoder = codecs.getincrementalencoder(encoding)()
@@ -376,7 +385,7 @@ def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-tab
 
 
 def find_layer(layer_name):
-    for name, search_layer in QgsMapLayerRegistry.instance().mapLayers().iteritems():
+    for name, search_layer in QgsMapLayerRegistry.instance().mapLayers().items():
         if search_layer.name() == layer_name:
             return search_layer
 
@@ -434,7 +443,7 @@ def getQgisVectorLayers():
     """Return list of all valid QgsVectorLayer in QgsMapLayerRegistry"""
     layermap = QgsMapLayerRegistry.instance().mapLayers()
     layerlist = []
-    for name, layer in layermap.iteritems():
+    for name, layer in layermap.items():
         if layer.isValid() and layer.type() == QgsMapLayer.VectorLayer:
                 layerlist.append( layer )
     return layerlist
@@ -479,7 +488,7 @@ def return_lower_ascii_string(textstring):
             return ''
         else:
             return char
-    filtered_string=filter(onlyascii, textstring)
+    filtered_string=list(filter(onlyascii, textstring))
     filtered_string = filtered_string.lower()
     return filtered_string
 
@@ -521,9 +530,9 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
             elif isinstance(anything, tuple):
                 text = tuple([returnunicode(x, keep_containers) for x in anything])
             elif isinstance(anything, dict):
-                text = dict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
+                text = dict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.items()])
             elif isinstance(anything, OrderedDict):
-                text = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.iteritems()])
+                text = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.items()])
             # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
             elif str(type(anything)) == u"<class 'PyQt4.QtCore.QVariant'>":
                 if anything.isNull():
@@ -532,7 +541,7 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
                     text = returnunicode(anything.toString())
             # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
             elif str(type(anything)) == u"<class 'PyQt4.QtCore.QString'>":
-                text = returnunicode(unicode(anything.toUtf8(), 'utf-8'))
+                text = returnunicode(str(anything.toUtf8(), 'utf-8'))
             # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
             elif str(type(anything)) == u"<class 'PyQt4.QtCore.QPyNullVariant'>":
                 return u''
@@ -541,13 +550,13 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
 
             if isinstance(text, (list, tuple, dict, OrderedDict)):
                 if not keep_containers:
-                    text = unicode(text)
+                    text = str(text)
             elif isinstance(text, str):
-                text = unicode(text, charset)
-            elif isinstance(text, unicode):
+                text = str(text, charset)
+            elif isinstance(text, str):
                 pass
             else:
-                text = unicode(text)
+                text = str(text)
 
         except UnicodeEncodeError:
             continue
@@ -558,9 +567,9 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
 
     if text is None:
         try:
-            text = unicode(str(anything))
+            text = str(str(anything))
         except:
-            text = unicode(QCoreApplication.translate(u'returnunicode', 'data type unknown, check database'))
+            text = str(QCoreApplication.translate(u'returnunicode', 'data type unknown, check database'))
     return text
 
 
@@ -596,7 +605,7 @@ def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
     try:
         if type(anything) == type(None):
             text = (u'').encode('utf-8')
-        elif isinstance(anything, unicode):
+        elif isinstance(anything, str):
             text = anything.encode('utf-8')
         elif isinstance(anything, list):
             text = ([unicode_2_utf8(x) for x in anything])
@@ -607,7 +616,7 @@ def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
         elif isinstance(anything, int):
             text = anything.encode('utf-8')
         elif isinstance(anything, dict):
-            text = (dict([(unicode_2_utf8(k), unicode_2_utf8(v)) for k, v in anything.iteritems()]))
+            text = (dict([(unicode_2_utf8(k), unicode_2_utf8(v)) for k, v in anything.items()]))
         elif isinstance(anything, str):
             text = anything
         elif isinstance(anything, bool):
@@ -711,7 +720,7 @@ def find_nearest_date_from_event(event):
         The x-axis of the artist is assumed to be a date as float or int.
         The found date float is then converted into datetime and returned.
     """
-    line_nodes = np.array(zip(event.artist.get_xdata(), event.artist.get_ydata()))
+    line_nodes = np.array(list(zip(event.artist.get_xdata(), event.artist.get_ydata())))
     xy_click = np.array((event.mouseevent.xdata, event.mouseevent.ydata))
     nearest_xy = find_nearest_using_pythagoras(xy_click, line_nodes)
     nearest_date = num2date(nearest_xy[0])
@@ -731,7 +740,7 @@ def find_nearest_using_pythagoras(xy_point, xy_array):
         >>> find_nearest_using_pythagoras((1, 2), ((4, 5), (3, 5), (-1, 1)))
         (-1, 1)
     """
-    distances = [math.sqrt((float(xy_point[0]) - float(xy_array[x][0]))**2 + (float(xy_point[1]) - float(xy_array[x][1]))**2) for x in xrange(len(xy_array))]
+    distances = [math.sqrt((float(xy_point[0]) - float(xy_array[x][0]))**2 + (float(xy_point[1]) - float(xy_array[x][1]))**2) for x in range(len(xy_array))]
     min_index = distances.index(min(distances))
     return xy_array[min_index]
 
@@ -749,7 +758,7 @@ def ts_gen(ts):
         (1, 2)
         ('a', 'b')
     """
-    for idx in xrange(len(ts)):
+    for idx in range(len(ts)):
         yield (ts[idx][0], ts[idx][1])
 
 
@@ -770,7 +779,7 @@ def get_latlon_for_all_obsids():
     :return: A dict of tuples with like {'obsid': (lat, lon)} for all obsids in obs_points
     """
     latlon_dict = db_utils.get_sql_result_as_dict('SELECT obsid, Y(Transform(geometry, 4326)) as lat, X(Transform(geometry, 4326)) as lon from obs_points')[1]
-    latlon_dict = dict([(obsid, lat_lon[0]) for obsid, lat_lon in latlon_dict.iteritems()])
+    latlon_dict = dict([(obsid, lat_lon[0]) for obsid, lat_lon in latlon_dict.items()])
     return latlon_dict
 
 
@@ -864,7 +873,7 @@ def ask_for_charset(default_charset=None, msg=None):
             if msg is None:
                 msg = QCoreApplication.translate(u'ask_for_charset', "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.")
             charsetchoosen = QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_charset',"Set charset encoding"), msg, QtGui.QLineEdit.Normal, default_charset)[0]
-    except Exception, e:
+    except Exception as e:
         if default_charset is None:
             default_charset = 'utf-8'
         if msg is None:
@@ -1051,7 +1060,7 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
         found = False
         #First check if the current value already has been asked for and if so
         # use the same answer again.
-        for asked_header, asked_answers in already_asked_values.iteritems():
+        for asked_header, asked_answers in already_asked_values.items():
             colnr = headers_colnr[asked_header]
             try:
                 row[index] = asked_answers[row[colnr]]
@@ -1072,7 +1081,7 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
         similar_values = find_similar(current_value, existing_values, hits=5)
         similar_values.extend([x for x in sorted(existing_values) if x not in similar_values])
 
-        msg = returnunicode(QCoreApplication.translate(u'filter_nonexisting_values_and_ask', u'(Message %s of %s)\n\nGive the %s for:\n%s'))%(unicode(rownr + 1), unicode(len(data_to_ask_for)), header_value, u'\n'.join([u': '.join((file_data[0][_colnr], word if word is not None else u'')) for _colnr, word in enumerate(row)]))
+        msg = returnunicode(QCoreApplication.translate(u'filter_nonexisting_values_and_ask', u'(Message %s of %s)\n\nGive the %s for:\n%s'))%(str(rownr + 1), str(len(data_to_ask_for)), header_value, u'\n'.join([u': '.join((file_data[0][_colnr], word if word is not None else u'')) for _colnr, word in enumerate(row)]))
         question = NotFoundQuestion(dialogtitle=QCoreApplication.translate(u'filter_nonexisting_values_and_ask', u'WARNING'),
                                     msg=msg,
                                     existing_list=similar_values,
@@ -1155,7 +1164,7 @@ def sql_to_parameters_units_tuple(sql):
     parameters_dict = {}
     for parameter, unit in parameters_from_table:
         parameters_dict.setdefault(parameter, []).append(unit)
-    parameters = tuple([(k, tuple(v)) for k, v in sorted(parameters_dict.iteritems())])
+    parameters = tuple([(k, tuple(v)) for k, v in sorted(parameters_dict.items())])
     return parameters
 
 
@@ -1226,7 +1235,7 @@ def get_locale_from_db():
 def calculate_db_table_rows():
     results = {}
 
-    tablenames = db_utils.tables_columns().keys()
+    tablenames = list(db_utils.tables_columns().keys())
 
     sql_failed = []
     for tablename in sorted(tablenames):
@@ -1250,7 +1259,7 @@ def calculate_db_table_rows():
         printable_msg = '{0:40}{1:15}'.format('Tablename', 'Nr of rows\n')
         printable_msg += '\n'.join(
             ['{0:40}{1:15}'.format(table_name, _nr_of_rows) for
-             table_name, _nr_of_rows in sorted(results.iteritems())])
+             table_name, _nr_of_rows in sorted(results.items())])
         MessagebarAndLog.info(
             bar_msg=QCoreApplication.translate(u'calculate_db_table_rows', 'Calculation done, see log for results.'),
             log_msg=printable_msg)
@@ -1280,7 +1289,7 @@ def anything_to_string_representation(anything, itemjoiner=u', ', pad=u'', dictf
                                                                     anything_to_string_representation(v, itemjoiner,  pad + pad,
                                                                                                       dictformatter,
                                                                                                       listformatter,
-                                                                                                      tupleformatter)]) for k, v in sorted(anything.iteritems())])
+                                                                                                      tupleformatter)]) for k, v in sorted(anything.items())])
     elif isinstance(anything, list):
         aunicode = listformatter%itemjoiner.join([pad + anything_to_string_representation(x, itemjoiner, pad + pad,
                                                                                           dictformatter,
@@ -1293,11 +1302,11 @@ def anything_to_string_representation(anything, itemjoiner=u', ', pad=u'', dictf
                                                                                            tupleformatter) for x in anything])
     elif isinstance(anything, (float, int)):
         aunicode = u'{}'.format(returnunicode(anything))
-    elif isinstance(anything, unicode):
+    elif isinstance(anything, str):
         aunicode = u'u"{}"'.format(anything)
     elif isinstance(anything, str):
         aunicode = u'"{}"'.format(anything)
-    elif isinstance(anything, PyQt4.QtCore.QVariant):
+    elif isinstance(anything, qgis.PyQt.QtCore.QVariant):
         aunicode = returnunicode(anything.toString().data())
     else:
         aunicode = returnunicode(str(anything))
@@ -1306,9 +1315,9 @@ def anything_to_string_representation(anything, itemjoiner=u', ', pad=u'', dictf
 
 def waiting_cursor(func):
     def func_wrapper(*args, **kwargs):
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))
+        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))
         ret = func(*args, **kwargs)
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
         return ret
     return func_wrapper
 
@@ -1381,10 +1390,10 @@ def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_field
 
 
 def ask_for_delimiter(header=QCoreApplication.translate(u'ask_for_delimiter', u'Give delimiter'), question=u'', default=u';'):
-    _delimiter = PyQt4.QtGui.QInputDialog.getText(None,
+    _delimiter = qgis.PyQt.QtGui.QInputDialog.getText(None,
                                                   QCoreApplication.translate(u'ask_for_delimiter', u"Give delimiter"),
                                                   question,
-                                                  PyQt4.QtGui.QLineEdit.Normal,
+                                                  qgis.PyQt.QtGui.QLineEdit.Normal,
                                                   default)
     if not _delimiter[1]:
         MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate(u'ask_for_delimiter', u'Delimiter not given. Stopping.')))
@@ -1430,7 +1439,7 @@ def list_of_lists_from_table(tablename):
 
 
 def transpose_lists_of_lists(list_of_lists):
-    outlist_of_lists = [[row[colnr] for row in list_of_lists] for colnr in xrange(len(list_of_lists[0]))]
+    outlist_of_lists = [[row[colnr] for row in list_of_lists] for colnr in range(len(list_of_lists[0]))]
     return outlist_of_lists
 
 
@@ -1450,7 +1459,7 @@ def fn_timer(function):
         #
         try:
             print ("Total time running %s: %s seconds" %
-                  (function.func_name, str(t1-t0))
+                  (function.__name__, str(t1-t0))
                    )
         except IOError:
             pass
@@ -1481,15 +1490,15 @@ def general_exception_handler(func):
             result = func(*args, **kwargs)
         except UserInterruptError:
             # The user interrupted the process.
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
             pass
         except UsageError as e:
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
             msg = str(e)
             if msg:
                 MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'general_exception_handler', u'Usage error: %s'))%str(e))
         except:
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
             raise
         else:
             return result
@@ -1552,7 +1561,7 @@ def to_float_or_none(anything):
         return anything
     elif isinstance(anything, int):
         return float(anything)
-    elif isinstance(anything, basestring):
+    elif isinstance(anything, str):
         try:
             a_float = float(anything.replace(u',', u'.'))
         except TypeError:
@@ -1638,19 +1647,19 @@ class PlotTemplates(object):
             if self.loaded_template:
                 MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Loaded template from default hard coded template.')))
 
-        plot_object.connect(self.edit_button, PyQt4.QtCore.SIGNAL("clicked()"), self.edit)
-        plot_object.connect(self.load_button, PyQt4.QtCore.SIGNAL("clicked()"), self.load)
-        plot_object.connect(self.save_as_button, PyQt4.QtCore.SIGNAL("clicked()"), self.save_as)
-        plot_object.connect(self.import_button, PyQt4.QtCore.SIGNAL("clicked()"), self.import_templates)
-        plot_object.connect(self.remove_button, PyQt4.QtCore.SIGNAL("clicked()"), self.remove)
+        plot_object.connect(self.edit_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.edit)
+        plot_object.connect(self.load_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.load)
+        plot_object.connect(self.save_as_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.save_as)
+        plot_object.connect(self.import_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.import_templates)
+        plot_object.connect(self.remove_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.remove)
 
     @general_exception_handler
     def edit(self):
         old_string = self.readable_output(self.loaded_template)
 
         msg = returnunicode(QCoreApplication.translate(u'StoredSettings', u'Replace the settings string with a new settings string.'))
-        new_string = PyQt4.QtGui.QInputDialog.getText(None, returnunicode(QCoreApplication.translate(u'StoredSettings', "Edit settings")), msg,
-                                                           PyQt4.QtGui.QLineEdit.Normal, old_string)
+        new_string = qgis.PyQt.QtGui.QInputDialog.getText(None, returnunicode(QCoreApplication.translate(u'StoredSettings', "Edit settings")), msg,
+                                                           qgis.PyQt.QtGui.QLineEdit.Normal, old_string)
         if not new_string[1]:
             raise UserInterruptError()
 
@@ -1670,7 +1679,7 @@ class PlotTemplates(object):
 
     @general_exception_handler
     def save_as(self):
-        filename = PyQt4.QtGui.QFileDialog.getSaveFileName(parent=None, caption=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Choose a file name')), directory='', filter='txt (*.txt)')
+        filename = qgis.PyQt.QtGui.QFileDialog.getSaveFileName(parent=None, caption=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Choose a file name')), directory='', filter='txt (*.txt)')
         if filename is None or not filename:
             raise UserInterruptError()
         as_str = self.readable_output(self.loaded_template)
@@ -1696,8 +1705,8 @@ class PlotTemplates(object):
                 if not filename:
                     continue
 
-                processed_before = filename in self.templates.keys()
-                processed_now = filename in templates.keys()
+                processed_before = filename in list(self.templates.keys())
+                processed_now = filename in list(templates.keys())
 
                 if not processed_before and not processed_now:
                     template = self.parse_template(filename)
@@ -1760,13 +1769,13 @@ class PlotTemplates(object):
             return {}
 
     def update_settingsdict(self):
-        self.ms.settingsdict[self.templates_settingskey] = u';'.join(self.templates.keys())
+        self.ms.settingsdict[self.templates_settingskey] = u';'.join(list(self.templates.keys()))
         self.ms.save_settings(self.templates_settingskey)
 
     def update_template_list(self):
         self.template_list.clear()
-        for filename, template in sorted(self.templates.iteritems(), key=lambda x: os.path.basename(x[0])):
-            qlistwidgetitem = PyQt4.QtGui.QListWidgetItem()
+        for filename, template in sorted(iter(self.templates.items()), key=lambda x: os.path.basename(x[0])):
+            qlistwidgetitem = qgis.PyQt.QtGui.QListWidgetItem()
             qlistwidgetitem.setText(template['name'])
             qlistwidgetitem.filename = template['filename']
             self.template_list.addItem(qlistwidgetitem)

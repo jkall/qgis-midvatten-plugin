@@ -19,8 +19,11 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import range
+from builtins import object
 
-import PyQt4
+import qgis.PyQt
 import ast
 import io
 import os
@@ -31,7 +34,7 @@ from midvatten_utils import PlotTemplates
 from mock import call
 from nose.plugins.attrib import attr
 
-import utils_for_tests
+from . import utils_for_tests
 from definitions import midvatten_defs as defs
 
 
@@ -40,13 +43,13 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
     def setUp(self):
         super(self.__class__, self).setUp()
-        self.template_list = PyQt4.QtGui.QListWidget()
+        self.template_list = qgis.PyQt.QtGui.QListWidget()
 
-        self.edit_button = PyQt4.QtGui.QPushButton()
-        self.load_button = PyQt4.QtGui.QPushButton()
-        self.save_as_button = PyQt4.QtGui.QPushButton()
-        self.import_button = PyQt4.QtGui.QPushButton()
-        self.remove_button = PyQt4.QtGui.QPushButton()
+        self.edit_button = qgis.PyQt.QtGui.QPushButton()
+        self.load_button = qgis.PyQt.QtGui.QPushButton()
+        self.save_as_button = qgis.PyQt.QtGui.QPushButton()
+        self.import_button = qgis.PyQt.QtGui.QPushButton()
+        self.remove_button = qgis.PyQt.QtGui.QPushButton()
         self.template_folder = os.path.join(os.path.split(os.path.split(os.path.dirname(__file__))[0])[0], 'definitions', 'secplot_templates')
 
         self.sectionplot = mock.MagicMock()
@@ -112,7 +115,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                                                  self.template_folder, 'secplot_templates', 'secplot_loaded_template',
                                                  defs.secplot_default_template(), self.midvatten.ms)
                 secplottemplates.import_templates()
-                item = [self.template_list.item(idx) for idx in xrange(self.template_list.count())][0]
+                item = [self.template_list.item(idx) for idx in range(self.template_list.count())][0]
                 item.setSelected(True)
                 secplottemplates.load()
 
@@ -120,7 +123,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
             secplottemplates, mock_messagebar, reference_filename = _test(self, f1)
 
-        items = [self.template_list.item(idx) for idx in xrange(self.template_list.count())]
+        items = [self.template_list.item(idx) for idx in range(self.template_list.count())]
         filename = items[0].filename
         assert filename == reference_filename
 
@@ -151,7 +154,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         assert self.template_list.count() == 1
 
-        item = [self.template_list.item(idx) for idx in xrange(self.template_list.count())][0]
+        item = [self.template_list.item(idx) for idx in range(self.template_list.count())][0]
         item.setSelected(True)
         secplottemplates.remove()
 
@@ -181,7 +184,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
                                                      'secplot_loaded_template',
                                                      defs.secplot_default_template(), self.midvatten.ms)
                     secplottemplates.import_templates()
-                    item = [self.template_list.item(idx) for idx in xrange(self.template_list.count())][0]
+                    item = [self.template_list.item(idx) for idx in range(self.template_list.count())][0]
                     item.setSelected(True)
                     secplottemplates.load()
                     secplottemplates.save_as()

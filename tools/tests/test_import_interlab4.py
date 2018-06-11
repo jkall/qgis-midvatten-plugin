@@ -20,13 +20,15 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import str
 #
 
 import midvatten_utils as utils
 from import_interlab4 import Interlab4Import
 from nose.plugins.attrib import attr
 
-import utils_for_tests
+from . import utils_for_tests
 
 
 @attr(status='on')

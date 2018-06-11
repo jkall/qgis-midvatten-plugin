@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
 #
 
 import db_utils
@@ -28,8 +29,8 @@ import mock
 from import_interlab4 import Interlab4Import
 from nose.plugins.attrib import attr
 
-import mocks_for_tests
-import utils_for_tests
+from . import mocks_for_tests
+from . import utils_for_tests
 
 
 @attr(status='on')

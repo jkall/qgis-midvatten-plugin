@@ -20,6 +20,9 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
 from collections import OrderedDict
 
 import db_utils
@@ -29,7 +32,7 @@ from import_data_to_db import MidvDataImporterError
 from mock import call
 from nose.plugins.attrib import attr
 
-import utils_for_tests
+from . import utils_for_tests
 
 
 @attr(status='on')
@@ -764,7 +767,7 @@ class TestGetForeignKeys(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         test = db_utils.get_foreign_keys(u'w_levels')
         assert len(test) > 0
         assert isinstance(test, (dict, OrderedDict))
-        for k, v in test.iteritems():
+        for k, v in test.items():
             assert isinstance(v, (list, tuple))
 
 

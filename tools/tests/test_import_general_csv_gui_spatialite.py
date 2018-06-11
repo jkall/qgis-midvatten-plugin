@@ -20,7 +20,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-import PyQt4
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
+import qgis.PyQt
 import datetime
 #
 import timeit
@@ -34,8 +38,8 @@ from import_general_csv_gui import GeneralCsvImportGui
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
-import utils_for_tests
-from mocks_for_tests import MockUsingReturnValue
+from . import utils_for_tests
+from .mocks_for_tests import MockUsingReturnValue
 
 
 @attr(status='on')
@@ -59,7 +63,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
                         mock_filename.return_value = filename
@@ -129,7 +133,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
                         mock_filename.return_value = filename
@@ -200,7 +204,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfound):
 
                         mock_filename.return_value = filename
@@ -274,7 +278,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfound):
 
                         mock_filename.return_value = filename
@@ -346,7 +350,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
                         mock_filename.return_value = filename
@@ -417,7 +421,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
                         mock_filename.return_value = filename
@@ -489,7 +493,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_selectedobsids):
 
                         mock_filename.return_value = filename
@@ -563,7 +567,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_selectedobsids):
 
                         mock_filename.return_value = filename
@@ -636,7 +640,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
                         mock_filename.return_value = filename
@@ -705,7 +709,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
                         mock_filename.return_value = filename
@@ -773,7 +777,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
                         mock_filename.return_value = filename
@@ -841,7 +845,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
                         mock_filename.return_value = filename
@@ -912,7 +916,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
                         mock_filename.return_value = filename
@@ -980,7 +984,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
                         mock_filename.return_value = filename
@@ -1049,7 +1053,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_messagebar):
 
                         mock_filename.return_value = filename
@@ -1123,7 +1127,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     @mock.patch('qgis.utils.iface', autospec=True)
                     @mock.patch('PyQt4.QtGui.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-                    @mock.patch.object(PyQt4.QtGui.QFileDialog, 'getOpenFileName')
+                    @mock.patch.object(qgis.PyQt.QtGui.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
                         mock_filename.return_value = filename

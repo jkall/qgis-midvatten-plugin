@@ -17,10 +17,12 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import str
 import datetime
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from PyQt4.QtCore import QCoreApplication
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
+from qgis.PyQt.QtCore import QCoreApplication
 
 def find_date_format(datestring):
     """
@@ -78,7 +80,7 @@ def dateshift(adate, n, step_lenght):
     >>> dateshift('2016-03-01', -24, 'hours')
     datetime.datetime(2016, 2, 29, 0, 0)
     """
-    if isinstance(n, (basestring)):
+    if isinstance(n, (str)):
         n = float(n)
     adate = datestring_to_date(adate)
 

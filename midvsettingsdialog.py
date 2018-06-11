@@ -11,17 +11,19 @@
         copyright            : (C) 2011 by joskal
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/"""
-import PyQt4
+from builtins import str
+from builtins import object
+import qgis.PyQt
 import ast
 import os.path
-from PyQt4 import uic
+from qgis.PyQt import uic
 from functools import partial  # only to get combobox signals to work
 
 import db_utils
 import gui_utils
 import midvatten_utils as utils
-from PyQt4.QtCore import QCoreApplication, Qt, SIGNAL
-from PyQt4.QtGui import QComboBox, QDockWidget, QFileDialog
+from qgis.PyQt.QtCore import QCoreApplication, Qt
+from qgis.PyQt.QtWidgets import QComboBox, QDockWidget, QFileDialog
 from midvatten_utils import returnunicode as ru
 
 #from ui.midvsettingsdock_ui import Ui_MidDockSettings
@@ -56,37 +58,37 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
 
         # SIGNALS
         #move dockwidget
-        self.connect(self, SIGNAL("dockLocationChanged(Qt::DockWidgetArea)"), self.set_location)
+        self.dockLocationChanged.connect(self.set_location)
 
         #tab TS
-        self.connect(self.ListOfTables, SIGNAL("activated(int)"), partial(self.TSTableUpdated)) 
-        self.connect(self.ListOfColumns, SIGNAL("activated(int)"), partial(self.ChangedListOfColumns)) 
-        self.connect(self.checkBoxDataPoints,SIGNAL("stateChanged(int)"),self.ChangedCheckBoxDataPoints)
-        self.connect(self.checkBoxStepPlot,SIGNAL("stateChanged(int)"),self.ChangedCheckBoxStepPlot)
+        self.ListOfTables.activated.connect(partial(self.TSTableUpdated)) 
+        self.ListOfColumns.activated.connect(partial(self.ChangedListOfColumns)) 
+        self.checkBoxDataPoints.stateChanged.connect(self.ChangedCheckBoxDataPoints)
+        self.checkBoxStepPlot.stateChanged.connect(self.ChangedCheckBoxStepPlot)
         #tab XY
-        self.connect(self.ListOfTables_2, SIGNAL("activated(int)"), partial(self.XYTableUpdated))
-        self.connect(self.ListOfColumns_2, SIGNAL("activated(int)"), partial(self.ChangedListOfColumns2)) 
-        self.connect(self.ListOfColumns_3, SIGNAL("activated(int)"), partial(self.ChangedListOfColumns3)) 
-        self.connect(self.ListOfColumns_4, SIGNAL("activated(int)"), partial(self.ChangedListOfColumns4)) 
-        self.connect(self.ListOfColumns_5, SIGNAL("activated(int)"), partial(self.ChangedListOfColumns5)) 
-        self.connect(self.checkBoxDataPoints_2,SIGNAL("stateChanged(int)"),self.ChangedCheckBoxDataPoints2)
+        self.ListOfTables_2.activated.connect(partial(self.XYTableUpdated))
+        self.ListOfColumns_2.activated.connect(partial(self.ChangedListOfColumns2)) 
+        self.ListOfColumns_3.activated.connect(partial(self.ChangedListOfColumns3)) 
+        self.ListOfColumns_4.activated.connect(partial(self.ChangedListOfColumns4)) 
+        self.ListOfColumns_5.activated.connect(partial(self.ChangedListOfColumns5)) 
+        self.checkBoxDataPoints_2.stateChanged.connect(self.ChangedCheckBoxDataPoints2)
         #tab wqualreport
-        self.connect(self.ListOfTables_WQUAL, SIGNAL("activated(int)"), partial(self.WQUALTableUpdated))  
-        self.connect(self.ListOfColumns_WQUALPARAM, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualParam)) 
-        self.connect(self.ListOfColumns_WQUALVALUE, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualValue))
-        self.connect(self.ListOfdate_time_format, SIGNAL("activated(int)"), partial(self.ChangedListOfdate_time_format))
-        self.connect(self.ListOfColumns_WQUALUNIT, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualUnit))         
-        self.connect(self.ListOfColumns_WQUALSORTING, SIGNAL("activated(int)"), partial(self.ChangedListOfColumnsWQualSorting))
+        self.ListOfTables_WQUAL.activated.connect(partial(self.WQUALTableUpdated))  
+        self.ListOfColumns_WQUALPARAM.activated.connect(partial(self.ChangedListOfColumnsWQualParam)) 
+        self.ListOfColumns_WQUALVALUE.activated.connect(partial(self.ChangedListOfColumnsWQualValue))
+        self.ListOfdate_time_format.activated.connect(partial(self.ChangedListOfdate_time_format))
+        self.ListOfColumns_WQUALUNIT.activated.connect(partial(self.ChangedListOfColumnsWQualUnit))         
+        self.ListOfColumns_WQUALSORTING.activated.connect(partial(self.ChangedListOfColumnsWQualSorting))
 
         #tab piper
-        self.connect(self.paramCl, SIGNAL("activated(int)"), partial(self.ChangedParamCl))
-        self.connect(self.paramHCO3, SIGNAL("activated(int)"), partial(self.ChangedParamHCO3))
-        self.connect(self.paramSO4, SIGNAL("activated(int)"), partial(self.ChangedParamSO4))
-        self.connect(self.paramNa, SIGNAL("activated(int)"), partial(self.ChangedParamNa)) 
-        self.connect(self.paramK, SIGNAL("activated(int)"), partial(self.ChangedParamK)) 
-        self.connect(self.paramCa, SIGNAL("activated(int)"), partial(self.ChangedParamCa)) 
-        self.connect(self.paramMg, SIGNAL("activated(int)"), partial(self.ChangedParamMg))         
-        self.connect(self.MarkerComboBox, SIGNAL("activated(int)"), partial(self.ChangedPiperMarkerComboBox))
+        self.paramCl.activated.connect(partial(self.ChangedParamCl))
+        self.paramHCO3.activated.connect(partial(self.ChangedParamHCO3))
+        self.paramSO4.activated.connect(partial(self.ChangedParamSO4))
+        self.paramNa.activated.connect(partial(self.ChangedParamNa)) 
+        self.paramK.activated.connect(partial(self.ChangedParamK)) 
+        self.paramCa.activated.connect(partial(self.ChangedParamCa)) 
+        self.paramMg.activated.connect(partial(self.ChangedParamMg))         
+        self.MarkerComboBox.activated.connect(partial(self.ChangedPiperMarkerComboBox))
 
         #Draw the widget
         self.iface.addDockWidget(max(self.ms.settingsdict['settingslocation'],1), self)
@@ -281,7 +283,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             i=0
             while notfound==0:    # Loop until the last selected tstable is found
                 self.ListOfTables.setCurrentIndex(i)
-                if unicode(self.ListOfTables.currentText()) == unicode(self.ms.settingsdict['tstable']):#The index count stops when last selected table is found #MacOSX fix1
+                if str(self.ListOfTables.currentText()) == str(self.ms.settingsdict['tstable']):#The index count stops when last selected table is found #MacOSX fix1
                     notfound=1
                     self.TSTableUpdated()        # Fill the given combobox with columns from the given table and also perform a sanity check of table
                     searchindex = self.ListOfColumns.findText(self.ms.settingsdict['tscolumn'])
@@ -329,7 +331,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
             i=0
             while notfound==0: #looping through ListOfTables_2 looking for last selected xytable
                 self.ListOfTables_2.setCurrentIndex(i)
-                if unicode(self.ListOfTables_2.currentText()) == unicode(self.ms.settingsdict['xytable']):    #when last selected xytable found, it is selected in list and a lot of columns is searced for #MacOSX fix1
+                if str(self.ListOfTables_2.currentText()) == str(self.ms.settingsdict['xytable']):    #when last selected xytable found, it is selected in list and a lot of columns is searced for #MacOSX fix1
                     notfound=1
                     self.XYTableUpdated()    # Fill the given combobox with columns from the given table and performs a test
                     searchindex = self.ListOfColumns_2.findText(self.ms.settingsdict['xy_xcolumn'])
@@ -359,7 +361,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
     def loadTablesFromDB(self): # This method populates all table-comboboxes with the tables inside the database
         # Execute a query in SQLite to return all available tables (sql syntax excludes some of the predefined tables)
         # start with cleaning comboboxes before filling with new entries
-        tables = db_utils.tables_columns().keys()
+        tables = list(db_utils.tables_columns().keys())
 
         self.ListOfTables.addItem('')
         self.ListOfTables_2.addItem('')
@@ -406,31 +408,31 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
                     self.paramMg.addItem(row[0])
 
     def PiperClUpdated(self):
-        self.ms.settingsdict['piper_cl']= unicode(self.paramCl.currentText())
+        self.ms.settingsdict['piper_cl']= str(self.paramCl.currentText())
         self.ms.save_settings('piper_cl')#save this specific setting
 
     def PiperHCO3Updated(self):
-        self.ms.settingsdict['piper_hco3']= unicode(self.paramHCO3.currentText())
+        self.ms.settingsdict['piper_hco3']= str(self.paramHCO3.currentText())
         self.ms.save_settings('piper_hco3')#save this specific setting
 
     def PiperSO4Updated(self):
-        self.ms.settingsdict['piper_so4']= unicode(self.paramSO4.currentText())
+        self.ms.settingsdict['piper_so4']= str(self.paramSO4.currentText())
         self.ms.save_settings('piper_so4')#save this specific setting
 
     def PiperNaUpdated(self):
-        self.ms.settingsdict['piper_na']= unicode(self.paramNa.currentText())
+        self.ms.settingsdict['piper_na']= str(self.paramNa.currentText())
         self.ms.save_settings('piper_na')#save this specific setting
 
     def PiperKUpdated(self):
-        self.ms.settingsdict['piper_k']= unicode(self.paramK.currentText())
+        self.ms.settingsdict['piper_k']= str(self.paramK.currentText())
         self.ms.save_settings('piper_k')#save this specific setting
 
     def PiperCaUpdated(self):
-        self.ms.settingsdict['piper_ca']= unicode(self.paramCa.currentText())
+        self.ms.settingsdict['piper_ca']= str(self.paramCa.currentText())
         self.ms.save_settings('piper_ca')#save this specific setting
 
     def PiperMgUpdated(self):
-        self.ms.settingsdict['piper_mg']= unicode(self.paramMg.currentText())
+        self.ms.settingsdict['piper_mg']= str(self.paramMg.currentText())
         self.ms.save_settings('piper_mg')#save this specific setting
 
     def set_location(self):
@@ -525,9 +527,9 @@ class DatabaseSettings(object):
         self.db_settings_obj = None
         self.label_width = self.maximum_label_width()
 
-        self._label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'DatabaseSettings', u'Database type')))
+        self._label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'DatabaseSettings', u'Database type')))
         self._label.setFixedWidth(self.label_width)
-        self._dbtype_combobox = PyQt4.QtGui.QComboBox()
+        self._dbtype_combobox = qgis.PyQt.QtGui.QComboBox()
         self._dbtype_combobox.addItems([u'', u'spatialite', u'postgis'])
 
         self.grid = gui_utils.RowEntryGrid()
@@ -537,7 +539,7 @@ class DatabaseSettings(object):
 
         self.child_widgets = []
 
-        self.midvsettingsdialogdock.connect(self._dbtype_combobox, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_dbtype)
+        self.midvsettingsdialogdock.connect(self._dbtype_combobox, qgis.PyQt.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_dbtype)
 
         self.layout.setRowStretch(self.layout.rowCount(), 1)
 
@@ -597,18 +599,18 @@ class DatabaseSettings(object):
             pass
 
         for setting in [db_settings, _db_settings]:
-            if isinstance(setting, basestring):
+            if isinstance(setting, str):
                 # Assume that the db_settings is an old spatialite database
                 if os.path.isfile(setting) and setting.endswith(u'.sqlite'):
                     db_settings = {u'spatialite': {u'dbpath': setting}}
                     break
 
         if isinstance(db_settings, dict):
-            for dbtype, settings in db_settings.iteritems():
+            for dbtype, settings in db_settings.items():
                 self.dbtype_combobox = dbtype
                 self.choose_dbtype()
 
-                for setting_name, value in settings.iteritems():
+                for setting_name, value in settings.items():
                     if hasattr(self.db_settings_obj, setting_name.encode(u'utf-8')):
                         setattr(self.db_settings_obj, setting_name.encode(u'utf-8'), value)
                     else:
@@ -623,7 +625,7 @@ class DatabaseSettings(object):
     def maximum_label_width(self):
         maximumwidth = 0
         for label_name in [ru(QCoreApplication.translate(u'DatabaseSettings', u'Database type')), ru(QCoreApplication.translate(u'DatabaseSettings', u'Select db')), ru(QCoreApplication.translate(u'DatabaseSettings', u'Connections'))]:
-            testlabel = PyQt4.QtGui.QLabel(label_name)
+            testlabel = qgis.PyQt.QtGui.QLabel(label_name)
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
         return maximumwidth
@@ -633,10 +635,10 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
     def __init__(self, midvsettingsdialogdock, label_width):
         super(SpatialiteSettings, self).__init__()
         self.midvsettingsdialogdock = midvsettingsdialogdock
-        self.btnSetDB = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'SpatialiteSettings', u'Select db')))
+        self.btnSetDB = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'SpatialiteSettings', u'Select db')))
         self.btnSetDB.setFixedWidth(label_width)
         self.layout.addWidget(self.btnSetDB, 0, 0)
-        self._dbpath = PyQt4.QtGui.QLineEdit(u'')
+        self._dbpath = qgis.PyQt.QtGui.QLineEdit(u'')
         self.layout.addWidget(self._dbpath, 0, 1)
 
         #select file
@@ -652,7 +654,7 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
 
     def select_file(self):
         """ Open a dialog to locate the sqlite file and some more..."""
-        dbpath = QFileDialog.getOpenFileName(None, str("Select database:"), "*.sqlite")
+        dbpath, __ = QFileDialog.getOpenFileName(None, str("Select database:"), "*.sqlite")
         if dbpath:  # Only get new db name if not cancelling the FileDialog
             self.dbpath = dbpath
             self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({u'spatialite': {u'dbpath': dbpath}})
@@ -671,15 +673,15 @@ class PostgisSettings(gui_utils.RowEntryGrid):
 
         postgis_connections = db_utils.get_postgis_connections()
 
-        self.label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'PostgisSettings', u'Connections')))
+        self.label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'PostgisSettings', u'Connections')))
         self.label.setFixedWidth(label_width)
-        self._connection = PyQt4.QtGui.QComboBox()
+        self._connection = qgis.PyQt.QtGui.QComboBox()
         self._connection.addItem(u'')
-        connection_names = [u'/'.join([k, u':'.join([v.get(u'host', u''), v.get(u'port', u'')]), v.get(u'database', u'')]) for k, v in postgis_connections.iteritems()]
+        connection_names = [u'/'.join([k, u':'.join([v.get(u'host', u''), v.get(u'port', u'')]), v.get(u'database', u'')]) for k, v in postgis_connections.items()]
         self._connection.addItems(sorted(connection_names))
 
         self.midvsettingsdialogdock.connect(self._connection,
-                                            PyQt4.QtCore.SIGNAL(
+                                            qgis.PyQt.QtCore.SIGNAL(
                                                 "currentIndexChanged(const QString&)"),
                                             self.set_db)
 

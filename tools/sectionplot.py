@@ -20,6 +20,10 @@ SAKNAS:
 1. (input och plottning av seismik, vlf etc längs med linjen) - efter release alpha
 2. ((input och plottning av markyta från DEM)) - efter release beta
 """
+from __future__ import absolute_import
+from builtins import zip
+from builtins import str
+from builtins import range
 import copy
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
@@ -29,41 +33,41 @@ from matplotlib import container, patches
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from qgis.core import QgsCoordinateReferenceSystem, QgsMapLayerRegistry
 
-import PyQt4
+import qgis.PyQt
 import numpy as np
 
-import db_utils
+from . import db_utils
 
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 except:
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import sqlite3 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from midvatten_utils import PlotTemplates
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
+from .midvatten_utils import PlotTemplates
 
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication
 
 #from ui.secplotdockwidget_ui import Ui_SecPlotDock
-from PyQt4 import uic
+from qgis.PyQt import uic
 Ui_SecPlotDock =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'secplotdockwidget_ui.ui'))[0]
 
 import definitions.midvatten_defs as defs
-from sampledem import qchain, sampling
+from .sampledem import qchain, sampling
 
-class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
+class SectionPlot(qgis.PyQt.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
     def __init__(self, parent1, iface1):
         #super(sectionplot, self).save_settings()
-        PyQt4.QtGui.QDockWidget.__init__(self, parent1) #, PyQt4.QtCore.Qt.WindowFlags(PyQt4.QtCore.Qt.WA_DeleteOnClose))
-        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+        qgis.PyQt.QtGui.QDockWidget.__init__(self, parent1) #, PyQt4.QtCore.Qt.WindowFlags(PyQt4.QtCore.Qt.WA_DeleteOnClose))
+        self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         #Ui_SecPlotDock.__init__(self)
 
         self.parent = parent1
         self.iface = iface1
         #self.location = PyQt4.QtCore.Qt.Qt.BottomDockWidgetArea#should be loaded from settings instead
         #self.location = int(self.ms.settingsdict['secplotlocation'])
-        self.connect(self, PyQt4.QtCore.SIGNAL("dockLocationChanged(Qt::DockWidgetArea)"), self.set_location)#not really implemented yet
+        self.connect(self, qgis.PyQt.QtCore.SIGNAL("dockLocationChanged(Qt::DockWidgetArea)"), self.set_location)#not really implemented yet
 
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.setWindowTitle("Midvatten plugin - section plot") # Set the title for the dialog
@@ -76,7 +80,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
     def do_it(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
 
         #show the user this may take a long time...
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))
+        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))
         #settings must be recieved here since plot windows may stay open (hence sectionplot instance activated) while a new qgis project is opened or midv settings are chaned 
         self.ms = msettings
         #Draw the widget
@@ -122,7 +126,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.fill_dem_list()
 
         
-        PyQt4.QtGui.QApplication.restoreOverrideCursor() #now this long process is done and the cursor is back as normal
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor() #now this long process is done and the cursor is back as normal
         
         #get PlotData
         self.get_plot_data()
@@ -157,14 +161,14 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.change_plot_size(width, height)
 
         try:
-            PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
+            qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))#show the user this may take a long time...
             try:
                 self.annotationtext.remove()
             except:
                 pass
             self.secax.clear()
             #load user settings from the ui
-            self.ms.settingsdict['secplotwlvltab'] = unicode(self.wlvltableComboBox.currentText())
+            self.ms.settingsdict['secplotwlvltab'] = str(self.wlvltableComboBox.currentText())
             temporarystring = ru(self.datetimetextEdit.toPlainText()) #this needs some cleanup
             try:
                 self.ms.settingsdict['secplotdates']= [x for x in temporarystring.replace(u'\r', u'').split(u'\n') if x.strip()]
@@ -218,21 +222,21 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         except KeyError as e:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Section plot optional settings error, press "Restore defaults"')),
                                             log_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Error msg: %s'))%e)
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
             self.dbconnection.closedb()
             self.dbconnection = None
 
         except:
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
             self.dbconnection.closedb()
             self.dbconnection = None
             raise
         else:
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def execute_query(self,query,params=(),commit=False):#from qspatialite, it is only used by self.uploadQgisVectorLayer
         """Execute query (string) with given parameters (tuple) (optionnaly perform commit to save Db) and return resultset [header,data] or [flase,False] if error"""
-        query=unicode(query)
+        query=str(query)
         self.queryPb=False
         header=[]
         data=[]
@@ -244,7 +248,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             data = [row for row in cursor]
             if commit:
                 self.dbconnection.commit()
-        except sqlite.OperationalError, Msg:
+        except sqlite.OperationalError as Msg:
             self.dbconnection.rollback()
             utils.pop_up_info(ru(QCoreApplication.translate(u'SectionPlot', "The SQL query\n %s\n seems to be invalid.\n\n%s")) %(query,Msg), 'Error', None)
             self.queryPb=True #Indicates pb with current query
@@ -320,7 +324,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             i=0
             while notfound==0:    # Loop until the last selected tstable is found
                 self.wlvltableComboBox.setCurrentIndex(i)
-                if unicode(self.wlvltableComboBox.currentText()) == unicode(self.ms.settingsdict['secplotwlvltab']):#The index count stops when last selected table is found #MacOSX fix1
+                if str(self.wlvltableComboBox.currentText()) == str(self.ms.settingsdict['secplotwlvltab']):#The index count stops when last selected table is found #MacOSX fix1
                     notfound=1
                 elif i> len(self.wlvltableComboBox):
                     notfound=1
@@ -330,7 +334,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             i=0
             while notfound==0:    # Loop until the last selected tstable is found
                 self.textcolComboBox.setCurrentIndex(i)
-                if unicode(self.textcolComboBox.currentText()) == unicode(self.ms.settingsdict['secplottext']):#The index count stops when last selected table is found #MacOSX fix1
+                if str(self.textcolComboBox.currentText()) == str(self.ms.settingsdict['secplottext']):#The index count stops when last selected table is found #MacOSX fix1
                     notfound=1
                 elif i> len(self.textcolComboBox):
                     notfound=1
@@ -354,8 +358,8 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                     #print('raster layer '  + layer.name() + ' has crs '+str(layer.crs().authid()[5:]))#debug
                     #print('polyline layer ' + self.sectionlinelayer.name() + ' has crs '+str(self.line_crs.authid()[5:]))#debug
                     if layer.crs().authid()[5:] == self.line_crs.authid()[5:]:#only raster layer with crs corresponding to line layer
-                        self.rastItems[unicode(layer.name())] = layer
-                        self.inData.addItem(unicode(layer.name()))
+                        self.rastItems[str(layer.name())] = layer
+                        self.inData.addItem(str(layer.name()))
         if msg !='':
             self.iface.messageBar().pushMessage(ru(QCoreApplication.translate(u'SectionPlot', u"Info")),msg, 0,duration=10)
         self.get_dem_selection()
@@ -374,11 +378,11 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.secax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
         self.secax.xaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
 
-        Axes_set_ylabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_ylabel', {}).iteritems() if k != 'ylabel'])
+        Axes_set_ylabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_ylabel', {}).items() if k != 'ylabel'])
         ylabel = self.secplot_templates.loaded_template.get('Axes_set_ylabel', {}).get('ylabel', defs.secplot_default_template()['Axes_set_ylabel']['ylabel'])
         self.secax.set_ylabel(ylabel, **Axes_set_ylabel)  #Allows international characters ('åäö') as ylabel
 
-        Axes_set_xlabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).iteritems() if k != 'xlabel'])
+        Axes_set_xlabel = dict([(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).items() if k != 'xlabel'])
         xlabel = self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).get('xlabel', defs.secplot_default_template()['Axes_set_xlabel']['xlabel'])
         self.secax.set_xlabel(xlabel, **Axes_set_xlabel)  #Allows international characters ('åäö') as xlabel
 
@@ -449,7 +453,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         return LengthAlongTable
 
     def get_plot_data(self):#this is called when class is instantiated, collecting data specific for the profile line layer and the obs_points
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtGui.QCursor(PyQt4.QtCore.Qt.WaitCursor))#show the user this may take a long time...
+        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))#show the user this may take a long time...
         self.plotx = {}
         self.plotbottom = {}
         self.plotbarlength = {}
@@ -560,7 +564,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             table = np.array(recs, dtype=My_format)  #NDARRAY
             self.obs_lines_plot_data=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write self.obs_lines_plot_data.values
         #print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id) + str(self.barlengths) + str(self.bottoms))#debug
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def get_plot_data_2(self):#collecting data depending on a number of selections in left side panel
         self.obsid_wlid=[]#if no stratigr plot, then obsid will be plotted close to water level instead of toc or gs
@@ -613,7 +617,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #connect signal
         self.pushButton.clicked.connect(self.draw_plot)
         self.redraw.clicked.connect(self.finish_plot)
-        self.connect(self.chart_settings, PyQt4.QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.chart_settings))
+        self.connect(self.chart_settings, qgis.PyQt.QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.chart_settings))
         self.set_groupbox_children_visibility(self.chart_settings)
         
         # Create a plot window with one single subplot
@@ -631,7 +635,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         if self.ms.settingsdict['secplotselectedDEMs'] and len(self.ms.settingsdict['secplotselectedDEMs'])>0:    # Adding a plot for each selected raster
             temp_memorylayer, xarray = qchain(self.sectionlinelayer,self.barwidth/2)
             for layername in self.ms.settingsdict['secplotselectedDEMs']:
-                DEMdata = sampling(temp_memorylayer,self.rastItems[unicode(layername)])
+                DEMdata = sampling(temp_memorylayer,self.rastItems[str(layername)])
 
                 plotlable = self.get_plot_label_name(layername, self.Labels)
 
@@ -847,7 +851,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                     text = self.secax.annotate(o, xy=(m,n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
 
     def set_groupbox_children_visibility(self, groupbox_widget):
-        children = groupbox_widget.findChildren(PyQt4.QtGui.QWidget)
+        children = groupbox_widget.findChildren(qgis.PyQt.QtGui.QWidget)
         for child in children:
             child.setVisible(groupbox_widget.isChecked())
 

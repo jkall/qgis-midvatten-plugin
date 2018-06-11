@@ -19,11 +19,15 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 import qgis.core
-import PyQt4
+import qgis.PyQt
 import io
 import os
-from PyQt4 import QtCore
+from qgis.PyQt import QtCore
 from collections import OrderedDict
 from qgis.core import QgsApplication
 
@@ -33,11 +37,11 @@ import mock
 from import_data_to_db import midv_data_importer
 from midvatten.midvatten import midvatten
 
-from mocks_for_tests import DummyInterface2
+from .mocks_for_tests import DummyInterface2
 from tools.tests.mocks_for_tests import DummyInterface
 
 
-class test_qapplication_is_running():
+class test_qapplication_is_running(object):
     """ Tests that the QApplication is running
     """
     def setUp(self):
@@ -66,7 +70,7 @@ def dict_to_sorted_list(adict):
     """
     result_list = []
     if isinstance(adict, dict):
-        for k, v in sorted(adict.iteritems()):
+        for k, v in sorted(adict.items()):
             result_list.extend(dict_to_sorted_list(k))
             result_list.extend(dict_to_sorted_list(v))
     elif isinstance(adict, list) or isinstance(adict, tuple):
@@ -95,14 +99,14 @@ def create_test_string(anything=None):
      u'{1: (c, d), 2: b, 3: a}'
     """
     if isinstance(anything, dict):
-        aunicode = u''.join([u'{', u', '.join([u': '.join([create_test_string(k), create_test_string(v)]) for k, v in sorted(anything.iteritems())]), u'}'])
+        aunicode = u''.join([u'{', u', '.join([u': '.join([create_test_string(k), create_test_string(v)]) for k, v in sorted(anything.items())]), u'}'])
     elif isinstance(anything, list):
         aunicode = u''.join([u'[', u', '.join([create_test_string(x) for x in anything]), u']'])
     elif isinstance(anything, tuple):
         aunicode = u''.join([u'(', u', '.join([create_test_string(x) for x in anything]), u')'])
-    elif isinstance(anything, (basestring, float, int)):
+    elif isinstance(anything, (str, float, int)):
         aunicode = utils.returnunicode(anything)
-    elif isinstance(anything, PyQt4.QtCore.QVariant):
+    elif isinstance(anything, qgis.PyQt.QtCore.QVariant):
         print("Was variant")
         aunicode = utils.returnunicode(anything.toString().data())
     else:

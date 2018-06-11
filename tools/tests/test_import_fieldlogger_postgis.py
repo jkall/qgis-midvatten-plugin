@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+from __future__ import absolute_import
 import copy
 from collections import OrderedDict
 
@@ -10,9 +12,9 @@ from import_fieldlogger import FieldloggerImport, DateTimeFilter
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
-import utils_for_tests
-from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgisUtilsIface, mock_answer
-from utils_for_tests import create_test_string
+from . import utils_for_tests
+from .mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgisUtilsIface, mock_answer
+from .utils_for_tests import create_test_string
 
 
 @attr(status='on')

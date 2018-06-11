@@ -18,12 +18,14 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4 import QtGui
+from __future__ import absolute_import
+from builtins import object
+from qgis.PyQt import QtGui
 
 import mock
 import w_flow_calc_aveflow
 
-from mocks_for_tests import MockUsingReturnValue, MockQgisUtilsIface, MockReturnUsingDictIn
+from .mocks_for_tests import MockUsingReturnValue, MockQgisUtilsIface, MockReturnUsingDictIn
 from tools.tests.mocks_for_tests import DummyInterface
 
 

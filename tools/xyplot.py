@@ -17,19 +17,22 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 
 import matplotlib.pyplot as plt  # THIS LINE may cause conflict with plugins "statist" and "chartmaker"  - THE ISSUE IS NOT SOLVED. May be due to matplotlib.pyplot assumes other backend by default
 import matplotlib.ticker as tick
 import numpy as np
 
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication
 
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+from . import db_utils
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
 
 
-class XYPlot:
+class XYPlot(object):
 
     def __init__(self, layer=None, settingsdict={}):    # Might need revision of variables and method for loading default variables
         self.settingsdict = settingsdict
@@ -73,26 +76,26 @@ class XYPlot:
                     obsid = attributes[kolumnindex] # Copy value in column obsid in the attribute list
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
                     sql =r"""SELECT """
-                    sql += unicode(self.xcol) #MacOSX fix1
+                    sql += str(self.xcol) #MacOSX fix1
                     sql += r""" as 'x'"""
                     if len(self.y1col):
                         sql += r""", """
-                        sql += unicode(self.y1col) #MacOSX fix1
+                        sql += str(self.y1col) #MacOSX fix1
                         sql += r""" as 'y1'"""
                     if len(self.y2col):
                         sql += r""", """
-                        sql += unicode(self.y2col) #MacOSX fix1
+                        sql += str(self.y2col) #MacOSX fix1
                         sql += r""" as 'y2'"""
                     if len(self.y3col):
                         sql += r""", """
-                        sql += unicode(self.y3col) #MacOSX fix1
+                        sql += str(self.y3col) #MacOSX fix1
                         sql += r""" as 'y3'"""
                     sql += """ FROM """
-                    sql += unicode(self.table) #MacOSX fix1
+                    sql += str(self.table) #MacOSX fix1
                     sql += r""" WHERE obsid = '"""
                     sql += obsid
                     sql += """' ORDER BY """
-                    sql += unicode(self.xcol) #MacOSX fix1
+                    sql += str(self.xcol) #MacOSX fix1
                     connection_ok, recs = db_utils.sql_load_fr_db(sql)
                     """Transform data to a numpy.recarray"""
                     if len(self.y1col):
@@ -108,21 +111,21 @@ class XYPlot:
                         p[j], = ax.plot(table2.x, table2.y1, marker = 'o', linestyle = '-', label=obsid)    # PLOT!!
                     else:
                         p[j], = ax.plot(table2.x, table2.y1, marker = 'None', linestyle = '-', label=obsid)    # PLOT!!
-                    plabel[j] = obsid + unicode(self.y1col) #+ str(j)# Label for the plot #MacOSX fix1
+                    plabel[j] = obsid + str(self.y1col) #+ str(j)# Label for the plot #MacOSX fix1
                     if len(self.y2col):
                         j = j + 1
                         if self.markers==2:# If the checkbox is checked - markers will be plotted, just a line #MacOSX fix1
                             p[j], = ax.plot(table2.x, table2.y2, marker = 'o', linestyle = '-', label=obsid)    # PLOT!!
                         else:
                             p[j], = ax.plot(table2.x, table2.y2, marker = 'None', linestyle = '-', label=obsid)    # PLOT!!
-                        plabel[j] = obsid + unicode(self.y2col) #+ str(j)# Label for the plot #MacOSX fix1
+                        plabel[j] = obsid + str(self.y2col) #+ str(j)# Label for the plot #MacOSX fix1
                     if len(self.y3col):
                         j = j + 1
                         if self.markers==2: # If the checkbox is checked - markers will be plotted, just a line #MacOSX fix1
                             p[j], = ax.plot(table2.x, table2.y3, marker = 'o', linestyle = '-', label=obsid)    # PLOT!!
                         else:
                             p[j], = ax.plot(table2.x, table2.y3, marker = 'None', linestyle = '-', label=obsid)    # PLOT!!
-                        plabel[j] = obsid + unicode(self.y3col) #+ str(j)# Label for the plot #MacOSX fix1
+                        plabel[j] = obsid + str(self.y3col) #+ str(j)# Label for the plot #MacOSX fix1
                     j = j + 1
                     i = i+1
 
@@ -130,7 +133,7 @@ class XYPlot:
                 ax.grid(True)
                 ax.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
                 ax.set_xlabel(self.xcol) #MacOSX fix1
-                ylabel = unicode(self.y1col) + ", \n" + unicode(self.y2col) + ", \n" + unicode(self.y3col) #MacOSX fix1
+                ylabel = str(self.y1col) + ", \n" + str(self.y2col) + ", \n" + str(self.y3col) #MacOSX fix1
                 ax.set_ylabel(ylabel)
                 ax.set_title(self.settingsdict['xytable']) #MacOSX fix1
                 leg = fig.legend(p, plabel, loc=0)

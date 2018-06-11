@@ -19,17 +19,22 @@ __modified_date__ = "Nov 2013"
     Development date: 8/5/2011
 ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
+from builtins import object
 
 import datetime
 import itertools
 import matplotlib.pyplot as plt
 import numpy as np
 
-import db_utils
-import midvatten_utils as utils
+from . import db_utils
+from . import midvatten_utils as utils
 
 
-class PiperPlot():
+class PiperPlot(object):
     def __init__(self,msettings,activelayer):
         self.ms = msettings
         self.activelayer = activelayer
@@ -54,10 +59,12 @@ class PiperPlot():
         for row in self.obsrecarray:
             #print ','.join([unicode(col).encode('utf-8') for col in row])
             try:
-                print ','.join([utils.returnunicode(col) for col in row])
+                # fix_print_with_import
+                print(','.join([utils.returnunicode(col) for col in row]))
             except:
                 try:
-                    print "failed printing piper data..."
+                    # fix_print_with_import
+                    print("failed printing piper data...")
                 except:
                     pass
         self.make_the_plot()
@@ -87,13 +94,13 @@ class PiperPlot():
         self.markerset = {}
         if self.ms.settingsdict['piper_markers']=='type':
             for tp in self.distincttypes:
-                self.markerset[tp[0]] =marker.next()
+                self.markerset[tp[0]] =next(marker)
         elif self.ms.settingsdict['piper_markers']=='obsid' or self.ms.settingsdict['piper_markers']=='obsid but no legend':
             for obs in self.observations:
-                self.markerset[obs] =marker.next()
+                self.markerset[obs] =next(marker)
         elif self.ms.settingsdict['piper_markers']=='date_time':
             for date_time in self.date_times:
-                self.markerset[date_time[0]] =marker.next()
+                self.markerset[date_time[0]] =next(marker)
 
     def create_parameter_selection(self):
         self.ParameterList=[]# ParameterList = ['Klorid, Cl','Alkalinitet, HCO3','Sulfat, SO4','Natrium, Na','Kalium, K','Kalcium, Ca','Magnesium, Mg']

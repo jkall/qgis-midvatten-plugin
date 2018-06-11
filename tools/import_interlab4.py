@@ -20,30 +20,33 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
 import copy
 import io
 import os
 from datetime import datetime
 
-import PyQt4
-from PyQt4.QtCore import QCoreApplication
+import qgis.PyQt
+from qgis.PyQt.QtCore import QCoreApplication
 
-import import_data_to_db
-import midvatten_utils as utils
-from date_utils import datestring_to_date
-from gui_utils import SplitterWithHandel, RowEntry, VRowEntry, ExtendedQPlainTextEdit
-from midvatten_utils import Cancel, returnunicode as ru
+from . import import_data_to_db
+from . import midvatten_utils as utils
+from .date_utils import datestring_to_date
+from .gui_utils import SplitterWithHandel, RowEntry, VRowEntry, ExtendedQPlainTextEdit
+from .midvatten_utils import Cancel, returnunicode as ru
 
-import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_interlab4.ui'))[0]
+import_fieldlogger_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_interlab4.ui'))[0]
 
-class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
+class Interlab4Import(qgis.PyQt.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
     def __init__(self, parent, msettings=None):
         self.status = False
         self.iface = parent
         self.ms = msettings
         self.ms.loadSettings()
-        PyQt4.QtGui.QDialog.__init__(self, parent)
-        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setWindowTitle(ru(QCoreApplication.translate(u'Interlab4Import', "Import interlab4 data to w_qual_lab table"))) # Set the title for the dialog
         #self.MainWindow.setWindowTitle("Import interlab4 data to w_qual_lab table")
         self.setupUi(self)  # Required by Qt4 to initialize the UI
@@ -57,7 +60,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         
         self.all_lab_results = self.parse(filenames)
 
-        splitter = SplitterWithHandel(PyQt4.QtCore.Qt.Vertical)
+        splitter = SplitterWithHandel(qgis.PyQt.QtCore.Qt.Vertical)
         self.main_vertical_layout.addWidget(splitter)
 
         self.specific_meta_filter = MetaFilterSelection(self.all_lab_results)
@@ -67,13 +70,13 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.metadata_filter = MetadataFilter(self.all_lab_results, self.connect)
         splitter.addWidget(self.metadata_filter.widget)
 
-        self.connect(self.metadata_filter.update_selection_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.metadata_filter.set_selection(self.specific_meta_filter.get_items_dict()))
+        self.connect(self.metadata_filter.update_selection_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda : self.metadata_filter.set_selection(self.specific_meta_filter.get_items_dict()))
 
-        self.start_import_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'Interlab4Import', u'Start import')))
+        self.start_import_button = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'Interlab4Import', u'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
-        self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras()))
+        self.connect(self.start_import_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras()))
 
-        self.help_label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'Interlab4Import', u'Instructions')))
+        self.help_label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'Interlab4Import', u'Instructions')))
         self.help_label.setToolTip(ru(QCoreApplication.translate(u'Interlab4Import',
                                    u'Selected rows (lablitteras in the bottom table will be imported when pushing "Start import" button.\n'
                                    u'The table can be sorted by clicking the column headers.\n\n'
@@ -85,7 +88,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                    u'All rows where values in the chosen column match entries in the pasted list will be selected.\n\n'
                                    u'Hover over a column header to see which database column it will go to.')))
 
-        self.close_after_import = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'Interlab4Import', u'Close dialog after import')))
+        self.close_after_import = qgis.PyQt.QtGui.QCheckBox(ru(QCoreApplication.translate(u'Interlab4Import', u'Close dialog after import')))
         self.close_after_import.setChecked(True)
         self.gridLayout_buttons.addWidget(self.close_after_import, 0, 0)
 
@@ -99,12 +102,12 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
     @import_data_to_db.import_exception_handler
     def start_import(self, all_lab_results, lablitteras_to_import):
         all_lab_results = copy.deepcopy(all_lab_results)
-        all_lab_results = dict([(lablittera, v) for lablittera, v in all_lab_results.iteritems() if lablittera in lablitteras_to_import])
+        all_lab_results = dict([(lablittera, v) for lablittera, v in all_lab_results.items() if lablittera in lablitteras_to_import])
 
         #Allow the user to connect the metadata rows to obsids.
         meta_headers = get_metadata_headers(all_lab_results)
         ask_obsid_table = [meta_headers]
-        for lablittera, v in sorted(all_lab_results.iteritems()):
+        for lablittera, v in sorted(all_lab_results.items()):
             metarow = [v[u'metadata'].get(meta_header, u'') for meta_header in meta_headers]
             ask_obsid_table.append(metarow)
         existing_obsids = utils.get_all_obsids()
@@ -120,7 +123,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             remaining_lablitteras_obsids = dict([(x[0], x[-1]) for x in answer[1:]])
         #Filter the remaining lablitteras and add an obsid field
         _all_lab_results = {}
-        for lablittera, v in all_lab_results.iteritems():
+        for lablittera, v in all_lab_results.items():
             if lablittera in remaining_lablitteras_obsids:
                 v[u'metadata'][u'obsid'] = remaining_lablitteras_obsids[lablittera]
                 _all_lab_results[lablittera] = v
@@ -136,7 +139,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         if self.close_after_import.isChecked():
             self.close()
 
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
 
     def parse(self, filenames):
         """ Reads the interlab
@@ -363,7 +366,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         #### !!!! If a metadata-dbcolumn connection is changed, MetadataFilter.update_table.metaheader_dbcolumn_tooltips MUST be updated as well.
 
         file_data = [[u'obsid', u'depth', u'report', u'project', u'staff', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment']]
-        for lablittera, lab_results in data_dict.iteritems():
+        for lablittera, lab_results in data_dict.items():
             metadata = lab_results.pop(u'metadata')
 
             obsid = metadata[u'obsid']
@@ -400,7 +403,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             if not more_meta_comments:
                 more_meta_comments = None
 
-            for parameter, parameter_dict in lab_results.iteritems():
+            for parameter, parameter_dict in lab_results.items():
                 anameth = parameter_dict.get(u'metodbeteckning', None)
 
                 reading_num = parameter_dict.get(u'mätvärdetal', None)
@@ -454,7 +457,7 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                                   u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments, more_parameter_comments] if comment is not None and comment])]
                                  )
 
-        for parameter, reports in sorted(parameter_report_warning_messages.iteritems()):
+        for parameter, reports in sorted(parameter_report_warning_messages.items()):
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'reading_num could not be set for parameter %s for reports %s'))%(parameter, u', '.join(reports)))
 
         return file_data
@@ -471,11 +474,11 @@ class Interlab4Import(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         #horizontalLineWidget.setFixedHeight(2)
         #horizontalLineWidget.setSizePolicy(PyQt4.QtGui.QSizePolicy.Expanding, PyQt4.QtGui.QSizePolicy.Fixed)
         #horizontalLineWidget.setStyleSheet(PyQt4.QtCore.QString("background-color: #c0c0c0;"));
-        line = PyQt4.QtGui.QFrame()
+        line = qgis.PyQt.QtGui.QFrame()
         #line.setObjectName(QString::fromUtf8("line"));
-        line.setGeometry(PyQt4.QtCore.QRect(320, 150, 118, 3))
-        line.setFrameShape(PyQt4.QtGui.QFrame.HLine);
-        line.setFrameShadow(PyQt4.QtGui.QFrame.Sunken);
+        line.setGeometry(qgis.PyQt.QtCore.QRect(320, 150, 118, 3))
+        line.setFrameShape(qgis.PyQt.QtGui.QFrame.HLine);
+        line.setFrameShadow(qgis.PyQt.QtGui.QFrame.Sunken);
         if layout is None:
             self.add_row(line)
         else:
@@ -488,8 +491,8 @@ class MetaFilterSelection(VRowEntry):
 
         """
         super(MetaFilterSelection, self).__init__()
-        self.layout.addWidget(PyQt4.QtGui.QLabel(u'Column header'))
-        self.combobox = PyQt4.QtGui.QComboBox()
+        self.layout.addWidget(qgis.PyQt.QtGui.QLabel(u'Column header'))
+        self.combobox = qgis.PyQt.QtGui.QComboBox()
         self.combobox.addItem(u'')
         self.combobox.addItems(get_metadata_headers(all_lab_results))
         self.layout.addWidget(self.combobox)
@@ -510,28 +513,28 @@ class MetadataFilter(VRowEntry):
         super(MetadataFilter, self).__init__()
         self.connect = connect
 
-        self.update_selection_button  = PyQt4.QtGui.QPushButton(u'Update selection')
+        self.update_selection_button  = qgis.PyQt.QtGui.QPushButton(u'Update selection')
         self.button_layout = RowEntry()
         self.button_layout.layout.addWidget(self.update_selection_button)
 
-        self.show_only_selected_checkbox = PyQt4.QtGui.QCheckBox(u'Show only selected rows')
+        self.show_only_selected_checkbox = qgis.PyQt.QtGui.QCheckBox(u'Show only selected rows')
         self.button_layout.layout.addWidget(self.show_only_selected_checkbox)
 
         self.layout.addWidget(self.button_layout.widget)
 
-        self.label = PyQt4.QtGui.QLabel()
+        self.label = qgis.PyQt.QtGui.QLabel()
         self.layout.addWidget(self.label)
 
-        self.table = PyQt4.QtGui.QTableWidget()
-        self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)
-        self.table.sizePolicy().setVerticalPolicy(PyQt4.QtGui.QSizePolicy.MinimumExpanding)
+        self.table = qgis.PyQt.QtGui.QTableWidget()
+        self.table.setSelectionBehavior(qgis.PyQt.QtGui.QAbstractItemView.SelectRows)
+        self.table.sizePolicy().setVerticalPolicy(qgis.PyQt.QtGui.QSizePolicy.MinimumExpanding)
         self.table.sizePolicy().setVerticalStretch(2)
-        self.table.setSelectionMode(PyQt4.QtGui.QAbstractItemView.ExtendedSelection)
-        self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)
+        self.table.setSelectionMode(qgis.PyQt.QtGui.QAbstractItemView.ExtendedSelection)
+        self.table.setSelectionBehavior(qgis.PyQt.QtGui.QAbstractItemView.SelectRows)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setSortingEnabled(True)
 
-        self.connect(self.table, PyQt4.QtCore.SIGNAL("itemSelectionChanged()"), self.update_nr_of_selected)
+        self.connect(self.table, qgis.PyQt.QtCore.SIGNAL("itemSelectionChanged()"), self.update_nr_of_selected)
 
         self.table_items = {}
 
@@ -547,12 +550,12 @@ class MetadataFilter(VRowEntry):
         :return:
         """
         self.table.clearSelection()
-        table_header = {k: v for k, v in table_header.iteritems() if k}
+        table_header = {k: v for k, v in table_header.items() if k}
         if not table_header:
             return None
         nr_of_cols = self.table.columnCount()
         nr_of_rows = self.table.rowCount()
-        table_header_colnr = dict([(self.table.horizontalHeaderItem(colnr).text(), colnr) for colnr in xrange(nr_of_cols)])
+        table_header_colnr = dict([(self.table.horizontalHeaderItem(colnr).text(), colnr) for colnr in range(nr_of_cols)])
 
         """
         [[self.table.setItemSelected(self.table.item(rownr, colnr), True) for colnr in xrange(nr_of_cols)]
@@ -564,16 +567,16 @@ class MetadataFilter(VRowEntry):
 
         #Select all items for chosen rows.
 
-        [[self.table.setItemSelected(self.table.item(rownr, colnr), True) for colnr in xrange(nr_of_cols)]
-         for header, selectionlist in table_header.iteritems()
-         for rownr in xrange(nr_of_rows)
+        [[self.table.setItemSelected(self.table.item(rownr, colnr), True) for colnr in range(nr_of_cols)]
+         for header, selectionlist in table_header.items()
+         for rownr in range(nr_of_rows)
          if self.table.item(rownr, table_header_colnr[header]).text() in selectionlist]
 
         #Hide all rows that aren't selected
-        [(self.table.hideRow(rownr), self.table.item(rownr, 0).setFlags(PyQt4.QtCore.Qt.NoItemFlags))
+        [(self.table.hideRow(rownr), self.table.item(rownr, 0).setFlags(qgis.PyQt.QtCore.Qt.NoItemFlags))
          if all([not self.table.item(rownr, 0).isSelected(), self.show_only_selected_checkbox.isChecked()])
-         else (self.table.showRow(rownr), self.table.item(rownr, 0).setFlags(PyQt4.QtCore.Qt.ItemIsSelectable))
-         for rownr in xrange(nr_of_rows)]
+         else (self.table.showRow(rownr), self.table.item(rownr, 0).setFlags(qgis.PyQt.QtCore.Qt.ItemIsSelectable))
+         for rownr in range(nr_of_rows)]
 
     @utils.waiting_cursor
     def update_table(self, all_lab_results):
@@ -601,13 +604,13 @@ class MetadataFilter(VRowEntry):
         self.table_items = {}
         for rownr, lablittera in enumerate(all_lab_results.keys()):
             metadata = all_lab_results[lablittera][u'metadata']
-            tablewidgetitem = PyQt4.QtGui.QTableWidgetItem(lablittera)
-            tablewidgetitem.setFlags(PyQt4.QtCore.Qt.ItemIsSelectable)
+            tablewidgetitem = qgis.PyQt.QtGui.QTableWidgetItem(lablittera)
+            tablewidgetitem.setFlags(qgis.PyQt.QtCore.Qt.ItemIsSelectable)
             self.table.setItem(rownr, 0, tablewidgetitem)
 
             for colnr, metaheader in enumerate(self.sorted_table_header[1:], 1):
-                tablewidgetitem = PyQt4.QtGui.QTableWidgetItem(metadata.get(metaheader, u''))
-                tablewidgetitem.setFlags(PyQt4.QtCore.Qt.ItemIsSelectable)
+                tablewidgetitem = qgis.PyQt.QtGui.QTableWidgetItem(metadata.get(metaheader, u''))
+                tablewidgetitem.setFlags(qgis.PyQt.QtCore.Qt.ItemIsSelectable)
                 self.table.setItem(rownr, colnr, tablewidgetitem)
 
         self.table.resizeColumnsToContents()
@@ -615,7 +618,7 @@ class MetadataFilter(VRowEntry):
         self.table.selectAll()
 
     def get_selected_lablitteras(self):
-        selected_lablitteras = [ru(self.table.item(rownr, 0).text()) for rownr in xrange(self.table.rowCount()) if self.table.item(rownr, 0).isSelected()]
+        selected_lablitteras = [ru(self.table.item(rownr, 0).text()) for rownr in range(self.table.rowCount()) if self.table.item(rownr, 0).isSelected()]
         return selected_lablitteras
 
     def get_all_data(self):
@@ -625,12 +628,12 @@ class MetadataFilter(VRowEntry):
         """
         all_lab_results = {}
 
-        headers = [self.table.horizontalHeaderItem(colnr) for colnr in xrange(self.table.columnCount())]
+        headers = [self.table.horizontalHeaderItem(colnr) for colnr in range(self.table.columnCount())]
         lablittera_colnr = headers.index(u'lablittera')
 
-        for rownr in xrange(self.table.rowCount()):
+        for rownr in range(self.table.rowCount()):
             lablittera = self.table.item(rownr, lablittera_colnr)
-            all_lab_results.setdefault(lablittera, {})[u'metadata'] = dict([(headers[colnr], self.table.item(rownr, colnr)) for colnr in xrange(self.table.columnCount())])
+            all_lab_results.setdefault(lablittera, {})[u'metadata'] = dict([(headers[colnr], self.table.item(rownr, colnr)) for colnr in range(self.table.columnCount())])
         return all_lab_results
 
     def update_nr_of_selected(self):
@@ -642,9 +645,9 @@ class MetadataFilter(VRowEntry):
 def get_metadata_headers(all_lab_results):
     table_header = set()
 
-    for k, v in sorted(all_lab_results.iteritems()):
+    for k, v in sorted(all_lab_results.items()):
         metadata = v[u'metadata']
-        table_header.update(metadata.keys())
+        table_header.update(list(metadata.keys()))
 
     sorted_table_header = [u'lablittera']
     sorted_table_header.extend([head for head in table_header if

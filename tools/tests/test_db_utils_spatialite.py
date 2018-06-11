@@ -19,12 +19,14 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import object
 
 import db_utils
 import mock
 from nose.plugins.attrib import attr
 
-import utils_for_tests
+from . import utils_for_tests
 
 
 @attr(status='on')
@@ -114,7 +116,7 @@ class TestVerifyTableExist(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
 
 @attr(status='on')
-class TestNonplotTables():
+class TestNonplotTables(object):
     def test_as_tuple(self):
         tables = db_utils.nonplot_tables(as_tuple=True)
 

@@ -19,13 +19,17 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
 
 import db_utils
 import midvatten_utils as utils
 import mock
 from nose.plugins.attrib import attr
 
-import utils_for_tests
+from . import utils_for_tests
 from definitions import midvatten_defs as defs
 
 
@@ -137,7 +141,7 @@ class TestCreateDb(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         result = db_utils.sql_load_fr_db(u"select * from about_db WHERE rowid != 1 and tablename not in %s"%db_utils.sqlite_internal_tables())
         test_string = utils.anything_to_string_representation(result)
         printnum = 40
-        for charnr in xrange(len(test_string)):
+        for charnr in range(len(test_string)):
             if test_string[charnr] != reference[charnr]:
                 print(u'%s\n%s'%(test_string[charnr-printnum:charnr+printnum], reference[charnr-printnum:charnr+printnum]))
                 break

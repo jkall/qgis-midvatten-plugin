@@ -17,12 +17,14 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from builtins import str
 
 from collections import OrderedDict
 
 import db_utils
 import midvatten_utils as utils
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication
 from midvatten_utils import returnunicode as ru
 
 
@@ -270,7 +272,7 @@ def geocolorsymbols():
     #dict_geo1 is just a start, not yet populated with tuples of geoshorts for each strata, time to do so
 
     dictionary={}
-    for strata, strata_synonyms in sorted(dict_geo1.iteritems()):
+    for strata, strata_synonyms in sorted(dict_geo1.items()):
         #In general there is only one geoshort in geoshort_as_strata_synonym
         for geoshort in strata_synonyms:
             geoshort = geoshort[0]
@@ -369,7 +371,7 @@ def hydrocolors():
                     }
     else:
         dict_qt = utils.unicode_2_utf8(dict_qt1)
-        for k, v in dict_qt.iteritems():
+        for k, v in dict_qt.items():
             dict_qt[k] = v[0]
     return dict_qt
 

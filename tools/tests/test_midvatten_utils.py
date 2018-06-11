@@ -19,6 +19,9 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 import io
 
 import db_utils
@@ -27,9 +30,9 @@ import mock
 import nose
 from nose.plugins.attrib import attr
 
-import utils_for_tests
-from mocks_for_tests import MockUsingReturnValue
-from utils_for_tests import create_test_string
+from . import utils_for_tests
+from .mocks_for_tests import MockUsingReturnValue
+from .utils_for_tests import create_test_string
 
 
 @attr(status='on')

@@ -17,34 +17,40 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
+from builtins import object
 import codecs
 import os
 import time  # for debugging
 from functools import partial
 
-import PyQt4
+import qgis.PyQt
 import ast
-from PyQt4.QtCore import QCoreApplication
-from PyQt4.QtCore import QUrl, Qt, QDir
-from PyQt4.QtGui import QDesktopServices, QApplication, QCursor
+from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QUrl, Qt, QDir
+from qgis.PyQt.QtGui import QDesktopServices, QCursor
+from qgis.PyQt.QtWidgets import QApplication
 
-import db_utils
-import gui_utils
+from . import db_utils
+from . import gui_utils
 import qgis
 # midvatten modules
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from midvatten_utils import general_exception_handler
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
+from .midvatten_utils import general_exception_handler
 
-custom_drillreport_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'compact_w_qual_report.ui'))[0]
+custom_drillreport_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'compact_w_qual_report.ui'))[0]
 
-class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
+class CompactWqualReportUi(qgis.PyQt.QtGui.QMainWindow, custom_drillreport_dialog):
     def __init__(self, parent, midv_settings):
         self.iface = parent
 
         self.ms = midv_settings
-        PyQt4.QtGui.QDialog.__init__(self, parent)
-        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.setWindowTitle(ru(QCoreApplication.translate(u'CompactWqualReportUi',
                                                           u"Compact water quality report")))  # Set the title for the dialog
@@ -52,7 +58,7 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
         self.manual_label.setText(u"<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-compact-water-quality-report\">%s</a>"%QCoreApplication.translate(u'CompactWqualReportUi', u'(manual)'))
         self.manual_label.setOpenExternalLinks(True)
 
-        tables = db_utils.tables_columns().keys()
+        tables = list(db_utils.tables_columns().keys())
         self.sql_table.addItems(sorted(tables))
         #Use w_qual_lab as default.
         gui_utils.set_combobox(self.sql_table, u'w_qual_lab', add_if_not_exists=False)
@@ -70,17 +76,17 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
         self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settings_key, {})
         self.update_from_stored_settings(self.stored_settings)
 
-        self.connect(self.pushButton_ok, PyQt4.QtCore.SIGNAL("clicked()"), self.wqualreport)
+        self.connect(self.pushButton_ok, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.wqualreport)
 
         #self.connect(self.pushButton_cancel, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.close())
 
-        self.connect(self.pushButton_update_from_string, PyQt4.QtCore.SIGNAL("clicked()"), self.ask_and_update_stored_settings)
+        self.connect(self.pushButton_update_from_string, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.ask_and_update_stored_settings)
 
-        self.connect(self.sql_table, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),lambda: self.from_sql_table.setChecked(True))
+        self.connect(self.sql_table, qgis.PyQt.QtCore.SIGNAL("currentIndexChanged(const QString&)"),lambda: self.from_sql_table.setChecked(True))
 
-        self.connect(self.empty_row_between_tables, PyQt4.QtCore.SIGNAL("clicked()"),
+        self.connect(self.empty_row_between_tables, qgis.PyQt.QtCore.SIGNAL("clicked()"),
                      lambda: self.page_break_between_tables.setChecked(False) if self.empty_row_between_tables.isChecked() else True)
-        self.connect(self.page_break_between_tables, PyQt4.QtCore.SIGNAL("clicked()"),
+        self.connect(self.page_break_between_tables, qgis.PyQt.QtCore.SIGNAL("clicked()"),
                      lambda: self.empty_row_between_tables.setChecked(False) if self.page_break_between_tables.isChecked() else True)
 
         self.show()
@@ -103,21 +109,21 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
 
     def update_from_stored_settings(self, stored_settings):
         if isinstance(stored_settings, dict) and stored_settings:
-            for attr, val in stored_settings.iteritems():
+            for attr, val in stored_settings.items():
                 try:
                     selfattr = getattr(self, attr)
                 except:
                     pass
                 else:
-                    if isinstance(selfattr, PyQt4.QtGui.QPlainTextEdit):
+                    if isinstance(selfattr, qgis.PyQt.QtGui.QPlainTextEdit):
                         if isinstance(val, (list, tuple)):
                             val = u'\n'.join(val)
                         selfattr.setPlainText(val)
-                    elif isinstance(selfattr, (PyQt4.QtGui.QCheckBox, PyQt4.QtGui.QRadioButton)):
+                    elif isinstance(selfattr, (qgis.PyQt.QtGui.QCheckBox, qgis.PyQt.QtGui.QRadioButton)):
                         selfattr.setChecked(val)
-                    elif isinstance(selfattr, PyQt4.QtGui.QLineEdit):
+                    elif isinstance(selfattr, qgis.PyQt.QtGui.QLineEdit):
                         selfattr.setText(val)
-                    elif isinstance(selfattr, PyQt4.QtGui.QComboBox):
+                    elif isinstance(selfattr, qgis.PyQt.QtGui.QComboBox):
                         gui_utils.set_combobox(selfattr, val, add_if_not_exists=False)
 
     @utils.general_exception_handler
@@ -135,13 +141,13 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
                 utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi',
                                                                                   u"Programming error. Attribute name %s didn't exist in self.")) % attrname)
             else:
-                if isinstance(attr, PyQt4.QtGui.QPlainTextEdit):
+                if isinstance(attr, qgis.PyQt.QtGui.QPlainTextEdit):
                     val = [x for x in attr.toPlainText().split(u'\n') if x]
-                elif isinstance(attr, (PyQt4.QtGui.QCheckBox, PyQt4.QtGui.QRadioButton)):
+                elif isinstance(attr, (qgis.PyQt.QtGui.QCheckBox, qgis.PyQt.QtGui.QRadioButton)):
                     val = attr.isChecked()
-                elif isinstance(attr, PyQt4.QtGui.QLineEdit):
+                elif isinstance(attr, qgis.PyQt.QtGui.QLineEdit):
                     val = attr.text()
-                elif isinstance(attr, PyQt4.QtGui.QComboBox):
+                elif isinstance(attr, qgis.PyQt.QtGui.QComboBox):
                     val = attr.currentText()
                 else:
                     utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Programming error. The Qt-type %s is unhandled.'))%str(type(attr)))
@@ -158,8 +164,8 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
                                                              listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
 
         msg = ru(QCoreApplication.translate(u'CompactWqualReportUi', u'Replace the settings string with a new settings string.'))
-        new_string = PyQt4.QtGui.QInputDialog.getText(None, ru(QCoreApplication.translate(u'DrillreportUi', "Edit settings string")), msg,
-                                                           PyQt4.QtGui.QLineEdit.Normal, old_string)
+        new_string = qgis.PyQt.QtGui.QInputDialog.getText(None, ru(QCoreApplication.translate(u'DrillreportUi', "Edit settings string")), msg,
+                                                           qgis.PyQt.QtGui.QLineEdit.Normal, old_string)
         if not new_string[1]:
             raise utils.UserInterruptError()
 
@@ -177,7 +183,7 @@ class CompactWqualReportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
             return as_dict
 
 
-class Wqualreport():        # extracts water quality data for selected objects, selected db and given table, results shown in html report
+class Wqualreport(object):        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     @general_exception_handler
     def __init__(self, settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
                             page_break_between_tables, from_active_layer, sql_table):
@@ -212,7 +218,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         report_data, num_data = self.data_to_printlist(data)
         utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'CompactWqualReport', u'Created report from %s number of rows.'))%str(num_data))
 
-        for startcol in xrange(1, len(report_data[0]), num_data_cols):
+        for startcol in range(1, len(report_data[0]), num_data_cols):
             printlist = [[row[0]] for row in report_data]
             for rownr, row in enumerate(report_data):
                 printlist[rownr].extend(row[startcol:min(startcol+num_data_cols, len(row))])
@@ -284,17 +290,17 @@ class Wqualreport():        # extracts water quality data for selected objects, 
     def data_to_printlist(self, data):
         num_data = 0
 
-        distinct_parameters = set([p for obsid, date_times in data.iteritems()
-                                   for date_time, reports in date_times.iteritems()
-                                        for reports, parameters in reports.iteritems()
-                                            for p in parameters.keys()])
+        distinct_parameters = set([p for obsid, date_times in data.items()
+                                   for date_time, reports in date_times.items()
+                                        for reports, parameters in reports.items()
+                                            for p in list(parameters.keys())])
 
         outlist = [['obsid'], ['date_time'], ['report']]
         outlist.extend([[p] for p in sorted(distinct_parameters, key=lambda s: s.lower())])
 
-        for obsid, date_times in sorted(data.iteritems(), key=lambda s: s[0].lower()):
-            for date_time, reports in sorted(date_times.iteritems()):
-                for report, parameters in sorted(reports.iteritems()):
+        for obsid, date_times in sorted(iter(data.items()), key=lambda s: s[0].lower()):
+            for date_time, reports in sorted(date_times.items()):
+                for report, parameters in sorted(reports.items()):
                     outlist[0].append(obsid)
                     outlist[1].append(date_time)
                     outlist[2].append(report)

@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
 #
 
 import db_utils
@@ -28,7 +29,7 @@ import mock
 import piper
 from nose.plugins.attrib import attr
 
-import utils_for_tests
+from . import utils_for_tests
 
 
 @attr(status='on')

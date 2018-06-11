@@ -19,20 +19,24 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
+from builtins import object
 
 import sys
 from operator import itemgetter
 
-import PyQt4
-from PyQt4.QtCore import QCoreApplication
+import qgis.PyQt
+from qgis.PyQt.QtCore import QCoreApplication
 
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from midvatten_utils import UserInterruptError
+from . import db_utils
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
+from .midvatten_utils import UserInterruptError
 
 
-class midv_data_importer():  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
+class midv_data_importer(object):  # this class is intended to be a multipurpose import class  BUT loggerdata probably needs specific importer or its own subfunction
 
     def __init__(self):
         self.columns = 0
@@ -58,7 +62,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 return
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'\nImport to %s starting\n--------------------'))%goal_table)
 
-            PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+            qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
 
             self.temptable_name = goal_table + u'_temp'
 
@@ -120,7 +124,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
 
                 if foreign_keys:
                     if self.foreign_keys_import_question is None:
-                        msg = ru(QCoreApplication.translate(u'midv_data_importer', u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""")) % (u', '.join(foreign_keys.keys()))
+                        msg = ru(QCoreApplication.translate(u'midv_data_importer', u"""Please note!\nForeign keys will be imported silently into "%s" if needed. \n\nProceed?""")) % (u', '.join(list(foreign_keys.keys())))
                         utils.MessagebarAndLog.info(log_msg=msg)
                         stop_question = utils.Askuser(u"YesNo", msg, ru(QCoreApplication.translate(u'midv_data_importer', u"Info!")))
                         if stop_question.result == 0:      # if the user wants to abort
@@ -157,7 +161,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             recsbefore = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
             try:
                 dbconnection.execute(sql)
-            except Exception, e:
+            except Exception as e:
                 utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'INSERT failed while importing to %s. Using INSERT OR IGNORE instead. Msg:\n')) % goal_table + ru(str(e)))
                 sql = db_utils.add_insert_or_ignore_to_sql(sql, dbconnection)
                 try:
@@ -185,10 +189,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 dbconnection.commit_and_closedb()
             else:
                 dbconnection.commit()
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
         except:
             exc_info = sys.exc_info()
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
             try:
                 # If an external dbconnection is supplied, do not close it.
                 if _dbconnection is None:
@@ -210,7 +214,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         concat_cols = [file_data[0].index(pk) for pk in primary_keys_for_concat]
         added_rows = set()
         numskipped = 0
-        sql = u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join([placeholder_sign for x in xrange(len(file_data[0]))]))
+        sql = u"""INSERT INTO %s VALUES (%s)""" % (self.temptable_name, u', '.join([placeholder_sign for x in range(len(file_data[0]))]))
         for row in file_data[1:]:
             if  primary_keys_for_concat:
                 concatted = u'|'.join([row[idx] for idx in concat_cols])
@@ -284,7 +288,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):
             skip_obsids = []
             obsid_strat = db_utils.get_sql_result_as_dict(u'select obsid, stratid, depthtop, depthbot from %s' % self.temptable_name, dbconnection)[1]
-            for obsid, stratid_depthbot_depthtop  in obsid_strat.iteritems():
+            for obsid, stratid_depthbot_depthtop  in obsid_strat.items():
                 #Turn everything to float
                 try:
                     strats = [[float(x) for x in y] for y in stratid_depthbot_depthtop]
@@ -294,7 +298,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                 stratid_idx = 0
                 depthtop_idx = 1
                 depthbot_idx = 2
-                for index in xrange(len(sorted_strats)):
+                for index in range(len(sorted_strats)):
                     if index == 0:
                         continue
                     #Check that there is no gap in the stratid:
@@ -317,7 +321,7 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
         # import all foreign keys from temptable that doesn't already exist in foreign key table
         # insert into fk_table (to1, to2) select distinct from1(cast as), from2(cast as) from temptable where concatted_from_and_case_when_null not in concatted_to_and_case_when_null
 
-        for fk_table, from_to_fields in foreign_keys.iteritems():
+        for fk_table, from_to_fields in foreign_keys.items():
             from_list = [x[0] for x in from_to_fields]
             to_list = [x[1] for x in from_to_fields]
             if not all([_from in existing_columns_in_temptable for _from in from_list]):
@@ -349,9 +353,9 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             dbconnection = db_utils.DbConnectionManager()
         sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u'midv_data_importer', """It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""")), ru(QCoreApplication.translate(u'midv_data_importer', 'Vacuum the database?')))
         if sanity.result == 1:
-            PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+            qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
             dbconnection.vacuum()    # since a temporary table was loaded and then deleted - the db may need vacuuming
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
 
     def import_error_msg(self):
         return ru(QCoreApplication.translate(u'midv_data_importer', u'Import error, see log message panel'))
@@ -366,7 +370,7 @@ def import_exception_handler(func):
         try:
             result = func(*args, **kwargs)
         except MidvDataImporterError as e:
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Import error, see log message panel')),
                                             log_msg=str(e))
         else:

@@ -20,6 +20,9 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
 #
 
 from collections import OrderedDict
@@ -31,8 +34,8 @@ from import_diveroffice import DiverofficeImport
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
-import utils_for_tests
-from mocks_for_tests import MockUsingReturnValue
+from . import utils_for_tests
+from .mocks_for_tests import MockUsingReturnValue
 
 
 @attr(status='on')

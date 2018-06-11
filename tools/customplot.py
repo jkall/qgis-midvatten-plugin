@@ -21,11 +21,16 @@ The PlotSQLite application version 0.2.6 was merged into Midvatten plugin at 201
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import object
 import matplotlib.pyplot as plt
 import os
-import db_utils
-from PyQt4 import QtGui, QtCore, uic  # , QtSql
-from PyQt4.QtCore import QCoreApplication
+from . import db_utils
+from qgis.PyQt import QtGui, QtCore, uic  # , QtSql
+from qgis.PyQt.QtCore import QCoreApplication
 from functools import partial  # only to get combobox signals to work
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.dates import datestr2num
@@ -41,10 +46,10 @@ except:
 import datetime
 import matplotlib.ticker as tick
 
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
-import PyQt4
+import qgis.PyQt
 
 try:
     import pandas as pd
@@ -97,7 +102,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.connect(self.plot_settings_2, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.plot_settings_2))
         self.connect(self.plot_settings_3, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.plot_settings_3))
         self.connect(self.chart_settings, QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.chart_settings))
-        self.connect(self.template_wid, PyQt4.QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.template_wid))
+        self.connect(self.template_wid, qgis.PyQt.QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.template_wid))
 
         self.connect(self.select_button_t1f1, QtCore.SIGNAL("clicked()"), partial(self.select_in_filterlist_from_selection, self.Filter1_QListWidget_1, self.Filter1_ComboBox_1))
         self.connect(self.select_button_t1f2, QtCore.SIGNAL("clicked()"), partial(self.select_in_filterlist_from_selection, self.Filter2_QListWidget_1, self.Filter2_ComboBox_1))
@@ -280,11 +285,11 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         if not (table_ComboBox.currentText() == '' or table_ComboBox.currentText()==' ') and not (xcol_ComboBox.currentText()== '' or xcol_ComboBox.currentText()==' ') and not (ycol_ComboBox.currentText()== '' or ycol_ComboBox.currentText()==' '): #if anything is to be plotted from tab 1
             self.ms.settingsdict['custplot_maxtstep'] = self.spnmaxtstep.value()   # if user selected a time step bigger than zero than thre may be discontinuous plots
             plottable1='y'
-            filter1 = unicode(Filter1_ComboBox.currentText())
+            filter1 = str(Filter1_ComboBox.currentText())
             filter1list = []
             filter2list = []
             filter1list = Filter1_QListWidget.selectedItems()
-            filter2 = unicode(Filter2_ComboBox.currentText())
+            filter2 = str(Filter2_ComboBox.currentText())
             filter2list= Filter2_QListWidget.selectedItems()
             nop = max(len(filter1list),1)*max(len(filter2list),1)
             #self.p= [None]*nop#list for plot objects
@@ -301,16 +306,16 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
             remove_mean = checkBox_remove_mean.isChecked()
 
-            _sql = r"""SELECT %s, %s FROM %s """% (unicode(xcol_ComboBox.currentText()), unicode(ycol_ComboBox.currentText()), unicode(table_ComboBox.currentText()))
-            _sql += r"""WHERE %s """ % db_utils.test_not_null_and_not_empty_string(unicode(table_ComboBox.currentText()), unicode(xcol_ComboBox.currentText()), dbconnection)
-            _sql += r"""AND %s """ % db_utils.test_not_null_and_not_empty_string(unicode(table_ComboBox.currentText()), unicode(ycol_ComboBox.currentText()), dbconnection)
+            _sql = r"""SELECT %s, %s FROM %s """% (str(xcol_ComboBox.currentText()), str(ycol_ComboBox.currentText()), str(table_ComboBox.currentText()))
+            _sql += r"""WHERE %s """ % db_utils.test_not_null_and_not_empty_string(str(table_ComboBox.currentText()), str(xcol_ComboBox.currentText()), dbconnection)
+            _sql += r"""AND %s """ % db_utils.test_not_null_and_not_empty_string(str(table_ComboBox.currentText()), str(ycol_ComboBox.currentText()), dbconnection)
 
             while i < len(self.p):
                 #Both filters empty
                 if (not filter1.strip() or not filter1list) and (not filter2.strip() or not filter2list):
-                    sql = _sql + r""" ORDER BY %s"""%unicode(xcol_ComboBox.currentText())
+                    sql = _sql + r""" ORDER BY %s"""%str(xcol_ComboBox.currentText())
                     recs = dbconnection.execute_and_fetchall(sql)
-                    label = unicode(ycol_ComboBox.currentText())+""", """+unicode(table_ComboBox.currentText())
+                    label = str(ycol_ComboBox.currentText())+""", """+str(table_ComboBox.currentText())
                     if not recs:
                         i += 1
                         continue
@@ -321,9 +326,9 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 elif all((filter1.strip(), filter1list, filter2.strip(), filter2list)):
                     for item1 in filter1list:
                         for item2 in filter2list:
-                            sql = _sql + r""" AND %s = '%s' AND %s = '%s' ORDER BY %s"""%(filter1, unicode(item1.text()), filter2, unicode(item2.text()), unicode(xcol_ComboBox.currentText()))
+                            sql = _sql + r""" AND %s = '%s' AND %s = '%s' ORDER BY %s"""%(filter1, str(item1.text()), filter2, str(item2.text()), str(xcol_ComboBox.currentText()))
                             recs = dbconnection.execute_and_fetchall(sql)
-                            label = unicode(item1.text()) + """, """ + unicode(item2.text())
+                            label = str(item1.text()) + """, """ + str(item2.text())
                             if not recs:
                                 utils.MessagebarAndLog.info(log_msg=ru(
                                     QCoreApplication.translate('CustomPlot', 'No plottable data for %s.')) % label)
@@ -339,9 +344,9 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                             continue
                         else:
                             for item in filterlist:
-                                sql = _sql + r""" AND %s = '%s' ORDER BY %s"""%(filter, unicode(item.text()), unicode(xcol_ComboBox.currentText()))
+                                sql = _sql + r""" AND %s = '%s' ORDER BY %s"""%(filter, str(item.text()), str(xcol_ComboBox.currentText()))
                                 recs = dbconnection.execute_and_fetchall(sql)
-                                label = unicode(item.text())
+                                label = str(item.text())
                                 if not recs:
                                     utils.MessagebarAndLog.warning(log_msg=ru(
                                         QCoreApplication.translate('CustomPlot', 'No plottable data for %s.')) % label)
@@ -363,7 +368,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             FlagTimeXY = 'time'
             myTimestring = list(table2.date_time)
             numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
-        except Exception, e:
+        except Exception as e:
             utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u'Plotting date_time failed, msg: %s'))%str(e))
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u"Customplot, transforming to recarray with date_time as x-axis failed, msg: %s"))%ru(str(e)))
             #recs = [x for x in recs if all(x)]
@@ -414,7 +419,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 df = pandas_calc.calculate(df)
                 if df is not None:
                     try:
-                        table = np.array(zip(df.index, df[u'values']), dtype=My_format)
+                        table = np.array(list(zip(df.index, df[u'values'])), dtype=My_format)
                     except TypeError:
                         utils.MessagebarAndLog.info(log_msg=str(df))
                         raise
@@ -530,7 +535,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
     def filter_selections(self, filter_qlistwidget, custplot_filter_selection):
         #filtre1_1_selection
-        for index in xrange(filter_qlistwidget.count()):
+        for index in range(filter_qlistwidget.count()):
             for item in self.ms.settingsdict[custplot_filter_selection]:
                 if filter_qlistwidget.item(index).text()==item:#earlier str(item) but that caused probs for non-ascii
                      filter_qlistwidget.item(index).setSelected(True)
@@ -540,12 +545,12 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 
         listcount = filterlist.count()
         if words:
-            [filterlist.item(idx).setHidden(False) if any([word.lower() in filterlist.item(idx).text().lower() for word in words]) else filterlist.item(idx).setHidden(True) for idx in xrange(listcount)]
+            [filterlist.item(idx).setHidden(False) if any([word.lower() in filterlist.item(idx).text().lower() for word in words]) else filterlist.item(idx).setHidden(True) for idx in range(listcount)]
         else:
-            [filterlist.item(idx).setHidden(False) for idx in xrange(listcount)]
+            [filterlist.item(idx).setHidden(False) for idx in range(listcount)]
 
     def LoadTablesFromDB( self, tables_columns ):    # Open the SpatiaLite file to extract info about tables
-        tables = sorted([table for table in tables_columns.keys() if table not in db_utils.nonplot_tables(as_tuple=True) and not table.startswith(u'zz_')])
+        tables = sorted([table for table in list(tables_columns.keys()) if table not in db_utils.nonplot_tables(as_tuple=True) and not table.startswith(u'zz_')])
         for i, table_combobox in enumerate([self.table_ComboBox_1, self.table_ComboBox_2, self.table_ComboBox_3], 1):
             table_combobox.clear()
             self.clearthings(i)
@@ -648,7 +653,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
     def PopulateFilterList(self, table, QListWidgetname='', filtercolumn=None, other_QListWidget=None,
                            other_filtercolumn=None, dependent_filtering_box=None):
 
-        sql = "select distinct " + unicode(filtercolumn) + " from " + table + " order by " + unicode(filtercolumn)
+        sql = "select distinct " + str(filtercolumn) + " from " + table + " order by " + str(filtercolumn)
 
         if dependent_filtering_box is not None:
             dependent_filtering = dependent_filtering_box.isChecked()
@@ -661,16 +666,16 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             selected = ru([item.text() for item in other_QListWidget_wid.selectedItems() if item.text()], keep_containers=True)
             if selected:
                 sql = u"SELECT DISTINCT {} FROM {} WHERE {} IN ({}) ORDER BY {}".format(
-                                                                                unicode(filtercolumn),
+                                                                                str(filtercolumn),
                                                                                 table,
                                                                                 other_filtercolumn,
                                                                                 u', '.join([u"'{}'".format(item)
                                                                                             for item in selected]),
-                                                                                unicode(filtercolumn),)
+                                                                                str(filtercolumn),)
 
         ConnectionOK, list_data= db_utils.sql_load_fr_db(sql)
         for post in list_data:
-            item = QtGui.QListWidgetItem(unicode(post[0]))
+            item = QtGui.QListWidgetItem(str(post[0]))
             getattr(self, QListWidgetname).addItem(item)
 
     @utils.general_exception_handler
@@ -719,7 +724,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 try:
                     self.axes.tick_params(**tick_params)
                 except ValueError:
-                    tp = {k: v for k, v in tick_params.iteritems() if k != 'labelrotation'}
+                    tp = {k: v for k, v in tick_params.items() if k != 'labelrotation'}
                     self.axes.tick_params(**tp)
 
                     if 'labelrotation' in tick_params:
@@ -775,21 +780,21 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         #plt.close(self.custplotfigure)#this closes reference to self.custplotfigure
 
     def storesettings(self):
-        self.ms.settingsdict['custplot_table1'] = unicode(self.table_ComboBox_1.currentText())
-        self.ms.settingsdict['custplot_xcol1'] = unicode(self.xcol_ComboBox_1.currentText())
-        self.ms.settingsdict['custplot_ycol1'] = unicode(self.ycol_ComboBox_1.currentText())
-        self.ms.settingsdict['custplot_table2'] = unicode(self.table_ComboBox_2.currentText())
-        self.ms.settingsdict['custplot_xcol2'] = unicode(self.xcol_ComboBox_2.currentText())
-        self.ms.settingsdict['custplot_ycol2'] = unicode(self.ycol_ComboBox_2.currentText())
-        self.ms.settingsdict['custplot_table3'] = unicode(self.table_ComboBox_3.currentText())
-        self.ms.settingsdict['custplot_xcol3'] = unicode(self.xcol_ComboBox_3.currentText())
-        self.ms.settingsdict['custplot_ycol3'] = unicode(self.ycol_ComboBox_3.currentText())
-        self.ms.settingsdict['custplot_filter1_1']=unicode(self.Filter1_ComboBox_1.currentText())
-        self.ms.settingsdict['custplot_filter2_1']=unicode(self.Filter2_ComboBox_1.currentText())
-        self.ms.settingsdict['custplot_filter1_2']=unicode(self.Filter1_ComboBox_2.currentText())
-        self.ms.settingsdict['custplot_filter2_2']=unicode(self.Filter2_ComboBox_2.currentText())
-        self.ms.settingsdict['custplot_filter1_3']=unicode(self.Filter1_ComboBox_3.currentText())
-        self.ms.settingsdict['custplot_filter2_3']=unicode(self.Filter2_ComboBox_3.currentText())
+        self.ms.settingsdict['custplot_table1'] = str(self.table_ComboBox_1.currentText())
+        self.ms.settingsdict['custplot_xcol1'] = str(self.xcol_ComboBox_1.currentText())
+        self.ms.settingsdict['custplot_ycol1'] = str(self.ycol_ComboBox_1.currentText())
+        self.ms.settingsdict['custplot_table2'] = str(self.table_ComboBox_2.currentText())
+        self.ms.settingsdict['custplot_xcol2'] = str(self.xcol_ComboBox_2.currentText())
+        self.ms.settingsdict['custplot_ycol2'] = str(self.ycol_ComboBox_2.currentText())
+        self.ms.settingsdict['custplot_table3'] = str(self.table_ComboBox_3.currentText())
+        self.ms.settingsdict['custplot_xcol3'] = str(self.xcol_ComboBox_3.currentText())
+        self.ms.settingsdict['custplot_ycol3'] = str(self.ycol_ComboBox_3.currentText())
+        self.ms.settingsdict['custplot_filter1_1']=str(self.Filter1_ComboBox_1.currentText())
+        self.ms.settingsdict['custplot_filter2_1']=str(self.Filter2_ComboBox_1.currentText())
+        self.ms.settingsdict['custplot_filter1_2']=str(self.Filter1_ComboBox_2.currentText())
+        self.ms.settingsdict['custplot_filter2_2']=str(self.Filter2_ComboBox_2.currentText())
+        self.ms.settingsdict['custplot_filter1_3']=str(self.Filter1_ComboBox_3.currentText())
+        self.ms.settingsdict['custplot_filter2_3']=str(self.Filter2_ComboBox_3.currentText())
         self.ms.settingsdict['custplot_filter1_1_selection']=[]
         self.ms.settingsdict['custplot_filter2_1_selection']=[]
         self.ms.settingsdict['custplot_filter1_2_selection']=[]
@@ -797,20 +802,20 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.ms.settingsdict['custplot_filter1_3_selection']=[]
         self.ms.settingsdict['custplot_filter2_3_selection']=[]
         for item in self.Filter1_QListWidget_1.selectedItems(): 
-            self.ms.settingsdict['custplot_filter1_1_selection'].append(unicode(item.text()))
+            self.ms.settingsdict['custplot_filter1_1_selection'].append(str(item.text()))
         for item in self.Filter2_QListWidget_1.selectedItems(): 
-            self.ms.settingsdict['custplot_filter2_1_selection'].append(unicode(item.text()))
+            self.ms.settingsdict['custplot_filter2_1_selection'].append(str(item.text()))
         for item in self.Filter1_QListWidget_2.selectedItems(): 
-            self.ms.settingsdict['custplot_filter1_2_selection'].append(unicode(item.text()))
+            self.ms.settingsdict['custplot_filter1_2_selection'].append(str(item.text()))
         for item in self.Filter2_QListWidget_2.selectedItems(): 
-            self.ms.settingsdict['custplot_filter2_2_selection'].append(unicode(item.text()))
+            self.ms.settingsdict['custplot_filter2_2_selection'].append(str(item.text()))
         for item in self.Filter1_QListWidget_3.selectedItems(): 
-            self.ms.settingsdict['custplot_filter1_3_selection'].append(unicode(item.text()))
+            self.ms.settingsdict['custplot_filter1_3_selection'].append(str(item.text()))
         for item in self.Filter2_QListWidget_3.selectedItems(): 
-            self.ms.settingsdict['custplot_filter2_3_selection'].append(unicode(item.text()))
-        self.ms.settingsdict['custplot_plottype1']=unicode(self.PlotType_comboBox_1.currentText())
-        self.ms.settingsdict['custplot_plottype2']=unicode(self.PlotType_comboBox_2.currentText())
-        self.ms.settingsdict['custplot_plottype3']=unicode(self.PlotType_comboBox_3.currentText())
+            self.ms.settingsdict['custplot_filter2_3_selection'].append(str(item.text()))
+        self.ms.settingsdict['custplot_plottype1']=str(self.PlotType_comboBox_1.currentText())
+        self.ms.settingsdict['custplot_plottype2']=str(self.PlotType_comboBox_2.currentText())
+        self.ms.settingsdict['custplot_plottype3']=str(self.PlotType_comboBox_3.currentText())
         self.ms.settingsdict['custplot_maxtstep'] = self.spnmaxtstep.value()
         self.ms.settingsdict['custplot_legend']=self.Legend_checkBox.checkState()
         #self.ms.settingsdict['custplot_grid']=self.Grid_checkBox.checkState()
@@ -824,7 +829,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.ms.save_settings('custplot_templates')
 
     def set_groupbox_children_visibility(self, groupbox_widget):
-        children = groupbox_widget.findChildren(PyQt4.QtGui.QWidget)
+        children = groupbox_widget.findChildren(qgis.PyQt.QtGui.QWidget)
         for child in children:
             child.setVisible(groupbox_widget.isChecked())
 
@@ -833,10 +838,10 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         if not current_column:
             return
         selected_values = utils.getselectedobjectnames(column_name=current_column)
-        [filter_listwidget.item(nr).setSelected(True) for nr in xrange(filter_listwidget.count()) if ru(filter_listwidget.item(nr).text()) in selected_values]
+        [filter_listwidget.item(nr).setSelected(True) for nr in range(filter_listwidget.count()) if ru(filter_listwidget.item(nr).text()) in selected_values]
 
     def save_to_eps(self):
-        filename = PyQt4.QtGui.QFileDialog.getSaveFileName(parent=None, caption=ru(
+        filename = qgis.PyQt.QtGui.QFileDialog.getSaveFileName(parent=None, caption=ru(
             QCoreApplication.translate(u'CustomPlot', u'Choose a file name, extension sets format')), directory='')
         if not filename:
             return
@@ -847,11 +852,11 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
 class PandasCalculations(object):
     def __init__(self, gridlayout):
 
-        self.widget = PyQt4.QtGui.QWidget()
+        self.widget = qgis.PyQt.QtGui.QWidget()
 
         #General settings
-        self.rule_label = PyQt4.QtGui.QLabel(u'Resample rule')
-        self.rule = PyQt4.QtGui.QLineEdit()
+        self.rule_label = qgis.PyQt.QtGui.QLabel(u'Resample rule')
+        self.rule = qgis.PyQt.QtGui.QLineEdit()
         for wid in [self.rule_label, self.rule]:
             wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
                            u'Steplength for resampling, ex:\n'
@@ -863,8 +868,8 @@ class PandasCalculations(object):
                            u'No resampling if field is empty\n'
                            u'See pandas pandas.DataFrame.resample documentation for more info.')))
 
-        self.base_label = PyQt4.QtGui.QLabel(u'Resample base')
-        self.base = PyQt4.QtGui.QLineEdit()
+        self.base_label = qgis.PyQt.QtGui.QLabel(u'Resample base')
+        self.base = qgis.PyQt.QtGui.QLineEdit()
         for wid in [self.base_label, self.base]:
             wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
                            u'The hour to start each timestep when rule "evenly subdivide 1 day" (for example Rule = 24h)\n'
@@ -873,8 +878,8 @@ class PandasCalculations(object):
                            u'For frequencies that evenly subdivide 1 day, the "origin" of the aggregated intervals.\n'
                            u'For example, for "5min" frequency, base could range from 0 through 4. Defaults to 0.')))
 
-        self.how_label = PyQt4.QtGui.QLabel(u'Resample how')
-        self.how = PyQt4.QtGui.QLineEdit()
+        self.how_label = qgis.PyQt.QtGui.QLabel(u'Resample how')
+        self.how = qgis.PyQt.QtGui.QLineEdit()
         for wid in [self.how_label, self.how]:
             wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
                            u'How to make the resample, ex. "mean" (default), "first", "last", "sum".\n'
@@ -882,10 +887,10 @@ class PandasCalculations(object):
                            u'(though "how" is not explained a lot)')))
 
         #Moving average:
-        self.window_label = PyQt4.QtGui.QLabel(u'Rolling mean window')
-        self.window = PyQt4.QtGui.QLineEdit(u'')
-        self.center_label = PyQt4.QtGui.QLabel(u'Rolling mean center')
-        self.center = PyQt4.QtGui.QLineEdit(u'')
+        self.window_label = qgis.PyQt.QtGui.QLabel(u'Rolling mean window')
+        self.window = qgis.PyQt.QtGui.QLineEdit(u'')
+        self.center_label = qgis.PyQt.QtGui.QLabel(u'Rolling mean center')
+        self.center = qgis.PyQt.QtGui.QLineEdit(u'')
         for wid in [self.window_label, self.window]:
             wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
                            u'The number of timesteps in each moving average (rolling mean) mean\n'
@@ -903,21 +908,21 @@ class PandasCalculations(object):
 
         for lineedit in [self.rule, self.base, self.how, self.window, self.center]:
             #lineedit.sizeHint()setFixedWidth(122)
-            lineedit.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Preferred)
+            lineedit.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtGui.QSizePolicy.Preferred)
 
         maximumwidth = 0
         for label in [self.rule_label, self.base_label, self.how_label, self.window_label, self.center_label]:
-            testlabel = PyQt4.QtGui.QLabel()
+            testlabel = qgis.PyQt.QtGui.QLabel()
             testlabel.setText(label.text())
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
         for label in [self.rule_label, self.base_label, self.how_label, self.window_label, self.center_label]:
             label.setFixedWidth(maximumwidth)
             #label.setMinimumWidth(maximumwidth)
-            label.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Fixed)
+            label.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtGui.QSizePolicy.Fixed)
 
         hline = horizontal_line()
-        hline.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Fixed)
+        hline.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtGui.QSizePolicy.Fixed)
         gridlayout.addWidget(hline)
         for col1, col2 in [(self.rule_label, self.rule),
                            (self.base_label, self.base),
@@ -974,8 +979,8 @@ class PandasCalculations(object):
 
 
 def horizontal_line():
-    line = PyQt4.QtGui.QFrame()
-    line.setGeometry(PyQt4.QtCore.QRect(320, 150, 118, 3))
-    line.setFrameShape(PyQt4.QtGui.QFrame.HLine)
-    line.setFrameShadow(PyQt4.QtGui.QFrame.Sunken)
+    line = qgis.PyQt.QtGui.QFrame()
+    line.setGeometry(qgis.PyQt.QtCore.QRect(320, 150, 118, 3))
+    line.setFrameShape(qgis.PyQt.QtGui.QFrame.HLine)
+    line.setFrameShadow(qgis.PyQt.QtGui.QFrame.Sunken)
     return line

@@ -18,37 +18,39 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import str
 
-import PyQt4
+import qgis.PyQt
 
 import qgis.utils
 
 import datetime
 import os
 
-import db_utils
+from . import db_utils
 from matplotlib.dates import datestr2num
 import numpy as np
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
 #from ui.calc_aveflow_dialog import Ui_Dialog as Calc_Ui_Dialog
-from PyQt4 import uic
+from qgis.PyQt import uic
 
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication
 
 Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_aveflow_dialog.ui'))[0]
 
 
-class Calcave(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
+class Calcave(qgis.PyQt.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class Calc_Ui_Dialog is created same time as instance of calclvl is created
 
     def __init__(self, parent):
-        PyQt4.QtGui.QDialog.__init__(self)
+        qgis.PyQt.QtGui.QDialog.__init__(self)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.obsid = utils.getselectedobjectnames()
         self.setWindowTitle(ru(QCoreApplication.translate(u'Calcave', u"Calculate average flow"))) # Set the title for the dialog
-        self.connect(self.pushButton_All, PyQt4.QtCore.SIGNAL("clicked()"), self.calcall)
-        self.connect(self.pushButton_Selected, PyQt4.QtCore.SIGNAL("clicked()"), self.calcselected)
-        self.connect(self.pushButton_Cancel, PyQt4.QtCore.SIGNAL("clicked()"), self.close)
+        self.connect(self.pushButton_All, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.calcall)
+        self.connect(self.pushButton_Selected, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.calcselected)
+        self.connect(self.pushButton_Cancel, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.close)
 
     def calcall(self):
         obsar = db_utils.sql_load_fr_db('select distinct obsid from w_flow where flowtype="Accvol"')[1]
@@ -61,7 +63,7 @@ class Calcave(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
         self.calculateaveflow()
 
     def calculateaveflow(self):
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
         date_from = self.FromDateTime.dateTime().toPyDateTime()
         date_to = self.ToDateTime.dateTime().toPyDateTime()
         #Identify distinct set of obsid and instrumentid with Accvol-data and within the user-defined date_time-interval:
@@ -88,5 +90,5 @@ class Calcave(PyQt4.QtGui.QDialog, Calc_Ui_Dialog): # An instance of the class C
                     db_utils.sql_alter_db(sql)
         if negativeflow:
             utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Calcave', u"Please notice that negative flow was encountered.")))
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
         self.close()

@@ -9,16 +9,20 @@
         copyright            : (C) 2011 by joskal
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/"""
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 from qgis.core import QgsProject
 
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication
 
-import midvatten_utils as utils
+from . import midvatten_utils as utils
 from definitions import midvatten_defs
-from midvatten_utils import returnunicode as ru
+from .midvatten_utils import returnunicode as ru
 
 
-class midvsettings():
+class midvsettings(object):
     def __init__(self):
         # settings...
         self.settingsareloaded = False
@@ -50,7 +54,7 @@ class midvsettings():
                      'pyqtWrapperType' : prj.readListEntry # strange name for QStringList
                      }
         output = {}
-        for (key, value) in self.settingsdict.items():
+        for (key, value) in list(self.settingsdict.items()):
             dataType = type(value).__name__
             try:
                 func = functions[dataType]
@@ -67,7 +71,7 @@ class midvsettings():
     def save_settings(self,key = ''):# settingsdict is a dictionary belonging to instance midvatten. Must be stored and loaded here.
         if not self.readingSettings:
             if key =='': #if no argument, then save all settings according to dictionary
-                for (key, value) in self.settingsdict.items():
+                for (key, value) in list(self.settingsdict.items()):
                     try: # write plugin settings to QgsProject
                         QgsProject.instance().writeEntry("Midvatten",key, value )
                     except TypeError:

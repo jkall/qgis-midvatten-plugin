@@ -18,44 +18,47 @@
  *                                                                         *
  ***************************************************************************/
 """
-import db_utils
-from PyQt4.QtCore import QUrl, QDir
-from PyQt4.QtGui import QDesktopServices
-import PyQt4
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
+from . import db_utils
+from qgis.PyQt.QtCore import QUrl, QDir
+from qgis.PyQt.QtGui import QDesktopServices
+import qgis.PyQt
 import ast
 
 import os
 import locale
 from collections import OrderedDict
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
 import codecs
 from time import sleep
 import qgis
 
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication
 
 
-custom_drillreport_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'custom_drillreport.ui'))[0]
+custom_drillreport_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'custom_drillreport.ui'))[0]
 
-class DrillreportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
+class DrillreportUi(qgis.PyQt.QtGui.QMainWindow, custom_drillreport_dialog):
     def __init__(self, parent, midv_settings):
         self.iface = parent
 
         self.ms = midv_settings
-        PyQt4.QtGui.QDialog.__init__(self, parent)
-        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 
         self.stored_settings_key = u'customdrillreportstoredsettings'
         self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settings_key, {})
         self.update_from_stored_settings(self.stored_settings)
 
-        self.connect(self.pushButton_ok, PyQt4.QtCore.SIGNAL("clicked()"), self.drillreport)
+        self.connect(self.pushButton_ok, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.drillreport)
 
-        self.connect(self.pushButton_cancel, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.close())
+        self.connect(self.pushButton_cancel, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda : self.close())
 
-        self.connect(self.pushButton_update_from_string, PyQt4.QtCore.SIGNAL("clicked()"), self.ask_and_update_stored_settings)
+        self.connect(self.pushButton_update_from_string, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.ask_and_update_stored_settings)
 
         self.show()
 
@@ -94,19 +97,19 @@ class DrillreportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
 
     def update_from_stored_settings(self, stored_settings):
         if isinstance(stored_settings, dict) and stored_settings:
-            for attr, val in stored_settings.iteritems():
+            for attr, val in stored_settings.items():
                 try:
                     selfattr = getattr(self, attr)
                 except:
                     pass
                 else:
-                    if isinstance(selfattr, PyQt4.QtGui.QPlainTextEdit):
+                    if isinstance(selfattr, qgis.PyQt.QtGui.QPlainTextEdit):
                         if isinstance(val, (list, tuple)):
                             val = u'\n'.join(val)
                         selfattr.setPlainText(val)
-                    elif isinstance(selfattr, PyQt4.QtGui.QCheckBox):
+                    elif isinstance(selfattr, qgis.PyQt.QtGui.QCheckBox):
                         selfattr.setChecked(val)
-                    elif isinstance(selfattr, PyQt4.QtGui.QLineEdit):
+                    elif isinstance(selfattr, qgis.PyQt.QtGui.QLineEdit):
                         selfattr.setText(val)
         else:
             # Settings:
@@ -175,11 +178,11 @@ class DrillreportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
                 utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi',
                                                                                   u"Programming error. Attribute name %s didn't exist in self.")) % attrname)
             else:
-                if isinstance(attr, PyQt4.QtGui.QPlainTextEdit):
+                if isinstance(attr, qgis.PyQt.QtGui.QPlainTextEdit):
                     val = [x for x in attr.toPlainText().split(u'\n') if x]
-                elif isinstance(attr, PyQt4.QtGui.QCheckBox):
+                elif isinstance(attr, qgis.PyQt.QtGui.QCheckBox):
                     val = attr.isChecked()
-                elif isinstance(attr, PyQt4.QtGui.QLineEdit):
+                elif isinstance(attr, qgis.PyQt.QtGui.QLineEdit):
                     val = attr.text()
                 else:
                     utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Programming error. The Qt-type %s is unhandled.'))%str(type(attr)))
@@ -196,8 +199,8 @@ class DrillreportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
                                                              listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
 
         msg = ru(QCoreApplication.translate(u'DrillreportUi', u'Replace the settings string with a new settings string.'))
-        new_string = PyQt4.QtGui.QInputDialog.getText(None, ru(QCoreApplication.translate(u'DrillreportUi', "Edit settings string")), msg,
-                                                           PyQt4.QtGui.QLineEdit.Normal, old_string)
+        new_string = qgis.PyQt.QtGui.QInputDialog.getText(None, ru(QCoreApplication.translate(u'DrillreportUi', "Edit settings string")), msg,
+                                                           qgis.PyQt.QtGui.QLineEdit.Normal, old_string)
         if not new_string[1]:
             raise utils.UserInterruptError()
 
@@ -215,7 +218,7 @@ class DrillreportUi(PyQt4.QtGui.QMainWindow, custom_drillreport_dialog):
             return as_dict
 
 
-class Drillreport():        # general observation point info for the selected object
+class Drillreport(object):        # general observation point info for the selected object
 
     def __init__(self, obsids, settingsdict, general_metadata, geo_metadata, strat_columns, header_in_table,
          skip_empty, include_comments, general_metadata_header, geo_metadata_header, strat_columns_header,

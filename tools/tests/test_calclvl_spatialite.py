@@ -19,8 +19,11 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
 
-from PyQt4 import QtGui
+from qgis.PyQt import QtGui
 
 import db_utils
 import mock
@@ -28,7 +31,7 @@ from date_utils import datestring_to_date
 from nose.plugins.attrib import attr
 from wlevels_calc_calibr import Calclvl
 
-import utils_for_tests
+from . import utils_for_tests
 
 
 @attr(status='on')

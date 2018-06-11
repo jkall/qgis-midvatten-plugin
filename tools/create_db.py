@@ -17,35 +17,39 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 import datetime
 import locale
 import os
 import re
 from qgis.core import QGis
 
-import PyQt4
-from PyQt4.QtCore import QCoreApplication
+import qgis.PyQt
+from qgis.PyQt.QtCore import QCoreApplication
 
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+from . import db_utils
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
 
 
-class NewDb():
+class NewDb(object):
     def __init__(self):
         self.db_settings = u''
 
     def create_new_spatialite_db(self, verno, user_select_CRS='y', EPSG_code=u'4326', delete_srids=True):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
 
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
         set_locale = self.ask_for_locale()
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
 
         if user_select_CRS=='y':
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
-            PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+            qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
         else:
             EPSGID=EPSG_code
 
@@ -54,9 +58,9 @@ class NewDb():
         # If a CRS is selectd, go on and create the database
 
         #path and name of new db
-        dbpath = ru(PyQt4.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)"))
+        dbpath = ru(qgis.PyQt.QtGui.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)"))
         if not dbpath:
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
             return u''
         #create Spatialite database
 
@@ -76,7 +80,7 @@ class NewDb():
         except Exception as e:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'NewDb', u"Impossible to connect to selected DataBase, see log message panel")), log_msg=ru(QCoreApplication.translate(u'NewDb', u'Msg:\n') + str(e)))
             #utils.pop_up_info("Impossible to connect to selected DataBase")
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
             return ''
 
         #First, find spatialite version
@@ -129,7 +133,7 @@ class NewDb():
         #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
         dbconnection.commit_and_closedb()
         #create SpatiaLite Connection in QGIS QSettings
-        settings=PyQt4.QtCore.QSettings()
+        settings=qgis.PyQt.QtCore.QSettings()
         settings.beginGroup('/SpatiaLite/dbconnections')
         settings.setValue(u'%s/sqlitepath'%os.path.basename(dbpath),'%s'%dbpath)
         settings.endGroup()
@@ -141,18 +145,18 @@ class NewDb():
         AddLayerStyles(dbpath)
         """
 
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
 
     def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):
 
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
         set_locale = self.ask_for_locale()
-        PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
 
         if user_select_CRS=='y':
-            PyQt4.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
-            PyQt4.QtGui.QApplication.setOverrideCursor(PyQt4.QtCore.Qt.WaitCursor)
+            qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
         else:
             EPSGID=EPSG_code
 
@@ -161,7 +165,7 @@ class NewDb():
 
         dbconnection = db_utils.DbConnectionManager()
         db_settings = dbconnection.db_settings
-        if not isinstance(db_settings, basestring):
+        if not isinstance(db_settings, str):
             self.db_settings = ru(utils.anything_to_string_representation(dbconnection.db_settings))
         else:
             self.db_settings = ru(db_settings)
@@ -230,7 +234,7 @@ class NewDb():
         #Finally add the layer styles info into the data base
         AddLayerStyles(dbpath)
         """
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
 
     def replace_words(self, line, replace_word_replace_with):
         for replace_word, replace_with in replace_word_replace_with:
@@ -238,7 +242,7 @@ class NewDb():
         return line
 
     def ask_for_locale(self):
-        locales = [PyQt4.QtCore.QLocale(PyQt4.QtCore.QLocale.Swedish, PyQt4.QtCore.QLocale.Sweden), PyQt4.QtCore.QLocale(PyQt4.QtCore.QLocale.English, PyQt4.QtCore.QLocale.UnitedStates)]
+        locales = [qgis.PyQt.QtCore.QLocale(qgis.PyQt.QtCore.QLocale.Swedish, qgis.PyQt.QtCore.QLocale.Sweden), qgis.PyQt.QtCore.QLocale(qgis.PyQt.QtCore.QLocale.English, qgis.PyQt.QtCore.QLocale.UnitedStates)]
         locale_names = [localeobj.name() for localeobj in locales]
         locale_names.append(locale.getdefaultlocale()[0])
         locale_names = list(set(locale_names))
@@ -261,7 +265,7 @@ class NewDb():
             default_crs = 3006
         else:
             default_crs = 4326
-        EPSGID = PyQt4.QtGui.QInputDialog.getInteger(None, ru(QCoreApplication.translate(u'NewDb', "Select CRS")), ru(QCoreApplication.translate(u'NewDb', "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:")),default_crs)
+        EPSGID = qgis.PyQt.QtGui.QInputDialog.getInteger(None, ru(QCoreApplication.translate(u'NewDb', "Select CRS")), ru(QCoreApplication.translate(u'NewDb', "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:")),default_crs)
         if not EPSGID[1]:
             raise utils.UserInterruptError()
         return EPSGID
@@ -311,7 +315,7 @@ class NewDb():
 
             foreign_keys_dict = {}
             foreign_keys = db_utils.get_foreign_keys(table, dbconnection)
-            for _table, _from_to in foreign_keys.iteritems():
+            for _table, _from_to in foreign_keys.items():
                 _from = _from_to[0][0]
                 _to = _from_to[0][1]
                 foreign_keys_dict[_from] = (_table, _to)
@@ -355,11 +359,11 @@ class NewDb():
             if line:
                 try:
                     dbconnection.execute(line)
-                except Exception, e:
+                except Exception as e:
                     utils.MessagebarAndLog.critical(bar_msg=utils.sql_failed_msg(), log_msg=ru(QCoreApplication.translate(u'NewDb', u'sql failed:\n%s\nerror msg:\n%s\n'))%(ru(line), str(e)))
 
 
-class AddLayerStyles():
+class AddLayerStyles(object):
     """ currently this class is not used although it should be, when storing layer styles in the database works better """
     def __init__(self):
 

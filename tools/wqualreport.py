@@ -17,21 +17,27 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
+from builtins import object
 import codecs
 import os
 import time  # for debugging
 
-from PyQt4.QtCore import QCoreApplication
-from PyQt4.QtCore import QUrl, Qt, QDir
-from PyQt4.QtGui import QDesktopServices, QApplication, QCursor
+from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QUrl, Qt, QDir
+from qgis.PyQt.QtGui import QDesktopServices, QCursor
+from qgis.PyQt.QtWidgets import QApplication
 
-import db_utils
+from . import db_utils
 # midvatten modules
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
 
 
-class Wqualreport():        # extracts water quality data for selected objects, selected db and given table, results shown in html report
+class Wqualreport(object):        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     def __init__(self,layer, settingsdict = {}):
         #show the user this may take a long time...
         QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
@@ -89,7 +95,7 @@ class Wqualreport():        # extracts water quality data for selected objects, 
         
     def GetData(self, dbPath='', obsid = '', dbconnection=None):            # GetData method that returns a table with water quality data
         # Load all water quality parameters stored in two result columns: parameter, unit
-        if not(unicode(self.settingsdict['wqual_unitcolumn']) ==''):          #If there is a a given column for unit 
+        if not(str(self.settingsdict['wqual_unitcolumn']) ==''):          #If there is a a given column for unit 
             sql =r"""select distinct """ + self.settingsdict['wqual_paramcolumn'] + """, """
             sql += self.settingsdict['wqual_unitcolumn']
             sql +=r""" from """

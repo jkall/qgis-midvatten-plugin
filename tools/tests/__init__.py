@@ -1,3 +1,3 @@
-from PyQt4 import QtGui
+from qgis.PyQt import QtGui
 
 app = QtGui.QApplication([])

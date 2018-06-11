@@ -17,17 +17,20 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 import os
 import qgis.utils
 from qgis.core import QgsDataSourceURI, QgsMapLayerRegistry, QgsProject, QgsVectorLayer
 from qgis.gui import QgsMapCanvasLayer
 
-import db_utils
-import midvatten_utils as utils
+from . import db_utils
+from . import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 
 
-class LoadLayers():
+class LoadLayers(object):
     def __init__(self, iface, settingsdict={},group_name='Midvatten_OBS_DB'):
         self.settingsdict = settingsdict
         self.group_name = group_name
@@ -72,7 +75,7 @@ class LoadLayers():
 
         elif self.group_name == 'Midvatten_data_domains': #if self.group_name == 'Midvatten_data_domains':
             tables_columns = db_utils.tables_columns()
-            d_domain_tables = [x for x in tables_columns.keys() if x.startswith(u'zz_')]
+            d_domain_tables = [x for x in list(tables_columns.keys()) if x.startswith(u'zz_')]
             self.add_layers_to_list(layer_list, uri, schema, d_domain_tables, dbtype)
 
         #now loop over all the layers and set styles etc
@@ -234,7 +237,7 @@ class LoadLayers():
         if len(result)==0:#if it is an old database w/o styles
             update_db = utils.Askuser("YesNo", """Your database was created with plugin version < 1.1 when layer styles were not stored in the database. You can update this database to the new standard with layer styles (symbols, colors, labels, input forms etc) stored in the database. This will increase plugin stability and multi-user experience but it will also change the layout of all your forms for entering data into the database. Anyway, an update of the database is recommended. Do you want to add these layer styles now?""", 'Update database with layer styles?')
             if update_db.result == 1:
-                from create_db import AddLayerStyles
+                from .create_db import AddLayerStyles
                 AddLayerStyles()
                 self.add_layers_new_method()
             else:

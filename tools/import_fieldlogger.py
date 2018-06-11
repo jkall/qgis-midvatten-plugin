@@ -20,46 +20,52 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import object
 
 import copy
 import io
 import os
-from Queue import Queue
+from queue import Queue
 from collections import OrderedDict
 from datetime import datetime
 from functools import partial
 from time import sleep
 
 
-import PyQt4
-from PyQt4.QtCore import QCoreApplication
+import qgis.PyQt
+from qgis.PyQt.QtCore import QCoreApplication
 
 import definitions.midvatten_defs
-import import_data_to_db
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from date_utils import datestring_to_date, dateshift
+from . import import_data_to_db
+from . import db_utils
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
+from .date_utils import datestring_to_date, dateshift
 from definitions import midvatten_defs as defs
-from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid
-from gui_utils import DateTimeFilter
+from .gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid
+from .gui_utils import DateTimeFilter
 
 
-import_fieldlogger_ui_dialog =  PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
+import_fieldlogger_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
-class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
+class FieldloggerImport(qgis.PyQt.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
     def __init__(self, parent, msettings=None):
         self.status = False
         self.iface = parent
         self.ms = msettings
         self.ms.loadSettings()
-        PyQt4.QtGui.QDialog.__init__(self, parent)
-        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.status = True
 
     def parse_observations_and_populate_gui(self):
-        splitter = SplitterWithHandel(PyQt4.QtCore.Qt.Vertical)
+        splitter = SplitterWithHandel(qgis.PyQt.QtCore.Qt.Vertical)
         self.add_row(splitter)
 
         self.observations = self.select_file_and_parse_rows(self.parse_rows)
@@ -67,15 +73,15 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
             return None
 
         #Filters and general settings
-        settings_widget = PyQt4.QtGui.QWidget()
-        settings_layout = PyQt4.QtGui.QVBoxLayout()
+        settings_widget = qgis.PyQt.QtGui.QWidget()
+        settings_layout = qgis.PyQt.QtGui.QVBoxLayout()
         settings_widget.setLayout(settings_layout)
         splitter.addWidget(settings_widget)
         self.settings = []
         self.settings.append(StaffQuestion())
         self.settings.append(DateShiftQuestion())
         self.date_time_filter = DateTimeFilter(stretch=False)
-        self.date_time_filter.date_time_filter_update_button = PyQt4.QtGui.QPushButton(QCoreApplication.translate('FieldloggerImport',
+        self.date_time_filter.date_time_filter_update_button = qgis.PyQt.QtGui.QPushButton(QCoreApplication.translate('FieldloggerImport',
                                                                                                  u'Filter dates'))
         self.date_time_filter.date_time_filter_update_button.setToolTip(ru(QCoreApplication.translate('FieldloggerImport',
                                                                                      u'Filter observations using from and to dates and update gui.')))
@@ -93,10 +99,10 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         #Sublocations
         sublocations = [observation[u'sublocation'] for observation in self.observations]
-        sublocations_widget = PyQt4.QtGui.QWidget()
-        sublocations_layout = PyQt4.QtGui.QVBoxLayout()
+        sublocations_widget = qgis.PyQt.QtGui.QWidget()
+        sublocations_layout = qgis.PyQt.QtGui.QVBoxLayout()
         sublocations_widget.setLayout(sublocations_layout)
-        sublocations_layout.addWidget(PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'FieldloggerImport', u'Select sublocations to import:'))))
+        sublocations_layout.addWidget(qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'FieldloggerImport', u'Select sublocations to import:'))))
         splitter.addWidget(sublocations_widget)
         self.sublocation_filter = SublocationFilter(sublocations)
         self.settings.append(self.sublocation_filter)
@@ -113,34 +119,32 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         splitter.addWidget(self.input_fields.widget)
 
         #General buttons
-        self.save_settings_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Save settings')))
+        self.save_settings_button = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Save settings')))
         self.gridLayout_buttons.addWidget(self.save_settings_button, 0, 0)
-        self.connect(self.save_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
-                         lambda : map(lambda x: x(),
-                                      [lambda : self.input_fields.update_stored_settings(self.stored_settings),
-                                       lambda : utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]))
+        self.connect(self.save_settings_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+                         lambda : [x() for x in [lambda : self.input_fields.update_stored_settings(self.stored_settings),
+                                       lambda : utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)]])
 
-        self.clear_settings_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Clear settings')))
+        self.clear_settings_button = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Clear settings')))
         self.clear_settings_button.setToolTip(ru(QCoreApplication.translate(u'FieldloggerImport', u'Clear all parameter settings\nReopen Fieldlogger import gui to have it reset,\nor press "Save settings" to undo.')))
         self.gridLayout_buttons.addWidget(self.clear_settings_button, 1, 0)
-        self.connect(self.clear_settings_button, PyQt4.QtCore.SIGNAL("clicked()"),
-                     lambda: map(lambda x: x(),
-                                 [lambda: utils.save_stored_settings(self.ms, [], self.stored_settingskey),
-                                  lambda: utils.pop_up_info(ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings cleared. Restart import Fieldlogger dialog')))]))
+        self.connect(self.clear_settings_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
+                     lambda: [x() for x in [lambda: utils.save_stored_settings(self.ms, [], self.stored_settingskey),
+                                  lambda: utils.pop_up_info(ru(QCoreApplication.translate(u'FieldloggerImport', u'Settings cleared. Restart import Fieldlogger dialog')))]])
 
-        self.close_after_import = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'FieldloggerImport', u'Close dialog after import')))
+        self.close_after_import = qgis.PyQt.QtGui.QCheckBox(ru(QCoreApplication.translate(u'FieldloggerImport', u'Close dialog after import')))
         self.close_after_import.setChecked(True)
         self.gridLayout_buttons.addWidget(self.close_after_import, 2, 0)
 
-        self.start_import_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Start import')))
+        self.start_import_button = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'FieldloggerImport', u'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 3, 0)
-        self.connect(self.start_import_button, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
+        self.connect(self.start_import_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.observations))
 
-        self.connect(self.date_time_filter.date_time_filter_update_button, PyQt4.QtCore.SIGNAL("clicked()"),
+        self.connect(self.date_time_filter.date_time_filter_update_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
                      self.update_sublocations_and_inputfields_on_date_change)
 
         #Button click first filters data from the settings and then updates input fields.
-        self.connect(self.input_fields.update_parameters_button, PyQt4.QtCore.SIGNAL("clicked()"),
+        self.connect(self.input_fields.update_parameters_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
                      self.update_input_fields_from_button)
 
         self.gridLayout_buttons.setRowStretch(4, 1)
@@ -219,11 +223,11 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         #horizontalLineWidget.setFixedHeight(2)
         #horizontalLineWidget.setSizePolicy(PyQt4.QtGui.QSizePolicy.Expanding, PyQt4.QtGui.QSizePolicy.Fixed)
         #horizontalLineWidget.setStyleSheet(PyQt4.QtCore.QString("background-color: #c0c0c0;"));
-        line = PyQt4.QtGui.QFrame()
+        line = qgis.PyQt.QtGui.QFrame()
         #line.setObjectName(QString::fromUtf8("line"));
-        line.setGeometry(PyQt4.QtCore.QRect(320, 150, 118, 3))
-        line.setFrameShape(PyQt4.QtGui.QFrame.HLine);
-        line.setFrameShadow(PyQt4.QtGui.QFrame.Sunken);
+        line.setGeometry(qgis.PyQt.QtCore.QRect(320, 150, 118, 3))
+        line.setFrameShape(qgis.PyQt.QtGui.QFrame.HLine);
+        line.setFrameShadow(qgis.PyQt.QtGui.QFrame.Sunken);
         if layout is None:
             self.add_row(line)
         else:
@@ -241,9 +245,9 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         for sublocation in sublocations:
             splitted = sublocation.split(delimiter)
             length = len(splitted)
-            for index in xrange(length):
+            for index in range(length):
                 #a dict like {1: [set()], 2: [set(), set()], ...}
-                sublocation_groups.setdefault(length, [set()for i in xrange(length)])[index].add(splitted[index])
+                sublocation_groups.setdefault(length, [set()for i in range(length)])[index].add(splitted[index])
         return sublocation_groups
 
     def update_sublocations_and_inputfields_on_date_change(self):
@@ -412,7 +416,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
         self.input_fields.update_stored_settings(self.stored_settings)
         utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settingskey)
 
-        chosen_methods = [import_method_chooser.import_method for import_method_chooser in self.input_fields.parameter_imports.values()
+        chosen_methods = [import_method_chooser.import_method for import_method_chooser in list(self.input_fields.parameter_imports.values())
                           if import_method_chooser.import_method]
         if not chosen_methods:
             utils.pop_up_info(ru(QCoreApplication.translate(u'FieldloggerImport', u"Must choose at least one parameter import method")))
@@ -439,7 +443,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
                           u'comments': self.prepare_comments_data,
                           u'w_qual_field_depth': lambda x: None}
 
-        for import_method, observations in observations_importmethods.iteritems():
+        for import_method, observations in observations_importmethods.items():
             if import_method:
                 file_data = data_preparers[import_method](observations)
                 if file_data is None:
@@ -451,7 +455,7 @@ class FieldloggerImport(PyQt4.QtGui.QMainWindow, import_fieldlogger_ui_dialog):
 
         if self.close_after_import.isChecked():
             self.close()
-        PyQt4.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
 
 
 class ObsidFilter(object):
@@ -493,7 +497,7 @@ class ObsidFilter(object):
 class StaffQuestion(RowEntry):
     def __init__(self):
         super(StaffQuestion, self).__init__()
-        self.label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'StaffQuestion', u'Staff who did the measurement')))
+        self.label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'StaffQuestion', u'Staff who did the measurement')))
         self.existing_staff_combobox = default_combobox()
         existing_staff = sorted(defs.staff_list()[1])
         self.existing_staff_combobox.addItems(existing_staff)
@@ -522,8 +526,8 @@ class StaffQuestion(RowEntry):
 class DateShiftQuestion(RowEntry):
     def __init__(self):
         super(DateShiftQuestion, self).__init__()
-        self.label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'DateShiftQuestion', u'Shift dates, supported format ex. "%s":'))%u'-1 hours')
-        self.dateshift_lineedit = PyQt4.QtGui.QLineEdit()
+        self.label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'DateShiftQuestion', u'Shift dates, supported format ex. "%s":'))%u'-1 hours')
+        self.dateshift_lineedit = qgis.PyQt.QtGui.QLineEdit()
         self.dateshift_lineedit.setText(u'0 hours')
 
         for widget in [self.label, self.dateshift_lineedit]:
@@ -568,11 +572,11 @@ class SublocationFilter(RowEntry):
         :param sublocations: a list like [u'a.b', u'1.2.3', ...]
         """
         super(SublocationFilter, self).__init__()
-        self.table = PyQt4.QtGui.QTableWidget()
-        self.table.setSelectionBehavior(PyQt4.QtGui.QAbstractItemView.SelectRows)
-        self.table.sizePolicy().setVerticalPolicy(PyQt4.QtGui.QSizePolicy.MinimumExpanding)
+        self.table = qgis.PyQt.QtGui.QTableWidget()
+        self.table.setSelectionBehavior(qgis.PyQt.QtGui.QAbstractItemView.SelectRows)
+        self.table.sizePolicy().setVerticalPolicy(qgis.PyQt.QtGui.QSizePolicy.MinimumExpanding)
         self.table.sizePolicy().setVerticalStretch(2)
-        self.table.setSelectionMode(PyQt4.QtGui.QAbstractItemView.ExtendedSelection)
+        self.table.setSelectionMode(qgis.PyQt.QtGui.QAbstractItemView.ExtendedSelection)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setSortingEnabled(True)
 
@@ -619,7 +623,7 @@ class SublocationFilter(RowEntry):
         self.table_items = {}
         for rownr, sublocation in enumerate(sublocations):
             for colnr, value in enumerate(sublocation.split(u'.')):
-                tablewidgetitem = PyQt4.QtGui.QTableWidgetItem(value)
+                tablewidgetitem = qgis.PyQt.QtGui.QTableWidgetItem(value)
                 if sublocation not in self.table_items:
                     self.table_items[sublocation] = tablewidgetitem
                 self.table.setItem(rownr, colnr, tablewidgetitem)
@@ -631,8 +635,8 @@ class SublocationFilter(RowEntry):
 
 class InputFields(RowEntry):
     def __init__(self, connect):
-        self.widget = PyQt4.QtGui.QWidget()
-        self.layout = PyQt4.QtGui.QVBoxLayout()
+        self.widget = qgis.PyQt.QtGui.QWidget()
+        self.layout = qgis.PyQt.QtGui.QVBoxLayout()
         self.widget.setLayout(self.layout)
         self.connect = connect
 
@@ -642,13 +646,13 @@ class InputFields(RowEntry):
         self.update_queue = Queue()
         self.update_queue_working = False
 
-        self.layout.addWidget(PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'InputFields', u'Specify import methods for input fields'))))
+        self.layout.addWidget(qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'InputFields', u'Specify import methods for input fields'))))
 
         self.parameter_imports = OrderedDict()
 
         #This button has to get filtered observations as input, so it has to be
         #connected elsewhere.
-        self.update_parameters_button = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'InputFields', u'Update input fields')))
+        self.update_parameters_button = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'InputFields', u'Update input fields')))
         self.update_parameters_button.setToolTip(ru(QCoreApplication.translate(u'InputFields', u'Update input fields using the observations remaining after filtering by date and sublocation selection.')))
         self.layout.addWidget(self.update_parameters_button)
 
@@ -689,7 +693,7 @@ class InputFields(RowEntry):
 
         maximumwidth = 0
         for parametername in parameter_names:
-            testlabel = PyQt4.QtGui.QLabel()
+            testlabel = qgis.PyQt.QtGui.QLabel()
             testlabel.setText(parametername)
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
@@ -715,7 +719,7 @@ class InputFields(RowEntry):
     def update_observations(self, observations):
 
         observations = copy.deepcopy(observations)
-        for parameter_name, import_method_chooser in self.parameter_imports.iteritems():
+        for parameter_name, import_method_chooser in self.parameter_imports.items():
             parameter_import_fields = import_method_chooser.parameter_import_fields
             if parameter_import_fields is not None:
                 observations = parameter_import_fields.alter_data(
@@ -753,7 +757,7 @@ class InputFields(RowEntry):
         :return:
         """
         utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'InputFields', u'Setting parameters using stored settings: %s'))%str(stored_settings))
-        for import_method_chooser in self.parameter_imports.values():
+        for import_method_chooser in list(self.parameter_imports.values()):
 
             if not stored_settings:
                 continue
@@ -777,13 +781,13 @@ class InputFields(RowEntry):
                     continue
                 try:
                     setattr(import_method_chooser.parameter_import_fields, attr, val)
-                except Exception, e:
+                except Exception as e:
                     utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'InputFields', u'Setting parameter %s for %s to value %s failed, msg:\n%s'))%(str(attr), import_method_chooser.parameter_name, str(val), str(e)))
 
     def update_stored_settings(self, stored_settings, force_update=False):
         setted_pars = []
         new_settings = []
-        for parameter_name, import_method_chooser in self.parameter_imports.iteritems():
+        for parameter_name, import_method_chooser in self.parameter_imports.items():
             if not force_update:
                 if import_method_chooser.import_method is None or not import_method_chooser.import_method:
                     continue
@@ -811,7 +815,7 @@ class InputFields(RowEntry):
         stored_settings[:] = new_settings
 
     def clear_widgets(self):
-        for name, param_import_obj in self.parameter_imports.iteritems():
+        for name, param_import_obj in self.parameter_imports.items():
             self.layout.removeWidget(param_import_obj.widget)
             param_import_obj.widget.close()
         self.parameter_imports = OrderedDict()
@@ -825,10 +829,10 @@ class ImportMethodChooser(RowEntry):
         self.parameter_name = parameter_name
         self.parameter_names = parameter_names
         self.parameter_import_fields = None
-        self.label = PyQt4.QtGui.QLabel()
+        self.label = qgis.PyQt.QtGui.QLabel()
         self.label.setText(self.parameter_name)
-        self.label.setTextInteractionFlags(PyQt4.QtCore.Qt.TextSelectableByMouse)
-        self.__import_method = PyQt4.QtGui.QComboBox()
+        self.label.setTextInteractionFlags(qgis.PyQt.QtCore.Qt.TextSelectableByMouse)
+        self.__import_method = qgis.PyQt.QtGui.QComboBox()
 
         self.import_method_classes = OrderedDict(((u'', None),
                                                   (u'comments', CommentsImportFields),
@@ -837,9 +841,9 @@ class ImportMethodChooser(RowEntry):
                                                   (u'w_qual_field_depth', WQualFieldDepthImportFields),
                                                   (u'w_qual_field', WQualFieldImportFields)))
 
-        self.__import_method.addItems(self.import_method_classes.keys())
+        self.__import_method.addItems(list(self.import_method_classes.keys()))
 
-        self.connect(self.__import_method, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"),
+        self.connect(self.__import_method, qgis.PyQt.QtCore.SIGNAL("currentIndexChanged(const QString&)"),
                      lambda: self.choose_method(self.import_method_classes))
 
         for widget in [self.label, self.__import_method]:
@@ -863,15 +867,15 @@ class ImportMethodChooser(RowEntry):
         self.layout.takeAt(-1)
         try:
             self.layout.removeWidget(self.parameter_widget)
-        except Exception, e:
+        except Exception as e:
             pass
         try:
             self.parameter_widget.close()
-        except Exception, e:
+        except Exception as e:
             pass
         try:
             self.parameter_import_fields = None
-        except Exception, e:
+        except Exception as e:
             pass
 
         parameter_import_fields_class = import_methods_classes.get(import_method_name, None)
@@ -935,9 +939,9 @@ class WLevelsImportFields(RowEntryGrid):
         self.connect = connect
         self.h_toc_dict = None
         self.import_method_chooser = import_method_chooser
-        self.label_value_column = PyQt4.QtGui.QLabel(u'Value column: ')
-        self._value_column = PyQt4.QtGui.QComboBox()
-        self._calculate_level_masl_checkbox = PyQt4.QtGui.QCheckBox(ru(QCoreApplication.translate(u'WLevelsImportFields', u'Calculate level_masl from meas and h_toc')))
+        self.label_value_column = qgis.PyQt.QtGui.QLabel(u'Value column: ')
+        self._value_column = qgis.PyQt.QtGui.QComboBox()
+        self._calculate_level_masl_checkbox = qgis.PyQt.QtGui.QCheckBox(ru(QCoreApplication.translate(u'WLevelsImportFields', u'Calculate level_masl from meas and h_toc')))
         self._calculate_level_masl_checkbox.setToolTip(ru(QCoreApplication.translate(u'WLevelsImportFields', u'If h_toc is not NULL in table obs_points, level_masl is calculated as h_toc - meas.')))
         self._value_column.addItems([u'meas', u'level_masl'])
         self.value_column = u'meas'
@@ -946,7 +950,7 @@ class WLevelsImportFields(RowEntryGrid):
         self.layout.addWidget(self._calculate_level_masl_checkbox, 1, 1)
         self.layout.setColumnStretch(1, 2)
 
-        self.connect(self._value_column, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.set_calculate_level_masl_visibility)
+        self.connect(self._value_column, qgis.PyQt.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.set_calculate_level_masl_visibility)
 
         self.set_calculate_level_masl_visibility()
 
@@ -1018,13 +1022,13 @@ class WFlowImportFields(RowEntryGrid):
         super(WFlowImportFields, self).__init__()
         self.connect = connect
         self._import_method_chooser = import_method_chooser
-        self.label_flowtype = PyQt4.QtGui.QLabel(u'Flowtype: ')
+        self.label_flowtype = qgis.PyQt.QtGui.QLabel(u'Flowtype: ')
         self.__flowtype = default_combobox()
         self._flowtypes_units = defs.w_flow_flowtypes_units()
         self.__flowtype.addItems(sorted(self._flowtypes_units.keys()))
-        self.label_unit = PyQt4.QtGui.QLabel(u'Unit: ')
+        self.label_unit = qgis.PyQt.QtGui.QLabel(u'Unit: ')
         self.__unit = default_combobox()
-        self.connect(self.__flowtype, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
+        self.connect(self.__flowtype, qgis.PyQt.QtCore.SIGNAL("editTextChanged(const QString&)"),
                      lambda : self.fill_list(self.__unit, self.flowtype, self._flowtypes_units))
 
         self.layout.addWidget(self.label_flowtype, 0, 0)
@@ -1061,7 +1065,7 @@ class WFlowImportFields(RowEntryGrid):
         """
         vals = parameter_list_dict.get(parameter_var, None)
         if vals is None:
-            vals = list(sorted(set([val for vals_list in parameter_list_dict.values() for val in vals_list[0]])))
+            vals = list(sorted(set([val for vals_list in list(parameter_list_dict.values()) for val in vals_list[0]])))
         else:
             vals = list(vals[0])
         combobox_var.clear()
@@ -1102,20 +1106,20 @@ class WQualFieldImportFields(RowEntryGrid):
         super(WQualFieldImportFields, self).__init__()
         self.connect = connect
         self._import_method_chooser = import_method_chooser
-        self.label_parameter = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Parameter: ')))
+        self.label_parameter = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Parameter: ')))
         self.__parameter = default_combobox()
         self._parameters_units = defs.w_qual_field_parameter_units()
-        self.__parameter.addItems(self._parameters_units.keys())
-        self.label_unit = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Unit: ')))
+        self.__parameter.addItems(list(self._parameters_units.keys()))
+        self.label_unit = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Unit: ')))
         self.__unit = default_combobox()
         self.__instrument = default_combobox()
-        self.label_instrument = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Instrument: ')))
+        self.label_instrument = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Instrument: ')))
         self.parameter_instruments = {}
-        for parameter, unit_instrument_staff_date_time_list_of_lists in definitions.midvatten_defs.get_last_used_quality_instruments().iteritems():
+        for parameter, unit_instrument_staff_date_time_list_of_lists in definitions.midvatten_defs.get_last_used_quality_instruments().items():
             for unit, instrument, staff, date_time, in unit_instrument_staff_date_time_list_of_lists:
                 self.parameter_instruments.setdefault(parameter, set()).add(instrument)
 
-        for parameter, instrument_set in self.parameter_instruments.iteritems():
+        for parameter, instrument_set in self.parameter_instruments.items():
             self.parameter_instruments[parameter] = list(instrument_set)
 
         self.layout.addWidget(self.label_parameter, 0, 0)
@@ -1126,10 +1130,10 @@ class WQualFieldImportFields(RowEntryGrid):
         self.layout.addWidget(self.__instrument, 1, 3)
         self.layout.setColumnStretch(4, 1)
 
-        self.connect(self.__parameter, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
+        self.connect(self.__parameter, qgis.PyQt.QtCore.SIGNAL("editTextChanged(const QString&)"),
                      lambda : self.fill_list(self.__unit, self.parameter, self._parameters_units))
 
-        self.connect(self.__parameter, PyQt4.QtCore.SIGNAL("editTextChanged(const QString&)"),
+        self.connect(self.__parameter, qgis.PyQt.QtCore.SIGNAL("editTextChanged(const QString&)"),
                      lambda: self.fill_list(self.__instrument, self.parameter, self.parameter_instruments))
 
     @property
@@ -1166,7 +1170,7 @@ class WQualFieldImportFields(RowEntryGrid):
         """
         vals = parameter_list_dict.get(parameter_var, None)
         if vals is None:
-            vals = list(sorted(set([val[0] if isinstance(val, (list, tuple)) else val for vals_list in parameter_list_dict.values() for val in vals_list])))
+            vals = list(sorted(set([val[0] if isinstance(val, (list, tuple)) else val for vals_list in list(parameter_list_dict.values()) for val in vals_list])))
         else:
             vals = sorted([val[0] if isinstance(val, (list, tuple)) else val for val in vals])
 
@@ -1242,9 +1246,9 @@ class WQualFieldDepthImportFields(RowEntry):
 
 
 def default_combobox(editable=True):
-    combo_box = PyQt4.QtGui.QComboBox()
+    combo_box = qgis.PyQt.QtGui.QComboBox()
     combo_box.setEditable(editable)
-    combo_box.setSizeAdjustPolicy(PyQt4.QtGui.QComboBox.AdjustToContents)
+    combo_box.setSizeAdjustPolicy(qgis.PyQt.QtGui.QComboBox.AdjustToContents)
     combo_box.setMinimumWidth(80)
     combo_box.addItem(u'')
     return combo_box

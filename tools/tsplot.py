@@ -18,6 +18,9 @@
  ***************************************************************************/
 
 """
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
@@ -25,14 +28,14 @@ import matplotlib.ticker as tick
 from matplotlib.dates import datestr2num
 
 import numpy as np
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication
 
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+from . import db_utils
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
 
 
-class TimeSeriesPlot:
+class TimeSeriesPlot(object):
 
     def __init__(self, layer=None, settingsdict={}):    # Might need revision of variables and method for loading default variables
         self.settingsdict = settingsdict
@@ -58,12 +61,12 @@ class TimeSeriesPlot:
                 plabel=[None]*nF # List for label strings
 
                 for i, k in enumerate(ob):    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
-                    obsid = unicode(ob[i][kolumnindex])
+                    obsid = str(ob[i][kolumnindex])
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
                     sql =r"""SELECT date_time, """
-                    sql += unicode(self.settingsdict['tscolumn']) #MacOSX fix1
+                    sql += str(self.settingsdict['tscolumn']) #MacOSX fix1
                     sql += """ FROM """
-                    sql += unicode(self.settingsdict['tstable']) #MacOSX fix1
+                    sql += str(self.settingsdict['tstable']) #MacOSX fix1
                     sql += r""" WHERE obsid = '"""
                     sql += obsid
                     sql += """' ORDER BY date_time """

@@ -26,7 +26,7 @@ For create file 'qm'
 
 """
 
-from PyQt4.QtCore import QFileInfo, QSettings, QLocale, QTranslator, QCoreApplication
+from qgis.PyQt.QtCore import QFileInfo, QSettings, QLocale, QTranslator, QCoreApplication
 from qgis.core import QgsApplication
 
 def getTranslate(namePlugin, nameDir=None):

@@ -19,21 +19,25 @@
  *                                                                         *
  ***************************************************************************/
 """
-import db_utils
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
+from . import db_utils
 import matplotlib as mpl
 import os
 from qgis.core import QgsMapLayerRegistry, QgsProject, QgsSingleSymbolRendererV2, QgsSymbolV2, QgsVectorLayer
 from qgis.gui import QgsMapCanvasLayer
 
-from PyQt4.QtCore import QCoreApplication
-from PyQt4.QtGui import QColor
+from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtGui import QColor
 
-import midvatten_utils as utils
+from . import midvatten_utils as utils
 from definitions import midvatten_defs as defs
-from midvatten_utils import returnunicode as ru
+from .midvatten_utils import returnunicode as ru
 
 
-class PrepareForQgis2Threejs():        
+class PrepareForQgis2Threejs(object):        
     def __init__(self, iface, settingsdict={}):
 
         self.dbconnection = db_utils.DbConnectionManager()
@@ -41,11 +45,11 @@ class PrepareForQgis2Threejs():
         self.settingsdict = settingsdict
         self.strat_layers_dict =  defs.PlotTypesDict('english') 
         self.symbolcolors_dict = defs.PlotColorDict() # This is not used yet
-        for key, v in self.strat_layers_dict.items():#make all the keys only ascii and only lower case and also add 'strat_' as prefix
+        for key, v in list(self.strat_layers_dict.items()):#make all the keys only ascii and only lower case and also add 'strat_' as prefix
             newkey = 'strat_' + utils.return_lower_ascii_string(key)
             self.strat_layers_dict[newkey] = self.strat_layers_dict[key]
             del self.strat_layers_dict[key]
-        for key, v in self.symbolcolors_dict.items():#THIS IS NOT USED YET make all the keys only ascii and only lower case and also add 'strat_' as prefix
+        for key, v in list(self.symbolcolors_dict.items()):#THIS IS NOT USED YET make all the keys only ascii and only lower case and also add 'strat_' as prefix
             newkey = 'strat_' + utils.return_lower_ascii_string(key)
             self.symbolcolors_dict[newkey] = self.symbolcolors_dict[key] 
             del self.symbolcolors_dict[key]

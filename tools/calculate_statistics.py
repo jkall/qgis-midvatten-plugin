@@ -17,25 +17,26 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
 import os
-import PyQt4
-from PyQt4.QtCore import QCoreApplication
+import qgis.PyQt
+from qgis.PyQt.QtCore import QCoreApplication
 
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-import gui_utils
+from . import db_utils
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
+from . import gui_utils
 
 
-calculate_statistics_dialog = PyQt4.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calculate_statistics_ui.ui'))[0]
+calculate_statistics_dialog = qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calculate_statistics_ui.ui'))[0]
 
-class CalculateStatisticsGui(PyQt4.QtGui.QMainWindow, calculate_statistics_dialog):
+class CalculateStatisticsGui(qgis.PyQt.QtGui.QMainWindow, calculate_statistics_dialog):
     def __init__(self, parent, midv_settings):
         self.iface = parent
 
         self.ms = midv_settings
-        PyQt4.QtGui.QDialog.__init__(self, parent)
-        self.setAttribute(PyQt4.QtCore.Qt.WA_DeleteOnClose)
+        qgis.PyQt.QtGui.QDialog.__init__(self, parent)
+        self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 
         tables_columns = db_utils.tables_columns()
@@ -44,9 +45,9 @@ class CalculateStatisticsGui(PyQt4.QtGui.QMainWindow, calculate_statistics_dialo
 
         self.gridLayout.addWidget(self.db_browser.widget, 0, 0)
 
-        self.connect(self.pushButton_ok, PyQt4.QtCore.SIGNAL("clicked()"), self.calculate)
+        self.connect(self.pushButton_ok, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.calculate)
 
-        self.connect(self.pushButton_cancel, PyQt4.QtCore.SIGNAL("clicked()"), lambda : self.close())
+        self.connect(self.pushButton_cancel, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda : self.close())
 
         self.show()
 
@@ -65,7 +66,7 @@ class CalculateStatisticsGui(PyQt4.QtGui.QMainWindow, calculate_statistics_dialo
         stats = get_statistics(obsids, table, column, sql_function_order=sql_function_order, median=True)
         printlist = []
         printlist.append(ru(QCoreApplication.translate(u"Midvatten", 'Obsid;Min;Median;Average;Max;Nr of values')))
-        printlist.extend([u';'.join([ru(x) for x in (obsid, v[0], v[4], v[2], v[1], v[3])]) for obsid, v in sorted(stats.iteritems())])
+        printlist.extend([u';'.join([ru(x) for x in (obsid, v[0], v[4], v[2], v[1], v[3])]) for obsid, v in sorted(stats.items())])
         utils.MessagebarAndLog.info(
             bar_msg=ru(QCoreApplication.translate("Midvatten", 'Statistics for table %s column %s done, see log for results.'))%(table, column),
             log_msg='\n'.join(printlist), duration=15, button=True)
@@ -94,9 +95,9 @@ def get_statistics(obsids, table, column, sql_function_order=None, median=True, 
 
     sql = u'select obsid, %s from %s where obsid in (%s) group by obsid'%(u', '.join([u'%s(%s)'%(func, column) for func in sql_function_order]), table, u', '.join([u"'{}'".format(x) for x in obsids]))
     _res = db_utils.get_sql_result_as_dict(sql, dbconnection=dbconnection)[1]
-    res = dict([(obsid, list(v[0])) for obsid, v in _res.iteritems()])
+    res = dict([(obsid, list(v[0])) for obsid, v in _res.items()])
     if median:
-        [v.append(db_utils.calculate_median_value(table, column, obsid, dbconnection)) for obsid, v in res.iteritems()]
+        [v.append(db_utils.calculate_median_value(table, column, obsid, dbconnection)) for obsid, v in res.items()]
     return res
 
 def get_statistics_for_single_obsid(obsid ='', table=u'w_levels', data_columns=None):

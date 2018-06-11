@@ -17,17 +17,22 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import object
 from pyspatialite import dbapi2 as sqlite
-import csv, codecs, cStringIO, os, os.path
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
+import csv, codecs, io, os, os.path
+from . import db_utils
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 import qgis.utils
 from qgis.core import QgsMessageLog
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication
 
-class ExportData():
+class ExportData(object):
 
     def __init__(self, OBSID_P, OBSID_L):
         self.ID_obs_points = OBSID_P
@@ -165,7 +170,7 @@ class ExportData():
         output = UnicodeWriter(file(os.path.join(self.exportfolder, tname + ".csv"), 'w'))
         self.curs.execute(u"select * from %s where obsid in %s"%(tname, self.format_obsids(obsids)))
         output.writerow([col[0] for col in self.curs.description])
-        filter(None, (output.writerow(row) for row in self.curs))
+        [_f for _f in (output.writerow(row) for row in self.curs) if _f]
 
     def to_sql(self, tname, tname_with_prefix, obsids):
         """
@@ -181,7 +186,7 @@ class ExportData():
 
         foreign_keys = self.get_foreign_keys(tname)
 
-        for reference_table, from_to_fields in foreign_keys.iteritems():
+        for reference_table, from_to_fields in foreign_keys.items():
             from_list = [x[0] for x in from_to_fields]
             to_list = [x[1] for x in from_to_fields]
 
@@ -192,7 +197,7 @@ class ExportData():
                 sql = u"""INSERT OR IGNORE INTO %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
             try:
                 self.curs.execute(sql)
-            except Exception, e:
+            except Exception as e:
                 utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'INSERT failed while importing to %s.\nMsg:%s'))%(tname, str(e)))
 
         #Make a transformation for column names that are geometries #Transformation doesn't work yet.
@@ -207,7 +212,7 @@ class ExportData():
         sql = u"""INSERT INTO %s (%s) SELECT %s FROM %s WHERE obsid IN %s"""%(tname, u', '.join(column_names), u', '.join(transformed_column_names), tname_with_prefix, self.format_obsids(obsids))
         try:
             self.curs.execute(sql)
-        except Exception, e:
+        except Exception as e:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u"Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate(u'ExportData', u'%s\nmsg:\n%s'))%(sql, str(e)))
 
     @staticmethod
@@ -259,8 +264,8 @@ class ExportData():
 
         #Special case for obs_points because of the very special columns east/north
         if tname == u'obs_points' and transformed:
-            old_geocol_srids = [(k, v) for k, v in old_table_column_srid_dict.get(tname, {}).iteritems()]
-            new_geocol_srids = [(k, v) for k, v in new_table_column_srid_dict.get(tname, {}).iteritems()]
+            old_geocol_srids = [(k, v) for k, v in old_table_column_srid_dict.get(tname, {}).items()]
+            new_geocol_srids = [(k, v) for k, v in new_table_column_srid_dict.get(tname, {}).items()]
             if len(old_geocol_srids) != 1 and len(new_geocol_srids) != 1:
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u'Export warning!, see Log Message Panel')), log_msg=ru(QCoreApplication.translate(u'ExportData', u'Transformation of east/north for table obs_points failed! The number of geometry columns was not == 1!')))
             else:
@@ -283,7 +288,7 @@ class ExportData():
         output = UnicodeWriter(file(os.path.join(self.exportfolder, tname + ".csv"), 'w'))
         self.curs.execute(r"select * from %s"%(tname))
         output.writerow([col[0] for col in self.curs.description])
-        filter(None, (output.writerow(row) for row in self.curs))
+        [_f for _f in (output.writerow(row) for row in self.curs) if _f]
 
     def zz_to_sql(self, tname, tname_with_prefix):
         column_names = self.get_and_check_existing_column_names(tname, tname_with_prefix)
@@ -299,12 +304,12 @@ class ExportData():
         sql = u"""INSERT INTO %s (%s) select %s from %s """ % (tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix) #where %s not in (select %s from %s)"""%(tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
         try:
             self.curs.execute(sql)
-        except Exception, e:
+        except Exception as e:
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'INSERT failed while importing to %s. Using INSERT OR REPLACE instead.\nMsg:%s'))%(tname, str(e)))
             sql = sql.replace(u'INSERT', u'INSERT OR REPLACE')
             try:
                 self.curs.execute(sql)
-            except Exception, e:
+            except Exception as e:
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u"Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate(u'ExportData', u'%s\nmsg:\n%s'))%(sql, str(e)))
 
     def get_foreign_keys(self, tname):
@@ -382,7 +387,7 @@ class ExportData():
 
         try:
             result_list = self.curs.execute(sql).fetchall()
-        except Exception, e:
+        except Exception as e:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u"Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate(u'ExportData', u'%s\nmsg:\n%s'))%(sql, str(e)))
             return None
 
@@ -419,7 +424,7 @@ class ExportData():
         printable_results.append(header)
 
         #Create table result rows
-        for tablename, dbdict in sorted(results.iteritems()):
+        for tablename, dbdict in sorted(results.items()):
             vals = [tablename]
             vals.extend([str(dbdict.get(alias, u'table_missing')) for alias in sorted(db_aliases)])
             if vals[1] != vals[2]:
@@ -429,7 +434,7 @@ class ExportData():
         return printable_msg
 
 
-class UnicodeWriter:
+class UnicodeWriter(object):
     """
     A CSV writer which will write rows to CSV file "f",
     which is encoded in the given encoding.
@@ -438,13 +443,13 @@ class UnicodeWriter:
     """
 
     def __init__(self, f, dialect=csv.excel, delimiter=';', encoding="utf-8", **kwds):
-        self.queue = cStringIO.StringIO()
+        self.queue = io.StringIO()
         self.writer = csv.writer(self.queue, dialect=dialect, delimiter=delimiter,**kwds)
         self.stream = f
         self.encoder = codecs.getincrementalencoder(encoding)()
 
     def encodeone(self, item):
-        if type(item) == unicode:
+        if type(item) == str:
             return self.encoder.encode(item)
         else:
             return item

@@ -19,6 +19,8 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import object
 
 from collections import OrderedDict
 
@@ -29,11 +31,11 @@ from mock import MagicMock
 from nose.plugins.attrib import attr
 import midvatten_utils as utils
 
-from utils_for_tests import create_test_string
+from .utils_for_tests import create_test_string
 
 
 @attr(status='on')
-class TestExportFieldloggerNoDb():
+class TestExportFieldloggerNoDb(object):
     def setUp(self):
         #self.ExportToFieldLogger = ExportToFieldLogger
         pass

@@ -18,20 +18,22 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import object
 import codecs
 import os
 
-from PyQt4.QtCore import QCoreApplication
-from PyQt4.QtCore import QUrl, QDir
-from PyQt4.QtGui import QDesktopServices
+from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QUrl, QDir
+from qgis.PyQt.QtGui import QDesktopServices
 
-import db_utils
-import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
-from calculate_statistics import get_statistics_for_single_obsid
+from . import db_utils
+from . import midvatten_utils as utils
+from .midvatten_utils import returnunicode as ru
+from .calculate_statistics import get_statistics_for_single_obsid
 
 
-class Drillreport():        # general observation point info for the selected object
+class Drillreport(object):        # general observation point info for the selected object
     
     def __init__(self, obsids=[''], settingsdict = {}):
 

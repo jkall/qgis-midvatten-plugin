@@ -19,8 +19,10 @@
  *                                                                         *
  ***************************************************************************/
 """
+from builtins import str
+from builtins import object
 import  qgis.core
-from PyQt4 import QtGui
+from qgis.PyQt import QtGui
 from qgis.core import QgsMapLayerRegistry
 
 import mock
@@ -52,7 +54,7 @@ class MockReturnUsingDict(object):
 
         if isinstance(self.args_idx, int):
             arg = args[self.args_idx]
-        elif isinstance(self.args_idx, basestring):
+        elif isinstance(self.args_idx, str):
             arg = kwargs[self.args_idx]
 
         return_value = self.adict.get(arg, None)
@@ -70,7 +72,7 @@ class MockReturnUsingDictIn(object):
         self.args_called_with.extend(kwargs)
         return_value = None
         if isinstance(self.args_idx, int):
-            for k, v in self.adict.iteritems():
+            for k, v in self.adict.items():
                 a = args[self.args_idx]
                 try:
                     if isinstance(a, QString):
@@ -80,8 +82,8 @@ class MockReturnUsingDictIn(object):
                         a = str(a)
                 if a.startswith(k):
                    return_value = v
-        elif isinstance(self.args_idx, basestring):
-            for k, v in self.adict.iteritems():
+        elif isinstance(self.args_idx, str):
+            for k, v in self.adict.items():
                 if str(kwargs[self.args_idx]).startswith(k):
                    return_value = v
         if return_value == None:
@@ -151,7 +153,7 @@ class DummyInterface(object):
         raise StopIteration
     def layers(self):
         # simulate iface.legendInterface().layers()
-        return QgsMapLayerRegistry.instance().mapLayers().values()
+        return list(QgsMapLayerRegistry.instance().mapLayers().values())
 
 
 class DummyInterface2(object):
@@ -167,7 +169,7 @@ class DummyInterface2(object):
         self.widget = QtGui.QWidget()
         self.mainwindow = QtGui.QMainWindow(self.widget)
         self.mock.mainWindow.return_value = self.mainwindow
-        self.mock.layers.return_value = QgsMapLayerRegistry.instance().mapLayers().values()
+        self.mock.layers.return_value = list(QgsMapLayerRegistry.instance().mapLayers().values())
 
 
 def mock_answer(yes_or_no='yes'):
