@@ -139,7 +139,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
     @fn_timer
     def __init__(self, parent, settingsdict1={}, obsid=''):
-        qgis.PyQt.QtGui.QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
+        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
         self.obsid = obsid
         self.log_pos = None
         self.y_pos = None
@@ -197,7 +197,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         # Populate combobox with obsid from table w_levels_logger
         self.load_obsid_from_db()
 
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     @property
     def selected_obsid(self):
@@ -359,7 +359,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     def calibrate(self, obsid=None):
         self.calib_help.setText("Calibrating")
 
-        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
         if obsid is None:
             obsid = self.load_obsid_and_init()
         if not obsid=='':
@@ -374,7 +374,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         else:
             self.INFO.setText(ru(QCoreApplication.translate(u'Calibrlogger', u"Select the observation point with logger data to be calibrated.")))
         self.calib_help.setText("")
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
 
     @fn_timer
     def update_level_masl_from_level_masl(self, obsid, fr_d_t, to_d_t, newzref):
@@ -439,11 +439,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         """ Plots self.level_masl_ts, self.meas_ts and maybe self.head_ts """
         self.reset_plot_selects_and_calib_help()
         self.calib_help.setText("Updating plot")
-        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
         last_used_obsid = self.obsid
         obsid = self.load_obsid_and_init()
         if obsid == None:
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             self.calib_help.setText("")
             return
         self.axes.clear()
@@ -481,7 +481,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.calibrplotfigure.tight_layout()
         self.canvas.draw()
         plt.close(self.calibrplotfigure)#this closes reference to self.calibrplotfigure
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
         self.calib_help.setText("")
 
         if last_used_obsid == self.obsid:
@@ -601,7 +601,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             5. Run calibration.
         """            
         if self.log_pos is not None and self.y_pos is not None:
-            qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+            qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
 
             logger_ts = self.level_masl_ts
             
@@ -623,7 +623,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             else:
                 self.Add2Levelmasl.setText(str(float(y_pos) - float(logger_value)))
 
-                qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+                qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
 
         self.pushButtonMpos.setEnabled(False)
         
@@ -680,7 +680,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             text_field = self.Add2Levelmasl
             calib_func = self.add_to_level_masl
 
-        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
 
         coupled_vals = self.match_ts_values(self.meas_ts, logger_ts, search_radius)
         if not coupled_vals:
@@ -694,7 +694,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
                 text_field.setText(calculated_diff)
                 calib_func(obsid)
 
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
      
     @fn_timer
     def match_ts_values(self, meas_ts, logger_ts, search_radius_tuple):

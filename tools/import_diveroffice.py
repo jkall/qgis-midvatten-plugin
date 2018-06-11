@@ -85,11 +85,11 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         self.import_all_data.checked = False
         self.add_row(self.import_all_data.widget)
 
-        self.close_after_import = qgis.PyQt.QtGui.QCheckBox(ru(QCoreApplication.translate(u'DiverofficeImport', u'Close dialog after import')))
+        self.close_after_import = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate(u'DiverofficeImport', u'Close dialog after import')))
         self.close_after_import.setChecked(True)
         self.gridLayout_buttons.addWidget(self.close_after_import, 0, 0)
 
-        self.start_import_button = qgis.PyQt.QtGui.QPushButton(QCoreApplication.translate('DiverofficeImport', u'Start import'))
+        self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(QCoreApplication.translate('DiverofficeImport', u'Start import'))
         self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
         self.connect(self.start_import_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda : self.start_import(files=self.files, skip_rows_without_water_level=self.skip_rows.checked, confirm_names=self.confirm_names.checked, import_all_data=self.import_all_data.checked, from_date=self.date_time_filter.from_date, to_date=self.date_time_filter.to_date))
 
@@ -112,13 +112,13 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
     def start_import(self, files, skip_rows_without_water_level, confirm_names, import_all_data, from_date=None, to_date=None):
         """
         """
-        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
+        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))  #show the user this may take a long time...
         parsed_files = []
         for selected_file in files:
             res = self.parse_func(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
             if res == u'cancel':
                 self.status = True
-                qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+                qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
                 return res
             elif res in (u'skip', u'ignore'):
                 continue
@@ -133,7 +133,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         if len(parsed_files) == 0:
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate('DiverofficeImport', u"Import Failure: No files imported"""))
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return
 
         #Add obsid to all parsed filedatas by asking the user for it.
@@ -150,7 +150,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         if len(filename_location_obsid) < 2:
             utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', u'Warning. All files were skipped, nothing imported!'))
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return False
 
         filenames_obsid = dict([(x[0], x[2]) for x in filename_location_obsid[1:]])
@@ -172,15 +172,15 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         if len(file_to_import_to_db) < 2:
             utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate('DiverofficeImport', u'No new data existed in the files. Nothing imported.'))
             self.status = 'True'
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return True
 
         importer = import_data_to_db.midv_data_importer()
         answer = importer.general_import(u'w_levels_logger', file_to_import_to_db)
 
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
         importer.SanityCheckVacuumDB()
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
 
         if self.close_after_import.isChecked():
             self.close()
@@ -353,9 +353,9 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 class CheckboxAndExplanation(VRowEntry):
     def __init__(self, checkbox_label, explanation=None):
         super(CheckboxAndExplanation, self).__init__()
-        self.checkbox = qgis.PyQt.QtGui.QCheckBox(checkbox_label)
+        self.checkbox = qgis.PyQt.QtWidgets.QCheckBox(checkbox_label)
         self.layout.addWidget(self.checkbox)
-        self.label = qgis.PyQt.QtGui.QLabel()
+        self.label = qgis.PyQt.QtWidgets.QLabel()
 
         if explanation:
             self.label.setText(explanation)

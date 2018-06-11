@@ -45,7 +45,7 @@ class TestWFlowCalcAveflow(object):
 
     def setUp(self):
         self.iface = DummyInterface()
-        widget = QtGui.QWidget()
+        widget = QtWidgets.QWidget()
         self.calcave = w_flow_calc_aveflow.Calcave(widget)
 
     @mock.patch('w_flow_calc_aveflow.utils.sql_load_fr_db', db_all_distinct_obsids.get_v)

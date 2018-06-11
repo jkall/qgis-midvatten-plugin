@@ -72,11 +72,11 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         self.connect(self.metadata_filter.update_selection_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda : self.metadata_filter.set_selection(self.specific_meta_filter.get_items_dict()))
 
-        self.start_import_button = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'Interlab4Import', u'Start import')))
+        self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'Interlab4Import', u'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
         self.connect(self.start_import_button, qgis.PyQt.QtCore.SIGNAL("clicked()"), lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras()))
 
-        self.help_label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'Interlab4Import', u'Instructions')))
+        self.help_label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'Interlab4Import', u'Instructions')))
         self.help_label.setToolTip(ru(QCoreApplication.translate(u'Interlab4Import',
                                    u'Selected rows (lablitteras in the bottom table will be imported when pushing "Start import" button.\n'
                                    u'The table can be sorted by clicking the column headers.\n\n'
@@ -88,7 +88,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                                    u'All rows where values in the chosen column match entries in the pasted list will be selected.\n\n'
                                    u'Hover over a column header to see which database column it will go to.')))
 
-        self.close_after_import = qgis.PyQt.QtGui.QCheckBox(ru(QCoreApplication.translate(u'Interlab4Import', u'Close dialog after import')))
+        self.close_after_import = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate(u'Interlab4Import', u'Close dialog after import')))
         self.close_after_import.setChecked(True)
         self.gridLayout_buttons.addWidget(self.close_after_import, 0, 0)
 
@@ -139,7 +139,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         if self.close_after_import.isChecked():
             self.close()
 
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
 
     def parse(self, filenames):
         """ Reads the interlab
@@ -470,9 +470,9 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
     def add_line(self, layout=None):
         """ just adds a line"""
-        #horizontalLineWidget = PyQt4.QtGui.QWidget()
+        #horizontalLineWidget = PyQt4.QtWidgets.QWidget()
         #horizontalLineWidget.setFixedHeight(2)
-        #horizontalLineWidget.setSizePolicy(PyQt4.QtGui.QSizePolicy.Expanding, PyQt4.QtGui.QSizePolicy.Fixed)
+        #horizontalLineWidget.setSizePolicy(PyQt4.QtWidgets.QSizePolicy.Expanding, PyQt4.QtWidgets.QSizePolicy.Fixed)
         #horizontalLineWidget.setStyleSheet(PyQt4.QtCore.QString("background-color: #c0c0c0;"));
         line = qgis.PyQt.QtWidgets.QFrame()
         #line.setObjectName(QString::fromUtf8("line"));
@@ -491,8 +491,8 @@ class MetaFilterSelection(VRowEntry):
 
         """
         super(MetaFilterSelection, self).__init__()
-        self.layout.addWidget(qgis.PyQt.QtGui.QLabel(u'Column header'))
-        self.combobox = qgis.PyQt.QtGui.QComboBox()
+        self.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(u'Column header'))
+        self.combobox = qgis.PyQt.QtWidgets.QComboBox()
         self.combobox.addItem(u'')
         self.combobox.addItems(get_metadata_headers(all_lab_results))
         self.layout.addWidget(self.combobox)
@@ -513,24 +513,24 @@ class MetadataFilter(VRowEntry):
         super(MetadataFilter, self).__init__()
         self.connect = connect
 
-        self.update_selection_button  = qgis.PyQt.QtGui.QPushButton(u'Update selection')
+        self.update_selection_button  = qgis.PyQt.QtWidgets.QPushButton(u'Update selection')
         self.button_layout = RowEntry()
         self.button_layout.layout.addWidget(self.update_selection_button)
 
-        self.show_only_selected_checkbox = qgis.PyQt.QtGui.QCheckBox(u'Show only selected rows')
+        self.show_only_selected_checkbox = qgis.PyQt.QtWidgets.QCheckBox(u'Show only selected rows')
         self.button_layout.layout.addWidget(self.show_only_selected_checkbox)
 
         self.layout.addWidget(self.button_layout.widget)
 
-        self.label = qgis.PyQt.QtGui.QLabel()
+        self.label = qgis.PyQt.QtWidgets.QLabel()
         self.layout.addWidget(self.label)
 
-        self.table = qgis.PyQt.QtGui.QTableWidget()
-        self.table.setSelectionBehavior(qgis.PyQt.QtGui.QAbstractItemView.SelectRows)
-        self.table.sizePolicy().setVerticalPolicy(qgis.PyQt.QtGui.QSizePolicy.MinimumExpanding)
+        self.table = qgis.PyQt.QtWidgets.QTableWidget()
+        self.table.setSelectionBehavior(qgis.PyQt.QtWidgets.QAbstractItemView.SelectRows)
+        self.table.sizePolicy().setVerticalPolicy(qgis.PyQt.QtWidgets.QSizePolicy.MinimumExpanding)
         self.table.sizePolicy().setVerticalStretch(2)
-        self.table.setSelectionMode(qgis.PyQt.QtGui.QAbstractItemView.ExtendedSelection)
-        self.table.setSelectionBehavior(qgis.PyQt.QtGui.QAbstractItemView.SelectRows)
+        self.table.setSelectionMode(qgis.PyQt.QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.table.setSelectionBehavior(qgis.PyQt.QtWidgets.QAbstractItemView.SelectRows)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setSortingEnabled(True)
 
@@ -604,12 +604,12 @@ class MetadataFilter(VRowEntry):
         self.table_items = {}
         for rownr, lablittera in enumerate(all_lab_results.keys()):
             metadata = all_lab_results[lablittera][u'metadata']
-            tablewidgetitem = qgis.PyQt.QtGui.QTableWidgetItem(lablittera)
+            tablewidgetitem = qgis.PyQt.QtWidgets.QTableWidgetItem(lablittera)
             tablewidgetitem.setFlags(qgis.PyQt.QtCore.Qt.ItemIsSelectable)
             self.table.setItem(rownr, 0, tablewidgetitem)
 
             for colnr, metaheader in enumerate(self.sorted_table_header[1:], 1):
-                tablewidgetitem = qgis.PyQt.QtGui.QTableWidgetItem(metadata.get(metaheader, u''))
+                tablewidgetitem = qgis.PyQt.QtWidgets.QTableWidgetItem(metadata.get(metaheader, u''))
                 tablewidgetitem.setFlags(qgis.PyQt.QtCore.Qt.ItemIsSelectable)
                 self.table.setItem(rownr, colnr, tablewidgetitem)
 

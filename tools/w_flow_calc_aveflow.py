@@ -63,7 +63,7 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
         self.calculateaveflow()
 
     def calculateaveflow(self):
-        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
         date_from = self.FromDateTime.dateTime().toPyDateTime()
         date_to = self.ToDateTime.dateTime().toPyDateTime()
         #Identify distinct set of obsid and instrumentid with Accvol-data and within the user-defined date_time-interval:
@@ -90,5 +90,5 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
                     db_utils.sql_alter_db(sql)
         if negativeflow:
             utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Calcave', u"Please notice that negative flow was encountered.")))
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
         self.close()

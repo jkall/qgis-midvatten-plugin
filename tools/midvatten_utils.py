@@ -47,7 +47,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 from functools import wraps
 from operator import itemgetter
-from qgis.core import QgsLogger, QgsMapLayer, QgsProject, QgsMessageLog, QgsProject, Qgis
+from qgis.core import QgsLogger, QgsMapLayer, QgsProject, QgsProject, Qgis, QgsApplication
 from qgis.gui import QgsMessageBar, QtCore
 
 import numpy as np
@@ -71,13 +71,13 @@ class MessagebarAndLog(object):
     """ Class that sends logmessages to messageBar and or to QgsMessageLog
 
     Usage: MessagebarAndLog.info(bar_msg='a', log_msg='b', duration=10,
-    messagebar_level=QgsMessageBar.INFO, log_level=QgsMessageLog.INFO,
+    messagebar_level=Qgis.Info, log_level=Qgis.Info,
     button=True)
 
     :param bar_msg: A short msg displayed in messagebar and log.
     :param log_msg: A long msg displayed only in log.
     :param messagebar_level: The message level of the messageBar.
-    :param log_level: The message level of the QgsMessageLog  { INFO = 0, WARNING = 1, CRITICAL = 2 }.
+    :param log_level: The message level of the QgsMessageLog  { Info = 0, Warning = 1, Critical = 2 }.
     :param duration: The duration of the messageBar.
     :param button: (True/False, default True) If False, the button to the
                    QgsMessageLog does not appear at the messageBar.
@@ -105,7 +105,7 @@ class MessagebarAndLog(object):
             return None
         if bar_msg is not None:
             widget = qgis.utils.iface.messageBar().createMessage(returnunicode(bar_msg))
-            log_button = QtGui.QPushButton(QCoreApplication.translate(u'MessagebarAndLog', u"View message log"), pressed=show_message_log)
+            log_button = QtWidgets.QPushButton(QCoreApplication.translate(u'MessagebarAndLog', u"View message log"), pressed=show_message_log)
             if log_msg is not None and button:
                 widget.layout().addWidget(log_button)
             qgis.utils.iface.messageBar().pushWidget(widget, level=messagebar_level, duration=duration)
@@ -115,9 +115,9 @@ class MessagebarAndLog(object):
                     qgis.utils.iface.optional_bar.pushWidget(widget, level=messagebar_level, duration=duration)
                 except:
                     pass
-        QgsMessageLog.logMessage(returnunicode(bar_msg), u'Midvatten', level=log_level)
+        QgsApplication.messageLog().logMessage(returnunicode(bar_msg), u'Midvatten', level=log_level)
         if log_msg is not None:
-            QgsMessageLog.logMessage(returnunicode(log_msg), u'Midvatten', level=log_level)
+            QgsApplication.messageLog().logMessage(returnunicode(log_msg), u'Midvatten', level=log_level)
 
     @staticmethod
     def info(bar_msg=None, log_msg=None, duration=10, button=True, optional_bar=False):
@@ -142,29 +142,29 @@ class Askuser(QtWidgets.QDialog):
     def __init__(self, question="YesNo", msg = '', dialogtitle=QCoreApplication.translate(u'askuser', 'User input needed'), parent=None):
         self.result = ''
         if question == 'YesNo':         #  Yes/No dialog 
-            reply = QtGui.QMessageBox.information(parent, dialogtitle, msg, QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
-            if reply==QtGui.QMessageBox.Yes:
+            reply = QtWidgets.QMessageBox.information(parent, dialogtitle, msg, QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.Yes)
+            if reply==QtWidgets.QMessageBox.Yes:
                 self.result = 1 #1 = "yes"
             else:
                 self.result = 0  #0="no"
         elif question == 'AllSelected': # All or Selected Dialog
-            btnAll = QtGui.QPushButton(QCoreApplication.translate(u'askuser', "All"))   # = "0"
-            btnSelected = QtGui.QPushButton(QCoreApplication.translate(u'askuser', "Selected"))     # = "1"
+            btnAll = QtWidgets.QPushButton(QCoreApplication.translate(u'askuser', "All"))   # = "0"
+            btnSelected = QtWidgets.QPushButton(QCoreApplication.translate(u'askuser', "Selected"))     # = "1"
             #btnAll.clicked.connect(self.DoForAll)
             #btnSelected.clicked.connect(self.DoForSelected)
-            msgBox = QtGui.QMessageBox(parent)
+            msgBox = QtWidgets.QMessageBox(parent)
             msgBox.setText(msg)
             msgBox.setWindowTitle(dialogtitle)
             #msgBox.setWindowModality(Qt.ApplicationModal)
-            msgBox.addButton(btnAll, QtGui.QMessageBox.ActionRole)
-            msgBox.addButton(btnSelected, QtGui.QMessageBox.ActionRole)
-            msgBox.addButton(QtGui.QMessageBox.Cancel)
+            msgBox.addButton(btnAll, QtWidgets.QMessageBox.ActionRole)
+            msgBox.addButton(btnSelected, QtWidgets.QMessageBox.ActionRole)
+            msgBox.addButton(QtWidgets.QMessageBox.Cancel)
             reply = msgBox.exec_()
             self.result = reply  # ALL=0, SELECTED=1
         elif question == 'DateShift':
             supported_units = [u'microseconds', u'milliseconds', u'seconds', u'minutes', u'hours', u'days', u'weeks']
             while True:
-                answer = str(qgis.PyQt.QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'askuser', "User input needed"), returnunicode(QCoreApplication.translate(u'askuser', "Give needed adjustment of date/time for the data.\nSupported format: +- X <resolution>\nEx: 1 hours, -1 hours, -1 days\nSupported units:\n%s"))%', '.join(supported_units), qgis.PyQt.QtGui.QLineEdit.Normal, u'0 hours')[0])
+                answer = str(qgis.PyQt.QtWidgets.QInputDialog.getText(None, QCoreApplication.translate(u'askuser', "User input needed"), returnunicode(QCoreApplication.translate(u'askuser', "Give needed adjustment of date/time for the data.\nSupported format: +- X <resolution>\nEx: 1 hours, -1 hours, -1 days\nSupported units:\n%s"))%', '.join(supported_units), qgis.PyQt.QtWidgets.QLineEdit.Normal, u'0 hours')[0])
                 if not answer:
                     self.result = u'cancel'
                     break
@@ -195,13 +195,13 @@ class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
                 self.comboBox.addItem(existing)
 
         for button_name in button_names:
-            button = QtGui.QPushButton(button_name)
+            button = QtWidgets.QPushButton(button_name)
             button.setObjectName(button_name.lower())
             self.buttonBox.addButton(button, QtWidgets.QDialogButtonBox.ActionRole)
             self.connect(button, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.button_clicked)
 
-        self.reuse_label = qgis.PyQt.QtGui.QLabel(QCoreApplication.translate(u'NotFoundQuestion', u'Reuse answer for all identical'))
-        self._reuse_column = qgis.PyQt.QtGui.QComboBox()
+        self.reuse_label = qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate(u'NotFoundQuestion', u'Reuse answer for all identical'))
+        self._reuse_column = qgis.PyQt.QtWidgets.QComboBox()
         self._reuse_column.addItem(u'')
         if isinstance(reuse_header_list, (list, tuple)):
             self.reuse_layout.addWidget(self.reuse_label)
@@ -210,7 +210,7 @@ class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
             self._reuse_column.addItems(reuse_header_list)
             self.reuse_column_temp = reuse_column
 
-        _label = QtGui.QLabel(msg)
+        _label = QtWidgets.QLabel(msg)
         if 140 < _label.height() <= 300:
             self.setGeometry(500, 150, self.width(), 415)
         elif _label.height() > 300:
@@ -260,14 +260,14 @@ class HtmlDialog(QtWidgets.QDialog):
         self.resize(600, 500)
         self.webView = QtWebKit.QWebView()
         self.setWindowTitle(title)
-        self.verticalLayout= QtGui.QVBoxLayout()
+        self.verticalLayout= QtWidgets.QVBoxLayout()
         self.verticalLayout.setSpacing(2)
         self.verticalLayout.setMargin(0)
         self.verticalLayout.addWidget(self.webView)
-        self.closeButton = QtGui.QPushButton()
+        self.closeButton = QtWidgets.QPushButton()
         self.closeButton.setText(QCoreApplication.translate(u'HtmlDialog', "Close"))
         self.closeButton.setMaximumWidth(150)
-        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setSpacing(2)
         self.horizontalLayout.setMargin(0)
         self.horizontalLayout.addStretch(1000)
@@ -479,7 +479,7 @@ def null_2_empty_string(input_string):
 
 def pop_up_info(msg='',title=QCoreApplication.translate(u'pop_up_info', 'Information'),parent=None):
     """Display an info message via Qt box"""
-    QtGui.QMessageBox.information(parent, title, '%s' % (msg))
+    QtWidgets.QMessageBox.information(parent, title, '%s' % (msg))
 
 
 def return_lower_ascii_string(textstring):
@@ -867,23 +867,23 @@ def ask_for_charset(default_charset=None, msg=None):
         if default_charset is None:
             if msg is None:
                 msg = returnunicode(QCoreApplication.translate(u'ask_for_charset',"Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer %s is default."))%localencoding
-            charsetchoosen = QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_charset',"Set charset encoding"), msg,QtGui.QLineEdit.Normal,getcurrentlocale()[1])[0]
+            charsetchoosen = QtWidgets.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_charset',"Set charset encoding"), msg,QtWidgets.QLineEdit.Normal,getcurrentlocale()[1])[0]
         else:
             if msg is None:
                 msg = QCoreApplication.translate(u'ask_for_charset', "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.")
-            charsetchoosen = QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_charset',"Set charset encoding"), msg, QtGui.QLineEdit.Normal, default_charset)[0]
+            charsetchoosen = QtWidgets.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_charset',"Set charset encoding"), msg, QtWidgets.QLineEdit.Normal, default_charset)[0]
     except Exception as e:
         if default_charset is None:
             default_charset = 'utf-8'
         if msg is None:
             msg = QCoreApplication.translate(u'ask_for_charset', "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.")
-        charsetchoosen = QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_charset',"Set charset encoding"), msg, QtGui.QLineEdit.Normal, default_charset)[0]
+        charsetchoosen = QtWidgets.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_charset',"Set charset encoding"), msg, QtWidgets.QLineEdit.Normal, default_charset)[0]
 
     return str(charsetchoosen)
 
 
 def ask_for_export_crs(default_crs=u''):
-    return str(QtGui.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_export_crs',"Set export crs"), QCoreApplication.translate(u'ask_for_export_crs', "Give the crs for the exported database.\n"),QtGui.QLineEdit.Normal,default_crs)[0])
+    return str(QtWidgets.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_export_crs',"Set export crs"), QCoreApplication.translate(u'ask_for_export_crs', "Give the crs for the exported database.\n"),QtWidgets.QLineEdit.Normal,default_crs)[0])
 
 
 def lists_to_string(alist_of_lists, quote=False):
@@ -1314,9 +1314,9 @@ def anything_to_string_representation(anything, itemjoiner=u', ', pad=u'', dictf
 
 def waiting_cursor(func):
     def func_wrapper(*args, **kwargs):
-        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))
+        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))
         ret = func(*args, **kwargs)
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
         return ret
     return func_wrapper
 
@@ -1389,10 +1389,10 @@ def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_field
 
 
 def ask_for_delimiter(header=QCoreApplication.translate(u'ask_for_delimiter', u'Give delimiter'), question=u'', default=u';'):
-    _delimiter = qgis.PyQt.QtGui.QInputDialog.getText(None,
+    _delimiter = qgis.PyQt.QtWidgets.QInputDialog.getText(None,
                                                   QCoreApplication.translate(u'ask_for_delimiter', u"Give delimiter"),
                                                   question,
-                                                  qgis.PyQt.QtGui.QLineEdit.Normal,
+                                                  qgis.PyQt.QtWidgets.QLineEdit.Normal,
                                                   default)
     if not _delimiter[1]:
         MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate(u'ask_for_delimiter', u'Delimiter not given. Stopping.')))
@@ -1489,15 +1489,15 @@ def general_exception_handler(func):
             result = func(*args, **kwargs)
         except UserInterruptError:
             # The user interrupted the process.
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             pass
         except UsageError as e:
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             msg = str(e)
             if msg:
                 MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'general_exception_handler', u'Usage error: %s'))%str(e))
         except:
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             raise
         else:
             return result
@@ -1657,8 +1657,8 @@ class PlotTemplates(object):
         old_string = self.readable_output(self.loaded_template)
 
         msg = returnunicode(QCoreApplication.translate(u'StoredSettings', u'Replace the settings string with a new settings string.'))
-        new_string = qgis.PyQt.QtGui.QInputDialog.getText(None, returnunicode(QCoreApplication.translate(u'StoredSettings', "Edit settings")), msg,
-                                                           qgis.PyQt.QtGui.QLineEdit.Normal, old_string)
+        new_string = qgis.PyQt.QtWidgets.QInputDialog.getText(None, returnunicode(QCoreApplication.translate(u'StoredSettings', "Edit settings")), msg,
+                                                           qgis.PyQt.QtWidgets.QLineEdit.Normal, old_string)
         if not new_string[1]:
             raise UserInterruptError()
 
@@ -1774,7 +1774,7 @@ class PlotTemplates(object):
     def update_template_list(self):
         self.template_list.clear()
         for filename, template in sorted(iter(self.templates.items()), key=lambda x: os.path.basename(x[0])):
-            qlistwidgetitem = qgis.PyQt.QtGui.QListWidgetItem()
+            qlistwidgetitem = qgis.PyQt.QtWidgets.QListWidgetItem()
             qlistwidgetitem.setText(template['name'])
             qlistwidgetitem.filename = template['filename']
             self.template_list.addItem(qlistwidgetitem)

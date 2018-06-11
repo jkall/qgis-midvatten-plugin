@@ -230,8 +230,8 @@ class DbConnectionManager(object):
             temptable_name = u'temp_%s'%temptable_name
         existing_names = list(tables_columns(dbconnection=self).keys())
         while temptable_name in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
-            reponse = qgis.PyQt.QtGui.QMessageBox.question(None, utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u"Warning - Table name confusion!")),utils.returnunicode(QCoreApplication.translate(u'midv_data_importer', u'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''))%(self.temptable_name, self.temptable_name, self.temptable_name), qgis.PyQt.QtGui.QMessageBox.Yes | qgis.PyQt.QtGui.QMessageBox.No)
-            if reponse == qgis.PyQt.QtGui.QMessageBox.Yes:
+            reponse = qgis.PyQt.QtWidgets.QMessageBox.question(None, utils.returnunicode(QCoreApplication.translate(u'DbConnectionManager', u"Warning - Table name confusion!")),utils.returnunicode(QCoreApplication.translate(u'midv_data_importer', u'''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''))%(self.temptable_name, self.temptable_name, self.temptable_name), qgis.PyQt.QtWidgets.QMessageBox.Yes | qgis.PyQt.QtWidgets.QMessageBox.No)
+            if reponse == qgis.PyQt.QtWidgets.QMessageBox.Yes:
                 self.temptable_name = '%s_2' % self.temptable_name
             else:
                 raise utils.UserInterruptError()

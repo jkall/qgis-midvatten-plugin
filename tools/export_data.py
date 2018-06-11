@@ -29,7 +29,6 @@ import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 import qgis.utils
-from qgis.core import QgsMessageLog
 from qgis.PyQt.QtCore import QCoreApplication
 
 class ExportData(object):

@@ -39,7 +39,7 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInteger')
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_create_db_locale_sv(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface, mocked_messagebar):
@@ -61,7 +61,7 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInteger')
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_create_db_locale_en(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
@@ -81,7 +81,7 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInteger')
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_create_db_setup_string(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
@@ -104,7 +104,7 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInteger')
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_about_db_creation(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
@@ -137,7 +137,7 @@ class TestFillDb(utils_for_tests.MidvattenTestPostgisNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.PyQt4.QtGui.QInputDialog.getInteger')
+    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInteger')
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     def test_about_db_creation_version_string(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):

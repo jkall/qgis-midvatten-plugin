@@ -137,7 +137,7 @@ class MockQgsProjectInstance(object):
 
 class DummyInterface(object):
     def __init__(self):
-        self.widget = QtGui.QWidget()
+        self.widget = QtWidgets.QWidget()
         self.mainwindow = QtWidgets.QMainWindow(self.widget)
     def __getattr__(self, *args, **kwargs):
         def dummy(*args, **kwargs):
@@ -166,7 +166,7 @@ class DummyInterface2(object):
     """
     def __init__(self):
         self.mock = mock.MagicMock()
-        self.widget = QtGui.QWidget()
+        self.widget = QtWidgets.QWidget()
         self.mainwindow = QtWidgets.QMainWindow(self.widget)
         self.mock.mainWindow.return_value = self.mainwindow
         self.mock.layers.return_value = list(QgsProject.instance().mapLayers().values())

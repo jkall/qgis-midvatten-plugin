@@ -147,12 +147,12 @@ class TestAskUser(object):
     PyQt4_QtGui_QInputDialog_getText = MockUsingReturnValue([u'-1 hours'])
     cancel = MockUsingReturnValue([u''])
 
-    @mock.patch('PyQt4.QtGui.QInputDialog.getText', PyQt4_QtGui_QInputDialog_getText.get_v)
+    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText', PyQt4_QtGui_QInputDialog_getText.get_v)
     def test_askuser_dateshift(self):
         question = utils.Askuser('DateShift')
         assert question.result == ['-1', 'hours']
 
-    @mock.patch('PyQt4.QtGui.QInputDialog.getText', cancel.get_v)
+    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText', cancel.get_v)
     def test_askuser_dateshift_cancel(self):
         question = utils.Askuser('DateShift')
         assert question.result == u'cancel'

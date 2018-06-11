@@ -15,7 +15,7 @@ and qchainage plugin (C) 2012 by Werner Macho
 """
 
 import qgis.PyQt
-from qgis.core import Qgis, QgsFeature, QgsField, QgsFields, QgsProject, QgsMessageLog, QgsRaster, QgsVectorLayer
+from qgis.core import Qgis, QgsFeature, QgsField, QgsFields, QgsProject, QgsApplication, QgsRaster, QgsVectorLayer
 
 
 def qchain(sectionlinelayer, distance): #original start function from qchainage
@@ -118,7 +118,7 @@ def points_along_line(layerout, startpoint, endpoint, distance, layer):#,selecte
         # Add feature ID of selected feature
         fid = feature.id()
         if not geom:
-            QgsMessageLog.logMessage("No geometry", "QChainage")
+            QgsApplication.messageLog().logMessage("No geometry", "QChainage")
             continue
 
         features, xarray = create_points_at(startpoint, endpoint, distance, geom, fid,unit)

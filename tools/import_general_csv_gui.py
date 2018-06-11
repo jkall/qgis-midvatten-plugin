@@ -66,7 +66,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.main_vertical_layout.addStretch()
         #General buttons
-        self.select_file_button = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Load data from file')))
+        self.select_file_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Load data from file')))
         self.gridLayout_buttons.addWidget(self.select_file_button, 0, 0)
         self.connect(self.select_file_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
                      lambda: [x() for x in [lambda: self.load_files(),
@@ -74,14 +74,14 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                                                  lambda: self.file_data_loaded_popup()]])
 
 
-        self.import_all_features_button = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Load data from all features\nfrom active layer')))
+        self.import_all_features_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Load data from all features\nfrom active layer')))
         self.gridLayout_buttons.addWidget(self.import_all_features_button, 1, 0)
         self.connect(self.import_all_features_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
                      lambda: [x() for x in [lambda: self.load_from_active_layer(only_selected=False),
                                                  lambda: self.table_chooser.reload(),
                                                  lambda: self.file_data_loaded_popup()]])
 
-        self.import_selected_features_button = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Load data from selected features\nfrom active layer')))
+        self.import_selected_features_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Load data from selected features\nfrom active layer')))
         self.gridLayout_buttons.addWidget(self.import_selected_features_button, 2, 0)
         self.connect(self.import_selected_features_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
                      lambda: [x() for x in [lambda: self.load_from_active_layer(only_selected=True),
@@ -96,11 +96,11 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         self.gridLayout_buttons.addWidget(get_line(), 5, 0)
 
-        self.close_after_import = qgis.PyQt.QtGui.QCheckBox(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Close dialog after import')))
+        self.close_after_import = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Close dialog after import')))
         self.close_after_import.setChecked(True)
         self.gridLayout_buttons.addWidget(self.close_after_import, 6, 0)
 
-        self.start_import_button = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Start import')))
+        self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 7, 0)
         self.connect(self.start_import_button, qgis.PyQt.QtCore.SIGNAL("clicked()"),
                      self.start_import)
@@ -245,9 +245,9 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         importer = import_data_to_db.midv_data_importer()
         answer = importer.general_import(goal_table=goal_table, file_data=file_data)
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
         importer.SanityCheckVacuumDB()
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
 
         if self.close_after_import.isChecked():
             self.close()
@@ -267,9 +267,9 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
     def add_line(self, layout=None):
         """ just adds a line"""
-        # horizontalLineWidget = PyQt4.QtGui.QWidget()
+        # horizontalLineWidget = PyQt4.QtWidgets.QWidget()
         # horizontalLineWidget.setFixedHeight(2)
-        # horizontalLineWidget.setSizePolicy(PyQt4.QtGui.QSizePolicy.Expanding, PyQt4.QtGui.QSizePolicy.Fixed)
+        # horizontalLineWidget.setSizePolicy(PyQt4.QtWidgets.QSizePolicy.Expanding, PyQt4.QtWidgets.QSizePolicy.Fixed)
         # horizontalLineWidget.setStyleSheet(PyQt4.QtCore.QString("background-color: #c0c0c0;"));
         line = qgis.PyQt.QtWidgets.QFrame()
         # line.setObjectName(QString::fromUtf8("line"));
@@ -346,8 +346,8 @@ class ImportTableChooser(VRowEntry):
 
         chooser = RowEntry()
 
-        self.label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', 'Import to table')))
-        self.__import_method = qgis.PyQt.QtGui.QComboBox()
+        self.label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', 'Import to table')))
+        self.__import_method = qgis.PyQt.QtWidgets.QComboBox()
         self.__import_method.addItem(u'')
         self.__import_method.addItems(sorted(list(tables_columns.keys()), key=lambda s: s.lower()))
 
@@ -360,7 +360,7 @@ class ImportTableChooser(VRowEntry):
 
         self.specific_info_widget = VRowEntry()
         self.specific_info_widget.layout.addWidget(get_line())
-        self.specific_table_info = qgis.PyQt.QtGui.QLabel()
+        self.specific_table_info = qgis.PyQt.QtWidgets.QLabel()
         self.specific_info_widget.layout.addWidget(self.specific_table_info)
         self.specific_info_widget.layout.addWidget(get_line())
 
@@ -431,10 +431,10 @@ class ImportTableChooser(VRowEntry):
         self.grid = RowEntryGrid()
         self.layout.addWidget(self.grid.widget)
 
-        self.grid.layout.addWidget(qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'Column name'))), 0, 0)
-        self.grid.layout.addWidget(qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'File column'))), 0, 1)
-        self.grid.layout.addWidget(qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'Static value'))), 0, 2)
-        self.grid.layout.addWidget(qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'Factor'))), 0, 3)
+        self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'Column name'))), 0, 0)
+        self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'File column'))), 0, 1)
+        self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'Static value'))), 0, 2)
+        self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'Factor'))), 0, 3)
 
         for index, tables_columns_info in enumerate(sorted(tables_columns[import_method_name], key=itemgetter(0))):
             column = ColumnEntry(tables_columns_info, file_header, self.connect, self.numeric_datatypes)
@@ -464,18 +464,18 @@ class ColumnEntry(object):
         pk = int(tables_columns_info[5])
         concatted_info = u', '.join([_x for _x in [self.column_type, u'not null' if self.notnull else False,
                                       u'primary key' if pk else False] if _x])
-        label = qgis.PyQt.QtGui.QLabel(u' '.join([u'Column ', self.db_column, u'({})'.format(concatted_info)]))
+        label = qgis.PyQt.QtWidgets.QLabel(u' '.join([u'Column ', self.db_column, u'({})'.format(concatted_info)]))
 
         self.column_widgets = [label]
         self._all_widgets = [label]
 
-        self.combobox = qgis.PyQt.QtGui.QComboBox()
+        self.combobox = qgis.PyQt.QtWidgets.QComboBox()
         self.combobox.setEditable(True)
         self.combobox.addItem(u'')
         self.combobox.addItems(sorted(self.file_header, key=lambda s: s.lower()))
 
         if self.db_column == u'obsid':
-            self.obsids_from_selection = qgis.PyQt.QtGui.QCheckBox(ru(QCoreApplication.translate(u'ColumnEntry', u'Obsid from qgis selection')))
+            self.obsids_from_selection = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate(u'ColumnEntry', u'Obsid from qgis selection')))
             self.obsids_from_selection.setToolTip(ru(QCoreApplication.translate(u'ColumnEntry', u'Select 1 obsid from obs_points or obs_lines attribute table or map.')))
             self.connect(self.obsids_from_selection, qgis.PyQt.QtCore.SIGNAL("clicked()"), self.obsids_from_selection_checked)
 
@@ -490,12 +490,12 @@ class ColumnEntry(object):
             self.column_widgets.append(self.combobox)
             self._all_widgets.extend(self.column_widgets)
 
-        self.static_checkbox = qgis.PyQt.QtGui.QCheckBox()
+        self.static_checkbox = qgis.PyQt.QtWidgets.QCheckBox()
         self.static_checkbox.setToolTip(ru(QCoreApplication.translate(u'ColumnEntry', u'The supplied string will be written to the current column name for all\nimported rows instead of being read from file column.')))
         self.column_widgets.append(self.static_checkbox)
         self._all_widgets.append(self.static_checkbox)
 
-        self._factor = qgis.PyQt.QtGui.QLineEdit()
+        self._factor = qgis.PyQt.QtWidgets.QLineEdit()
         self._factor.setText(u'1')
         self._factor.setToolTip(ru(QCoreApplication.translate(u'ColumnEntry', u'Multiply each imported value in the column with a factor.')))
         self._factor.setFixedWidth(40)
@@ -547,7 +547,7 @@ class ColumnEntry(object):
     def static_checkbox_checked(self):
         if self.static_checkbox.isChecked():
             self.combobox.setEnabled(True)
-            if isinstance(self.obsids_from_selection, qgis.PyQt.QtGui.QCheckBox):
+            if isinstance(self.obsids_from_selection, qgis.PyQt.QtWidgets.QCheckBox):
                 self.obsids_from_selection.setChecked(False)
 
     @property

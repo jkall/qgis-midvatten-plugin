@@ -86,20 +86,20 @@ class Stratigraphy(object):
             return
         # initiate the datastore if not yet done   
         self.initStore()   
-        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)  # Sets the mouse cursor to wait symbol
+        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)  # Sets the mouse cursor to wait symbol
         try:  # return from store.getData is stored in data only if no object belonging to DataSanityError class is created
             self.data = self.store.getData(ids, lyr)    # added lyr as an argument!!!
         except DataSanityError as e: # if an object 'e' belonging to DataSanityError is created, then do following
             print("DataSanityError %s"%str(e))
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"Data sanity problem, obsid: %s\n%s")) % (e.sond_id, e.message))
             return
         except Exception as e: # if an object 'e' belonging to DataSanityError is created, then do following
             print("exception : %s"%str(e))
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u' Stratigraphy', u"The stratigraphy plot failed, check Midvatten plugin settings and your data!")))
             return
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()  # Restores the mouse cursor to normal symbol
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()  # Restores the mouse cursor to normal symbol
         # show widget
         w = SurveyDialog()
         #w.widget.setData2_nosorting(data)  #THIS IS IF DATA IS NOT TO BE SORTED!!
@@ -553,16 +553,16 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
         
     def printDiagram(self):
         """ outputs the diagram to the printer (or PDF) """
-        printer = qgis.PyQt.QtGui.QPrinter(qgis.PyQt.QtGui.QPrinter.HighResolution)
+        printer = qgis.PyQt.QtPrintSupport.QPrinter(qgis.PyQt.QtPrintSupport.QPrinter.HighResolution)
         
         # set defaults
-        printer.setOrientation(qgis.PyQt.QtGui.QPrinter.Landscape)
+        printer.setOrientation(qgis.PyQt.QtPrintSupport.QPrinter.Landscape)
 
     # setting output file name results in not opening print dialog on Win
         #printer.setOutputFileName("arpat.pdf")
         
         # show print dialog
-        dlg = qgis.PyQt.QtGui.QPrintDialog(printer, self)
+        dlg = qgis.PyQt.QtPrintSupport.QPrintDialog(printer, self)
         if dlg.exec_() != qgis.PyQt.QtWidgets.QDialog.Accepted:
             return
         
@@ -586,29 +586,29 @@ class SurveyDialog(qgis.PyQt.QtWidgets.QDialog):
 
         self.setWindowTitle(ru(QCoreApplication.translate(u'SurveyDialog', u"Identify Results")))
         
-        self.layout = qgis.PyQt.QtGui.QVBoxLayout(self)
+        self.layout = qgis.PyQt.QtWidgets.QVBoxLayout(self)
         self.layout.setMargin(5)
         
-        self.layout2 = qgis.PyQt.QtGui.QHBoxLayout()
+        self.layout2 = qgis.PyQt.QtWidgets.QHBoxLayout()
         
         self.widget = SurveyWidget()
         self.layout.addWidget(self.widget)
         
-        self.radGeo = qgis.PyQt.QtGui.QRadioButton("Geo")
+        self.radGeo = qgis.PyQt.QtWidgets.QRadioButton("Geo")
         self.radGeo.setChecked(True)    #Default is to show colors as per geo
         self.layout2.addWidget(self.radGeo)
-        self.radHydro = qgis.PyQt.QtGui.QRadioButton("Hydro")
+        self.radHydro = qgis.PyQt.QtWidgets.QRadioButton("Hydro")
         #self.radHydro.setChecked(False)  #Default is NOT to show colors as per hydro
         self.layout2.addWidget(self.radHydro)
         
-        spacerItem = qgis.PyQt.QtGui.QSpacerItem(100,0)
+        spacerItem = qgis.PyQt.QtWidgets.QSpacerItem(100,0)
         self.layout2.addItem(spacerItem)
         
-        self.chkShowDesc = qgis.PyQt.QtGui.QCheckBox(ru(QCoreApplication.translate(u'SurveyDialog', u"Show text")))
+        self.chkShowDesc = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate(u'SurveyDialog', u"Show text")))
         self.chkShowDesc.setChecked(True)
         self.layout2.addWidget(self.chkShowDesc)
 
-        self.GeologyOrCommentCBox = qgis.PyQt.QtGui.QComboBox(self)
+        self.GeologyOrCommentCBox = qgis.PyQt.QtWidgets.QComboBox(self)
         self.GeologyOrCommentCBox.addItem('geology')
         self.GeologyOrCommentCBox.addItem('comment')
         self.GeologyOrCommentCBox.addItem('geoshort')
@@ -619,10 +619,10 @@ class SurveyDialog(qgis.PyQt.QtWidgets.QDialog):
         
 
 
-        self.btnPrint = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'SurveyDialog', u"Print")))
+        self.btnPrint = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'SurveyDialog', u"Print")))
         self.layout2.addWidget(self.btnPrint)
         
-        self.btnClose = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'SurveyDialog', u"Close")))
+        self.btnClose = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'SurveyDialog', u"Close")))
         self.layout2.addWidget(self.btnClose)
         
         self.layout.addLayout(self.layout2)

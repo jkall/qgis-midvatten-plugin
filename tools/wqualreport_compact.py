@@ -119,11 +119,11 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
                         if isinstance(val, (list, tuple)):
                             val = u'\n'.join(val)
                         selfattr.setPlainText(val)
-                    elif isinstance(selfattr, (qgis.PyQt.QtGui.QCheckBox, qgis.PyQt.QtGui.QRadioButton)):
+                    elif isinstance(selfattr, (qgis.PyQt.QtWidgets.QCheckBox, qgis.PyQt.QtWidgets.QRadioButton)):
                         selfattr.setChecked(val)
-                    elif isinstance(selfattr, qgis.PyQt.QtGui.QLineEdit):
+                    elif isinstance(selfattr, qgis.PyQt.QtWidgets.QLineEdit):
                         selfattr.setText(val)
-                    elif isinstance(selfattr, qgis.PyQt.QtGui.QComboBox):
+                    elif isinstance(selfattr, qgis.PyQt.QtWidgets.QComboBox):
                         gui_utils.set_combobox(selfattr, val, add_if_not_exists=False)
 
     @utils.general_exception_handler
@@ -143,11 +143,11 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
             else:
                 if isinstance(attr, qgis.PyQt.QtWidgets.QPlainTextEdit):
                     val = [x for x in attr.toPlainText().split(u'\n') if x]
-                elif isinstance(attr, (qgis.PyQt.QtGui.QCheckBox, qgis.PyQt.QtGui.QRadioButton)):
+                elif isinstance(attr, (qgis.PyQt.QtWidgets.QCheckBox, qgis.PyQt.QtWidgets.QRadioButton)):
                     val = attr.isChecked()
-                elif isinstance(attr, qgis.PyQt.QtGui.QLineEdit):
+                elif isinstance(attr, qgis.PyQt.QtWidgets.QLineEdit):
                     val = attr.text()
-                elif isinstance(attr, qgis.PyQt.QtGui.QComboBox):
+                elif isinstance(attr, qgis.PyQt.QtWidgets.QComboBox):
                     val = attr.currentText()
                 else:
                     utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Programming error. The Qt-type %s is unhandled.'))%str(type(attr)))
@@ -164,8 +164,8 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
                                                              listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
 
         msg = ru(QCoreApplication.translate(u'CompactWqualReportUi', u'Replace the settings string with a new settings string.'))
-        new_string = qgis.PyQt.QtGui.QInputDialog.getText(None, ru(QCoreApplication.translate(u'DrillreportUi', "Edit settings string")), msg,
-                                                           qgis.PyQt.QtGui.QLineEdit.Normal, old_string)
+        new_string = qgis.PyQt.QtWidgets.QInputDialog.getText(None, ru(QCoreApplication.translate(u'DrillreportUi', "Edit settings string")), msg,
+                                                           qgis.PyQt.QtWidgets.QLineEdit.Normal, old_string)
         if not new_string[1]:
             raise utils.UserInterruptError()
 

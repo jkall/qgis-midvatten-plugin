@@ -212,8 +212,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         try:
             width = float(width)
         except ValueError:
-            #self.layoutplot.setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Extended)
-            #self.widgetPlot.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
+            #self.layoutplot.setHorizontalPolicy(PyQt4.QtWidgets.QSizePolicy.Extended)
+            #self.widgetPlot.sizePolicy().setHorizontalPolicy(PyQt4.QtWidgets.QSizePolicy.Expanding)
             self.widgetPlot.setMinimumWidth(100)
             self.widgetPlot.setMaximumWidth(16777215)
             #self.widgetPlot.adjustSize()
@@ -226,7 +226,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         try:
             height = float(height)
         except ValueError:
-            #self.widgetPlot.sizePolicy().setVerticalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
+            #self.widgetPlot.sizePolicy().setVerticalPolicy(PyQt4.QtWidgets.QSizePolicy.Expanding)
             self.widgetPlot.setMinimumHeight(100)
             self.widgetPlot.setMaximumHeight(16777215)
         else:
@@ -243,7 +243,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         self.used_format = None
 
-        QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))#show the user this may take a long time...
+        QtWidgets.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))#show the user this may take a long time...
 
         self.axes.clear()
         self.axes.legend_ = None
@@ -278,7 +278,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
     
         self.refreshPlot()
     
-        QtGui.QApplication.restoreOverrideCursor()  # now this long process is done and the cursor is back as normal
+        QtWidgets.QApplication.restoreOverrideCursor()  # now this long process is done and the cursor is back as normal
 
     def drawPlot(self, dbconnection, nop, i, My_format, table_ComboBox, xcol_ComboBox, ycol_ComboBox, Filter1_ComboBox, Filter1_QListWidget, Filter2_ComboBox, Filter2_QListWidget, PlotType_comboBox, pandas_calc, checkBox_remove_mean, LineEditFactor, LineEditOffset):
                 
@@ -675,7 +675,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         ConnectionOK, list_data= db_utils.sql_load_fr_db(sql)
         for post in list_data:
-            item = QtGui.QListWidgetItem(str(post[0]))
+            item = QtWidgets.QListWidgetItem(str(post[0]))
             getattr(self, QListWidgetname).addItem(item)
 
     @utils.general_exception_handler
@@ -829,7 +829,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.ms.save_settings('custplot_templates')
 
     def set_groupbox_children_visibility(self, groupbox_widget):
-        children = groupbox_widget.findChildren(qgis.PyQt.QtGui.QWidget)
+        children = groupbox_widget.findChildren(qgis.PyQt.QtWidgets.QWidget)
         for child in children:
             child.setVisible(groupbox_widget.isChecked())
 
@@ -852,11 +852,11 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 class PandasCalculations(object):
     def __init__(self, gridlayout):
 
-        self.widget = qgis.PyQt.QtGui.QWidget()
+        self.widget = qgis.PyQt.QtWidgets.QWidget()
 
         #General settings
-        self.rule_label = qgis.PyQt.QtGui.QLabel(u'Resample rule')
-        self.rule = qgis.PyQt.QtGui.QLineEdit()
+        self.rule_label = qgis.PyQt.QtWidgets.QLabel(u'Resample rule')
+        self.rule = qgis.PyQt.QtWidgets.QLineEdit()
         for wid in [self.rule_label, self.rule]:
             wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
                            u'Steplength for resampling, ex:\n'
@@ -868,8 +868,8 @@ class PandasCalculations(object):
                            u'No resampling if field is empty\n'
                            u'See pandas pandas.DataFrame.resample documentation for more info.')))
 
-        self.base_label = qgis.PyQt.QtGui.QLabel(u'Resample base')
-        self.base = qgis.PyQt.QtGui.QLineEdit()
+        self.base_label = qgis.PyQt.QtWidgets.QLabel(u'Resample base')
+        self.base = qgis.PyQt.QtWidgets.QLineEdit()
         for wid in [self.base_label, self.base]:
             wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
                            u'The hour to start each timestep when rule "evenly subdivide 1 day" (for example Rule = 24h)\n'
@@ -878,8 +878,8 @@ class PandasCalculations(object):
                            u'For frequencies that evenly subdivide 1 day, the "origin" of the aggregated intervals.\n'
                            u'For example, for "5min" frequency, base could range from 0 through 4. Defaults to 0.')))
 
-        self.how_label = qgis.PyQt.QtGui.QLabel(u'Resample how')
-        self.how = qgis.PyQt.QtGui.QLineEdit()
+        self.how_label = qgis.PyQt.QtWidgets.QLabel(u'Resample how')
+        self.how = qgis.PyQt.QtWidgets.QLineEdit()
         for wid in [self.how_label, self.how]:
             wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
                            u'How to make the resample, ex. "mean" (default), "first", "last", "sum".\n'
@@ -887,10 +887,10 @@ class PandasCalculations(object):
                            u'(though "how" is not explained a lot)')))
 
         #Moving average:
-        self.window_label = qgis.PyQt.QtGui.QLabel(u'Rolling mean window')
-        self.window = qgis.PyQt.QtGui.QLineEdit(u'')
-        self.center_label = qgis.PyQt.QtGui.QLabel(u'Rolling mean center')
-        self.center = qgis.PyQt.QtGui.QLineEdit(u'')
+        self.window_label = qgis.PyQt.QtWidgets.QLabel(u'Rolling mean window')
+        self.window = qgis.PyQt.QtWidgets.QLineEdit(u'')
+        self.center_label = qgis.PyQt.QtWidgets.QLabel(u'Rolling mean center')
+        self.center = qgis.PyQt.QtWidgets.QLineEdit(u'')
         for wid in [self.window_label, self.window]:
             wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
                            u'The number of timesteps in each moving average (rolling mean) mean\n'
@@ -908,21 +908,21 @@ class PandasCalculations(object):
 
         for lineedit in [self.rule, self.base, self.how, self.window, self.center]:
             #lineedit.sizeHint()setFixedWidth(122)
-            lineedit.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtGui.QSizePolicy.Preferred)
+            lineedit.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtWidgets.QSizePolicy.Preferred)
 
         maximumwidth = 0
         for label in [self.rule_label, self.base_label, self.how_label, self.window_label, self.center_label]:
-            testlabel = qgis.PyQt.QtGui.QLabel()
+            testlabel = qgis.PyQt.QtWidgets.QLabel()
             testlabel.setText(label.text())
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
         for label in [self.rule_label, self.base_label, self.how_label, self.window_label, self.center_label]:
             label.setFixedWidth(maximumwidth)
             #label.setMinimumWidth(maximumwidth)
-            label.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtGui.QSizePolicy.Fixed)
+            label.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtWidgets.QSizePolicy.Fixed)
 
         hline = horizontal_line()
-        hline.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtGui.QSizePolicy.Fixed)
+        hline.sizePolicy().setHorizontalPolicy(qgis.PyQt.QtWidgets.QSizePolicy.Fixed)
         gridlayout.addWidget(hline)
         for col1, col2 in [(self.rule_label, self.rule),
                            (self.base_label, self.base),

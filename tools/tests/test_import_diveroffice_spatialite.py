@@ -75,7 +75,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
@@ -129,7 +129,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
@@ -182,7 +182,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
@@ -237,7 +237,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
@@ -282,7 +282,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.utils.select_files')
             def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
@@ -330,7 +330,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
             @mock.patch('import_data_to_db.utils.Askuser')
             @mock.patch('qgis.utils.iface', autospec=True)
-            @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+            @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.utils.select_files')
             def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
@@ -392,7 +392,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
@@ -453,7 +453,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
@@ -514,7 +514,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                 @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                 @mock.patch('import_data_to_db.utils.Askuser')
                 @mock.patch('qgis.utils.iface', autospec=True)
-                @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
                 @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                 @mock.patch('import_data_to_db.utils.select_files')
                 def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
@@ -574,7 +574,7 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtGui.QInputDialog.getText')
+                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion, mock_messagebarandlog):

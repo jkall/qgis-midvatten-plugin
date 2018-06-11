@@ -82,7 +82,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     def do_it(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
 
         #show the user this may take a long time...
-        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))
+        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))
         #settings must be recieved here since plot windows may stay open (hence sectionplot instance activated) while a new qgis project is opened or midv settings are chaned 
         self.ms = msettings
         #Draw the widget
@@ -128,7 +128,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.fill_dem_list()
 
         
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor() #now this long process is done and the cursor is back as normal
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor() #now this long process is done and the cursor is back as normal
         
         #get PlotData
         self.get_plot_data()
@@ -163,7 +163,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.change_plot_size(width, height)
 
         try:
-            qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))#show the user this may take a long time...
+            qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))#show the user this may take a long time...
             try:
                 self.annotationtext.remove()
             except:
@@ -224,17 +224,17 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         except KeyError as e:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Section plot optional settings error, press "Restore defaults"')),
                                             log_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Error msg: %s'))%e)
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             self.dbconnection.closedb()
             self.dbconnection = None
 
         except:
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             self.dbconnection.closedb()
             self.dbconnection = None
             raise
         else:
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def execute_query(self,query,params=(),commit=False):#from qspatialite, it is only used by self.uploadQgisVectorLayer
         """Execute query (string) with given parameters (tuple) (optionnaly perform commit to save Db) and return resultset [header,data] or [flase,False] if error"""
@@ -455,7 +455,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         return LengthAlongTable
 
     def get_plot_data(self):#this is called when class is instantiated, collecting data specific for the profile line layer and the obs_points
-        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))#show the user this may take a long time...
+        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))#show the user this may take a long time...
         self.plotx = {}
         self.plotbottom = {}
         self.plotbarlength = {}
@@ -566,7 +566,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             table = np.array(recs, dtype=My_format)  #NDARRAY
             self.obs_lines_plot_data=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write self.obs_lines_plot_data.values
         #print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id) + str(self.barlengths) + str(self.bottoms))#debug
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     def get_plot_data_2(self):#collecting data depending on a number of selections in left side panel
         self.obsid_wlid=[]#if no stratigr plot, then obsid will be plotted close to water level instead of toc or gs
@@ -853,7 +853,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                     text = self.secax.annotate(o, xy=(m,n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])
 
     def set_groupbox_children_visibility(self, groupbox_widget):
-        children = groupbox_widget.findChildren(qgis.PyQt.QtGui.QWidget)
+        children = groupbox_widget.findChildren(qgis.PyQt.QtWidgets.QWidget)
         for child in children:
             child.setVisible(groupbox_widget.isChecked())
 
@@ -861,8 +861,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         try:
             width = int(width)
         except:
-            #self.layoutplot.setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Extended)
-            #self.widgetPlot.sizePolicy().setHorizontalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
+            #self.layoutplot.setHorizontalPolicy(PyQt4.QtWidgets.QSizePolicy.Extended)
+            #self.widgetPlot.sizePolicy().setHorizontalPolicy(PyQt4.QtWidgets.QSizePolicy.Expanding)
             self.widget.setMinimumWidth(0)
             self.widget.setMaximumWidth(16777215)
             #self.widgetPlot.adjustSize()
@@ -875,7 +875,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         try:
             height = int(height)
         except:
-            #self.widgetPlot.sizePolicy().setVerticalPolicy(PyQt4.QtGui.QSizePolicy.Expanding)
+            #self.widgetPlot.sizePolicy().setVerticalPolicy(PyQt4.QtWidgets.QSizePolicy.Expanding)
             self.widget.setMinimumHeight(0)
             self.widget.setMaximumHeight(16777215)
         else:

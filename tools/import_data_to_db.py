@@ -62,7 +62,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                 return
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'\nImport to %s starting\n--------------------'))%goal_table)
 
-            qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+            qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
 
             self.temptable_name = goal_table + u'_temp'
 
@@ -189,10 +189,10 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                 dbconnection.commit_and_closedb()
             else:
                 dbconnection.commit()
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
         except:
             exc_info = sys.exc_info()
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             try:
                 # If an external dbconnection is supplied, do not close it.
                 if _dbconnection is None:
@@ -353,9 +353,9 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             dbconnection = db_utils.DbConnectionManager()
         sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate(u'midv_data_importer', """It is a strong recommendation that you do vacuum the database now, do you want to do so?\n(If unsure - then answer "yes".)""")), ru(QCoreApplication.translate(u'midv_data_importer', 'Vacuum the database?')))
         if sanity.result == 1:
-            qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+            qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
             dbconnection.vacuum()    # since a temporary table was loaded and then deleted - the db may need vacuuming
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
 
     def import_error_msg(self):
         return ru(QCoreApplication.translate(u'midv_data_importer', u'Import error, see log message panel'))
@@ -370,7 +370,7 @@ def import_exception_handler(func):
         try:
             result = func(*args, **kwargs)
         except MidvDataImporterError as e:
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Import error, see log message panel')),
                                             log_msg=str(e))
         else:

@@ -133,7 +133,7 @@ class TestFieldLoggerImporterNoDb(object):
 
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
                 mock_charset.return_value = ('utf-8', True)
@@ -167,7 +167,7 @@ class TestFieldLoggerImporterNoDb(object):
 
         with utils.tempinput(''.join(f), charset=u'cp1252') as filename:
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
                 mock_charset.return_value = ('utf-8', True)
@@ -201,7 +201,7 @@ class TestFieldLoggerImporterNoDb(object):
 
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
                 mock_charset.return_value = ('utf-8', True)
@@ -236,7 +236,7 @@ class TestFieldLoggerImporterNoDb(object):
         with utils.tempinput(''.join(f)) as filename:
             @mock.patch('import_fieldlogger.utils.ask_for_delimiter')
             @mock.patch('import_fieldlogger.utils.QtWidgets.QFileDialog.getOpenFileNames')
-            @mock.patch('import_fieldlogger.utils.QtGui.QInputDialog.getText')
+            @mock.patch('import_fieldlogger.utils.QtWidgets.QInputDialog.getText')
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_delimiter_question):
                 mock_delimiter_question.return_value = (u',', True)

@@ -27,7 +27,7 @@ import qgis.utils
 import shutil
 import sys
 # Import the PyQt and QGIS libraries
-from qgis.core import Qgis, QgsMessageLog
+from qgis.core import Qgis, QgsApplication
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication, QDir, QObject, QSettings, QUrl, Qt
 from qgis.PyQt.QtWidgets import QAction, QApplication, QFileDialog, QMenu
@@ -309,7 +309,7 @@ class midvatten(object):
         #Connect message log to logfile.
         #Log file name must be set as env. variable QGIS_LOG_FILE in
         # settings > options > system > environment.
-        QgsMessageLog.instance().messageReceived.connect(utils.write_qgs_log_to_file)
+        QgsApplication.messageLog().messageReceived.connect(utils.write_qgs_log_to_file)
 
     def unload(self):    
         try:
@@ -439,9 +439,9 @@ class midvatten(object):
                 EPSG_code = str(CRS.authid()[5:])
 
                 #Let the user chose an EPSG-code for the exported database
-                qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+                qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
                 user_chosen_EPSG_code = utils.ask_for_export_crs(EPSG_code)
-                qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+                qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
 
                 if not user_chosen_EPSG_code:
                     QApplication.restoreOverrideCursor()

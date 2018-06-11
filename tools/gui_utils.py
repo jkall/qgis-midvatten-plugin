@@ -41,7 +41,7 @@ class SplitterWithHandel(qgis.PyQt.QtWidgets.QSplitter):
         super(SplitterWithHandel, self).__init__(*args, **kwargs)
         handle = self.handle(1)
         self.setHandleWidth(10)
-        layout = qgis.PyQt.QtGui.QVBoxLayout(handle)
+        layout = qgis.PyQt.QtWidgets.QVBoxLayout(handle)
         layout.setSpacing(0)
         layout.setMargin(0)
         line = qgis.PyQt.QtWidgets.QFrame(handle)
@@ -52,22 +52,22 @@ class SplitterWithHandel(qgis.PyQt.QtWidgets.QSplitter):
 
 class RowEntry(object):
     def __init__(self):
-        self.widget = qgis.PyQt.QtGui.QWidget()
-        self.layout = qgis.PyQt.QtGui.QHBoxLayout()
+        self.widget = qgis.PyQt.QtWidgets.QWidget()
+        self.layout = qgis.PyQt.QtWidgets.QHBoxLayout()
         self.widget.setLayout(self.layout)
 
 
 class VRowEntry(object):
     def __init__(self):
-        self.widget = qgis.PyQt.QtGui.QWidget()
-        self.layout = qgis.PyQt.QtGui.QVBoxLayout()
+        self.widget = qgis.PyQt.QtWidgets.QWidget()
+        self.layout = qgis.PyQt.QtWidgets.QVBoxLayout()
         self.widget.setLayout(self.layout)
 
 
 class RowEntryGrid(object):
     def __init__(self):
-        self.widget = qgis.PyQt.QtGui.QWidget()
-        self.layout = qgis.PyQt.QtGui.QGridLayout()
+        self.widget = qgis.PyQt.QtWidgets.QWidget()
+        self.layout = qgis.PyQt.QtWidgets.QGridLayout()
         self.widget.setLayout(self.layout)
 
 
@@ -113,20 +113,20 @@ def get_line():
 class DateTimeFilter(RowEntry):
     def __init__(self, calendar=False, stretch=True):
         super(DateTimeFilter, self).__init__()
-        self.label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'DateTimeFilter', u'Import data from: ')))
-        self.from_datetimeedit = qgis.PyQt.QtGui.QDateTimeEdit(datestring_to_date(u'1901-01-01 00:00:00'))
+        self.label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'DateTimeFilter', u'Import data from: ')))
+        self.from_datetimeedit = qgis.PyQt.QtWidgets.QDateTimeEdit(datestring_to_date(u'1901-01-01 00:00:00'))
         self.from_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh:mm:ss')
         self.from_datetimeedit.setMinimumWidth(180)
 
-        self.label_to = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'DateTimeFilter', u'to: ')))
-        self.to_datetimeedit = qgis.PyQt.QtGui.QDateTimeEdit(datestring_to_date(u'2099-12-31 23:59:59'))
+        self.label_to = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'DateTimeFilter', u'to: ')))
+        self.to_datetimeedit = qgis.PyQt.QtWidgets.QDateTimeEdit(datestring_to_date(u'2099-12-31 23:59:59'))
         self.to_datetimeedit.setDisplayFormat(u'yyyy-MM-dd hh:mm:ss')
         self.to_datetimeedit.setMinimumWidth(180)
 
         if calendar:
             self.from_datetimeedit.setCalendarPopup(True)
             self.to_datetimeedit.setCalendarPopup(True)
-        #self.import_after_last_date = PyQt4.QtGui.QCheckBox(u"Import after latest date in database for each obsid")
+        #self.import_after_last_date = PyQt4.QtWidgets.QCheckBox(u"Import after latest date in database for each obsid")
         for widget in [self.label, self.from_datetimeedit, self.label_to, self.to_datetimeedit]:
             self.layout.addWidget(widget)
         if stretch:
@@ -181,13 +181,13 @@ class DistinctValuesBrowser(VRowEntry):
     def __init__(self, tables_columns, connect):
         super(DistinctValuesBrowser, self).__init__()
 
-        self.browser_label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'DistinctValuesBrowser', u'DB browser:')))
-        self.table_label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'DistinctValuesBrowser', u'Table')))
-        self._table_list = qgis.PyQt.QtGui.QComboBox()
-        self.column_label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'DistinctValuesBrowser', u'Column')))
-        self._column_list = qgis.PyQt.QtGui.QComboBox()
-        self.distinct_value_label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'DistinctValuesBrowser', u'Distinct values')))
-        self._distinct_value = qgis.PyQt.QtGui.QComboBox()
+        self.browser_label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'DistinctValuesBrowser', u'DB browser:')))
+        self.table_label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'DistinctValuesBrowser', u'Table')))
+        self._table_list = qgis.PyQt.QtWidgets.QComboBox()
+        self.column_label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'DistinctValuesBrowser', u'Column')))
+        self._column_list = qgis.PyQt.QtWidgets.QComboBox()
+        self.distinct_value_label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'DistinctValuesBrowser', u'Distinct values')))
+        self._distinct_value = qgis.PyQt.QtWidgets.QComboBox()
         self._distinct_value.setEditable(True)
 
 

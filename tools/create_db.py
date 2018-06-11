@@ -42,14 +42,14 @@ class NewDb(object):
     def create_new_spatialite_db(self, verno, user_select_CRS='y', EPSG_code=u'4326', delete_srids=True):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
 
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
         set_locale = self.ask_for_locale()
-        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
 
         if user_select_CRS=='y':
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
-            qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+            qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
         else:
             EPSGID=EPSG_code
 
@@ -60,7 +60,7 @@ class NewDb(object):
         #path and name of new db
         dbpath = ru(qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(None, "New DB","midv_obsdb.sqlite","Spatialite (*.sqlite)"))
         if not dbpath:
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return u''
         #create Spatialite database
 
@@ -80,7 +80,7 @@ class NewDb(object):
         except Exception as e:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'NewDb', u"Impossible to connect to selected DataBase, see log message panel")), log_msg=ru(QCoreApplication.translate(u'NewDb', u'Msg:\n') + str(e)))
             #utils.pop_up_info("Impossible to connect to selected DataBase")
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return ''
 
         #First, find spatialite version
@@ -145,18 +145,18 @@ class NewDb(object):
         AddLayerStyles(dbpath)
         """
 
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
 
     def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code=u'4326'):
 
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
         set_locale = self.ask_for_locale()
-        qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
 
         if user_select_CRS=='y':
-            qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
-            qgis.PyQt.QtGui.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+            qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
         else:
             EPSGID=EPSG_code
 
@@ -234,7 +234,7 @@ class NewDb(object):
         #Finally add the layer styles info into the data base
         AddLayerStyles(dbpath)
         """
-        qgis.PyQt.QtGui.QApplication.restoreOverrideCursor()
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
 
     def replace_words(self, line, replace_word_replace_with):
         for replace_word, replace_with in replace_word_replace_with:
@@ -265,7 +265,7 @@ class NewDb(object):
             default_crs = 3006
         else:
             default_crs = 4326
-        EPSGID = qgis.PyQt.QtGui.QInputDialog.getInteger(None, ru(QCoreApplication.translate(u'NewDb', "Select CRS")), ru(QCoreApplication.translate(u'NewDb', "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:")),default_crs)
+        EPSGID = qgis.PyQt.QtWidgets.QInputDialog.getInteger(None, ru(QCoreApplication.translate(u'NewDb', "Select CRS")), ru(QCoreApplication.translate(u'NewDb', "Give EPSG-ID (integer) corresponding to\nthe CRS you want to use in the database:")),default_crs)
         if not EPSGID[1]:
             raise utils.UserInterruptError()
         return EPSGID

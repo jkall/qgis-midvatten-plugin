@@ -43,13 +43,13 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
     def setUp(self):
         super(self.__class__, self).setUp()
-        self.template_list = qgis.PyQt.QtGui.QListWidget()
+        self.template_list = qgis.PyQt.QtWidgets.QListWidget()
 
-        self.edit_button = qgis.PyQt.QtGui.QPushButton()
-        self.load_button = qgis.PyQt.QtGui.QPushButton()
-        self.save_as_button = qgis.PyQt.QtGui.QPushButton()
-        self.import_button = qgis.PyQt.QtGui.QPushButton()
-        self.remove_button = qgis.PyQt.QtGui.QPushButton()
+        self.edit_button = qgis.PyQt.QtWidgets.QPushButton()
+        self.load_button = qgis.PyQt.QtWidgets.QPushButton()
+        self.save_as_button = qgis.PyQt.QtWidgets.QPushButton()
+        self.import_button = qgis.PyQt.QtWidgets.QPushButton()
+        self.remove_button = qgis.PyQt.QtWidgets.QPushButton()
         self.template_folder = os.path.join(os.path.split(os.path.split(os.path.dirname(__file__))[0])[0], 'definitions', 'secplot_templates')
 
         self.sectionplot = mock.MagicMock()

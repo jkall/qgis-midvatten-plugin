@@ -527,9 +527,9 @@ class DatabaseSettings(object):
         self.db_settings_obj = None
         self.label_width = self.maximum_label_width()
 
-        self._label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'DatabaseSettings', u'Database type')))
+        self._label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'DatabaseSettings', u'Database type')))
         self._label.setFixedWidth(self.label_width)
-        self._dbtype_combobox = qgis.PyQt.QtGui.QComboBox()
+        self._dbtype_combobox = qgis.PyQt.QtWidgets.QComboBox()
         self._dbtype_combobox.addItems([u'', u'spatialite', u'postgis'])
 
         self.grid = gui_utils.RowEntryGrid()
@@ -625,7 +625,7 @@ class DatabaseSettings(object):
     def maximum_label_width(self):
         maximumwidth = 0
         for label_name in [ru(QCoreApplication.translate(u'DatabaseSettings', u'Database type')), ru(QCoreApplication.translate(u'DatabaseSettings', u'Select db')), ru(QCoreApplication.translate(u'DatabaseSettings', u'Connections'))]:
-            testlabel = qgis.PyQt.QtGui.QLabel(label_name)
+            testlabel = qgis.PyQt.QtWidgets.QLabel(label_name)
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
         return maximumwidth
@@ -635,10 +635,10 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
     def __init__(self, midvsettingsdialogdock, label_width):
         super(SpatialiteSettings, self).__init__()
         self.midvsettingsdialogdock = midvsettingsdialogdock
-        self.btnSetDB = qgis.PyQt.QtGui.QPushButton(ru(QCoreApplication.translate(u'SpatialiteSettings', u'Select db')))
+        self.btnSetDB = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'SpatialiteSettings', u'Select db')))
         self.btnSetDB.setFixedWidth(label_width)
         self.layout.addWidget(self.btnSetDB, 0, 0)
-        self._dbpath = qgis.PyQt.QtGui.QLineEdit(u'')
+        self._dbpath = qgis.PyQt.QtWidgets.QLineEdit(u'')
         self.layout.addWidget(self._dbpath, 0, 1)
 
         #select file
@@ -673,9 +673,9 @@ class PostgisSettings(gui_utils.RowEntryGrid):
 
         postgis_connections = db_utils.get_postgis_connections()
 
-        self.label = qgis.PyQt.QtGui.QLabel(ru(QCoreApplication.translate(u'PostgisSettings', u'Connections')))
+        self.label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'PostgisSettings', u'Connections')))
         self.label.setFixedWidth(label_width)
-        self._connection = qgis.PyQt.QtGui.QComboBox()
+        self._connection = qgis.PyQt.QtWidgets.QComboBox()
         self._connection.addItem(u'')
         connection_names = [u'/'.join([k, u':'.join([v.get(u'host', u''), v.get(u'port', u'')]), v.get(u'database', u'')]) for k, v in postgis_connections.items()]
         self._connection.addItems(sorted(connection_names))

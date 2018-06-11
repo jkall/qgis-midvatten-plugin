@@ -123,7 +123,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('midvatten_utils.QtGui.QInputDialog.getText')
+    @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
@@ -209,7 +209,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('midvatten_utils.QtGui.QInputDialog.getText')
+    @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
@@ -262,7 +262,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('midvatten_utils.QtGui.QInputDialog.getText')
+    @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
@@ -347,7 +347,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('midvatten_utils.MessagebarAndLog')
-    @mock.patch('midvatten_utils.QtGui.QInputDialog.getText')
+    @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
     @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
