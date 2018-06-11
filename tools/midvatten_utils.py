@@ -19,6 +19,7 @@
  ***************************************************************************/
 """
 import PyQt4
+import ast
 import cStringIO
 import codecs
 import copy
@@ -28,20 +29,19 @@ import difflib
 import io
 import locale
 import math
-import numpy as np
 import os
 import qgis.utils
 import tempfile
 import time
-import ast
 from PyQt4 import QtCore, QtGui, QtWebKit, uic
 from collections import OrderedDict
 from contextlib import contextmanager
 from functools import wraps
 from operator import itemgetter
-from qgis.core import *
-from qgis.gui import *
+from qgis.core import QgsLogger, QgsMapLayer, QgsMapLayerRegistry, QgsMessageLog, QgsProject
+from qgis.gui import QgsMessageBar, QtCore
 
+import numpy as np
 from PyQt4.QtCore import QCoreApplication
 
 try:

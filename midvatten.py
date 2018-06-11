@@ -18,19 +18,16 @@
  *                                                                         *
  ***************************************************************************/
 """
-# Import the PyQt and QGIS libraries
-from PyQt4.QtCore import *
-from PyQt4.QtCore import QDir
-from PyQt4.QtGui import *
-from qgis.core import *
-import qgis.utils
-import shutil
-import ast
-import resources  # Initialize Qt resources from file resources.py
-
 # Import some general python modules
 import os.path
+import qgis.utils
+import shutil
 import sys
+# Import the PyQt and QGIS libraries
+from qgis.core import QGis, QgsMessageLog
+import PyQt4
+from PyQt4.QtCore import QCoreApplication, QDir, QObject, QSettings, QUrl, Qt, SIGNAL
+from PyQt4.QtGui import QAction, QApplication, QCursor, QFileDialog, QIcon, QMenu
 
 #add midvatten plugin directory to pythonpath (needed here to allow importing modules from subfolders)
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -56,7 +53,6 @@ from midvsettings import midvsettings
 import midvsettingsdialog
 from piper import PiperPlot
 from export_data import ExportData
-import PyQt4
 import db_utils
 #import profilefromdem
 

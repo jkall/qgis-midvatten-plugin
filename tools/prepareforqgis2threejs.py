@@ -20,19 +20,17 @@
  ***************************************************************************/
 """
 import db_utils
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *  
-from qgis.core import *  
-from qgis.gui import *
 import matplotlib as mpl
+import os
+from qgis.core import QgsMapLayerRegistry, QgsProject, QgsSingleSymbolRendererV2, QgsSymbolV2, QgsVectorLayer
+from qgis.gui import QgsMapCanvasLayer
 
 from PyQt4.QtCore import QCoreApplication
+from PyQt4.QtGui import QColor
 
-import qgis.utils
-import os
 import midvatten_utils as utils
-from midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
+from midvatten_utils import returnunicode as ru
 
 
 class PrepareForQgis2Threejs():        

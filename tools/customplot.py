@@ -21,21 +21,16 @@ The PlotSQLite application version 0.2.6 was merged into Midvatten plugin at 201
  *                                                                         *
  ***************************************************************************/
 """
-import sys, os, locale
-from PyQt4 import QtGui, QtCore, uic#, QtSql
-
+import matplotlib.pyplot as plt
+import os
 import db_utils
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from functools import partial # only to get combobox signals to work
-
-from sqlite3 import dbapi2 as sqlite
-import numpy as np
-import matplotlib.pyplot as plt   
-from matplotlib.dates import datestr2num
-from matplotlib import ticker
-import matplotlib.dates as mdates
+from PyQt4 import QtGui, QtCore, uic  # , QtSql
+from PyQt4.QtCore import QCoreApplication
+from functools import partial  # only to get combobox signals to work
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.dates import datestr2num
+
+import numpy as np
 
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
@@ -45,13 +40,11 @@ except:
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
 import datetime
 import matplotlib.ticker as tick
-#import midvatten_utils as utils
+
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
-from date_utils import datestring_to_date
 from definitions import midvatten_defs as defs
 import PyQt4
-from PyQt4.QtCore import QCoreApplication
 
 try:
     import pandas as pd

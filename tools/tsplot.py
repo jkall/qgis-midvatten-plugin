@@ -17,17 +17,14 @@
  *                                                                         *
  ***************************************************************************/
 
-from PyQt4.QtGui import *
-from qgis.core import *
-from qgis.gui import *
 """
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
-import numpy as np
 # plt.ion() #interactive mode immediately to prevent pyplot plots from blocking application
 from matplotlib.dates import datestr2num
 
+import numpy as np
 from PyQt4.QtCore import QCoreApplication
 
 import db_utils

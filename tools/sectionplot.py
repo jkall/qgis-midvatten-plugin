@@ -10,8 +10,6 @@
         email                : groundwatergis [at] gmail.com
  ***************************************************************************/
 """
-import db_utils
-
 """
 Major parts of the code is re-used from the profiletool plugin:
 # Copyright (C) 2008  Borys Jurgiel
@@ -22,21 +20,21 @@ SAKNAS:
 1. (input och plottning av seismik, vlf etc längs med linjen) - efter release alpha
 2. ((input och plottning av markyta från DEM)) - efter release beta
 """
-import PyQt4.QtCore
-import PyQt4.QtGui
-from qgis.core import *
-from functools import partial
-
-import ast
-import numpy as np
-import os
-import io
 import copy
-from operator import itemgetter
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
+import os
+from functools import partial
 from matplotlib import container, patches
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from qgis.core import QgsCoordinateReferenceSystem, QgsMapLayerRegistry
+
+import PyQt4.QtCore
+import PyQt4.QtGui
+import numpy as np
+
+import db_utils
+
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 except:
