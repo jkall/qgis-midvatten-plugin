@@ -1,23 +1,28 @@
 [general]
-;mandatory metadata entries
+
+
 name=Midvatten
 qgisMinimumVersion=3.0
-description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-about=TODO!
+description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data
+            (drillings, water levels, seismic data etc) stored in a sqlite db.
+about=The plugin is a toolset for using QGIS to manage observational data from hydrogeological investigations.
+      Data is stored in a spatialite database.
 version=2.0b1
-author=Josef Källgården, Henrik Spångmyr
+author=Josef Kallgården, Henrik Spangmyr
 email=groundwatergis@gmail.com
 repository=https://github.com/jkall/qgis-midvatten-plugin.git
 
 ;optional metadata entries
-tags=hydrogeology,groundwater,time series,stratigraphy,piper diagram,borehole
-icon=icons/MidvSettings.png
-homepage=https://github.com/jkall/qgis-midvatten-plugin/wiki
-authorName=Josef Källgården
-tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
-repository=https://github.com/jkall/qgis-midvatten-plugin
+qgisMaximumVersion=3.99
 experimental=False
 deprecated=False
+tags=hydrogeolog,groundwater,time series,stratigraphy,piper diagram,borehole
+homepage=https://github.com/jkall/qgis-midvatten-plugin/wiki
+repository=https://github.com/jkall/qgis-midvatten-plugin
+tracker=https://github.com/jkall/qgis-midvatten-plugin/issues?state=open
+icon=icons/MidvSettings.png
+; authorName=Josef Kallgården
+
 
 changelog=
         Version 2.0b1:
@@ -25,7 +30,5 @@ changelog=
         For changes until ver 2.0, see separate document changelog_history
 
 ;for the new plugin repo
-about=The plugin is a toolset for using QGIS to manage observational data from hydrogeological investigations. Data is stored in a spatialite database. 
+about=
 
-; change icon...
-icon=icons/MidvSettings.png
