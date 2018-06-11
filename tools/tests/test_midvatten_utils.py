@@ -30,7 +30,7 @@ import mock
 import nose
 from nose.plugins.attrib import attr
 
-from . import utils_for_tests
+import utils_for_tests
 from .mocks_for_tests import MockUsingReturnValue
 from .utils_for_tests import create_test_string
 

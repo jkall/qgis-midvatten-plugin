@@ -25,7 +25,7 @@ import mock
 from nose.plugins.attrib import attr
 
 import db_utils
-from . import utils_for_tests
+import utils_for_tests
 from definitions import midvatten_defs
 
 @attr(status='on')

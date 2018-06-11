@@ -21,7 +21,7 @@
 from __future__ import absolute_import
 from builtins import str
 from builtins import object
-from . import db_utils
+import db_utils
 from qgis.PyQt.QtCore import QUrl, QDir
 from qgis.PyQt.QtGui import QDesktopServices
 import qgis.PyQt
@@ -30,7 +30,7 @@ import ast
 import os
 import locale
 from collections import OrderedDict
-from . import midvatten_utils as utils
+import midvatten_utils as utils
 from .midvatten_utils import returnunicode as ru
 import codecs
 from time import sleep

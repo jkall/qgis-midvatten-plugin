@@ -31,7 +31,7 @@ from date_utils import datestring_to_date
 from nose.plugins.attrib import attr
 from wlevels_calc_calibr import Calclvl
 
-from . import utils_for_tests
+import utils_for_tests
 
 
 @attr(status='on')

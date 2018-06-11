@@ -30,8 +30,8 @@ from qgis.core import Qgis
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 
-from . import db_utils
-from . import midvatten_utils as utils
+import db_utils
+import midvatten_utils as utils
 from .midvatten_utils import returnunicode as ru
 
 

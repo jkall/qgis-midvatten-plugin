@@ -20,7 +20,7 @@
 from __future__ import absolute_import
 from builtins import str
 import datetime
-from . import midvatten_utils as utils
+import midvatten_utils as utils
 from .midvatten_utils import returnunicode as ru
 from qgis.PyQt.QtCore import QCoreApplication
 

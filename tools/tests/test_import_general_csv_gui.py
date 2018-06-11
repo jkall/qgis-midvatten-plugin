@@ -28,7 +28,7 @@ import midvatten_utils as utils
 from import_general_csv_gui import GeneralCsvImportGui
 from nose.plugins.attrib import attr
 
-from . import utils_for_tests
+import utils_for_tests
 
 
 @attr(status='on')

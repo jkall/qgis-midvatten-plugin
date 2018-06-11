@@ -28,10 +28,10 @@ import qgis.utils
 import datetime
 import os
 
-from . import db_utils
+import db_utils
 from matplotlib.dates import datestr2num
 import numpy as np
-from . import midvatten_utils as utils
+import midvatten_utils as utils
 from .midvatten_utils import returnunicode as ru
 #from ui.calc_aveflow_dialog import Ui_Dialog as Calc_Ui_Dialog
 from qgis.PyQt import uic

@@ -30,7 +30,7 @@ import mock
 from nose.plugins.attrib import attr
 from stratigraphy import Stratigraphy
 
-from . import utils_for_tests
+import utils_for_tests
 
 
 @attr(status='on')

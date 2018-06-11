@@ -26,10 +26,10 @@ from builtins import str
 import io
 import os
 from collections import OrderedDict
-from . import import_diveroffice
+import import_diveroffice
 from qgis.PyQt.QtCore import QCoreApplication
-from . import midvatten_utils as utils
-from . import date_utils
+import midvatten_utils as utils
+import date_utils
 from .midvatten_utils import returnunicode as ru
 
 

@@ -23,7 +23,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 from builtins import str
 from builtins import object
-from . import db_utils
+import db_utils
 import matplotlib as mpl
 import os
 from qgis.core import QgsProject, QgsSingleSymbolRenderer, QgsSymbol, QgsVectorLayer
@@ -31,7 +31,7 @@ from qgis.core import QgsProject, QgsSingleSymbolRenderer, QgsSymbol, QgsVectorL
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtGui import QColor
 
-from . import midvatten_utils as utils
+import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 from .midvatten_utils import returnunicode as ru
 

@@ -29,7 +29,7 @@ import midvatten_utils as utils
 import mock
 from nose.plugins.attrib import attr
 
-from . import utils_for_tests
+import utils_for_tests
 from definitions import midvatten_defs as defs
 
 

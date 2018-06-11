@@ -30,9 +30,9 @@ from collections import OrderedDict
 
 from qgis.PyQt.QtCore import QCoreApplication
 
-from . import db_utils
+import db_utils
 import definitions.midvatten_defs as defs
-from . import midvatten_utils as utils
+import midvatten_utils as utils
 from .gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit, get_line, set_combobox
 from .midvatten_utils import returnunicode as ru
 

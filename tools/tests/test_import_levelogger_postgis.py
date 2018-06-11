@@ -34,7 +34,7 @@ from import_levelogger import LeveloggerImport
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
-from . import utils_for_tests
+import utils_for_tests
 from .mocks_for_tests import MockUsingReturnValue
 
 

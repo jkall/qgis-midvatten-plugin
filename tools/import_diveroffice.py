@@ -31,8 +31,8 @@ from datetime import datetime
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 
-from . import import_data_to_db
-from . import midvatten_utils as utils
+import import_data_to_db
+import midvatten_utils as utils
 from .date_utils import find_date_format, datestring_to_date
 from .gui_utils import VRowEntry, get_line, DateTimeFilter
 from .midvatten_utils import returnunicode as ru

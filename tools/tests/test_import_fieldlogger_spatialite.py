@@ -12,7 +12,7 @@ from import_fieldlogger import FieldloggerImport, DateTimeFilter
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
-from . import utils_for_tests
+import utils_for_tests
 from .mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgisUtilsIface, mock_answer
 from .utils_for_tests import create_test_string
 

@@ -30,9 +30,9 @@ from matplotlib.dates import datestr2num
 import numpy as np
 from qgis.PyQt.QtCore import QCoreApplication
 
-from . import db_utils
-from . import midvatten_utils as utils
-from .midvatten_utils import returnunicode as ru
+import db_utils
+import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
 
 
 class TimeSeriesPlot(object):

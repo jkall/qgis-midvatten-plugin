@@ -17,7 +17,7 @@ from qgis.core import QgsProject
 
 from qgis.PyQt.QtCore import QCoreApplication
 
-from . import midvatten_utils as utils
+import midvatten_utils as utils
 from definitions import midvatten_defs
 from .midvatten_utils import returnunicode as ru
 

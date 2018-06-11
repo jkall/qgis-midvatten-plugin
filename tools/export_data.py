@@ -24,8 +24,8 @@ from builtins import str
 from builtins import object
 from pyspatialite import dbapi2 as sqlite
 import csv, codecs, io, os, os.path
-from . import db_utils
-from . import midvatten_utils as utils
+import db_utils
+import midvatten_utils as utils
 from .midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 import qgis.utils

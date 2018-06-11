@@ -26,7 +26,7 @@ import db_utils
 import mock
 from nose.plugins.attrib import attr
 
-from . import utils_for_tests
+import utils_for_tests
 
 
 @attr(status='on')

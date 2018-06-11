@@ -54,7 +54,7 @@ from .definitions import midvatten_defs
 from sectionplot import SectionPlot
 import customplot
 from midvsettings import midvsettings
-from . import midvsettingsdialog
+import midvsettingsdialog
 from piper import PiperPlot
 from export_data import ExportData
 import db_utils

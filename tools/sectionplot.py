@@ -36,14 +36,14 @@ from qgis.core import QgsCoordinateReferenceSystem, QgsProject
 import qgis.PyQt
 import numpy as np
 
-from . import db_utils
+import db_utils
 
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 except:
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import sqlite3 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
-from . import midvatten_utils as utils
+import midvatten_utils as utils
 from .midvatten_utils import returnunicode as ru
 from .midvatten_utils import PlotTemplates
 

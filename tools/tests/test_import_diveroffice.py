@@ -32,7 +32,7 @@ from date_utils import datestring_to_date
 from import_diveroffice import DiverofficeImport
 from nose.plugins.attrib import attr
 
-from . import utils_for_tests
+import utils_for_tests
 from .mocks_for_tests import MockReturnUsingDictIn
 
 

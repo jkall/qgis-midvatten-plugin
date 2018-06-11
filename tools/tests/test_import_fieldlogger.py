@@ -13,7 +13,7 @@ from import_fieldlogger import FieldloggerImport, InputFields, DateTimeFilter
 from mock import MagicMock, call
 from nose.plugins.attrib import attr
 
-from . import utils_for_tests
+import utils_for_tests
 from .utils_for_tests import create_test_string
 
 

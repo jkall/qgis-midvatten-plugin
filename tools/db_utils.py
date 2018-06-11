@@ -45,7 +45,7 @@ from qgis._core import QgsProject, QgsDataSourceURI
 import db_manager.db_plugins.postgis.connector as postgis_connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
 
-from . import midvatten_utils as utils
+import midvatten_utils as utils
 
 class DbConnectionManager(object):
     def __init__(self, db_settings=None):

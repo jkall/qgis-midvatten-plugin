@@ -62,7 +62,7 @@ else:
 
 from matplotlib.dates import num2date
 
-from . import db_utils
+import db_utils
 
 not_found_dialog = uic.loadUiType(os.path.join(os.path.dirname(__file__), '..', 'ui', 'not_found_gui.ui'))[0]
 

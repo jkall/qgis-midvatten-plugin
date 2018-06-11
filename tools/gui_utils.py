@@ -26,8 +26,8 @@ import copy
 from qgis.PyQt.QtCore import QCoreApplication
 
 from .date_utils import datestring_to_date
-from . import midvatten_utils as utils
-from . import db_utils
+import midvatten_utils as utils
+import db_utils
 from .midvatten_utils import returnunicode as ru
 
 

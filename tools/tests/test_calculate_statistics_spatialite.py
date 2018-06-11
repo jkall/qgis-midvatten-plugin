@@ -33,7 +33,7 @@ import piper
 from nose.plugins.attrib import attr
 import calculate_statistics
 
-from . import utils_for_tests
+import utils_for_tests
 
 @attr(status='on')
 class TestCalculateStatistics(utils_for_tests.MidvattenTestSpatialiteDbSv):

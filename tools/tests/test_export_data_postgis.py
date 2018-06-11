@@ -31,7 +31,7 @@ import midvatten_utils as utils
 import mock
 from midvatten.midvatten import midvatten
 
-from . import utils_for_tests
+import utils_for_tests
 from .mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance, MockReturnUsingDictIn, DummyInterface2
 
 EXPORT_DB_PATH = u'/tmp/tmp_midvatten_export_db.sqlite'

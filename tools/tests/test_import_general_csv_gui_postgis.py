@@ -38,7 +38,7 @@ from import_general_csv_gui import GeneralCsvImportGui
 from mock import MagicMock
 from nose.plugins.attrib import attr
 
-from . import utils_for_tests
+import utils_for_tests
 from .mocks_for_tests import MockUsingReturnValue
 
 

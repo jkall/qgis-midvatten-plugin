@@ -31,9 +31,9 @@ from qgis.PyQt.QtCore import QUrl, Qt, QDir
 from qgis.PyQt.QtGui import QDesktopServices, QCursor
 from qgis.PyQt.QtWidgets import QApplication
 
-from . import db_utils
+import db_utils
 # midvatten modules
-from . import midvatten_utils as utils
+import midvatten_utils as utils
 from .midvatten_utils import returnunicode as ru
 
 

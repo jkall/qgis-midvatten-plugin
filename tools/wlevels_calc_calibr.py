@@ -43,10 +43,10 @@ try:#assume matplotlib >=1.5.1
 except:
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
 import datetime
-from . import midvatten_utils as utils
+import midvatten_utils as utils
 from .midvatten_utils import fn_timer, returnunicode as ru
 from .date_utils import dateshift, datestring_to_date, long_dateformat
-from . import db_utils
+import db_utils
 
 Calibr_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calibr_logger_dialog_integrated.ui'))[0]
 Calc_Ui_Dialog =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'calc_lvl_dialog.ui'))[0]

@@ -28,7 +28,7 @@ from builtins import range
 from builtins import object
 import matplotlib.pyplot as plt
 import os
-from . import db_utils
+import db_utils
 from qgis.PyQt import QtGui, QtCore, uic  # , QtSql
 from qgis.PyQt.QtCore import QCoreApplication
 from functools import partial  # only to get combobox signals to work
@@ -46,7 +46,7 @@ except:
 import datetime
 import matplotlib.ticker as tick
 
-from . import midvatten_utils as utils
+import midvatten_utils as utils
 from .midvatten_utils import returnunicode as ru
 from definitions import midvatten_defs as defs
 import qgis.PyQt

@@ -24,8 +24,8 @@ import os
 import qgis.utils
 from qgis.core import QgsDataSourceURI, QgsProject, QgsVectorLayer
 
-from . import db_utils
-from . import midvatten_utils as utils
+import db_utils
+import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 
 

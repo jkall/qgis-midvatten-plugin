@@ -34,10 +34,10 @@ from operator import itemgetter
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication
 
-from . import date_utils
-from . import db_utils
-from . import import_data_to_db
-from . import midvatten_utils as utils
+import date_utils
+import db_utils
+import import_data_to_db
+import midvatten_utils as utils
 from definitions import midvatten_defs as defs
 from .gui_utils import RowEntry, VRowEntry, get_line, RowEntryGrid
 from .midvatten_utils import returnunicode as ru

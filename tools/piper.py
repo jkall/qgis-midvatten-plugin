@@ -30,8 +30,8 @@ import itertools
 import matplotlib.pyplot as plt
 import numpy as np
 
-from . import db_utils
-from . import midvatten_utils as utils
+import db_utils
+import midvatten_utils as utils
 
 
 class PiperPlot(object):
