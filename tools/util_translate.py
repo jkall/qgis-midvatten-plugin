@@ -35,7 +35,7 @@ def getTranslate(namePlugin, nameDir=None):
 
     pluginPath = "python/plugins/{}".format( nameDir )
 
-    userPath = QFileInfo( QgsApplication.qgisUserDbFilePath() ).path()
+    userPath = QFileInfo( QgsApplication.qgisUserDatabaseFilePath() ).path()
     userPluginPath = "{0}{1}".format( userPath, pluginPath)
     
     systemPath = QgsApplication.prefixPath()

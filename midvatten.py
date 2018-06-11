@@ -80,12 +80,12 @@ class midvatten(object):
         self.actionloadthelayers = QAction(QIcon(":/plugins/midvatten/icons/loaddefaultlayers.png"), QCoreApplication.translate("Midvatten","Load default db-layers to qgis"), self.iface.mainWindow())
         self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load default layers from the selected database"))
         self.iface.registerMainWindowAction(self.actionloadthelayers, "F7")   # The function should also be triggered by the F7 key
-        self.actionloadthelayers.activated.connect(self.loadthelayers)
+        self.actionloadthelayers.triggered.connect(self.loadthelayers)
 
         self.actionsetup = QAction(QIcon(":/plugins/midvatten/icons/MidvSettings.png"), QCoreApplication.translate("Midvatten","Midvatten Settings"), self.iface.mainWindow())
         self.actionsetup.setWhatsThis(QCoreApplication.translate("Midvatten","Configuration for Midvatten toolset"))
         self.iface.registerMainWindowAction(self.actionsetup, "F6")   # The function should also be triggered by the F6 key
-        self.actionsetup.activated.connect(self.setup)
+        self.actionsetup.triggered.connect(self.setup)
         
         self.actionresetSettings = QAction(QIcon(":/plugins/midvatten/icons/ResetSettings.png"), QCoreApplication.translate("Midvatten","Reset Settings"), self.iface.mainWindow())
         self.actionresetSettings.triggered.connect(self.reset_settings)
@@ -169,7 +169,7 @@ class midvatten(object):
 
         self.actionloaddatadomains = QAction(QIcon(":/plugins/midvatten/icons/loaddatadomains.png"), QCoreApplication.translate("Midvatten","Load data domain tables to qgis"), self.iface.mainWindow())
         self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load the data domain tables from the database"))
-        self.actionloaddatadomains.activated.connect(self.load_data_domains)
+        self.actionloaddatadomains.triggered.connect(self.load_data_domains)
 
         self.actionVacuumDB = QAction(QIcon(":/plugins/midvatten/icons/vacuum.png"), QCoreApplication.translate("Midvatten","Vacuum the database"), self.iface.mainWindow())
         self.actionVacuumDB.setWhatsThis(QCoreApplication.translate("Midvatten","Perform database vacuuming"))

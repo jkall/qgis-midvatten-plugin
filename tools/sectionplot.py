@@ -58,10 +58,10 @@ SAKNAS:
 """
 
 
-class SectionPlot(qgis.PyQt.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
+class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  is created instantaniously as this is created
     def __init__(self, parent1, iface1):
         #super(sectionplot, self).save_settings()
-        qgis.PyQt.QtGui.QDockWidget.__init__(self, parent1) #, PyQt4.QtCore.Qt.WindowFlags(PyQt4.QtCore.Qt.WA_DeleteOnClose))
+        qgis.PyQt.QtWidgets.QDockWidget.__init__(self, parent1) #, PyQt4.QtCore.Qt.WindowFlags(PyQt4.QtCore.Qt.WA_DeleteOnClose))
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         #Ui_SecPlotDock.__init__(self)
 

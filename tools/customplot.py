@@ -29,7 +29,7 @@ from builtins import object
 import matplotlib.pyplot as plt
 import os
 import db_utils
-from qgis.PyQt import QtGui, QtCore, uic  # , QtSql
+from qgis.PyQt import QtGui, QtCore, uic, QtWidgets  # , QtSql
 from qgis.PyQt.QtCore import QCoreApplication
 from functools import partial  # only to get combobox signals to work
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
@@ -957,10 +957,12 @@ class PandasCalculations(object):
             except ValueError:
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'PandasCalculations', u'Resample base must be an integer')))
             else:
-				try:#new api for pandas >=0.18
-					df = getattr(df.resample(rule,base=int(base)),how)()
-				except:#old pandas
-					df = df.resample(rule, how=how, base=int(base))
+                # new api for pandas >=0.18
+                try:
+                    df = getattr(df.resample(rule,base=int(base)),how)()
+                # old pandas
+                except:
+                    df = df.resample(rule, how=how, base=int(base))
 
         #Rolling mean
         window = self.window.text()

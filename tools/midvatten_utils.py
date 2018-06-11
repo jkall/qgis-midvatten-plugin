@@ -553,8 +553,6 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
                 if not keep_containers:
                     text = str(text)
             elif isinstance(text, str):
-                text = str(text, charset)
-            elif isinstance(text, str):
                 pass
             else:
                 text = str(text)
