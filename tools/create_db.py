@@ -23,8 +23,7 @@ import os
 import re
 from qgis.core import QGis
 
-import PyQt4.QtCore
-import PyQt4.QtGui
+import PyQt4
 from PyQt4.QtCore import QCoreApplication
 
 import db_utils

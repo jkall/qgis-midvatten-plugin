@@ -29,8 +29,7 @@ from matplotlib import container, patches
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from qgis.core import QgsCoordinateReferenceSystem, QgsMapLayerRegistry
 
-import PyQt4.QtCore
-import PyQt4.QtGui
+import PyQt4
 import numpy as np
 
 import db_utils

@@ -42,8 +42,7 @@
 import unicodedata  # To normalize some special national characters to regular international characters
 from functools import partial  # only to get combobox signals to work
 
-import PyQt4.QtCore
-import PyQt4.QtGui
+import PyQt4
 from PyQt4.QtCore import QCoreApplication
 
 import db_utils

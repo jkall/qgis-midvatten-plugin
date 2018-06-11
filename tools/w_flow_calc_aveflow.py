@@ -18,8 +18,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-import PyQt4.QtCore
-import PyQt4.QtGui
+
+import PyQt4
 
 import qgis.utils
 

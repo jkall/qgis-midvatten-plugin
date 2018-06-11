@@ -20,14 +20,12 @@
  *                                                                         *
  ***************************************************************************/
 """
-import PyQt4
 import copy
 import io
 import os
 from operator import itemgetter
 
-import PyQt4.QtCore
-import PyQt4.QtGui
+import PyQt4
 from PyQt4.QtCore import QCoreApplication
 
 import date_utils

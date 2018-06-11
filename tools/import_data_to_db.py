@@ -19,12 +19,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-import PyQt4
+
 import sys
 from operator import itemgetter
 
-import PyQt4.QtCore
-import PyQt4.QtGui
+import PyQt4
 from PyQt4.QtCore import QCoreApplication
 
 import db_utils
