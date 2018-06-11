@@ -22,7 +22,7 @@ from builtins import str
 from builtins import object
 import os
 import qgis.utils
-from qgis.core import QgsDataSourceURI, QgsProject, QgsVectorLayer
+from qgis.core import QgsDataSourceUri, QgsProject, QgsVectorLayer
 
 import db_utils
 import midvatten_utils as utils
@@ -147,7 +147,7 @@ class LoadLayers(object):
             MyGroup = self.legend.addGroup ("Midvatten_OBS_DB",1,-1)
         except: #olddstyle
             MyGroup = self.legend.addGroup ("Midvatten_OBS_DB")
-        uri = QgsDataSourceURI()
+        uri = QgsDataSourceUri()
         uri.setDatabase(self.settingsdict['database'])#MacOSX fix1 #earlier sent byte string, now intending to send unicode string
         for tablename in self.default_nonspatlayers:    # first the non-spatial tables, THEY DO NOT ALL HAVE CUSTOM UI FORMS
             firststring= 'dbname="' + self.settingsdict['database'] + '" table="' + tablename + '"'#MacOSX fix1  #earlier sent byte string, now unicode

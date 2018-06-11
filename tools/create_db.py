@@ -320,8 +320,8 @@ class NewDb(object):
                 _to = _from_to[0][1]
                 foreign_keys_dict[_from] = (_table, _to)
 
-            sql = ur"""INSERT INTO about_db (tablename, columnname, description, data_type, not_null, default_value, primary_key, foreign_key) VALUES """
-            sql +=  ur'({});'.format(u', '.join([u"""(CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END)"""%(col, col, col, col) for col in [table, ur'*', table_descr, ur'', ur'', ur'', ur'', ur'']]))
+            sql = r"""INSERT INTO about_db (tablename, columnname, description, data_type, not_null, default_value, primary_key, foreign_key) VALUES """
+            sql +=  r'({});'.format(u', '.join([u"""(CASE WHEN '%s' != '' or '%s' != ' ' or '%s' IS NOT NULL THEN '%s' else NULL END)"""%(col, col, col, col) for col in [table, r'*', table_descr, r'', r'', r'', r'', r'']]))
             dbconnection.execute(sql)
 
             for column in table_info:

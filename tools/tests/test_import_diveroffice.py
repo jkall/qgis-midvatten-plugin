@@ -114,7 +114,7 @@ class TestParseDiverofficeFile(object):
                 file_data = DiverofficeImport.parse_diveroffice_file(path, charset_of_diverofficefile)
 
         test_string = utils_for_tests.create_test_string(file_data[0])
-        reference_string = ur'''[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 26.9, 5.18, ], [2016-03-15 11:00:00, 157.7, 0.6, ]]'''
+        reference_string = r'''[[date_time, head_cm, temp_degc, cond_mscm], [2016-03-15 10:30:00, 26.9, 5.18, ], [2016-03-15 11:00:00, 157.7, 0.6, ]]'''
         assert test_string == reference_string
         assert os.path.basename(path) == file_data[1]
         assert file_data[2] == u'rb1'

@@ -35,13 +35,13 @@ except:
 import datetime
 import re
 from collections import OrderedDict
-from pyspatialite import dbapi2 as sqlite
+import sqlite3 as sqlite
 
 import  qgis.core
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtCore import QSettings
 
-from qgis._core import QgsProject, QgsDataSourceURI
+from qgis._core import QgsProject, QgsDataSourceUri
 import db_manager.db_plugins.postgis.connector as postgis_connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
 
@@ -91,7 +91,7 @@ class DbConnectionManager(object):
         self.dbtype = list(self.db_settings.keys())[0]
         self.connection_settings = list(self.db_settings.values())[0]
 
-        self.uri = QgsDataSourceURI()
+        self.uri = QgsDataSourceUri()
 
         if self.dbtype == u'spatialite':
             self.dbpath = utils.returnunicode(self.connection_settings[u'dbpath'])

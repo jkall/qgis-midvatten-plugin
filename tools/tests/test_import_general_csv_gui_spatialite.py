@@ -112,7 +112,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(
                         db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
+                    reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     print(str(test_string))
                     assert test_string == reference_string
 
@@ -183,7 +183,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
                     test_string = utils_for_tests.create_test_string(
                         db_utils.sql_load_fr_db(u'''SELECT obsid FROM obs_points'''))
-                    reference_string = ur'''(True, [(rb1)])'''
+                    reference_string = r'''(True, [(rb1)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -257,7 +257,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(
                         db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
-                    reference_string = ur'''(True, [(rb2, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
+                    reference_string = r'''(True, [(rb2, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -399,7 +399,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(
                         db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
+                    reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -471,7 +471,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     import_time = _test(self, filename)
                     test_string = utils_for_tests.create_test_string(
                         db_utils.sql_load_fr_db(u'''SELECT count(*) FROM w_levels'''))
-                    reference_string = ur'''(True, [(10000)])'''
+                    reference_string = r'''(True, [(10000)])'''
                     assert import_time < 10
                     assert test_string == reference_string
 
@@ -546,7 +546,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(
                         db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
-                    reference_string = ur'''(True, [(rb2, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
+                    reference_string = r'''(True, [(rb2, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -620,7 +620,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(
                         db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
+                    reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -757,7 +757,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
+                    reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -825,7 +825,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
+                    reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -896,7 +896,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, a comment)])'''
+                    reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, a comment)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -964,7 +964,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30, 5.0, None, None, None)])'''
+                    reference_string = r'''(True, [(rb1, 2016-03-15 10:30, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -1032,7 +1032,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
+                    reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -1106,7 +1106,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(
                         db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
+                    reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 5.0, None, None, None)])'''
                     print(str(test_string))
                     assert test_string == reference_string
 
@@ -1178,6 +1178,6 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestSpatialiteDbSv):
                     _test(self, filename)
                     test_string = utils_for_tests.create_test_string(
                         db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, meas, h_toc, level_masl, comment FROM w_levels'''))
-                    reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 12.5, None, None, None)])'''
+                    reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 12.5, None, None, None)])'''
                     print(str(test_string))
                     assert test_string == reference_string

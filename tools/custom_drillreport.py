@@ -295,7 +295,7 @@ class Drillreport(object):        # general observation point info for the selec
         dbconnection.closedb()
 
         f, rpt = self.open_file(', '.join(obsids), reportpath)
-        rpt += ur"""<html>"""
+        rpt += r"""<html>"""
         for obsid in obsids:
             obs_points_data = all_obs_points_data[obsid][0]
             general_data_no_rounding = [x.split(u';')[0] for x in general_metadata]
@@ -335,11 +335,11 @@ class Drillreport(object):        # general observation point info for the selec
                                     general_colwidth=general_colwidth,
                                     geo_colwidth=geo_colwidth,
                                     decimal_separator=decimal_separator)
-            rpt += ur"""<p>    </p>"""
+            rpt += r"""<p>    </p>"""
             if empty_row_between_obsids:
-                rpt += ur"""<p>empty_row_between_obsids</p>"""
+                rpt += r"""<p>empty_row_between_obsids</p>"""
 
-        rpt += ur"""</html>"""
+        rpt += r"""</html>"""
         f.write(rpt)
         self.close_file(f, reportpath)
 
@@ -347,8 +347,8 @@ class Drillreport(object):        # general observation point info for the selec
         #open connection to report file
         f = codecs.open(reportpath, "wb", "utf-8")
         #write some initiating html, header and also
-        rpt = ur"""<meta http-equiv="content-type" content="text/html; charset=utf-8" />"""
-        rpt += ur"""<head><title>%s %s</title></head>"""%(header, ru(QCoreApplication.translate(u'Drillreport', u'General report from Midvatten plugin for QGIS')))
+        rpt = r"""<meta http-equiv="content-type" content="text/html; charset=utf-8" />"""
+        rpt += r"""<head><title>%s %s</title></head>"""%(header, ru(QCoreApplication.translate(u'Drillreport', u'General report from Midvatten plugin for QGIS')))
 
         return f, rpt
 
@@ -360,7 +360,7 @@ class Drillreport(object):        # general observation point info for the selec
         return url_status
 
     def obsid_header(self, obsid):
-        return ur"""<h3 style="font-family:'Ubuntu';font-size:12pt; font-weight:600"><font size=4>%s</font></h3>"""%ru(obsid)
+        return r"""<h3 style="font-family:'Ubuntu';font-size:12pt; font-weight:600"><font size=4>%s</font></h3>"""%ru(obsid)
 
     def write_obsid(self, obsid, general_data, geo_data, strat_data, comment_data, strat_columns, header_in_table=True,
                     skip_empty=False, general_metadata_header=u'', geo_metadata_header=u'', strat_columns_header=u'',
@@ -373,48 +373,48 @@ class Drillreport(object):        # general observation point info for the selec
         if not header_in_table:
             rpt += self.obsid_header(obsid)
 
-        rpt += ur"""<TABLE WIDTH=100% BORDER=1 CELLPADDING=1 class="no-spacing" CELLSPACING=0>"""
+        rpt += r"""<TABLE WIDTH=100% BORDER=1 CELLPADDING=1 class="no-spacing" CELLSPACING=0>"""
 
         if header_in_table:
         #Row 1, obsid header
-            rpt += ur"""<TR VALIGN=TOP>"""
-            rpt += ur"""<TD WIDTH=100% COLSPAN=2>"""
+            rpt += r"""<TR VALIGN=TOP>"""
+            rpt += r"""<TD WIDTH=100% COLSPAN=2>"""
             rpt += self.obsid_header(obsid)
-            rpt += ur"""</TD>"""
-            rpt += ur"""</TR>"""
+            rpt += r"""</TD>"""
+            rpt += r"""</TR>"""
 
 
         #Row 2, general and geographical information
-        rpt += ur"""<TR VALIGN=TOP>"""
+        rpt += r"""<TR VALIGN=TOP>"""
         if geo_data:
             if len(topleft_topright_colwidths) == 2:
-                rpt += ur"""<TD WIDTH=%s>""" % (topleft_topright_colwidths[0])
+                rpt += r"""<TD WIDTH=%s>""" % (topleft_topright_colwidths[0])
             else:
-                rpt += ur"""<TD WIDTH=60%>"""
+                rpt += r"""<TD WIDTH=60%>"""
         else:
-            rpt += ur"""<TD WIDTH=100% COLSPAN=2>"""
+            rpt += r"""<TD WIDTH=100% COLSPAN=2>"""
 
 
         rpt += self.write_two_col_table(general_data, general_metadata_header, skip_empty, general_rounding,
                                         general_colwidth, decimal_separator)
-        rpt += ur"""</TD>"""
+        rpt += r"""</TD>"""
 
         if geo_data:
             if len(topleft_topright_colwidths) == 2:
-                rpt += ur"""<TD WIDTH=%s>""" % (topleft_topright_colwidths[1])
+                rpt += r"""<TD WIDTH=%s>""" % (topleft_topright_colwidths[1])
             else:
-                rpt += ur"""<TD WIDTH=40%>"""
+                rpt += r"""<TD WIDTH=40%>"""
 
             rpt += self.write_two_col_table(geo_data, geo_metadata_header, skip_empty, geo_rounding, geo_colwidth,
                                             decimal_separator)
-            rpt += ur"""</TD>"""
-        rpt += ur"""</TR>"""
+            rpt += r"""</TD>"""
+        rpt += r"""</TR>"""
 
         #Row 3, stratigraphy and comments
 
         if strat_data or comment_data:
-            rpt += ur"""<TR VALIGN=TOP>"""
-            rpt += ur"""<TD WIDTH=100% COLSPAN=2>"""
+            rpt += r"""<TR VALIGN=TOP>"""
+            rpt += r"""<TD WIDTH=100% COLSPAN=2>"""
 
             if strat_data:
 
@@ -424,9 +424,9 @@ class Drillreport(object):        # general observation point info for the selec
             if comment_data:
                 rpt += self.write_comment_data(comment_data, comment_header)
 
-            rpt += ur"""</TD>"""
-            rpt += ur"""</TR>"""
-        rpt += ur"""</TABLE>"""
+            rpt += r"""</TD>"""
+            rpt += r"""</TR>"""
+        rpt += r"""</TABLE>"""
 
         return rpt
 
@@ -435,17 +435,17 @@ class Drillreport(object):        # general observation point info for the selec
             column_rounding = []
 
         if table_header:
-            rpt = ur"""<P><U><B><font size=3>%s</font></B></U></P>"""%table_header
+            rpt = r"""<P><U><B><font size=3>%s</font></B></U></P>"""%table_header
         else:
-            rpt = ur''
+            rpt = r''
 
         if not col_widths or len(col_widths) != 2:
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'Drillreport2', u'Column width not entered correctly, must be like x;y. Was %s'%str(col_widths))))
             col_widths = [u'2*', u'3*']
 
-        rpt += ur"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 class="no-spacing" CELLSPACING=0><COL WIDTH={}><COL WIDTH={}>""".format(col_widths[0], col_widths[1])
+        rpt += r"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 class="no-spacing" CELLSPACING=0><COL WIDTH={}><COL WIDTH={}>""".format(col_widths[0], col_widths[1])
 
-        rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
+        rpt += r"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
         for idx, header_value in enumerate(data):
             header, value = header_value
             header = ru(header)
@@ -487,7 +487,7 @@ class Drillreport(object):        # general observation point info for the selec
                 value = value.replace(u'.', decimal_separator)
 
             try:
-                rpt += ur"""<TR VALIGN=TOP><TD WIDTH=33%><P><font size=1>{}</font></P></TD><TD WIDTH=50%><P><font size=1>{}</font></P></TD></TR>""".format(header, value)
+                rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%><P><font size=1>{}</font></P></TD><TD WIDTH=50%><P><font size=1>{}</font></P></TD></TR>""".format(header, value)
             except UnicodeEncodeError:
                 try:
                     utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'custom_drillreport', u'Writing drillreport failed, see log message panel')),
@@ -501,18 +501,18 @@ class Drillreport(object):        # general observation point info for the selec
 
     def write_strat_data(self, strat_data, _strat_columns, table_header, strat_sql_columns_list, decimal_separator):
         if table_header:
-            rpt = ur"""<P><U><B><font size=3>%s</font></B></U></P>""" % table_header
+            rpt = r"""<P><U><B><font size=3>%s</font></B></U></P>""" % table_header
         else:
-            rpt = ur''
+            rpt = r''
         strat_columns = [x.split(u';')[0] for x in _strat_columns]
 
         col_widths = [x.split(u';')[1] if len(x.split(u';')) == 2 else u'1*' for x in _strat_columns]
 
 
-        rpt += ur"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 class="no-spacing" CELLSPACING=0>"""
+        rpt += r"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 class="no-spacing" CELLSPACING=0>"""
         for col_width in col_widths:
-            rpt += ur"""<COL WIDTH={}>""".format(col_width)
-        rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
+            rpt += r"""<COL WIDTH={}>""".format(col_width)
+        rpt += r"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
 
         headers_txt = OrderedDict([(u'stratid', ru(QCoreApplication.translate(u'Drillreport2_strat', u'Layer number'))),
                                    (u'depth', ru(QCoreApplication.translate(u'Drillreport2_strat', u'level (m b gs)'))),
@@ -525,14 +525,14 @@ class Drillreport(object):        # general observation point info for the selec
                                     (u'comment', ru(QCoreApplication.translate(u'Drillreport2_strat', u'comment')))])
 
         if len(strat_data) > 0:
-            rpt += ur"""<TR VALIGN=TOP>"""
+            rpt += r"""<TR VALIGN=TOP>"""
             for header in strat_columns:
-                rpt += ur"""<TD><P><font size=2><u>{}</font></P></u></TD>""".format(headers_txt[header])
-            rpt += ur"""</TR>"""
+                rpt += r"""<TD><P><font size=2><u>{}</font></P></u></TD>""".format(headers_txt[header])
+            rpt += r"""</TR>"""
 
             for rownr, row in enumerate(strat_data):
 
-                rpt += ur"""<TR VALIGN=TOP>"""
+                rpt += r"""<TR VALIGN=TOP>"""
                 for col in strat_columns:
                     if col == u'depth':
                         try:
@@ -541,34 +541,34 @@ class Drillreport(object):        # general observation point info for the selec
                         except ValueError:
                             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'Drillreport2',
                                                                                                   u'Programming error, depthtop and depthbot columns was supposed to exist')))
-                            rpt += ur"""<TD><P><font size=1> </font></P></TD>""".format(value)
+                            rpt += r"""<TD><P><font size=1> </font></P></TD>""".format(value)
                         else:
                             depthtop = u'' if row[depthtop_idx] == 'NULL' else row[depthtop_idx].replace(u'.', decimal_separator)
                             depthbot = u'' if row[depthbot_idx] == 'NULL' else row[depthbot_idx].replace(u'.', decimal_separator)
-                            rpt += ur"""<TD><P><font size=1>{}</font></P></TD>""".format(u' - '.join([depthtop, depthbot]))
+                            rpt += r"""<TD><P><font size=1>{}</font></P></TD>""".format(u' - '.join([depthtop, depthbot]))
                     else:
                         value_idx = strat_sql_columns_list.index(col)
                         value = u'' if row[value_idx] == 'NULL' else row[value_idx]
                         if col in (u'depthtop', u'depthbot') and decimal_separator != u'.':
                             value = value.replace(u'.', decimal_separator)
-                        rpt += ur"""<TD><P><font size=1>{}</font></P></TD>""".format(value)
+                        rpt += r"""<TD><P><font size=1>{}</font></P></TD>""".format(value)
 
-                rpt += ur"""</TR>"""
-        rpt += ur"""</p>"""
-        rpt += ur"""</TABLE>"""
+                rpt += r"""</TR>"""
+        rpt += r"""</p>"""
+        rpt += r"""</TABLE>"""
 
         return rpt
 
     def write_comment_data(self, comment_data, header):
         if comment_data:
             if header:
-                rpt = ur"""<P><U><B><font size=3>{}</font></B></U></P>""".format(header)
+                rpt = r"""<P><U><B><font size=3>{}</font></B></U></P>""".format(header)
             else:
-                rpt = ur''
+                rpt = r''
 
-            rpt += ur"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;"><font size=1>"""
-            rpt += ur'. '.join([ru(x) for x in comment_data if ru(x) not in ['','NULL']])
-            rpt += ur"""</font></p>"""
+            rpt += r"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;"><font size=1>"""
+            rpt += r'. '.join([ru(x) for x in comment_data if ru(x) not in ['','NULL']])
+            rpt += r"""</font></p>"""
         else:
             rpt = u''
 

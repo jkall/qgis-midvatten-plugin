@@ -22,7 +22,7 @@ from future import standard_library
 standard_library.install_aliases()
 from builtins import str
 from builtins import object
-from pyspatialite import dbapi2 as sqlite
+import sqlite3 as sqlite
 import csv, codecs, io, os, os.path
 import db_utils
 import midvatten_utils as utils
@@ -217,7 +217,7 @@ class ExportData(object):
 
     @staticmethod
     def transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict, geom_as_text=False):
-        ur"""
+        r"""
         Transform geometry columns to new chosen SRID
 
         The transformation is only done if the chosen srid is not the same as the old srid,

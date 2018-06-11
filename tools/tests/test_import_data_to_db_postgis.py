@@ -52,7 +52,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, None)])'''
+        reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, None)])'''
         print(str(mock_messagebar.mock_calls))
         print(test_string)
         assert test_string == reference_string
@@ -72,7 +72,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         mock_iface.messageBar.return_value.createMessage.createMessage(u'Import error, see log message panel')
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-        reference_string = ur'''(True, [])'''
+        reference_string = r'''(True, [])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -86,7 +86,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         self.importinstance.general_import(goal_table=u'w_levels_logger', file_data=file)
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, testcomment)])'''
+        reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, None, None, None, testcomment)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -100,7 +100,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, None, None, None)])'''
+        reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, None, None, None)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -114,7 +114,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         self.importinstance.general_import(goal_table=u'w_levels_logger', file_data=file)
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
+        reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -129,7 +129,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
+        reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 5.0, 10.0, None, None)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -144,7 +144,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, None, None, 1.0, None)])'''
+        reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, None, None, None, 1.0, None)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -159,7 +159,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, 1.0, None, None, None)])'''
+        reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, None, 1.0, None, None, None)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -174,7 +174,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, None, 1.0, None, None)])'''
+        reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, None, None, 1.0, None, None)])'''
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
@@ -191,7 +191,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment from w_levels_logger'''))
-        reference_string = ur'''(True, [(rb1, 2016-03-15 10:30:00, None, None, None, None, None)])'''
+        reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, None, None, None, None, None)])'''
         print(str(mock_messagebar.mock_calls))
         print(test_string)
         assert test_string == reference_string
@@ -220,7 +220,7 @@ class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImport
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html, ST_AsText(geometry) from obs_points'''))
 
-        reference_string = ur'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, 421484.0, 6542696.0, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, POINT(421484 6542696))])'''
+        reference_string = r'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, 421484.0, 6542696.0, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, POINT(421484 6542696))])'''
         assert test_string == reference_string
 
     @mock.patch('qgis.utils.iface')
@@ -240,7 +240,7 @@ class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImport
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html, ST_AsText(geometry) from obs_points'''))
 
-        reference_string = ur'''(True, [(rb1, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)])'''
+        reference_string = r'''(True, [(rb1, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -259,7 +259,7 @@ class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImport
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html, ST_AsText(geometry) from obs_points'''))
 
-        reference_string = ur'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, 421484.0, 6542696.0, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, POINT(421484 6542696))])'''
+        reference_string = r'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, 421484.0, 6542696.0, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, POINT(421484 6542696))])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -275,7 +275,7 @@ class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImport
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html, ST_AsText(geometry) from obs_points'''))
 
-        reference_string = ur'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, None, None, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, None)])'''
+        reference_string = r'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, None, None, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, None)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -290,7 +290,7 @@ class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImport
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select obsid, name, place, type, length, drillstop, diam, material, screen, capacity, drilldate, wmeas_yn, wlogg_yn, east, north, ne_accur, ne_source, h_toc, h_tocags, h_gs, h_accur, h_syst, h_source, source, com_onerow, com_html, ST_AsText(geometry) from obs_points'''))
 
-        reference_string = ur'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, 45.0, 55.0, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, POINT(45 55))])'''
+        reference_string = r'''(True, [(rb1, rb1, a, pipe, 1.0, 1, 1.0, 1, 1, 1, 1, 1, 1, 45.0, 55.0, 1.0, 1, 1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1, 1, POINT(45 55))])'''
         assert test_string == reference_string
 
 
@@ -304,7 +304,7 @@ class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestPostgisDbSvImport
         self.importinstance.general_import(file_data=f, goal_table=u'obs_lines')
         test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''select obsid, ST_AsText(geometry) from obs_lines'''))
 
-        reference_string = ur'''(True, [(line1, LINESTRING(1 2,3 4,5 6,7 8))])'''
+        reference_string = r'''(True, [(line1, LINESTRING(1 2,3 4,5 6,7 8))])'''
         assert test_string == reference_string
 
 
@@ -325,7 +325,7 @@ class TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
 
-        reference_string = ur'''(True, [(obsid1, 2.0, testreport, testproject, teststaff, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
+        reference_string = r'''(True, [(obsid1, 2.0, testreport, testproject, teststaff, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -343,7 +343,7 @@ class TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
 
-        reference_string = ur'''(True, [(obsid1, None, testreport, testproject, teststaff, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
+        reference_string = r'''(True, [(obsid1, None, testreport, testproject, teststaff, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -360,7 +360,7 @@ class TestWquallabImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_qual_lab'''))
-        reference_string = ur'''(True, [(obsid1, 2.0, testreport, testproject, None, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
+        reference_string = r'''(True, [(obsid1, 2.0, testreport, testproject, None, 2011-10-19 12:30:00, testmethod, 1,2-Dikloretan, 1.5, <1.5, µg/l, testcomment)])'''
         assert test_string == reference_string
 
 
@@ -378,7 +378,7 @@ class TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_flow'''))
-        reference_string = ur'''(True, [(obsid1, testid, Momflow, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
+        reference_string = r'''(True, [(obsid1, testid, Momflow, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -393,7 +393,7 @@ class TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_flow'''))
-        reference_string = ur'''(True, [(obsid1, testid, Testtype, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
+        reference_string = r'''(True, [(obsid1, testid, Testtype, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -408,11 +408,11 @@ class TestWflowImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_flow'''))
-        reference_string = ur'''(True, [(obsid1, testid, Momflow2, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
+        reference_string = r'''(True, [(obsid1, testid, Momflow2, 2011-10-19 12:30:00, 2.0, l/s, testcomment)])'''
         assert test_string == reference_string
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from zz_flowtype'''))
-        reference_string = ur'''(True, [(Accvol, Accumulated volume), (Momflow, Momentary flow rate), (Aveflow, Average flow since last reading), (Momflow2, None)])'''
+        reference_string = r'''(True, [(Accvol, Accumulated volume), (Momflow, Momentary flow rate), (Aveflow, Average flow since last reading), (Momflow2, None)])'''
         assert test_string == reference_string
 
 
@@ -430,7 +430,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))
-        reference_string = ur'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
+        reference_string = r'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -445,7 +445,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))
-        reference_string = ur'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, None, testcomment)])'''
+        reference_string = r'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, None, testcomment)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -466,7 +466,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))
-        reference_string = ur'''(True, [])'''
+        reference_string = r'''(True, [])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -489,7 +489,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))
-        reference_string = ur'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
+        reference_string = r'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -516,12 +516,12 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_qual_field'''))
-        reference_string = ur'''(True, [(obsid1, None, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment), (obsid2, None, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
+        reference_string = r'''(True, [(obsid1, None, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment), (obsid2, None, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, 22.0, testcomment)])'''
         assert test_string == reference_string
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from zz_staff'''))
-        reference_string = ur'''(True, [])'''
+        reference_string = r'''(True, [])'''
         print(str(test_string))
         assert test_string == reference_string
 
@@ -532,7 +532,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstanc
         self.importinstance.general_import(goal_table=u'w_qual_field', file_data=f)
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from zz_staff'''))
-        reference_string = ur'''(True, [])'''
+        reference_string = r'''(True, [])'''
         assert test_string == reference_string
 
 
@@ -550,7 +550,7 @@ class TestWlevelsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_levels'''))
-        reference_string = ur'''(True, [(obsid1, 2011-10-19 12:30:00, 2.0, None, None, testcomment)])'''
+        reference_string = r'''(True, [(obsid1, 2011-10-19 12:30:00, 2.0, None, None, testcomment)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -566,7 +566,7 @@ class TestWlevelsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
         self.importinstance.general_import(goal_table=u'w_levels', file_data=f)
 
         test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT * FROM w_levels'''))
-        reference_string = ur'''(True, [])'''
+        reference_string = r'''(True, [])'''
         assert test_string == reference_string
 
 
@@ -584,7 +584,7 @@ class TestSeismicImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance):
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from seismic_data'''))
-        reference_string = ur'''(True, [(obsid1, 500.0, 2.0, 4.0, 3.0, acomment)])'''
+        reference_string = r'''(True, [(obsid1, 500.0, 2.0, 4.0, 3.0, acomment)])'''
         assert test_string == reference_string
 
 
@@ -602,7 +602,7 @@ class TestCommentsImport(utils_for_tests.MidvattenTestPostgisDbSvImportInstance)
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from comments'''))
-        reference_string = ur'''(True, [(obsid1, 2011-10-19 12:30:00, testcomment, teststaff)])'''
+        reference_string = r'''(True, [(obsid1, 2011-10-19 12:30:00, testcomment, teststaff)])'''
         assert test_string == reference_string
 
 
@@ -787,7 +787,7 @@ class TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestPost
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_levels'''))
-        reference_string = ur'''(True, [(obsid1, 2016-01-01 00:00:00, None, None, 123.0, None)])'''
+        reference_string = r'''(True, [(obsid1, 2016-01-01 00:00:00, None, None, 123.0, None)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -804,7 +804,7 @@ class TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestPost
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_levels'''))
-        reference_string = ur'''(True, [(obsid1, 2016-01-01 00:00:00, None, None, 123.0, None)])'''
+        reference_string = r'''(True, [(obsid1, 2016-01-01 00:00:00, None, None, 123.0, None)])'''
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
@@ -825,6 +825,6 @@ class TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestPost
 
         test_string = utils_for_tests.create_test_string(
             db_utils.sql_load_fr_db(u'''select * from w_levels'''))
-        reference_string = ur'''(True, [(obsid1, 2016-01-01 00:00, None, None, 123.0, None), (obsid1, 2016-01-01 00:02:00, None, None, 789.0, None)])'''
+        reference_string = r'''(True, [(obsid1, 2016-01-01 00:00, None, None, 123.0, None), (obsid1, 2016-01-01 00:02:00, None, None, 789.0, None)])'''
         assert test_string == reference_string
 

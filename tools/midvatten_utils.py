@@ -494,7 +494,7 @@ def return_lower_ascii_string(textstring):
 
 
 def returnunicode(anything, keep_containers=False): #takes an input and tries to return it as unicode
-    ur"""
+    r"""
 
     >>> returnunicode('b')
     u'b'
@@ -520,6 +520,7 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
     :param anything: just about anything
     :return: hopefully a unicode converted anything
     """
+
     text = None
     for charset in [u'ascii', u'utf-8', u'utf-16', u'cp1252', u'iso-8859-1']:
         try:
@@ -595,7 +596,7 @@ def strat_selection_check(layer=''):
 
 
 def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
-    ur"""
+    r"""
 
     :param anything: just about anything
     :return: hopefully a utf8 converted anything
@@ -888,7 +889,7 @@ def ask_for_export_crs(default_crs=u''):
 
 
 def lists_to_string(alist_of_lists, quote=False):
-    ur'''
+    r'''
 
         The long Version:
         reslist = []
@@ -949,7 +950,7 @@ def lists_to_string(alist_of_lists, quote=False):
 
 
 def find_similar(word, wordlist, hits=5):
-    ur"""
+    r"""
 
     :param word: the word to find similar words for
     :param wordlist: the word list to find similar in
@@ -1267,7 +1268,7 @@ def calculate_db_table_rows():
 
 def anything_to_string_representation(anything, itemjoiner=u', ', pad=u'', dictformatter=u'{%s}',
                                       listformatter=u'[%s]', tupleformatter=u'(%s, )'):
-    ur""" Turns anything into a string used for testing
+    r""" Turns anything into a string used for testing
     :param anything: just about anything
     :param itemjoiner: The string to join list/tuple/dict items with.
     :return: A unicode string

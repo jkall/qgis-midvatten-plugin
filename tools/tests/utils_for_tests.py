@@ -88,7 +88,7 @@ def init_test():
     return app
 
 def create_test_string(anything=None):
-    ur""" Turns anything into a string used for testing
+    r""" Turns anything into a string used for testing
     :param anything: just about anything
     :return: A unicode string
      >>> create_test_string(u'123')
