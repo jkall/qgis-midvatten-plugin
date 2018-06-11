@@ -534,7 +534,7 @@ class MetadataFilter(VRowEntry):
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setSortingEnabled(True)
 
-        self.table, qgis.PyQt.QtCore.SIGNAL("itemSelectionChanged()"), self.update_nr_of_selected)
+        self.table.itemSelectionChanged.connect( self.update_nr_of_selected)
 
         self.table_items = {}
 
