@@ -1,12 +1,13 @@
 [general]
 ;mandatory metadata entries
 name=Midvatten
-qgisMinimumVersion=2.4
-qgisMaximumVersion=2.98
+qgisMinimumVersion=3.0
 description=A toolset that makes QGIS an interface for editing/viewing hydrogeological observational data (drillings, water levels, seismic data etc) stored in a sqlite db.
-version=Version 1.5.1
+about=TODO!
+version=2.0b1
 author=Josef Källgården, Henrik Spångmyr
 email=groundwatergis@gmail.com
+repository=https://github.com/jkall/qgis-midvatten-plugin.git
 
 ;optional metadata entries
 tags=hydrogeology,groundwater,time series,stratigraphy,piper diagram,borehole
@@ -19,16 +20,9 @@ experimental=False
 deprecated=False
 
 changelog=
-        Version 1.5.1:
-        - Custom plot: Bug fix for when XY plot contained NaN-values..
-        - New water quality report.
-        - Fix for database import to be able to import to tables without primary key.
-        - Sectionplot: Barwidths can be set as % of plot window.
-        - Customplot: Added template support.
-        - New feature: Compact water quality report. Used for creating water quality reports for use as report attachments..
-        Version 1.5:
-        - Final release
-        For changes until ver 1.5, see separate document changelog_history
+        Version 2.0b1:
+        - Update for QGIS3.
+        For changes until ver 2.0, see separate document changelog_history
 
 ;for the new plugin repo
 about=The plugin is a toolset for using QGIS to manage observational data from hydrogeological investigations. Data is stored in a spatialite database. 
