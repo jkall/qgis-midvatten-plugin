@@ -107,8 +107,10 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
             #Special cases for some tables
             if goal_table == u'stratigraphy':
                 self.check_and_delete_stratigraphy(existing_columns_in_goal_table, dbconnection)
-            if goal_table in (u'obs_lines', u'obs_points'):
-                self.calculate_geometry(existing_columns_in_goal_table, goal_table, dbconnection)
+            # Check if current table has geometry:
+            geom_column = db_utils.get_geometry_types(dbconnection, goal_table)
+            if geom_column:
+                self.calculate_geometry(geom_column, goal_table, dbconnection)
 
             # Import foreign keys in some special cases
             foreign_keys = db_utils.get_foreign_keys(goal_table, dbconnection=dbconnection)
@@ -266,19 +268,13 @@ class midv_data_importer():  # this class is intended to be a multipurpose impor
                                                                                           goal_table)
         dbconnection.execute(sql)
 
-    def calculate_geometry(self, existing_columns, table_name, dbconnection):
+    def calculate_geometry(self, geometry_columns, table_name, dbconnection):
         # Calculate the geometry
         # THIS IS DUE TO WKT-import of geometries below
         srid = dbconnection.execute_and_fetchall(u"""SELECT srid FROM geometry_columns WHERE f_table_name = '%s'""" % table_name)[0][0]
-        if u'WKT' in existing_columns:
-            geocol = u'WKT'
-        elif u'geometry' in existing_columns:
-            geocol = u'geometry'
-        else:
-            return None
-
-        sql = u"""UPDATE %s SET geometry = ST_GeomFromText(%s, %s)"""%(self.temptable_name, geocol, srid)
-        dbconnection.execute(sql)
+        for geocol, geotype in geometry_columns.items():
+            sql = u"""UPDATE {} SET {} = ST_GeomFromText({}, {})""".format(self.temptable_name, geocol, geocol, srid)
+            dbconnection.execute(sql)
 
     def check_and_delete_stratigraphy(self, existing_columns, dbconnection):
         if all([u'stratid' in existing_columns, u'depthtop' in existing_columns, u'depthbot' in existing_columns]):
