@@ -49,14 +49,11 @@ class LoadLayers(object):
         self.add_layers_new_method()
 
     def add_layers_new_method(self):
-        try:#qgis>=2.4
-            if self.group_name == 'Midvatten_OBS_DB':
-                position_index = 0
-            else:
-                position_index = 1
-            MyGroup = self.root.insertGroup(position_index, self.group_name)
-        except:#qgis < 2.4
-            MyGroup = self.legend.addGroup (self.group_name,1,-1)
+        if self.group_name == 'Midvatten_OBS_DB':
+            position_index = 0
+        else:
+            position_index = 1
+        MyGroup = self.root.insertGroup(position_index, self.group_name)
 
         dbconnection = db_utils.DbConnectionManager()
         uri = dbconnection.uri
@@ -81,14 +78,10 @@ class LoadLayers(object):
         for layer in layer_list:
             # TODO: Made this a comment, but there might be some hidden feature thats still needed!
             #map_canvas_layer_list.append(QgsMapCanvasLayer(layer))
-            try:#qgis>=2.4
-                QgsProject.instance().addMapLayers([layer],False)
-                MyGroup.insertLayer(0,layer)
-                #MyGroup.addLayer(layer)
-            except:#qgis<2.4
-                QgsProject.instance().addMapLayers([layer])
-                group_index = self.legend.groups().index(self.group_name)
-                self.legend.moveLayer (self.legend.layers()[0],group_index)
+
+            QgsProject.instance().addMapLayers([layer],False)
+            MyGroup.insertLayer(0,layer)
+            #MyGroup.addLayer(layer)
 
             if self.group_name == 'Midvatten_OBS_DB':
                 layer.setEditorLayout(1)#perhaps this is unnecessary since it gets set from the loaded qml below?
@@ -114,7 +107,9 @@ class LoadLayers(object):
                 obsp_lyr = layer
                 canvas.setExtent(layer.extent())
             elif layer.name() == 'w_lvls_last_geom':#we do not want w_lvls_last_geom to be visible by default
-                self.legend.setLayerVisible(layer,False)
+                #Todo: Fix this:
+                layer.setVisible(False)
+
             else:
                 pass
 
