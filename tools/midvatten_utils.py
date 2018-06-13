@@ -1681,6 +1681,7 @@ class PlotTemplates(object):
         filename = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Choose a file name')), directory='', filter='txt (*.txt)')
         if filename is None or not filename:
             raise UserInterruptError()
+        filename = filename[0]
         as_str = self.readable_output(self.loaded_template)
         with io.open(filename, 'w', encoding='utf8') as of:
             of.write(as_str)

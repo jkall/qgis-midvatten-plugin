@@ -355,6 +355,8 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         filename = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Choose a file name')), directory='', filter='csv (*.csv)')
         if not filename:
             return
+        else:
+            filename = filename[0]
         if os.path.splitext(filename)[1] != u'.csv':
             filename += u'.csv'
         try:

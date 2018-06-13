@@ -845,6 +845,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             QCoreApplication.translate(u'CustomPlot', u'Choose a file name, extension sets format')), directory='')
         if not filename:
             return
+        else:
+            filename = filename[0]
         name, ext = os.path.splitext(filename)
         self.custplotfigure.savefig(filename, format=ext.lstrip(u'.'), dpi=float(self.figure_dpi.text()))
 

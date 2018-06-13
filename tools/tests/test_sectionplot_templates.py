@@ -168,14 +168,14 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
         with utils.tempinput('', u'utf-8') as save_file:
             with utils.tempinput(afile, u'utf-8') as f1:
-                @mock.patch('PyQt4.QtWidgets.QFileDialog.getSaveFileName')
+                @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
                 @mock.patch('midvatten_utils.select_files')
                 @mock.patch('midvatten_utils.MessagebarAndLog')
                 @mock.patch('os.path.join')
                 def _test(self, filename, save_file, mock_join, mock_messagebar, mock_select_files, mock_save_filename):
                     mock_join.return_value = ''
                     mock_select_files.return_value = [filename]
-                    mock_save_filename.return_value = save_file
+                    mock_save_filename.return_value = (save_file, 0)
                     self.midvatten.ms.settingsdict['secplot_templates'] = ''
                     secplottemplates = PlotTemplates(self.sectionplot, self.template_list, self.edit_button,
                                                      self.load_button,

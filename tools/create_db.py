@@ -58,14 +58,15 @@ class NewDb(object):
         # If a CRS is selectd, go on and create the database
 
         #path and name of new db
-        dbpath, _filter = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption="New DB",
+        dbpath = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption="New DB",
                                                                     directory="midv_obsdb.sqlite",
                                                                     filter="Spatialite (*.sqlite)")
-        dbpath = ru(dbpath)
-        print(str(dbpath))
+
         if not dbpath:
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return u''
+        else:
+            dbpath = ru(dbpath[0])
 
         #create Spatialite database
 
