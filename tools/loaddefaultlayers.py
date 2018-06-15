@@ -37,7 +37,6 @@ class LoadLayers(object):
         self.default_nonspatlayers = defs.get_subset_of_tables_fr_db(category='default_nonspatlayers')
         self.iface = iface
         self.root = QgsProject.instance().layerTreeRoot()
-        self.legend = self.iface.legendInterface()
         self.remove_layers()
         self.add_layers()
 
@@ -53,8 +52,8 @@ class LoadLayers(object):
             position_index = 0
         else:
             position_index = 1
-        MyGroup = self.root.insertGroup(position_index, self.group_name)
-
+        MyGroup = qgis.core.QgsLayerTreeGroup(name=self.group_name, checked=True)
+        self.root.insertChildNode(position_index, MyGroup)
         dbconnection = db_utils.DbConnectionManager()
         uri = dbconnection.uri
         dbtype = dbconnection.dbtype
