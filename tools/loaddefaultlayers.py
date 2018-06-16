@@ -18,15 +18,17 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import str
-from builtins import object
+
 import os
 import qgis.utils
 from qgis.core import QgsDataSourceUri, QgsProject, QgsVectorLayer
 
 import db_utils
 import midvatten_utils as utils
+from builtins import object
+
 from definitions import midvatten_defs as defs
+from midvatten_utils import add_layers_to_list
 
 
 class LoadLayers(object):
@@ -55,23 +57,18 @@ class LoadLayers(object):
         MyGroup = qgis.core.QgsLayerTreeGroup(name=self.group_name, checked=True)
         self.root.insertChildNode(position_index, MyGroup)
         dbconnection = db_utils.DbConnectionManager()
-        uri = dbconnection.uri
-        dbtype = dbconnection.dbtype
-        schema = dbconnection.schemas()
-        #For QgsVectorLayer, dbtype has to be postgres instead of postgis
-        dbtype = db_utils.get_dbtype(dbtype)
 
         canvas = self.iface.mapCanvas()
         layer_list = []
-        map_canvas_layer_list=[]
         if self.group_name == 'Midvatten_OBS_DB':
-            self.add_layers_to_list(layer_list, uri, schema, self.default_nonspatlayers, dbtype)
-            self.add_layers_to_list(layer_list, uri, schema, self.default_layers, dbtype, 'geometry')
+            add_layers_to_list(layer_list, self.default_nonspatlayers, dbconnection=dbconnection)
+            add_layers_to_list(layer_list, self.default_layers, geometrycolumn='geometry',
+                               dbconnection=dbconnection)
 
         elif self.group_name == 'Midvatten_data_domains': #if self.group_name == 'Midvatten_data_domains':
             tables_columns = db_utils.tables_columns()
             d_domain_tables = [x for x in list(tables_columns.keys()) if x.startswith(u'zz_')]
-            self.add_layers_to_list(layer_list, uri, schema, d_domain_tables, dbtype)
+            add_layers_to_list(layer_list, d_domain_tables, dbconnection=dbconnection)
 
         #now loop over all the layers and set styles etc
         for layer in layer_list:
@@ -113,26 +110,13 @@ class LoadLayers(object):
                 pass
 
         #finally refresh canvas
+        dbconnection.closedb()
         canvas.refresh()
 
-    def add_layers_to_list(self, resultlist, uri, schema, tablenames, dbtype, geometrycolumn=None):
-        for tablename in tablenames:  # first load all non-spatial layers
-            layer = self.create_layer(uri, schema, tablename, dbtype, geometrycolumn)
-            if not layer.isValid():
-                #Try to add it as a view by adding key column
-                layer = self.create_layer(uri, schema, tablename, dbtype, geometrycolumn, None, 'obsid')
-                if not layer.isValid():
-                    utils.MessagebarAndLog.critical(bar_msg=layer.name() + u' is not valid layer')
-                else:
-                    resultlist.append(layer)
-            else:
-                resultlist.append(layer)
+    def remove_layers(self):
+        remove_group = self.root.findGroup(self.group_name)
+        self.root.removeChildNode(remove_group)
 
-    def create_layer(self, uri, schema, tablename, dbtype, geometrycolumn=None, sql=None, keycolumn=None):
-        uri.setDataSource(schema, tablename, geometrycolumn, sql, keycolumn)
-        layer = QgsVectorLayer(uri.uri(), tablename, dbtype.encode('utf-8'))
-        return layer
-                
     def add_layers_old_method(self):
         """
         this method is depreceated and should no longer be used
@@ -150,7 +134,7 @@ class LoadLayers(object):
                 utils.MessagebarAndLog.critical(bar_msg=u'Error, Failed to load layer %s!'%tablename)
             else:
                 QgsProject.instance().addMapLayers([layer])
-                group_index = self.legend.groups().index('Midvatten_OBS_DB') 
+                group_index = self.legend.groups().index('Midvatten_OBS_DB')
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
                 filename = tablename + ".qml"       #  load styles
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filename)
@@ -184,13 +168,13 @@ class LoadLayers(object):
                         filename = tablename + "_en.ui"
                     uifile = os.path.join(os.sep,os.path.dirname(__file__),"..","ui",filename)
                     try: # python bindings for setEditorLayout were introduced in qgis-master commit 9183adce9f257a097fc54e5a8a700e4d494b2962 november 2012
-                        layer.setEditorLayout(2)  
+                        layer.setEditorLayout(2)
                     except:
                         pass
                     layer.setEditForm(uifile)
                     if tablename in ('obs_points','obs_lines'):
                         formlogic = "form_logics." + tablename + "_form_open"
-                        layer.setEditFormInit(formlogic)     
+                        layer.setEditFormInit(formlogic)
                 QgsProject.instance().addMapLayers([layer])
                 group_index = self.legend.groups().index('Midvatten_OBS_DB')   # SIPAPI UPDATE 2.0
                 self.legend.moveLayer (self.legend.layers()[0],group_index)
@@ -198,32 +182,6 @@ class LoadLayers(object):
                     qgis.utils.iface.mapCanvas().setExtent(layer.extent())
                 elif tablename == 'w_lvls_last_geom':#we do not want w_lvls_last_geom to be visible by default
                     self.legend.setLayerVisible(layer,False)
-
-    def remove_layers(self):
-        try:#qgis>2.6
-            remove_group = self.root.findGroup(self.group_name)
-            self.root.removeChildNode(remove_group)
-        except: #qgis < 2.4
-            """ FIRST search for and try to remove old layers """        
-            ALL_LAYERS = self.iface.mapCanvas().layers()
-            if self.group_name == 'Midvatten_OBS_DB':
-                for lyr in ALL_LAYERS:
-                    name = lyr.name()
-                    if (name in self.default_layers) or (name in self.default_nonspatlayers):
-                        QgsProject.instance().removeMapLayers( [lyr.id()] )
-                    """ THEN remove old group """
-            elif self.group_name == 'Midvatten_data_domains':
-                conn_ok, dd_tables = db_utils.sql_load_fr_db("select name from sqlite_master where name like 'zz_%'")
-                if not conn_ok:
-                    return
-                d_domain_tables = [str(dd_table[0]) for dd_table in dd_tables]
-                for lyr in ALL_LAYERS:         
-                    name = lyr.name()
-                    if name in d_domain_tables:
-                        QgsProject.instance().removeMapLayers( [lyr.id()] )
-            while self.group_name in self.legend.groups():
-                group_index = self.legend.groups().index(self.group_name) 
-                self.legend.removeGroup(group_index)
 
     def selection_layer_in_db_or_not(self): #this is not used, it might be if using layer_styles stored in the db
         sql = r"""select name from sqlite_master where name = 'layer_styles'"""

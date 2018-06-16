@@ -54,7 +54,6 @@ class PrepareForQgis2Threejs(object):
             del self.symbolcolors_dict[key]
         self.iface = iface
         self.root = QgsProject.instance().layerTreeRoot()
-        self.legend = self.iface.legendInterface()
         self.remove_views()
         self.drop_db_views()
         self.create_db_views()
@@ -64,12 +63,8 @@ class PrepareForQgis2Threejs(object):
     def add_layers(self):#not tested and not ready, must fix basic styles (preferrably colors based on some definition dicitonary
         MyGroup = self.root.insertGroup(0, "stratigraphy_layers_for_qgis2threejs")#verify this is inserted at top
 
-        uri = self.dbconnection.uri
-
         canvas = self.iface.mapCanvas()
-        layer_list = []
-        map_canvas_layer_list=[]
-        
+
         list_with_all_strat_layer = []
         for key in self.strat_layers_dict:
             list_with_all_strat_layer.append(key)
@@ -79,12 +74,11 @@ class PrepareForQgis2Threejs(object):
 
         colors = []
 
-        for strat_layer_view in list_with_all_strat_layer: 
-            uri.setDataSource('',strat_layer_view, 'Geometry')
-            dbtype = db_utils.get_dbtype(self.dbconnection.dbtype)
-            layer = QgsVectorLayer(uri.uri(), strat_layer_view, dbtype) # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
-            layer_list.append(layer)
+        layer_list = []
+        utils.add_layers_to_list(layer_list, list_with_all_strat_layer, geometrycolumn='geometry',
+                           dbconnection=self.dbconnection)
 
+        for strat_layer_view in list_with_all_strat_layer:
             try:
                 supplied_color = self.symbolcolors_dict[strat_layer_view]
             except KeyError:
@@ -108,7 +102,7 @@ class PrepareForQgis2Threejs(object):
             colors.append(color)
 
         # create a new single symbol renderer
-        symbol = QgsSymbol.defaultSymbol(layer.geometryType())
+        symbol = QgsSymbol.defaultSymbol(layer_list[-1].geometryType())
         renderer = QgsSingleSymbolRenderer(symbol)
 
         for idx, layer in enumerate(layer_list):#now loop over all the layers, add them to canvas and set colors
@@ -145,6 +139,7 @@ class PrepareForQgis2Threejs(object):
             canvas.refresh()
 
     def create_db_views(self):
+        # TODO: Update to support PostGIS
         SQLFile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions","add_spatial_views_for_gis2threejs.sql")
 
         self.dbconnection.execute(r"""create view strat_obs_p_for_qgsi2threejs as select distinct "a"."rowid" as "rowid", "a"."obsid" as "obsid", "a"."geometry" as "geometry" from "obs_points" as "a" JOIN "stratigraphy" as "b" using ("obsid") where (typeof("a"."h_toc") in ('integer', 'real') or typeof("a"."h_gs") in ('integer', 'real'))""")
@@ -161,6 +156,7 @@ class PrepareForQgis2Threejs(object):
                 linecounter += 1
 
     def drop_db_views(self):
+        # TODO: Update to support PostGIS
         sql1="delete from views_geometry_columns where view_name = 'strat_obs_p_for_qgsi2threejs'"
         sql2="drop view if exists strat_obs_p_for_qgsi2threejs"
         db_utils.sql_alter_db(sql1, dbconnection=self.dbconnection)

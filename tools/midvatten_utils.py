@@ -21,6 +21,10 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from future import standard_library
+
+import midvatten_utils
+from qgis._core import QgsVectorLayer
+
 standard_library.install_aliases()
 from builtins import filter
 from builtins import zip
@@ -1798,3 +1802,36 @@ class PlotTemplates(object):
                                            log_msg=returnunicode(QCoreApplication.translate(u'StoredSettings', u'Error %s\nfor string\n%s'))%(str(e), the_string))
         else:
             return as_dict
+
+
+def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbconnection=None):
+    if not isinstance(dbconnection, db_utils.DbConnectionManager):
+        dbconnection = db_utils.DbConnectionManager()
+
+    uri = dbconnection.uri
+    dbtype = dbconnection.dbtype
+    schema = dbconnection.schemas()
+    # For QgsVectorLayer, dbtype has to be postgres instead of postgis
+    dbtype = db_utils.get_dbtype(dbtype)
+
+    uri.setDataSource(schema, tablename, geometrycolumn, sql, keycolumn)
+    layer = QgsVectorLayer(uri.uri(), tablename, dbtype.encode('utf-8'))
+    return layer
+
+
+def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection=None):
+    if not isinstance(dbconnection, db_utils.DbConnectionManager):
+        dbconnection = db_utils.DbConnectionManager()
+
+    for tablename in tablenames:  # first load all non-spatial layers
+        layer = create_layer(tablename, geometrycolumn=geometrycolumn)
+        if not layer.isValid():
+            #Try to add it as a view by adding key column
+            layer = create_layer(tablename, geometrycolumn=geometrycolumn, sql=None, keycolumn='obsid',
+                                 dbconnection=dbconnection)
+            if not layer.isValid():
+                MessagebarAndLog.critical(bar_msg=layer.name() + u' is not valid layer')
+            else:
+                resultlist.append(layer)
+        else:
+            resultlist.append(layer)
