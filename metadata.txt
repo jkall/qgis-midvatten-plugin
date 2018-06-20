@@ -21,6 +21,7 @@ deprecated=False
 changelog=
         Version 1.5.2:
         - Version for qgis 2.18.
+        - Qgis2threejs: Fix for when geoshorts are upper case.
         Version 1.5.1:
         - Custom plot: Bug fix for when XY plot contained NaN-values..
         - New water quality report.
