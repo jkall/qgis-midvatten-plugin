@@ -114,7 +114,8 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             # Check if current table has geometry:
             geom_column = db_utils.get_geometry_types(dbconnection, goal_table)
             if geom_column:
-                self.calculate_geometry(geom_column, goal_table, dbconnection)
+                if geom_column in existing_columns_in_temptable:
+                    self.calculate_geometry(geom_column, goal_table, dbconnection)
 
             # Import foreign keys in some special cases
             foreign_keys = db_utils.get_foreign_keys(goal_table, dbconnection=dbconnection)
