@@ -177,7 +177,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                                                         log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Sql\n%s  failed.')) % (sql), duration=999)
                     else:
                         utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Import failed, see log message panel')),
-                                                        log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Sql\n%s  failed.\nMsg:\n%s')) % (sql, str(e)), duration=999)
+                                                        log_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Sql\n%s  failed.\nMsg:\n%s')) % (sql, ru(str(e))), duration=999)
 
             recsafter = dbconnection.execute_and_fetchall(u'select count(*) from %s' % (goal_table))[0][0]
 
