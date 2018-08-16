@@ -482,7 +482,7 @@ def get_foreign_keys(table, dbconnection=None):
         result_list = dbconnection.execute_and_fetchall(sql)
         for row in result_list:
             info = row[2]
-            m = re.search(r'FOREIGN KEY \(([a-zA-ZåäöÅÄÖ\-\_]+)\) REFERENCES ([a-zA-ZåäöÅÄÖ\-\_]+)\(([a-zA-ZåäöÅÄÖ\-\_]+)\)', info)
+            m = re.search(r'FOREIGN KEY \(([a-zA-ZåäöÅÄÖ0-9\-\_]+)\) REFERENCES ([a-zA-ZåäöÅÄÖ0-9\-\_]+)\(([a-zA-ZåäöÅÄÖ0-9\-\_]+)\)', info)
             res = m.groups()
             if res:
                 foreign_keys.setdefault(res[1], []).append((res[0], res[2]))
