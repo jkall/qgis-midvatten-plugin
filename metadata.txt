@@ -24,6 +24,7 @@ changelog=
         - Qgis2threejs: Fix for when geoshorts are upper case.
         - Added -wal to db lock check.
         - Fixes #276 where importing to PostgreSQL tables with numbers in the name caused an error.
+        - Import function for HOBO temperature loggers.
         Version 1.5.1:
         - Custom plot: Bug fix for when XY plot contained NaN-values..
         - New water quality report.

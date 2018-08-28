@@ -252,3 +252,4 @@ class DistinctValuesBrowser(VRowEntry):
     @distinct_value.setter
     def distinct_value(self, value):
         set_combobox(self._distinct_value, value)
+

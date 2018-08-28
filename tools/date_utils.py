@@ -18,11 +18,12 @@
  ***************************************************************************/
 """
 import datetime
+import re
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from PyQt4.QtCore import QCoreApplication
 
-def find_date_format(datestring):
+def find_date_format(datestring, suppress_error_msg=False):
     """
     Parses a string and returns the found working dateformat string
     :param datestring: A string representing a date, ex: '2015-01-01 12:00'
@@ -47,7 +48,7 @@ def find_date_format(datestring):
                            u'%Y-%m-%d', u'%d-%m-%Y', u'%H:%M:%S', u'%d-%m-%Y %H:%M:%S',
                            u'%d-%m-%Y %H:%M', u'%d-%m-%Y %H', u'%Y/%m/%d %H:%M',
                            u'%Y/%m/%d %H', u'%Y%m%d %H%M%S', u'%Y%m%d %H%M',
-                           u'%Y%m%d %H']
+                           u'%Y%m%d %H', u'%m/%d/%y %H:%M:%S']
     found_format = None
     for dateformat in date_formats_to_try:
         try:
@@ -59,9 +60,10 @@ def find_date_format(datestring):
             break
 
     if found_format is None:
-        utils.MessagebarAndLog.critical(
-            bar_msg=QCoreApplication.translate(u'find_date_format', u'Date parsing failed, see log message panel'),
-            log_msg=ru(QCoreApplication.translate(u'find_date_format', u'Could not find the date format for string "%s"\nSupported date formats:\n%s'))%(utils.returnunicode(datestring), u'\n'.join(date_formats_to_try)))
+        if not suppress_error_msg:
+            utils.MessagebarAndLog.critical(
+                bar_msg=QCoreApplication.translate(u'find_date_format', u'Date parsing failed, see log message panel'),
+                log_msg=ru(QCoreApplication.translate(u'find_date_format', u'Could not find the date format for string "%s"\nSupported date formats:\n%s'))%(utils.returnunicode(datestring), u'\n'.join(date_formats_to_try)))
 
     return found_format
 
@@ -158,3 +160,82 @@ def reformat_date_time(astring):
     outformat = u' '.join([date, time])
     new_datestring = datetime.datetime.strftime(datetime.datetime.strptime(astring, date_format), outformat)
     return new_datestring
+
+def find_time_format(datestring):
+    """
+    Parses a string and returns the found working dateformat string
+    :param datestring: A string representing a time, ex: '12:00'
+    :return: The dateformat of the string, ex: ' %H:%M'
+
+    Can only parse a list of preconfigured datestrings. See the code.
+
+    """
+    datestring = str(datestring)
+    #Length, format
+    time_formats_to_try = {4: [u'%H%M'],
+                           5: [u'%H:%M', u'%H %M'],
+                           6: [u'%H%M%S'],
+                           8: [u'%H:%M:%S', u'%H %M %S']}
+
+
+    found_format = None
+
+    length = len(datestring)
+
+    format_list = time_formats_to_try.get(length, None)
+    if format_list is None:
+        print(u'Timeformat not supported for %s'%datestring)
+        return None
+
+    for timeformat in format_list:
+        try:
+            datetime.datetime.strptime(datestring, timeformat)
+        except ValueError:
+            continue
+        else:
+            found_format = timeformat
+            break
+
+    return found_format
+
+def parse_timezone_to_timedelta(tz_string):
+    """
+
+    :param tz_string:
+    :return:
+
+    >>> parse_timezone_to_timedelta('GMT+02:00')
+    datetime.timedelta(0, 7200)
+    >>> parse_timezone_to_timedelta('GMT')
+    datetime.timedelta(0)
+    >>> parse_timezone_to_timedelta('GMT00:00')
+    datetime.timedelta(0)
+    >>> parse_timezone_to_timedelta('GMT-11:00')
+    datetime.timedelta(-1, 46800)
+    >>> parse_timezone_to_timedelta('GMT+14:00')
+    datetime.timedelta(0, 50400)
+    >>> parse_timezone_to_timedelta('GMT+2')
+    datetime.timedelta(0, 7200)
+    >>> parse_timezone_to_timedelta('GMT+02:35')
+    datetime.timedelta(0, 9300)
+
+    """
+    tz_string = ru(tz_string)
+    match = re.match('GMT([\+\-]*)([0-9]+)([\:]*[0-9]*)', tz_string, re.IGNORECASE)
+    if match is None:
+        if not tz_string.replace('GMT', '').replace('gmt', ''):
+            res = ('', '', '')
+        else:
+            raise ValueError(ru(QCoreApplication.translate(u'parse_timezone_to_timedelta', u'Timezone string %s could not be parsed!'))%tz_string)
+    else:
+        res = match.groups()
+    if res[0] == '-':
+        sign = -1
+    else:
+        sign = 1
+    hours = int(res[1])*sign if res[1] else 0
+    minutes = int(res[2].lstrip(':'))*sign if res[2].lstrip(':') else 0
+    td = datetime.timedelta(hours=hours, minutes=minutes)
+    return td
+
+
