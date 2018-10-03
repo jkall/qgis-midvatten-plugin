@@ -54,8 +54,10 @@ def settingsdict():    #These are the default settings, they shall not be change
             'secplotbw':2,
             'secplotlocation':8,
             'secplotselectedDEMs':[],
-            'stratigraphyplotted':2,
+            'stratigraphyplotted':True,
+            'secplothydrologyplotted':False,
             'secplotlabelsplotted':0,
+            'secplotlegendplotted':2,
             'secplot_loaded_template': '',
             'secplot_templates': '',
             'secplotwidthofplot': 1,
@@ -724,6 +726,9 @@ def secplot_default_template():
         loaded_template['ticklabels_Text_set_fontsize'] = {'fontsize': 10}
         loaded_template['Axes_set_xlabel'] = {
             'xlabel': ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")),
+            'fontsize': 10}
+        loaded_template['Axes_set_xlabel_stratplot'] = {
+            'xlabel': ru(QCoreApplication.translate(u'SectionPlot', u"Observation Location Code")),
             'fontsize': 10}
         loaded_template['Axes_set_xlim'] = None  # Tuple like (min, max)
         loaded_template['Axes_set_ylim'] = None  # Tuple like (min, max)
