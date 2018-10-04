@@ -581,7 +581,7 @@ class DatabaseSettings(object):
         self.db_settings_obj = dbclass(self.midvsettingsdialogdock, self.label_width)
         self.layout.addWidget(self.db_settings_obj.widget, self.layout.rowCount(), 0)
         self.child_widgets.append(self.db_settings_obj.widget)
-
+        print(str(self.child_widgets))
         self.layout.setRowStretch(self.layout.rowCount(), 1)
 
     def update_settings(self, _db_settings):
