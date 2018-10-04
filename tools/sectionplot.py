@@ -411,10 +411,10 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             Axes_set_xlabel = dict(
                 [(k, v) for k, v in self.secplot_templates.loaded_template.get('Axes_set_xlabel', {}).iteritems() if
                  k != 'xlabel'])
-            xlabel = self.secplot_templates.loaded_template.get('Axes_set_xlabel',
+            xlabel = self.secplot_templates.loaded_template.get('Axes_set_xlabel_stratplot',
                                                                         {}).get('xlabel',
                                                                                      defs.secplot_default_template()[
-                                                                                               'Axes_set_xlabel'][
+                                                                                        'Axes_set_xlabel_stratplot'][
                                                                                                'xlabel'])
             self.secax.set_xlabel(xlabel, **Axes_set_xlabel)  # Allows international characters ('åäö') as xlabel
         else:  # Test produces section plot if flag = 1
@@ -541,6 +541,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
             z_gs = []
             BarLength = []  # stratigraphy bar length
             Bottom = []  # stratigraphy bottom
+            Capacity = '0'
             for obs in self.selected_obsids:
                 if k <= len(self.selected_obsids):  # in first Typ-loop, get obs_points data - used for plotting obsid
                     self.x_id.append(float(self.LengthAlong[q]))
@@ -566,7 +567,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
                 if _recs:
                     recs = _recs
                     j = 0  # counter for unique stratid
-                    Capacity = 'o'
+                    Capacity = '0'
                     for rec in recs:  # loop cleanup
                         BarLength.append(rec[0])  # loop cleanup
                         x.append(float(self.LengthAlong[k]))  # - self.barwidth/2)
