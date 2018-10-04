@@ -534,11 +534,11 @@ class DatabaseSettings(object):
         self.grid.layout.addWidget(self._label, 0, 0)
         self.grid.layout.addWidget(self._dbtype_combobox, 0, 1)
         self.layout.addWidget(self.grid.widget)
-
+        print(str('line 537'))
         self.child_widgets = []
-
+        print(str('line 539'))
         self.midvsettingsdialogdock.connect(self._dbtype_combobox, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_dbtype)
-
+        print(str('line 541'))
         self.layout.setRowStretch(self.layout.rowCount(), 1)
 
     @property
