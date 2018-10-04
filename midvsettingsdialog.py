@@ -634,6 +634,8 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
         super(SpatialiteSettings, self).__init__()
         self.midvsettingsdialogdock = midvsettingsdialogdock
         self.btnSetDB = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'SpatialiteSettings', u'Select db')))
+        if self.btnSetDB:
+            print(str('self.btnsetDB found'))
         self.btnSetDB.setFixedWidth(label_width)
         self.layout.addWidget(self.btnSetDB, 0, 0)
         self._dbpath = PyQt4.QtGui.QLineEdit(u'')
