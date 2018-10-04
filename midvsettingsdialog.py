@@ -534,11 +534,11 @@ class DatabaseSettings(object):
         self.grid.layout.addWidget(self._label, 0, 0)
         self.grid.layout.addWidget(self._dbtype_combobox, 0, 1)
         self.layout.addWidget(self.grid.widget)
-        print(str('line 537'))
+
         self.child_widgets = []
-        print(str('line 539'))
+
         self.midvsettingsdialogdock.connect(self._dbtype_combobox, PyQt4.QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.choose_dbtype)
-        print(str('line 541'))
+
         self.layout.setRowStretch(self.layout.rowCount(), 1)
 
     @property
@@ -581,7 +581,6 @@ class DatabaseSettings(object):
         self.db_settings_obj = dbclass(self.midvsettingsdialogdock, self.label_width)
         self.layout.addWidget(self.db_settings_obj.widget, self.layout.rowCount(), 0)
         self.child_widgets.append(self.db_settings_obj.widget)
-        print(str(self.child_widgets))
         self.layout.setRowStretch(self.layout.rowCount(), 1)
 
     def update_settings(self, _db_settings):
@@ -634,8 +633,6 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
         super(SpatialiteSettings, self).__init__()
         self.midvsettingsdialogdock = midvsettingsdialogdock
         self.btnSetDB = PyQt4.QtGui.QPushButton(ru(QCoreApplication.translate(u'SpatialiteSettings', u'Select db')))
-        if self.btnSetDB:
-            print(str('self.btnsetDB found'))
         self.btnSetDB.setFixedWidth(label_width)
         self.layout.addWidget(self.btnSetDB, 0, 0)
         self._dbpath = PyQt4.QtGui.QLineEdit(u'')
