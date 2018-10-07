@@ -71,9 +71,9 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.initUI()
         self.template_plot_label.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-section-plot\">Templates manual</a>")
         self.template_plot_label.setOpenExternalLinks(True)
-        if self.isWindow():
-            self.setWindowFlags(
-                PyQt4.QtCore.Qt.Window | PyQt4.QtCore.Qt.WindowMinimizeButtonHint | PyQt4.QtCore.Qt.WindowMaximizeButtonHint | PyQt4.QtCore.Qt.WindowCloseButtonHint);
+        # if self.isWindow():
+        #    self.setWindowFlags(
+         #       PyQt4.QtCore.Qt.Window | PyQt4.QtCore.Qt.WindowMinimizeButtonHint | PyQt4.QtCore.Qt.WindowMaximizeButtonHint | PyQt4.QtCore.Qt.WindowCloseButtonHint);
 
 
     def do_it(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
