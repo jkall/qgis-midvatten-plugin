@@ -1088,7 +1088,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ms.settingsdict['secplotlocation']=dockarea
 
     def undock_button_bar(self):
-        self.parent = None
+        # self.parent = None
         print(str('undocked'))
         self.setWindowFlags(
             PyQt4.QtCore.Qt.Window | PyQt4.QtCore.Qt.WindowMinimizeButtonHint | PyQt4.QtCore.Qt.WindowMaximizeButtonHint | PyQt4.QtCore.Qt.WindowCloseButtonHint);
