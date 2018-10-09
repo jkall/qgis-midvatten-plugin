@@ -155,9 +155,9 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         #draw plot
         self.draw_plot()
 
-    def draw_plot(self): #replot
+    def draw_plot(self, parent1): #replot
         if self.isWindow():
-            self.undock_button_bar()
+            self.undock_button_bar(parent=parent1)
         try:
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SectionPlot', u'Plotting using settings:\n%s'))%self.secplot_templates.readable_output())
         except:
