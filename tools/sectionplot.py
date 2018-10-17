@@ -1090,7 +1090,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
     def undock_button_bar(self):
         self.titlebar = self.setTitleBarWidget(PyQt4.QtGui.QWidget())
-        self.titlebar.maximise = PyQt4.QtGui.QWidget.showMaximized(self.titlebar)
+        self.titlebar.maximise = self.titlebar.showMaximized()
         self.titlebar.addWidget(self.titlebar.maximise)
         # PyQt4.QtGui.QDialog.__init__(self, parent)
         # self.parent1 = None
