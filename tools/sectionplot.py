@@ -1089,12 +1089,12 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.ms.settingsdict['secplotlocation']=dockarea
 
     def undock_button_bar(self):
-        self.titlebar = self.setTitleBarWidget(PyQt4.QtGui.QWidget())
+        # self.titlebar = self.setTitleBarWidget(PyQt4.QtGui.QWidget())
         # self.titlebar.maximise = self.titlebar.showMaximized()
         # self.titlebar.addWidget(self.titlebar.maximise)
         # PyQt4.QtGui.QDialog.__init__(self, parent)
         # self.parent1 = None
-        self.titlebar.setWindowFlags(
+        self.setWindowFlags(
             PyQt4.QtCore.Qt.Window | PyQt4.QtCore.Qt.WindowMinimizeButtonHint | PyQt4.QtCore.Qt.WindowMaximizeButtonHint | PyQt4.QtCore.Qt.WindowCloseButtonHint);
     def upload_qgis_vector_layer(self, layer, srid=None,selected=False, mapinfo=True,Attributes=False): #from qspatialite, with a few  changes LAST ARGUMENT IS USED TO SKIP ARGUMENTS SINCE WE ONLY WANT THE GEOMETRY TO CALCULATE DISTANCES
         """Upload layer (QgsMapLayer) (optionnaly only selected values ) into current DB, in self.temptable_name (string) with desired SRID (default layer srid if None) - user can desactivate mapinfo compatibility Date importation. Return True if operation succesfull or false in all other cases"""
