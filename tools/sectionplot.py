@@ -897,7 +897,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
         self.redraw.clicked.connect(self.finish_plot)
         self.connect(self.chart_settings, PyQt4.QtCore.SIGNAL("clicked()"), partial(self.set_groupbox_children_visibility, self.chart_settings))
         self.set_groupbox_children_visibility(self.chart_settings)
-        self.connect(self, PyQt4.QtCore.SIGNAL("topLevelChanged(bool topLevel)"), self.add_titlebar)
+        self.connect(self, PyQt4.QtCore.SIGNAL("topLevelChanged(bool)"), self.add_titlebar)
         
         # Create a plot window with one single subplot
         self.secfig = plt.figure()
