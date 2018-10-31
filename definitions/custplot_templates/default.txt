@@ -2,16 +2,11 @@
     "Axes_set_title": {},
     "Axes_set_xlabel": {
         "fontsize": 10},
-    "Axes_set_xlim": None,
     "Axes_set_ylabel": {
         "fontsize": 10},
-    "Axes_set_ylim": None,
     "Axes_tick_param": {
         "axis": "both",
         "labelsize": 10},
-    "dates_Axes_plot_date": {
-        "DEFAULT": {
-            "zorder": 8}},
     "Figure_subplots_adjust": {
     },
     "grid_Axes_grid": {
@@ -30,9 +25,18 @@
     "legend_Text_set_fontsize": 10,
     "plot_height": "",
     "plot_width": "",
+    "styles_colors": [],
+    "styles_line": ['-', '--', '-.', ':'],
+    "styles_line_and_marker": ['o-'],
+    "styles_line_and_cross": ['+-'],
+    "styles_marker": ['o', '+', 's', 'x'],
+    "styles_step-pre": ['-', '--', '-.', ':'],
+    "styles_step-post": ['-', '--', '-.', ':'],
+    "styles_frequenzy": ['-', '--', '-.', ':'],
+    "tight_layout": True,
     "x_Axes_tick_param": {
         "axis": "x",
         "labelrotation": 45},
-    "xyplot_Axes_plot": {
-        "DEFAULT": {
-            "zorder": 8}}}
+    "y_Axes_tick_param": {
+        "axis": "y",
+        "labelrotation": 0}}

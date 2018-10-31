@@ -780,6 +780,49 @@ def secplot_default_template():
         return loaded_template
 
 def custplot_default_template():
-    return u'{}'
+    default = {
+    "Axes_set_title": {},
+    "Axes_set_xlabel": {
+        "fontsize": 10},
+    "Axes_set_ylabel": {
+        "fontsize": 10},
+    "Axes_tick_param": {
+        "axis": "both",
+        "labelsize": 10},
+    "Figure_subplots_adjust": {
+    },
+    "grid_Axes_grid": {
+        "b": True,
+        "color": "0.65",
+        "linestyle": "-",
+        "which": "both",
+        "zorder": 0},
+    "legend_Axes_legend": {
+        "fontsize": 10,
+        "framealpha": 1,
+        "loc": 10,
+        "numpoints": 1},
+    "legend_Frame_set_facecolor": "1",
+    "legend_Frame_set_fill": False,
+    "legend_Text_set_fontsize": 10,
+    "plot_height": "",
+    "plot_width": "",
+    "styles_colors": [],
+    "styles_line": ['-', '--', '-.', ':'],
+    "styles_line_and_marker": ['o-'],
+    "styles_line_and_cross": ['+-'],
+    "styles_marker": ['o', '+', 's', 'x'],
+    "styles_step-pre": ['-', '--', '-.', ':'],
+    "styles_step-post": ['-', '--', '-.', ':'],
+    "styles_frequenzy": ['-', '--', '-.', ':'],
+    "tight_layout": True,
+    "x_Axes_tick_param": {
+        "axis": "x",
+        "labelrotation": 45},
+    "y_Axes_tick_param": {
+        "axis": "y",
+        "labelrotation": 0}}
+
+    return default
 
 
