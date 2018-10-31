@@ -34,7 +34,7 @@
     "legend_Text_set_fontsize": 6,
     "plot_height": 350,
     "plot_width": 469,
-    "styles_colors": [],
+    "styles_colors": ['b', 'r', 'lime', 'salmon', 'darkcyan', 'magenta', 'turquoise', 'pink', 'cyan', 'gray'],
     "styles_line": ['-', '--', '-.', ':'],
     "styles_line_and_marker": ['o-'],
     "styles_line_and_cross": ['+-'],

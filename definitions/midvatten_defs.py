@@ -807,7 +807,7 @@ def custplot_default_template():
     "legend_Text_set_fontsize": 10,
     "plot_height": "",
     "plot_width": "",
-    "styles_colors": [],
+    "styles_colors": ['b', 'r', 'lime', 'salmon', 'darkcyan', 'magenta', 'turquoise', 'pink', 'cyan', 'gray'],
     "styles_line": ['-', '--', '-.', ':'],
     "styles_line_and_marker": ['o-'],
     "styles_line_and_cross": ['+-'],
