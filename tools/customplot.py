@@ -435,12 +435,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         colors = self.templates.loaded_template.get('styles_colors', None)
         _color =  [_num[0] for _num in np.random.rand(3,1).tolist()]
         if not colors:
-            print(str(plt.get_cmap('Accent')))
-            print(str(type(plt.get_cmap('Accent'))))
-            cmap = plt.get_cmap('Accent')
-            for x in cmap:
-                print(str(x))
-
             color =  _color
             style = MarkVar[0]
         else:
