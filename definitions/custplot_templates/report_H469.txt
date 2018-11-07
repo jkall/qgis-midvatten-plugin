@@ -1,47 +1,94 @@
 {
-    "Axes_set_title": {},
+    "Axes_plot": {
+        "linewidth": 0.5,
+        "markersize": 6,
+        "zorder": 8},
+    "Axes_plot_date": {
+        "linewidth": 0.5,
+        "markersize": 6,
+        "zorder": 8},
+    "Axes_set_title": {
+        "label": u""},
     "Axes_set_xlabel": {
-        "fontsize": 8},
-    "Axes_set_xlim": None,
+        "fontsize": 8,
+        "xlabel": u""},
     "Axes_set_ylabel": {
-        "fontsize": 8},
-    "Axes_set_ylim": None,
+        "fontsize": 8,
+        "ylabel": u"Ylabel"},
     "Axes_tick_param": {
         "axis": "both",
         "labelsize": 6},
-    "dates_Axes_plot_date": {
-        "DEFAULT": {
-            "zorder": 8}},
+    "Figure_add_subplot": {
+},
     "Figure_subplots_adjust": {
-        "bottom": 0.09,
+        "bottom": 0.065,
         "left": 0.09,
         "right": 0.95,
-        "top": 0.95},
+        "top": 0.973},
     "grid_Axes_grid": {
-        "b": True,
-        "color": "0.65",
-        "linestyle": "-",
-        "which": "both",
-        "zorder": 0},
+        "b": False},
     "legend_Axes_legend": {
-        "labelspacing": 0,
-        "columnspacing": 0.1,
-        "markerscale": 1,
-        "numpoints": 1,
-        "handlelength": 1,
         "borderpad": 0.2,
-        "handletextpad": 0.2,
+        "columnspacing": 0.1,
         "fontsize": 6,
-        "framealpha": 0.5,
-        "loc": 10},
-    "legend_Frame_set_facecolor": "1",
-    "legend_Frame_set_fill": False,
+        "framealpha": 0.8,
+        "handlelength": 1,
+        "handletextpad": 0.2,
+        "labelspacing": 0,
+        "loc": 10,
+        "markerscale": 1,
+        "numpoints": 1},
+    "legend_Frame_set_facecolor": "white",
+    "legend_Frame_set_fill": True,
     "legend_Text_set_fontsize": 6,
-    "plot_height": 469,
-    "plot_width": 469,
+    "plot_height": u"469",
+    "plot_width": u"469",
+    "rcParams": {
+        "savefig.dpi": 450},
+    "styles_colors": [
+        "b",
+        "r",
+        "lime",
+        "salmon",
+        "darkcyan",
+        "magenta",
+        "turquoise",
+        "pink",
+        "cyan",
+        "gray"],
+    "styles_frequenzy": [
+        "-",
+        "--",
+        "-.",
+        ":"],
+    "styles_line": [
+        "-",
+        "--",
+        "-.",
+        ":"],
+    "styles_line_and_cross": [
+        "+-"],
+    "styles_line_and_marker": [
+        "o-"],
+    "styles_marker": [
+        "o",
+        "+",
+        "s",
+        "x"],
+    "styles_step-post": [
+        "-",
+        "--",
+        "-.",
+        ":"],
+    "styles_step-pre": [
+        "-",
+        "--",
+        "-.",
+        ":"],
+    "tight_layout": False,
     "x_Axes_tick_param": {
         "axis": "x",
-        "labelrotation": 45},
-    "xyplot_Axes_plot": {
-        "DEFAULT": {
-            "zorder": 8}}}
+        "labelrotation": 20},
+    "y_Axes_tick_param": {
+        "axis": "y",
+        "labelrotation": 0}}

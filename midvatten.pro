@@ -15,6 +15,7 @@ SOURCES = \
 ./tools/import_diveroffice.py \
 ./tools/import_fieldlogger.py \
 ./tools/import_general_csv_gui.py \
+./tools/import_hobologger.py \
 ./tools/import_interlab4.py \
 ./tools/import_levelogger.py \
 ./tools/loaddefaultlayers.py \

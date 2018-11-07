@@ -36,6 +36,8 @@ from midvatten_utils import returnunicode as ru
 class LeveloggerImport(import_diveroffice.DiverofficeImport):
     def __init__(self, parent, msettings=None):
         super(self.__class__, self).__init__(parent, msettings)
+        self.default_charset = 'cp1252'
+        self.use_skiprows = True
 
         self.setWindowTitle(QCoreApplication.translate('LeveloggerImport', "Levelogger import"))  # Set the title for the dialog
 

@@ -1627,7 +1627,7 @@ class PlotTemplates(object):
         except:
             MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Failed to load saved template, loading default template instead.')))
         if self.loaded_template:
-            MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Loaded template from midvatten settings secplot_loaded_template.')))
+            MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Loaded template from midvatten settings %s.'))%self.loaded_template_settingskey)
 
         default_filename = os.path.join(self.template_folder, 'default.txt')
 

@@ -71,25 +71,25 @@ class midvatten(object):
 
     def initGui(self):
         # Create actions that will start plugin configuration
-        self.actionNewDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), ru(QCoreApplication.translate("Midvatten","Create a new Midvatten project DB")), self.iface.mainWindow())
+        self.actionNewDB = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "create_new.xpm")), ru(QCoreApplication.translate("Midvatten","Create a new Midvatten project DB")), self.iface.mainWindow())
         self.actionNewDB.triggered.connect(self.new_db)
 
-        self.actionNewPostgisDB = QAction(QIcon(":/plugins/midvatten/icons/create_new.xpm"), ru(QCoreApplication.translate("Midvatten", "Populate a postgis database to a new Midvatten project DB")), self.iface.mainWindow())
+        self.actionNewPostgisDB = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "create_new.xpm")), ru(QCoreApplication.translate("Midvatten", "Populate a postgis database to a new Midvatten project DB")), self.iface.mainWindow())
         self.actionNewPostgisDB.triggered.connect(self.new_postgis_db)
 
-        self.actionloadthelayers = QAction(QIcon(":/plugins/midvatten/icons/loaddefaultlayers.png"), QCoreApplication.translate("Midvatten","Load default db-layers to qgis"), self.iface.mainWindow())
+        self.actionloadthelayers = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "loaddefaultlayers.png")), QCoreApplication.translate("Midvatten","Load default db-layers to qgis"), self.iface.mainWindow())
         self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load default layers from the selected database"))
         self.iface.registerMainWindowAction(self.actionloadthelayers, "F7")   # The function should also be triggered by the F7 key
         self.actionloadthelayers.triggered.connect(self.loadthelayers)
 
-        self.actionsetup = QAction(QIcon(":/plugins/midvatten/icons/MidvSettings.png"), QCoreApplication.translate("Midvatten","Midvatten Settings"), self.iface.mainWindow())
+        self.actionsetup = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "MidvSettings.png")), QCoreApplication.translate("Midvatten","Midvatten Settings"), self.iface.mainWindow())
         self.actionsetup.setWhatsThis(QCoreApplication.translate("Midvatten","Configuration for Midvatten toolset"))
         self.iface.registerMainWindowAction(self.actionsetup, "F6")   # The function should also be triggered by the F6 key
         self.actionsetup.triggered.connect(self.setup)
         
-        self.actionresetSettings = QAction(QIcon(":/plugins/midvatten/icons/ResetSettings.png"), QCoreApplication.translate("Midvatten","Reset Settings"), self.iface.mainWindow())
+        self.actionresetSettings = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "ResetSettings.png")), QCoreApplication.translate("Midvatten","Reset Settings"), self.iface.mainWindow())
         self.actionresetSettings.triggered.connect(self.reset_settings)
-        
+
         self.actionabout = QAction(QIcon(":/plugins/midvatten/icons/about.png"), QCoreApplication.translate("Midvatten","About"), self.iface.mainWindow())
         self.actionabout.triggered.connect(self.about)
 
@@ -104,7 +104,13 @@ class midvatten(object):
         
         self.action_import_leveloggerdata = QAction(QIcon(":/plugins/midvatten/icons/load_wlevels_logger.png"), QCoreApplication.translate("Midvatten","Import logger data using Levelogger csv-format"), self.iface.mainWindow())
         self.action_import_leveloggerdata.triggered.connect(self.import_leveloggerdata)
-        
+
+        self.action_import_hobologgerdata = QAction(
+            QIcon(os.path.join(os.path.dirname(__file__), "icons", "load_wlevels_logger.png")),
+            QCoreApplication.translate("Midvatten", "Import logger data using HOBO logger csv-format"),
+            self.iface.mainWindow())
+        QObject.connect(self.action_import_hobologgerdata, SIGNAL("triggered()"), self.import_hobologgerdata)
+
         self.action_wlvlloggcalibrate = QAction(QIcon(":/plugins/midvatten/icons/calibr_level_logger_masl.png"), QCoreApplication.translate("Midvatten","Calculate logger w level from logger water head"), self.iface.mainWindow())
         self.action_wlvlloggcalibrate.triggered.connect(self.wlvlloggcalibrate)
 
@@ -242,6 +248,7 @@ class midvatten(object):
         self.menu.import_data_menu.addAction(self.actiongeneral_import_csv)
         self.menu.import_data_menu.addAction(self.action_import_diverofficedata)
         self.menu.import_data_menu.addAction(self.action_import_leveloggerdata)
+        self.menu.import_data_menu.addAction(self.action_import_hobologgerdata)
         self.menu.import_data_menu.addAction(self.actionimport_wqual_lab_from_interlab4)
         self.menu.import_data_menu.addAction(self.actionimport_fieldlogger)
         
@@ -623,6 +630,40 @@ class midvatten(object):
             else: 
                 utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
         QApplication.restoreOverrideCursor()  
+
+    @utils.general_exception_handler
+    def import_hobologgerdata(self):
+        allcritical_layers = ('obs_points', 'w_levels_logger')#none of these layers must be in editing mode
+        err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
+        if err_flag == 0:
+            if not (self.ms.settingsdict['database'] == ''):
+                longmessage = ru(QCoreApplication.translate(u"Midvatten",
+                               u"""You are about to import water head data, recorded with a HOBO temperature logger.\n"""
+                               u"""Data is supposed to be in utf-8 and using this format:\n"""
+                               u'''"Plot Title: temp_aname"\n'''
+                               u'''"#","Date Time, GMT+02:00","Temp, °C (LGR S/N: 1234, SEN S/N: 1234, LBL: obsid)",...\n'''
+                               u'''1,07/19/18 11:00:00 fm,7.654,...\n'''
+                               u"""The data columns must be real numbers with point (.) or comma (,) as decimal separator and no separator for thousands.\n"""
+                               u"""The charset is usually utf8!\n\n"""
+                               u"""Continue?"""))
+                sanity = utils.Askuser("YesNo", ru(longmessage), ru(QCoreApplication.translate(u"Midvatten", 'Are you sure?')))
+                if sanity.result == 1:
+                    from import_hobologger import HobologgerImport
+                    importinstance = HobologgerImport(self.iface.mainWindow(), self.ms)
+                    importinstance.select_files_and_load_gui()
+
+                    if not importinstance.status:
+                        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate("Midvatten", "Something failed during import"))
+                    else:
+                        try:
+                            self.midvsettingsdialog.ClearEverything()
+                            self.midvsettingsdialog.LoadAndSelectLastSettings()
+                        except:
+                            pass
+            else:
+                utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
+        QApplication.restoreOverrideCursor()
+
 
     def load_data_domains(self):
         #utils.pop_up_info(msg='This feature is not yet implemented',title='Hold on...')
