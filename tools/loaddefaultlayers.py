@@ -70,6 +70,8 @@ class LoadLayers(object):
             d_domain_tables = [x for x in list(tables_columns.keys()) if x.startswith(u'zz_')]
             add_layers_to_list(layer_list, d_domain_tables, dbconnection=dbconnection)
 
+        w_lvls_last_geom = None
+
         #now loop over all the layers and set styles etc
         for layer in layer_list:
             # TODO: Made this a comment, but there might be some hidden feature thats still needed!
@@ -79,8 +81,9 @@ class LoadLayers(object):
             MyGroup.insertLayer(0,layer)
             #MyGroup.addLayer(layer)
 
-            if self.group_name == 'Midvatten_OBS_DB':
-                layer.setEditorLayout(1)#perhaps this is unnecessary since it gets set from the loaded qml below?
+            #TODO: Check if this isn't needed.
+            #if self.group_name == 'Midvatten_OBS_DB':
+            #    layer.setEditorLayout(1) #perhaps this is unnecessary since it gets set from the loaded qml below?
 
             #now try to load the style file
             stylefile_sv = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",layer.name() + "_sv.qml")
@@ -102,12 +105,18 @@ class LoadLayers(object):
             if layer.name() == 'obs_points':#zoom to obs_points extent
                 obsp_lyr = layer
                 canvas.setExtent(layer.extent())
-            elif layer.name() == 'w_lvls_last_geom':#we do not want w_lvls_last_geom to be visible by default
-                #Todo: Fix this:
-                layer.setVisible(False)
+            elif layer.name() == u'w_lvls_last_geom':
+                w_lvls_last_geom = layer
 
-            else:
-                pass
+        if w_lvls_last_geom is not None:
+            midv = self.root.findGroup('Midvatten_OBS_DB')
+            print(str(midv))
+            print(str(midv.dump()))
+            print(str(midv.findLayerIds()))
+            w_lvls_last_geom = MyGroup.findLayer(w_lvls_last_geom)
+            print(str(w_lvls_last_geom))
+
+            w_lvls_last_geom.setItemVisibilityCheckedRecursive(False)
 
         #finally refresh canvas
         dbconnection.closedb()

@@ -1815,7 +1815,7 @@ def create_layer(tablename, geometrycolumn=None, sql=None, keycolumn=None, dbcon
     dbtype = db_utils.get_dbtype(dbtype)
 
     uri.setDataSource(schema, tablename, geometrycolumn, sql, keycolumn)
-    layer = QgsVectorLayer(uri.uri(), tablename, dbtype.encode('utf-8'))
+    layer = QgsVectorLayer(uri.uri(), tablename, dbtype)
     return layer
 
 
