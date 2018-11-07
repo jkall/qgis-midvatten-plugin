@@ -22,6 +22,7 @@ The PlotSQLite application version 0.2.6 was merged into Midvatten plugin at 201
  ***************************************************************************/
 """
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import os
 import db_utils
 from PyQt4 import QtGui, QtCore, uic  # , QtSql
@@ -121,9 +122,24 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.PlotChart_QPushButton.clicked.connect(self.drawPlot_all)
         self.Redraw_pushButton.clicked.connect( self.refreshPlot )
 
+        self.templates = utils.PlotTemplates(self,
+                                             self.template_list,
+                                             self.edit_button,
+                                             self.load_button,
+                                             self.save_as_button,
+                                             self.import_button,
+                                             self.remove_button,
+                                             os.path.join(os.path.split(os.path.dirname(__file__))[0], 'definitions',
+                                                          'custplot_templates'),
+                                             'custplot_templates',
+                                             'custplot_loaded_template',
+                                             defs.custplot_default_template(),
+                                             msettings=self.ms)
+
         self.custplotfigure = plt.figure()
 
-        self.axes = self.custplotfigure.add_subplot( 111 )
+
+        self.axes = self.custplotfigure.add_subplot( 111,  **self.templates.loaded_template.get('Figure_add_subplot', {}))
         self.canvas = FigureCanvas( self.custplotfigure )
 
         self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot)
@@ -149,21 +165,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.pandas_calc_1 = PandasCalculations(self.gridLayout_16)
             self.pandas_calc_2 = PandasCalculations(self.gridLayout_14)
             self.pandas_calc_3 = PandasCalculations(self.gridLayout_19)
-
-
-        self.templates = utils.PlotTemplates(self,
-                                             self.template_list,
-                                             self.edit_button,
-                                             self.load_button,
-                                             self.save_as_button,
-                                             self.import_button,
-                                             self.remove_button,
-                                             os.path.join(os.path.split(os.path.dirname(__file__))[0], 'definitions',
-                                                          'custplot_templates'),
-                                             'custplot_templates',
-                                             'custplot_loaded_template',
-                                             defs.custplot_default_template(),
-                                             msettings=self.ms)
 
         self.chart_settings.setChecked(False)
         self.template_wid.setChecked(False)
@@ -242,6 +243,12 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.axes.clear()
         self.axes.legend_ = None
         My_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array
+
+        print(u'\n'.join(mpl.rcParams.keys()))
+        rcparams = self.templates.loaded_template.get('rcParams', {})
+        for k, v in rcparams.items():
+            print("rcparams set k {} v {}".format(k, v))
+            mpl.rcParams[k] = v
 
         dbconnection = db_utils.DbConnectionManager()
 
@@ -446,25 +453,26 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 color = _color
                 style = MarkVar[0]
 
-        plot_settings = {"zorder": 8}
+        plot_settings = self.templates.loaded_template.get('Axes_plot', {"zorder": 8, 'markersize': 6, 'linewidth': 1})
+        plot_date_settings = self.templates.loaded_template.get('Axes_plot_date', {"zorder": 8, 'markersize': 6, 'linewidth': 1})
 
         if FlagTimeXY == "time" and plottype == "step-pre":
-            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-pre', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_settings)# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
+            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-pre', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_date_settings)# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
         elif FlagTimeXY == "time" and plottype == "step-post":
-            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-post', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_settings)
+            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-post', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_date_settings)
         elif FlagTimeXY == "time" and plottype == "line and cross":
-            self.p[i], = self.axes.plot_date(numtime, table2.values,  style, c=color, markersize = 6, label=self.plabels[i], **plot_settings)
+            self.p[i], = self.axes.plot_date(numtime, table2.values,  style, c=color, label=self.plabels[i], **plot_date_settings)
         elif FlagTimeXY == "time" and plottype == "frequency":
             try:
-                self.p[i], = self.axes.plot_date(numtime, table2.values,  linestyle=style, marker='None',c=color ,markersize = 6, label='frequency '+str(self.plabels[i]), **plot_settings)
+                self.p[i], = self.axes.plot_date(numtime, table2.values,  linestyle=style, marker='None',c=color,label='frequency '+str(self.plabels[i]), **plot_date_settings)
                 self.plabels[i]='frequency '+str(self.plabels[i])
             except:
-                self.p[i], = self.axes.plot_date(np.array([]),np.array([]),  linestyle=style, marker='None',c=color ,markersize = 6, label='frequency '+str(self.plabels[i]))
+                self.p[i], = self.axes.plot_date(np.array([]),np.array([]),  linestyle=style, marker='None',c=color,label='frequency '+str(self.plabels[i]))
                 self.plabels[i]='frequency '+str(self.plabels[i])
         elif FlagTimeXY == "time" and plottype == "marker":
-            self.p[i], = self.axes.plot_date(numtime, table2.values, linestyle='None', marker=style,c=color,label=self.plabels[i], **plot_settings)
+            self.p[i], = self.axes.plot_date(numtime, table2.values, linestyle='None', marker=style,c=color,label=self.plabels[i], **plot_date_settings)
         elif FlagTimeXY == "time" and plottype == "line":
-            self.p[i], = self.axes.plot_date(numtime, table2.values,  linestyle=style, marker='None',c=color ,label=self.plabels[i], **plot_settings)
+            self.p[i], = self.axes.plot_date(numtime, table2.values,  linestyle=style, marker='None',c=color ,label=self.plabels[i], **plot_date_settings)
         elif FlagTimeXY == "XY" and plottype == "step-pre":
             self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-pre', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_settings)
         elif FlagTimeXY == "XY" and plottype == "step-post":
@@ -730,6 +738,12 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             self.templates.loaded_template['grid_Axes_grid']['b'] = True
         else:
             self.templates.loaded_template['grid_Axes_grid']['b'] = False
+
+        if self.templates.loaded_template.get('Axes_axhline', {}):
+            self.axes.axhline(**self.templates.loaded_template.get('Axes_axhline', {}))
+
+        if self.templates.loaded_template.get('Axes_axvline', {}):
+            self.axes.axhline(**self.templates.loaded_template.get('Axes_axvline', {}))
 
         self.axes.grid(**self.templates.loaded_template['grid_Axes_grid'])#grid
 

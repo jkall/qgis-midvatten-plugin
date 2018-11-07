@@ -781,47 +781,97 @@ def secplot_default_template():
 
 def custplot_default_template():
     default = {
-    "Axes_set_title": {},
-    "Axes_set_xlabel": {
-        "fontsize": 10},
-    "Axes_set_ylabel": {
-        "fontsize": 10},
-    "Axes_tick_param": {
-        "axis": "both",
-        "labelsize": 10},
-    "Figure_subplots_adjust": {
-    },
-    "grid_Axes_grid": {
-        "b": True,
-        "color": "0.65",
-        "linestyle": "-",
-        "which": "both",
-        "zorder": 0},
-    "legend_Axes_legend": {
-        "fontsize": 10,
-        "framealpha": 1,
-        "loc": 10,
-        "numpoints": 1},
-    "legend_Frame_set_facecolor": "1",
-    "legend_Frame_set_fill": False,
-    "legend_Text_set_fontsize": 10,
-    "plot_height": "",
-    "plot_width": "",
-    "styles_colors": ['b', 'r', 'lime', 'salmon', 'darkcyan', 'magenta', 'turquoise', 'pink', 'cyan', 'gray'],
-    "styles_line": ['-', '--', '-.', ':'],
-    "styles_line_and_marker": ['o-'],
-    "styles_line_and_cross": ['+-'],
-    "styles_marker": ['o', '+', 's', 'x'],
-    "styles_step-pre": ['-', '--', '-.', ':'],
-    "styles_step-post": ['-', '--', '-.', ':'],
-    "styles_frequenzy": ['-', '--', '-.', ':'],
-    "tight_layout": True,
-    "x_Axes_tick_param": {
-        "axis": "x",
-        "labelrotation": 45},
-    "y_Axes_tick_param": {
-        "axis": "y",
-        "labelrotation": 0}}
+
+            "Axes_axhline": {
+            },
+            "Axes_axvline": {
+            },
+            "Axes_plot": {
+                "linewidth": 1,
+                "markersize": 6,
+                "zorder": 8},
+            "Axes_plot_date": {
+                "linewidth": 1,
+                "markersize": 6,
+                "zorder": 8},
+            "Axes_set_title": {
+                "label": u""},
+            "Axes_set_xlabel": {
+                "fontsize": 10,
+                "xlabel": u""},
+            "Axes_set_ylabel": {
+                "fontsize": 10,
+                "ylabel": u""},
+            "Axes_tick_param": {
+                "axis": "both",
+                "labelsize": 10},
+            "Figure_add_subplot": {},
+            "Figure_subplots_adjust": {
+            },
+            "grid_Axes_grid": {
+                "b": True,
+                "color": "0.65",
+                "linestyle": "-",
+                "which": "both",
+                "zorder": 0},
+            "legend_Axes_legend": {
+                "fontsize": 10,
+                "framealpha": 1,
+                "loc": 10,
+                "numpoints": 1},
+            "legend_Frame_set_facecolor": "1",
+            "legend_Frame_set_fill": False,
+            "legend_Text_set_fontsize": 10,
+            "plot_height": u"",
+            "plot_width": u"",
+            "rcParams": {"savefig.dpi": 450},
+            "styles_colors": [
+                "b",
+                "r",
+                "lime",
+                "salmon",
+                "darkcyan",
+                "magenta",
+                "turquoise",
+                "pink",
+                "cyan",
+                "gray"],
+            "styles_frequenzy": [
+                "-",
+                "--",
+                "-.",
+                ":"],
+            "styles_line": [
+                "-",
+                "--",
+                "-.",
+                ":"],
+            "styles_line_and_cross": [
+                "+-"],
+            "styles_line_and_marker": [
+                "o-"],
+            "styles_marker": [
+                "o",
+                "+",
+                "s",
+                "x"],
+            "styles_step-post": [
+                "-",
+                "--",
+                "-.",
+                ":"],
+            "styles_step-pre": [
+                "-",
+                "--",
+                "-.",
+                ":"],
+            "tight_layout": False,
+            "x_Axes_tick_param": {
+                "axis": "x",
+                "labelrotation": 45},
+            "y_Axes_tick_param": {
+                "axis": "y",
+                "labelrotation": 0}}
 
     return default
 
