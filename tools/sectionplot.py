@@ -362,6 +362,7 @@ class SectionPlot(PyQt4.QtGui.QDockWidget, Ui_SecPlotDock):#the Ui_SecPlotDock  
 
     def finish_plot(self):
         leg = self.secax.legend(self.p, self.Labels, **self.secplot_templates.loaded_template['legend_Axes_legend'])
+        leg.set_zorder(999)
         leg.draggable(state=True)
         frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
         frame.set_facecolor(self.secplot_templates.loaded_template['legend_Frame_set_facecolor'])    # set the frame face color to white

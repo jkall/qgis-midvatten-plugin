@@ -70,6 +70,7 @@
         "zorder": 5},
     "plot_height": None,
     "plot_width": None,
+    "rcParams": {"savefig.dpi": 450},
     "ticklabels_Text_set_fontsize": {
         "fontsize": 10},
     "wlevels_Axes_plot": {

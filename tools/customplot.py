@@ -244,10 +244,10 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         self.axes.legend_ = None
         My_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array
 
-        print(u'\n'.join(mpl.rcParams.keys()))
+        #print(u'\n'.join(mpl.rcParams.keys()))
         rcparams = self.templates.loaded_template.get('rcParams', {})
         for k, v in rcparams.items():
-            print("rcparams set k {} v {}".format(k, v))
+            #print("rcparams set k {} v {}".format(k, v))
             mpl.rcParams[k] = v
 
         dbconnection = db_utils.DbConnectionManager()
@@ -537,7 +537,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         else:
             self.Legend_checkBox.setChecked(False)
 
-        if self.templates.loaded_template['grid_Axes_grid']:
+        if self.templates.loaded_template['grid_Axes_grid'].get('b', True):
             self.Grid_checkBox.setChecked(True)
         else:
             self.Grid_checkBox.setChecked(False)
@@ -786,6 +786,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                     else:
                         leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
 
+            leg.set_zorder(999)
             leg.draggable(state=True)
 
             frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend

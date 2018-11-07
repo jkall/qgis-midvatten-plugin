@@ -6,7 +6,7 @@
         "fontsize": 8},
     "Axes_set_ylim": None,
     "Figure_subplots_adjust": {
-        "bottom": 0.17,
+        "bottom": 0.15,
         "left": 0.09,
         "right": 0.95,
         "top": 0.95},
@@ -15,23 +15,34 @@
                 "linestyle": "-",
                 "linewidth": 1,
                 "marker": "None",
-                "zorder": 3}},
+                "zorder": 3},
+        u"bedrock": {
+                "label": u"bedrock",
+                "linestyle": "--",
+                "linewidth": 1.5,
+                "marker": "None",
+                "zorder": 3,
+                "color": "black"},
+        u"dem": {
+                "label": u"dem",
+                "linestyle": "-",
+                "linewidth": 0.5,
+                "marker": "None",
+                "zorder": 3,
+                "color": "green"}},
     "drillstop_Axes_plot": {
         "color": "black",
         "linestyle": "",
         "marker": "^",
-        "markersize": 8},
+        "markersize": 6,
+        "zorder": 6},
     "geology_Axes_bar": {
         "DEFAULT": {
-            "edgecolor": "black",
-            "linewidth": 0.5,
-            "zorder": 5}},
+                "edgecolor": "black",
+                "linewidth": 0.5,
+                "zorder": 5}},
     "grid_Axes_grid": {
-        "b": True,
-        "color": "0.65",
-        "linestyle": "-",
-        "which": "both",
-        "zorder": 0},
+        "b": False},
     "layer_Axes_annotate": {
         "bbox": {
                 "alpha": 0.6,
@@ -47,18 +58,18 @@
                 0, ),
         "zorder": 10},
     "legend_Axes_legend": {
-        "borderpad": 0.1,
+        "borderpad": 0.2,
         "columnspacing": 0.1,
         "fontsize": 6,
         "framealpha": 1,
         "handlelength": 1,
         "handletextpad": 0.2,
         "labelspacing": 0,
-        "loc": 0,
+        "loc": 10,
         "markerscale": 1,
         "numpoints": 1},
-    "legend_Frame_set_facecolor": "1",
-    "legend_Frame_set_fill": 1,
+    "legend_Frame_set_facecolor": "white",
+    "legend_Frame_set_fill": True,
     "legend_Text_set_fontsize": 6,
     "obsid_Axes_annotate": {
         "bbox": {
@@ -81,9 +92,17 @@
         "zorder": 5},
     "plot_height": 250,
     "plot_width": 469,
+    "rcParams": {"savefig.dpi": 450},
     "ticklabels_Text_set_fontsize": {
-        "fontsize": 8},
+        "fontsize": 6},
     "wlevels_Axes_plot": {
+        u"2017": {
+                "label": u"2017",
+                "linestyle": "-",
+                "linewidth": 1,
+                "marker": "v",
+                "markersize": 6,
+                "zorder": 8},
         "DEFAULT": {
                 "linestyle": "-",
                 "linewidth": 1,
