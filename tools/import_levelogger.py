@@ -59,8 +59,8 @@ class LeveloggerImport(import_diveroffice.DiverofficeImport):
 
         """
         #These can be set to paritally import files.
-        #begindate = datetime.strptime(u'2016-06-08 20:00:00',u'%Y-%m-%d %H:%M:%S')
-        #enddate = datetime.strptime(u'2016-06-08 19:00:00',u'%Y-%m-%d %H:%M:%S')
+        #begindate = datetime.strptime('2016-06-08 20:00:00','%Y-%m-%d %H:%M:%S')
+        #enddate = datetime.strptime('2016-06-08 19:00:00','%Y-%m-%d %H:%M:%S')
 
         #It should be possible to import all cols that exists in the translation dict
 
@@ -74,70 +74,70 @@ class LeveloggerImport(import_diveroffice.DiverofficeImport):
         if enddate is not None:
             enddate = date_utils.datestring_to_date(enddate)
 
-        with io.open(path, u'rt', encoding=str(charset)) as f:
-            rows_unsplit = [row.lstrip().rstrip(u'\n').rstrip(u'\r') for row in f]
+        with io.open(path, 'rt', encoding=str(charset)) as f:
+            rows_unsplit = [row.lstrip().rstrip('\n').rstrip('\r') for row in f]
 
         try:
-            data_header_idx = [rownr for rownr, row in enumerate(rows_unsplit) if row.startswith(u'Date')][0]
+            data_header_idx = [rownr for rownr, row in enumerate(rows_unsplit) if row.startswith('Date')][0]
         except IndexError:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'LeveloggerImport',
-                                                                                 u'''File %s could not be parsed.'''))%filename)
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('LeveloggerImport',
+                                                                                 '''File %s could not be parsed.'''))%filename)
             return [], filename, location
 
-        delimiter = utils.get_delimiter_from_file_rows(rows_unsplit[data_header_idx:], filename=filename, delimiters=[u';', u','], num_fields=None)
+        delimiter = utils.get_delimiter_from_file_rows(rows_unsplit[data_header_idx:], filename=filename, delimiters=[';', ','], num_fields=None)
 
         if delimiter is None:
             return [], filename, location
 
-        rows = [row.split(u';') for row in rows_unsplit]
+        rows = [row.split(';') for row in rows_unsplit]
 
         col1 = [row[0] for row in rows]
 
         try:
-            location_idx = col1.index(u'Location:')
+            location_idx = col1.index('Location:')
         except ValueError:
             pass
         else:
             location = col1[location_idx + 1]
 
         try:
-            level_unit_idx = col1.index(u'LEVEL')
+            level_unit_idx = col1.index('LEVEL')
         except ValueError:
             pass
         else:
             try:
-                level_unit = col1[level_unit_idx + 1].split(u':')[1].lstrip()
+                level_unit = col1[level_unit_idx + 1].split(':')[1].lstrip()
             except IndexError:
                 pass
             else:
-                if level_unit == u'cm':
+                if level_unit == 'cm':
                     level_unit_factor_to_cm = 1
-                elif level_unit == u'm':
+                elif level_unit == 'm':
                     level_unit_factor_to_cm = 100
                 else:
                     level_unit_factor_to_cm = 100
-                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'LeveloggerImport', u'''The unit for level wasn't m or cm, a factor of %s was used. Check the imported data.'''))%str(level_unit_factor_to_cm))
+                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('LeveloggerImport', '''The unit for level wasn't m or cm, a factor of %s was used. Check the imported data.'''))%str(level_unit_factor_to_cm))
 
         file_header = rows[data_header_idx]
 
-        new_header = [u'date_time', u'head_cm', u'temp_degc', u'cond_mscm']
+        new_header = ['date_time', 'head_cm', 'temp_degc', 'cond_mscm']
         filedata.append(new_header)
 
-        date_colnr = file_header.index(u'Date')
-        time_colnr = file_header.index(u'Time')
+        date_colnr = file_header.index('Date')
+        time_colnr = file_header.index('Time')
         try:
-            level_colnr = file_header.index(u'LEVEL')
+            level_colnr = file_header.index('LEVEL')
         except ValueError:
             level_colnr = None
         try:
-            temp_colnr = file_header.index(u'TEMPERATURE')
+            temp_colnr = file_header.index('TEMPERATURE')
         except ValueError:
             temp_colnr = None
         try:
-            spec_cond_colnr = file_header.index(u'spec. conductivity (uS/cm)')
+            spec_cond_colnr = file_header.index('spec. conductivity (uS/cm)')
         except ValueError:
             try:
-                spec_cond_colnr = file_header.index(u'spec. conductivity (mS/cm)')
+                spec_cond_colnr = file_header.index('spec. conductivity (mS/cm)')
             except ValueError:
                 spec_cond_colnr = None
             else:
@@ -148,25 +148,25 @@ class LeveloggerImport(import_diveroffice.DiverofficeImport):
         try:
             first_data_row = rows[data_header_idx + 1]
         except IndexError:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'LeveloggerImport',
-                                                                                 u'''No data in file %s.'''))%filename)
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('LeveloggerImport',
+                                                                                 '''No data in file %s.'''))%filename)
             return [], filename, location
         else:
-            date_str = u' '.join([first_data_row[date_colnr], first_data_row[time_colnr]])
+            date_str = ' '.join([first_data_row[date_colnr], first_data_row[time_colnr]])
             date_format = date_utils.datestring_to_date(date_str)
             if date_format is None:
-                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'LeveloggerImport',
-                                                                                     u'''Dateformat in file %s could not be parsed.''')) % filename)
+                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('LeveloggerImport',
+                                                                                     '''Dateformat in file %s could not be parsed.''')) % filename)
                 return [], filename, location
 
-        filedata.extend([[date_utils.long_dateformat(u' '.join([row[date_colnr], row[time_colnr]]), date_format),
-                          str(float(row[level_colnr].replace(u',', u'.')) * level_unit_factor_to_cm) if (utils.to_float_or_none(row[level_colnr]) is not None if level_colnr is not None else None) else None,
-                          str(float(row[temp_colnr].replace(u',', u'.'))) if (utils.to_float_or_none(row[temp_colnr]) if temp_colnr is not None else None) else None,
-                          str(float(row[spec_cond_colnr].replace(u',', u'.')) * spec_cond_factor_to_mScm) if (utils.to_float_or_none(row[spec_cond_colnr]) if spec_cond_colnr is not None else None) else None]
+        filedata.extend([[date_utils.long_dateformat(' '.join([row[date_colnr], row[time_colnr]]), date_format),
+                          str(float(row[level_colnr].replace(',', '.')) * level_unit_factor_to_cm) if (utils.to_float_or_none(row[level_colnr]) is not None if level_colnr is not None else None) else None,
+                          str(float(row[temp_colnr].replace(',', '.'))) if (utils.to_float_or_none(row[temp_colnr]) if temp_colnr is not None else None) else None,
+                          str(float(row[spec_cond_colnr].replace(',', '.')) * spec_cond_factor_to_mScm) if (utils.to_float_or_none(row[spec_cond_colnr]) if spec_cond_colnr is not None else None) else None]
                         for row in rows[data_header_idx + 1:]
                         if all([isinstance(utils.to_float_or_none(row[level_colnr]), float) if skip_rows_without_water_level else True,
-                                date_utils.datestring_to_date(u' '.join([row[date_colnr], row[time_colnr]]), df=date_format) >= begindate if begindate is not None else True,
-                                date_utils.datestring_to_date(u' '.join([row[date_colnr], row[time_colnr]]), df=date_format) <= enddate if enddate is not None else True])])
+                                date_utils.datestring_to_date(' '.join([row[date_colnr], row[time_colnr]]), df=date_format) >= begindate if begindate is not None else True,
+                                date_utils.datestring_to_date(' '.join([row[date_colnr], row[time_colnr]]), df=date_format) <= enddate if enddate is not None else True])])
 
 
         filedata = [row for row in filedata if any(row[1:])]

@@ -129,7 +129,7 @@ class MessageBar(object):
 
 
 class MockQgsProjectInstance(object):
-    def __init__(self, entry=u''):
+    def __init__(self, entry=''):
         self.entry = entry
     def readEntry(self, *args, **kwargs):
         return self.entry
@@ -182,4 +182,4 @@ def mock_answer(yes_or_no='yes'):
 answer_yes = mock_answer('yes')
 answer_no = mock_answer('no')
 
-mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no.get_v(), u'Please note!\nThere are ': answer_yes.get_v(), u'Please note!\nForeign keys will': answer_yes.get_v()}, 1)
+mock_askuser = MockReturnUsingDictIn({'It is a strong': answer_no.get_v(), 'Please note!\nThere are ': answer_yes.get_v(), 'Please note!\nForeign keys will': answer_yes.get_v()}, 1)

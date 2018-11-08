@@ -59,7 +59,7 @@ except:
 else:
     pandas_on = True
 
-utils.MessagebarAndLog.info(log_msg=u"Python pandas: " + str(pandas_on))
+utils.MessagebarAndLog.info(log_msg="Python pandas: " + str(pandas_on))
 customplot_ui_class =  uic.loadUiType(os.path.join(os.path.dirname(__file__),'..', 'ui', 'customplotdialog.ui'))[0]
 
 
@@ -249,7 +249,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.axes.legend_ = None
         My_format = [('date_time', datetime.datetime), ('values', float)] #Define (with help from function datetime) a good format for numpy array
 
-        #print(u'\n'.join(mpl.rcParams.keys()))
+        #print('\n'.join(mpl.rcParams.keys()))
         rcparams = self.templates.loaded_template.get('rcParams', {})
         for k, v in rcparams.items():
             #print("rcparams set k {} v {}".format(k, v))
@@ -375,8 +375,8 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             myTimestring = list(table2.date_time)
             numtime=datestr2num(myTimestring)  #conv list of strings to numpy.ndarray of floats
         except Exception as e:
-            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u'Plotting date_time failed, msg: %s'))%str(e))
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u"Customplot, transforming to recarray with date_time as x-axis failed, msg: %s"))%ru(str(e)))
+            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('plotsqlitewindow', 'Plotting date_time failed, msg: %s'))%str(e))
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('plotsqlitewindow', "Customplot, transforming to recarray with date_time as x-axis failed, msg: %s"))%ru(str(e)))
             #recs = [x for x in recs if all(x)]
 
             table = np.array(recs, dtype=[('numx', float), ('values', float)])  #NDARRAY #define a format for xy-plot (to use if not datetime on x-axis)
@@ -390,7 +390,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             self.used_format = FlagTimeXY
         else:
             if self.used_format != FlagTimeXY:
-                raise utils.UsageError(ru(QCoreApplication.translate(u'CustomPlot', u"Plotting both xy and time plot at the same time doesn't work! Check the x-y axix settings in all tabs!")))
+                raise utils.UsageError(ru(QCoreApplication.translate('CustomPlot', "Plotting both xy and time plot at the same time doesn't work! Check the x-y axix settings in all tabs!")))
 
         # from version 0.2 there is a possibility to make discontinuous plot if timestep bigger than maxtstep
         if self.spnmaxtstep.value() > 0: # if user selected a time step bigger than zero than thre may be discontinuous plots
@@ -428,21 +428,21 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         if pandas_calc and FlagTimeXY == "time":
             if pandas_calc.use_pandas():
-                df = pd.DataFrame.from_records(table2, columns=[u'values'], exclude=[u'date_time'])
-                df.set_index(pd.DatetimeIndex(table2.date_time, name=u'date_time'), inplace=True)
-                df.columns = [u'values']
+                df = pd.DataFrame.from_records(table2, columns=['values'], exclude=['date_time'])
+                df.set_index(pd.DatetimeIndex(table2.date_time, name='date_time'), inplace=True)
+                df.columns = ['values']
 
                 df = pandas_calc.calculate(df)
                 if df is not None:
                     try:
-                        table = np.array(list(zip(df.index, df[u'values'])), dtype=My_format)
+                        table = np.array(list(zip(df.index, df['values'])), dtype=My_format)
                     except TypeError:
                         utils.MessagebarAndLog.info(log_msg=str(df))
                         raise
                     table2 = table.view(np.recarray)  # RECARRAY transform the 2 cols into callable objects
                     numtime = table2.date_time
                 else:
-                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u"Pandas calculate failed.")))
+                    utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('plotsqlitewindow', "Pandas calculate failed.")))
 
         colors = self.templates.loaded_template.get('styles_colors', None)
         _color =  [_num[0] for _num in np.random.rand(3,1).tolist()]
@@ -574,7 +574,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                      filter_qlistwidget.item(index).setSelected(True)
 
     def filter_filterlist(self, filterlist, lineedit):
-        words = lineedit.text().split(u';')
+        words = lineedit.text().split(';')
 
         listcount = filterlist.count()
         if words:
@@ -583,7 +583,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             [filterlist.item(idx).setHidden(False) for idx in range(listcount)]
 
     def LoadTablesFromDB( self, tables_columns ):    # Open the SpatiaLite file to extract info about tables
-        tables = sorted([table for table in list(tables_columns.keys()) if table not in db_utils.nonplot_tables(as_tuple=True) and not table.startswith(u'zz_')])
+        tables = sorted([table for table in list(tables_columns.keys()) if table not in db_utils.nonplot_tables(as_tuple=True) and not table.startswith('zz_')])
         for i, table_combobox in enumerate([self.table_ComboBox_1, self.table_ComboBox_2, self.table_ComboBox_3], 1):
             table_combobox.clear()
             self.clearthings(i)
@@ -698,11 +698,11 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             other_QListWidget_wid = getattr(self, other_QListWidget)
             selected = ru([item.text() for item in other_QListWidget_wid.selectedItems() if item.text()], keep_containers=True)
             if selected:
-                sql = u"SELECT DISTINCT {} FROM {} WHERE {} IN ({}) ORDER BY {}".format(
+                sql = "SELECT DISTINCT {} FROM {} WHERE {} IN ({}) ORDER BY {}".format(
                                                                                 str(filtercolumn),
                                                                                 table,
                                                                                 other_filtercolumn,
-                                                                                u', '.join([u"'{}'".format(item)
+                                                                                ', '.join(["'{}'".format(item)
                                                                                             for item in selected]),
                                                                                 str(filtercolumn),)
 
@@ -885,13 +885,13 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
     def save_to_eps(self):
         filename = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption=ru(
-            QCoreApplication.translate(u'CustomPlot', u'Choose a file name, extension sets format')), directory='')
+            QCoreApplication.translate('CustomPlot', 'Choose a file name, extension sets format')), directory='')
         if not filename:
             return
         else:
             filename = filename[0]
         name, ext = os.path.splitext(filename)
-        self.custplotfigure.savefig(filename, format=ext.lstrip(u'.'), dpi=float(self.figure_dpi.text()))
+        self.custplotfigure.savefig(filename, format=ext.lstrip('.'), dpi=float(self.figure_dpi.text()))
 
     def get_settings(self, FlagTimeXY_plottype, plot_key, label):
         if FlagTimeXY_plottype not in self.templates.loaded_template[plot_key]:
@@ -911,55 +911,55 @@ class PandasCalculations(object):
         self.widget = qgis.PyQt.QtWidgets.QWidget()
 
         #General settings
-        self.rule_label = qgis.PyQt.QtWidgets.QLabel(u'Resample rule')
+        self.rule_label = qgis.PyQt.QtWidgets.QLabel('Resample rule')
         self.rule = qgis.PyQt.QtWidgets.QLineEdit()
         for wid in [self.rule_label, self.rule]:
-            wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
-                           u'Steplength for resampling, ex:\n'
-                           u'"10S" = 10 seconds\n'
-                           u'"20T" = 20 minutes\n'
-                           u'"1h" = 1 hour\n'
-                           u'"24h" = 24 hours\n'
-                           u'(D = calendar day, M = month end, MS = month start, W = weekly, AS = year start, A = year end, ...)\n'
-                           u'No resampling if field is empty\n'
-                           u'See pandas pandas.DataFrame.resample documentation for more info.')))
+            wid.setToolTip(ru(QCoreApplication.translate('PandasCalculations',
+                           'Steplength for resampling, ex:\n'
+                           '"10S" = 10 seconds\n'
+                           '"20T" = 20 minutes\n'
+                           '"1h" = 1 hour\n'
+                           '"24h" = 24 hours\n'
+                           '(D = calendar day, M = month end, MS = month start, W = weekly, AS = year start, A = year end, ...)\n'
+                           'No resampling if field is empty\n'
+                           'See pandas pandas.DataFrame.resample documentation for more info.')))
 
-        self.base_label = qgis.PyQt.QtWidgets.QLabel(u'Resample base')
+        self.base_label = qgis.PyQt.QtWidgets.QLabel('Resample base')
         self.base = qgis.PyQt.QtWidgets.QLineEdit()
         for wid in [self.base_label, self.base]:
-            wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
-                           u'The hour to start each timestep when rule "evenly subdivide 1 day" (for example Rule = 24h)\n'
-                           u'Ex: 7 (= 07:00). Default is 0 (00:00)\n'
-                           u'See pandas pandas.DataFrame.resample documentation for more info:\n'
-                           u'For frequencies that evenly subdivide 1 day, the "origin" of the aggregated intervals.\n'
-                           u'For example, for "5min" frequency, base could range from 0 through 4. Defaults to 0.')))
+            wid.setToolTip(ru(QCoreApplication.translate('PandasCalculations',
+                           'The hour to start each timestep when rule "evenly subdivide 1 day" (for example Rule = 24h)\n'
+                           'Ex: 7 (= 07:00). Default is 0 (00:00)\n'
+                           'See pandas pandas.DataFrame.resample documentation for more info:\n'
+                           'For frequencies that evenly subdivide 1 day, the "origin" of the aggregated intervals.\n'
+                           'For example, for "5min" frequency, base could range from 0 through 4. Defaults to 0.')))
 
-        self.how_label = qgis.PyQt.QtWidgets.QLabel(u'Resample how')
+        self.how_label = qgis.PyQt.QtWidgets.QLabel('Resample how')
         self.how = qgis.PyQt.QtWidgets.QLineEdit()
         for wid in [self.how_label, self.how]:
-            wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
-                           u'How to make the resample, ex. "mean" (default), "first", "last", "sum".\n'
-                           u'See pandas pandas.DataFrame.resample documentation for more info\n'
-                           u'(though "how" is not explained a lot)')))
+            wid.setToolTip(ru(QCoreApplication.translate('PandasCalculations',
+                           'How to make the resample, ex. "mean" (default), "first", "last", "sum".\n'
+                           'See pandas pandas.DataFrame.resample documentation for more info\n'
+                           '(though "how" is not explained a lot)')))
 
         #Moving average:
-        self.window_label = qgis.PyQt.QtWidgets.QLabel(u'Rolling mean window')
-        self.window = qgis.PyQt.QtWidgets.QLineEdit(u'')
-        self.center_label = qgis.PyQt.QtWidgets.QLabel(u'Rolling mean center')
-        self.center = qgis.PyQt.QtWidgets.QLineEdit(u'')
+        self.window_label = qgis.PyQt.QtWidgets.QLabel('Rolling mean window')
+        self.window = qgis.PyQt.QtWidgets.QLineEdit('')
+        self.center_label = qgis.PyQt.QtWidgets.QLabel('Rolling mean center')
+        self.center = qgis.PyQt.QtWidgets.QLineEdit('')
         for wid in [self.window_label, self.window]:
-            wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
-                           u'The number of timesteps in each moving average (rolling mean) mean\n'
-                           u'The result is stored at the center timestep of each mean.\n'
-                           u'See Pandas pandas.rolling_mean documentation for more info.\n'
-                           u'No rolling mean if field is empty.')))
+            wid.setToolTip(ru(QCoreApplication.translate('PandasCalculations',
+                           'The number of timesteps in each moving average (rolling mean) mean\n'
+                           'The result is stored at the center timestep of each mean.\n'
+                           'See Pandas pandas.rolling_mean documentation for more info.\n'
+                           'No rolling mean if field is empty.')))
 
         for wid in [self.center_label, self.center]:
-            wid.setToolTip(ru(QCoreApplication.translate(u'PandasCalculations',
-                           u'1/True (default) to store the rolling mean at the center timestep.\n'
-                           u'0/False to store the rolling mean at the last timestep.\n'
-                           u'See Pandas pandas.rolling_mean documentation for more info.\n'
-                           u'center=True if field is empty.')))
+            wid.setToolTip(ru(QCoreApplication.translate('PandasCalculations',
+                           '1/True (default) to store the rolling mean at the center timestep.\n'
+                           '0/False to store the rolling mean at the last timestep.\n'
+                           'See Pandas pandas.rolling_mean documentation for more info.\n'
+                           'center=True if field is empty.')))
 
 
         for lineedit in [self.rule, self.base, self.how, self.window, self.center]:
@@ -1006,12 +1006,12 @@ class PandasCalculations(object):
         #Resample
         rule = self.rule.text()
         base = self.base.text() if self.base.text() else 0
-        how = self.how.text() if self.how.text() else u'mean'
+        how = self.how.text() if self.how.text() else 'mean'
         if rule:
             try:
                 base = int(base)
             except ValueError:
-                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'PandasCalculations', u'Resample base must be an integer')))
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('PandasCalculations', 'Resample base must be an integer')))
             else:
                 # new api for pandas >=0.18
                 try:
@@ -1026,9 +1026,9 @@ class PandasCalculations(object):
             try:
                 window = int(window)
             except ValueError:
-                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'PandasCalculations', u'Rolling mean window must be an integer')))
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('PandasCalculations', 'Rolling mean window must be an integer')))
             else:
-                if self.center.text() in (u'0', u'False'):
+                if self.center.text() in ('0', 'False'):
                     center=False
                 else:
                     center=True

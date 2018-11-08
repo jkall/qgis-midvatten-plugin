@@ -109,7 +109,7 @@ class MessagebarAndLog(object):
             return None
         if bar_msg is not None:
             widget = qgis.utils.iface.messageBar().createMessage(returnunicode(bar_msg))
-            log_button = QtWidgets.QPushButton(QCoreApplication.translate(u'MessagebarAndLog', u"View message log"), pressed=show_message_log)
+            log_button = QtWidgets.QPushButton(QCoreApplication.translate('MessagebarAndLog', "View message log"), pressed=show_message_log)
             if log_msg is not None and button:
                 widget.layout().addWidget(log_button)
             qgis.utils.iface.messageBar().pushWidget(widget, level=messagebar_level, duration=duration)
@@ -119,9 +119,9 @@ class MessagebarAndLog(object):
                     qgis.utils.iface.optional_bar.pushWidget(widget, level=messagebar_level, duration=duration)
                 except:
                     pass
-        QgsApplication.messageLog().logMessage(returnunicode(bar_msg), u'Midvatten', level=log_level)
+        QgsApplication.messageLog().logMessage(returnunicode(bar_msg), 'Midvatten', level=log_level)
         if log_msg is not None:
-            QgsApplication.messageLog().logMessage(returnunicode(log_msg), u'Midvatten', level=log_level)
+            QgsApplication.messageLog().logMessage(returnunicode(log_msg), 'Midvatten', level=log_level)
 
     @staticmethod
     def info(bar_msg=None, log_msg=None, duration=10, button=True, optional_bar=False):
@@ -139,11 +139,11 @@ class MessagebarAndLog(object):
 def write_qgs_log_to_file(message, tag, level):
     logfile = QgsLogger.logFile()
     if logfile is not None:
-        QgsLogger.logMessageToFile(u'{}: {}({}): {} '.format(u'%s'%(returnunicode(get_date_time())), returnunicode(tag), returnunicode(level), u'%s'%(returnunicode(message))))
+        QgsLogger.logMessageToFile('{}: {}({}): {} '.format('%s'%(returnunicode(get_date_time())), returnunicode(tag), returnunicode(level), '%s'%(returnunicode(message))))
 
 
 class Askuser(QtWidgets.QDialog):
-    def __init__(self, question="YesNo", msg = '', dialogtitle=QCoreApplication.translate(u'askuser', 'User input needed'), parent=None):
+    def __init__(self, question="YesNo", msg = '', dialogtitle=QCoreApplication.translate('askuser', 'User input needed'), parent=None):
         self.result = ''
         if question == 'YesNo':         #  Yes/No dialog 
             reply = QtWidgets.QMessageBox.information(parent, dialogtitle, msg, QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.Yes)
@@ -152,8 +152,8 @@ class Askuser(QtWidgets.QDialog):
             else:
                 self.result = 0  #0="no"
         elif question == 'AllSelected': # All or Selected Dialog
-            btnAll = QtWidgets.QPushButton(QCoreApplication.translate(u'askuser', "All"))   # = "0"
-            btnSelected = QtWidgets.QPushButton(QCoreApplication.translate(u'askuser', "Selected"))     # = "1"
+            btnAll = QtWidgets.QPushButton(QCoreApplication.translate('askuser', "All"))   # = "0"
+            btnSelected = QtWidgets.QPushButton(QCoreApplication.translate('askuser', "Selected"))     # = "1"
             #btnAll.clicked.connect(self.DoForAll)
             #btnSelected.clicked.connect(self.DoForSelected)
             msgBox = QtWidgets.QMessageBox(parent)
@@ -166,11 +166,11 @@ class Askuser(QtWidgets.QDialog):
             reply = msgBox.exec_()
             self.result = reply  # ALL=0, SELECTED=1
         elif question == 'DateShift':
-            supported_units = [u'microseconds', u'milliseconds', u'seconds', u'minutes', u'hours', u'days', u'weeks']
+            supported_units = ['microseconds', 'milliseconds', 'seconds', 'minutes', 'hours', 'days', 'weeks']
             while True:
-                answer = str(qgis.PyQt.QtWidgets.QInputDialog.getText(None, QCoreApplication.translate(u'askuser', "User input needed"), returnunicode(QCoreApplication.translate(u'askuser', "Give needed adjustment of date/time for the data.\nSupported format: +- X <resolution>\nEx: 1 hours, -1 hours, -1 days\nSupported units:\n%s"))%', '.join(supported_units), qgis.PyQt.QtWidgets.QLineEdit.Normal, u'0 hours')[0])
+                answer = str(qgis.PyQt.QtWidgets.QInputDialog.getText(None, QCoreApplication.translate('askuser', "User input needed"), returnunicode(QCoreApplication.translate('askuser', "Give needed adjustment of date/time for the data.\nSupported format: +- X <resolution>\nEx: 1 hours, -1 hours, -1 days\nSupported units:\n%s"))%', '.join(supported_units), qgis.PyQt.QtWidgets.QLineEdit.Normal, '0 hours')[0])
                 if not answer:
-                    self.result = u'cancel'
+                    self.result = 'cancel'
                     break
                 else:
                     adjustment_unit = answer.split()
@@ -179,13 +179,13 @@ class Askuser(QtWidgets.QDialog):
                             self.result = adjustment_unit
                             break
                         else:
-                            pop_up_info(returnunicode(QCoreApplication.translate(u'askuser', "Failure:\nOnly support resolutions\n%s"))%', '.join(supported_units))
+                            pop_up_info(returnunicode(QCoreApplication.translate('askuser', "Failure:\nOnly support resolutions\n%s"))%', '.join(supported_units))
                     else:
-                        pop_up_info(QCoreApplication.translate(u'askuser', "Failure:\nMust write time resolution also.\n"))
+                        pop_up_info(QCoreApplication.translate('askuser', "Failure:\nMust write time resolution also.\n"))
 
 
 class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
-    def __init__(self, dialogtitle=u'Warning', msg=u'', existing_list=None, default_value=u'', parent=None, button_names=[u'Ignore', u'Cancel', u'Ok'], combobox_label=u'Similar values found in db (choose or edit):', reuse_header_list=None, reuse_column=u''):
+    def __init__(self, dialogtitle='Warning', msg='', existing_list=None, default_value='', parent=None, button_names=['Ignore', 'Cancel', 'Ok'], combobox_label='Similar values found in db (choose or edit):', reuse_header_list=None, reuse_column=''):
         QtWidgets.QDialog.__init__(self, parent)
         self.answer = None
         self.setupUi(self)
@@ -204,9 +204,9 @@ class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
             self.buttonBox.addButton(button, QtWidgets.QDialogButtonBox.ActionRole)
             button.clicked.connect(self.button_clicked)
 
-        self.reuse_label = qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate(u'NotFoundQuestion', u'Reuse answer for all identical'))
+        self.reuse_label = qgis.PyQt.QtWidgets.QLabel(QCoreApplication.translate('NotFoundQuestion', 'Reuse answer for all identical'))
         self._reuse_column = qgis.PyQt.QtWidgets.QComboBox()
-        self._reuse_column.addItem(u'')
+        self._reuse_column.addItem('')
         if isinstance(reuse_header_list, (list, tuple)):
             self.reuse_layout.addWidget(self.reuse_label)
             self.reuse_layout.addWidget(self._reuse_column)
@@ -247,7 +247,7 @@ class NotFoundQuestion(QtWidgets.QDialog, not_found_dialog):
 
     def closeEvent(self, event):
         if self.answer is None:
-            self.set_answer_and_value(u'cancel')
+            self.set_answer_and_value('cancel')
         super(NotFoundQuestion, self).closeEvent(event)
 
         #self.close()
@@ -269,7 +269,7 @@ class HtmlDialog(QtWidgets.QDialog):
         self.verticalLayout.setMargin(0)
         self.verticalLayout.addWidget(self.webView)
         self.closeButton = QtWidgets.QPushButton()
-        self.closeButton.setText(QCoreApplication.translate(u'HtmlDialog', "Close"))
+        self.closeButton.setText(QCoreApplication.translate('HtmlDialog', "Close"))
         self.closeButton.setMaximumWidth(150)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setSpacing(2)
@@ -369,9 +369,9 @@ def ask_user_about_stopping(question):
     """
     answer = Askuser("YesNo", question)
     if answer.result:
-        return u'cancel'
+        return 'cancel'
     else:
-        return u'ignore'
+        return 'ignore'
 
 
 def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-table)
@@ -379,9 +379,9 @@ def create_dict_from_db_2_cols(params):#params are (col1=keys,col2=values,db-tab
     connection_ok, list_of_tuples= db_utils.sql_load_fr_db(sqlstring)
 
     if not connection_ok:
-        textstring = returnunicode(QCoreApplication.translate(u'create_dict_from_db_2_cols', """Cannot create dictionary from columns %s and %s in table %s!"""))%(params)#col1,col2,table)
+        textstring = returnunicode(QCoreApplication.translate('create_dict_from_db_2_cols', """Cannot create dictionary from columns %s and %s in table %s!"""))%(params)#col1,col2,table)
         #qgis.utils.iface.messageBar().pushMessage("Error",textstring, 2,duration=10)
-        MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'create_dict_from_db_2_cols', 'Some sql failure, see log for additional info.'), log_msg=textstring, duration=4,button=True)
+        MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('create_dict_from_db_2_cols', 'Some sql failure, see log for additional info.'), log_msg=textstring, duration=4,button=True)
         return False, {'':''}
 
     adict = dict([(k, v) for k, v in list_of_tuples])
@@ -394,12 +394,12 @@ def find_layer(layer_name):
             return search_layer
 
 
-def get_all_obsids(table=u'obs_points'):
+def get_all_obsids(table='obs_points'):
     """ Returns all obsids from obs_points
     :return: All obsids from obs_points
     """
     obsids = []
-    connection_ok, result = db_utils.sql_load_fr_db(u'''SELECT DISTINCT obsid FROM %s ORDER BY OBSID''' % table)
+    connection_ok, result = db_utils.sql_load_fr_db('''SELECT DISTINCT obsid FROM %s ORDER BY OBSID''' % table)
     if connection_ok:
         obsids = [row[0] for row in result]
     return obsids
@@ -426,7 +426,7 @@ def get_selected_features_as_tuple(layername=None):
     return obsidtuple
 
 
-def getselectedobjectnames(thelayer='default', column_name=u'obsid'):
+def getselectedobjectnames(thelayer='default', column_name='obsid'):
     """ Returns a list of obsid as unicode
 
         thelayer is an optional argument, if not given then activelayer is used
@@ -481,7 +481,7 @@ def null_2_empty_string(input_string):
     return(input_string.replace('NULL', '').replace('null', ''))
 
 
-def pop_up_info(msg='',title=QCoreApplication.translate(u'pop_up_info', 'Information'),parent=None):
+def pop_up_info(msg='',title=QCoreApplication.translate('pop_up_info', 'Information'),parent=None):
     """Display an info message via Qt box"""
     QtWidgets.QMessageBox.information(parent, title, '%s' % (msg))
 
@@ -501,35 +501,35 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
     r"""
 
     >>> returnunicode('b')
-    u'b'
+    'b'
     >>> returnunicode(int(1))
-    u'1'
+    '1'
     >>> returnunicode(None)
-    u''
+    ''
     >>> returnunicode([])
-    u'[]'
-    >>> returnunicode(['a', u'b'])
-    u"[u'a', u'b']"
+    '[]'
     >>> returnunicode(['a', 'b'])
-    u"[u'a', u'b']"
+    "['a', 'b']"
+    >>> returnunicode(['a', 'b'])
+    "['a', 'b']"
     >>> returnunicode(['ä', 'ö'])
-    u"[u'\\xe4', u'\\xf6']"
+    "['\\xe4', '\\xf6']"
     >>> returnunicode(float(1))
-    u'1.0'
+    '1.0'
     >>> returnunicode(None)
-    u''
+    ''
     >>> returnunicode([(1, ), {2: 'a'}], True)
-    [(u'1',), {u'2': u'a'}]
+    [('1',), {'2': 'a'}]
 
     :param anything: just about anything
     :return: hopefully a unicode converted anything
     """
 
     text = None
-    for charset in [u'ascii', u'utf-8', u'utf-16', u'cp1252', u'iso-8859-1']:
+    for charset in ['ascii', 'utf-8', 'utf-16', 'cp1252', 'iso-8859-1']:
         try:
             if anything is None:
-                text = u''
+                text = ''
             elif isinstance(anything, list):
                 text = [returnunicode(x, keep_containers) for x in anything]
             elif isinstance(anything, tuple):
@@ -539,17 +539,17 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
             elif isinstance(anything, OrderedDict):
                 text = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.items()])
             # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
-            elif str(type(anything)) == u"<class 'PyQt4.QtCore.QVariant'>":
+            elif str(type(anything)) == "<class 'PyQt4.QtCore.QVariant'>":
                 if anything.isNull():
-                    text = u''
+                    text = ''
                 else:
                     text = returnunicode(anything.toString())
             # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
-            elif str(type(anything)) == u"<class 'PyQt4.QtCore.QString'>":
+            elif str(type(anything)) == "<class 'PyQt4.QtCore.QString'>":
                 text = returnunicode(str(anything.toUtf8(), 'utf-8'))
             # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
-            elif str(type(anything)) == u"<class 'PyQt4.QtCore.QPyNullVariant'>":
-                return u''
+            elif str(type(anything)) == "<class 'PyQt4.QtCore.QPyNullVariant'>":
+                return ''
             else:
                 text = anything
 
@@ -572,7 +572,7 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
         try:
             text = str(str(anything))
         except:
-            text = str(QCoreApplication.translate(u'returnunicode', 'data type unknown, check database'))
+            text = str(QCoreApplication.translate('returnunicode', 'data type unknown, check database'))
     return text
 
 
@@ -583,18 +583,18 @@ def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatur
         elif not(selectedfeatures==0) and layer.selectedFeatureCount()==selectedfeatures:
             return 'ok'
         elif selectedfeatures == 0 and not(layer.selectedFeatureCount() > 0):
-            MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'selection_check', u'Error, select at least one object in the qgis layer!'))
+            MessagebarAndLog.critical(bar_msg=QCoreApplication.translate('selection_check', 'Error, select at least one object in the qgis layer!'))
         else:
-            MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'selection_check', u'"""Error, select exactly %s object in the qgis layer!'))%str(selectedfeatures))
+            MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('selection_check', '"""Error, select exactly %s object in the qgis layer!'))%str(selectedfeatures))
     else:
-        pop_up_info(QCoreApplication.translate(u'selection_check', "Select a qgis layer that has a field obsid!"))
+        pop_up_info(QCoreApplication.translate('selection_check', "Select a qgis layer that has a field obsid!"))
 
 
 def strat_selection_check(layer=''):
     if layer.dataProvider().fieldNameIndex('h_gs')  > -1 or layer.dataProvider().fieldNameIndex('h_toc')  > -1  or layer.dataProvider().fieldNameIndex('SURF_LVL')  > -1: # SURF_LVL to enable backwards compatibility
             return 'ok'
     else:
-        MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'strat_selection_check', u'Error, select a qgis layer with field h_gs!')))
+        MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('strat_selection_check', 'Error, select a qgis layer with field h_gs!')))
 
 
 def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
@@ -607,7 +607,7 @@ def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
     text = None
     try:
         if type(anything) == type(None):
-            text = (u'').encode('utf-8')
+            text = ('').encode('utf-8')
         elif isinstance(anything, str):
             text = anything.encode('utf-8')
         elif isinstance(anything, list):
@@ -628,7 +628,7 @@ def unicode_2_utf8(anything): #takes an unicode and tries to return it as utf8
         pass
 
     if text is None:
-        text = returnunicode(QCoreApplication.translate(u'unicode_2_utf8', u'data type unknown, check database')).encode('utf-8')
+        text = returnunicode(QCoreApplication.translate('unicode_2_utf8', 'data type unknown, check database')).encode('utf-8')
     return text
 
 
@@ -641,22 +641,22 @@ def verify_msettings_loaded_and_layer_edit_mode(iface, mset, allcritical_layers=
         layerexists = find_layer(str(layername))
         if layerexists:
             if layerexists.isEditable():
-                MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u"Error %s is currently in editing mode.\nPlease exit this mode before proceeding with this operation."))%str(layerexists.name()))
+                MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('verify_msettings_loaded_and_layer_edit_mode', "Error %s is currently in editing mode.\nPlease exit this mode before proceeding with this operation."))%str(layerexists.name()))
                 #pop_up_info("Layer " + str(layerexists.name()) + " is currently in editing mode.\nPlease exit this mode before proceeding with this operation.", "Warning")
                 errorsignal += 1
 
     if not mset.settingsdict['database']:
-        MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u"Error, No database found. Please check your Midvatten Settings. Reset if needed."))
+        MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('verify_msettings_loaded_and_layer_edit_mode', "Error, No database found. Please check your Midvatten Settings. Reset if needed."))
         errorsignal += 1
     else:
         try:
             connection_ok = db_utils.check_connection_ok()
         except db_utils.DatabaseLockedError:
-            MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u'Databas is already in use'))
+            MessagebarAndLog.critical(bar_msg=QCoreApplication.translate('verify_msettings_loaded_and_layer_edit_mode', 'Databas is already in use'))
             errorsignal += 1
         else:
             if not connection_ok:
-                MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'verify_msettings_loaded_and_layer_edit_mode', u"Error, The selected database doesn't exist. Please check your Midvatten Settings and database location. Reset if needed."))
+                MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('verify_msettings_loaded_and_layer_edit_mode', "Error, The selected database doesn't exist. Please check your Midvatten Settings and database location. Reset if needed."))
                 errorsignal += 1
 
     return errorsignal
@@ -668,11 +668,11 @@ def verify_layer_selection(errorsignal,selectedfeatures=0):
         if not(selection_check(layer) == 'ok'):
             errorsignal += 1
             if selectedfeatures==0:
-                MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'verify_layer_selection', u'Error, you have to select some features!'))
+                MessagebarAndLog.critical(bar_msg=QCoreApplication.translate('verify_layer_selection', 'Error, you have to select some features!'))
             else:
-                MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'verify_layer_selection', u'Error, you have to select exactly %s features!'))%str(selectedfeatures))
+                MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('verify_layer_selection', 'Error, you have to select exactly %s features!'))%str(selectedfeatures))
     else:
-        MessagebarAndLog.critical(bar_msg=QCoreApplication.translate(u'verify_layer_selection', u'Error, you have to select a relevant layer!'))
+        MessagebarAndLog.critical(bar_msg=QCoreApplication.translate('verify_layer_selection', 'Error, you have to select a relevant layer!'))
         errorsignal += 1
     return errorsignal
 
@@ -689,18 +689,18 @@ def verify_this_layer_selected_and_not_in_edit_mode(errorsignal,layername):
     layer = get_active_layer()
     if not layer:#check there is actually a layer selected
         errorsignal += 1
-        MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'verify_this_layer_selected_and_not_in_edit_mode', u'Error, you have to select/activate %s layer!'))%layername)
+        MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('verify_this_layer_selected_and_not_in_edit_mode', 'Error, you have to select/activate %s layer!'))%layername)
     elif layer.isEditable():
         errorsignal += 1
-        MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'verify_this_layer_selected_and_not_in_edit_mode', u'Error, the selected layer is currently in editing mode. Please exit this mode before updating coordinates.')))
+        MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('verify_this_layer_selected_and_not_in_edit_mode', 'Error, the selected layer is currently in editing mode. Please exit this mode before updating coordinates.')))
     elif not(layer.name() == layername):
         errorsignal += 1
-        MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'verify_this_layer_selected_and_not_in_edit_mode', u'Error, you have to select/activate %s layer!'))%layername)
+        MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('verify_this_layer_selected_and_not_in_edit_mode', 'Error, you have to select/activate %s layer!'))%layername)
     return errorsignal
 
 
 @contextmanager
-def tempinput(data, charset=u'UTF-8'):
+def tempinput(data, charset='UTF-8'):
     """ Creates and yields a temporary file from data
 
         The file can't be deleted in windows for some strange reason.
@@ -808,7 +808,7 @@ def get_quality_instruments():
     connection_ok, result_list = sql_result
 
     if not connection_ok:
-        MessagebarAndLog.critical(bar_msg=sql_failed_msg(), log_msg=returnunicode(QCoreApplication.translate(u'get_quality_instruments', u'Failed to get quality instruments from sql\n%s'))%sql)
+        MessagebarAndLog.critical(bar_msg=sql_failed_msg(), log_msg=returnunicode(QCoreApplication.translate('get_quality_instruments', 'Failed to get quality instruments from sql\n%s'))%sql)
         return False, tuple()
 
     return True, returnunicode([x[0] for x in result_list], True)
@@ -854,13 +854,13 @@ def select_files(only_one_file=True, extension="csv (*.csv)"):
     try:
         dir = os.path.dirname(db_utils.get_spatialite_db_path_from_dbsettings_string(QgsProject.instance().readEntry("Midvatten","database")[0]))
     except Exception as e:
-        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'select_files', u'Getting directory for select_files failed with msg %s'))%str(e))
-        dir = u''
+        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('select_files', 'Getting directory for select_files failed with msg %s'))%str(e))
+        dir = ''
 
     if only_one_file:
-        csvpath = [QtWidgets.QFileDialog.getOpenFileName(parent=None, caption=QCoreApplication.translate(u'select_files', "Select file"), directory=dir, filter=extension)]
+        csvpath = [QtWidgets.QFileDialog.getOpenFileName(parent=None, caption=QCoreApplication.translate('select_files', "Select file"), directory=dir, filter=extension)]
     else:
-        csvpath = QtWidgets.QFileDialog.getOpenFileNames(parent=None, caption=QCoreApplication.translate(u'select_files', "Select files"), directory=dir, filter=extension)
+        csvpath = QtWidgets.QFileDialog.getOpenFileNames(parent=None, caption=QCoreApplication.translate('select_files', "Select files"), directory=dir, filter=extension)
     csvpath = [returnunicode(p[0]) for p in csvpath if p]
     return csvpath
 
@@ -870,24 +870,24 @@ def ask_for_charset(default_charset=None, msg=None):
         localencoding = getcurrentlocale()[1]
         if default_charset is None:
             if msg is None:
-                msg = returnunicode(QCoreApplication.translate(u'ask_for_charset',"Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer %s is default."))%localencoding
-            charsetchoosen = QtWidgets.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_charset',"Set charset encoding"), msg,QtWidgets.QLineEdit.Normal,getcurrentlocale()[1])[0]
+                msg = returnunicode(QCoreApplication.translate('ask_for_charset',"Give charset used in the file, normally\niso-8859-1, utf-8, cp1250 or cp1252.\n\nOn your computer %s is default."))%localencoding
+            charsetchoosen = QtWidgets.QInputDialog.getText(None, QCoreApplication.translate('ask_for_charset',"Set charset encoding"), msg,QtWidgets.QLineEdit.Normal,getcurrentlocale()[1])[0]
         else:
             if msg is None:
-                msg = QCoreApplication.translate(u'ask_for_charset', "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.")
-            charsetchoosen = QtWidgets.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_charset',"Set charset encoding"), msg, QtWidgets.QLineEdit.Normal, default_charset)[0]
+                msg = QCoreApplication.translate('ask_for_charset', "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.")
+            charsetchoosen = QtWidgets.QInputDialog.getText(None, QCoreApplication.translate('ask_for_charset',"Set charset encoding"), msg, QtWidgets.QLineEdit.Normal, default_charset)[0]
     except Exception as e:
         if default_charset is None:
             default_charset = 'utf-8'
         if msg is None:
-            msg = QCoreApplication.translate(u'ask_for_charset', "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.")
-        charsetchoosen = QtWidgets.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_charset',"Set charset encoding"), msg, QtWidgets.QLineEdit.Normal, default_charset)[0]
+            msg = QCoreApplication.translate('ask_for_charset', "Give charset used in the file, default charset on normally\nutf-8, iso-8859-1, cp1250 or cp1252.")
+        charsetchoosen = QtWidgets.QInputDialog.getText(None, QCoreApplication.translate('ask_for_charset',"Set charset encoding"), msg, QtWidgets.QLineEdit.Normal, default_charset)[0]
 
     return str(charsetchoosen)
 
 
-def ask_for_export_crs(default_crs=u''):
-    return str(QtWidgets.QInputDialog.getText(None, QCoreApplication.translate(u'ask_for_export_crs',"Set export crs"), QCoreApplication.translate(u'ask_for_export_crs', "Give the crs for the exported database.\n"),QtWidgets.QLineEdit.Normal,default_crs)[0])
+def ask_for_export_crs(default_crs=''):
+    return str(QtWidgets.QInputDialog.getText(None, QCoreApplication.translate('ask_for_export_crs',"Set export crs"), QCoreApplication.translate('ask_for_export_crs', "Give the crs for the exported database.\n"),QtWidgets.QLineEdit.Normal,default_crs)[0])
 
 
 def lists_to_string(alist_of_lists, quote=False):
@@ -900,44 +900,44 @@ def lists_to_string(alist_of_lists, quote=False):
                 innerlist = []
                 for col in row:
                     if quote:
-                        if all([u'"' in returnunicode(col), u'""' not in returnunicode(col)]):
-                            innerword = returnunicode(col).replace(u'"', u'""')
+                        if all(['"' in returnunicode(col), '""' not in returnunicode(col)]):
+                            innerword = returnunicode(col).replace('"', '""')
                         else:
                             innerword = returnunicode(col)
                         try:
-                            innerlist.append(u'"{}"'.format(innerword))
+                            innerlist.append('"{}"'.format(innerword))
                         except UnicodeDecodeError:
                             print(str(innerword))
                             raise Exception
                     else:
                         innerlist.append(returnunicode(col))
-                reslist.append(u';'.join(innerlist))
+                reslist.append(';'.join(innerlist))
             else:
                 reslist.append(returnunicode(row))
 
-        return_string = u'\n'.join(reslist)
+        return_string = '\n'.join(reslist)
 
 
     :param alist_of_lists:
     :return: A string with '\n' separating rows and ; separating columns.
 
     >>> lists_to_string([1])
-    u'1'
+    '1'
     >>> lists_to_string([('a', 'b'), (1, 2)])
-    u'a;b\n1;2'
+    'a;b\n1;2'
     >>> lists_to_string([('a', 'b'), (1, 2)], quote=True)
-    u'"a";"b"\n"1";"2"'
+    '"a";"b"\n"1";"2"'
     >>> lists_to_string([('"a"', 'b'), (1, 2)], quote=False)
-    u'"a";b\n1;2'
+    '"a";b\n1;2'
     >>> lists_to_string([('"a"', 'b'), (1, 2)], quote=True)
-    u'"""a""";"b"\n"1";"2"'
+    '"""a""";"b"\n"1";"2"'
     '''
     if isinstance(alist_of_lists, (list, tuple)):
 
-        return_string = u'\n'.join(
-            [u';'.join([u'"{}"'.format(returnunicode(col).replace(u'"', u'""')
-                                       if all([u'"' in returnunicode(col),
-                                               u'""' not in returnunicode(col)])
+        return_string = '\n'.join(
+            [';'.join(['"{}"'.format(returnunicode(col).replace('"', '""')
+                                       if all(['"' in returnunicode(col),
+                                               '""' not in returnunicode(col)])
                                        else returnunicode(col))
                         if quote
                         else
@@ -961,31 +961,31 @@ def find_similar(word, wordlist, hits=5):
 
     some code from http://stackoverflow.com/questions/480214/how-do-you-remove-duplicates-from-a-list-in-whilst-preserving-order
 
-    >>> find_similar(u'rb1203', [u'Rb1203', u'rb 1203', u'gert', u'rb', u'rb1203', u'b1203', u'rb120', u'rb11', u'rb123', u'rb1203_bgfgf'], 5)
-    [u'rb1203', u'rb 1203', u'rb123', u'rb120', u'b1203', u'Rb1203', u'rb1203_bgfgf']
-    >>> find_similar(u'1', [u'2', u'3'], 5)
-    [u'']
-    >>> find_similar(None, [u'2', u'3'], 5)
-    [u'']
+    >>> find_similar('rb1203', ['Rb1203', 'rb 1203', 'gert', 'rb', 'rb1203', 'b1203', 'rb120', 'rb11', 'rb123', 'rb1203_bgfgf'], 5)
+    ['rb1203', 'rb 1203', 'rb123', 'rb120', 'b1203', 'Rb1203', 'rb1203_bgfgf']
+    >>> find_similar('1', ['2', '3'], 5)
+    ['']
+    >>> find_similar(None, ['2', '3'], 5)
+    ['']
     >>> find_similar(None, None, 5)
-    [u'']
-    >>> find_similar(u'1', [], 5)
-    [u'']
-    >>> find_similar(u'1', False, 5)
-    [u'']
-    >>> find_similar(False, [u'2', u'3'], 5)
-    [u'']
+    ['']
+    >>> find_similar('1', [], 5)
+    ['']
+    >>> find_similar('1', False, 5)
+    ['']
+    >>> find_similar(False, ['2', '3'], 5)
+    ['']
 
     """
     if None in [word, wordlist] or not wordlist or not word:
-        return [u'']
+        return ['']
 
     matches = difflib.get_close_matches(word, wordlist, hits)
 
     matches.extend([x for x in wordlist if any((x.startswith(word.lower()), x.startswith(word.upper()), x.startswith(word.capitalize())))])
     nr_of_hits = len(matches)
     if nr_of_hits == 0:
-        return [u'']
+        return ['']
 
     #Remove duplicates
     seen = set()
@@ -998,7 +998,7 @@ def find_similar(word, wordlist, hits=5):
 def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existing_values=None, try_capitalize=False, always_ask_user=False):
     """
 
-    The class NotFoundQuestion is used with 4 buttons; u'Ignore', u'Cancel', u'Ok', u'Skip'.
+    The class NotFoundQuestion is used with 4 buttons; 'Ignore', 'Cancel', 'Ok', 'Skip'.
     Ignore = use the chosen value and move to the next obsid.
     Cancel = raises UserInterruptError
     Ok = Tries the currently submitted obsid against the existing once. If it doesn't exist, it asks again.
@@ -1056,8 +1056,8 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
 
     headers_colnr = dict([(header, colnr) for colnr, header in enumerate(file_data[0])])
 
-    already_asked_values = {} # {u'obsid': {u'asked_for': u'answer'}, u'report': {u'asked_for_report': u'answer'}}
-    reuse_column = u''
+    already_asked_values = {} # {'obsid': {'asked_for': 'answer'}, 'report': {'asked_for_report': 'answer'}}
+    reuse_column = ''
     for rownr, row in enumerate(data_to_ask_for):
         current_value = row[index]
         found = False
@@ -1084,23 +1084,23 @@ def filter_nonexisting_values_and_ask(file_data=None, header_value=None, existin
         similar_values = find_similar(current_value, existing_values, hits=5)
         similar_values.extend([x for x in sorted(existing_values) if x not in similar_values])
 
-        msg = returnunicode(QCoreApplication.translate(u'filter_nonexisting_values_and_ask', u'(Message %s of %s)\n\nGive the %s for:\n%s'))%(str(rownr + 1), str(len(data_to_ask_for)), header_value, u'\n'.join([u': '.join((file_data[0][_colnr], word if word is not None else u'')) for _colnr, word in enumerate(row)]))
-        question = NotFoundQuestion(dialogtitle=QCoreApplication.translate(u'filter_nonexisting_values_and_ask', u'WARNING'),
+        msg = returnunicode(QCoreApplication.translate('filter_nonexisting_values_and_ask', '(Message %s of %s)\n\nGive the %s for:\n%s'))%(str(rownr + 1), str(len(data_to_ask_for)), header_value, '\n'.join([': '.join((file_data[0][_colnr], word if word is not None else '')) for _colnr, word in enumerate(row)]))
+        question = NotFoundQuestion(dialogtitle=QCoreApplication.translate('filter_nonexisting_values_and_ask', 'WARNING'),
                                     msg=msg,
                                     existing_list=similar_values,
                                     default_value=similar_values[0],
-                                    button_names=[u'Cancel', u'Ok', u'Skip'],
+                                    button_names=['Cancel', 'Ok', 'Skip'],
                                     reuse_header_list=sorted(headers_colnr.keys()),
                                     reuse_column=reuse_column
                                     )
         answer = question.answer
         submitted_value = returnunicode(question.value)
         reuse_column = returnunicode(question.reuse_column)
-        if answer == u'cancel':
+        if answer == 'cancel':
             raise UserInterruptError()
-        elif answer == u'ok':
+        elif answer == 'ok':
             current_value = submitted_value
-        elif answer == u'skip':
+        elif answer == 'skip':
             current_value = None
 
         if reuse_column:
@@ -1217,10 +1217,10 @@ def getcurrentlocale():
 
 
 def get_locale_from_db():
-    connection_ok, locale_row = db_utils.sql_load_fr_db(u"SELECT description FROM about_db WHERE description LIKE 'locale:%'")
+    connection_ok, locale_row = db_utils.sql_load_fr_db("SELECT description FROM about_db WHERE description LIKE 'locale:%'")
     if connection_ok:
         try:
-            locale_setting = returnunicode(locale_row, keep_containers=True)[0][0].split(u':')
+            locale_setting = returnunicode(locale_row, keep_containers=True)[0][0].split(':')
         except IndexError:
             return None
 
@@ -1231,7 +1231,7 @@ def get_locale_from_db():
         else:
             return locale_setting
     else:
-        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'get_locale_from_db', u'Connection to db failed when getting locale from db.')))
+        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('get_locale_from_db', 'Connection to db failed when getting locale from db.')))
         return None
 
 
@@ -1242,7 +1242,7 @@ def calculate_db_table_rows():
 
     sql_failed = []
     for tablename in sorted(tablenames):
-        sql = u"""SELECT count(*) FROM %s""" % (tablename)
+        sql = """SELECT count(*) FROM %s""" % (tablename)
 
         sql_result = db_utils.sql_load_fr_db(sql)
         connection_ok, nr_of_rows = sql_result
@@ -1256,7 +1256,7 @@ def calculate_db_table_rows():
     if sql_failed:
         MessagebarAndLog.warning(
             bar_msg=sql_failed_msg(),
-            log_msg=returnunicode(QCoreApplication.translate(u'calculate_db_table_rows', 'Sql failed:\n%s\n'))%'\n'.join(sql_failed))
+            log_msg=returnunicode(QCoreApplication.translate('calculate_db_table_rows', 'Sql failed:\n%s\n'))%'\n'.join(sql_failed))
 
     if results:
         printable_msg = '{0:40}{1:15}'.format('Tablename', 'Nr of rows\n')
@@ -1264,27 +1264,27 @@ def calculate_db_table_rows():
             ['{0:40}{1:15}'.format(table_name, _nr_of_rows) for
              table_name, _nr_of_rows in sorted(results.items())])
         MessagebarAndLog.info(
-            bar_msg=QCoreApplication.translate(u'calculate_db_table_rows', 'Calculation done, see log for results.'),
+            bar_msg=QCoreApplication.translate('calculate_db_table_rows', 'Calculation done, see log for results.'),
             log_msg=printable_msg)
 
 
-def anything_to_string_representation(anything, itemjoiner=u', ', pad=u'', dictformatter=u'{%s}',
-                                      listformatter=u'[%s]', tupleformatter=u'(%s, )'):
+def anything_to_string_representation(anything, itemjoiner=', ', pad='', dictformatter='{%s}',
+                                      listformatter='[%s]', tupleformatter='(%s, )'):
     r""" Turns anything into a string used for testing
     :param anything: just about anything
     :param itemjoiner: The string to join list/tuple/dict items with.
     :return: A unicode string
-     >>> anything_to_string_representation({(u'123'): 4.5, "a": u'7'})
-     u'{u"123": 4.5, "a": u"7"}'
-     >>> anything_to_string_representation({(u'123', ): 4.5, "a": u'7'})
-     u'{"a": u"7", (u"123", ): 4.5}'
-     >>> anything_to_string_representation([u'1', '2', 3])
-     u'[u"1", "2", 3]'
-     >>> anything_to_string_representation({u'123': 4.5, "a": u'7'}, u',\n', u'    ')
-     u'{    u"123": 4.5,\n    "a": u"7"}'
+     >>> anything_to_string_representation({('123'): 4.5, "a": '7'})
+     '{"123": 4.5, "a": "7"}'
+     >>> anything_to_string_representation({('123', ): 4.5, "a": '7'})
+     '{"a": "7", ("123", ): 4.5}'
+     >>> anything_to_string_representation(['1', '2', 3])
+     '["1", "2", 3]'
+     >>> anything_to_string_representation({'123': 4.5, "a": '7'}, ',\n', '    ')
+     '{    "123": 4.5,\n    "a": "7"}'
     """
     if isinstance(anything, dict):
-        aunicode = dictformatter%itemjoiner.join([pad + u': '.join([anything_to_string_representation(k, itemjoiner,
+        aunicode = dictformatter%itemjoiner.join([pad + ': '.join([anything_to_string_representation(k, itemjoiner,
                                                                                                       pad + pad,
                                                                                                       dictformatter,
                                                                                                       listformatter,
@@ -1304,11 +1304,11 @@ def anything_to_string_representation(anything, itemjoiner=u', ', pad=u'', dictf
                                                                                            listformatter,
                                                                                            tupleformatter) for x in anything])
     elif isinstance(anything, (float, int)):
-        aunicode = u'{}'.format(returnunicode(anything))
+        aunicode = '{}'.format(returnunicode(anything))
     elif isinstance(anything, str):
-        aunicode = u'u"{}"'.format(anything)
+        aunicode = '"{}"'.format(anything)
     elif isinstance(anything, str):
-        aunicode = u'"{}"'.format(anything)
+        aunicode = '"{}"'.format(anything)
     elif isinstance(anything, qgis.PyQt.QtCore.QVariant):
         aunicode = returnunicode(anything.toString().data())
     else:
@@ -1344,9 +1344,9 @@ class Cancel(object):
         pass
 
 
-def get_delimiter(filename, charset=u'utf-8', delimiters=None, num_fields=None):
+def get_delimiter(filename, charset='utf-8', delimiters=None, num_fields=None):
     if filename is None:
-        raise TypeError(QCoreApplication.translate(u'get_delimiter', u'Must give filename'))
+        raise TypeError(QCoreApplication.translate('get_delimiter', 'Must give filename'))
     with io.open(filename, 'r', encoding=charset) as f:
         rows = f.readlines()
 
@@ -1356,10 +1356,10 @@ def get_delimiter(filename, charset=u'utf-8', delimiters=None, num_fields=None):
 
 def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_fields=None):
     if filename is None:
-        filename = u'the rows'
+        filename = 'the rows'
     delimiter = None
     if delimiters is None:
-        delimiters = [u',', u';']
+        delimiters = [',', ';']
     tested_delim = []
     for _delimiter in delimiters:
         cols_on_all_rows = set()
@@ -1374,12 +1374,12 @@ def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_field
     if not delimiter:
         # No delimiter worked
         if not tested_delim:
-            _delimiter = ask_for_delimiter(question=returnunicode(QCoreApplication.translate(u'get_delimiter_from_file_rows', u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):"))% filename)
+            _delimiter = ask_for_delimiter(question=returnunicode(QCoreApplication.translate('get_delimiter_from_file_rows', "Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):"))% filename)
             delimiter = _delimiter[0]
         else:
             if delimiter is None:
                 if num_fields is not None:
-                    MessagebarAndLog.critical(returnunicode(QCoreApplication.translate(u'get_delimiter_from_file_rows', u'Delimiter not found for %s. The file must contain %s fields, but none of %s worked as delimiter.'))%(filename, str(num_fields), u' or '.join(delimiters)))
+                    MessagebarAndLog.critical(returnunicode(QCoreApplication.translate('get_delimiter_from_file_rows', 'Delimiter not found for %s. The file must contain %s fields, but none of %s worked as delimiter.'))%(filename, str(num_fields), ' or '.join(delimiters)))
                     return None
 
                 lenght = max(tested_delim, key=itemgetter(1))[1]
@@ -1389,19 +1389,19 @@ def get_delimiter_from_file_rows(rows, filename=None, delimiters=None, num_field
                 delimiter = max(tested_delim, key=itemgetter(1))[0]
 
                 if lenght == 1 or len(more_than_one_delimiter) > 1:
-                    _delimiter = ask_for_delimiter(question=returnunicode(QCoreApplication.translate(u'get_delimiter_from_file_rows', u"Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):")) % filename)
+                    _delimiter = ask_for_delimiter(question=returnunicode(QCoreApplication.translate('get_delimiter_from_file_rows', "Delimiter couldn't be found automatically for %s. Give the correct one (ex ';'):")) % filename)
                     delimiter = _delimiter[0]
     return delimiter
 
 
-def ask_for_delimiter(header=QCoreApplication.translate(u'ask_for_delimiter', u'Give delimiter'), question=u'', default=u';'):
+def ask_for_delimiter(header=QCoreApplication.translate('ask_for_delimiter', 'Give delimiter'), question='', default=';'):
     _delimiter = qgis.PyQt.QtWidgets.QInputDialog.getText(None,
-                                                  QCoreApplication.translate(u'ask_for_delimiter', u"Give delimiter"),
+                                                  QCoreApplication.translate('ask_for_delimiter', "Give delimiter"),
                                                   question,
                                                   qgis.PyQt.QtWidgets.QLineEdit.Normal,
                                                   default)
     if not _delimiter[1]:
-        MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate(u'ask_for_delimiter', u'Delimiter not given. Stopping.')))
+        MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate('ask_for_delimiter', 'Delimiter not given. Stopping.')))
         raise UserInterruptError()
     else:
         delimiter = _delimiter[0]
@@ -1411,24 +1411,24 @@ def ask_for_delimiter(header=QCoreApplication.translate(u'ask_for_delimiter', u'
 def create_markdown_table_from_table(tablename, transposed=False, only_description=False):
     table = list_of_lists_from_table(tablename)
     if only_description:
-        descr_idx = table[0].index(u'description')
-        tablename_idx = table[0].index(u'tablename')
-        columnname_idx = table[0].index(u'columnname')
+        descr_idx = table[0].index('description')
+        tablename_idx = table[0].index('tablename')
+        columnname_idx = table[0].index('columnname')
 
         table = [[row[tablename_idx], row[columnname_idx], row[descr_idx]] for row in table]
 
     if transposed:
         table = transpose_lists_of_lists(table)
         for row in table:
-            row[0] = u'**{}**'.format(row[0])
+            row[0] = '**{}**'.format(row[0])
 
     column_names = table[0]
     table_contents = table[1:]
 
-    printlist = [u'|{}|'.format(u' | '.join(column_names))]
-    printlist.append(u'|{}|'.format(u' | '.join([u':---' for idx, x in enumerate(column_names)])))
-    printlist.extend([u'|{}|'.format(u' | '.join([item if item is not None else u'' for item in row])) for row in table_contents])
-    return u'\n'.join(printlist)
+    printlist = ['|{}|'.format(' | '.join(column_names))]
+    printlist.append('|{}|'.format(' | '.join([':---' for idx, x in enumerate(column_names)])))
+    printlist.extend(['|{}|'.format(' | '.join([item if item is not None else '' for item in row])) for row in table_contents])
+    return '\n'.join(printlist)
 
 
 def list_of_lists_from_table(tablename):
@@ -1437,7 +1437,7 @@ def list_of_lists_from_table(tablename):
     table_info = returnunicode(table_info, keep_containers=True)
     column_names = [x[1] for x in table_info]
     list_of_lists.append(column_names)
-    table_contents = db_utils.sql_load_fr_db(u'SELECT * FROM %s'%tablename)[1]
+    table_contents = db_utils.sql_load_fr_db('SELECT * FROM %s'%tablename)[1]
     table_contents = returnunicode(table_contents, keep_containers=True)
     list_of_lists.extend(table_contents)
     return list_of_lists
@@ -1449,7 +1449,7 @@ def transpose_lists_of_lists(list_of_lists):
 
 
 def sql_failed_msg():
-    return QCoreApplication.translate(u'sql_failed_msg', u'Sql failed, see log message panel.')
+    return QCoreApplication.translate('sql_failed_msg', 'Sql failed, see log message panel.')
 
 
 def fn_timer(function):
@@ -1501,7 +1501,7 @@ def general_exception_handler(func):
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             msg = str(e)
             if msg:
-                MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'general_exception_handler', u'Usage error: %s'))%str(e))
+                MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('general_exception_handler', 'Usage error: %s'))%str(e))
         except:
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             raise
@@ -1521,7 +1521,7 @@ def save_stored_settings(ms, stored_settings, settingskey):
     settings_string = anything_to_string_representation(stored_settings)
     ms.settingsdict[settingskey] = settings_string
     ms.save_settings(settingskey)
-    MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'save_stored_settings', u'Settings %s stored for key %s.'))%(settings_string, settingskey))
+    MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('save_stored_settings', 'Settings %s stored for key %s.'))%(settings_string, settingskey))
 
 
 def get_stored_settings(ms, settingskey, default=None):
@@ -1536,16 +1536,16 @@ def get_stored_settings(ms, settingskey, default=None):
         default = []
     settings_string_raw = ms.settingsdict.get(settingskey, None)
     if settings_string_raw is None:
-        MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Settings key %s did not exist in midvatten settings.'))%settingskey)
+        MessagebarAndLog.info(bar_msg=returnunicode(QCoreApplication.translate('get_stored_settings', 'Settings key %s did not exist in midvatten settings.'))%settingskey)
         return default
     if not settings_string_raw:
-        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Settings key %s was empty.'))%settingskey)
+        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('get_stored_settings', 'Settings key %s was empty.'))%settingskey)
         return default
 
     settings_string_raw = returnunicode(settings_string_raw)
 
     try:
-        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Reading stored settings "%s":\n%s'))%(settingskey,
+        MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('get_stored_settings', 'Reading stored settings "%s":\n%s'))%(settingskey,
                                                                                                                                                settings_string_raw))
     except:
         pass
@@ -1554,10 +1554,10 @@ def get_stored_settings(ms, settingskey, default=None):
         stored_settings = ast.literal_eval(settings_string_raw)
     except SyntaxError as e:
         stored_settings = default
-        MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=returnunicode(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing the settingsstring %s failed. Msg "%s"'))%(settings_string_raw, str(e)))
+        MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('get_stored_settings', 'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=returnunicode(QCoreApplication.translate('ExportToFieldLogger', 'Parsing the settingsstring %s failed. Msg "%s"'))%(settings_string_raw, str(e)))
     except ValueError as e:
         stored_settings = default
-        MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'get_stored_settings', u'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=returnunicode(QCoreApplication.translate(u'ExportToFieldLogger', u'Parsing the settingsstring %s failed. Msg "%s"'))%(settings_string_raw, str(e)))
+        MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('get_stored_settings', 'Getting stored settings failed for key %s see log message panel.'))%settingskey, log_msg=returnunicode(QCoreApplication.translate('ExportToFieldLogger', 'Parsing the settingsstring %s failed. Msg "%s"'))%(settings_string_raw, str(e)))
     return stored_settings
 
 
@@ -1568,7 +1568,7 @@ def to_float_or_none(anything):
         return float(anything)
     elif isinstance(anything, str):
         try:
-            a_float = float(anything.replace(u',', u'.'))
+            a_float = float(anything.replace(',', '.'))
         except TypeError:
             return None
         except ValueError:
@@ -1581,7 +1581,7 @@ def to_float_or_none(anything):
         return anything
     else:
         try:
-            a_float = float(str(anything).replace(u',', u'.'))
+            a_float = float(str(anything).replace(',', '.'))
         except:
             return None
         else:
@@ -1627,30 +1627,30 @@ class PlotTemplates(object):
         try:
             self.loaded_template = self.string_to_dict(self.ms.settingsdict[self.loaded_template_settingskey])
         except:
-            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Failed to load saved template, loading default template instead.')))
+            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('PlotTemplates', 'Failed to load saved template, loading default template instead.')))
         if self.loaded_template:
-            MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Loaded template from midvatten settings %s.'))%self.loaded_template_settingskey)
+            MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('PlotTemplates', 'Loaded template from midvatten settings %s.'))%self.loaded_template_settingskey)
 
         default_filename = os.path.join(self.template_folder, 'default.txt')
 
         if not self.loaded_template:
             if not os.path.isfile(default_filename):
-                MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates',
-                                                                                     u'Default template not found, loading hard coded default template.')))
+                MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('PlotTemplates',
+                                                                                     'Default template not found, loading hard coded default template.')))
             else:
                 try:
                     self.load(self.templates[default_filename]['template'])
                 except Exception as e:
-                    MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates',
-                                                                                         u'Failed to load default template, loading hard coded default template.')),
-                                                   log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Error msg %s'))%str(e))
+                    MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('PlotTemplates',
+                                                                                         'Failed to load default template, loading hard coded default template.')),
+                                                   log_msg=returnunicode(QCoreApplication.translate('PlotTemplates', 'Error msg %s'))%str(e))
             if self.loaded_template:
-                MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Loaded template from default template file.')))
+                MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('PlotTemplates', 'Loaded template from default template file.')))
 
         if not self.loaded_template:
             self.loaded_template = self.fallback_template
             if self.loaded_template:
-                MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Loaded template from default hard coded template.')))
+                MessagebarAndLog.info(log_msg=returnunicode(QCoreApplication.translate('PlotTemplates', 'Loaded template from default hard coded template.')))
 
         self.edit_button.clicked.connect(self.edit)
         self.load_button.clicked.connect(self.load)
@@ -1662,8 +1662,8 @@ class PlotTemplates(object):
     def edit(self):
         old_string = self.readable_output(self.loaded_template)
 
-        msg = returnunicode(QCoreApplication.translate(u'StoredSettings', u'Replace the settings string with a new settings string.'))
-        new_string = qgis.PyQt.QtWidgets.QInputDialog.getText(None, returnunicode(QCoreApplication.translate(u'StoredSettings', "Edit settings")), msg,
+        msg = returnunicode(QCoreApplication.translate('StoredSettings', 'Replace the settings string with a new settings string.'))
+        new_string = qgis.PyQt.QtWidgets.QInputDialog.getText(None, returnunicode(QCoreApplication.translate('StoredSettings', "Edit settings")), msg,
                                                            qgis.PyQt.QtWidgets.QLineEdit.Normal, old_string)
         if not new_string[1]:
             raise UserInterruptError()
@@ -1684,7 +1684,7 @@ class PlotTemplates(object):
 
     @general_exception_handler
     def save_as(self):
-        filename = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Choose a file name')), directory='', filter='txt (*.txt)')
+        filename = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption=returnunicode(QCoreApplication.translate('PlotTemplates', 'Choose a file name')), directory='', filter='txt (*.txt)')
         if filename is None or not filename:
             raise UserInterruptError()
         filename = filename[0]
@@ -1744,30 +1744,30 @@ class PlotTemplates(object):
         filenames = [x for x in self.ms.settingsdict[self.templates_settingskey].split(';') if x]
         if filenames:
             MessagebarAndLog.info(
-                log_msg=returnunicode(QCoreApplication.translate(u'', u'Loading saved templates %s')) % u'\n'.join(filenames))
+                log_msg=returnunicode(QCoreApplication.translate('', 'Loading saved templates %s')) % '\n'.join(filenames))
             self.import_templates(filenames)
 
     def parse_template(self, filename):
         name = os.path.splitext(os.path.basename(filename))[0]
         if not os.path.isfile(filename):
-            raise UsageError(returnunicode(QCoreApplication.translate(u'PlotTemplates', u'"%s" was not a file.')) % filename)
+            raise UsageError(returnunicode(QCoreApplication.translate('PlotTemplates', '"%s" was not a file.')) % filename)
         try:
             with io.open(filename, 'rt', encoding='utf-8') as f:
-                lines = u''.join([line for line in f if line])
+                lines = ''.join([line for line in f if line])
         except Exception as e:
-            MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates',
-                                                                                  u'Loading template %s failed, see log message panel')) % filename,
-                                            log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates', u'Reading file failed, msg:\n%s'))%returnunicode(str(e)))
+            MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('PlotTemplates',
+                                                                                  'Loading template %s failed, see log message panel')) % filename,
+                                            log_msg=returnunicode(QCoreApplication.translate('PlotTemplates', 'Reading file failed, msg:\n%s'))%returnunicode(str(e)))
             raise
 
         if lines:
             try:
-                template = self.string_to_dict(u''.join(lines))
+                template = self.string_to_dict(''.join(lines))
             except Exception as e:
-                MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates',
-                                                                                      u'Loading template %s failed, see log message panel')) % filename,
-                                                log_msg=returnunicode(QCoreApplication.translate(u'PlotTemplates',
-                                                                                      u'Parsing file rows failed, msg:\n%s')) % returnunicode(str(e)))
+                MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('PlotTemplates',
+                                                                                      'Loading template %s failed, see log message panel')) % filename,
+                                                log_msg=returnunicode(QCoreApplication.translate('PlotTemplates',
+                                                                                      'Parsing file rows failed, msg:\n%s')) % returnunicode(str(e)))
                 raise
             else:
                 return {'filename': filename, 'template': template, 'name': name}
@@ -1775,7 +1775,7 @@ class PlotTemplates(object):
             return {}
 
     def update_settingsdict(self):
-        self.ms.settingsdict[self.templates_settingskey] = u';'.join(list(self.templates.keys()))
+        self.ms.settingsdict[self.templates_settingskey] = ';'.join(list(self.templates.keys()))
         self.ms.save_settings(self.templates_settingskey)
 
     def update_template_list(self):
@@ -1789,19 +1789,19 @@ class PlotTemplates(object):
     def readable_output(self, a_dict=None):
         if a_dict is None:
             a_dict = self.loaded_template
-        return anything_to_string_representation(a_dict, itemjoiner=u',\n', pad=u'    ',
-                                                dictformatter=u'{\n%s}',
-                                                listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
+        return anything_to_string_representation(a_dict, itemjoiner=',\n', pad='    ',
+                                                dictformatter='{\n%s}',
+                                                listformatter='[\n%s]', tupleformatter='(\n%s, )')
 
     def string_to_dict(self, the_string):
         the_string = returnunicode(the_string)
         if not the_string:
-            return u''
+            return ''
         try:
             as_dict = ast.literal_eval(the_string)
         except Exception as e:
-            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate(u'StoredSettings', u'Translating string to dict failed, see log message panel')),
-                                           log_msg=returnunicode(QCoreApplication.translate(u'StoredSettings', u'Error %s\nfor string\n%s'))%(str(e), the_string))
+            MessagebarAndLog.warning(bar_msg=returnunicode(QCoreApplication.translate('StoredSettings', 'Translating string to dict failed, see log message panel')),
+                                           log_msg=returnunicode(QCoreApplication.translate('StoredSettings', 'Error %s\nfor string\n%s'))%(str(e), the_string))
         else:
             return as_dict
 
@@ -1832,7 +1832,7 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
             layer = create_layer(tablename, geometrycolumn=geometrycolumn, sql=None, keycolumn='obsid',
                                  dbconnection=dbconnection)
             if not layer.isValid():
-                MessagebarAndLog.critical(bar_msg=layer.name() + u' is not valid layer')
+                MessagebarAndLog.critical(bar_msg=layer.name() + ' is not valid layer')
             else:
                 resultlist.append(layer)
         else:

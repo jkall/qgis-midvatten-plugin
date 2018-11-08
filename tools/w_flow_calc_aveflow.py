@@ -1,4 +1,4 @@
-﻿﻿# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 /***************************************************************************
  This part of the Midvatten plugin handles calculation of average water flow
@@ -47,7 +47,7 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
         qgis.PyQt.QtWidgets.QDialog.__init__(self)
         self.setupUi(self) # Required by Qt4 to initialize the UI
         #self.obsid = utils.getselectedobjectnames()
-        self.setWindowTitle(ru(QCoreApplication.translate(u'Calcave', u"Calculate average flow"))) # Set the title for the dialog
+        self.setWindowTitle(ru(QCoreApplication.translate('Calcave', "Calculate average flow"))) # Set the title for the dialog
         self.pushButton_All.clicked.connect(self.calcall)
         self.pushButton_Selected.clicked.connect(self.calcselected)
         self.pushButton_Cancel.clicked.connect(self.close)
@@ -89,6 +89,6 @@ class Calcave(qgis.PyQt.QtWidgets.QDialog, Calc_Ui_Dialog): # An instance of the
                     sql = """insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('%s','%s','Aveflow','%s','%s','l/s')"""%(pyobsid,pyinstrumentid,table2.date_time[j],Aveflow)
                     db_utils.sql_alter_db(sql)
         if negativeflow:
-            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Calcave', u"Please notice that negative flow was encountered.")))
+            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('Calcave', "Please notice that negative flow was encountered.")))
         qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
         self.close()

@@ -61,7 +61,7 @@ class midvsettings(object):
                 output[key] = func("Midvatten", key)
                 self.settingsdict[key] = output[key][0]
             except KeyError:
-                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'midvsettings', u"Settings key %s does not exist in project file. Maybe this file was last used with old Midvatten plugin?"))%(str(key)))
+                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('midvsettings', "Settings key %s does not exist in project file. Maybe this file was last used with old Midvatten plugin?"))%(str(key)))
         self.readingSettings = False
         self.settingsareloaded = True
 

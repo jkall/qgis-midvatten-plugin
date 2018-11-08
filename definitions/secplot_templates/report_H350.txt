@@ -16,15 +16,15 @@
                 "linewidth": 1,
                 "marker": "None",
                 "zorder": 3},
-        u"bedrock": {
-                "label": u"bedrock",
+        "bedrock": {
+                "label": "bedrock",
                 "linestyle": "--",
                 "linewidth": 1.5,
                 "marker": "None",
                 "zorder": 3,
                 "color": "black"},
-        u"dem": {
-                "label": u"dem",
+        "dem": {
+                "label": "dem",
                 "linestyle": "-",
                 "linewidth": 0.5,
                 "marker": "None",
@@ -96,8 +96,8 @@
     "ticklabels_Text_set_fontsize": {
         "fontsize": 6},
     "wlevels_Axes_plot": {
-        u"2017": {
-                "label": u"2017",
+        "2017": {
+                "label": "2017",
                 "linestyle": "-",
                 "linewidth": 1,
                 "marker": "v",

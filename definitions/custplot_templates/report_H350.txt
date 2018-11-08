@@ -8,13 +8,13 @@
         "markersize": 6,
         "zorder": 8},
     "Axes_set_title": {
-        "label": u""},
+        "label": ""},
     "Axes_set_xlabel": {
         "fontsize": 8,
-        "xlabel": u""},
+        "xlabel": ""},
     "Axes_set_ylabel": {
         "fontsize": 8,
-        "ylabel": u"Ylabel"},
+        "ylabel": "Ylabel"},
     "Axes_tick_param": {
         "axis": "both",
         "labelsize": 6},
@@ -41,8 +41,8 @@
     "legend_Frame_set_facecolor": "white",
     "legend_Frame_set_fill": True,
     "legend_Text_set_fontsize": 6,
-    "plot_height": u"350",
-    "plot_width": u"469",
+    "plot_height": "350",
+    "plot_width": "469",
     "rcParams": {
         "savefig.dpi": 450},
     "styles_colors": [

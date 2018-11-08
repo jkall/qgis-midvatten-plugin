@@ -5,7 +5,7 @@
 Mocking QgsProjectInstance:
 #----------------------------
 #Add a tuple with the requested values from definitions.midvatten_defs.settingsdict as key and the return value as value
-MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): [u'sv_SE']}[(x, y)]
+MIDV_DICT = lambda x, y: {('Midvatten', 'database'): [TEMP_DB_PATH], ('Midvatten', 'locale'): ['sv_SE']}[(x, y)]
 
 class ATestClass():
     @mock.patch('midvatten_utils.QgsProject.instance')
@@ -19,20 +19,20 @@ class ATestClass():
 def x(mock_askuser):
     def side_effect(*args, **kwargs):
         mock_result = mock.MagicMock()
-        if args[1].startswith(u'Do you want to confirm'):
+        if args[1].startswith('Do you want to confirm'):
             mock_result.result = 0
             return mock_result
             #mock_askuser.return_value.result.return_value = 0
-        elif args[1].startswith(u'Do you want to import all'):
+        elif args[1].startswith('Do you want to import all'):
             mock_result.result = 0
             return mock_result
-        elif args[1].startswith(u'Please note!\nForeign keys'):
+        elif args[1].startswith('Please note!\nForeign keys'):
             mock_result.result = 1
             return mock_result
-        elif args[1].startswith(u'Please note!\nThere are'):
+        elif args[1].startswith('Please note!\nThere are'):
             mock_result.result = 1
             return mock_result
-        elif args[1].startswith(u'It is a strong recommendation'):
+        elif args[1].startswith('It is a strong recommendation'):
             mock_result.result = 0
             return mock_result
     mock_askuser.side_effect = side_effect
@@ -55,15 +55,15 @@ self.assertEqual(expected, mock.mock_calls)
 #This can be shortened into:
 #print(str(mock_iface.mock_calls)) #Copy the relevant calls from the print result.
 
-assert call.messageBar().createMessage(u'Warning, In total 2 posts were not imported.') in mock_iface.mock_calls
-assert call.messageBar().createMessage(u'In total 1 measurements were imported to "obs_points".') in mock_iface.mock_calls
+assert call.messageBar().createMessage('Warning, In total 2 posts were not imported.') in mock_iface.mock_calls
+assert call.messageBar().createMessage('In total 1 measurements were imported to "obs_points".') in mock_iface.mock_calls
 
 
 #Mock multiple answers from NotFoundQuestion
 mocks_notfoundquestion = []
-for answer, value, reuse_column in [[u'ok', u'rb1', u'location'],
-                      [u'ok', u'rb2', u'location'],
-                      [u'skip', u'rb3', u'location']]:
+for answer, value, reuse_column in [['ok', 'rb1', 'location'],
+                      ['ok', 'rb2', 'location'],
+                      ['skip', 'rb3', 'location']]:
     a_mock = MagicMock()
     a_mock.answer = answer
     a_mock.value = value

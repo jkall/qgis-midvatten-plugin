@@ -12,7 +12,7 @@ This part of Midvatten plugin is partly based upon code from
 __author__ = "B.M. van Breukelen <b.m.vanbreukelen@vu.nl>"
 __version__ = "1.0"
 __date__ = "Nov 2012"
-__modified_by__ = u'Josef Källgården'
+__modified_by__ = 'Josef Källgården'
 __modified_date__ = "Nov 2013"
 
    Adopted from: Ray and Mukherjee (2008) Groundwater 46(6): 893-896

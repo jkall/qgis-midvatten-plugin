@@ -50,26 +50,26 @@ class TestGeocolorsymbols(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_only_moran(self):
-        db_utils.sql_alter_db(u'DELETE FROM zz_strat')
-        db_utils.sql_alter_db(u'DELETE FROM zz_stratigraphy_plots')
-        db_utils.sql_alter_db(u"""INSERT INTO zz_strat(geoshort, strata) VALUES('morän', 'morän')""")
-        db_utils.sql_alter_db(u"""INSERT INTO zz_strat(geoshort, strata) VALUES('moran', 'morän')""")
-        db_utils.sql_alter_db(u"""INSERT INTO zz_stratigraphy_plots(strata, color_mplot, hatch_mplot, color_qt, brush_qt) VALUES('morän', 'theMPcolor', '/', 'theQTcolor', 'thePattern')""")
+        db_utils.sql_alter_db('DELETE FROM zz_strat')
+        db_utils.sql_alter_db('DELETE FROM zz_stratigraphy_plots')
+        db_utils.sql_alter_db("""INSERT INTO zz_strat(geoshort, strata) VALUES('morän', 'morän')""")
+        db_utils.sql_alter_db("""INSERT INTO zz_strat(geoshort, strata) VALUES('moran', 'morän')""")
+        db_utils.sql_alter_db("""INSERT INTO zz_stratigraphy_plots(strata, color_mplot, hatch_mplot, color_qt, brush_qt) VALUES('morän', 'theMPcolor', '/', 'theQTcolor', 'thePattern')""")
 
         test_string = utils.anything_to_string_representation(midvatten_defs.geocolorsymbols())
-        reference_string = u'''{u"moran": (u"thePattern", u"theQTcolor", ), u"morän": (u"thePattern", u"theQTcolor", )}'''
+        reference_string = '''{"moran": ("thePattern", "theQTcolor", ), "morän": ("thePattern", "theQTcolor", )}'''
         print(test_string)
         assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_missing_colors_patterns(self):
-        db_utils.sql_alter_db(u'DELETE FROM zz_strat')
-        db_utils.sql_alter_db(u'DELETE FROM zz_stratigraphy_plots')
-        db_utils.sql_alter_db(u"""INSERT INTO zz_strat(geoshort, strata) VALUES('nostrata', 'noshort')""")
-        db_utils.sql_alter_db(u"""INSERT INTO zz_stratigraphy_plots(strata, color_mplot, hatch_mplot, color_qt, brush_qt) VALUES('moran', 'theMPcolor', '/', 'theQTcolor', 'thePattern')""")
+        db_utils.sql_alter_db('DELETE FROM zz_strat')
+        db_utils.sql_alter_db('DELETE FROM zz_stratigraphy_plots')
+        db_utils.sql_alter_db("""INSERT INTO zz_strat(geoshort, strata) VALUES('nostrata', 'noshort')""")
+        db_utils.sql_alter_db("""INSERT INTO zz_stratigraphy_plots(strata, color_mplot, hatch_mplot, color_qt, brush_qt) VALUES('moran', 'theMPcolor', '/', 'theQTcolor', 'thePattern')""")
 
         test_string = utils.anything_to_string_representation(midvatten_defs.geocolorsymbols())
-        reference_string = u'''{u"nostrata": (u"NoBrush", u"white", )}'''
+        reference_string = '''{"nostrata": ("NoBrush", "white", )}'''
         assert test_string == reference_string
 

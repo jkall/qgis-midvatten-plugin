@@ -149,6 +149,6 @@ class XYPlot(object):
                     label.set_fontsize(10)
                 plt.show() # causes conflict with plugins "statist" and "chartmaker"
             else:
-                utils.pop_up_info(ru(QCoreApplication.translate(u'XYPlot', u"Please select at least one point with xy data")))
+                utils.pop_up_info(ru(QCoreApplication.translate('XYPlot', "Please select at least one point with xy data")))
         else:
-            utils.pop_up_info(ru(QCoreApplication.translate(u'XYPlot', u"Please select a layer containing observations with xy data")))
+            utils.pop_up_info(ru(QCoreApplication.translate('XYPlot', "Please select a layer containing observations with xy data")))

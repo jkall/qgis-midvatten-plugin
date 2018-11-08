@@ -67,7 +67,7 @@ class LoadLayers(object):
 
         elif self.group_name == 'Midvatten_data_domains': #if self.group_name == 'Midvatten_data_domains':
             tables_columns = db_utils.tables_columns()
-            d_domain_tables = [x for x in list(tables_columns.keys()) if x.startswith(u'zz_')]
+            d_domain_tables = [x for x in list(tables_columns.keys()) if x.startswith('zz_')]
             add_layers_to_list(layer_list, d_domain_tables, dbconnection=dbconnection)
 
         w_lvls_last_geom = None
@@ -105,7 +105,7 @@ class LoadLayers(object):
             if layer.name() == 'obs_points':#zoom to obs_points extent
                 obsp_lyr = layer
                 canvas.setExtent(layer.extent())
-            elif layer.name() == u'w_lvls_last_geom':
+            elif layer.name() == 'w_lvls_last_geom':
                 w_lvls_last_geom = layer
 
         if w_lvls_last_geom is not None:
@@ -135,7 +135,7 @@ class LoadLayers(object):
             firststring= 'dbname="' + self.settingsdict['database'] + '" table="' + tablename + '"'#MacOSX fix1  #earlier sent byte string, now unicode
             layer = QgsVectorLayer(firststring,self.dbtype)   # Adding the layer as 'spatialite' and not ogr vector layer is preferred
             if not layer.isValid():
-                utils.MessagebarAndLog.critical(bar_msg=u'Error, Failed to load layer %s!'%tablename)
+                utils.MessagebarAndLog.critical(bar_msg='Error, Failed to load layer %s!'%tablename)
             else:
                 QgsProject.instance().addMapLayers([layer])
                 group_index = self.legend.groups().index('Midvatten_OBS_DB')
@@ -160,7 +160,7 @@ class LoadLayers(object):
             uri.setDataSource('',tablename, 'Geometry')
             layer = QgsVectorLayer(uri.uri(), self.dbtype) # Adding the layer as 'spatialite' instead of ogr vector layer is preferred
             if not layer.isValid():
-                utils.MessagebarAndLog.critical(bar_msg=u'Error, Failed to load layer %s!' % tablename)
+                utils.MessagebarAndLog.critical(bar_msg='Error, Failed to load layer %s!' % tablename)
             else:
                 filename = tablename + ".qml"
                 stylefile = os.path.join(os.sep,os.path.dirname(__file__),"..","definitions",filename)

@@ -35,22 +35,22 @@ import utils_for_tests
 class TestStaticMethods(object):
 
     def test_translate_and_reorder_file_data(self):
-        file_data = [[u'obsid', u'acol', u'acol2'],
-                    [u'rb1', u'1', u'2']]
+        file_data = [['obsid', 'acol', 'acol2'],
+                    ['rb1', '1', '2']]
 
-        translation_dict = {u'obsid': [u'obsid'], u'acol': [u'num', u'txt'], u'acol2': [u'comment']}
+        translation_dict = {'obsid': ['obsid'], 'acol': ['num', 'txt'], 'acol2': ['comment']}
 
         test_string = utils_for_tests.create_test_string(GeneralCsvImportGui.translate_and_reorder_file_data(file_data, translation_dict))
-        reference_string = u'[[num, txt, comment, obsid], [1, 1, 2, rb1]]'
+        reference_string = '[[num, txt, comment, obsid], [1, 1, 2, rb1]]'
         assert test_string == reference_string
 
     def test_convert_comma_to_points_for_double_columns(self):
-        file_data = [[u'obsid', u'date_time', u'reading'], [u'obs1,1', u'2017-04-12 11:03', u'123,456']]
+        file_data = [['obsid', 'date_time', 'reading'], ['obs1,1', '2017-04-12 11:03', '123,456']]
 
-        #(6, u'comment', u'text', 0, None, 0)
-        tables_columns = ((0, u'obsid', u'text', 0, None, 0), (1, u'reading', u'double', 0, None, 0))
+        #(6, 'comment', 'text', 0, None, 0)
+        tables_columns = ((0, 'obsid', 'text', 0, None, 0), (1, 'reading', 'double', 0, None, 0))
         test_string = utils.anything_to_string_representation(GeneralCsvImportGui.convert_comma_to_points_for_double_columns(file_data, tables_columns))
-        reference = u'[[u"obsid", u"date_time", u"reading"], [u"obs1,1", u"2017-04-12 11:03", u"123.456"]]'
+        reference = '[["obsid", "date_time", "reading"], ["obs1,1", "2017-04-12 11:03", "123.456"]]'
         assert test_string == reference
 
 

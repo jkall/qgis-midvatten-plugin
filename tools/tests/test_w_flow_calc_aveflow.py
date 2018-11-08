@@ -33,12 +33,12 @@ from tools.tests.mocks_for_tests import DummyInterface
 
 class TestWFlowCalcAveflow(object):
     return_int = MockUsingReturnValue(int)
-    db_all_distinct_obsids = MockUsingReturnValue([True, [u'1', u'2']])
-    selected_obs = MockUsingReturnValue([u'3', u'4'])
+    db_all_distinct_obsids = MockUsingReturnValue([True, ['1', '2']])
+    selected_obs = MockUsingReturnValue(['3', '4'])
     mocked_iface = MockQgisUtilsIface()
-    utilssql_load_fr_db = MockReturnUsingDictIn({'select distinct obsid, instrumentid from': (True, [(u'1', u'inst1'), (u'2', u'inst2')]),
-                                                 'select date_time, reading from w_flow where flowtype': (True, [(u'2015-01-01 00:00:00', u'10'),
-                                                                                                                 (u'2016-01-01 00:00:00', u'20')]),
+    utilssql_load_fr_db = MockReturnUsingDictIn({'select distinct obsid, instrumentid from': (True, [('1', 'inst1'), ('2', 'inst2')]),
+                                                 'select date_time, reading from w_flow where flowtype': (True, [('2015-01-01 00:00:00', '10'),
+                                                                                                                 ('2016-01-01 00:00:00', '20')]),
                                                  'insert or ignore into w_flow': (True, None)},
                                                 0)
     return_none = MockUsingReturnValue(None)
@@ -76,5 +76,5 @@ class TestWFlowCalcAveflow(object):
         # DeltaTime = 24*3600*(735964.0 - 735599.0) == 31536000.0
         #Aveflow = Volume/DeltaTime#L/s == 10000 / 31536000.0 = 0.000317097919838
 
-        reference_list = [u"insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('1','inst1','Aveflow','2016-01-01 00:00:00','0.000317097919838','l/s')", u"insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('2','inst2','Aveflow','2016-01-01 00:00:00','0.000317097919838','l/s')"]
+        reference_list = ["insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('1','inst1','Aveflow','2016-01-01 00:00:00','0.000317097919838','l/s')", "insert or ignore into w_flow(obsid,instrumentid,flowtype,date_time,reading,unit) values('2','inst2','Aveflow','2016-01-01 00:00:00','0.000317097919838','l/s')"]
         assert self.return_none.args_called_with == reference_list

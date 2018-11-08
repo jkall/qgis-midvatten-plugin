@@ -52,26 +52,26 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
-        self.setWindowTitle(ru(QCoreApplication.translate(u'CompactWqualReportUi',
-                                                          u"Compact water quality report")))  # Set the title for the dialog
+        self.setWindowTitle(ru(QCoreApplication.translate('CompactWqualReportUi',
+                                                          "Compact water quality report")))  # Set the title for the dialog
 
-        self.manual_label.setText(u"<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-compact-water-quality-report\">%s</a>"%QCoreApplication.translate(u'CompactWqualReportUi', u'(manual)'))
+        self.manual_label.setText("<a href=\"https://github.com/jkall/qgis-midvatten-plugin/wiki/5.-Plots-and-reports#create-compact-water-quality-report\">%s</a>"%QCoreApplication.translate('CompactWqualReportUi', '(manual)'))
         self.manual_label.setOpenExternalLinks(True)
 
         tables = list(db_utils.tables_columns().keys())
         self.sql_table.addItems(sorted(tables))
         #Use w_qual_lab as default.
-        gui_utils.set_combobox(self.sql_table, u'w_qual_lab', add_if_not_exists=False)
+        gui_utils.set_combobox(self.sql_table, 'w_qual_lab', add_if_not_exists=False)
 
-        self.save_attrnames = [u'num_data_cols',
-                         u'rowheader_colwidth_percent',
-                         u'empty_row_between_tables',
-                         u'page_break_between_tables',
-                         u'from_active_layer',
-                         u'from_sql_table',
-                         u'sql_table']
+        self.save_attrnames = ['num_data_cols',
+                         'rowheader_colwidth_percent',
+                         'empty_row_between_tables',
+                         'page_break_between_tables',
+                         'from_active_layer',
+                         'from_sql_table',
+                         'sql_table']
 
-        self.stored_settings_key = u'compactwqualreport'
+        self.stored_settings_key = 'compactwqualreport'
 
         self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settings_key, {})
         self.update_from_stored_settings(self.stored_settings)
@@ -117,7 +117,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
                 else:
                     if isinstance(selfattr, qgis.PyQt.QtWidgets.QPlainTextEdit):
                         if isinstance(val, (list, tuple)):
-                            val = u'\n'.join(val)
+                            val = '\n'.join(val)
                         selfattr.setPlainText(val)
                     elif isinstance(selfattr, (qgis.PyQt.QtWidgets.QCheckBox, qgis.PyQt.QtWidgets.QRadioButton)):
                         selfattr.setChecked(val)
@@ -138,11 +138,11 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
             try:
                 attr = getattr(self, attrname)
             except:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi',
-                                                                                  u"Programming error. Attribute name %s didn't exist in self.")) % attrname)
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('DrillreportUi',
+                                                                                  "Programming error. Attribute name %s didn't exist in self.")) % attrname)
             else:
                 if isinstance(attr, qgis.PyQt.QtWidgets.QPlainTextEdit):
-                    val = [x for x in attr.toPlainText().split(u'\n') if x]
+                    val = [x for x in attr.toPlainText().split('\n') if x]
                 elif isinstance(attr, (qgis.PyQt.QtWidgets.QCheckBox, qgis.PyQt.QtWidgets.QRadioButton)):
                     val = attr.isChecked()
                 elif isinstance(attr, qgis.PyQt.QtWidgets.QLineEdit):
@@ -150,7 +150,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
                 elif isinstance(attr, qgis.PyQt.QtWidgets.QComboBox):
                     val = attr.currentText()
                 else:
-                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Programming error. The Qt-type %s is unhandled.'))%str(type(attr)))
+                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('DrillreportUi', 'Programming error. The Qt-type %s is unhandled.'))%str(type(attr)))
                     continue
                 stored_settings[attrname] = val
 
@@ -159,12 +159,12 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settings_key)
 
     def ask_for_stored_settings(self, stored_settings):
-        old_string = utils.anything_to_string_representation(stored_settings, itemjoiner=u',\n', pad=u'    ',
-                                                             dictformatter=u'{\n%s}',
-                                                             listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
+        old_string = utils.anything_to_string_representation(stored_settings, itemjoiner=',\n', pad='    ',
+                                                             dictformatter='{\n%s}',
+                                                             listformatter='[\n%s]', tupleformatter='(\n%s, )')
 
-        msg = ru(QCoreApplication.translate(u'CompactWqualReportUi', u'Replace the settings string with a new settings string.'))
-        new_string = qgis.PyQt.QtWidgets.QInputDialog.getText(None, ru(QCoreApplication.translate(u'DrillreportUi', "Edit settings string")), msg,
+        msg = ru(QCoreApplication.translate('CompactWqualReportUi', 'Replace the settings string with a new settings string.'))
+        new_string = qgis.PyQt.QtWidgets.QInputDialog.getText(None, ru(QCoreApplication.translate('DrillreportUi', "Edit settings string")), msg,
                                                            qgis.PyQt.QtWidgets.QLineEdit.Normal, old_string)
         if not new_string[1]:
             raise utils.UserInterruptError()
@@ -176,7 +176,7 @@ class CompactWqualReportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_d
         try:
             as_dict = ast.literal_eval(new_string_text)
         except Exception as e:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'CompactWqualReportUi', u'Translating string to dict failed, see log message panel')),
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('CompactWqualReportUi', 'Translating string to dict failed, see log message panel')),
                                            log_msg=str(e))
             raise utils.UsageError()
         else:
@@ -199,16 +199,16 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         f = codecs.open(reportpath, "wb", "utf-8")
 
         #write some initiating html
-        rpt = r"""<head><title>%s</title></head>"""%ru(QCoreApplication.translate(u'Wqualreport', u'water quality report from Midvatten plugin for QGIS'))
+        rpt = r"""<head><title>%s</title></head>"""%ru(QCoreApplication.translate('Wqualreport', 'water quality report from Midvatten plugin for QGIS'))
         rpt += r""" <meta http-equiv="content-type" content="text/html; charset=utf-8" />""" #NOTE, all report data must be in 'utf-8'
         rpt += "<html><body>"
         f.write(rpt)
 
         if from_active_layer:
-            utils.pop_up_info(ru(QCoreApplication.translate(u'CompactWqualReport', u'Check that exported number of rows are identical to expected number of rows!\nFeatures in layers from sql queries can be invalid and then excluded from the report!')), 'Warning!')
+            utils.pop_up_info(ru(QCoreApplication.translate('CompactWqualReport', 'Check that exported number of rows are identical to expected number of rows!\nFeatures in layers from sql queries can be invalid and then excluded from the report!')), 'Warning!')
             w_qual_lab_layer = qgis.utils.iface.activeLayer()
             if w_qual_lab_layer is None:
-                raise utils.UsageError(ru(QCoreApplication.translate(u'CompactWqualReport', u'Must select a layer!')))
+                raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'Must select a layer!')))
             if not w_qual_lab_layer.selectedFeatureCount():
                 w_qual_lab_layer.selectAll()
             data = self.get_data_from_qgislayer(w_qual_lab_layer)
@@ -216,7 +216,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             data = self.get_data_from_sql(sql_table, utils.getselectedobjectnames())
 
         report_data, num_data = self.data_to_printlist(data)
-        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'CompactWqualReport', u'Created report from %s number of rows.'))%str(num_data))
+        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('CompactWqualReport', 'Created report from %s number of rows.'))%str(num_data))
 
         for startcol in range(1, len(report_data[0]), num_data_cols):
             printlist = [[row[0]] for row in report_data]
@@ -255,7 +255,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
 
         data = {}
         for row in rows:
-            data.setdefault(row[0], {}).setdefault(row[1], {}).setdefault(row[2], {})[u', '.join([x for x in [row[3], row[4]] if x])] = row[5]
+            data.setdefault(row[0], {}).setdefault(row[1], {}).setdefault(row[2], {})[', '.join([x for x in [row[3], row[4]] if x])] = row[5]
 
         return data
 
@@ -270,7 +270,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         columns = ['obsid', 'date_time', 'report', 'parameter', 'unit', 'reading_txt']
         for column in columns:
             if not column in fieldnames:
-                raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', u'The chosen layer must contain column %s'))%column)
+                raise utils.UsageError(ru(QCoreApplication.translate('CompactWqualReport', 'The chosen layer must contain column %s'))%column)
 
         indexes = {column: fields.indexFromName(column) for column in columns}
 
@@ -283,7 +283,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
             parameter = attrs[indexes['parameter']]
             unit = attrs[indexes['unit']]
             reading_txt = attrs[indexes['reading_txt']]
-            par_unit = u', '.join([x for x in [parameter, unit] if x])
+            par_unit = ', '.join([x for x in [parameter, unit] if x])
             data.setdefault(obsid, {}).setdefault(date_time, {}).setdefault(report, {})[par_unit] = reading_txt
         return data
 
@@ -317,29 +317,29 @@ class Wqualreport(object):        # extracts water quality data for selected obj
 
     def WriteHTMLReport(self, ReportData, f, rowheader_colwidth_percent, empty_row_between_tables=False,
                         page_break_between_tables=False):
-        rpt = u"""<TABLE WIDTH=100% BORDER=1 CELLPADDING=1 class="no-spacing" CELLSPACING=0 PADDING-BOTTOM=0 PADDING=0>"""
+        rpt = """<TABLE WIDTH=100% BORDER=1 CELLPADDING=1 class="no-spacing" CELLSPACING=0 PADDING-BOTTOM=0 PADDING=0>"""
         f.write(rpt)
 
         for counter, sublist in enumerate(ReportData):
             sublist = ru(sublist, keep_containers=True)
             try:
                 if counter < self.nr_header_rows:
-                    rpt = u"<tr><TH WIDTH={}%><font size=1>{}</font></th>".format(str(rowheader_colwidth_percent), sublist[0])
+                    rpt = "<tr><TH WIDTH={}%><font size=1>{}</font></th>".format(str(rowheader_colwidth_percent), sublist[0])
 
                     data_colwidth = (100.0 - float(rowheader_colwidth_percent)) / len(sublist[1:])
 
-                    coltext = u"<th width ={colwidth}%><font size=1>{data}</font></th>"
-                    rpt += "".join([coltext.format(**{u"colwidth": str(data_colwidth),
-                                                      u"data": x}) for x in sublist[1:]])
+                    coltext = "<th width ={colwidth}%><font size=1>{data}</font></th>"
+                    rpt += "".join([coltext.format(**{"colwidth": str(data_colwidth),
+                                                      "data": x}) for x in sublist[1:]])
 
-                    rpt += u"</tr>\n"
+                    rpt += "</tr>\n"
                 else:
-                    rpt = u"<tr>"
-                    rpt += u"""<td align=\"left\"><font size=1>{}</font></td>""".format(sublist[0])
-                    coltext = u"""<td align=\"right\"><font size=1>{}</font></td>"""
-                    rpt += u"".join([coltext.format(x) for x in sublist[1:]])
+                    rpt = "<tr>"
+                    rpt += """<td align=\"left\"><font size=1>{}</font></td>""".format(sublist[0])
+                    coltext = """<td align=\"right\"><font size=1>{}</font></td>"""
+                    rpt += "".join([coltext.format(x) for x in sublist[1:]])
 
-                    rpt += u"</tr>\n"
+                    rpt += "</tr>\n"
             except:
                 try:
                     print("here was an error: %s"%sublist)
@@ -359,4 +359,4 @@ class Wqualreport(object):        # extracts water quality data for selected obj
 
 
 def sql_list(alist):
-    return u', '.join(["'{}'".format(x) for x in alist])
+    return ', '.join(["'{}'".format(x) for x in alist])

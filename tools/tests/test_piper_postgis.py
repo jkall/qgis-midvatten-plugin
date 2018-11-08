@@ -84,22 +84,22 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_piper_plot_get_data(self, mock_showplot, mock_selected, mock_messagebar):
 
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, type, geometry) VALUES ('P1', 'well', ST_GeomFromText('POINT(633466 711659)', 3006))''')
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, type, geometry) VALUES ('P2', 'notwell', ST_GeomFromText('POINT(6720727 016568)', 3006))''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'chloride', '1', 'mg/l', '2017-01-01')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'alcalinity', '2', 'mg/l', '2017-01-01')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'sulphat', '3', 'mg/l', '2017-01-01')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'natrium', '4', 'mg/l', '2017-01-01')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'kalium', '5', 'mg/l', '2017-01-01')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'kalcium', '6', 'mg/l', '2017-01-01')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'magnesium', '7', 'mg/l', '2017-01-01')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'chloride', '10', 'mg/l', '2017-01-01')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'alcalinity', '20', 'mg/l', '2017-01-01')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'sulphat', '30', 'mg/l', '2017-01-01')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'natrium', '40', 'mg/l', '2017-01-01')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'kalium', '50', 'mg/l', '2017-01-01')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'kalcium', '60', 'mg/l', '2017-01-01')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'magnesium', '70', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, type, geometry) VALUES ('P1', 'well', ST_GeomFromText('POINT(633466 711659)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, type, geometry) VALUES ('P2', 'notwell', ST_GeomFromText('POINT(6720727 016568)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'chloride', '1', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'alcalinity', '2', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'sulphat', '3', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'natrium', '4', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'kalium', '5', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'kalcium', '6', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P1', '1', 'magnesium', '7', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'chloride', '10', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'alcalinity', '20', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'sulphat', '30', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'natrium', '40', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'kalium', '50', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'kalcium', '60', 'mg/l', '2017-01-01')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, report, parameter, reading_num, unit, date_time) VALUES ('P2', '2', 'magnesium', '70', 'mg/l', '2017-01-01')''')
 
         """
         Manual calculation:
@@ -137,10 +137,10 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestPostgisDbSv):
                                 r"""piper_ca""": '',
                                 r"""piper_mg""": ''}
         mock_active_layer = mock.MagicMock()
-        mock_selected.return_value = [u'P1', u'P2']
+        mock_selected.return_value = ['P1', 'P2']
         piperplot = piper.PiperPlot(mock_ms, mock_active_layer)
         piperplot.create_parameter_selection()
-        piperplot.ms.settingsdict['piper_markers'] = u'obsid'
+        piperplot.ms.settingsdict['piper_markers'] = 'obsid'
         piperplot.get_data_and_make_plot()
         data = piperplot.obsnp_nospecformat
         test_data = utils.anything_to_string_representation(data)
@@ -149,10 +149,10 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestPostgisDbSv):
         ref_paramlist = '''["(lower(parameter) like '%klorid%' or lower(parameter) like '%chloride%')", "(lower(parameter) like '%alkalinitet%' or lower(parameter) like '%alcalinity%')", "(lower(parameter) like '%sulfat%' or lower(parameter) like '%sulphat%')", "(lower(parameter) like '%natrium%')", "(lower(parameter) like '%kalium%' or lower(parameter) like '%potassium%')", "(lower(parameter) like '%kalcium%' or lower(parameter) like '%calcium%')", "(lower(parameter) like '%magnesium%')"]'''
         assert test_paramlist == ref_paramlist
 
-        ref_data = u"""[[u'P1' u'2017-01-01' u'well' u'0.028206357713' u'0.0327778579014'
-  u'0.0624590112739' u'0.301873002325' u'0.29941613853' u'0.576013166015']
- [u'P2' u'2017-01-01' u'notwell' u'0.28206357713' u'0.327778579014'
-  u'0.624590112739' u'3.01873002325' u'2.9941613853' u'5.76013166015']]"""
+        ref_data = """[['P1' '2017-01-01' 'well' '0.028206357713' '0.0327778579014'
+  u'0.0624590112739' '0.301873002325' '0.29941613853' '0.576013166015']
+ ['P2' '2017-01-01' 'notwell' '0.28206357713' '0.327778579014'
+  u'0.624590112739' '3.01873002325' '2.9941613853' '5.76013166015']]"""
         assert test_data == ref_data
 
         assert len(mock_messagebar.mock_calls) == 0

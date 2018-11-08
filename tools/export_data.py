@@ -46,7 +46,7 @@ class ExportData(object):
                         lambda x: db_utils.verify_table_exists(x, dbconnection=dbconnection))
         self.write_data(self.to_csv, self.ID_obs_lines, defs.get_subset_of_tables_fr_db(category='obs_lines'),
                         lambda x: db_utils.verify_table_exists(x, dbconnection=dbconnection))
-        self.write_data(self.zz_to_csv, u'no_obsids', defs.get_subset_of_tables_fr_db(category='data_domains'),
+        self.write_data(self.zz_to_csv, 'no_obsids', defs.get_subset_of_tables_fr_db(category='data_domains'),
                         lambda x: db_utils.verify_table_exists(x, dbconnection=dbconnection))
         dbconnection.closedb()
 
@@ -74,7 +74,7 @@ class ExportData(object):
         conn.commit()
         self.write_data(self.to_sql, self.ID_obs_lines, defs.get_subset_of_tables_fr_db(category='obs_lines'), self.verify_table_in_attached_db, 'a.')
         conn.commit()
-        self.write_data(self.zz_to_sql, u'no_obsids', defs.get_subset_of_tables_fr_db(category='data_domains'), self.verify_table_in_attached_db, 'a.')
+        self.write_data(self.zz_to_sql, 'no_obsids', defs.get_subset_of_tables_fr_db(category='data_domains'), self.verify_table_in_attached_db, 'a.')
         conn.commit()
 
         db_utils.delete_srids(self.curs, EPSG_code)
@@ -87,7 +87,7 @@ class ExportData(object):
         self.curs.execute(r"""DETACH DATABASE a""")
         self.curs.execute('vacuum')
 
-        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'ExportData', u"Export done, see differences in log message panel")), log_msg=ru(QCoreApplication.translate(u'ExportData', u"Tables with different number of rows:\n%s"))%statistics)
+        utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('ExportData', "Export done, see differences in log message panel")), log_msg=ru(QCoreApplication.translate('ExportData', "Tables with different number of rows:\n%s"))%statistics)
 
         conn.commit()
         conn.close()
@@ -136,21 +136,21 @@ class ExportData(object):
         return result
 
     def format_obsids(self, obsids):
-        formatted_obsids = u''.join([u'(', u', '.join([u"'{}'".format(k) for k in ru(obsids, True)]), u')'])
+        formatted_obsids = ''.join(['(', ', '.join(["'{}'".format(k) for k in ru(obsids, True)]), ')'])
         return formatted_obsids
 
     def get_number_of_obsids(self, obsids, tname):
-        self.curs.execute(u"select count(obsid) from %s where obsid in %s" %(tname, self.format_obsids(obsids)))
+        self.curs.execute("select count(obsid) from %s where obsid in %s" %(tname, self.format_obsids(obsids)))
         no_of_obs = self.curs.fetchall()
         return no_of_obs
 
     def write_data(self, to_writer, obsids, ptabs, verify_table_exists, tname_prefix=''):
-        if len(obsids) > 0 or obsids == u'no_obsids':#only if there are any obs_points selected at all
+        if len(obsids) > 0 or obsids == 'no_obsids':#only if there are any obs_points selected at all
             for tname in ptabs:
                 tname_with_prefix = tname_prefix + tname
                 if not verify_table_exists(tname):
                     continue
-                if obsids != u'no_obsids':
+                if obsids != 'no_obsids':
                     no_of_obs = self.get_number_of_obsids(obsids, tname_with_prefix)
 
                     if no_of_obs[0][0] > 0:#only go on if there are any observations for this obsid
@@ -167,7 +167,7 @@ class ExportData(object):
         :return:
         """
         output = UnicodeWriter(file(os.path.join(self.exportfolder, tname + ".csv"), 'w'))
-        self.curs.execute(u"select * from %s where obsid in %s"%(tname, self.format_obsids(obsids)))
+        self.curs.execute("select * from %s where obsid in %s"%(tname, self.format_obsids(obsids)))
         output.writerow([col[0] for col in self.curs.description])
         [_f for _f in (output.writerow(row) for row in self.curs) if _f]
 
@@ -191,13 +191,13 @@ class ExportData(object):
 
             #If the current table contains obsid, filter only the chosen ones.
             try:
-                sql = u"""INSERT OR IGNORE INTO %s (%s) select distinct %s from  %s where obsid in %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix, self.format_obsids(obsids))
+                sql = """INSERT OR IGNORE INTO %s (%s) select distinct %s from  %s where obsid in %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix, self.format_obsids(obsids))
             except:
-                sql = u"""INSERT OR IGNORE INTO %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
+                sql = """INSERT OR IGNORE INTO %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
             try:
                 self.curs.execute(sql)
             except Exception as e:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'INSERT failed while importing to %s.\nMsg:%s'))%(tname, str(e)))
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('ExportData', 'INSERT failed while importing to %s.\nMsg:%s'))%(tname, str(e)))
 
         #Make a transformation for column names that are geometries #Transformation doesn't work yet.
         old_table_column_srid_dict = self.get_table_column_srid(prefix='a')
@@ -208,11 +208,11 @@ class ExportData(object):
         else:
             transformed_column_names = column_names
 
-        sql = u"""INSERT INTO %s (%s) SELECT %s FROM %s WHERE obsid IN %s"""%(tname, u', '.join(column_names), u', '.join(transformed_column_names), tname_with_prefix, self.format_obsids(obsids))
+        sql = """INSERT INTO %s (%s) SELECT %s FROM %s WHERE obsid IN %s"""%(tname, ', '.join(column_names), ', '.join(transformed_column_names), tname_with_prefix, self.format_obsids(obsids))
         try:
             self.curs.execute(sql)
         except Exception as e:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u"Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate(u'ExportData', u'%s\nmsg:\n%s'))%(sql, str(e)))
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ExportData', "Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate('ExportData', '%s\nmsg:\n%s'))%(sql, str(e)))
 
     @staticmethod
     def transform_geometries(tname, column_names, old_table_column_srid_dict, new_table_column_srid_dict, geom_as_text=False):
@@ -224,16 +224,16 @@ class ExportData(object):
 
         :param tname: The table name
         :param column_names: a list of columns that will be copied from the old table/database to the new table/database
-        :param old_table_column_srid_dict: a dict like  {u'testt': {u'geom': 3006}}. A dict with tables that have geometries. The inner dict is the column and the srid.
-        :param new_table_column_srid_dict: a dict like  {u'testt': {u'geom': 3006}}. A dict with tables that have geometries. The inner dict is the column and the srid.
+        :param old_table_column_srid_dict: a dict like  {'testt': {'geom': 3006}}. A dict with tables that have geometries. The inner dict is the column and the srid.
+        :param new_table_column_srid_dict: a dict like  {'testt': {'geom': 3006}}. A dict with tables that have geometries. The inner dict is the column and the srid.
         :return: A list of columns where the geometry columns are Transformed.
 
-        >>> ExportData.transform_geometries(u'testt', [u'notgeom', u'geom'], {u'testt': {u'geom': 3006}}, {u'testt': {u'geom': 3006}})
-        [u'notgeom', u'geom']
-        >>> ExportData.transform_geometries(u'testt', [u'notgeom', u'geom'], {u'testt': {u'geom': 3006}}, {u'testt': {u'geom': 3010}})
-        [u'notgeom', u'ST_Transform(geom, 3010)']
-        >>> ExportData.transform_geometries(u'obs_points', [u'obsid', u'east', u'north', u'geom'], {u'obs_points': {u'geom': 3006}}, {u'obs_points': {u'geom': 3010}})
-        [u'obsid', u'X(ST_Transform(geom, 3010))', u'Y(ST_Transform(geom, 3010))', u'ST_Transform(geom, 3010)']
+        >>> ExportData.transform_geometries('testt', ['notgeom', 'geom'], {'testt': {'geom': 3006}}, {'testt': {'geom': 3006}})
+        ['notgeom', 'geom']
+        >>> ExportData.transform_geometries('testt', ['notgeom', 'geom'], {'testt': {'geom': 3006}}, {'testt': {'geom': 3010}})
+        ['notgeom', 'ST_Transform(geom, 3010)']
+        >>> ExportData.transform_geometries('obs_points', ['obsid', 'east', 'north', 'geom'], {'obs_points': {'geom': 3006}}, {'obs_points': {'geom': 3010}})
+        ['obsid', 'X(ST_Transform(geom, 3010))', 'Y(ST_Transform(geom, 3010))', 'ST_Transform(geom, 3010)']
         """
         transformed = False
         #Make a transformation for column names that are geometries
@@ -250,11 +250,11 @@ class ExportData(object):
                         column = column.capitalize()
                 if old_srid is not None and new_srid is not None and old_srid != new_srid:
                     if geom_as_text:
-                        transformed_column_names.append(u'ST_AsText(ST_Transform({}, {}))'.format(column, ru(new_srid)))
+                        transformed_column_names.append('ST_AsText(ST_Transform({}, {}))'.format(column, ru(new_srid)))
                     else:
-                        transformed_column_names.append(u'ST_Transform({}, {})'.format(column, ru(new_srid)))
+                        transformed_column_names.append('ST_Transform({}, {})'.format(column, ru(new_srid)))
 
-                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'Transformation for table %s column %s from %s to %s"'))%(tname, column, str(old_srid), str(new_srid)))
+                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('ExportData', 'Transformation for table %s column %s from %s to %s"'))%(tname, column, str(old_srid), str(new_srid)))
                     transformed = True
                 else:
                     transformed_column_names.append(column)
@@ -262,21 +262,21 @@ class ExportData(object):
             transformed_column_names = column_names
 
         #Special case for obs_points because of the very special columns east/north
-        if tname == u'obs_points' and transformed:
+        if tname == 'obs_points' and transformed:
             old_geocol_srids = [(k, v) for k, v in old_table_column_srid_dict.get(tname, {}).items()]
             new_geocol_srids = [(k, v) for k, v in new_table_column_srid_dict.get(tname, {}).items()]
             if len(old_geocol_srids) != 1 and len(new_geocol_srids) != 1:
-                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u'Export warning!, see Log Message Panel')), log_msg=ru(QCoreApplication.translate(u'ExportData', u'Transformation of east/north for table obs_points failed! The number of geometry columns was not == 1!')))
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ExportData', 'Export warning!, see Log Message Panel')), log_msg=ru(QCoreApplication.translate('ExportData', 'Transformation of east/north for table obs_points failed! The number of geometry columns was not == 1!')))
             else:
                 new_srid = new_geocol_srids[0][1]
                 old_geometry_column = old_geocol_srids[0][0]
 
                 res = []
                 for column in transformed_column_names:
-                    if column == u'east':
-                        res.append(u'X(ST_Transform(%s, %s))'%(old_geometry_column, new_srid))
-                    elif column == u'north':
-                        res.append(u'Y(ST_Transform(%s, %s))'%(old_geometry_column, new_srid))
+                    if column == 'east':
+                        res.append('X(ST_Transform(%s, %s))'%(old_geometry_column, new_srid))
+                    elif column == 'north':
+                        res.append('Y(ST_Transform(%s, %s))'%(old_geometry_column, new_srid))
                     else:
                         res.append(column)
                 transformed_column_names = res
@@ -300,16 +300,16 @@ class ExportData(object):
         ifnull_primary_keys = [''.join(["ifnull(", pk, ",'')"]) for pk in primary_keys]
         concatenated_primary_keys = ' || '.join(ifnull_primary_keys)
 
-        sql = u"""INSERT INTO %s (%s) select %s from %s """ % (tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix) #where %s not in (select %s from %s)"""%(tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
+        sql = """INSERT INTO %s (%s) select %s from %s """ % (tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix) #where %s not in (select %s from %s)"""%(tname, ', '.join(column_names), ', '.join(column_names), tname_with_prefix, concatenated_primary_keys, concatenated_primary_keys, tname)
         try:
             self.curs.execute(sql)
         except Exception as e:
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'ExportData', u'INSERT failed while importing to %s. Using INSERT OR REPLACE instead.\nMsg:%s'))%(tname, str(e)))
-            sql = sql.replace(u'INSERT', u'INSERT OR REPLACE')
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('ExportData', 'INSERT failed while importing to %s. Using INSERT OR REPLACE instead.\nMsg:%s'))%(tname, str(e)))
+            sql = sql.replace('INSERT', 'INSERT OR REPLACE')
             try:
                 self.curs.execute(sql)
             except Exception as e:
-                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u"Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate(u'ExportData', u'%s\nmsg:\n%s'))%(sql, str(e)))
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ExportData', "Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate('ExportData', '%s\nmsg:\n%s'))%(sql, str(e)))
 
     def get_foreign_keys(self, tname):
         result_list = self.curs.execute("""PRAGMA foreign_key_list(%s)"""%(tname)).fetchall()
@@ -324,7 +324,7 @@ class ExportData(object):
         return primary_keys
 
     def verify_table_in_attached_db(self, tname):
-        result = self.curs.execute(u"""SELECT name FROM a.sqlite_master WHERE type='table' AND name='%s'"""%(tname)).fetchall()
+        result = self.curs.execute("""SELECT name FROM a.sqlite_master WHERE type='table' AND name='%s'"""%(tname)).fetchall()
         if result:
             return True
         else:
@@ -334,14 +334,14 @@ class ExportData(object):
 
         new_column_names = self.get_column_names(tname)
         if new_column_names is None:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u'Export warning!, see Log Message Panel')), log_msg=ru(QCoreApplication.translate(u'ExportData', u"Table %s export failed!"))%tname)
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ExportData', 'Export warning!, see Log Message Panel')), log_msg=ru(QCoreApplication.translate('ExportData', "Table %s export failed!"))%tname)
             return None
 
-        prefix = tname_with_prefix.split(u'.')[0]
-        tname_with_prefix_without_prefix = tname_with_prefix.replace(prefix + u'.', u'')
+        prefix = tname_with_prefix.split('.')[0]
+        tname_with_prefix_without_prefix = tname_with_prefix.replace(prefix + '.', '')
         old_column_names = self.get_column_names(tname_with_prefix_without_prefix, prefix)
         if old_column_names is None:
-            utils.MessagebarAndLog.critical(bar_msg=u'Export warning!, see Log Message Panel', log_msg=u"Table " + tname + u" export failed!")
+            utils.MessagebarAndLog.critical(bar_msg='Export warning!, see Log Message Panel', log_msg="Table " + tname + " export failed!")
             return None
 
         #Check which columns that doesn't exist from in old and new database and write a log msg about it.
@@ -350,27 +350,27 @@ class ExportData(object):
 
         """
         #TODO: Temporary msg:
-        utils.MessagebarAndLog.info(log_msg=u'Table ' + tname)
-        utils.MessagebarAndLog.info(log_msg=u"old_column_names " + str(old_column_names))
-        utils.MessagebarAndLog.info(log_msg=u"new_column_names " + str(new_column_names))
-        utils.MessagebarAndLog.info(log_msg=u"old_columns_missing_in_new " + str(old_columns_missing_in_new))
-        utils.MessagebarAndLog.info(log_msg=u"new_columns_missing_in_old " + str(new_columns_missing_in_old))
+        utils.MessagebarAndLog.info(log_msg='Table ' + tname)
+        utils.MessagebarAndLog.info(log_msg="old_column_names " + str(old_column_names))
+        utils.MessagebarAndLog.info(log_msg="new_column_names " + str(new_column_names))
+        utils.MessagebarAndLog.info(log_msg="old_columns_missing_in_new " + str(old_columns_missing_in_new))
+        utils.MessagebarAndLog.info(log_msg="new_columns_missing_in_old " + str(new_columns_missing_in_old))
         """
 
-        missing_columns_msg = [ru(QCoreApplication.translate(u'ExportData', u'Table %s:'))%tname]
+        missing_columns_msg = [ru(QCoreApplication.translate('ExportData', 'Table %s:'))%tname]
         if new_columns_missing_in_old:
-            missing_columns_msg.append(ru(QCoreApplication.translate(u'ExportData', u'\nNew columns missing in old database: %s'))%u', '.join(new_columns_missing_in_old))
+            missing_columns_msg.append(ru(QCoreApplication.translate('ExportData', '\nNew columns missing in old database: %s'))%', '.join(new_columns_missing_in_old))
         if old_columns_missing_in_new:
-            missing_columns_msg.append(ru(QCoreApplication.translate(u'ExportData', u'\nOld columns missing in new database: %s'))%u', '.join(old_columns_missing_in_new))
+            missing_columns_msg.append(ru(QCoreApplication.translate('ExportData', '\nOld columns missing in new database: %s'))%', '.join(old_columns_missing_in_new))
         if len(missing_columns_msg) > 1:
-                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'ExportData', u'Export warning, see Log Message Panel')), log_msg=u''.join(missing_columns_msg))
+                utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('ExportData', 'Export warning, see Log Message Panel')), log_msg=''.join(missing_columns_msg))
 
         #Check if a primary key in the new database is missing in the old database and skip the table if there are missing primary keys.
         primary_keys = self.get_primary_keys(tname)
         missing_primary_keys = [col for col in primary_keys if col in new_columns_missing_in_old]
         if missing_primary_keys:
-            missing_pk_msg = ru(QCoreApplication.translate(u'ExportData', u'Table %s:\nPrimary keys %s are missing in old database. The table will not be exported!!!'))%(tname, u'", "'.join(missing_primary_keys))
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u'Export warning!, see Log Message Panel')), log_msg=missing_pk_msg)
+            missing_pk_msg = ru(QCoreApplication.translate('ExportData', 'Table %s:\nPrimary keys %s are missing in old database. The table will not be exported!!!'))%(tname, '", "'.join(missing_primary_keys))
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ExportData', 'Export warning!, see Log Message Panel')), log_msg=missing_pk_msg)
             return None
 
         #Only copy columns from old to new database that exist in old database.
@@ -387,13 +387,13 @@ class ExportData(object):
         try:
             result_list = self.curs.execute(sql).fetchall()
         except Exception as e:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'ExportData', u"Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate(u'ExportData', u'%s\nmsg:\n%s'))%(sql, str(e)))
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('ExportData', "Export warning: sql failed. See message log.")), log_msg=ru(QCoreApplication.translate('ExportData', '%s\nmsg:\n%s'))%(sql, str(e)))
             return None
 
         columns = [col[1] for col in result_list] #Load column names from sqlite table
         return columns
 
-    def get_table_rows_with_differences(self, db_aliases_and_prefixes=[(u'exported_db', u''), (u'source_db', u'a.')]):
+    def get_table_rows_with_differences(self, db_aliases_and_prefixes=[('exported_db', ''), ('source_db', 'a.')]):
         """
         Counts rows for all tables in new and old database and returns those that differ.
         self.cursor is required where the new database is the regular one and the old database is the attached one
@@ -402,22 +402,22 @@ class ExportData(object):
         """
         results = {}
         for alias, prefix in db_aliases_and_prefixes:
-            sql = u"""SELECT name FROM %s WHERE type='table';"""%(prefix + u'sqlite_master')
+            sql = """SELECT name FROM %s WHERE type='table';"""%(prefix + 'sqlite_master')
             tablenames = self.curs.execute(sql).fetchall()
             for tablename in tablenames:
                 tablename = tablename[0]
-                sql = u"""SELECT count(*) FROM %s"""%(prefix + tablename)
+                sql = """SELECT count(*) FROM %s"""%(prefix + tablename)
                 try:
                     nr_of_rows = self.curs.execute(sql).fetchall()[0][0]
                 except:
-                    utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'ExportData', u'Sql failed while getting table row differences: %s'))%sql)
+                    utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('ExportData', 'Sql failed while getting table row differences: %s'))%sql)
                 else:
                     results.setdefault(tablename, {})[alias] = str(nr_of_rows)
 
         printable_results = []
 
         #Create header
-        header = [u'tablename']
+        header = ['tablename']
         db_aliases = sorted([_x[0] for _x in db_aliases_and_prefixes])
         header.extend(db_aliases)
         printable_results.append(header)
@@ -425,7 +425,7 @@ class ExportData(object):
         #Create table result rows
         for tablename, dbdict in sorted(results.items()):
             vals = [tablename]
-            vals.extend([str(dbdict.get(alias, u'table_missing')) for alias in sorted(db_aliases)])
+            vals.extend([str(dbdict.get(alias, 'table_missing')) for alias in sorted(db_aliases)])
             if vals[1] != vals[2]:
                 printable_results.append(vals)
 

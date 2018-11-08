@@ -48,7 +48,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.database_settings = DatabaseSettings(self, self.gridLayout_db)
         self.ClearEverything()
 
-        self.MarkerComboBox.addItems([u'obsid', u'type', u'date_time', u'obsid but no legend', u'simple marker'])
+        self.MarkerComboBox.addItems(['obsid', 'type', 'date_time', 'obsid but no legend', 'simple marker'])
 
         if len(self.ms.settingsdict['database'])>0:
             self.LoadAndSelectLastSettings()
@@ -447,9 +447,9 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         # Second, Make sure that columns obsid and date_time exists
         columns = self.LoadColumnsFromTable(self.ListOfTables.currentText())     # For some reason it is not possible to send currentText with the SIGNAL-trigger
         if ('obsid' in columns) and ('date_time' in columns):
-            text = u"<font color=green>%s</font>"%ru(QCoreApplication.translate(u'midvsettingsdialogdock', u'Correct table, both obsid and date_time columns have been found.'))
+            text = "<font color=green>%s</font>"%ru(QCoreApplication.translate('midvsettingsdialogdock', 'Correct table, both obsid and date_time columns have been found.'))
         else:
-            text = u"<font color=red>%s</font>"%ru(QCoreApplication.translate(u'midvsettingsdialogdock', u'Wrong table! obsid and/or date_time is missing.'))
+            text = "<font color=red>%s</font>"%ru(QCoreApplication.translate('midvsettingsdialogdock', 'Wrong table! obsid and/or date_time is missing.'))
         self.InfoTxtTSPlot.setText(text)
         #finally, save to qgis project settings
         self.ms.settingsdict['tstable']=self.ListOfTables.currentText()
@@ -512,9 +512,9 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         # Second, Make sure that column obsid exists
         columns = self.LoadColumnsFromTable(self.ListOfTables_2.currentText())     # For some reason it is not possible to send currentText with the SIGNAL-trigger
         if 'obsid' in columns:    
-            text = u"<font color=green>%s</font>"%ru(QCoreApplication.translate(u'midvsettingsdialogdock', u'Correct table! obsid column is found.'))
+            text = "<font color=green>%s</font>"%ru(QCoreApplication.translate('midvsettingsdialogdock', 'Correct table! obsid column is found.'))
         else:
-            text = u"<font color=red>%s</font>"%ru(QCoreApplication.translate(u'midvsettingsdialogdock', u'Wrong table! obsid is missing.'))
+            text = "<font color=red>%s</font>"%ru(QCoreApplication.translate('midvsettingsdialogdock', 'Wrong table! obsid is missing.'))
         self.InfoTxtXYPlot.setText(text)
         self.ms.settingsdict['xytable']=self.ListOfTables_2.currentText()
         self.ms.save_settings('xytable')#save this specific setting
@@ -527,10 +527,10 @@ class DatabaseSettings(object):
         self.db_settings_obj = None
         self.label_width = self.maximum_label_width()
 
-        self._label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'DatabaseSettings', u'Database type')))
+        self._label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('DatabaseSettings', 'Database type')))
         self._label.setFixedWidth(self.label_width)
         self._dbtype_combobox = qgis.PyQt.QtWidgets.QComboBox()
-        self._dbtype_combobox.addItems([u'', u'spatialite', u'postgis'])
+        self._dbtype_combobox.addItems(['', 'spatialite', 'postgis'])
 
         self.grid = gui_utils.RowEntryGrid()
         self.grid.layout.addWidget(self._label, 0, 0)
@@ -572,8 +572,8 @@ class DatabaseSettings(object):
                 pass
         self.child_widgets = []
 
-        dbclasses = {u'spatialite': SpatialiteSettings,
-                     u'postgis': PostgisSettings}
+        dbclasses = {'spatialite': SpatialiteSettings,
+                     'postgis': PostgisSettings}
 
         dbclass = dbclasses.get(self.dbtype_combobox, None)
 
@@ -595,15 +595,15 @@ class DatabaseSettings(object):
         try:
             db_settings = ast.literal_eval(_db_settings)
         except:
-            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'DatabaseSettings', u'Reading db_settings failed using string %s'))%_db_settings)
+            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('DatabaseSettings', 'Reading db_settings failed using string %s'))%_db_settings)
         else:
             pass
 
         for setting in [db_settings, _db_settings]:
             if isinstance(setting, str):
                 # Assume that the db_settings is an old spatialite database
-                if os.path.isfile(setting) and setting.endswith(u'.sqlite'):
-                    db_settings = {u'spatialite': {u'dbpath': setting}}
+                if os.path.isfile(setting) and setting.endswith('.sqlite'):
+                    db_settings = {'spatialite': {'dbpath': setting}}
                     break
 
         if isinstance(db_settings, dict):
@@ -616,20 +616,20 @@ class DatabaseSettings(object):
                         if hasattr(self.db_settings_obj, str(setting_name)):
                             setattr(self.db_settings_obj, str(setting_name), value)
                         else:
-                            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'DatabaseSettings', u"Databasetype %s didn' t have setting %s"))%(dbtype, setting_name))
+                            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('DatabaseSettings', "Databasetype %s didn' t have setting %s"))%(dbtype, setting_name))
                     except:
                         print(str(setting_name))
                         raise
         else:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'DatabaseSettings', u"Could not load database settings. Select database again!")), log_msg=ru(QCoreApplication.translate(u'DatabaseSettings', u'Tried to load db_settings string %s'))%_db_settings)
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('DatabaseSettings', "Could not load database settings. Select database again!")), log_msg=ru(QCoreApplication.translate('DatabaseSettings', 'Tried to load db_settings string %s'))%_db_settings)
 
     def clear(self):
-        self.dbtype_combobox = u''
+        self.dbtype_combobox = ''
         self.choose_dbtype()
 
     def maximum_label_width(self):
         maximumwidth = 0
-        for label_name in [ru(QCoreApplication.translate(u'DatabaseSettings', u'Database type')), ru(QCoreApplication.translate(u'DatabaseSettings', u'Select db')), ru(QCoreApplication.translate(u'DatabaseSettings', u'Connections'))]:
+        for label_name in [ru(QCoreApplication.translate('DatabaseSettings', 'Database type')), ru(QCoreApplication.translate('DatabaseSettings', 'Select db')), ru(QCoreApplication.translate('DatabaseSettings', 'Connections'))]:
             testlabel = qgis.PyQt.QtWidgets.QLabel(label_name)
             maximumwidth = max(maximumwidth, testlabel.sizeHint().width())
         testlabel = None
@@ -640,10 +640,10 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
     def __init__(self, midvsettingsdialogdock, label_width):
         super(SpatialiteSettings, self).__init__()
         self.midvsettingsdialogdock = midvsettingsdialogdock
-        self.btnSetDB = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'SpatialiteSettings', u'Select db')))
+        self.btnSetDB = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('SpatialiteSettings', 'Select db')))
         self.btnSetDB.setFixedWidth(label_width)
         self.layout.addWidget(self.btnSetDB, 0, 0)
-        self._dbpath = qgis.PyQt.QtWidgets.QLineEdit(u'')
+        self._dbpath = qgis.PyQt.QtWidgets.QLineEdit('')
         self.layout.addWidget(self._dbpath, 0, 1)
 
         #select file
@@ -662,12 +662,12 @@ class SpatialiteSettings(gui_utils.RowEntryGrid):
         dbpath, __ = QFileDialog.getOpenFileName(None, str("Select database:"), "*.sqlite")
         if dbpath:  # Only get new db name if not cancelling the FileDialog
             self.dbpath = dbpath
-            self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({u'spatialite': {u'dbpath': dbpath}})
+            self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({'spatialite': {'dbpath': dbpath}})
             self.midvsettingsdialogdock.ms.save_settings('database')
             self.midvsettingsdialogdock.load_plot_settings()
             #self.midvsettingsdialogdock.LoadAndSelectLastSettings()
         else:  # debug
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'SpatialiteSettings', u"DB selection cancelled and still using database path %s"))%utils.returnunicode(self.midvsettingsdialogdock.ms.settingsdict['database']))
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('SpatialiteSettings', "DB selection cancelled and still using database path %s"))%utils.returnunicode(self.midvsettingsdialogdock.ms.settingsdict['database']))
 
 
 class PostgisSettings(gui_utils.RowEntryGrid):
@@ -678,11 +678,11 @@ class PostgisSettings(gui_utils.RowEntryGrid):
 
         postgis_connections = db_utils.get_postgis_connections()
 
-        self.label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'PostgisSettings', u'Connections')))
+        self.label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('PostgisSettings', 'Connections')))
         self.label.setFixedWidth(label_width)
         self._connection = qgis.PyQt.QtWidgets.QComboBox()
-        self._connection.addItem(u'')
-        connection_names = [u'/'.join([k, u':'.join([v.get(u'host', u''), v.get(u'port', u'')]), v.get(u'database', u'')]) for k, v in postgis_connections.items()]
+        self._connection.addItem('')
+        connection_names = ['/'.join([k, ':'.join([v.get('host', ''), v.get('port', '')]), v.get('database', '')]) for k, v in postgis_connections.items()]
         self._connection.addItems(sorted(connection_names))
 
         self._connection.currentIndexChanged.connect(self.set_db)
@@ -701,6 +701,6 @@ class PostgisSettings(gui_utils.RowEntryGrid):
             self._connection.setCurrentIndex(index)
 
     def set_db(self):
-        self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({u'postgis': {u'connection': self.connection}})
+        self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({'postgis': {'connection': self.connection}})
         self.midvsettingsdialogdock.ms.save_settings('database')
         self.midvsettingsdialogdock.load_plot_settings()

@@ -91,19 +91,19 @@ def create_test_string(anything=None):
     r""" Turns anything into a string used for testing
     :param anything: just about anything
     :return: A unicode string
-     >>> create_test_string(u'123')
-     u'123'
+     >>> create_test_string('123')
+     '123'
      >>> create_test_string([1, 2, 3])
-     u'[1, 2, 3]'
+     '[1, 2, 3]'
      >>> create_test_string({3: 'a', 2: 'b', 1: ('c', 'd')})
-     u'{1: (c, d), 2: b, 3: a}'
+     '{1: (c, d), 2: b, 3: a}'
     """
     if isinstance(anything, dict):
-        aunicode = u''.join([u'{', u', '.join([u': '.join([create_test_string(k), create_test_string(v)]) for k, v in sorted(anything.items())]), u'}'])
+        aunicode = ''.join(['{', ', '.join([': '.join([create_test_string(k), create_test_string(v)]) for k, v in sorted(anything.items())]), '}'])
     elif isinstance(anything, list):
-        aunicode = u''.join([u'[', u', '.join([create_test_string(x) for x in anything]), u']'])
+        aunicode = ''.join(['[', ', '.join([create_test_string(x) for x in anything]), ']'])
     elif isinstance(anything, tuple):
-        aunicode = u''.join([u'(', u', '.join([create_test_string(x) for x in anything]), u')'])
+        aunicode = ''.join(['(', ', '.join([create_test_string(x) for x in anything]), ')'])
     elif isinstance(anything, (str, float, int)):
         aunicode = utils.returnunicode(anything)
     elif isinstance(anything, qgis.PyQt.QtCore.QVariant):
@@ -125,11 +125,11 @@ class ContextualStringIO(io.StringIO):
 
 class MidvattenTestSpatialiteNotCreated(object):
     mock_instance_settings_database = mock.MagicMock()
-    mock_instance_settings_database.return_value.readEntry.return_value = (u"{u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}", True)
+    mock_instance_settings_database.return_value.readEntry.return_value = ("{'spatialite': {'dbpath': '/tmp/tmp_midvatten_temp_db.sqlite'}}", True)
 
     def __init__(self):
-        self.TEMP_DB_SETTINGS = {u'spatialite': {u'dbpath': u'/tmp/tmp_midvatten_temp_db.sqlite'}}
-        self.TEMP_DBPATH = u'/tmp/tmp_midvatten_temp_db.sqlite'
+        self.TEMP_DB_SETTINGS = {'spatialite': {'dbpath': '/tmp/tmp_midvatten_temp_db.sqlite'}}
+        self.TEMP_DBPATH = '/tmp/tmp_midvatten_temp_db.sqlite'
 
     @mock.patch('midvatten_utils.QgsProject.instance', mock_instance_settings_database)
     def setUp(self):
@@ -162,8 +162,8 @@ class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
     @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         super(MidvattenTestSpatialiteDbSv, self).setUp()
-        mock_locale.return_value.answer = u'ok'
-        mock_locale.return_value.value = u'sv_SE'
+        mock_locale.return_value.answer = 'ok'
+        mock_locale.return_value.value = 'sv_SE'
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         mock_savefilename.return_value = self.TEMP_DBPATH
@@ -178,8 +178,8 @@ class MidvattenTestSpatialiteDbEn(MidvattenTestSpatialiteNotCreated):
     @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         super(MidvattenTestSpatialiteDbEn, self).setUp()
-        mock_locale.return_value.answer = u'ok'
-        mock_locale.return_value.value = u'en_US'
+        mock_locale.return_value.answer = 'ok'
+        mock_locale.return_value.value = 'en_US'
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         mock_savefilename.return_value = self.TEMP_DBPATH
@@ -193,8 +193,8 @@ class MidvattenTestSpatialiteDbSvImportInstance(MidvattenTestSpatialiteDbSv):
 
 
 class MidvattenTestPostgisNotCreated(object):
-    ALL_POSTGIS_SETTINGS = {u'nosetests': {u'estimatedMetadata': u'false', u'username': u'henrik3', u'publicOnly': u'false', u'service': u'', u'database': u'nosetests', u'dontResolveType': u'false', u'saveUsername': u'true', u'sslmode': u'1', u'host': u'127.0.0.1', u'authcfg': u'', u'geometryColumnsOnly': u'false', u'allowGeometrylessTables': u'false', u'password': u'0000', u'savePassword': u'false', u'port': u'5432'}}
-    TEMP_DB_SETTINGS = {u'postgis': {u'connection': u'nosetests/127.0.0.1:5432/nosetests'}}
+    ALL_POSTGIS_SETTINGS = {'nosetests': {'estimatedMetadata': 'false', 'username': 'henrik3', 'publicOnly': 'false', 'service': '', 'database': 'nosetests', 'dontResolveType': 'false', 'saveUsername': 'true', 'sslmode': '1', 'host': '127.0.0.1', 'authcfg': '', 'geometryColumnsOnly': 'false', 'allowGeometrylessTables': 'false', 'password': '0000', 'savePassword': 'false', 'port': '5432'}}
+    TEMP_DB_SETTINGS = {'postgis': {'connection': 'nosetests/127.0.0.1:5432/nosetests'}}
     SETTINGS_DATABASE = (utils.anything_to_string_representation(TEMP_DB_SETTINGS), True)
 
     mock_postgis_connections = mock.MagicMock()
@@ -220,8 +220,8 @@ class MidvattenTestPostgisNotCreated(object):
 
         #Clear the database
         try:
-            db_utils.sql_alter_db(u'DROP SCHEMA public CASCADE;')
-            db_utils.sql_alter_db(u'CREATE SCHEMA public;')
+            db_utils.sql_alter_db('DROP SCHEMA public CASCADE;')
+            db_utils.sql_alter_db('CREATE SCHEMA public;')
         except Exception as e:
             print("Failure resetting db: " + str(e))
 
@@ -232,8 +232,8 @@ class MidvattenTestPostgisNotCreated(object):
         #mocked_instance.return_value.readEntry.return_value = self.SETTINGS_DATABASE
         #Clear the database
         try:
-            db_utils.sql_alter_db(u'DROP SCHEMA public CASCADE;')
-            db_utils.sql_alter_db(u'CREATE SCHEMA public;')
+            db_utils.sql_alter_db('DROP SCHEMA public CASCADE;')
+            db_utils.sql_alter_db('CREATE SCHEMA public;')
         except Exception as e:
             print("Failure resetting db: " + str(e))
             print("MidvattenTestPostgisNotCreated tearDownproblem: " + str(mock_messagebar.mock_calls))
@@ -248,8 +248,8 @@ class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):
     @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInt')
     def setUp(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         super(MidvattenTestPostgisDbSv, self).setUp()
-        mock_locale.return_value.answer = u'ok'
-        mock_locale.return_value.value = u'sv_SE'
+        mock_locale.return_value.answer = 'ok'
+        mock_locale.return_value.value = 'sv_SE'
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
         self.midvatten.new_postgis_db()
@@ -264,7 +264,7 @@ class MidvattenTestPostgisDbSvImportInstance(MidvattenTestPostgisDbSv):
 
 
 def foreign_key_test_from_exception(e, dbtype):
-    if dbtype == u'spatialite':
-        return str(e) == u'FOREIGN KEY constraint failed'
-    elif dbtype == u'postgis':
-        return u'is not present in table' in str(e)
+    if dbtype == 'spatialite':
+        return str(e) == 'FOREIGN KEY constraint failed'
+    elif dbtype == 'postgis':
+        return 'is not present in table' in str(e)

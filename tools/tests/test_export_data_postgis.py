@@ -34,8 +34,8 @@ from midvatten.midvatten import midvatten
 import utils_for_tests
 from .mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance, MockReturnUsingDictIn, DummyInterface2
 
-EXPORT_DB_PATH = u'/tmp/tmp_midvatten_export_db.sqlite'
-TEMP_DIR = u'/tmp/'
+EXPORT_DB_PATH = '/tmp/tmp_midvatten_export_db.sqlite'
+TEMP_DIR = '/tmp/'
 from nose.plugins.attrib import attr
 
 
@@ -47,9 +47,9 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
     answer_no_obj.result = 0
     answer_yes = MockUsingReturnValue(answer_yes_obj)
     crs_question = MockUsingReturnValue([3006])
-    mock_askuser = MockReturnUsingDictIn({u'It is a strong': answer_no_obj, u'Please note!\nThere are ': answer_yes_obj}, 1)
+    mock_askuser = MockReturnUsingDictIn({'It is a strong': answer_no_obj, 'Please note!\nThere are ': answer_yes_obj}, 1)
     skip_popup = MockUsingReturnValue('')
-    mock_selection = MockReturnUsingDictIn({u'obs_points': (u'P1', ), u'obs_lines': (u'L1', )}, 0)
+    mock_selection = MockReturnUsingDictIn({'obs_points': ('P1', ), 'obs_lines': ('L1', )}, 0)
     exported_csv_files = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv', 'zz_flowtype.csv', 'zz_meteoparam.csv', 'zz_staff.csv', 'zz_strat.csv', 'zz_capacity.csv']]
     exported_csv_files_no_zz = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv']]
 
@@ -60,19 +60,19 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
     def test_export_csv(self, mock_iface, mock_savepath, mock_messagebar):
-        mock_savepath.return_value = u'/tmp/'
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
-        db_utils.sql_alter_db(u'''INSERT INTO zz_staff (staff) VALUES ('s1')''')
-        db_utils.sql_alter_db(u'''INSERT INTO comments (obsid, date_time, staff, comment) VALUES ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_lab (obsid, parameter, report, staff) VALUES ('P1', 'labpar1', 'report1', 's1')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_qual_field (obsid, parameter, staff, date_time, unit) VALUES ('P1', 'labpar1', 's1', '2015-01-01 01:00:00', 'unit1')''')
+        mock_savepath.return_value = '/tmp/'
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('s1')''')
+        db_utils.sql_alter_db('''INSERT INTO comments (obsid, date_time, staff, comment) VALUES ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, parameter, report, staff) VALUES ('P1', 'labpar1', 'report1', 's1')''')
+        db_utils.sql_alter_db('''INSERT INTO w_qual_field (obsid, parameter, staff, date_time, unit) VALUES ('P1', 'labpar1', 's1', '2015-01-01 01:00:00', 'unit1')''')
 
-        db_utils.sql_alter_db(u'''INSERT INTO w_flow (obsid, instrumentid, flowtype, date_time, unit) VALUES ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_levels (obsid, date_time, meas) VALUES ('P1', '2015-01-02 00:00:01', '2')''')
-        db_utils.sql_alter_db(u'''INSERT INTO stratigraphy (obsid, stratid) VALUES ('P1', 1)''')
-        db_utils.sql_alter_db(u'''INSERT INTO obs_lines (obsid) VALUES ('L1')''')
-        db_utils.sql_alter_db(u'''INSERT INTO seismic_data (obsid, length) VALUES ('L1', '5')''')
-        db_utils.sql_alter_db(u'''INSERT INTO meteo (obsid, instrumentid, parameter, date_time) VALUES ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''')
+        db_utils.sql_alter_db('''INSERT INTO w_flow (obsid, instrumentid, flowtype, date_time, unit) VALUES ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas) VALUES ('P1', '2015-01-02 00:00:01', '2')''')
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid) VALUES ('P1', 1)''')
+        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid) VALUES ('L1')''')
+        db_utils.sql_alter_db('''INSERT INTO seismic_data (obsid, length) VALUES ('L1', '5')''')
+        db_utils.sql_alter_db('''INSERT INTO meteo (obsid, instrumentid, parameter, date_time) VALUES ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''')
 
         self.midvatten.export_csv()
 
@@ -80,8 +80,8 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
         for filename in TestExport.exported_csv_files_no_zz:
             with io.open(filename, 'r', encoding='utf-8') as f:
                 file_contents.append(os.path.basename(filename) + '\n')
-                if os.path.basename(filename) == u'obs_points.csv':
-                    file_contents.append([u';'.join(l.replace('\r', '').split(u';')[:-1]) + u'\n' for l in f])
+                if os.path.basename(filename) == 'obs_points.csv':
+                    file_contents.append([';'.join(l.replace('\r', '').split(';')[:-1]) + '\n' for l in f])
                 else:
                     file_contents.append([l.replace('\r', '') for l in f])
         test_string = utils_for_tests.create_test_string(file_contents)

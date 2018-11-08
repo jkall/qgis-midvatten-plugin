@@ -66,8 +66,8 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         self.add_row(get_line())
 
-        self.skip_rows = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', u'Skip rows without water level'),
-                                                QCoreApplication.translate('DiverofficeImport', u'Checked = Rows without a value for columns Water head[cm] or Level[cm] will be skipped.'))
+        self.skip_rows = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', 'Skip rows without water level'),
+                                                QCoreApplication.translate('DiverofficeImport', 'Checked = Rows without a value for columns Water head[cm] or Level[cm] will be skipped.'))
         if self.use_skiprows:
             self.skip_rows.checked = True
             self.add_row(self.skip_rows.widget)
@@ -75,27 +75,27 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         else:
             self.skip_rows.checked = False
 
-        self.confirm_names = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', u'Confirm each logger obsid before import'),
-                                                    QCoreApplication.translate('DiverofficeImport', u'Checked = The obsid will be requested of the user for every file.\n\n') +
-                                                    QCoreApplication.translate('DiverofficeImport', u'Unchecked = the location attribute, both as is and capitalized, in the\n') +
-                                                    QCoreApplication.translate('DiverofficeImport', u'file will be matched against obsids in the database.\n\n') +
-                                                    QCoreApplication.translate('DiverofficeImport', u'In both case, obsid will be requested of the user if no match in the database is found.'))
+        self.confirm_names = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', 'Confirm each logger obsid before import'),
+                                                    QCoreApplication.translate('DiverofficeImport', 'Checked = The obsid will be requested of the user for every file.\n\n') +
+                                                    QCoreApplication.translate('DiverofficeImport', 'Unchecked = the location attribute, both as is and capitalized, in the\n') +
+                                                    QCoreApplication.translate('DiverofficeImport', 'file will be matched against obsids in the database.\n\n') +
+                                                    QCoreApplication.translate('DiverofficeImport', 'In both case, obsid will be requested of the user if no match in the database is found.'))
         self.confirm_names.checked = True
         self.add_row(self.confirm_names.widget)
         self.add_row(get_line())
-        self.import_all_data = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', u'Import all data'),
-                                                      QCoreApplication.translate('DiverofficeImport', u'Checked = any data not matching an exact datetime in the database\n') +
-                                                      QCoreApplication.translate('DiverofficeImport', u'for the corresponding obsid will be imported.\n\n') +
-                                                      QCoreApplication.translate('DiverofficeImport', u'Unchecked = only new data after the latest date in the database,\n') +
-                                                      QCoreApplication.translate('DiverofficeImport', u'for each observation point, will be imported.'))
+        self.import_all_data = CheckboxAndExplanation(QCoreApplication.translate('DiverofficeImport', 'Import all data'),
+                                                      QCoreApplication.translate('DiverofficeImport', 'Checked = any data not matching an exact datetime in the database\n') +
+                                                      QCoreApplication.translate('DiverofficeImport', 'for the corresponding obsid will be imported.\n\n') +
+                                                      QCoreApplication.translate('DiverofficeImport', 'Unchecked = only new data after the latest date in the database,\n') +
+                                                      QCoreApplication.translate('DiverofficeImport', 'for each observation point, will be imported.'))
         self.import_all_data.checked = False
         self.add_row(self.import_all_data.widget)
 
-        self.close_after_import = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate(u'DiverofficeImport', u'Close dialog after import')))
+        self.close_after_import = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('DiverofficeImport', 'Close dialog after import')))
         self.close_after_import.setChecked(True)
         self.gridLayout_buttons.addWidget(self.close_after_import, 0, 0)
 
-        self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(QCoreApplication.translate('DiverofficeImport', u'Start import'))
+        self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(QCoreApplication.translate('DiverofficeImport', 'Start import'))
         self.gridLayout_buttons.addWidget(self.start_import_button, 1, 0)
         self.start_import_button.clicked.connect(lambda : self.start_import(files=self.files, skip_rows_without_water_level=self.skip_rows.checked, confirm_names=self.confirm_names.checked, import_all_data=self.import_all_data.checked, from_date=self.date_time_filter.from_date, to_date=self.date_time_filter.to_date))
 
@@ -108,7 +108,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         self.charsetchoosen = utils.ask_for_charset(default_charset=self.default_charset)
         if not self.charsetchoosen:
             self.status = 'True'
-            return u'cancel'
+            return 'cancel'
 
         files = utils.select_files(only_one_file=False, extension="csv (*.csv)")
         return files
@@ -122,28 +122,28 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         parsed_files = []
         for selected_file in files:
             res = self.parse_func(path=selected_file, charset=self.charsetchoosen, skip_rows_without_water_level=skip_rows_without_water_level, begindate=from_date, enddate=to_date)
-            if res == u'cancel':
+            if res == 'cancel':
                 self.status = True
                 qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
                 return res
-            elif res in (u'skip', u'ignore'):
+            elif res in ('skip', 'ignore'):
                 continue
 
             try:
                 file_data, filename, location = res
             except Exception as e:
-                utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', u'Import error, see log message panel'),
-                                               log_msg=ru(QCoreApplication.translate('DiverofficeImport', u'File %s could not be parsed. Msg:\n%s'))%(selected_file, str(e)))
+                utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', 'Import error, see log message panel'),
+                                               log_msg=ru(QCoreApplication.translate('DiverofficeImport', 'File %s could not be parsed. Msg:\n%s'))%(selected_file, str(e)))
                 continue
             parsed_files.append((file_data, filename, location))
 
         if len(parsed_files) == 0:
-            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate('DiverofficeImport', u"Import Failure: No files imported"""))
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate('DiverofficeImport', "Import Failure: No files imported"""))
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return
 
         #Add obsid to all parsed filedatas by asking the user for it.
-        filename_location_obsid = [[u'filename', u'location', u'obsid']]
+        filename_location_obsid = [['filename', 'location', 'obsid']]
         filename_location_obsid.extend([[parsed_file[1], parsed_file[2], parsed_file[2]] for parsed_file in parsed_files])
 
         if confirm_names:
@@ -152,10 +152,10 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             try_capitalize = True
 
         existing_obsids = utils.get_all_obsids()
-        filename_location_obsid = utils.filter_nonexisting_values_and_ask(file_data=filename_location_obsid, header_value=u'obsid', existing_values=existing_obsids, try_capitalize=try_capitalize, always_ask_user=confirm_names)
+        filename_location_obsid = utils.filter_nonexisting_values_and_ask(file_data=filename_location_obsid, header_value='obsid', existing_values=existing_obsids, try_capitalize=try_capitalize, always_ask_user=confirm_names)
 
         if len(filename_location_obsid) < 2:
-            utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', u'Warning. All files were skipped, nothing imported!'))
+            utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', 'Warning. All files were skipped, nothing imported!'))
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return False
 
@@ -166,7 +166,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             if filename in filenames_obsid:
                 file_data = list(file_data)
                 obsid = filenames_obsid[filename]
-                file_data[0].append(u'obsid')
+                file_data[0].append('obsid')
                 [row.append(obsid) for row in file_data[1:]]
                 parsed_files_with_obsid.append([file_data, filename, location])
         #Header
@@ -176,13 +176,13 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         if not import_all_data:
             file_to_import_to_db = self.filter_dates_from_filedata(file_to_import_to_db, utils.get_last_logger_dates())
         if len(file_to_import_to_db) < 2:
-            utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate('DiverofficeImport', u'No new data existed in the files. Nothing imported.'))
+            utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate('DiverofficeImport', 'No new data existed in the files. Nothing imported.'))
             self.status = 'True'
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return True
 
         importer = import_data_to_db.midv_data_importer()
-        answer = importer.general_import(u'w_levels_logger', file_to_import_to_db)
+        answer = importer.general_import('w_levels_logger', file_to_import_to_db)
 
         qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
         importer.SanityCheckVacuumDB()
@@ -207,70 +207,70 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         """
         #These can be set to paritally import files.
-        #begindate = datetime.strptime(u'2016-06-08 20:00:00',u'%Y-%m-%d %H:%M:%S')
-        #enddate = datetime.strptime(u'2016-06-08 19:00:00',u'%Y-%m-%d %H:%M:%S')
+        #begindate = datetime.strptime('2016-06-08 20:00:00','%Y-%m-%d %H:%M:%S')
+        #enddate = datetime.strptime('2016-06-08 19:00:00','%Y-%m-%d %H:%M:%S')
 
         #It should be possible to import all cols that exists in the translation dict
 
-        translation_dict_in_order = OrderedDict([(u'Date/time', u'date_time'),
-                                                 (u'Water head[cm]', u'head_cm'),
-                                                 (u'Level[cm]', u'head_cm'),
-                                                 (u'Temperature[°C]', u'temp_degc'),
-                                                 (u'Conductivity[mS/cm]', u'cond_mscm'),
-                                                 (u'1:Conductivity[mS/cm]', u'cond_mscm'),
-                                                 (u'2:Spec.cond.[mS/cm]', u'cond_mscm')])
+        translation_dict_in_order = OrderedDict([('Date/time', 'date_time'),
+                                                 ('Water head[cm]', 'head_cm'),
+                                                 ('Level[cm]', 'head_cm'),
+                                                 ('Temperature[°C]', 'temp_degc'),
+                                                 ('Conductivity[mS/cm]', 'cond_mscm'),
+                                                 ('1:Conductivity[mS/cm]', 'cond_mscm'),
+                                                 ('2:Spec.cond.[mS/cm]', 'cond_mscm')])
 
         filedata = []
         begin_extraction = False
 
         data_rows = []
-        with io.open(path, u'rt', encoding=str(charset)) as f:
+        with io.open(path, 'rt', encoding=str(charset)) as f:
             location = None
             for rawrow in f:
                 rawrow = ru(rawrow)
-                row = rawrow.rstrip(u'\n').rstrip(u'\r').lstrip()
+                row = rawrow.rstrip('\n').rstrip('\r').lstrip()
 
                 #Try to get location
-                if row.startswith(u'Location'):
-                    location = row.split(u'=')[1].strip()
+                if row.startswith('Location'):
+                    location = row.split('=')[1].strip()
                     continue
 
                 #Parse eader
-                if u'Date/time' in row:
+                if 'Date/time' in row:
                     begin_extraction = True
 
                 if begin_extraction:
-                    if row and not u'end of data' in row.lower():
+                    if row and not 'end of data' in row.lower():
                         data_rows.append(row)
 
         if not begin_extraction:
             utils.MessagebarAndLog.critical(
-                bar_msg=QCoreApplication.translate('DiverofficeImport', u"Diveroffice import warning. See log message panel"),
-                log_msg=ru(QCoreApplication.translate('DiverofficeImport', u"Warning, the file %s \ndid not have Date/time as a header and will be skipped.\nSupported headers are %s"))%(ru(path), u', '.join(list(translation_dict_in_order.keys()))))
-            return u'skip'
+                bar_msg=QCoreApplication.translate('DiverofficeImport', "Diveroffice import warning. See log message panel"),
+                log_msg=ru(QCoreApplication.translate('DiverofficeImport', "Warning, the file %s \ndid not have Date/time as a header and will be skipped.\nSupported headers are %s"))%(ru(path), ', '.join(list(translation_dict_in_order.keys()))))
+            return 'skip'
 
-        if len(data_rows[0].split(u',')) > len(data_rows[0].split(u';')):
-            delimiter = u','
+        if len(data_rows[0].split(',')) > len(data_rows[0].split(';')):
+            delimiter = ','
         else:
-            delimiter = u';'
+            delimiter = ';'
 
         file_header = data_rows[0].split(delimiter)
         nr_of_cols = len(file_header)
 
         if nr_of_cols < 2:
-            utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', u'Diveroffice import warning. See log message panel'),
-                                           log_msg=ru(QCoreApplication.translate('DiverofficeImport', u'Delimiter could not be found for file %s or it contained only one column, skipping it.'))%path)
-            return u'skip'
+            utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('DiverofficeImport', 'Diveroffice import warning. See log message panel'),
+                                           log_msg=ru(QCoreApplication.translate('DiverofficeImport', 'Delimiter could not be found for file %s or it contained only one column, skipping it.'))%path)
+            return 'skip'
 
         translated_header = [translation_dict_in_order.get(col, None) for col in file_header]
-        if u'head_cm' not in translated_header:
+        if 'head_cm' not in translated_header:
             utils.MessagebarAndLog.warning(
-                bar_msg=QCoreApplication.translate('DiverofficeImport', u"Diveroffice import warning. See log message panel"),
-                log_msg=ru(QCoreApplication.translate('DiverofficeImport', u"Warning, the file %s \ndid not have Water head[cm] as a header.\nMake sure its barocompensated!\nSupported headers are %s"))%(ru(path), u', '.join(list(translation_dict_in_order.keys()))))
+                bar_msg=QCoreApplication.translate('DiverofficeImport', "Diveroffice import warning. See log message panel"),
+                log_msg=ru(QCoreApplication.translate('DiverofficeImport', "Warning, the file %s \ndid not have Water head[cm] as a header.\nMake sure its barocompensated!\nSupported headers are %s"))%(ru(path), ', '.join(list(translation_dict_in_order.keys()))))
             if skip_rows_without_water_level:
-                return u'skip'
+                return 'skip'
 
-        new_header = [u'date_time', u'head_cm', u'temp_degc', u'cond_mscm']
+        new_header = ['date_time', 'head_cm', 'temp_degc', 'cond_mscm']
         colnrs_to_import = [translated_header.index(x) if x in translated_header else None for x in new_header]
 
         date_col = colnrs_to_import[0]
@@ -282,7 +282,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             cols = row.split(delimiter)
             if len(cols) != nr_of_cols:
                 return utils.ask_user_about_stopping(
-                    ru(QCoreApplication.translate('DiverofficeImport', u"Failure: The number of data columns in file %s was not equal to the header.\nIs the decimal separator the same as the delimiter?\nDo you want to stop the import? (else it will continue with the next file)"))%path)
+                    ru(QCoreApplication.translate('DiverofficeImport', "Failure: The number of data columns in file %s was not equal to the header.\nIs the decimal separator the same as the delimiter?\nDo you want to stop the import? (else it will continue with the next file)"))%path)
 
             dateformat = find_date_format(cols[date_col])
 
@@ -298,16 +298,16 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
                 if skip_rows_without_water_level:
                     try:
-                        float(cols[translated_header.index(u'head_cm')].replace(u',', u'.'))
+                        float(cols[translated_header.index('head_cm')].replace(',', '.'))
                     except:
                         skipped_rows += 1
                         continue
 
-                printrow = [datetime.strftime(date,u'%Y-%m-%d %H:%M:%S')]
+                printrow = [datetime.strftime(date,'%Y-%m-%d %H:%M:%S')]
 
                 try:
-                    printrow.extend([(str(float(cols[colnr].replace(u',', u'.'))) if cols[colnr] else u'')
-                                     if colnr is not None else u''
+                    printrow.extend([(str(float(cols[colnr].replace(',', '.'))) if cols[colnr] else '')
+                                     if colnr is not None else ''
                                      for colnr in colnrs_to_import if colnr != date_col])
                 except ValueError as e:
                     errors.add(ru(QCoreApplication.translate('DiverofficeImport', "parse_diveroffice_file error: %s"))%str(e))
@@ -316,20 +316,20 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                 if any(printrow[1:]):
                     filedata.append(printrow)
         if errors:
-           utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('DiverofficeImport', u'Error messages while parsing file "%s":\n%s'))%(path, u'\n'.join(errors)))
+           utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('DiverofficeImport', 'Error messages while parsing file "%s":\n%s'))%(path, '\n'.join(errors)))
 
         if len(filedata) < 2:
-            return utils.ask_user_about_stopping(ru(QCoreApplication.translate('DiverofficeImport', u"Failure, parsing failed for file %s\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)"))%path)
+            return utils.ask_user_about_stopping(ru(QCoreApplication.translate('DiverofficeImport', "Failure, parsing failed for file %s\nNo valid data found!\nDo you want to stop the import? (else it will continue with the next file)"))%path)
 
         filename = os.path.basename(path)
 
         return filedata, filename, location
 
     @staticmethod
-    def filter_dates_from_filedata(file_data, obsid_last_imported_dates, obsid_header_name=u'obsid', date_time_header_name=u'date_time'):
+    def filter_dates_from_filedata(file_data, obsid_last_imported_dates, obsid_header_name='obsid', date_time_header_name='date_time'):
         """
-        :param file_data: a list of lists like [[u'obsid', u'date_time', ...], [obsid1, date_time1, ...]]
-        :param obsid_last_imported_dates: a dict like {u'obsid1': last_date_in_db, ...}
+        :param file_data: a list of lists like [['obsid', 'date_time', ...], [obsid1, date_time1, ...]]
+        :param obsid_last_imported_dates: a dict like {'obsid1': last_date_in_db, ...}
         :param obsid_header_name: the name of the obsid header
         :param date_time_header_name: the name of the date_time header
         :return: A filtered list with only dates after last date is included for each obsid.
@@ -342,7 +342,7 @@ class DiverofficeImport(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         obsid_idx = file_data[0].index(obsid_header_name)
         date_time_idx = file_data[0].index(date_time_header_name)
-        filtered_file_data = [row for row in file_data[1:] if datestring_to_date(row[date_time_idx]) > datestring_to_date(obsid_last_imported_dates.get(row[obsid_idx], [(u'0001-01-01 00:00:00',)])[0][0])]
+        filtered_file_data = [row for row in file_data[1:] if datestring_to_date(row[date_time_idx]) > datestring_to_date(obsid_last_imported_dates.get(row[obsid_idx], [('0001-01-01 00:00:00',)])[0][0])]
 
         filtered_file_data.reverse()
         filtered_file_data.append(file_data[0])

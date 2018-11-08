@@ -125,7 +125,7 @@ def geocolorsymbols():
     # fallback method to maintain backwards compatibility
     if not (res1 and res2):
         # Fallback method - if using old databases where zz_strat is missing, then you may change the code below to reflect your own GEOLOGIC CODES, SYMBOLS AND COLORS
-        utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate(u'geocolorsymbols', u'Reading zz_strat* tables failed. Using default dictionary instead'))
+        utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate('geocolorsymbols', 'Reading zz_strat* tables failed. Using default dictionary instead'))
         dictionary  = { '': ('NoBrush', 'white'),
                     ' ': ('NoBrush', 'white'),
                     'berg': ('DiagCrossPattern', 'red'),
@@ -285,8 +285,8 @@ def geocolorsymbols():
                     try:
                         dictionary[geoshort] = dict_qt[ru(strata)][0]
                     except Exception as c:
-                        utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'geocolorsymbols', u'Error in geocolorsymbols, setting brush and color for strata "%s" using geoshort %s failed. Msg1:\n%s\nMsg2:\n%s\Msg3:\n%s'))%(strata, geoshort, str(a), str(b), str(c)))
-                        dictionary[geoshort]=(u'NoBrush', u'white')
+                        utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('geocolorsymbols', 'Error in geocolorsymbols, setting brush and color for strata "%s" using geoshort %s failed. Msg1:\n%s\nMsg2:\n%s\Msg3:\n%s'))%(strata, geoshort, str(a), str(b), str(c)))
+                        dictionary[geoshort]=('NoBrush', 'white')
 
     """
     # this was temporary method to deal with zz_stratigraphy table existing in plugin version 1.3.x
@@ -343,7 +343,7 @@ def hydrocolors():
             print('using fallback method for backwards compat.')
         except:
             pass
-        utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'hydrocolors', u'Getting hydrocolors from database failed, using fallback method!')))
+        utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('hydrocolors', 'Getting hydrocolors from database failed, using fallback method!')))
         dict_qt = { '': ('okant', 'gray'),
                       ' ': ('okant', 'gray'),
                       '0': ('okant', 'gray'),
@@ -387,73 +387,73 @@ def PlotTypesDict(international='no'):
     success, Dict = db_utils.get_sql_result_as_dict('select strata, geoshort from zz_strat')
     succss_strata, strata_order = db_utils.sql_load_fr_db('select strata from zz_stratigraphy_plots order by %s'%db_utils.rowid_string())
     if not success:
-        utils.MessagebarAndLog.info(log_msg=QCoreApplication.translate(u'PlotTypesDict', u'Getting strata and geoshort from zz_strat failed, fallback method using PlotTypesDict from code'))
+        utils.MessagebarAndLog.info(log_msg=QCoreApplication.translate('PlotTypesDict', 'Getting strata and geoshort from zz_strat failed, fallback method using PlotTypesDict from code'))
         if international=='no' and  utils.getcurrentlocale() == 'sv_SE':
             """
-            Dict = {u"Okänt" : u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')",
-            "Berg"  : u"in ('berg','b','rock','ro')",
-            "Grovgrus" : u"in ('grovgrus','grg','coarse gravel','cgr')",
-            "Grus" : u"in ('grus','gr','gravel')",
-            "Mellangrus" : u"in ('mellangrus','grm','medium gravel','mgr')",
-            "Fingrus" : u"in ('fingrus','grf','fine gravel','fgr')",
-            "Grovsand" : u"in ('grovsand','sag','coarse sand','csa')",
-            "Sand" : u"in ('sand','sa')",
-            "Mellansand" : u"in ('mellansand','sam','medium sand','msa')",
-            "Finsand" : u"in ('finsand','saf','fine sand','fsa')",
-            "Silt" : u"in ('silt','si')",
-            "Lera" : u"in ('lera','ler','le','clay','cl')",
-            u"Morän" : u"in ('morän','moran','mn','till','ti')",
-            "Torv" : u"in ('torv','t','peat','pt')",
-            "Fyll":u"in ('fyll','fyllning','f','made ground','mg','land fill')"}
+            Dict = {"Okänt" : "not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')",
+            "Berg"  : "in ('berg','b','rock','ro')",
+            "Grovgrus" : "in ('grovgrus','grg','coarse gravel','cgr')",
+            "Grus" : "in ('grus','gr','gravel')",
+            "Mellangrus" : "in ('mellangrus','grm','medium gravel','mgr')",
+            "Fingrus" : "in ('fingrus','grf','fine gravel','fgr')",
+            "Grovsand" : "in ('grovsand','sag','coarse sand','csa')",
+            "Sand" : "in ('sand','sa')",
+            "Mellansand" : "in ('mellansand','sam','medium sand','msa')",
+            "Finsand" : "in ('finsand','saf','fine sand','fsa')",
+            "Silt" : "in ('silt','si')",
+            "Lera" : "in ('lera','ler','le','clay','cl')",
+            "Morän" : "in ('morän','moran','mn','till','ti')",
+            "Torv" : "in ('torv','t','peat','pt')",
+            "Fyll":"in ('fyll','fyllning','f','made ground','mg','land fill')"}
             """
-            dictionary = OrderedDict([(u"Okänt" , u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')"),
-            ("Berg"  , u"in ('berg','b','rock','ro')"),
-            ("Grovgrus" , u"in ('grovgrus','grg','coarse gravel','cgr')"),
-            ("Grus" , u"in ('grus','gr','gravel')"),
-            ("Mellangrus" , u"in ('mellangrus','grm','medium gravel','mgr')"),
-            ("Fingrus" , u"in ('fingrus','grf','fine gravel','fgr')"),
-            ("Grovsand" , u"in ('grovsand','sag','coarse sand','csa')"),
-            ("Sand" , u"in ('sand','sa')"),
-            ("Mellansand" , u"in ('mellansand','sam','medium sand','msa')"),
-            ("Finsand" , u"in ('finsand','saf','fine sand','fsa')"),
-            ("Silt" , u"in ('silt','si')"),
-            ("Lera" , u"in ('lera','ler','le','clay','cl')"),
-            (u"Morän" , u"in ('morän','moran','mn','till','ti')"),
-            ("Torv" , u"in ('torv','t','peat','pt')"),
-            ("Fyll",u"in ('fyll','fyllning','f','made ground','mg','land fill')")])
+            dictionary = OrderedDict([("Okänt" , "not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')"),
+            ("Berg"  , "in ('berg','b','rock','ro')"),
+            ("Grovgrus" , "in ('grovgrus','grg','coarse gravel','cgr')"),
+            ("Grus" , "in ('grus','gr','gravel')"),
+            ("Mellangrus" , "in ('mellangrus','grm','medium gravel','mgr')"),
+            ("Fingrus" , "in ('fingrus','grf','fine gravel','fgr')"),
+            ("Grovsand" , "in ('grovsand','sag','coarse sand','csa')"),
+            ("Sand" , "in ('sand','sa')"),
+            ("Mellansand" , "in ('mellansand','sam','medium sand','msa')"),
+            ("Finsand" , "in ('finsand','saf','fine sand','fsa')"),
+            ("Silt" , "in ('silt','si')"),
+            ("Lera" , "in ('lera','ler','le','clay','cl')"),
+            ("Morän" , "in ('morän','moran','mn','till','ti')"),
+            ("Torv" , "in ('torv','t','peat','pt')"),
+            ("Fyll","in ('fyll','fyllning','f','made ground','mg','land fill')")])
         else:
             """
-            Dict = {u"Unknown" : u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')",
-            "Rock"  : u"in ('berg','b','rock','ro')",
-            "Coarse gravel" : u"in ('grovgrus','grg','coarse gravel','cgr')",
-            "Gravel" : u"in ('grus','gr','gravel')",
-            "Medium gravel" : u"in ('mellangrus','grm','medium gravel','mgr')",
-            "Fine gravel" : u"in ('fingrus','grf','fine gravel','fgr')",
-            "Coarse sand" : u"in ('grovsand','sag','coarse sand','csa')",
-            "Sand" : u"in ('sand','sa')",
-            "Medium sand" : u"in ('mellansand','sam','medium sand','msa')",
-            "Fine sand" : u"in ('finsand','saf','fine sand','fsa')",
-            "Silt" : u"in ('silt','si')",
-            "Clay" : u"in ('lera','ler','le','clay','cl')",
-            "Till" : u"in ('morän','moran','mn','till','ti')",
-            "Peat" : u"in ('torv','t','peat','pt')",
-            "Fill":u"in ('fyll','fyllning','f','made ground','mg','land fill')"}
+            Dict = {"Unknown" : "not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')",
+            "Rock"  : "in ('berg','b','rock','ro')",
+            "Coarse gravel" : "in ('grovgrus','grg','coarse gravel','cgr')",
+            "Gravel" : "in ('grus','gr','gravel')",
+            "Medium gravel" : "in ('mellangrus','grm','medium gravel','mgr')",
+            "Fine gravel" : "in ('fingrus','grf','fine gravel','fgr')",
+            "Coarse sand" : "in ('grovsand','sag','coarse sand','csa')",
+            "Sand" : "in ('sand','sa')",
+            "Medium sand" : "in ('mellansand','sam','medium sand','msa')",
+            "Fine sand" : "in ('finsand','saf','fine sand','fsa')",
+            "Silt" : "in ('silt','si')",
+            "Clay" : "in ('lera','ler','le','clay','cl')",
+            "Till" : "in ('morän','moran','mn','till','ti')",
+            "Peat" : "in ('torv','t','peat','pt')",
+            "Fill":"in ('fyll','fyllning','f','made ground','mg','land fill')"}
             """
-            dictionary = OrderedDict([("Unknown" , u"not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')"),
-            ("Rock"  , u"in ('berg','b','rock','ro')"),
-            ("Coarse gravel" , u"in ('grovgrus','grg','coarse gravel','cgr')"),
-            ("Gravel" , u"in ('grus','gr','gravel')"),
-            ("Medium gravel" , u"in ('mellangrus','grm','medium gravel','mgr')"),
-            ("Fine gravel" , u"in ('fingrus','grf','fine gravel','fgr')"),
-            ("Coarse sand" , u"in ('grovsand','sag','coarse sand','csa')"),
-            ("Sand" , u"in ('sand','sa')"),
-            ("Medium sand" , u"in ('mellansand','sam','medium sand','msa')"),
-            ("Fine sand" , u"in ('finsand','saf','fine sand','fsa')"),
-            ("Silt" , u"in ('silt','si')"),
-            ("Clay" , u"in ('lera','ler','le','clay','cl')"),
-            ("Till" , u"in ('morän','moran','mn','till','ti')"),
-            ("Peat" , u"in ('torv','t','peat','pt')"),
-            ("Fill",u"in ('fyll','fyllning','f','made ground','mg','land fill')")])
+            dictionary = OrderedDict([("Unknown" , "not in ('berg','b','rock','ro','grovgrus','grg','coarse gravel','cgr','grus','gr','gravel','mellangrus','grm','medium gravel','mgr','fingrus','grf','fine gravel','fgr','grovsand','sag','coarse sand','csa','sand','sa','mellansand','sam','medium sand','msa','finsand','saf','fine sand','fsa','silt','si','lera','ler','le','clay','cl','morän','moran','mn','till','ti','torv','t','peat','pt','fyll','fyllning','f','made ground','mg','land fill')"),
+            ("Rock"  , "in ('berg','b','rock','ro')"),
+            ("Coarse gravel" , "in ('grovgrus','grg','coarse gravel','cgr')"),
+            ("Gravel" , "in ('grus','gr','gravel')"),
+            ("Medium gravel" , "in ('mellangrus','grm','medium gravel','mgr')"),
+            ("Fine gravel" , "in ('fingrus','grf','fine gravel','fgr')"),
+            ("Coarse sand" , "in ('grovsand','sag','coarse sand','csa')"),
+            ("Sand" , "in ('sand','sa')"),
+            ("Medium sand" , "in ('mellansand','sam','medium sand','msa')"),
+            ("Fine sand" , "in ('finsand','saf','fine sand','fsa')"),
+            ("Silt" , "in ('silt','si')"),
+            ("Clay" , "in ('lera','ler','le','clay','cl')"),
+            ("Till" , "in ('morän','moran','mn','till','ti')"),
+            ("Peat" , "in ('torv','t','peat','pt')"),
+            ("Fill","in ('fyll','fyllning','f','made ground','mg','land fill')")])
     else:
         """manually create dictionary to reuse old code"""
         dictionary = OrderedDict({})
@@ -480,39 +480,39 @@ def PlotColorDict():
     """
     success, Dict = utils.create_dict_from_db_2_cols(('strata','color_mplot','zz_stratigraphy_plots'))
     if not success:
-        utils.MessagebarAndLog.info(log_msg=QCoreApplication.translate(u'PlotColorDict', u'Getting strata and color_mplot form zz_stratigraphy_plots failed, fallback method with PlotColorDict from code'))
+        utils.MessagebarAndLog.info(log_msg=QCoreApplication.translate('PlotColorDict', 'Getting strata and color_mplot form zz_stratigraphy_plots failed, fallback method with PlotColorDict from code'))
         if  utils.getcurrentlocale() == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
-            Dict = {u"Okänt" : u"white",
-            "Berg"  : u"red",
-            "Grovgrus" : u"DarkGreen",
-            "Grus" : u"DarkGreen",
-            "Mellangrus" : u"DarkGreen",
-            "Fingrus" : u"DarkGreen",
-            "Grovsand" : u"green",
-            "Sand" : u"green",
-            "Mellansand" : u"green",
-            "Finsand" : u"DarkOrange",
-            "Silt" : u"yellow",
-            "Lera" : u"yellow",
-            u"Morän" : u"cyan",
-            "Torv" : u"DarkGray",
-            "Fyll":u"white"}
+            Dict = {"Okänt" : "white",
+            "Berg"  : "red",
+            "Grovgrus" : "DarkGreen",
+            "Grus" : "DarkGreen",
+            "Mellangrus" : "DarkGreen",
+            "Fingrus" : "DarkGreen",
+            "Grovsand" : "green",
+            "Sand" : "green",
+            "Mellansand" : "green",
+            "Finsand" : "DarkOrange",
+            "Silt" : "yellow",
+            "Lera" : "yellow",
+            "Morän" : "cyan",
+            "Torv" : "DarkGray",
+            "Fyll":"white"}
         else:
-            Dict = {u"Unknown" : u"white",
-            "Rock"  : u"red",
-            "Coarse gravel" : u"DarkGreen",
-            "Gravel" : u"DarkGreen",
-            "Medium gravel" : u"DarkGreen",
-            "Fine gravel" : u"DarkGreen",
-            "Coarse sand" : u"green",
-            "Sand" : u"green",
-            "Medium sand" : u"green",
-            "Fine sand" : u"DarkOrange",
-            "Silt" : u"yellow",
-            "Clay" : u"yellow",
-            "Till" : u"cyan",
-            "Peat" : u"DarkGray",
-            "Fill":u"white"}
+            Dict = {"Unknown" : "white",
+            "Rock"  : "red",
+            "Coarse gravel" : "DarkGreen",
+            "Gravel" : "DarkGreen",
+            "Medium gravel" : "DarkGreen",
+            "Fine gravel" : "DarkGreen",
+            "Coarse sand" : "green",
+            "Sand" : "green",
+            "Medium sand" : "green",
+            "Fine sand" : "DarkOrange",
+            "Silt" : "yellow",
+            "Clay" : "yellow",
+            "Till" : "cyan",
+            "Peat" : "DarkGray",
+            "Fill":"white"}
     #print Dict#debug!
     return Dict
 
@@ -524,40 +524,40 @@ def PlotHatchDict():
     """
     success, Dict = utils.create_dict_from_db_2_cols(('strata','hatch_mplot','zz_stratigraphy_plots'))
     if not success:
-        utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate(u'PlotHatchDict', u'Getting strata and hatch_mplot from zz_stratigraphy_plots failed, fallback method with PlotHatchDict from code'))
+        utils.MessagebarAndLog.info(bar_msg=QCoreApplication.translate('PlotHatchDict', 'Getting strata and hatch_mplot from zz_stratigraphy_plots failed, fallback method with PlotHatchDict from code'))
         # hatch patterns : ('-', '+', 'x', '\\', '*', 'o', 'O', '.','/')
         if  utils.getcurrentlocale() == 'sv_SE': #swedish forms are loaded only if locale settings indicate sweden
-            Dict = {u"Okänt" : u"",
-            "Berg"  : u"x",
-            "Grovgrus" : u"O",
-            "Grus" : u"O",
-            "Mellangrus" : u"o",
-            "Fingrus" : u"o",
-            "Grovsand" : u"*",
-            "Sand" : u"*",
-            "Mellansand" : u".",
-            "Finsand" : u".",
-            "Silt" : u"\\",
-            "Lera" : u"-",
-            u"Morän" : u"/",
-            "Torv" : u"+",
-            "Fyll":u"+"}
+            Dict = {"Okänt" : "",
+            "Berg"  : "x",
+            "Grovgrus" : "O",
+            "Grus" : "O",
+            "Mellangrus" : "o",
+            "Fingrus" : "o",
+            "Grovsand" : "*",
+            "Sand" : "*",
+            "Mellansand" : ".",
+            "Finsand" : ".",
+            "Silt" : "\\",
+            "Lera" : "-",
+            "Morän" : "/",
+            "Torv" : "+",
+            "Fyll":"+"}
         else:
-            Dict = {u"Unknown" : u"",
-            "Rock"  : u"x",
-            "Coarse gravel" : u"O",
-            "Gravel" : u"O",
-            "Medium gravel" : u"o",
-            "Fine gravel" : u"o",
-            "Coarse sand" : u"*",
-            "Sand" : u"*",
-            "Medium sand" : u".",
-            "Fine sand" : u".",
-            "Silt" : u"\\",
-            "Clay" : u"-",
-            "Till" : u"/",
-            "Peat" : u"+",
-            "Fill":u"+"}
+            Dict = {"Unknown" : "",
+            "Rock"  : "x",
+            "Coarse gravel" : "O",
+            "Gravel" : "O",
+            "Medium gravel" : "o",
+            "Fine gravel" : "o",
+            "Coarse sand" : "*",
+            "Sand" : "*",
+            "Medium sand" : ".",
+            "Fine sand" : ".",
+            "Silt" : "\\",
+            "Clay" : "-",
+            "Till" : "/",
+            "Peat" : "+",
+            "Fill":"+"}
     return Dict
 
 def staff_list():
@@ -569,7 +569,7 @@ def staff_list():
     connection_ok, result_list = sql_result
 
     if not connection_ok:
-        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'staff_list', u'Sql failed, see log message panel'), log_msg=ru(QCoreApplication.translate(u'staff_list', u'Failed to get existing staff from staff table from sql %s'))%sql)
+        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('staff_list', 'Sql failed, see log message panel'), log_msg=ru(QCoreApplication.translate('staff_list', 'Failed to get existing staff from staff table from sql %s'))%sql)
         return False, tuple()
 
     return True, ru(tuple([x[0] for x in result_list]), True)
@@ -582,7 +582,7 @@ def w_flow_flowtypes_units():
     connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
 
     if not connection_ok:
-        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'w_flow_flowtypes_units', u"Error, sql failed, see log message panel"), log_msg=ru(QCoreApplication.translate(u'w_flow_flowtypes_units', u'Cannot get data from sql %s'))%ru(sql))
+        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('w_flow_flowtypes_units', "Error, sql failed, see log message panel"), log_msg=ru(QCoreApplication.translate('w_flow_flowtypes_units', 'Cannot get data from sql %s'))%ru(sql))
         return {}
 
     return ru(result_dict, keep_containers=True)
@@ -592,7 +592,7 @@ def w_qual_field_parameter_units():
     connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
 
     if not connection_ok:
-        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate(u'w_qual_field_parameter_units', u'Error, sql failed, see log message panel'), log_msg=ru(QCoreApplication.translate(u'w_qual_field_parameter_units', u'Cannot get data from sql %s'))%ru(sql))
+        utils.MessagebarAndLog.warning(bar_msg=QCoreApplication.translate('w_qual_field_parameter_units', 'Error, sql failed, see log message panel'), log_msg=ru(QCoreApplication.translate('w_qual_field_parameter_units', 'Cannot get data from sql %s'))%ru(sql))
         return {}
 
     return ru(result_dict, keep_containers=True)
@@ -607,105 +607,105 @@ def get_last_used_quality_instruments():
     connection_ok, result_dict = db_utils.get_sql_result_as_dict(sql)
     return ru(result_dict, True)
 
-specific_table_info = {u'obs_lines': u'The geometry column supports WKT ("well known text") of type LINESTRING and\nthe geometries must correspond to SRID in the database.',
-                       u'obs_points': u'The geometry column supports WKT ("well known text") of type POINT and\nthe geometries must correspond to SRID in the database.'}
+specific_table_info = {'obs_lines': 'The geometry column supports WKT ("well known text") of type LINESTRING and\nthe geometries must correspond to SRID in the database.',
+                       'obs_points': 'The geometry column supports WKT ("well known text") of type POINT and\nthe geometries must correspond to SRID in the database.'}
 
 def export_fieldlogger_defaults():
     current_locale = utils.getcurrentlocale()[0]
 
-    if current_locale != u'sv_SE':
+    if current_locale != 'sv_SE':
         input_field_browser =  [
-            [0, ((u"input_field_list",[
-            u"Accvol.m3;numberDecimal|numberSigned; ",
-            u"DO.mg/L;numberDecimal|numberSigned; ",
-            u"Momflow.l/s;numberDecimal|numberSigned; ",
-            u"Momflow.m3/h;numberDecimal|numberSigned; ",
-            u"comment;text;Obsid related comment",
-            u"cond.µS/cm;numberDecimal|numberSigned; ",
-            u"f.comment;text;Measurement related comment",
-            u"l.comment;text;Measurement related comment",
-            u"meas.m;numberDecimal|numberSigned;depth to water",
-            u"pH;numberDecimal|numberSigned; ",
-            u"q.comment;text;Measurement related comment",
-            u"redox.mV;numberDecimal|numberSigned; ",
-            u"s.comment;text;Measurement related comment",
-            u"temp.°C;numberDecimal|numberSigned; ",
-            u"turb.FNU;numberDecimal|numberSigned; "
+            [0, (("input_field_list",[
+            "Accvol.m3;numberDecimal|numberSigned; ",
+            "DO.mg/L;numberDecimal|numberSigned; ",
+            "Momflow.l/s;numberDecimal|numberSigned; ",
+            "Momflow.m3/h;numberDecimal|numberSigned; ",
+            "comment;text;Obsid related comment",
+            "cond.µS/cm;numberDecimal|numberSigned; ",
+            "f.comment;text;Measurement related comment",
+            "l.comment;text;Measurement related comment",
+            "meas.m;numberDecimal|numberSigned;depth to water",
+            "pH;numberDecimal|numberSigned; ",
+            "q.comment;text;Measurement related comment",
+            "redox.mV;numberDecimal|numberSigned; ",
+            "s.comment;text;Measurement related comment",
+            "temp.°C;numberDecimal|numberSigned; ",
+            "turb.FNU;numberDecimal|numberSigned; "
             ]),)]]
         input_fields_groups = [
-            [0, ((u"input_field_group_list",
-                  [u"meas.m;numberDecimal|numberSigned;depth to water",
-                   u"l.comment;text;Measurement related comment"]),
-                (u"sublocation_suffix", u"level"))],
-            [1, ((u"input_field_group_list",
-                  [u"comment;text;Obsid related comment"]),
-                 (u"sublocation_suffix", u"comment"))],
-            [2, ((u"input_field_group_list",
-                  [u"cond.µS/cm;numberDecimal|numberSigned; ",
-                   u"DO.mg/L;numberDecimal|numberSigned; ",
-                   u"pH;numberDecimal|numberSigned; ",
-                   u"redox.mV;numberDecimal|numberSigned; ",
-                   u"temp.°C;numberDecimal|numberSigned; ",
-                   u"turb.FNU;numberDecimal|numberSigned; ",
-                   u"q.comment;text;Measurement related comment"]),
-                 (u"sublocation_suffix", u"quality"))],
-            [3, ((u"input_field_group_list",
-                  [u"temp.°C;numberDecimal|numberSigned; ",
-                   u"turb.FNU;numberDecimal|numberSigned; ",
-                   u"s.comment;text;Measurement related comment"]),
-                 (u"sublocation_suffix", u"sample"))],
-            [4, ((u"input_field_group_list",
-                  [u"Accvol.m3;numberDecimal|numberSigned; ",
-                   u"Momflow.l/s;numberDecimal|numberSigned; ",
-                   u"Momflow.m3/h;numberDecimal|numberSigned; ",
-                   u"f.comment;text;Measurement related comment"]),
-                 (u"sublocation_suffix", u"flow"))]]
+            [0, (("input_field_group_list",
+                  ["meas.m;numberDecimal|numberSigned;depth to water",
+                   "l.comment;text;Measurement related comment"]),
+                ("sublocation_suffix", "level"))],
+            [1, (("input_field_group_list",
+                  ["comment;text;Obsid related comment"]),
+                 ("sublocation_suffix", "comment"))],
+            [2, (("input_field_group_list",
+                  ["cond.µS/cm;numberDecimal|numberSigned; ",
+                   "DO.mg/L;numberDecimal|numberSigned; ",
+                   "pH;numberDecimal|numberSigned; ",
+                   "redox.mV;numberDecimal|numberSigned; ",
+                   "temp.°C;numberDecimal|numberSigned; ",
+                   "turb.FNU;numberDecimal|numberSigned; ",
+                   "q.comment;text;Measurement related comment"]),
+                 ("sublocation_suffix", "quality"))],
+            [3, (("input_field_group_list",
+                  ["temp.°C;numberDecimal|numberSigned; ",
+                   "turb.FNU;numberDecimal|numberSigned; ",
+                   "s.comment;text;Measurement related comment"]),
+                 ("sublocation_suffix", "sample"))],
+            [4, (("input_field_group_list",
+                  ["Accvol.m3;numberDecimal|numberSigned; ",
+                   "Momflow.l/s;numberDecimal|numberSigned; ",
+                   "Momflow.m3/h;numberDecimal|numberSigned; ",
+                   "f.comment;text;Measurement related comment"]),
+                 ("sublocation_suffix", "flow"))]]
     else:
-        input_field_browser = [[0, ((u"input_field_list", [
-            u"Accvol.m3;numberDecimal|numberSigned; ",
-            u"DO.mg/L;numberDecimal|numberSigned; ",
-            u"Momflow.l/s;numberDecimal|numberSigned; ",
-            u"Momflow.m3/h;numberDecimal|numberSigned; ",
-            u"f.kommentar;text;mätrelaterad kommentar",
-            u"k.kommentar;text;mätrelaterad kommentar",
-            u"kommentar;text;obsidrelaterad kommentar",
-            u"kond.µS/cm;numberDecimal|numberSigned; ",
-            u"meas.m;numberDecimal|numberSigned;djup till vatten",
-            u"n.kommentar;text;mätrelaterad kommentar",
-            u"nedmätning.m;numberDecimal|numberSigned;djup till vatten",
-            u"p.kommentar;text;mätrelaterad kommentar", u"pH;numberDecimal|numberSigned; ",
-            u"redox.mV;numberDecimal|numberSigned; ", u"temp.°C;numberDecimal|numberSigned; ",
-            u"turb.FNU;numberDecimal|numberSigned; "
+        input_field_browser = [[0, (("input_field_list", [
+            "Accvol.m3;numberDecimal|numberSigned; ",
+            "DO.mg/L;numberDecimal|numberSigned; ",
+            "Momflow.l/s;numberDecimal|numberSigned; ",
+            "Momflow.m3/h;numberDecimal|numberSigned; ",
+            "f.kommentar;text;mätrelaterad kommentar",
+            "k.kommentar;text;mätrelaterad kommentar",
+            "kommentar;text;obsidrelaterad kommentar",
+            "kond.µS/cm;numberDecimal|numberSigned; ",
+            "meas.m;numberDecimal|numberSigned;djup till vatten",
+            "n.kommentar;text;mätrelaterad kommentar",
+            "nedmätning.m;numberDecimal|numberSigned;djup till vatten",
+            "p.kommentar;text;mätrelaterad kommentar", "pH;numberDecimal|numberSigned; ",
+            "redox.mV;numberDecimal|numberSigned; ", "temp.°C;numberDecimal|numberSigned; ",
+            "turb.FNU;numberDecimal|numberSigned; "
             ], ), )]]
 
         input_fields_groups = [
-            [0, ((u"input_field_group_list",
-               [u"nedmätning.m;numberDecimal|numberSigned;djup till vatten",
-                u"n.kommentar;text;mätrelaterad kommentar"]),
-              (u"sublocation_suffix", u"nivå"))],
-            [1, ((u"input_field_group_list",
-                  [u"kommentar;text;obsidrelaterad kommentar"]),
-                 (u"sublocation_suffix", u"kommentar"))],
-            [2, ((u"input_field_group_list",
-                  [u"kond.µS/cm;numberDecimal|numberSigned; ",
-                   u"DO.mg/L;numberDecimal|numberSigned; ",
-                   u"pH;numberDecimal|numberSigned; ",
-                   u"redox.mV;numberDecimal|numberSigned; ",
-                   u"temp.°C;numberDecimal|numberSigned; ",
-                   u"turb.FNU;numberDecimal|numberSigned; ",
-                   u"k.kommentar;text;mätrelaterad kommentar"]),
-                 (u"sublocation_suffix", u"kvalitet"))],
-            [3, ((u"input_field_group_list",
-                  [u"temp.°C;numberDecimal|numberSigned; ",
-                   u"turb.FNU;numberDecimal|numberSigned; ",
-                   u"p.kommentar;text;mätrelaterad kommentar"]),
-                 (u"sublocation_suffix", u"prov"))],
-            [4, ((u"input_field_group_list",
-                  [u"Accvol.m3;numberDecimal|numberSigned; ",
-                   u"Momflow.l/s;numberDecimal|numberSigned; ",
-                   u"Momflow.m3/h;numberDecimal|numberSigned; ",
-                   u"f.kommentar;text;mätrelaterad kommentar"],),
-                 (u"sublocation_suffix", u"flöde"))]]
+            [0, (("input_field_group_list",
+               ["nedmätning.m;numberDecimal|numberSigned;djup till vatten",
+                "n.kommentar;text;mätrelaterad kommentar"]),
+              ("sublocation_suffix", "nivå"))],
+            [1, (("input_field_group_list",
+                  ["kommentar;text;obsidrelaterad kommentar"]),
+                 ("sublocation_suffix", "kommentar"))],
+            [2, (("input_field_group_list",
+                  ["kond.µS/cm;numberDecimal|numberSigned; ",
+                   "DO.mg/L;numberDecimal|numberSigned; ",
+                   "pH;numberDecimal|numberSigned; ",
+                   "redox.mV;numberDecimal|numberSigned; ",
+                   "temp.°C;numberDecimal|numberSigned; ",
+                   "turb.FNU;numberDecimal|numberSigned; ",
+                   "k.kommentar;text;mätrelaterad kommentar"]),
+                 ("sublocation_suffix", "kvalitet"))],
+            [3, (("input_field_group_list",
+                  ["temp.°C;numberDecimal|numberSigned; ",
+                   "turb.FNU;numberDecimal|numberSigned; ",
+                   "p.kommentar;text;mätrelaterad kommentar"]),
+                 ("sublocation_suffix", "prov"))],
+            [4, (("input_field_group_list",
+                  ["Accvol.m3;numberDecimal|numberSigned; ",
+                   "Momflow.l/s;numberDecimal|numberSigned; ",
+                   "Momflow.m3/h;numberDecimal|numberSigned; ",
+                   "f.kommentar;text;mätrelaterad kommentar"],),
+                 ("sublocation_suffix", "flöde"))]]
 
     input_field_browser = utils.anything_to_string_representation(input_field_browser)
     input_fields_groups = utils.anything_to_string_representation(input_fields_groups)
@@ -725,12 +725,12 @@ def secplot_default_template():
         loaded_template = {}
         loaded_template['ticklabels_Text_set_fontsize'] = {'fontsize': 10}
         loaded_template['Axes_set_xlabel'] = {
-            'xlabel': ru(QCoreApplication.translate(u'SectionPlot', u"Distance along section")),
+            'xlabel': ru(QCoreApplication.translate('SectionPlot', "Distance along section")),
             'fontsize': 10}
         loaded_template['Axes_set_xlim'] = None  # Tuple like (min, max)
         loaded_template['Axes_set_ylim'] = None  # Tuple like (min, max)
         loaded_template['Axes_set_ylabel'] = {
-            'ylabel': ru(QCoreApplication.translate(u'SectionPlot', u"Level, masl")),
+            'ylabel': ru(QCoreApplication.translate('SectionPlot', "Level, masl")),
             'fontsize': 10}
         loaded_template['dems_Axes_plot'] = {'DEFAULT': {'marker': 'None',
                                                               'linestyle': '-',
@@ -797,13 +797,13 @@ def custplot_default_template():
                 "markersize": 6,
                 "zorder": 8},
             "Axes_set_title": {
-                "label": u""},
+                "label": ""},
             "Axes_set_xlabel": {
                 "fontsize": 10,
-                "xlabel": u""},
+                "xlabel": ""},
             "Axes_set_ylabel": {
                 "fontsize": 10,
-                "ylabel": u""},
+                "ylabel": ""},
             "Axes_tick_param": {
                 "axis": "both",
                 "labelsize": 10},
@@ -824,8 +824,8 @@ def custplot_default_template():
             "legend_Frame_set_facecolor": "1",
             "legend_Frame_set_fill": False,
             "legend_Text_set_fontsize": 10,
-            "plot_height": u"",
-            "plot_width": u"",
+            "plot_height": "",
+            "plot_width": "",
             "rcParams": {"savefig.dpi": 450},
             "styles_colors": [
                 "b",

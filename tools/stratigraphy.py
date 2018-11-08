@@ -82,7 +82,7 @@ class Stratigraphy(object):
         lyr = self.layer
         ids = lyr.selectedFeatureIds()
         if len(ids) == 0:
-            utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"No selection")), ru(QCoreApplication.translate(u' Stratigraphy', u"No features are selected")))
+            utils.pop_up_info(ru(QCoreApplication.translate(' Stratigraphy', "No selection")), ru(QCoreApplication.translate(' Stratigraphy', "No features are selected")))
             return
         # initiate the datastore if not yet done   
         self.initStore()   
@@ -92,12 +92,12 @@ class Stratigraphy(object):
         except DataSanityError as e: # if an object 'e' belonging to DataSanityError is created, then do following
             print("DataSanityError %s"%str(e))
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
-            utils.pop_up_info(ru(QCoreApplication.translate(u' Stratigraphy', u"Data sanity problem, obsid: %s\n%s")) % (e.sond_id, e.message))
+            utils.pop_up_info(ru(QCoreApplication.translate(' Stratigraphy', "Data sanity problem, obsid: %s\n%s")) % (e.sond_id, e.message))
             return
         except Exception as e: # if an object 'e' belonging to DataSanityError is created, then do following
             print("exception : %s"%str(e))
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u' Stratigraphy', u"The stratigraphy plot failed, check Midvatten plugin settings and your data!")))
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(' Stratigraphy', "The stratigraphy plot failed, check Midvatten plugin settings and your data!")))
             return
         qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()  # Restores the mouse cursor to normal symbol
         # show widget
@@ -184,7 +184,7 @@ class SurveyStore(object):
                         try:
                             level_val = float(h_gs)
                         except ValueError:
-                            error_msg = ru(QCoreApplication.translate(u'Stratigraphy', u'Converting to float failed.'))
+                            error_msg = ru(QCoreApplication.translate('Stratigraphy', 'Converting to float failed.'))
                         except Exception as e:
                             error_msg = e
 
@@ -193,17 +193,17 @@ class SurveyStore(object):
                         try:
                             level_val = float(h_toc)
                         except:
-                            using = u'-1'
+                            using = '-1'
                             level_val = -1
                         else:
-                            using = u'h_toc'
+                            using = 'h_toc'
 
-                        utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'Stratigraphy', u"Obsid %s: using h_gs '%s' failed, using '%s' instead.")) % (obsid, h_gs, using),
-                                                       log_msg=ru(QCoreApplication.translate(u'Stratigraphy', u'%s'))%error_msg,
+                        utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Stratigraphy', "Obsid %s: using h_gs '%s' failed, using '%s' instead.")) % (obsid, h_gs, using),
+                                                       log_msg=ru(QCoreApplication.translate('Stratigraphy', '%s'))%error_msg,
                                                        duration=90)
 
                         if self.warning_popup:
-                            utils.pop_up_info(ru(QCoreApplication.translate(u'Stratigraphy', u'Warning, h_gs is missing. See messagebar.')))
+                            utils.pop_up_info(ru(QCoreApplication.translate('Stratigraphy', 'Warning, h_gs is missing. See messagebar.')))
                             self.warning_popup = False
 
                     toplvl_list[i] = level_val
@@ -212,7 +212,7 @@ class SurveyStore(object):
                     # add to array
                     surveys[obsid_list[i]] = SurveyInfo(obsid_list[i], toplvl_list[i], coord_list[i])
         else:
-            utils.pop_up_info(ru(QCoreApplication.translate(u'Stratigraphy', u"getDataStep1 failed")))  # _CHANGE_ for debugging
+            utils.pop_up_info(ru(QCoreApplication.translate('Stratigraphy', "getDataStep1 failed")))  # _CHANGE_ for debugging
 
         return surveys
 
@@ -234,7 +234,7 @@ class SurveyStore(object):
                     depthtotop = record[1]  # depth to top of stratrigraphy layer
                     depthtobot = record[2]  # depth to bottom of stratrigraphy layer
                 else:
-                    raise DataSanityError(str(obsid), ru(QCoreApplication.translate(u'SurveyStore', u"Something bad with stratid, depthtop or depthbot!")))
+                    raise DataSanityError(str(obsid), ru(QCoreApplication.translate('SurveyStore', "Something bad with stratid, depthtop or depthbot!")))
                     stratigaphy_id = 1  # when something went wrong, put it into first layer
                     depthtotop = 0
                     depthtobot = 999#default value when something went wrong
@@ -293,13 +293,13 @@ class SurveyStore(object):
                 for strato in survey.strata[1:]:
                     # top (n) < top (n+1)
                     if top1 > strato.depthTop:
-                        raise DataSanityError(str(obsid), ru(QCoreApplication.translate(u'SurveyStore', u"Top depth is incorrect (%.2f > %.2f)")) % (top1, strato.depthTop))
+                        raise DataSanityError(str(obsid), ru(QCoreApplication.translate('SurveyStore', "Top depth is incorrect (%.2f > %.2f)")) % (top1, strato.depthTop))
                     # bed (n) < bed (n+1)
                     if bed1 > strato.depthBot:
-                        raise DataSanityError(str(obsid), ru(QCoreApplication.translate(u'SurveyStore', u"Bed depth is incorrect (%.2f > %.2f)")) % (bed1, strato.depthBot))
+                        raise DataSanityError(str(obsid), ru(QCoreApplication.translate('SurveyStore', "Bed depth is incorrect (%.2f > %.2f)")) % (bed1, strato.depthBot))
                     # bed (n) = top (n+1)
                     if bed1 != strato.depthTop:
-                        raise DataSanityError(str(obsid), ru(QCoreApplication.translate(u'SurveyStore', u"Top and bed depth don't match (%.2f != %.2f)")) % (bed1, strato.depthTop))
+                        raise DataSanityError(str(obsid), ru(QCoreApplication.translate('SurveyStore', "Top and bed depth don't match (%.2f != %.2f)")) % (bed1, strato.depthTop))
                     
                     top1 = strato.depthTop
                     bed1 = strato.depthBot
@@ -397,7 +397,7 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
         # check whether there's a survey to show
         if len(self.sondaggio) == 0:
             p = qgis.PyQt.QtGui.QPainter(self)
-            p.drawText(self.rect(), qgis.PyQt.QtCore.Qt.AlignCenter | qgis.PyQt.QtCore.Qt.AlignVCenter, ru(QCoreApplication.translate(u'SurveyWidget', u"No data to display")))
+            p.drawText(self.rect(), qgis.PyQt.QtCore.Qt.AlignCenter | qgis.PyQt.QtCore.Qt.AlignVCenter, ru(QCoreApplication.translate('SurveyWidget', "No data to display")))
             return
 
         painter = qgis.PyQt.QtGui.QPainter(self)
@@ -584,7 +584,7 @@ class SurveyDialog(qgis.PyQt.QtWidgets.QDialog):
         self.resize(qgis.PyQt.QtCore.QSize(500,250))
         self.setWindowFlags(qgis.PyQt.QtCore.Qt.Window | qgis.PyQt.QtCore.Qt.WindowMinimizeButtonHint | qgis.PyQt.QtCore.Qt.WindowMaximizeButtonHint | qgis.PyQt.QtCore.Qt.WindowCloseButtonHint);
 
-        self.setWindowTitle(ru(QCoreApplication.translate(u'SurveyDialog', u"Identify Results")))
+        self.setWindowTitle(ru(QCoreApplication.translate('SurveyDialog', "Identify Results")))
         
         self.layout = qgis.PyQt.QtWidgets.QVBoxLayout(self)
         self.layout.setMargin(5)
@@ -604,7 +604,7 @@ class SurveyDialog(qgis.PyQt.QtWidgets.QDialog):
         spacerItem = qgis.PyQt.QtWidgets.QSpacerItem(100,0)
         self.layout2.addItem(spacerItem)
         
-        self.chkShowDesc = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate(u'SurveyDialog', u"Show text")))
+        self.chkShowDesc = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('SurveyDialog', "Show text")))
         self.chkShowDesc.setChecked(True)
         self.layout2.addWidget(self.chkShowDesc)
 
@@ -619,10 +619,10 @@ class SurveyDialog(qgis.PyQt.QtWidgets.QDialog):
         
 
 
-        self.btnPrint = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'SurveyDialog', u"Print")))
+        self.btnPrint = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('SurveyDialog', "Print")))
         self.layout2.addWidget(self.btnPrint)
         
-        self.btnClose = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'SurveyDialog', u"Close")))
+        self.btnClose = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('SurveyDialog', "Close")))
         self.layout2.addWidget(self.btnClose)
         
         self.layout.addLayout(self.layout2)

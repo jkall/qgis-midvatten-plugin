@@ -95,8 +95,8 @@ class PrepareForQgis2Threejs(object):
                         color = [x * 255 for x in color]
                     except Exception as e:
                         utils.MessagebarAndLog.warning(
-                            bar_msg=ru(QCoreApplication.translate(u'PrepareForQgis2Threejs', u'Setting color from dict failed')),
-                            log_msg=ru(QCoreApplication.translate(u'PrepareForQgis2Threejs', u'Error msg %s'))%str(e))
+                            bar_msg=ru(QCoreApplication.translate('PrepareForQgis2Threejs', 'Setting color from dict failed')),
+                            log_msg=ru(QCoreApplication.translate('PrepareForQgis2Threejs', 'Error msg %s'))%str(e))
                         color = None
 
             colors.append(color)

@@ -115,6 +115,6 @@ class TimeSeriesPlot(object):
                 plt.show()
                 #plt.draw()
             else:
-                utils.pop_up_info(ru(QCoreApplication.translate(u'TimeSeriesPlot', u"Please select at least one point with time series data")))
+                utils.pop_up_info(ru(QCoreApplication.translate('TimeSeriesPlot', "Please select at least one point with time series data")))
         else:
-            utils.pop_up_info(ru(QCoreApplication.translate(u'TimeSeriesPlot', u"Please select a layer with time series observation points")))
+            utils.pop_up_info(ru(QCoreApplication.translate('TimeSeriesPlot', "Please select a layer with time series observation points")))

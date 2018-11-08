@@ -55,18 +55,18 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
-        self.setWindowTitle(ru(QCoreApplication.translate(u'GeneralCsvImportGui', "Csv import")))  # Set the title for the dialog
+        self.setWindowTitle(ru(QCoreApplication.translate('GeneralCsvImportGui', "Csv import")))  # Set the title for the dialog
         self.table_chooser = None
         self.file_data = None
         self.status = True
 
     def load_gui(self):
-        self.tables_columns_info = {k: v for (k, v) in db_utils.db_tables_columns_info().items() if not k.endswith(u'_geom')}
+        self.tables_columns_info = {k: v for (k, v) in db_utils.db_tables_columns_info().items() if not k.endswith('_geom')}
         self.table_chooser = ImportTableChooser(self.tables_columns_info, file_header=None)
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.main_vertical_layout.addStretch()
         #General buttons
-        self.select_file_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Load data from file')))
+        self.select_file_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('GeneralCsvImportGui', 'Load data from file')))
         self.gridLayout_buttons.addWidget(self.select_file_button, 0, 0)
         self.select_file_button.clicked.connect(
                      lambda: [x() for x in [lambda: self.load_files(),
@@ -74,14 +74,14 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                                                  lambda: self.file_data_loaded_popup()]])
 
 
-        self.import_all_features_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Load data from all features\nfrom active layer')))
+        self.import_all_features_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('GeneralCsvImportGui', 'Load data from all features\nfrom active layer')))
         self.gridLayout_buttons.addWidget(self.import_all_features_button, 1, 0)
         self.import_all_features_button.clicked.connect(
                      lambda: [x() for x in [lambda: self.load_from_active_layer(only_selected=False),
                                                  lambda: self.table_chooser.reload(),
                                                  lambda: self.file_data_loaded_popup()]])
 
-        self.import_selected_features_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Load data from selected features\nfrom active layer')))
+        self.import_selected_features_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('GeneralCsvImportGui', 'Load data from selected features\nfrom active layer')))
         self.gridLayout_buttons.addWidget(self.import_selected_features_button, 2, 0)
         self.import_selected_features_button.clicked.connect(
                      lambda: [x() for x in [lambda: self.load_from_active_layer(only_selected=True),
@@ -96,11 +96,11 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         self.gridLayout_buttons.addWidget(get_line(), 5, 0)
 
-        self.close_after_import = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Close dialog after import')))
+        self.close_after_import = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('GeneralCsvImportGui', 'Close dialog after import')))
         self.close_after_import.setChecked(True)
         self.gridLayout_buttons.addWidget(self.close_after_import, 6, 0)
 
-        self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Start import')))
+        self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('GeneralCsvImportGui', 'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 7, 0)
         self.start_import_button.clicked.connect(
                      self.start_import)
@@ -114,7 +114,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         charset = utils.ask_for_charset()
         if not charset:
             return None
-        filename = utils.select_files(only_one_file=True, extension=ru(QCoreApplication.translate(u'GeneralCsvImportGui', "Comma or semicolon separated csv file %s;;Comma or semicolon separated csv text file %s;;Comma or semicolon separated file %s"))%('(*.csv)', '(*.txt)', '(*.*)'))
+        filename = utils.select_files(only_one_file=True, extension=ru(QCoreApplication.translate('GeneralCsvImportGui', "Comma or semicolon separated csv file %s;;Comma or semicolon separated csv text file %s;;Comma or semicolon separated file %s"))%('(*.csv)', '(*.txt)', '(*.*)'))
         if not filename:
             return None
         if isinstance(filename, (list, tuple)):
@@ -123,10 +123,10 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             filename = filename
         filename = ru(filename)
 
-        delimiter = utils.get_delimiter(filename=filename, charset=charset, delimiters=[u',', u';'])
+        delimiter = utils.get_delimiter(filename=filename, charset=charset, delimiters=[',', ';'])
         self.file_data = self.file_to_list(filename, charset, delimiter)
 
-        header_question = utils.Askuser(question=u"YesNo", msg=ru(QCoreApplication.translate(u'GeneralCsvImportGui', u"""Does the file contain a header?""")))
+        header_question = utils.Askuser(question="YesNo", msg=ru(QCoreApplication.translate('GeneralCsvImportGui', """Does the file contain a header?""")))
         if header_question.result:
             # Remove duplicate header entries
             header = self.file_data[0]
@@ -137,7 +137,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
             self.table_chooser.file_header = self.file_data[0]
         else:
-            header = [u'Column ' + str(colnr) for colnr in range(len(self.file_data[0]))]
+            header = ['Column ' + str(colnr) for colnr in range(len(self.file_data[0]))]
             self.table_chooser.file_header = header
             self.file_data.reverse()
             self.file_data.append(header)
@@ -147,11 +147,11 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         if self.file_data is not None:
             for button in (self.select_file_button, self.import_all_features_button, self.import_selected_features_button):
                 button.setEnabled(False)
-            utils.pop_up_info(msg=ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'File data loaded. Select table to import to.')))
+            utils.pop_up_info(msg=ru(QCoreApplication.translate('GeneralCsvImportGui', 'File data loaded. Select table to import to.')))
 
     def file_to_list(self, filename, charset, delimiter):
         with io.open(filename, 'r', encoding=charset) as f:
-            file_data = [rawrow.rstrip(u'\n').rstrip(u'\r').split(delimiter) for rawrow in f if rawrow.strip()]
+            file_data = [rawrow.rstrip('\n').rstrip('\r').split(delimiter) for rawrow in f if rawrow.strip()]
         return file_data
 
     @utils.waiting_cursor
@@ -161,7 +161,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         active_layer = utils.get_active_layer()
         if not active_layer:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Import error, no layer selected.')))
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('GeneralCsvImportGui', 'Import error, no layer selected.')))
             return None
 
         if not only_selected:
@@ -171,7 +171,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         file_data = [[ru(field.name()) for field in active_layer.fields()]]
 
         for feature in features:
-            file_data.append([ru(attr) if all([ru(attr).strip() != u'NULL' if attr is not None else u'', attr is not None]) else u'' for attr in feature])
+            file_data.append([ru(attr) if all([ru(attr).strip() != 'NULL' if attr is not None else '', attr is not None]) else '' for attr in feature])
 
         self.file_data = file_data
         self.table_chooser.file_header = file_data[0]
@@ -186,7 +186,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         :return:
         """
         if self.file_data is None:
-            raise utils.UsageError(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Error, must select a file first!')))
+            raise utils.UsageError(ru(QCoreApplication.translate('GeneralCsvImportGui', 'Error, must select a file first!')))
 
         translation_dict = self.table_chooser.get_translation_dict()
 
@@ -196,7 +196,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         foreign_keys = db_utils.get_foreign_keys(goal_table)
 
-        foreign_key_obsid_tables = [tname for tname, colnames in foreign_keys.items() for colname in colnames if colname[0] == u'obsid']
+        foreign_key_obsid_tables = [tname for tname, colnames in foreign_keys.items() for colname in colnames if colname[0] == 'obsid']
         if len(foreign_key_obsid_tables) == 1:
             foreign_key_obsid_table = foreign_key_obsid_tables[0]
         else:
@@ -208,9 +208,9 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             if isinstance(file_column, Obsids_from_selection):
                 selected = utils.get_selected_features_as_tuple()
                 if len(selected) != 1:
-                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Import error, must select 1 obsid')), duration=60)
-                    return u'cancel'
-                alter_colnames = [u'obsid']
+                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('GeneralCsvImportGui', 'Import error, must select 1 obsid')), duration=60)
+                    return 'cancel'
+                alter_colnames = ['obsid']
                 new_value = selected[0]
             elif isinstance(file_column, StaticValue):
                 if translation_dict[file_column]:
@@ -243,8 +243,8 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         if columns_factors:
             file_data = self.multiply_by_factor(file_data, columns_factors)
         file_data = self.remove_preceding_trailing_spaces_tabs(file_data)
-        if foreign_key_obsid_table and foreign_key_obsid_table != goal_table and u'obsid' in file_data[0]:
-            file_data = utils.filter_nonexisting_values_and_ask(file_data, u'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
+        if foreign_key_obsid_table and foreign_key_obsid_table != goal_table and 'obsid' in file_data[0]:
+            file_data = utils.filter_nonexisting_values_and_ask(file_data, 'obsid', utils.get_all_obsids(foreign_key_obsid_table), try_capitalize=False)
 
         file_data = self.reformat_date_time(file_data)
 
@@ -266,7 +266,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         try:
             new_file_data.extend([[row[file_column_index[file_column]] for file_column, db_columns in sorted(translation_dict.items()) for db_column in sorted(db_columns)] for rownr, row in enumerate(file_data[1:])])
         except IndexError as e:
-            raise IndexError(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Import error on row number %s:\n%s'))%(str(rownr + 1), u'\n'.join([u': '.join(x) for x in zip(file_data[0], row)])))
+            raise IndexError(ru(QCoreApplication.translate('GeneralCsvImportGui', 'Import error on row number %s:\n%s'))%(str(rownr + 1), '\n'.join([': '.join(x) for x in zip(file_data[0], row)])))
 
         return new_file_data
 
@@ -290,21 +290,21 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
     def convert_comma_to_points_for_double_columns(file_data, table_column):
         """
         Converts comma to point for columns with column types real or double
-        :param file_data: a list of lists like [[u'obsid', u'date_time', u'reading'], [u'obs1', u'2017-04-12 11:03', '123,456']]
-        :param table_column: a tuple like ((6, u'comment', u'text', 0, None, 0), (4, u'cond_mscm', u'double', 0, None, 0), (1, u'date_time', u'text', 1, None, 2), (2, u'head_cm', u'double', 0, None, 0), (5, u'level_masl', u'double', 0, None, 0), (0, u'obsid', u'text', 1, None, 1), (3, u'temp_degc', u'double', 0, None, 0))
+        :param file_data: a list of lists like [['obsid', 'date_time', 'reading'], ['obs1', '2017-04-12 11:03', '123,456']]
+        :param table_column: a tuple like ((6, 'comment', 'text', 0, None, 0), (4, 'cond_mscm', 'double', 0, None, 0), (1, 'date_time', 'text', 1, None, 2), (2, 'head_cm', 'double', 0, None, 0), (5, 'level_masl', 'double', 0, None, 0), (0, 'obsid', 'text', 1, None, 1), (3, 'temp_degc', 'double', 0, None, 0))
         :return: file_data where double and real column types have been converted from comma to point.
         """
         table_column_dict = dict([(column[1], column[2]) for column in table_column])
-        colnrs_to_convert = [colnr for colnr, col in enumerate(file_data[0]) if table_column_dict.get(col, u'').lower() in (u'double', u'double precision', u'real')]
-        file_data = [[col.replace(u',', u'.') if all([colnr in colnrs_to_convert, rownr > 0, col is not None]) else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
+        colnrs_to_convert = [colnr for colnr, col in enumerate(file_data[0]) if table_column_dict.get(col, '').lower() in ('double', 'double precision', 'real')]
+        file_data = [[col.replace(',', '.') if all([colnr in colnrs_to_convert, rownr > 0, col is not None]) else col for colnr, col in enumerate(row)] for rownr, row in enumerate(file_data)]
         return file_data
 
     @staticmethod
     def multiply_by_factor(file_data, columns_factors):
         """
         Multiplies all values in the file data with a given factor for each column
-        :param file_data: a list of lists like [[u'obsid', u'date_time', u'reading'], [u'obs1', u'2017-04-12 11:03', '123,456']]
-        :param table_columns_factors: a dict like {u'reading': 10}
+        :param file_data: a list of lists like [['obsid', 'date_time', 'reading'], ['obs1', '2017-04-12 11:03', '123,456']]
+        :param table_columns_factors: a dict like {'reading': 10}
         :return: file_data where the columns have been multiplied by the factor.
         """
         print(str(columns_factors))
@@ -317,7 +317,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
     @staticmethod
     def reformat_date_time(file_data):
         try:
-            colnrs_to_convert = [file_data[0].index(u'date_time')]
+            colnrs_to_convert = [file_data[0].index('date_time')]
         except ValueError:
             return file_data
         else:
@@ -331,7 +331,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                 num_rows_after = len(file_data)
                 num_removed_rows = num_rows_before - num_rows_after
                 if num_removed_rows > 0:
-                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'%s rows without parsable date_time format skipped during import'))%str(num_removed_rows))
+                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('GeneralCsvImportGui', '%s rows without parsable date_time format skipped during import'))%str(num_removed_rows))
             return file_data
 
     @staticmethod
@@ -350,9 +350,9 @@ class ImportTableChooser(VRowEntry):
 
         chooser = RowEntry()
 
-        self.label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', 'Import to table')))
+        self.label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ImportTableChooser', 'Import to table')))
         self.__import_method = qgis.PyQt.QtWidgets.QComboBox()
-        self.__import_method.addItem(u'')
+        self.__import_method.addItem('')
         self.__import_method.addItems(sorted(list(tables_columns.keys()), key=lambda s: s.lower()))
 
         self.__import_method.currentIndexChanged.connect( self.choose_method)
@@ -408,11 +408,11 @@ class ImportTableChooser(VRowEntry):
         layer = utils.find_layer(import_method_name)
         if layer is not None:
             if layer.isEditable():
-                utils.pop_up_info(ru(QCoreApplication.translate(u'ImportTableChooser', u"Layer %s is currently in editing mode.\nPlease exit this mode before proceeding with this operation."))%str(layer.name()), ru(QCoreApplication.translate(u'GeneralCsvImportGui', "Error")),)
-                self.import_method = u''
+                utils.pop_up_info(ru(QCoreApplication.translate('ImportTableChooser', "Layer %s is currently in editing mode.\nPlease exit this mode before proceeding with this operation."))%str(layer.name()), ru(QCoreApplication.translate('GeneralCsvImportGui', "Error")),)
+                self.import_method = ''
                 import_method_name = None
 
-        self.specific_table_info.setText(defs.specific_table_info.get(import_method_name, u''))
+        self.specific_table_info.setText(defs.specific_table_info.get(import_method_name, ''))
 
         if file_header is None:
             return None
@@ -435,10 +435,10 @@ class ImportTableChooser(VRowEntry):
         self.grid = RowEntryGrid()
         self.layout.addWidget(self.grid.widget)
 
-        self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'Column name'))), 0, 0)
-        self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'File column'))), 0, 1)
-        self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'Static value'))), 0, 2)
-        self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'Factor'))), 0, 3)
+        self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ImportTableChooser', 'Column name'))), 0, 0)
+        self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ImportTableChooser', 'File column'))), 0, 1)
+        self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ImportTableChooser', 'Static value'))), 0, 2)
+        self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ImportTableChooser', 'Factor'))), 0, 3)
 
         for index, tables_columns_info in enumerate(sorted(tables_columns[import_method_name], key=itemgetter(0))):
             column = ColumnEntry(tables_columns_info, file_header, self.numeric_datatypes)
@@ -451,7 +451,7 @@ class ImportTableChooser(VRowEntry):
 
     def reload(self):
         import_method = self.import_method
-        self.import_method = u''
+        self.import_method = ''
         self.import_method = import_method
 
 
@@ -465,21 +465,21 @@ class ColumnEntry(object):
         self.column_type = tables_columns_info[2]
         self.notnull = int(tables_columns_info[3])
         pk = int(tables_columns_info[5])
-        concatted_info = u', '.join([_x for _x in [self.column_type, u'not null' if self.notnull else False,
-                                      u'primary key' if pk else False] if _x])
-        label = qgis.PyQt.QtWidgets.QLabel(u' '.join([u'Column ', self.db_column, u'({})'.format(concatted_info)]))
+        concatted_info = ', '.join([_x for _x in [self.column_type, 'not null' if self.notnull else False,
+                                      'primary key' if pk else False] if _x])
+        label = qgis.PyQt.QtWidgets.QLabel(' '.join(['Column ', self.db_column, '({})'.format(concatted_info)]))
 
         self.column_widgets = [label]
         self._all_widgets = [label]
 
         self.combobox = qgis.PyQt.QtWidgets.QComboBox()
         self.combobox.setEditable(True)
-        self.combobox.addItem(u'')
+        self.combobox.addItem('')
         self.combobox.addItems(sorted(self.file_header, key=lambda s: s.lower()))
 
-        if self.db_column == u'obsid':
-            self.obsids_from_selection = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate(u'ColumnEntry', u'Obsid from qgis selection')))
-            self.obsids_from_selection.setToolTip(ru(QCoreApplication.translate(u'ColumnEntry', u'Select 1 obsid from obs_points or obs_lines attribute table or map.')))
+        if self.db_column == 'obsid':
+            self.obsids_from_selection = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('ColumnEntry', 'Obsid from qgis selection')))
+            self.obsids_from_selection.setToolTip(ru(QCoreApplication.translate('ColumnEntry', 'Select 1 obsid from obs_points or obs_lines attribute table or map.')))
             self.obsids_from_selection.clicked.connect(self.obsids_from_selection_checked)
 
             self.obsid_widget = RowEntry()
@@ -494,13 +494,13 @@ class ColumnEntry(object):
             self._all_widgets.extend(self.column_widgets)
 
         self.static_checkbox = qgis.PyQt.QtWidgets.QCheckBox()
-        self.static_checkbox.setToolTip(ru(QCoreApplication.translate(u'ColumnEntry', u'The supplied string will be written to the current column name for all\nimported rows instead of being read from file column.')))
+        self.static_checkbox.setToolTip(ru(QCoreApplication.translate('ColumnEntry', 'The supplied string will be written to the current column name for all\nimported rows instead of being read from file column.')))
         self.column_widgets.append(self.static_checkbox)
         self._all_widgets.append(self.static_checkbox)
 
         self._factor = qgis.PyQt.QtWidgets.QLineEdit()
-        self._factor.setText(u'1')
-        self._factor.setToolTip(ru(QCoreApplication.translate(u'ColumnEntry', u'Multiply each imported value in the column with a factor.')))
+        self._factor.setText('1')
+        self._factor.setToolTip(ru(QCoreApplication.translate('ColumnEntry', 'Multiply each imported value in the column with a factor.')))
         self._factor.setFixedWidth(40)
         self.column_widgets.append(self._factor)
         self._all_widgets.append(self._factor)
@@ -524,10 +524,10 @@ class ColumnEntry(object):
             selected = StaticValue(ru(self.combobox.currentText()))
 
         if self.notnull and not selected:
-            raise utils.UsageError(ru(QCoreApplication.translate(u'ColumnEntry', u'Import error, the column %s must have a value'))%self.db_column)
+            raise utils.UsageError(ru(QCoreApplication.translate('ColumnEntry', 'Import error, the column %s must have a value'))%self.db_column)
 
         if selected and not self.static_checkbox.isChecked() and selected not in self.file_header:
-            raise utils.UsageError(ru(QCoreApplication.translate(u'ColumnEntry', u'Import error, the chosen file column for the column %s did not exist in the file header.'))%self.db_column)
+            raise utils.UsageError(ru(QCoreApplication.translate('ColumnEntry', 'Import error, the chosen file column for the column %s did not exist in the file header.'))%self.db_column)
         else:
             return selected
 

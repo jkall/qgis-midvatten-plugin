@@ -75,22 +75,22 @@ class HobologgerImport(import_diveroffice.DiverofficeImport):
         if enddate is not None:
             enddate = date_utils.datestring_to_date(enddate)
 
-        with io.open(path, u'rt', encoding=str(charset)) as f:
-            rows_unsplit = [row.lstrip().rstrip(u'\n').rstrip(u'\r').encode('utf-8') for row in f]
+        with io.open(path, 'rt', encoding=str(charset)) as f:
+            rows_unsplit = [row.lstrip().rstrip('\n').rstrip('\r').encode('utf-8') for row in f]
             csvreader = csv.reader(rows_unsplit, delimiter=',', quotechar='"')
 
         rows = [ru(row, keep_containers=True) for row in csvreader]
 
         try:
-            data_header_idx = [rownr for rownr, row in enumerate(rows) if u'Date Time' in u'_'.join(row)][0]
+            data_header_idx = [rownr for rownr, row in enumerate(rows) if 'Date Time' in '_'.join(row)][0]
         except IndexError:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'Hobologger import',
-                                                                                 u'''File %s could not be parsed.'''))%filename)
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Hobologger import',
+                                                                                 '''File %s could not be parsed.'''))%filename)
             return [], filename, location
 
-        date_colnr = [idx for idx, col in enumerate(rows[1]) if u'Date Time' in col]
+        date_colnr = [idx for idx, col in enumerate(rows[1]) if 'Date Time' in col]
         if not date_colnr:
-            raise Exception(ru(QCoreApplication.translate(u'Hobologger import', u'Date Time column not found!')))
+            raise Exception(ru(QCoreApplication.translate('Hobologger import', 'Date Time column not found!')))
         else:
             date_colnr = date_colnr[0]
 
@@ -98,29 +98,29 @@ class HobologgerImport(import_diveroffice.DiverofficeImport):
             tz_string = get_tz_string(rows[1][date_colnr])
             if tz_string is None:
                 utils.MessagebarAndLog.warning(
-                    bar_msg=ru(QCoreApplication.translate(u'Hobologger import', u'Timezone not found in %s')) % filename)
+                    bar_msg=ru(QCoreApplication.translate('Hobologger import', 'Timezone not found in %s')) % filename)
             tz_converter.source_tz = tz_string
 
-        temp_colnr = [idx for idx, col in enumerate(rows[1]) if u'Temp, °C' in col]
+        temp_colnr = [idx for idx, col in enumerate(rows[1]) if 'Temp, °C' in col]
         if not temp_colnr:
-            raise Exception(ru(QCoreApplication.translate(u'Hobologger import', u'Temperature column not found!')))
+            raise Exception(ru(QCoreApplication.translate('Hobologger import', 'Temperature column not found!')))
         else:
             temp_colnr = temp_colnr[0]
 
-        match = re.search(u'LBL: ([A-Za-z0-9_\-]+)', rows[1][temp_colnr])
+        match = re.search('LBL: ([A-Za-z0-9_\-]+)', rows[1][temp_colnr])
         if not match:
             location = filename
         else:
             location = match.group(1)
 
-        new_header = [u'date_time', u'head_cm', u'temp_degc', u'cond_mscm']
+        new_header = ['date_time', 'head_cm', 'temp_degc', 'cond_mscm']
         filedata.append(new_header)
 
         try:
             first_data_row = rows[data_header_idx + 1]
         except IndexError:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'HobologgerImport',
-                                                                                 u'''No data in file %s.'''))%filename)
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('HobologgerImport',
+                                                                                 '''No data in file %s.'''))%filename)
             return [], filename, location
         else:
             dt = first_data_row[date_colnr]
@@ -129,13 +129,13 @@ class HobologgerImport(import_diveroffice.DiverofficeImport):
                 dt = first_data_row[date_colnr][:-2].rstrip()
                 date_format = date_utils.find_date_format(dt)
                 if date_format is None:
-                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'HobologgerImport',
-                                                                                         u'''Dateformat in file %s could not be parsed.''')) % filename)
+                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('HobologgerImport',
+                                                                                         '''Dateformat in file %s could not be parsed.''')) % filename)
                     return [], filename, location
 
         filedata.extend([[date_utils.long_dateformat(fix_date(row[date_colnr], filename, tz_converter)),
                               '',
-                              str(float(row[temp_colnr].replace(u',', u'.'))) if (
+                              str(float(row[temp_colnr].replace(',', '.'))) if (
                               utils.to_float_or_none(row[temp_colnr]) if temp_colnr is not None else None) else '',
                               '']
                         for row in rows[data_header_idx + 1:]
@@ -149,16 +149,16 @@ class HobologgerImport(import_diveroffice.DiverofficeImport):
 
 def fix_date(date_time, filename, tz_converter=None):
     try:
-        dt = datetime.datetime.strptime(date_time[:-2].rstrip(), u'%m/%d/%y %I:%M:%S')
+        dt = datetime.datetime.strptime(date_time[:-2].rstrip(), '%m/%d/%y %I:%M:%S')
     except ValueError:
         dt = date_utils.datestring_to_date(date_time)
         if dt is None:
-            raise FileError(ru(QCoreApplication.translate(u'HobologgerImport',
-                                                          u'''Dateformat in file %s could not be parsed.''')) % filename)
+            raise FileError(ru(QCoreApplication.translate('HobologgerImport',
+                                                          '''Dateformat in file %s could not be parsed.''')) % filename)
     else:
         dt_end = date_time[-2:]
         if dt_end.lower() in ('em', 'pm'):
-            dt = date_utils.dateshift(dt, 12, u'hours')
+            dt = date_utils.dateshift(dt, 12, 'hours')
 
     if tz_converter is not None:
         dt = tz_converter.convert_datetime(dt)
@@ -182,7 +182,7 @@ def get_tz_string(date_time_tz):
     'GMT-2:00'
 
     """
-    match = re.match(u'Date Time, ([A-Za-z0-9\+\-\:]+)', date_time_tz, re.IGNORECASE)
+    match = re.match('Date Time, ([A-Za-z0-9\+\-\:]+)', date_time_tz, re.IGNORECASE)
     if not match:
         return None
     else:
@@ -192,8 +192,8 @@ class TzConverter(gui_utils.RowEntry):
     def __init__(self):
         super(TzConverter, self).__init__()
         self.source_tz = None
-        self.label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate(u'TzSelector', u'Select target timezone: ')))
-        timezones = [u'GMT{:+d}'.format(x) for x in xrange(-11, 15)]
+        self.label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate('TzSelector', 'Select target timezone: ')))
+        timezones = ['GMT{:+d}'.format(x) for x in xrange(-11, 15)]
 
         self._tz_list = PyQt4.QtGui.QComboBox()
         self._tz_list.addItems(timezones)
@@ -201,7 +201,7 @@ class TzConverter(gui_utils.RowEntry):
         for widget in [self.label, self._tz_list]:
             self.layout.addWidget(widget)
 
-        self.target_tz = u'GMT+1'
+        self.target_tz = 'GMT+1'
 
         self.layout.addStretch()
 

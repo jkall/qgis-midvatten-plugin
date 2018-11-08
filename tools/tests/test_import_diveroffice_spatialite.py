@@ -45,26 +45,26 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_wlvllogg_import_from_diveroffice_files(self):
-        files = [(u'Location=rb1',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/03/15 10:30:00,1,10',
-                u'2016/03/15 11:00:00,11,101'),
-                (u'Location=rb2',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/04/15 10:30:00,2,20',
-                u'2016/04/15 11:00:00,21,201'),
-                (u'Location=rb3',
-                u'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
-                u'2016/05/15 10:30:00,3,30,5',
-                u'2016/05/15 11:00:00,31,301,6')
+        files = [('Location=rb1',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/03/15 10:30:00,1,10',
+                '2016/03/15 11:00:00,11,101'),
+                ('Location=rb2',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/04/15 10:30:00,2,20',
+                '2016/04/15 11:00:00,21,201'),
+                ('Location=rb3',
+                'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
+                '2016/05/15 10:30:00,3,30,5',
+                '2016/05/15 11:00:00,31,301,6')
                  ]
 
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
 
-        DiverofficeImport.charsetchoosen = u'utf-8'
-        with utils.tempinput(u'\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput(u'\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput(u'\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        DiverofficeImport.charsetchoosen = 'utf-8'
+        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -79,11 +79,11 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
-                        mock_notfoundquestion.return_value.answer = u'ok'
-                        mock_notfoundquestion.return_value.value = u'rb1'
-                        mock_notfoundquestion.return_value.reuse_column = u'location'
+                        mock_notfoundquestion.return_value.answer = 'ok'
+                        mock_notfoundquestion.return_value.value = 'rb1'
+                        mock_notfoundquestion.return_value.reuse_column = 'location'
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [u'utf-8']
+                        mock_encoding.return_value = ['utf-8']
 
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
@@ -95,33 +95,33 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
-                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb1, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb1, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb1, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb1, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_wlvllogg_import_from_diveroffice_files_skip_duplicate_datetimes(self):
-        files = [(u'Location=rb1',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/03/15 10:30:00,1,10',
-                u'2016/03/15 11:00:00,11,101'),
-                (u'Location=rb2',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/04/15 10:30:00,2,20',
-                u'2016/04/15 11:00:00,21,201'),
-                (u'Location=rb3',
-                u'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
-                u'2016/05/15 10:30:00,3,30,5',
-                u'2016/05/15 11:00:00,31,301,6')
+        files = [('Location=rb1',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/03/15 10:30:00,1,10',
+                '2016/03/15 11:00:00,11,101'),
+                ('Location=rb2',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/04/15 10:30:00,2,20',
+                '2016/04/15 11:00:00,21,201'),
+                ('Location=rb3',
+                'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
+                '2016/05/15 10:30:00,3,30,5',
+                '2016/05/15 11:00:00,31,301,6')
                  ]
 
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:30', '5.0')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:30', '5.0')''')
 
-        DiverofficeImport.charsetchoosen = u'utf-8'
-        with utils.tempinput(u'\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput(u'\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput(u'\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        DiverofficeImport.charsetchoosen = 'utf-8'
+        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -133,11 +133,11 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
-                        mock_notfoundquestion.return_value.answer = u'ok'
-                        mock_notfoundquestion.return_value.value = u'rb1'
-                        mock_notfoundquestion.return_value.reuse_column = u'location'
+                        mock_notfoundquestion.return_value.answer = 'ok'
+                        mock_notfoundquestion.return_value.value = 'rb1'
+                        mock_notfoundquestion.return_value.reuse_column = 'location'
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [u'utf-8']
+                        mock_encoding.return_value = ['utf-8']
 
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
@@ -148,33 +148,33 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
-                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:30, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb1, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb1, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb1, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb1, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_wlvllogg_import_from_diveroffice_files_filter_dates(self):
-        files = [(u'Location=rb1',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/03/15 10:30:00,1,10',
-                u'2016/03/15 11:00:00,11,101'),
-                (u'Location=rb2',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/04/15 10:30:00,2,20',
-                u'2016/04/15 11:00:00,21,201'),
-                (u'Location=rb3',
-                u'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
-                u'2016/05/15 10:30:00,3,30,5',
-                u'2016/05/15 11:00:00,31,301,6')
+        files = [('Location=rb1',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/03/15 10:30:00,1,10',
+                '2016/03/15 11:00:00,11,101'),
+                ('Location=rb2',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/04/15 10:30:00,2,20',
+                '2016/04/15 11:00:00,21,201'),
+                ('Location=rb3',
+                'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
+                '2016/05/15 10:30:00,3,30,5',
+                '2016/05/15 11:00:00,31,301,6')
                  ]
 
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
-        DiverofficeImport.charsetchoosen = u'utf-8'
-        with utils.tempinput(u'\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput(u'\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput(u'\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        DiverofficeImport.charsetchoosen = 'utf-8'
+        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -186,11 +186,11 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
-                        mock_notfoundquestion.return_value.answer = u'ok'
-                        mock_notfoundquestion.return_value.value = u'rb1'
-                        mock_notfoundquestion.return_value.reuse_column = u'location'
+                        mock_notfoundquestion.return_value.answer = 'ok'
+                        mock_notfoundquestion.return_value.value = 'rb1'
+                        mock_notfoundquestion.return_value.reuse_column = 'location'
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [u'utf-8']
+                        mock_encoding.return_value = ['utf-8']
 
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
@@ -201,35 +201,35 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
-                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb1, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb1, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb1, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb1, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_wlvllogg_import_from_diveroffice_files_all_dates(self):
-        files = [(u'Location=rb1',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/03/15 10:30:00,1,10',
-                u'2016/03/15 11:00:00,11,101'),
-                (u'Location=rb2',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/04/15 10:30:00,2,20',
-                u'2016/04/15 11:00:00,21,201'),
-                (u'Location=rb3',
-                u'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
-                u'2016/05/15 10:30:00,3,30,5',
-                u'2016/05/15 11:00:00,31,301,6')
+        files = [('Location=rb1',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/03/15 10:30:00,1,10',
+                '2016/03/15 11:00:00,11,101'),
+                ('Location=rb2',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/04/15 10:30:00,2,20',
+                '2016/04/15 11:00:00,21,201'),
+                ('Location=rb3',
+                'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
+                '2016/05/15 10:30:00,3,30,5',
+                '2016/05/15 11:00:00,31,301,6')
                  ]
 
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb3')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb3')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
-        DiverofficeImport.charsetchoosen = u'utf-8'
-        with utils.tempinput(u'\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput(u'\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput(u'\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        DiverofficeImport.charsetchoosen = 'utf-8'
+        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -241,11 +241,11 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
-                        mock_notfoundquestion.return_value.answer = u'ok'
-                        mock_notfoundquestion.return_value.value = u'rb1'
-                        mock_notfoundquestion.return_value.reuse_column = u'location'
+                        mock_notfoundquestion.return_value.answer = 'ok'
+                        mock_notfoundquestion.return_value.value = 'rb1'
+                        mock_notfoundquestion.return_value.reuse_column = 'location'
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [u'utf-8']
+                        mock_encoding.return_value = ['utf-8']
 
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
@@ -257,22 +257,22 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
-                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_wlvllogg_import_from_diveroffice_files_try_capitalize(self):
-        files = [(u'Location=rb1',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/03/15 10:30:00,1,10',
-                u'2016/03/15 11:00:00,11,101')
+        files = [('Location=rb1',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/03/15 10:30:00,1,10',
+                '2016/03/15 11:00:00,11,101')
                  ]
 
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('Rb1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1')''')
 
-        DiverofficeImport.charsetchoosen = u'utf-8'
-        with utils.tempinput(u'\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+        DiverofficeImport.charsetchoosen = 'utf-8'
+        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
             filenames = [f1]
             utils_askuser_answer_no_obj = MockUsingReturnValue(None)
             utils_askuser_answer_no_obj.result = 0
@@ -286,11 +286,11 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.utils.select_files')
             def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
-                mock_notfoundquestion.return_value.answer = u'ok'
-                mock_notfoundquestion.return_value.value = u'rb1'
-                mock_notfoundquestion.return_value.reuse_column = u'location'
+                mock_notfoundquestion.return_value.answer = 'ok'
+                mock_notfoundquestion.return_value.value = 'rb1'
+                mock_notfoundquestion.return_value.reuse_column = 'location'
                 mock_filenames.return_value = filenames
-                mock_encoding.return_value = [u'utf-8']
+                mock_encoding.return_value = ['utf-8']
 
                 ms = MagicMock()
                 ms.settingsdict = OrderedDict()
@@ -305,22 +305,22 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
             _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
-            test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
+            test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
             reference_string = r'''(True, [(Rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (Rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None)])'''
             assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_wlvllogg_import_from_diveroffice_files_cancel(self):
-        files = [(u'Location=rb2',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/03/15 10:30:00,1,10',
-                u'2016/03/15 11:00:00,11,101')
+        files = [('Location=rb2',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/03/15 10:30:00,1,10',
+                '2016/03/15 11:00:00,11,101')
                  ]
 
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('Rb1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('Rb1')''')
 
-        DiverofficeImport.charsetchoosen = u'utf-8'
-        with utils.tempinput(u'\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+        DiverofficeImport.charsetchoosen = 'utf-8'
+        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
             filenames = [f1]
             utils_askuser_answer_no_obj = MockUsingReturnValue(None)
             utils_askuser_answer_no_obj.result = 0
@@ -334,11 +334,11 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
             @mock.patch('import_data_to_db.utils.select_files')
             def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
-                mock_notfoundquestion.return_value.answer = u'cancel'
-                mock_notfoundquestion.return_value.value = u'rb1'
-                mock_notfoundquestion.return_value.reuse_column = u'location'
+                mock_notfoundquestion.return_value.answer = 'cancel'
+                mock_notfoundquestion.return_value.value = 'rb1'
+                mock_notfoundquestion.return_value.reuse_column = 'location'
                 mock_filenames.return_value = filenames
-                mock_encoding.return_value = [u'utf-8']
+                mock_encoding.return_value = ['utf-8']
 
                 ms = MagicMock()
                 ms.settingsdict = OrderedDict()
@@ -356,35 +356,35 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
             answer = _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
 
-            test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
+            test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
             reference_string = r'''(True, [])'''
             assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_wlvllogg_import_from_diveroffice_files_skip_missing_water_level(self):
-        files = [(u'Location=rb1',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/03/15 10:30:00,1,10',
-                u'2016/03/15 11:00:00,,101'),
-                (u'Location=rb2',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/04/15 10:30:00,2,20',
-                u'2016/04/15 11:00:00,21,201'),
-                (u'Location=rb3',
-                u'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
-                u'2016/05/15 10:30:00,3,30,5',
-                u'2016/05/15 11:00:00,31,301,6')
+        files = [('Location=rb1',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/03/15 10:30:00,1,10',
+                '2016/03/15 11:00:00,,101'),
+                ('Location=rb2',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/04/15 10:30:00,2,20',
+                '2016/04/15 11:00:00,21,201'),
+                ('Location=rb3',
+                'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
+                '2016/05/15 10:30:00,3,30,5',
+                '2016/05/15 11:00:00,31,301,6')
                  ]
 
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb3')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb3')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
-        DiverofficeImport.charsetchoosen = u'utf-8'
-        with utils.tempinput(u'\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput(u'\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput(u'\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        DiverofficeImport.charsetchoosen = 'utf-8'
+        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -396,11 +396,11 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
-                        mock_notfoundquestion.return_value.answer = u'ok'
-                        mock_notfoundquestion.return_value.value = u'rb1'
-                        mock_notfoundquestion.return_value.reuse_column = u'location'
+                        mock_notfoundquestion.return_value.answer = 'ok'
+                        mock_notfoundquestion.return_value.value = 'rb1'
+                        mock_notfoundquestion.return_value.reuse_column = 'location'
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [u'utf-8']
+                        mock_encoding.return_value = ['utf-8']
 
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
@@ -417,35 +417,35 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
-                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_wlvllogg_import_from_diveroffice_files_not_skip_missing_water_level(self):
-        files = [(u'Location=rb1',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/03/15 10:30:00,1,10',
-                u'2016/03/15 11:00:00,,101'),
-                (u'Location=rb2',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/04/15 10:30:00,2,20',
-                u'2016/04/15 11:00:00,21,201'),
-                (u'Location=rb3',
-                u'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
-                u'2016/05/15 10:30:00,3,30,5',
-                u'2016/05/15 11:00:00,31,301,6')
+        files = [('Location=rb1',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/03/15 10:30:00,1,10',
+                '2016/03/15 11:00:00,,101'),
+                ('Location=rb2',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/04/15 10:30:00,2,20',
+                '2016/04/15 11:00:00,21,201'),
+                ('Location=rb3',
+                'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
+                '2016/05/15 10:30:00,3,30,5',
+                '2016/05/15 11:00:00,31,301,6')
                  ]
 
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb3')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb3')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
-        DiverofficeImport.charsetchoosen = u'utf-8'
-        with utils.tempinput(u'\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput(u'\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput(u'\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        DiverofficeImport.charsetchoosen = 'utf-8'
+        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
 
@@ -457,11 +457,11 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch('import_data_to_db.utils.select_files')
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
-                        mock_notfoundquestion.return_value.answer = u'ok'
-                        mock_notfoundquestion.return_value.value = u'rb1'
-                        mock_notfoundquestion.return_value.reuse_column = u'location'
+                        mock_notfoundquestion.return_value.answer = 'ok'
+                        mock_notfoundquestion.return_value.value = 'rb1'
+                        mock_notfoundquestion.return_value.reuse_column = 'location'
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [u'utf-8']
+                        mock_encoding.return_value = ['utf-8']
 
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
@@ -481,31 +481,31 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
-                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
 
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, None, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None), (rb3, 2016-05-15 10:30:00, 3.0, 30.0, 5.0, None, None), (rb3, 2016-05-15 11:00:00, 31.0, 301.0, 6.0, None, None)])'''
                     assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_wlvllogg_import_from_diveroffice_files_datetime_filter(self):
-        files = [(u'Location=rb1',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/03/15 10:30:00,1,10',
-                u'2016/03/15 11:00:00,11,101',
-                u'2016/06/15 11:00:00,11,101'),
-                (u'Location=rb2',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/04/15 10:30:00,2,20',
-                u'2016/04/15 11:00:00,21,201'),
+        files = [('Location=rb1',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/03/15 10:30:00,1,10',
+                '2016/03/15 11:00:00,11,101',
+                '2016/06/15 11:00:00,11,101'),
+                ('Location=rb2',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/04/15 10:30:00,2,20',
+                '2016/04/15 11:00:00,21,201'),
                  ]
 
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
-        db_utils.sql_alter_db(u'''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
+        db_utils.sql_alter_db('''INSERT INTO w_levels_logger (obsid, date_time, head_cm) VALUES ('rb1', '2016-03-15 10:31', '5.0')''')
 
-        DiverofficeImport.charsetchoosen = u'utf-8'
-        with utils.tempinput(u'\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput(u'\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+        DiverofficeImport.charsetchoosen = 'utf-8'
+        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
 
                 filenames = [f1, f2]
 
@@ -518,11 +518,11 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                 @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                 @mock.patch('import_data_to_db.utils.select_files')
                 def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion):
-                    mock_notfoundquestion.return_value.answer = u'ok'
-                    mock_notfoundquestion.return_value.value = u'rb1'
-                    mock_notfoundquestion.return_value.reuse_column = u'location'
+                    mock_notfoundquestion.return_value.answer = 'ok'
+                    mock_notfoundquestion.return_value.value = 'rb1'
+                    mock_notfoundquestion.return_value.reuse_column = 'location'
                     mock_filenames.return_value = filenames
-                    mock_encoding.return_value = [u'utf-8']
+                    mock_encoding.return_value = ['utf-8']
 
                     ms = MagicMock()
                     ms.settingsdict = OrderedDict()
@@ -530,39 +530,39 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     importer.select_files_and_load_gui()
                     importer.import_all_data.checked = True
                     importer.confirm_names.checked = False
-                    importer.date_time_filter.from_date = u'2016-03-15 11:00:00'
-                    importer.date_time_filter.to_date = u'2016-04-15 10:30:00'
+                    importer.date_time_filter.from_date = '2016-03-15 11:00:00'
+                    importer.date_time_filter.to_date = '2016-04-15 10:30:00'
                     importer.start_import(importer.files, importer.skip_rows.checked, importer.confirm_names.checked, importer.import_all_data.checked,  importer.date_time_filter.from_date, importer.date_time_filter.to_date)
 
                 _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
-                test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
+                test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
                 reference_string = r'''(True, [(rb1, 2016-03-15 10:31, 5.0, None, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None)])'''
                 assert test_string == reference_string
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_wlvllogg_import_from_diveroffice_files_skip_obsid(self):
-        files = [(u'Location=rb1',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/03/15 10:30:00,1,10',
-                u'2016/03/15 11:00:00,11,101'),
-                (u'Location=rb2',
-                u'Date/time,Water head[cm],Temperature[°C]',
-                u'2016/04/15 10:30:00,2,20',
-                u'2016/04/15 11:00:00,21,201'),
-                (u'Location=rb3',
-                u'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
-                u'2016/05/15 10:30:00,3,30,5',
-                u'2016/05/15 11:00:00,31,301,6')
+        files = [('Location=rb1',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/03/15 10:30:00,1,10',
+                '2016/03/15 11:00:00,11,101'),
+                ('Location=rb2',
+                'Date/time,Water head[cm],Temperature[°C]',
+                '2016/04/15 10:30:00,2,20',
+                '2016/04/15 11:00:00,21,201'),
+                ('Location=rb3',
+                'Date/time,Water head[cm],Temperature[°C],Conductivity[mS/cm]',
+                '2016/05/15 10:30:00,3,30,5',
+                '2016/05/15 11:00:00,31,301,6')
                  ]
 
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
-        db_utils.sql_alter_db(u'''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb1')''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid) VALUES ('rb2')''')
 
-        DiverofficeImport.charsetchoosen = u'utf-8'
-        with utils.tempinput(u'\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
-            with utils.tempinput(u'\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
-                with utils.tempinput(u'\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
+        DiverofficeImport.charsetchoosen = 'utf-8'
+        with utils.tempinput('\n'.join(files[0]), DiverofficeImport.charsetchoosen) as f1:
+            with utils.tempinput('\n'.join(files[1]), DiverofficeImport.charsetchoosen) as f2:
+                with utils.tempinput('\n'.join(files[2]), DiverofficeImport.charsetchoosen) as f3:
 
                     filenames = [f1, f2, f3]
                     utils_askuser_answer_no_obj = MockUsingReturnValue(None)
@@ -580,19 +580,19 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
                     def _test_wlvllogg_import_from_diveroffice_files(self, filenames, mock_filenames, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfoundquestion, mock_messagebarandlog):
 
                         mocks_notfoundquestion = []
-                        for answer, value in [[u'ok', u'rb1'],
-                                              [u'ok', u'rb2'],
-                                              [u'skip', u'rb3']]:
+                        for answer, value in [['ok', 'rb1'],
+                                              ['ok', 'rb2'],
+                                              ['skip', 'rb3']]:
                             a_mock = MagicMock()
                             a_mock.answer = answer
                             a_mock.value = value
-                            a_mock.reuse_column = u'location'
+                            a_mock.reuse_column = 'location'
                             mocks_notfoundquestion.append(a_mock)
 
                         mock_notfoundquestion.side_effect = mocks_notfoundquestion
 
                         mock_filenames.return_value = filenames
-                        mock_encoding.return_value = [u'utf-8']
+                        mock_encoding.return_value = ['utf-8']
 
                         ms = MagicMock()
                         ms.settingsdict = OrderedDict()
@@ -601,12 +601,12 @@ class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatial
 
                         importer.start_import(importer.files, importer.skip_rows.checked, importer.confirm_names.checked, importer.import_all_data.checked)
 
-                        print(u'\n'.join([str(x) for x in mock_messagebarandlog.mock_calls]))
+                        print('\n'.join([str(x) for x in mock_messagebarandlog.mock_calls]))
 
 
                     _test_wlvllogg_import_from_diveroffice_files(self, filenames)
 
-                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db(u'''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
+                    test_string = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('''SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger'''))
                     reference_string = r'''(True, [(rb1, 2016-03-15 10:30:00, 1.0, 10.0, None, None, None), (rb1, 2016-03-15 11:00:00, 11.0, 101.0, None, None, None), (rb2, 2016-04-15 10:30:00, 2.0, 20.0, None, None, None), (rb2, 2016-04-15 11:00:00, 21.0, 201.0, None, None, None)])'''
                     print(test_string)
                     print(reference_string)

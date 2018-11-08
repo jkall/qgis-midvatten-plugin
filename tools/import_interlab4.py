@@ -47,7 +47,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         self.ms.loadSettings()
         qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
-        self.setWindowTitle(ru(QCoreApplication.translate(u'Interlab4Import', "Import interlab4 data to w_qual_lab table"))) # Set the title for the dialog
+        self.setWindowTitle(ru(QCoreApplication.translate('Interlab4Import', "Import interlab4 data to w_qual_lab table"))) # Set the title for the dialog
         #self.MainWindow.setWindowTitle("Import interlab4 data to w_qual_lab table")
         self.setupUi(self)  # Required by Qt4 to initialize the UI
         self.status = True
@@ -72,23 +72,23 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         self.metadata_filter.update_selection_button.clicked.connect(lambda : self.metadata_filter.set_selection(self.specific_meta_filter.get_items_dict()))
 
-        self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate(u'Interlab4Import', u'Start import')))
+        self.start_import_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('Interlab4Import', 'Start import')))
         self.gridLayout_buttons.addWidget(self.start_import_button, 0, 0)
         self.start_import_button.clicked.connect(lambda : self.start_import(self.all_lab_results, self.metadata_filter.get_selected_lablitteras()))
 
-        self.help_label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'Interlab4Import', u'Instructions')))
-        self.help_label.setToolTip(ru(QCoreApplication.translate(u'Interlab4Import',
-                                   u'Selected rows (lablitteras in the bottom table will be imported when pushing "Start import" button.\n'
-                                   u'The table can be sorted by clicking the column headers.\n\n'
-                                   u'Rows at the bottom table can also be selected using the top list.\n'
-                                   u'Howto:\n'
-                                   u'1. Choose column header to make a selection by in the Column header drop down list.\n'
-                                   u'2. Make a list of entries (one row per entry).\n'
-                                   u'3. Click "Update selection".\n'
-                                   u'All rows where values in the chosen column match entries in the pasted list will be selected.\n\n'
-                                   u'Hover over a column header to see which database column it will go to.')))
+        self.help_label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('Interlab4Import', 'Instructions')))
+        self.help_label.setToolTip(ru(QCoreApplication.translate('Interlab4Import',
+                                   'Selected rows (lablitteras in the bottom table will be imported when pushing "Start import" button.\n'
+                                   'The table can be sorted by clicking the column headers.\n\n'
+                                   'Rows at the bottom table can also be selected using the top list.\n'
+                                   'Howto:\n'
+                                   '1. Choose column header to make a selection by in the Column header drop down list.\n'
+                                   '2. Make a list of entries (one row per entry).\n'
+                                   '3. Click "Update selection".\n'
+                                   'All rows where values in the chosen column match entries in the pasted list will be selected.\n\n'
+                                   'Hover over a column header to see which database column it will go to.')))
 
-        self.close_after_import = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate(u'Interlab4Import', u'Close dialog after import')))
+        self.close_after_import = qgis.PyQt.QtWidgets.QCheckBox(ru(QCoreApplication.translate('Interlab4Import', 'Close dialog after import')))
         self.close_after_import.setChecked(True)
         self.gridLayout_buttons.addWidget(self.close_after_import, 0, 0)
 
@@ -108,16 +108,16 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         meta_headers = get_metadata_headers(all_lab_results)
         ask_obsid_table = [meta_headers]
         for lablittera, v in sorted(all_lab_results.items()):
-            metarow = [v[u'metadata'].get(meta_header, u'') for meta_header in meta_headers]
+            metarow = [v['metadata'].get(meta_header, '') for meta_header in meta_headers]
             ask_obsid_table.append(metarow)
         existing_obsids = utils.get_all_obsids()
-        answer = utils.filter_nonexisting_values_and_ask(ask_obsid_table, u'obsid', existing_values=existing_obsids, try_capitalize=False, always_ask_user=True)
-        if answer == u'cancel':
+        answer = utils.filter_nonexisting_values_and_ask(ask_obsid_table, 'obsid', existing_values=existing_obsids, try_capitalize=False, always_ask_user=True)
+        if answer == 'cancel':
             self.status = True
             return Cancel()
         elif not answer:
             self.status = False
-            utils.MessagebarAndLog.critical(bar_msg=u'Error, no observations remain. No import done.')
+            utils.MessagebarAndLog.critical(bar_msg='Error, no observations remain. No import done.')
             return Cancel()
         else:
             remaining_lablitteras_obsids = dict([(x[0], x[-1]) for x in answer[1:]])
@@ -125,14 +125,14 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         _all_lab_results = {}
         for lablittera, v in all_lab_results.items():
             if lablittera in remaining_lablitteras_obsids:
-                v[u'metadata'][u'obsid'] = remaining_lablitteras_obsids[lablittera]
+                v['metadata']['obsid'] = remaining_lablitteras_obsids[lablittera]
                 _all_lab_results[lablittera] = v
         all_lab_results = _all_lab_results
 
         self.wquallab_data_table = self.to_table(all_lab_results)
 
         importer = import_data_to_db.midv_data_importer()
-        answer = importer.general_import(goal_table=u'w_qual_lab', file_data=self.wquallab_data_table)
+        answer = importer.general_import(goal_table='w_qual_lab', file_data=self.wquallab_data_table)
 
         importer.SanityCheckVacuumDB()
 
@@ -144,7 +144,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
     def parse(self, filenames):
         """ Reads the interlab
         :param filenames:
-        :return: A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
+        :return: A dict like {<lablittera>: {'metadata': {'metadataheader': value, ...}, <par1_name>: {'dataheader': value, ...}}}
         """
         all_lab_results = {}
 
@@ -152,7 +152,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
             file_settings = self.parse_filesettings(filename)
             file_error, version, encoding, decimalsign, quotechar = file_settings
             if file_error:
-                utils.pop_up_info(ru(QCoreApplication.translate(u'Interlab4Import', u"Warning: The file information %s could not be read. Skipping file"))%filename)
+                utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "Warning: The file information %s could not be read. Skipping file"))%filename)
                 continue
 
             with open(filename, 'rb') as f:
@@ -175,12 +175,12 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                     if not cols:
                         continue
 
-                    if cols[0].lower().startswith(u'#slut'):
+                    if cols[0].lower().startswith('#slut'):
                         break
 
                     #cols = ru(cols, keep_containers=True)
 
-                    if cols[0].lower().startswith(u'#provadm'):
+                    if cols[0].lower().startswith('#provadm'):
                         parse_data_values = False
                         parse_metadata_values = False
                         read_data_header = False
@@ -189,7 +189,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                         metadata_header = None
                         continue
 
-                    if cols[0].lower().startswith(u'#provdat'):
+                    if cols[0].lower().startswith('#provdat'):
                         parse_data_values = False
                         parse_metadata_values = False
                         read_metadata_header = False
@@ -204,7 +204,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
                     if parse_metadata_values:
                         metadata = dict([(metadata_header[idx], value.lstrip(' ').rstrip(' ')) for idx, value in enumerate(cols) if value.lstrip(' ').rstrip(' ')])
-                        lab_results.setdefault(metadata[u'lablittera'], {})[u'metadata'] = metadata
+                        lab_results.setdefault(metadata['lablittera'], {})['metadata'] = metadata
                         continue
 
                     if read_data_header:
@@ -215,15 +215,15 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
                     if parse_data_values:
                         data = dict([(data_header[idx], value.lstrip(' ').rstrip(' ')) for idx, value in enumerate(cols) if value.lstrip(' ').rstrip(' ')])
-                        if u'mätvärdetal' in data:
-                            data[u'mätvärdetal'] = data[u'mätvärdetal'].replace(decimalsign, '.')
+                        if 'mätvärdetal' in data:
+                            data['mätvärdetal'] = data['mätvärdetal'].replace(decimalsign, '.')
 
-                        if not u'parameter' in data:
-                            utils.pop_up_info(ru(QCoreApplication.translate(u'Interlab4Import', "WARNING: Parsing error. The parameter is missing on row %s"))%str(cols))
+                        if not 'parameter' in data:
+                            utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "WARNING: Parsing error. The parameter is missing on row %s"))%str(cols))
                             continue
 
-                        if data[u'lablittera'] not in lab_results:
-                            utils.pop_up_info(ru(QCoreApplication.translate(u'Interlab4Import', "WARNING: Parsing error. Data for %s read before it's metadata."))%data['lablittera'])
+                        if data['lablittera'] not in lab_results:
+                            utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "WARNING: Parsing error. Data for %s read before it's metadata."))%data['lablittera'])
                             file_error = True
                             break
 
@@ -237,19 +237,19 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                         If kalium is below 1, they will have values '<2,5' and '<1' in 'mätvärdetext'
                         If both are above 2,5, there is no good way to separate them. In that case, use the last one.
                         """
-                        if u'kalium' in data[u'parameter'].lower():
-                            current_kalium_name = data[u'parameter'].lower()
-                            existing_same_names = [x for x in lab_results[data[u'lablittera']] if x == current_kalium_name]
+                        if 'kalium' in data['parameter'].lower():
+                            current_kalium_name = data['parameter'].lower()
+                            existing_same_names = [x for x in lab_results[data['lablittera']] if x == current_kalium_name]
                             if not existing_same_names:
                                 #kalium has not been parsed yet. Keep the current one.
                                 pass
                             else:
                                 parameter_chosen = False
                                 #Method 1: Use mätosäkerhet to find the high resolution kalium.
-                                _previous_resolution = lab_results[data[u'lablittera']][current_kalium_name].get(u'mätosäkerhet', u'')
-                                previous_resolution = _previous_resolution.replace(u'±', u'').replace(u'<', u'')
-                                _current_resolution = data.get(u'mätosäkerhet', u'')
-                                current_resolution = _current_resolution.replace(u'±', u'').replace(u'<', u'')
+                                _previous_resolution = lab_results[data['lablittera']][current_kalium_name].get('mätosäkerhet', '')
+                                previous_resolution = _previous_resolution.replace('±', '').replace('<', '')
+                                _current_resolution = data.get('mätosäkerhet', '')
+                                current_resolution = _current_resolution.replace('±', '').replace('<', '')
                                 if previous_resolution and current_resolution:
                                     try:
                                         previous_resolution = float(previous_resolution)
@@ -262,10 +262,10 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                                         if previous_resolution > current_resolution:
                                             # The current one is the high resolution one. Keep it to overwrite the other one.
                                             parameter_chosen = True
-                                            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Kalium was found more than once. The one with mätosäkerhet %s was used."'))%_current_resolution)
+                                            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Kalium was found more than once. The one with mätosäkerhet %s was used."'))%_current_resolution)
                                         elif current_resolution > previous_resolution:
                                             # The current one is the low resolution one, skip it.
-                                            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Kalium was found more than once. The one with mätosäkerhet %s was used."'))%_previous_resolution)
+                                            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Kalium was found more than once. The one with mätosäkerhet %s was used."'))%_previous_resolution)
                                             parameter_chosen = True
                                             continue
                                         elif current_resolution == previous_resolution:
@@ -273,23 +273,23 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                                             parameter_chosen = False
 
                                 if not parameter_chosen:
-                                    current_txt = data.get(u'mätvärdetext', u'').strip(u' ')
-                                    previous_txt = lab_results[data[u'lablittera']][current_kalium_name].get(u'mätvärdetext', u'')
+                                    current_txt = data.get('mätvärdetext', '').strip(' ')
+                                    previous_txt = lab_results[data['lablittera']][current_kalium_name].get('mätvärdetext', '')
                                     #Method 2: Use < and <2.5 limits to try to find the high resolution one.
-                                    if current_txt == u'<1' or previous_txt.strip(u' ').replace(u',', u'.') == u'<2.5':
+                                    if current_txt == '<1' or previous_txt.strip(' ').replace(',', '.') == '<2.5':
                                         #The current one is the high resolution one. Keep it to overwrite the other one.
-                                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Kalium was found more than once. The one with mätvärdetext %s was used."'))%current_txt)
+                                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Kalium was found more than once. The one with mätvärdetext %s was used."'))%current_txt)
                                         pass
-                                    elif current_txt == u'<2.5' or previous_txt.strip(u' ') == u'<1':
+                                    elif current_txt == '<2.5' or previous_txt.strip(' ') == '<1':
                                         #The current one is the low resolution one, skip it.
-                                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Kalium was found more than once. The one with mätvärdetext %s was used."'))%previous_txt)
+                                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Kalium was found more than once. The one with mätvärdetext %s was used."'))%previous_txt)
                                         continue
                                     else:
-                                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Kalium was found more than once. The high resolution one could not be found. The one with mätvärdetext %s was used."'))%current_txt)
+                                        utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Kalium was found more than once. The high resolution one could not be found. The one with mätvärdetext %s was used."'))%current_txt)
                                         #Hope that the current one (the last one) is the high resolution one and let it overwrite the existing one
                                         pass
 
-                        lab_results[data[u'lablittera']][data[u'parameter']] = data
+                        lab_results[data['lablittera']][data['parameter']] = data
 
                         continue
                 if not file_error:
@@ -323,9 +323,9 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                 continue
 
         if encoding is None:
-            encoding = utils.ask_for_charset(default_charset='utf-16', msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Give charset used in the file %s'))%filename)
+            encoding = utils.ask_for_charset(default_charset='utf-16', msg=ru(QCoreApplication.translate('Interlab4Import', 'Give charset used in the file %s'))%filename)
         if encoding is None or not encoding:
-            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Charset not given, stopping.')))
+            utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('Interlab4Import', 'Charset not given, stopping.')))
             raise utils.UserInterruptError()
 
         #Parse the filedescriptor
@@ -337,12 +337,12 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                     break
 
                 row = rawrow.lstrip('#').rstrip('\n').lower()
-                cols = row.split(u'=')
-                if cols[0].lower() == u'version':
+                cols = row.split('=')
+                if cols[0].lower() == 'version':
                     version = cols[1]
-                elif cols[0].lower() == u'decimaltecken':
+                elif cols[0].lower() == 'decimaltecken':
                     decimalsign = cols[1]
-                elif cols[0].lower() == u'textavgränsare':
+                elif cols[0].lower() == 'textavgränsare':
                     if cols[1].lower() == 'ja':
                         quotechar = '"'
 
@@ -352,8 +352,8 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         """
         Converts a parsed interlab4 dict into a table for w_qual_lab import
 
-        :param _data_dict:A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
-        :return: a list like [[u'obsid, depth, report, project, staff, date_time, anameth, reading_num, reading_txt, unit, comment'], rows with values]
+        :param _data_dict:A dict like {<lablittera>: {'metadata': {'metadataheader': value, ...}, <par1_name>: {'dataheader': value, ...}}}
+        :return: a list like [['obsid, depth, report, project, staff, date_time, anameth, reading_num, reading_txt, unit, comment'], rows with values]
 
         The translation from svensktvatten interlab4-keywords to w_qual_lab is from
         http://www.svensktvatten.se/globalassets/dricksvatten/riskanalys-och-provtagning/interlab-4-0.pdf
@@ -365,60 +365,60 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         #### !!!! If a metadata-dbcolumn connection is changed, MetadataFilter.update_table.metaheader_dbcolumn_tooltips MUST be updated as well.
 
-        file_data = [[u'obsid', u'depth', u'report', u'project', u'staff', u'date_time', u'anameth', u'parameter', u'reading_num', u'reading_txt', u'unit', u'comment']]
+        file_data = [['obsid', 'depth', 'report', 'project', 'staff', 'date_time', 'anameth', 'parameter', 'reading_num', 'reading_txt', 'unit', 'comment']]
         for lablittera, lab_results in data_dict.items():
-            metadata = lab_results.pop(u'metadata')
+            metadata = lab_results.pop('metadata')
 
-            obsid = metadata[u'obsid']
+            obsid = metadata['obsid']
             depth = None
             report = lablittera
-            project = metadata.get(u'projekt', None)
-            staff = metadata.get(u'provtagare', None)
+            project = metadata.get('projekt', None)
+            staff = metadata.get('provtagare', None)
 
-            sampledate = metadata.get(u'provtagningsdatum', None)
+            sampledate = metadata.get('provtagningsdatum', None)
             if sampledate is None:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Interlab4 import: There was no sample date found (column "provtagningsdatum") for lablittera %s. Importing without it.'))%lablittera)
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Interlab4 import: There was no sample date found (column "provtagningsdatum") for lablittera %s. Importing without it.'))%lablittera)
                 date_time = None
             else:
-                sampletime = metadata.get(u'provtagningstid', None)
+                sampletime = metadata.get('provtagningstid', None)
                 if sampletime is not None:
-                    date_time = datetime.strftime(datestring_to_date(u' '.join([sampledate, sampletime])), u'%Y-%m-%d %H:%M:%S')
+                    date_time = datetime.strftime(datestring_to_date(' '.join([sampledate, sampletime])), '%Y-%m-%d %H:%M:%S')
                 else:
-                    date_time = datetime.strftime(datestring_to_date(sampledate), u'%Y-%m-%d %H:%M:%S')
-                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Interlab4 import: There was no sample time found (column "provtagningstid") for lablittera %s. Importing without it.'))%lablittera)
+                    date_time = datetime.strftime(datestring_to_date(sampledate), '%Y-%m-%d %H:%M:%S')
+                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Interlab4 import: There was no sample time found (column "provtagningstid") for lablittera %s. Importing without it.'))%lablittera)
 
-            meta_comment = metadata.get(u'kommentar', None)
-            additional_meta_comments = [u'provtagningsorsak',
-                                        u'provtyp',
-                                        u'provtypspecifikation',
-                                        u'bedömning',
-                                        u'kemisk bedömning',
-                                        u'mikrobiologisk bedömning',
-                                        u'provplatsid',
-                                        u'provplatsnamn',
-                                        u'specifik provplats']
+            meta_comment = metadata.get('kommentar', None)
+            additional_meta_comments = ['provtagningsorsak',
+                                        'provtyp',
+                                        'provtypspecifikation',
+                                        'bedömning',
+                                        'kemisk bedömning',
+                                        'mikrobiologisk bedömning',
+                                        'provplatsid',
+                                        'provplatsnamn',
+                                        'specifik provplats']
 
             #Only keep the comments that really has a value.
-            more_meta_comments = u'. '.join([u': '.join([_x, metadata[_x]]) for _x in [_y for _y in additional_meta_comments if _y in metadata]  if all([metadata[_x], metadata[_x] is not None, metadata[_x].lower() != u'ej bedömt', metadata[_x] != u'-'])])
+            more_meta_comments = '. '.join([': '.join([_x, metadata[_x]]) for _x in [_y for _y in additional_meta_comments if _y in metadata]  if all([metadata[_x], metadata[_x] is not None, metadata[_x].lower() != 'ej bedömt', metadata[_x] != '-'])])
             if not more_meta_comments:
                 more_meta_comments = None
 
             for parameter, parameter_dict in lab_results.items():
-                anameth = parameter_dict.get(u'metodbeteckning', None)
+                anameth = parameter_dict.get('metodbeteckning', None)
 
-                reading_num = parameter_dict.get(u'mätvärdetal', None)
-                anm = parameter_dict.get(u'mätvärdetalanm', None)
-                reading_txt = parameter_dict.get(u'mätvärdetext', None)
+                reading_num = parameter_dict.get('mätvärdetal', None)
+                anm = parameter_dict.get('mätvärdetalanm', None)
+                reading_txt = parameter_dict.get('mätvärdetext', None)
 
                 if reading_num is None and reading_txt is not None:
-                    _reading_txt_replaced = reading_txt.replace(u'<', u'').replace(u'>', u'').replace(u',', u'.')
+                    _reading_txt_replaced = reading_txt.replace('<', '').replace('>', '').replace(',', '.')
                     try:
                         float(_reading_txt_replaced)
                     except ValueError:
                         reading_num = None
                         if parameter not in parameter_report_warning_messages:
-                            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Import interlab4 warning, see log message panel')),
-                                                           log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'Could not set reading_num for parameter %s for one or more reports/lablitteras (%s etc.)'))%(
+                            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Interlab4Import', 'Import interlab4 warning, see log message panel')),
+                                                           log_msg=ru(QCoreApplication.translate('Interlab4Import', 'Could not set reading_num for parameter %s for one or more reports/lablitteras (%s etc.)'))%(
                                                                parameter,
                                                                lablittera))
                         parameter_report_warning_messages.setdefault(parameter, []).append(report)
@@ -432,16 +432,16 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                     if not reading_txt.startswith(anm):
                         reading_txt = anm + reading_txt
 
-                unit = parameter_dict.get(u'enhet', None)
-                parameter_comment = parameter_dict.get(u'kommentar', None)
-                additional_parameter_comments = [u'rapporteringsgräns',
-                                                u'detektionsgräns',
-                                                u'mätosäkerhet',
-                                                u'mätvärdespår',
-                                                u'parameterbedömning'
+                unit = parameter_dict.get('enhet', None)
+                parameter_comment = parameter_dict.get('kommentar', None)
+                additional_parameter_comments = ['rapporteringsgräns',
+                                                'detektionsgräns',
+                                                'mätosäkerhet',
+                                                'mätvärdespår',
+                                                'parameterbedömning'
                                                 #u'mätvärdetalanm' This is used for creating reading_txt
                                                 ]
-                more_parameter_comments = u'. '.join([u': '.join([_x, parameter_dict[_x]]) for _x in [_y for _y in additional_parameter_comments if _y in parameter_dict]  if all([parameter_dict[_x], parameter_dict[_x] is not None, parameter_dict[_x].lower() != u'ej bedömt', parameter_dict[_x] != u'-'])])
+                more_parameter_comments = '. '.join([': '.join([_x, parameter_dict[_x]]) for _x in [_y for _y in additional_parameter_comments if _y in parameter_dict]  if all([parameter_dict[_x], parameter_dict[_x] is not None, parameter_dict[_x].lower() != 'ej bedömt', parameter_dict[_x] != '-'])])
 
                 file_data.append([obsid,
                                   depth,
@@ -454,11 +454,11 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                                   reading_num,
                                   reading_txt,
                                   unit,
-                                  u'. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments, more_parameter_comments] if comment is not None and comment])]
+                                  '. '.join([comment for comment in [parameter_comment, meta_comment, more_meta_comments, more_parameter_comments] if comment is not None and comment])]
                                  )
 
         for parameter, reports in sorted(parameter_report_warning_messages.items()):
-            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'Interlab4Import', u'reading_num could not be set for parameter %s for reports %s'))%(parameter, u', '.join(reports)))
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('Interlab4Import', 'reading_num could not be set for parameter %s for reports %s'))%(parameter, ', '.join(reports)))
 
         return file_data
     
@@ -491,9 +491,9 @@ class MetaFilterSelection(VRowEntry):
 
         """
         super(MetaFilterSelection, self).__init__()
-        self.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(u'Column header'))
+        self.layout.addWidget(qgis.PyQt.QtWidgets.QLabel('Column header'))
         self.combobox = qgis.PyQt.QtWidgets.QComboBox()
-        self.combobox.addItem(u'')
+        self.combobox.addItem('')
         self.combobox.addItems(get_metadata_headers(all_lab_results))
         self.layout.addWidget(self.combobox)
         self.items = ExtendedQPlainTextEdit()
@@ -513,11 +513,11 @@ class MetadataFilter(VRowEntry):
         super(MetadataFilter, self).__init__()
 
 
-        self.update_selection_button  = qgis.PyQt.QtWidgets.QPushButton(u'Update selection')
+        self.update_selection_button  = qgis.PyQt.QtWidgets.QPushButton('Update selection')
         self.button_layout = RowEntry()
         self.button_layout.layout.addWidget(self.update_selection_button)
 
-        self.show_only_selected_checkbox = qgis.PyQt.QtWidgets.QCheckBox(u'Show only selected rows')
+        self.show_only_selected_checkbox = qgis.PyQt.QtWidgets.QCheckBox('Show only selected rows')
         self.button_layout.layout.addWidget(self.show_only_selected_checkbox)
 
         self.layout.addWidget(self.button_layout.widget)
@@ -546,7 +546,7 @@ class MetadataFilter(VRowEntry):
     @utils.waiting_cursor
     def set_selection(self, table_header):
         """
-        :param table_header: {u'table_header': [list of values]}
+        :param table_header: {'table_header': [list of values]}
         :return:
         """
         self.table.clearSelection()
@@ -581,14 +581,14 @@ class MetadataFilter(VRowEntry):
     @utils.waiting_cursor
     def update_table(self, all_lab_results):
         """
-        all_lab_results: A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
+        all_lab_results: A dict like {<lablittera>: {'metadata': {'metadataheader': value, ...}, <par1_name>: {'dataheader': value, ...}}}
         """
         #Contains only the metadata headers that are hard coded to be put into something else than comment column.
-        metaheader_dbcolumn_tooltips = {u'lablittera': u'report',
-                                        u'projekt': u'project',
-                                        u'provtagare': u'staff',
-                                        u'provtagningsdatum': u'date_time',
-                                        u'provtagningstid': u'date_time'}
+        metaheader_dbcolumn_tooltips = {'lablittera': 'report',
+                                        'projekt': 'project',
+                                        'provtagare': 'staff',
+                                        'provtagningsdatum': 'date_time',
+                                        'provtagningstid': 'date_time'}
 
         self.table.clear()
 
@@ -597,19 +597,19 @@ class MetadataFilter(VRowEntry):
         self.table.setColumnCount(len(self.sorted_table_header))
         self.table.setHorizontalHeaderLabels(self.sorted_table_header)
         for head_index, head_text in enumerate(self.sorted_table_header):
-            self.table.horizontalHeaderItem(head_index).setToolTip(ru(QCoreApplication.translate(u'MetadataFilter', u'%s will be put into database column "%s"'))%(head_text, metaheader_dbcolumn_tooltips.get(head_text, u'comment')))
+            self.table.horizontalHeaderItem(head_index).setToolTip(ru(QCoreApplication.translate('MetadataFilter', '%s will be put into database column "%s"'))%(head_text, metaheader_dbcolumn_tooltips.get(head_text, 'comment')))
 
         self.table.setRowCount(len(all_lab_results))
 
         self.table_items = {}
         for rownr, lablittera in enumerate(all_lab_results.keys()):
-            metadata = all_lab_results[lablittera][u'metadata']
+            metadata = all_lab_results[lablittera]['metadata']
             tablewidgetitem = qgis.PyQt.QtWidgets.QTableWidgetItem(lablittera)
             tablewidgetitem.setFlags(qgis.PyQt.QtCore.Qt.ItemIsSelectable)
             self.table.setItem(rownr, 0, tablewidgetitem)
 
             for colnr, metaheader in enumerate(self.sorted_table_header[1:], 1):
-                tablewidgetitem = qgis.PyQt.QtWidgets.QTableWidgetItem(metadata.get(metaheader, u''))
+                tablewidgetitem = qgis.PyQt.QtWidgets.QTableWidgetItem(metadata.get(metaheader, ''))
                 tablewidgetitem.setFlags(qgis.PyQt.QtCore.Qt.ItemIsSelectable)
                 self.table.setItem(rownr, colnr, tablewidgetitem)
 
@@ -623,33 +623,33 @@ class MetadataFilter(VRowEntry):
 
     def get_all_data(self):
         """
-        all_lab_results: A dict like {<lablittera>: {u'metadata': {u'metadataheader': value, ...}, <par1_name>: {u'dataheader': value, ...}}}
+        all_lab_results: A dict like {<lablittera>: {'metadata': {'metadataheader': value, ...}, <par1_name>: {'dataheader': value, ...}}}
         :return:
         """
         all_lab_results = {}
 
         headers = [self.table.horizontalHeaderItem(colnr) for colnr in range(self.table.columnCount())]
-        lablittera_colnr = headers.index(u'lablittera')
+        lablittera_colnr = headers.index('lablittera')
 
         for rownr in range(self.table.rowCount()):
             lablittera = self.table.item(rownr, lablittera_colnr)
-            all_lab_results.setdefault(lablittera, {})[u'metadata'] = dict([(headers[colnr], self.table.item(rownr, colnr)) for colnr in range(self.table.columnCount())])
+            all_lab_results.setdefault(lablittera, {})['metadata'] = dict([(headers[colnr], self.table.item(rownr, colnr)) for colnr in range(self.table.columnCount())])
         return all_lab_results
 
     def update_nr_of_selected(self):
-        labeltext = ru(QCoreApplication.translate(u'MetadataFilter',u'Select lablitteras to import'))
+        labeltext = ru(QCoreApplication.translate('MetadataFilter','Select lablitteras to import'))
         nr_of_selected = str(len(self.get_selected_lablitteras()))
-        self.label.setText(u' '.join([labeltext, ru(QCoreApplication.translate(u'MetadataFilter',u'(%s rows selected)'))%nr_of_selected]))
+        self.label.setText(' '.join([labeltext, ru(QCoreApplication.translate('MetadataFilter','(%s rows selected)'))%nr_of_selected]))
 
 
 def get_metadata_headers(all_lab_results):
     table_header = set()
 
     for k, v in sorted(all_lab_results.items()):
-        metadata = v[u'metadata']
+        metadata = v['metadata']
         table_header.update(list(metadata.keys()))
 
-    sorted_table_header = [u'lablittera']
+    sorted_table_header = ['lablittera']
     sorted_table_header.extend([head for head in table_header if
                                      head not in sorted_table_header])
     return sorted_table_header

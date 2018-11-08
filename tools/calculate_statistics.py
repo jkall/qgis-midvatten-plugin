@@ -59,14 +59,14 @@ class CalculateStatisticsGui(qgis.PyQt.QtWidgets.QMainWindow, calculate_statisti
         obsids = utils.get_selected_features_as_tuple()
 
         if not all([table, column, obsids]):
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'CalculateStatisticsGui', u'''Calculation failed, make sure you've selected a table, a column and features with a column obsid.''')))
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('CalculateStatisticsGui', '''Calculation failed, make sure you've selected a table, a column and features with a column obsid.''')))
             return None
 
-        sql_function_order = [u'min', u'max', u'avg', u'count']
+        sql_function_order = ['min', 'max', 'avg', 'count']
         stats = get_statistics(obsids, table, column, sql_function_order=sql_function_order, median=True)
         printlist = []
-        printlist.append(ru(QCoreApplication.translate(u"Midvatten", 'Obsid;Min;Median;Average;Max;Nr of values')))
-        printlist.extend([u';'.join([ru(x) for x in (obsid, v[0], v[4], v[2], v[1], v[3])]) for obsid, v in sorted(stats.items())])
+        printlist.append(ru(QCoreApplication.translate("Midvatten", 'Obsid;Min;Median;Average;Max;Nr of values')))
+        printlist.extend([';'.join([ru(x) for x in (obsid, v[0], v[4], v[2], v[1], v[3])]) for obsid, v in sorted(stats.items())])
         utils.MessagebarAndLog.info(
             bar_msg=ru(QCoreApplication.translate("Midvatten", 'Statistics for table %s column %s done, see log for results.'))%(table, column),
             log_msg='\n'.join(printlist), duration=15, button=True)
@@ -89,18 +89,18 @@ def get_statistics(obsids, table, column, sql_function_order=None, median=True, 
         dbconnection = db_utils.DbConnectionManager()
 
     if sql_function_order is None:
-        sql_function_order = [u'min', u'max', u'avg', u'count']
+        sql_function_order = ['min', 'max', 'avg', 'count']
     if not isinstance(obsids, (list, tuple)):
         obsids = [obsids]
 
-    sql = u'select obsid, %s from %s where obsid in (%s) group by obsid'%(u', '.join([u'%s(%s)'%(func, column) for func in sql_function_order]), table, u', '.join([u"'{}'".format(x) for x in obsids]))
+    sql = 'select obsid, %s from %s where obsid in (%s) group by obsid'%(', '.join(['%s(%s)'%(func, column) for func in sql_function_order]), table, ', '.join(["'{}'".format(x) for x in obsids]))
     _res = db_utils.get_sql_result_as_dict(sql, dbconnection=dbconnection)[1]
     res = dict([(obsid, list(v[0])) for obsid, v in _res.items()])
     if median:
         [v.append(db_utils.calculate_median_value(table, column, obsid, dbconnection)) for obsid, v in res.items()]
     return res
 
-def get_statistics_for_single_obsid(obsid ='', table=u'w_levels', data_columns=None):
+def get_statistics_for_single_obsid(obsid ='', table='w_levels', data_columns=None):
     Statistics_list = [0]*4
 
     if data_columns is None:

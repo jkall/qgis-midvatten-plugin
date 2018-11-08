@@ -50,7 +50,7 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
         self.setAttribute(qgis.PyQt.QtCore.Qt.WA_DeleteOnClose)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 
-        self.stored_settings_key = u'customdrillreportstoredsettings'
+        self.stored_settings_key = 'customdrillreportstoredsettings'
         self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settings_key, {})
         self.update_from_stored_settings(self.stored_settings)
 
@@ -64,9 +64,9 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
 
     @utils.general_exception_handler
     def drillreport(self):
-        general_metadata = [x for x in self.general_metadata.toPlainText().split(u'\n') if x]
-        geo_metadata = [x for x in self.geo_metadata.toPlainText().split(u'\n') if x]
-        strat_columns = [x for x in self.strat_columns.toPlainText().split(u'\n') if x]
+        general_metadata = [x for x in self.general_metadata.toPlainText().split('\n') if x]
+        geo_metadata = [x for x in self.geo_metadata.toPlainText().split('\n') if x]
+        strat_columns = [x for x in self.strat_columns.toPlainText().split('\n') if x]
         header_in_table = self.header_in_table.isChecked()
         skip_empty = self.skip_empty.isChecked()
         include_comments = self.include_comments.isChecked()
@@ -76,12 +76,12 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
         strat_columns_header = self.strat_columns_header.text()
         comment_header = self.comment_header.text()
         empty_row_between_obsids = self.empty_row_between_obsids.isChecked()
-        topleft_topright_colwidths = self.topleft_topright_colwidths.text().split(u';')
-        general_colwidth = self.general_colwidth.text().split(u';')
-        geo_colwidth = self.geo_colwidth.text().split(u';')
+        topleft_topright_colwidths = self.topleft_topright_colwidths.text().split(';')
+        general_colwidth = self.general_colwidth.text().split(';')
+        geo_colwidth = self.geo_colwidth.text().split(';')
         decimal_separator = self.decimal_separator.text()
         if not obsids:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Must select at least 1 obsid in selected layer')))
+            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('DrillreportUi', 'Must select at least 1 obsid in selected layer')))
             raise utils.UsageError()
         self.save_stored_settings()
         drillrep = Drillreport(obsids, self.ms, general_metadata, geo_metadata, strat_columns, header_in_table,
@@ -105,7 +105,7 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
                 else:
                     if isinstance(selfattr, qgis.PyQt.QtWidgets.QPlainTextEdit):
                         if isinstance(val, (list, tuple)):
-                            val = u'\n'.join(val)
+                            val = '\n'.join(val)
                         selfattr.setPlainText(val)
                     elif isinstance(selfattr, qgis.PyQt.QtWidgets.QCheckBox):
                         selfattr.setChecked(val)
@@ -118,35 +118,35 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
             # All obs_points columns could appear here except geometry.
             # The XY-reference system is added a bit down in the script to the list geo_data. The append has to be commented away
             # if it's not wanted.
-            self.general_metadata.setPlainText(u'\n'.join([u'type',
-                                                           u'h_tocags',
-                                                           u'material',
-                                                           u'diam',
-                                                           u'drillstop',
-                                                           u'screen',
-                                                           u'drilldate']))
+            self.general_metadata.setPlainText('\n'.join(['type',
+                                                           'h_tocags',
+                                                           'material',
+                                                           'diam',
+                                                           'drillstop',
+                                                           'screen',
+                                                           'drilldate']))
 
-            self.geo_metadata.setPlainText(u'\n'.join([u'east',
-                                                       u'north',
-                                                       u'ne_accur',
-                                                       u'ne_source',
-                                                       u'h_source',
-                                                       u'h_toc',
-                                                       u'h_accur']))
+            self.geo_metadata.setPlainText('\n'.join(['east',
+                                                       'north',
+                                                       'ne_accur',
+                                                       'ne_source',
+                                                       'h_source',
+                                                       'h_toc',
+                                                       'h_accur']))
 
-            self.strat_columns.setPlainText(u'\n'.join([u'depth',
-                                                        u'geology',
-                                                        u'geoshort',
-                                                        u'capacity',
-                                                        u'development',
-                                                        u'comment']))
+            self.strat_columns.setPlainText('\n'.join(['depth',
+                                                        'geology',
+                                                        'geoshort',
+                                                        'capacity',
+                                                        'development',
+                                                        'comment']))
 
             self.general_metadata_header.setText(
-                ru(QCoreApplication.translate(u'Drillreport2', u'General information')))
+                ru(QCoreApplication.translate('Drillreport2', 'General information')))
             self.geo_metadata_header.setText(
-                ru(QCoreApplication.translate(u'Drillreport2', u'Geographical information')))
-            self.strat_columns_header.setText(ru(QCoreApplication.translate(u'Drillreport2', u'Stratigraphy')))
-            self.comment_header.setText(ru(QCoreApplication.translate(u'Drillreport2', u'Comment')))
+                ru(QCoreApplication.translate('Drillreport2', 'Geographical information')))
+            self.strat_columns_header.setText(ru(QCoreApplication.translate('Drillreport2', 'Stratigraphy')))
+            self.comment_header.setText(ru(QCoreApplication.translate('Drillreport2', 'Comment')))
             ##If False, the header will be written outside the table
             # header_in_table = True
             ##If True, headers/values in general_metadata and geo_metadata will be skipped if the value is empty, else they
@@ -157,35 +157,35 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
 
     def save_stored_settings(self):
         stored_settings = {}
-        for attrname in [u'general_metadata',
-                        u'geo_metadata',
-                        u'strat_columns',
-                        u'header_in_table',
-                        u'skip_empty',
-                        u'include_comments',
-                        u'general_metadata_header',
-                        u'geo_metadata_header',
-                        u'strat_columns_header',
-                        u'comment_header',
-                        u'empty_row_between_obsids',
-                        u'topleft_topright_colwidths',
-                        u'general_colwidth',
-                        u'geo_colwidth',
-                        u'decimal_separator']:
+        for attrname in ['general_metadata',
+                        'geo_metadata',
+                        'strat_columns',
+                        'header_in_table',
+                        'skip_empty',
+                        'include_comments',
+                        'general_metadata_header',
+                        'geo_metadata_header',
+                        'strat_columns_header',
+                        'comment_header',
+                        'empty_row_between_obsids',
+                        'topleft_topright_colwidths',
+                        'general_colwidth',
+                        'geo_colwidth',
+                        'decimal_separator']:
             try:
                 attr = getattr(self, attrname)
             except:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi',
-                                                                                  u"Programming error. Attribute name %s didn't exist in self.")) % attrname)
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('DrillreportUi',
+                                                                                  "Programming error. Attribute name %s didn't exist in self.")) % attrname)
             else:
                 if isinstance(attr, qgis.PyQt.QtWidgets.QPlainTextEdit):
-                    val = [x for x in attr.toPlainText().split(u'\n') if x]
+                    val = [x for x in attr.toPlainText().split('\n') if x]
                 elif isinstance(attr, qgis.PyQt.QtWidgets.QCheckBox):
                     val = attr.isChecked()
                 elif isinstance(attr, qgis.PyQt.QtWidgets.QLineEdit):
                     val = attr.text()
                 else:
-                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Programming error. The Qt-type %s is unhandled.'))%str(type(attr)))
+                    utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('DrillreportUi', 'Programming error. The Qt-type %s is unhandled.'))%str(type(attr)))
                     continue
                 stored_settings[attrname] = val
 
@@ -194,12 +194,12 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
         utils.save_stored_settings(self.ms, self.stored_settings, self.stored_settings_key)
 
     def ask_for_stored_settings(self, stored_settings):
-        old_string = utils.anything_to_string_representation(stored_settings, itemjoiner=u',\n', pad=u'    ',
-                                                             dictformatter=u'{\n%s}',
-                                                             listformatter=u'[\n%s]', tupleformatter=u'(\n%s, )')
+        old_string = utils.anything_to_string_representation(stored_settings, itemjoiner=',\n', pad='    ',
+                                                             dictformatter='{\n%s}',
+                                                             listformatter='[\n%s]', tupleformatter='(\n%s, )')
 
-        msg = ru(QCoreApplication.translate(u'DrillreportUi', u'Replace the settings string with a new settings string.'))
-        new_string = qgis.PyQt.QtWidgets.QInputDialog.getText(None, ru(QCoreApplication.translate(u'DrillreportUi', "Edit settings string")), msg,
+        msg = ru(QCoreApplication.translate('DrillreportUi', 'Replace the settings string with a new settings string.'))
+        new_string = qgis.PyQt.QtWidgets.QInputDialog.getText(None, ru(QCoreApplication.translate('DrillreportUi', "Edit settings string")), msg,
                                                            qgis.PyQt.QtWidgets.QLineEdit.Normal, old_string)
         if not new_string[1]:
             raise utils.UserInterruptError()
@@ -211,7 +211,7 @@ class DrillreportUi(qgis.PyQt.QtWidgets.QMainWindow, custom_drillreport_dialog):
         try:
             as_dict = ast.literal_eval(new_string_text)
         except Exception as e:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'DrillreportUi', u'Translating string to dict failed, see log message panel')),
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('DrillreportUi', 'Translating string to dict failed, see log message panel')),
                                            log_msg=str(e))
             raise utils.UsageError()
         else:
@@ -233,7 +233,7 @@ class Drillreport(object):        # general observation point info for the selec
         imgpath = os.path.join(os.sep,os.path.dirname(__file__),"..","templates")
 
         if len(obsids) == 0:
-            utils.pop_up_info(ru(QCoreApplication.translate(u'Drillreport', u"Must select one or more obsids!")))
+            utils.pop_up_info(ru(QCoreApplication.translate('Drillreport', "Must select one or more obsids!")))
             return None
 
         obs_points_translations = {
@@ -273,23 +273,23 @@ class Drillreport(object):        # general observation point info for the selec
         dbconnection = db_utils.DbConnectionManager()
 
         obs_points_cols =  ["obsid", "name", "place", "type", "length", "drillstop", "diam", "material", "screen", "capacity", "drilldate", "wmeas_yn", "wlogg_yn", "east", "north", "ne_accur", "ne_source", "h_toc", "h_tocags", "h_gs", "h_accur", "h_syst", "h_source", "source", "com_onerow", "com_html"]
-        all_obs_points_data = ru(db_utils.get_sql_result_as_dict(u'SELECT %s FROM obs_points WHERE obsid IN (%s) ORDER BY obsid'%(u', '.join(obs_points_cols), u', '.join([u"'{}'".format(x) for x in obsids])),
+        all_obs_points_data = ru(db_utils.get_sql_result_as_dict('SELECT %s FROM obs_points WHERE obsid IN (%s) ORDER BY obsid'%(', '.join(obs_points_cols), ', '.join(["'{}'".format(x) for x in obsids])),
                                                             dbconnection=dbconnection)[1], keep_containers=True)
 
         if strat_columns:
-            strat_sql_columns_list = [x.split(u';')[0] for x in strat_columns]
-            if u'depth' in strat_sql_columns_list:
-                strat_sql_columns_list.extend([u'depthtop', u'depthbot'])
-                strat_sql_columns_list.remove(u'depth')
-                strat_sql_columns_list = [x for x in strat_sql_columns_list if x not in (u'obsid')]
+            strat_sql_columns_list = [x.split(';')[0] for x in strat_columns]
+            if 'depth' in strat_sql_columns_list:
+                strat_sql_columns_list.extend(['depthtop', 'depthbot'])
+                strat_sql_columns_list.remove('depth')
+                strat_sql_columns_list = [x for x in strat_sql_columns_list if x not in ('obsid')]
 
-            all_stratigrapy_data = ru(db_utils.get_sql_result_as_dict(u'SELECT obsid, %s FROM stratigraphy WHERE obsid IN (%s) ORDER BY obsid, stratid'%(u', '.join(strat_sql_columns_list), u', '.join([u"'{}'".format(x) for x in obsids])),
+            all_stratigrapy_data = ru(db_utils.get_sql_result_as_dict('SELECT obsid, %s FROM stratigraphy WHERE obsid IN (%s) ORDER BY obsid, stratid'%(', '.join(strat_sql_columns_list), ', '.join(["'{}'".format(x) for x in obsids])),
                                                                 dbconnection=dbconnection)[1], keep_containers=True)
         else:
             all_stratigrapy_data = {}
             strat_sql_columns_list = []
 
-        crs = ru(db_utils.sql_load_fr_db(u"""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""", dbconnection=dbconnection)[1][0][0])
+        crs = ru(db_utils.sql_load_fr_db("""SELECT srid FROM geometry_columns where f_table_name = 'obs_points'""", dbconnection=dbconnection)[1][0][0])
         crsname = ru(db_utils.get_srid_name(crs, dbconnection=dbconnection))
 
         dbconnection.closedb()
@@ -298,15 +298,15 @@ class Drillreport(object):        # general observation point info for the selec
         rpt += r"""<html>"""
         for obsid in obsids:
             obs_points_data = all_obs_points_data[obsid][0]
-            general_data_no_rounding = [x.split(u';')[0] for x in general_metadata]
-            general_rounding = [x.split(u';')[1] if len(x.split(u';')) == 2 else None for x in general_metadata]
+            general_data_no_rounding = [x.split(';')[0] for x in general_metadata]
+            general_rounding = [x.split(';')[1] if len(x.split(';')) == 2 else None for x in general_metadata]
             general_data = [(obs_points_translations.get(header, header), obs_points_data[obs_points_cols.index(header)-1]) for header in general_data_no_rounding]
             if geo_metadata:
-                geo_metadata_no_rounding = [x.split(u';')[0] for x in geo_metadata]
-                geo_rounding = [x.split(u';')[1] if len(x.split(u';')) == 2 else None for x in geo_metadata]
+                geo_metadata_no_rounding = [x.split(';')[0] for x in geo_metadata]
+                geo_rounding = [x.split(';')[1] if len(x.split(';')) == 2 else None for x in geo_metadata]
                 geo_data = [(obs_points_translations.get(header, header), obs_points_data[obs_points_cols.index(header)-1]) for header in geo_metadata_no_rounding]
-                if u'east' in geo_metadata_no_rounding or u'north' in geo_metadata_no_rounding:
-                    geo_data.append((ru(QCoreApplication.translate('Drillreport2', u'XY Reference system')), '%s'%('%s, '%crsname if crsname else '') + 'EPSG:' + crs))
+                if 'east' in geo_metadata_no_rounding or 'north' in geo_metadata_no_rounding:
+                    geo_data.append((ru(QCoreApplication.translate('Drillreport2', 'XY Reference system')), '%s'%('%s, '%crsname if crsname else '') + 'EPSG:' + crs))
             else:
                 geo_data = []
                 geo_rounding = []
@@ -314,11 +314,11 @@ class Drillreport(object):        # general observation point info for the selec
             strat_data = all_stratigrapy_data.get(obsid, None)
 
             if include_comments:
-                comment_data = [obs_points_data[obs_points_cols.index(header)-1] for header in (u'com_onerow', u'com_html') if
+                comment_data = [obs_points_data[obs_points_cols.index(header)-1] for header in ('com_onerow', 'com_html') if
                                 all([obs_points_data[obs_points_cols.index(header)-1].strip(),
-                                     u'text-indent:0px;"><br /></p>' not in obs_points_data[obs_points_cols.index(header)-1],
-                                     u'text-indent:0px;"></p>' not in obs_points_data[obs_points_cols.index(header)-1],
-                                     u'text-indent:0px;">NULL</p>' not in obs_points_data[obs_points_cols.index(header)-1].strip()])]
+                                     'text-indent:0px;"><br /></p>' not in obs_points_data[obs_points_cols.index(header)-1],
+                                     'text-indent:0px;"></p>' not in obs_points_data[obs_points_cols.index(header)-1],
+                                     'text-indent:0px;">NULL</p>' not in obs_points_data[obs_points_cols.index(header)-1].strip()])]
             else:
                 comment_data = []
 
@@ -348,7 +348,7 @@ class Drillreport(object):        # general observation point info for the selec
         f = codecs.open(reportpath, "wb", "utf-8")
         #write some initiating html, header and also
         rpt = r"""<meta http-equiv="content-type" content="text/html; charset=utf-8" />"""
-        rpt += r"""<head><title>%s %s</title></head>"""%(header, ru(QCoreApplication.translate(u'Drillreport', u'General report from Midvatten plugin for QGIS')))
+        rpt += r"""<head><title>%s %s</title></head>"""%(header, ru(QCoreApplication.translate('Drillreport', 'General report from Midvatten plugin for QGIS')))
 
         return f, rpt
 
@@ -363,12 +363,12 @@ class Drillreport(object):        # general observation point info for the selec
         return r"""<h3 style="font-family:'Ubuntu';font-size:12pt; font-weight:600"><font size=4>%s</font></h3>"""%ru(obsid)
 
     def write_obsid(self, obsid, general_data, geo_data, strat_data, comment_data, strat_columns, header_in_table=True,
-                    skip_empty=False, general_metadata_header=u'', geo_metadata_header=u'', strat_columns_header=u'',
-                    comment_header=u'', general_rounding=[], geo_rounding=[], strat_sql_columns_list=[],
-                    topleft_topright_colwidths=[], general_colwidth=[], geo_colwidth=[], decimal_separator=u'.'):
+                    skip_empty=False, general_metadata_header='', geo_metadata_header='', strat_columns_header='',
+                    comment_header='', general_rounding=[], geo_rounding=[], strat_sql_columns_list=[],
+                    topleft_topright_colwidths=[], general_colwidth=[], geo_colwidth=[], decimal_separator='.'):
         """This part only handles writing the information. It does not do any db data collection."""
 
-        rpt = u''
+        rpt = ''
 
         if not header_in_table:
             rpt += self.obsid_header(obsid)
@@ -430,7 +430,7 @@ class Drillreport(object):        # general observation point info for the selec
 
         return rpt
 
-    def write_two_col_table(self, data, table_header, skip_empty=False, column_rounding=None, col_widths=None, decimal_separator=u'.'):
+    def write_two_col_table(self, data, table_header, skip_empty=False, column_rounding=None, col_widths=None, decimal_separator='.'):
         if column_rounding is None:
             column_rounding = []
 
@@ -440,8 +440,8 @@ class Drillreport(object):        # general observation point info for the selec
             rpt = r''
 
         if not col_widths or len(col_widths) != 2:
-            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'Drillreport2', u'Column width not entered correctly, must be like x;y. Was %s'%str(col_widths))))
-            col_widths = [u'2*', u'3*']
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('Drillreport2', 'Column width not entered correctly, must be like x;y. Was %s'%str(col_widths))))
+            col_widths = ['2*', '3*']
 
         rpt += r"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 class="no-spacing" CELLSPACING=0><COL WIDTH={}><COL WIDTH={}>""".format(col_widths[0], col_widths[1])
 
@@ -449,7 +449,7 @@ class Drillreport(object):        # general observation point info for the selec
         for idx, header_value in enumerate(data):
             header, value = header_value
             header = ru(header)
-            value = ru(value) if ru(value) is not None and ru(value) != u'NULL' else u''
+            value = ru(value) if ru(value) is not None and ru(value) != 'NULL' else ''
             if skip_empty:
                 if value and value != 'NULL' and value != header:
                     try:
@@ -474,24 +474,24 @@ class Drillreport(object):        # general observation point info for the selec
                         pass
                     else:
                         #Round the numbers to the maximum given rounding.
-                        int_and_dec = value.split(u'.')
+                        int_and_dec = value.split('.')
                         if len(int_and_dec) == 2:
                             len_dec = len(int_and_dec[1])
                             prec = min(len_dec, int(round))
                         else:
                             prec = int(round)
 
-                        value = u'{:.{prec}f}'.format(float(value), prec=prec)
+                        value = '{:.{prec}f}'.format(float(value), prec=prec)
 
-            if decimal_separator != u'.':
-                value = value.replace(u'.', decimal_separator)
+            if decimal_separator != '.':
+                value = value.replace('.', decimal_separator)
 
             try:
                 rpt += r"""<TR VALIGN=TOP><TD WIDTH=33%><P><font size=1>{}</font></P></TD><TD WIDTH=50%><P><font size=1>{}</font></P></TD></TR>""".format(header, value)
             except UnicodeEncodeError:
                 try:
-                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'custom_drillreport', u'Writing drillreport failed, see log message panel')),
-                                                    log_msg=ru(QCoreApplication.translate(u'custom_drillreport', u'Writing header %s and value %s failed'))%(header, value))
+                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('custom_drillreport', 'Writing drillreport failed, see log message panel')),
+                                                    log_msg=ru(QCoreApplication.translate('custom_drillreport', 'Writing header %s and value %s failed'))%(header, value))
                 except:
                     pass
                 raise
@@ -504,9 +504,9 @@ class Drillreport(object):        # general observation point info for the selec
             rpt = r"""<P><U><B><font size=3>%s</font></B></U></P>""" % table_header
         else:
             rpt = r''
-        strat_columns = [x.split(u';')[0] for x in _strat_columns]
+        strat_columns = [x.split(';')[0] for x in _strat_columns]
 
-        col_widths = [x.split(u';')[1] if len(x.split(u';')) == 2 else u'1*' for x in _strat_columns]
+        col_widths = [x.split(';')[1] if len(x.split(';')) == 2 else '1*' for x in _strat_columns]
 
 
         rpt += r"""<TABLE style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;" WIDTH=100% BORDER=0 CELLPADDING=0 class="no-spacing" CELLSPACING=0>"""
@@ -514,15 +514,15 @@ class Drillreport(object):        # general observation point info for the selec
             rpt += r"""<COL WIDTH={}>""".format(col_width)
         rpt += r"""<p style="font-family:'Ubuntu'; font-size:8pt; font-weight:400; font-style:normal;">"""
 
-        headers_txt = OrderedDict([(u'stratid', ru(QCoreApplication.translate(u'Drillreport2_strat', u'Layer number'))),
-                                   (u'depth', ru(QCoreApplication.translate(u'Drillreport2_strat', u'level (m b gs)'))),
-                                   (u'depthtop', ru(QCoreApplication.translate(u'Drillreport2_strat', u'top of layer (m b gs)'))),
-                                   (u'depthbot', ru(QCoreApplication.translate(u'Drillreport2_strat', u'bottom of layer (m b gs)'))),
-                                    (u'geology', ru(QCoreApplication.translate(u'Drillreport2_strat', u'geology, full text'))),
-                                    (u'geoshort', ru(QCoreApplication.translate(u'Drillreport2_strat', u'geology, short'))),
-                                    (u'capacity', ru(QCoreApplication.translate(u'Drillreport2_strat', u'capacity'))),
-                                    (u'development', ru(QCoreApplication.translate(u'Drillreport2_strat', u'development'))),
-                                    (u'comment', ru(QCoreApplication.translate(u'Drillreport2_strat', u'comment')))])
+        headers_txt = OrderedDict([('stratid', ru(QCoreApplication.translate('Drillreport2_strat', 'Layer number'))),
+                                   ('depth', ru(QCoreApplication.translate('Drillreport2_strat', 'level (m b gs)'))),
+                                   ('depthtop', ru(QCoreApplication.translate('Drillreport2_strat', 'top of layer (m b gs)'))),
+                                   ('depthbot', ru(QCoreApplication.translate('Drillreport2_strat', 'bottom of layer (m b gs)'))),
+                                    ('geology', ru(QCoreApplication.translate('Drillreport2_strat', 'geology, full text'))),
+                                    ('geoshort', ru(QCoreApplication.translate('Drillreport2_strat', 'geology, short'))),
+                                    ('capacity', ru(QCoreApplication.translate('Drillreport2_strat', 'capacity'))),
+                                    ('development', ru(QCoreApplication.translate('Drillreport2_strat', 'development'))),
+                                    ('comment', ru(QCoreApplication.translate('Drillreport2_strat', 'comment')))])
 
         if len(strat_data) > 0:
             rpt += r"""<TR VALIGN=TOP>"""
@@ -534,23 +534,23 @@ class Drillreport(object):        # general observation point info for the selec
 
                 rpt += r"""<TR VALIGN=TOP>"""
                 for col in strat_columns:
-                    if col == u'depth':
+                    if col == 'depth':
                         try:
-                            depthtop_idx = strat_sql_columns_list.index(u'depthtop')
-                            depthbot_idx = strat_sql_columns_list.index(u'depthbot')
+                            depthtop_idx = strat_sql_columns_list.index('depthtop')
+                            depthbot_idx = strat_sql_columns_list.index('depthbot')
                         except ValueError:
-                            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'Drillreport2',
-                                                                                                  u'Programming error, depthtop and depthbot columns was supposed to exist')))
+                            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('Drillreport2',
+                                                                                                  'Programming error, depthtop and depthbot columns was supposed to exist')))
                             rpt += r"""<TD><P><font size=1> </font></P></TD>""".format(value)
                         else:
-                            depthtop = u'' if row[depthtop_idx] == 'NULL' else row[depthtop_idx].replace(u'.', decimal_separator)
-                            depthbot = u'' if row[depthbot_idx] == 'NULL' else row[depthbot_idx].replace(u'.', decimal_separator)
-                            rpt += r"""<TD><P><font size=1>{}</font></P></TD>""".format(u' - '.join([depthtop, depthbot]))
+                            depthtop = '' if row[depthtop_idx] == 'NULL' else row[depthtop_idx].replace('.', decimal_separator)
+                            depthbot = '' if row[depthbot_idx] == 'NULL' else row[depthbot_idx].replace('.', decimal_separator)
+                            rpt += r"""<TD><P><font size=1>{}</font></P></TD>""".format(' - '.join([depthtop, depthbot]))
                     else:
                         value_idx = strat_sql_columns_list.index(col)
-                        value = u'' if row[value_idx] == 'NULL' else row[value_idx]
-                        if col in (u'depthtop', u'depthbot') and decimal_separator != u'.':
-                            value = value.replace(u'.', decimal_separator)
+                        value = '' if row[value_idx] == 'NULL' else row[value_idx]
+                        if col in ('depthtop', 'depthbot') and decimal_separator != '.':
+                            value = value.replace('.', decimal_separator)
                         rpt += r"""<TD><P><font size=1>{}</font></P></TD>""".format(value)
 
                 rpt += r"""</TR>"""
@@ -570,7 +570,7 @@ class Drillreport(object):        # general observation point info for the selec
             rpt += r'. '.join([ru(x) for x in comment_data if ru(x) not in ['','NULL']])
             rpt += r"""</font></p>"""
         else:
-            rpt = u''
+            rpt = ''
 
         return rpt
 
@@ -601,7 +601,7 @@ def GetStatistics(obsid = ''):
         Statistics_list[0] = min_value[0][0]
 
     #median value
-    median_value = db_utils.calculate_median_value(u'w_levels', meas_or_level_masl, obsid)
+    median_value = db_utils.calculate_median_value('w_levels', meas_or_level_masl, obsid)
     if median_value:
         Statistics_list[1] = median_value
 
