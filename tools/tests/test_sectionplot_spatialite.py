@@ -78,7 +78,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test_plot_section(self, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
-            mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
+            mock_getselectedobjectnames.return_value = (u'P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
             self.midvatten.plot_section()
@@ -90,8 +90,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         _test_plot_section(self)
 
         assert """call.info(log_msg=u'Settings {""" in str(mock_messagebar.mock_calls)
-        assert self.myplot.drillstoplineEdit.text() == u'%berg%'
-        assert utils_for_tests.create_test_string(self.myplot.selected_obsids) == "[u'P1' u'P2' u'P3']"
+        assert self.myplot.drillstoplineEdit.text() == '%berg%'
+        assert utils_for_tests.create_test_string(self.myplot.selected_obsids) == "[u'P1' 'P2' 'P3']"
         assert not mock_messagebar.warning.called
         assert not mock_messagebar.critical.called
 
@@ -109,7 +109,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(self, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
-            mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
+            mock_getselectedobjectnames.return_value = (u'P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
             self.midvatten.plot_section()
@@ -136,12 +136,12 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(self, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
-            mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
+            mock_getselectedobjectnames.return_value = (u'P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
             self.midvatten.plot_section()
             self.myplot = self.midvatten.myplot
-            gui_utils.set_combobox(self.myplot.wlvltableComboBox, u'w_levels')
+            gui_utils.set_combobox(self.myplot.wlvltableComboBox, 'w_levels')
             self.myplot.datetimetextEdit.append(u'2015')
             self.myplot.draw_plot()
 
@@ -167,7 +167,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(midvatten, vlayer, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = vlayer
-            mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
+            mock_getselectedobjectnames.return_value = (u'P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
             midvatten.plot_section()
@@ -199,7 +199,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         @mock.patch('qgis.utils.iface', autospec=True)
         def _test(midvatten, vlayer, mock_iface, mock_getselectedobjectnames):
             mock_iface.mapCanvas.return_value.currentLayer.return_value = vlayer
-            mock_getselectedobjectnames.return_value = (u'P1', u'P2', u'P3')
+            mock_getselectedobjectnames.return_value = (u'P1', 'P2', 'P3')
             mock_mapcanvas = mock_iface.mapCanvas.return_value
             mock_mapcanvas.layerCount.return_value = 0
             midvatten.plot_section()

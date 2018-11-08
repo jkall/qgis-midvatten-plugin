@@ -861,7 +861,7 @@ def select_files(only_one_file=True, extension="csv (*.csv)"):
         csvpath = [QtWidgets.QFileDialog.getOpenFileName(parent=None, caption=QCoreApplication.translate(u'select_files', "Select file"), directory=dir, filter=extension)]
     else:
         csvpath = QtWidgets.QFileDialog.getOpenFileNames(parent=None, caption=QCoreApplication.translate(u'select_files', "Select files"), directory=dir, filter=extension)
-    csvpath = [returnunicode(p) for p in csvpath if p]
+    csvpath = [returnunicode(p[0]) for p in csvpath if p]
     return csvpath
 
 
@@ -1319,9 +1319,11 @@ def anything_to_string_representation(anything, itemjoiner=u', ', pad=u'', dictf
 def waiting_cursor(func):
     def func_wrapper(*args, **kwargs):
         qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))
-        ret = func(*args, **kwargs)
+
+        result = func(*args, **kwargs)
+
         qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
-        return ret
+        return result
     return func_wrapper
 
 

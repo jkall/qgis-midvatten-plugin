@@ -198,11 +198,11 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
         parameter_groups = []
         for index, attrs in stored_settings:
-            parameter_group = ParameterGroup(connect)
+            parameter_group = ParameterGroup()
             attrs_set = False
             for attr in attrs:
-                if hasattr(parameter_group, attr[0].encode(u'utf-8')):
-                    setattr(parameter_group, attr[0].encode(u'utf-8'), attr[1])
+                if hasattr(parameter_group, attr[0]):
+                    setattr(parameter_group, attr[0], attr[1])
                     attrs_set = True
                 else:
                     utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Tried to load input field groups but the variable %s did not exist.'))%attr[0])
@@ -218,8 +218,8 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
             return
         for index, attrs in stored_settings:
             for attr in attrs:
-                if hasattr(parameter_browser, attr[0].encode(u'utf-8')):
-                    setattr(parameter_browser, attr[0].encode(u'utf-8'), attr[1])
+                if hasattr(parameter_browser, attr[0]):
+                    setattr(parameter_browser, attr[0], attr[1])
                 else:
                     utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'ExportToFieldLogger', u'Tried to load input field fields browser but the variable %s did not exist.'))%attr[0])
 

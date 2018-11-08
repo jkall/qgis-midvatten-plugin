@@ -176,7 +176,7 @@ class DbConnectionManager(object):
     def execute_and_fetchall(self, sql):
         try:
             self.cursor.execute(sql)
-        except Exception as e:
+        except (sqlite.OperationalError, Exception) as e:
             textstring = utils.returnunicode(QCoreApplication.translate(u'sql_load_fr_db',
                                                                         u"""DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (
                          utils.returnunicode(sql), utils.returnunicode(str(e)))
@@ -184,6 +184,7 @@ class DbConnectionManager(object):
                 bar_msg=utils.sql_failed_msg(),
                 log_msg=textstring)
             raise
+
         return self.cursor.fetchall()
 
     def execute_and_commit(self, sql, all_args=None):

@@ -179,7 +179,12 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
     @utils.waiting_cursor
     @utils.general_exception_handler
     @import_data_to_db.import_exception_handler
-    def start_import(self):
+    def start_import(self, dummy):
+        """
+        TODO: I have NO IDEA where the dummy parameter is coming from. It gets the value False for some reason!
+        :param dummy:
+        :return:
+        """
         if self.file_data is None:
             raise utils.UsageError(ru(QCoreApplication.translate(u'GeneralCsvImportGui', u'Error, must select a file first!')))
 

@@ -612,10 +612,14 @@ class DatabaseSettings(object):
                 self.choose_dbtype()
 
                 for setting_name, value in settings.items():
-                    if hasattr(self.db_settings_obj, setting_name.encode(u'utf-8')):
-                        setattr(self.db_settings_obj, setting_name.encode(u'utf-8'), value)
-                    else:
-                        utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'DatabaseSettings', u"Databasetype %s didn' t have setting %s"))%(dbtype, setting_name))
+                    try:
+                        if hasattr(self.db_settings_obj, str(setting_name)):
+                            setattr(self.db_settings_obj, str(setting_name), value)
+                        else:
+                            utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate(u'DatabaseSettings', u"Databasetype %s didn' t have setting %s"))%(dbtype, setting_name))
+                    except:
+                        print(str(setting_name))
+                        raise
         else:
             utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'DatabaseSettings', u"Could not load database settings. Select database again!")), log_msg=ru(QCoreApplication.translate(u'DatabaseSettings', u'Tried to load db_settings string %s'))%_db_settings)
 
