@@ -178,7 +178,7 @@ def set_combobox(combobox, value, add_if_not_exists=True):
 
 
 class DistinctValuesBrowser(VRowEntry):
-    def __init__(self, tables_columns, connect):
+    def __init__(self, tables_columns):
         super(DistinctValuesBrowser, self).__init__()
 
         self.browser_label = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'DistinctValuesBrowser', u'DB browser:')))

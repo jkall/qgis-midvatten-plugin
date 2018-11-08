@@ -34,7 +34,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 import import_data_to_db
 import midvatten_utils as utils
 from date_utils import datestring_to_date
-from .gui_utils import SplitterWithHandel, RowEntry, VRowEntry, ExtendedQPlainTextEdit
+from gui_utils import SplitterWithHandel, RowEntry, VRowEntry, ExtendedQPlainTextEdit
 from midvatten_utils import Cancel, returnunicode as ru
 
 import_fieldlogger_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_interlab4.ui'))[0]
@@ -505,13 +505,13 @@ class MetaFilterSelection(VRowEntry):
 
 
 class MetadataFilter(VRowEntry):
-    def __init__(self, all_lab_results, connect):
+    def __init__(self, all_lab_results):
         """
 
         """
         self.all_lab_results = all_lab_results
         super(MetadataFilter, self).__init__()
-        self.connect = connect
+
 
         self.update_selection_button  = qgis.PyQt.QtWidgets.QPushButton(u'Update selection')
         self.button_layout = RowEntry()

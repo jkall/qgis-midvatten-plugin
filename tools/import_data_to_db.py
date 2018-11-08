@@ -24,7 +24,6 @@ from builtins import str
 from builtins import range
 from builtins import object
 
-import sys
 from operator import itemgetter
 
 import qgis.PyQt
@@ -194,7 +193,6 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                 dbconnection.commit()
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
         except:
-            exc_info = sys.exc_info()
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             try:
                 # If an external dbconnection is supplied, do not close it.
@@ -206,7 +204,7 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                 pass
             except:
                 utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate(u'midv_data_importer', u'Closing database failed!')))
-            raise exc_info[0], exc_info[1], exc_info[2]
+            raise
 
     def list_to_table(self, dbconnection, file_data, primary_keys_for_concat):
         fieldnames_types = [u'{} TEXT'.format(field_name) for field_name in file_data[0]]

@@ -110,12 +110,7 @@ class LoadLayers(object):
 
         if w_lvls_last_geom is not None:
             midv = self.root.findGroup('Midvatten_OBS_DB')
-            print(str(midv))
-            print(str(midv.dump()))
-            print(str(midv.findLayerIds()))
             w_lvls_last_geom = MyGroup.findLayer(w_lvls_last_geom)
-            print(str(w_lvls_last_geom))
-
             w_lvls_last_geom.setItemVisibilityCheckedRecursive(False)
 
         #finally refresh canvas

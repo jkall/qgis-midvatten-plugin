@@ -34,7 +34,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 import import_data_to_db
 import midvatten_utils as utils
 from date_utils import find_date_format, datestring_to_date
-from .gui_utils import VRowEntry, get_line, DateTimeFilter
+from gui_utils import VRowEntry, get_line, DateTimeFilter
 from midvatten_utils import returnunicode as ru
 
 import_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]

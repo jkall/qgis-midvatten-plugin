@@ -39,9 +39,9 @@ import db_utils
 import import_data_to_db
 import midvatten_utils as utils
 from definitions import midvatten_defs as defs
-from .gui_utils import RowEntry, VRowEntry, get_line, RowEntryGrid
+from gui_utils import RowEntry, VRowEntry, get_line, RowEntryGrid
 from midvatten_utils import returnunicode as ru
-from .gui_utils import DistinctValuesBrowser
+from gui_utils import DistinctValuesBrowser
 
 import_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
 
@@ -62,7 +62,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
     def load_gui(self):
         self.tables_columns_info = {k: v for (k, v) in db_utils.db_tables_columns_info().items() if not k.endswith(u'_geom')}
-        self.table_chooser = ImportTableChooser(self.tables_columns_info, self.connect, file_header=None)
+        self.table_chooser = ImportTableChooser(self.tables_columns_info, file_header=None)
         self.main_vertical_layout.addWidget(self.table_chooser.widget)
         self.main_vertical_layout.addStretch()
         #General buttons
@@ -91,7 +91,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         self.gridLayout_buttons.addWidget(get_line(), 3, 0)
 
         tables_columns = db_utils.tables_columns()
-        self.distinct_value_browser = DistinctValuesBrowser(tables_columns, self.connect)
+        self.distinct_value_browser = DistinctValuesBrowser(tables_columns)
         self.gridLayout_buttons.addWidget(self.distinct_value_browser.widget, 4, 0)
 
         self.gridLayout_buttons.addWidget(get_line(), 5, 0)
@@ -336,9 +336,8 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
 
 class ImportTableChooser(VRowEntry):
-    def __init__(self, tables_columns, connect, file_header=None):
+    def __init__(self, tables_columns, file_header=None):
         super(ImportTableChooser, self).__init__()
-        self.connect = connect
         self.tables_columns = tables_columns
         self.file_header = file_header
         self.columns = []
@@ -437,7 +436,7 @@ class ImportTableChooser(VRowEntry):
         self.grid.layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'ImportTableChooser', u'Factor'))), 0, 3)
 
         for index, tables_columns_info in enumerate(sorted(tables_columns[import_method_name], key=itemgetter(0))):
-            column = ColumnEntry(tables_columns_info, file_header, self.connect, self.numeric_datatypes)
+            column = ColumnEntry(tables_columns_info, file_header, self.numeric_datatypes)
             rownr = self.grid.layout.rowCount()
             for colnr, wid in enumerate(column.column_widgets):
                 self.grid.layout.addWidget(wid, rownr, colnr)
@@ -452,9 +451,8 @@ class ImportTableChooser(VRowEntry):
 
 
 class ColumnEntry(object):
-    def __init__(self, tables_columns_info, file_header, connect, numeric_datatypes):
+    def __init__(self, tables_columns_info, file_header, numeric_datatypes):
         self.tables_columns_info = tables_columns_info
-        self.connect = connect
         self.obsids_from_selection = None
         self.file_header = file_header
 

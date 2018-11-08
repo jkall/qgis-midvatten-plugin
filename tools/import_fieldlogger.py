@@ -47,8 +47,8 @@ import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
 from date_utils import datestring_to_date, dateshift
 from definitions import midvatten_defs as defs
-from .gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid
-from .gui_utils import DateTimeFilter
+from gui_utils import SplitterWithHandel, RowEntry, RowEntryGrid
+from gui_utils import DateTimeFilter
 
 
 import_fieldlogger_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
@@ -634,11 +634,11 @@ class SublocationFilter(RowEntry):
 
 
 class InputFields(RowEntry):
-    def __init__(self, connect):
+    def __init__(self):
         self.widget = qgis.PyQt.QtWidgets.QWidget()
         self.layout = qgis.PyQt.QtWidgets.QVBoxLayout()
         self.widget.setLayout(self.layout)
-        self.connect = connect
+
 
         self.all_children = []
 
@@ -822,9 +822,9 @@ class InputFields(RowEntry):
 
 
 class ImportMethodChooser(RowEntry):
-    def __init__(self, parameter_name, parameter_names, connect):
+    def __init__(self, parameter_name, parameter_names):
         super(ImportMethodChooser, self).__init__()
-        self.connect = connect
+
         self.parameter_widget = None
         self.parameter_name = parameter_name
         self.parameter_names = parameter_names
@@ -900,7 +900,7 @@ class ImportMethodChooser(RowEntry):
 class CommentsImportFields(RowEntry):
     """
     """
-    def __init__(self, import_method_chooser, connect):
+    def __init__(self, import_method_chooser):
         """
         """
         super(CommentsImportFields, self).__init__()
@@ -932,11 +932,11 @@ class WLevelsImportFields(RowEntryGrid):
     """
     """
 
-    def __init__(self, import_method_chooser, connect):
+    def __init__(self, import_method_chooser):
         """
         """
         super(WLevelsImportFields, self).__init__()
-        self.connect = connect
+
         self.h_toc_dict = None
         self.import_method_chooser = import_method_chooser
         self.label_value_column = qgis.PyQt.QtWidgets.QLabel(u'Value column: ')
@@ -1013,14 +1013,14 @@ class WFlowImportFields(RowEntryGrid):
     """
 
 
-    def __init__(self, import_method_chooser, connect):
+    def __init__(self, import_method_chooser):
         """
         A HBoxlayout should be created as self.layout.
         It shuold also create an empty list for future data as self.data
         Connecting the dropdown lists as events is done here (or in submethods).
         """
         super(WFlowImportFields, self).__init__()
-        self.connect = connect
+
         self._import_method_chooser = import_method_chooser
         self.label_flowtype = qgis.PyQt.QtWidgets.QLabel(u'Flowtype: ')
         self.__flowtype = default_combobox()
@@ -1097,14 +1097,14 @@ class WQualFieldImportFields(RowEntryGrid):
 
     """
 
-    def __init__(self, import_method_chooser, connect):
+    def __init__(self, import_method_chooser):
         """
         A HBoxlayout should be created as self.layout.
         It shuold also create an empty list for future data as self.data
         Connecting the dropdown lists as events is done here (or in submethods).
         """
         super(WQualFieldImportFields, self).__init__()
-        self.connect = connect
+
         self._import_method_chooser = import_method_chooser
         self.label_parameter = qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate(u'WQualFieldImportFields', u'Parameter: ')))
         self.__parameter = default_combobox()
@@ -1217,7 +1217,7 @@ class WQualFieldImportFields(RowEntryGrid):
 class WQualFieldDepthImportFields(RowEntry):
     """
     """
-    def __init__(self, import_method_chooser, connect):
+    def __init__(self, import_method_chooser):
         """
         """
         super(WQualFieldDepthImportFields, self).__init__()

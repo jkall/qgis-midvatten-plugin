@@ -73,8 +73,8 @@ class CalculateStatisticsGui(qgis.PyQt.QtWidgets.QMainWindow, calculate_statisti
 
 class DbBrowser(gui_utils.DistinctValuesBrowser):
 
-    def __init__(self, tables_columns, connect):
-        super(DbBrowser, self).__init__(tables_columns, connect)
+    def __init__(self, tables_columns):
+        super(DbBrowser, self).__init__(tables_columns)
 
         self.distinct_value_label.setVisible(False)
         self._distinct_value.setVisible(False)

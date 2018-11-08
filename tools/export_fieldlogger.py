@@ -33,7 +33,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 import db_utils
 import definitions.midvatten_defs as defs
 import midvatten_utils as utils
-from .gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit, get_line, set_combobox
+from gui_utils import SplitterWithHandel, ExtendedQPlainTextEdit, get_line, set_combobox
 from midvatten_utils import returnunicode as ru
 
 export_fieldlogger_ui_dialog =  qgis.PyQt.uic.loadUiType(os.path.join(os.path.dirname(__file__),'..','ui', 'import_fieldlogger.ui'))[0]
@@ -190,7 +190,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         return new_widget
 
     @staticmethod
-    def create_parameter_groups_using_stored_settings(stored_settings, connect):
+    def create_parameter_groups_using_stored_settings(stored_settings):
         """
         """
         if not stored_settings or stored_settings is None:
@@ -369,7 +369,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
 
 class ParameterGroup(object):
-    def __init__(self, connect):
+    def __init__(self):
         """
         """
         #Widget list:
@@ -462,7 +462,7 @@ class ParameterGroup(object):
 
 
 class ParameterBrowser(qgis.PyQt.QtWidgets.QDialog, parameter_browser_dialog):
-    def __init__(self, tables_columns, connect, parent=None):
+    def __init__(self, tables_columns, parent=None):
         qgis.PyQt.QtWidgets.QDialog.__init__(self, parent)
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 
