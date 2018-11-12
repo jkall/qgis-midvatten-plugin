@@ -235,7 +235,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         :param args: Needed when using general_exception_handler for some reason?!?
         :return:
         """
-        self.style_index = 0
+        self.style_indexes = {}
 
         self.used_format = None
 
@@ -449,11 +449,13 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             style_color_list = [(style, color) for style in MarkVar for color in colors]
             utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u'Used style_color_list: %s'))%(str(style_color_list)))
             try:
-                style = style_color_list[self.style_index][0]
-                color = style_color_list[self.style_index][1]
-                self.style_index += 1
+                style_index = self.style_indexes.get(plottype, 0)
+                style = style_color_list[style_index][0]
+                color = style_color_list[style_index][1]
+                self.style_indexes[plottype] = style_index + 1
+
             except IndexError:
-                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u'style_color_list index error, index %s'))%str(self.style_index))
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate(u'plotsqlitewindow', u'style_color_list index error, index %s'))%str(style_index))
                 color = _color
                 style = MarkVar[0]
 
