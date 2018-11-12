@@ -427,7 +427,6 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                 df = pd.DataFrame.from_records(table2, columns=[u'values'], exclude=[u'date_time'])
                 df.set_index(pd.DatetimeIndex(table2.date_time, name=u'date_time'), inplace=True)
                 df.columns = [u'values']
-
                 df = pandas_calc.calculate(df)
                 if df is not None:
                     try:
@@ -1012,11 +1011,12 @@ class PandasCalculations(object):
             except ValueError:
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(u'PandasCalculations', u'Resample base must be an integer')))
             else:
-				try:#new api for pandas >=0.18
-					df = getattr(df.resample(rule,base=int(base)),how)()
-				except:#old pandas
-					df = df.resample(rule, how=how, base=int(base))
-
+                if pd.__version__ > '0.18.0':
+                    # new api for pandas >=0.18
+                    df = getattr(df.resample(rule,base=int(base)),how)()
+                else:
+                    #old pandas
+                    df = df.resample(rule, how=how, base=int(base))
         #Rolling mean
         window = self.window.text()
         if window:
