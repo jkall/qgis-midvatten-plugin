@@ -791,8 +791,15 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
                     else:
                         leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
 
+
             leg.set_zorder(999)
             leg.draggable(state=True)
+
+            lines_args = self.templates.loaded_template.get('legend_Line2D_methods', {})
+            if lines_args:
+                for line in leg.get_lines():
+                    for method, arg in lines_args.items():
+                        getattr(line, method)(arg)
 
             frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
 
