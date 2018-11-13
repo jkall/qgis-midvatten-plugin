@@ -41,6 +41,7 @@ import  qgis.core
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtCore import QSettings
 
+from qgis.utils import spatialite_connect
 from qgis._core import QgsProject, QgsDataSourceUri
 import db_manager.db_plugins.postgis.connector as postgis_connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
@@ -57,6 +58,7 @@ class DbConnectionManager(object):
         """
         self.conn = None
         self.cursor = None
+        self.connector = None
 
         if db_settings is None:
             db_settings = QgsProject.instance().readEntry("Midvatten", "database")[0]
@@ -80,6 +82,7 @@ class DbConnectionManager(object):
                         utils.MessagebarAndLog.critical(bar_msg=utils.returnunicode(QCoreApplication.translate('DbConnectionManager', 'Database connection failed. Try reset settings.')))
                         return None
         elif isinstance(db_settings, dict):
+            # Assume it the dict is a valid db_settings dict.
             pass
         else:
             raise Exception(utils.returnunicode(QCoreApplication.translate('DbConnectionManager', "DbConnectionManager error: db_settings must be either a dict like {'spatialite': {'dbpath': 'x'} or a string representation of it. Was: %s"))%utils.returnunicode(db_settings))
@@ -99,24 +102,16 @@ class DbConnectionManager(object):
 
             #Create the database if it's not existing
             self.uri.setDatabase(self.dbpath)
-            try:
-                self.conn = sqlite.connect(self.dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
-            except:
-                utils.MessagebarAndLog.critical(bar_msg=utils.returnunicode(QCoreApplication.translate('DbConnectionManager', 'Connecting to spatialite db %s failed! Check that the file or path exists.'))%self.dbpath)
-                self.conn = None
-            else:
-                try:
-                    self.conn.enable_load_extension(True)
-                    self.conn.load_extension('mod_spatialite')
-                except:
-                    utils.MessagebarAndLog.critical(
-                        bar_msg=utils.returnunicode(QCoreApplication.translate('DbConnectionManager', 'Failed to load spatialite extension!')))
+            if not os.path.isfile(self.dbpath):
+                conn = self.connect_with_spatialite_connect()
+                conn.close()
 
-                try:
-                    self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
-                except:
-                    pass
-                self.cursor = self.conn.cursor()
+            try:
+                self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
+            except Exception as e:
+                utils.MessagebarAndLog.critical(bar_msg=utils.returnunicode(QCoreApplication.translate('DbConnectionManager', 'Connecting to spatialite db %s failed! Check that the file or path exists.')) % self.dbpath,
+                                                log_msg=utils.returnunicode(QCoreApplication.translate('DbConnectionManager', 'msg %s'))%str(e))
+
         elif self.dbtype == 'postgis':
             connection_name = self.connection_settings['connection'].split('/')[0]
             self.postgis_settings = get_postgis_connections()[connection_name]
@@ -130,13 +125,18 @@ class DbConnectionManager(object):
                 else:
                     raise
 
+        if self.connector is not None:
             self.conn = self.connector.connection
-            self.cursor = self.connector._get_cursor()
+            self.cursor = self.connector.cursor()
 
     def connect2db(self):
         self.check_db_is_locked()
         if self.cursor:
             return True
+
+    def connect_with_spatialite_connect(self):
+        conn = spatialite_connect(self.dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
+        return conn
 
     def execute(self, sql, all_args=None):
         """

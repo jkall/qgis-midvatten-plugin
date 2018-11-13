@@ -33,6 +33,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 import db_utils
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
+from qgis.utils import spatialite_connect
 
 
 class NewDb(object):
@@ -88,7 +89,8 @@ class NewDb(object):
             #utils.pop_up_info("Impossible to connect to selected DataBase")
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return ''
-
+        d =dbconnection.connector
+        print("TODO {}".format(str(d.hasSpatialSupport())))
         #First, find spatialite version
         versionstext = dbconnection.execute_and_fetchall('select spatialite_version()')[0][0]
         # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
@@ -134,10 +136,12 @@ class NewDb(object):
 
         self.add_metadata_to_about_db(dbconnection)
 
-        dbconnection.vacuum()
-
         #FINISHED WORKING WITH THE DATABASE, CLOSE CONNECTIONS
+
+        dbconnection.commit()
+        dbconnection.vacuum()
         dbconnection.commit_and_closedb()
+
         #create SpatiaLite Connection in QGIS QSettings
         settings=qgis.PyQt.QtCore.QSettings()
         settings.beginGroup('/SpatiaLite/dbconnections')
