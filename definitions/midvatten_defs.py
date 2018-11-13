@@ -781,7 +781,6 @@ def secplot_default_template():
 
 def custplot_default_template():
     default = {
-
             "Axes_axhline": {
             },
             "Axes_axvline": {
@@ -822,6 +821,7 @@ def custplot_default_template():
             "legend_Frame_set_facecolor": "1",
             "legend_Frame_set_fill": False,
             "legend_Text_set_fontsize": 10,
+            "legend_Line2D_methods": {'set_linewidth': 1.5},
             "plot_height": u"",
             "plot_width": u"",
             "rcParams": {"savefig.dpi": 450},
