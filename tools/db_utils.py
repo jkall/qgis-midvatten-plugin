@@ -47,6 +47,7 @@ import db_manager.db_plugins.postgis.connector as postgis_connector
 import db_manager.db_plugins.spatialite.connector as spatialite_connector
 
 import midvatten_utils as utils
+from midvatten_utils import returnunicode as ru
 
 class DbConnectionManager(object):
     def __init__(self, db_settings=None):
@@ -71,7 +72,7 @@ class DbConnectionManager(object):
                 if not db_settings:
                     # TODO: Something feels off here. It should not return None, as that will just cause other hard to solve errors.
                     # TODO An exception feels better but is uglier for the user.
-                    utils.MessagebarAndLog.critical(bar_msg=utils.returnunicode(QCoreApplication.translate('DbConnectionManager', 'Database not chosen correctly. Check DB tab in Midvatten settings.')))
+                    utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('DbConnectionManager', 'Database not chosen correctly. Check DB tab in Midvatten settings.')))
                     return None
                 else:
                     try:
@@ -79,15 +80,15 @@ class DbConnectionManager(object):
                     except:
                         #TODO: Something feels off here. It should not return None, as that will just cause other hard to solve errors.
                         #TODO An exception feels better but is uglier for the user.
-                        utils.MessagebarAndLog.critical(bar_msg=utils.returnunicode(QCoreApplication.translate('DbConnectionManager', 'Database connection failed. Try reset settings.')))
+                        utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('DbConnectionManager', 'Database connection failed. Try reset settings.')))
                         return None
         elif isinstance(db_settings, dict):
             # Assume it the dict is a valid db_settings dict.
             pass
         else:
-            raise Exception(utils.returnunicode(QCoreApplication.translate('DbConnectionManager', "DbConnectionManager error: db_settings must be either a dict like {'spatialite': {'dbpath': 'x'} or a string representation of it. Was: %s"))%utils.returnunicode(db_settings))
+            raise Exception(ru(QCoreApplication.translate('DbConnectionManager', "DbConnectionManager error: db_settings must be either a dict like {'spatialite': {'dbpath': 'x'} or a string representation of it. Was: %s"))%ru(db_settings))
 
-        db_settings = utils.returnunicode(db_settings, keep_containers=True)
+        db_settings = ru(db_settings, keep_containers=True)
 
         self.db_settings = db_settings
 
@@ -97,7 +98,7 @@ class DbConnectionManager(object):
         self.uri = QgsDataSourceUri()
 
         if self.dbtype == 'spatialite':
-            self.dbpath = utils.returnunicode(self.connection_settings['dbpath'])
+            self.dbpath = ru(self.connection_settings['dbpath'])
             self.check_db_is_locked()
 
             #Create the database if it's not existing
@@ -109,8 +110,8 @@ class DbConnectionManager(object):
             try:
                 self.connector = spatialite_connector.SpatiaLiteDBConnector(self.uri)
             except Exception as e:
-                utils.MessagebarAndLog.critical(bar_msg=utils.returnunicode(QCoreApplication.translate('DbConnectionManager', 'Connecting to spatialite db %s failed! Check that the file or path exists.')) % self.dbpath,
-                                                log_msg=utils.returnunicode(QCoreApplication.translate('DbConnectionManager', 'msg %s'))%str(e))
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('DbConnectionManager', 'Connecting to spatialite db %s failed! Check that the file or path exists.')) % self.dbpath,
+                                                log_msg=ru(QCoreApplication.translate('DbConnectionManager', 'msg %s'))%str(e))
 
         elif self.dbtype == 'postgis':
             connection_name = self.connection_settings['connection'].split('/')[0]
@@ -120,7 +121,7 @@ class DbConnectionManager(object):
                 self.connector = postgis_connector.PostGisDBConnector(self.uri)
             except Exception as e:
                 if 'no password supplied' in str(e):
-                    utils.MessagebarAndLog.warning(bar_msg=utils.returnunicode(QCoreApplication.translate('DbConnectionManager', 'No password supplied for postgis connection')))
+                    utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('DbConnectionManager', 'No password supplied for postgis connection')))
                     raise utils.UserInterruptError()
                 else:
                     raise
@@ -149,13 +150,13 @@ class DbConnectionManager(object):
         if isinstance(sql, str):
             sql = [sql]
         elif not isinstance(sql, (list, tuple)):
-            raise TypeError(utils.returnunicode(QCoreApplication.translate('DbConnectionManager', 'DbConnectionManager.execute: sql must be type string or a list/tuple of strings. Was %s'))%utils.returnunicode(type(sql)))
+            raise TypeError(ru(QCoreApplication.translate('DbConnectionManager', 'DbConnectionManager.execute: sql must be type string or a list/tuple of strings. Was %s'))%ru(type(sql)))
         for idx, line in enumerate(sql):
             if all_args is None:
                 try:
                     self.cursor.execute(line)
                 except Exception as e:
-                    textstring = utils.returnunicode(QCoreApplication.translate('sql_load_fr_db', """DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (utils.returnunicode(line), utils.returnunicode(str(e)))
+                    textstring = ru(QCoreApplication.translate('sql_load_fr_db', """DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (ru(line), ru(str(e)))
                     utils.MessagebarAndLog.warning(
                         bar_msg=utils.sql_failed_msg(),
                         log_msg=textstring)
@@ -165,21 +166,21 @@ class DbConnectionManager(object):
                 try:
                     self.cursor.execute(line, args)
                 except Exception as e:
-                    textstring = utils.returnunicode(QCoreApplication.translate('sql_load_fr_db', """DB error!\n SQL causing this error:%s\nusing args %s\nMsg:\n%s""")) % (utils.returnunicode(line), utils.returnunicode(args), utils.returnunicode(str(e)))
+                    textstring = ru(QCoreApplication.translate('sql_load_fr_db', """DB error!\n SQL causing this error:%s\nusing args %s\nMsg:\n%s""")) % (ru(line), ru(args), ru(str(e)))
                     utils.MessagebarAndLog.warning(
                         bar_msg=utils.sql_failed_msg(),
                         log_msg=textstring)
                     raise
             else:
-                raise TypeError(utils.returnunicode(QCoreApplication.translate('DbConnectionManager', 'DbConnectionManager.execute: all_args must be a list/tuple. Was %s')) % utils.returnunicode(type(all_args)))
+                raise TypeError(ru(QCoreApplication.translate('DbConnectionManager', 'DbConnectionManager.execute: all_args must be a list/tuple. Was %s')) % ru(type(all_args)))
 
     def execute_and_fetchall(self, sql):
         try:
             self.cursor.execute(sql)
         except (sqlite.OperationalError, Exception) as e:
-            textstring = utils.returnunicode(QCoreApplication.translate('sql_load_fr_db',
+            textstring = ru(QCoreApplication.translate('sql_load_fr_db',
                                                                         """DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (
-                         utils.returnunicode(sql), utils.returnunicode(str(e)))
+                         ru(sql), ru(str(e)))
             utils.MessagebarAndLog.warning(
                 bar_msg=utils.sql_failed_msg(),
                 log_msg=textstring)
@@ -225,7 +226,7 @@ class DbConnectionManager(object):
         if self.dbtype == 'spatialite':
             for ext in ('journal', 'wal'):
                 if os.path.exists('%s-%s'%(self.dbpath, ext)):
-                    raise DatabaseLockedError(utils.returnunicode(QCoreApplication.translate('DbConnectionManager', "Error, The database is already in use (a %s-file was found)".format(ext))))
+                    raise DatabaseLockedError(ru(QCoreApplication.translate('DbConnectionManager', "Error, The database is already in use (a %s-file was found)".format(ext))))
 
     def vacuum(self):
         if self.dbtype == 'spatialite':
@@ -239,7 +240,7 @@ class DbConnectionManager(object):
             temptable_name = 'temp_%s'%temptable_name
         existing_names = list(tables_columns(dbconnection=self).keys())
         while temptable_name in existing_names: #this should only be needed if an earlier import failed. if so, propose to rename the temporary import-table
-            reponse = qgis.PyQt.QtWidgets.QMessageBox.question(None, utils.returnunicode(QCoreApplication.translate('DbConnectionManager', "Warning - Table name confusion!")),utils.returnunicode(QCoreApplication.translate('midv_data_importer', '''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''))%(self.temptable_name, self.temptable_name, self.temptable_name), qgis.PyQt.QtWidgets.QMessageBox.Yes | qgis.PyQt.QtWidgets.QMessageBox.No)
+            reponse = qgis.PyQt.QtWidgets.QMessageBox.question(None, ru(QCoreApplication.translate('DbConnectionManager', "Warning - Table name confusion!")),ru(QCoreApplication.translate('midv_data_importer', '''The temporary import table '%s' already exists in the current DataBase. This could indicate a failure during last import. Please verify that your table contains all expected data and then remove '%s'.\n\nMeanwhile, do you want to go on with this import, creating a temporary table '%s_2' in database?'''))%(self.temptable_name, self.temptable_name, self.temptable_name), qgis.PyQt.QtWidgets.QMessageBox.Yes | qgis.PyQt.QtWidgets.QMessageBox.No)
             if reponse == qgis.PyQt.QtWidgets.QMessageBox.Yes:
                 self.temptable_name = '%s_2' % self.temptable_name
             else:
@@ -295,7 +296,7 @@ def get_postgis_connections():
     qs = QSettings()
     postgresql_connections = {}
     for k in sorted(qs.allKeys()):
-        k = utils.returnunicode(k)
+        k = ru(k)
         if k.startswith('PostgreSQL'):
             cols = k.split('/')
             conn_name = cols[2]
@@ -307,7 +308,7 @@ def get_postgis_connections():
             value = qs.value(k)
             postgresql_connections.setdefault(conn_name, {})[setting] = value
 
-    postgresql_connections= utils.returnunicode(postgresql_connections, keep_containers=True)
+    postgresql_connections= ru(postgresql_connections, keep_containers=True)
     return postgresql_connections
 
 
@@ -317,7 +318,7 @@ def sql_load_fr_db(sql, dbconnection=None):
             dbconnection = DbConnectionManager()
         result = dbconnection.execute_and_fetchall(sql)
     except Exception as e:
-        textstring = utils.returnunicode(QCoreApplication.translate('sql_load_fr_db', """DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (utils.returnunicode(sql), utils.returnunicode(str(e)))
+        textstring = ru(QCoreApplication.translate('sql_load_fr_db', """DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (ru(sql), ru(str(e)))
         utils.MessagebarAndLog.warning(
             bar_msg=utils.sql_failed_msg(),
             log_msg=textstring, duration=4)
@@ -337,10 +338,10 @@ def sql_alter_db(sql, dbconnection=None, all_args=None):
     try:
         dbconnection.execute_and_commit(sql, all_args=all_args)
     except Exception as e:
-        textstring = utils.returnunicode(QCoreApplication.translate('sql_alter_db', """DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (
-        utils.returnunicode(sql), utils.returnunicode(str(e)))
+        textstring = ru(QCoreApplication.translate('sql_alter_db', """DB error!\n SQL causing this error:%s\nMsg:\n%s""")) % (
+        ru(sql), ru(str(e)))
         utils.MessagebarAndLog.warning(
-            bar_msg=utils.returnunicode(QCoreApplication.translate('sql_alter_db', 'Some sql failure, see log for additional info.')),
+            bar_msg=ru(QCoreApplication.translate('sql_alter_db', 'Some sql failure, see log for additional info.')),
             log_msg=textstring, duration=4)
 
 def execute_sqlfile(sqlfilename, function=sql_alter_db):
@@ -419,7 +420,7 @@ def get_table_info(tablename, dbconnection=None):
                 try:
                     columns = dbconnection.execute_and_fetchall(columns_sql)
                 except Exception as e:
-                    utils.MessagebarAndLog.warning(bar_msg=utils.sql_failed_msg(), log_msg=utils.returnunicode(
+                    utils.MessagebarAndLog.warning(bar_msg=utils.sql_failed_msg(), log_msg=ru(
                         QCoreApplication.translate('get_table_info', 'Sql failed: %s\msg:%s')) % (columns_sql, str(e)))
                     return None
     else:
@@ -665,11 +666,11 @@ def backup_db(dbconnection=None):
         zf.close()
         dbconnection.conn.rollback()
         utils.MessagebarAndLog.info(
-            bar_msg=utils.returnunicode(QCoreApplication.translate("backup_db", "Database backup was written to %s ")) % bkupname,
+            bar_msg=ru(QCoreApplication.translate("backup_db", "Database backup was written to %s ")) % bkupname,
             duration=15)
     else:
         utils.MessagebarAndLog.info(
-            bar_msg=utils.returnunicode(
+            bar_msg=ru(
                 QCoreApplication.translate("backup_db", "Backup of PostGIS database not supported yet!")),
             duration=15)
     dbconnection.closedb()
@@ -789,9 +790,9 @@ def calculate_median_value(table, column, obsid, dbconnection=None):
         try:
             median_value = median_value[0][0]
         except IndexError:
-            utils.MessagebarAndLog.warning(bar_msg=utils.returnunicode(QCoreApplication.translate('calculate_median_value',
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('calculate_median_value',
                                                                                  'Median calculation error, see log message panel')),
-                                           log_msg=utils.returnunicode(QCoreApplication.translate('calculate_median_value',
+                                           log_msg=ru(QCoreApplication.translate('calculate_median_value',
                                                                                  'Sql failed: %s')) % sql)
             median_value = None
 
@@ -802,9 +803,9 @@ def calculate_median_value(table, column, obsid, dbconnection=None):
         try:
             median_value = median_value[0][0]
         except IndexError:
-            utils.MessagebarAndLog.warning(bar_msg=utils.returnunicode(QCoreApplication.translate('calculate_median_value',
+            utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('calculate_median_value',
                                                                                  'Median calculation error, see log message panel')),
-                                           log_msg=utils.returnunicode(QCoreApplication.translate('calculate_median_value',
+                                           log_msg=ru(QCoreApplication.translate('calculate_median_value',
                                                                                  'Sql failed: %s')) % sql)
             median_value = None
     return median_value
@@ -835,7 +836,7 @@ def delete_srids(execute_able_object, keep_epsg_code):
         execute_able_object.execute(delete_srid_sql)
     except:
         utils.MessagebarAndLog.info(
-            log_msg=utils.returnunicode(QCoreApplication.translate('delete_srids', 'Removing srids failed using: %s')) % str(
+            log_msg=ru(QCoreApplication.translate('delete_srids', 'Removing srids failed using: %s')) % str(
                 delete_srid_sql))
 
 def get_spatialite_db_path_from_dbsettings_string(db_settings):
@@ -850,8 +851,8 @@ def get_spatialite_db_path_from_dbsettings_string(db_settings):
                 try:
                     msg = str(e)
                 except:
-                    msg = utils.returnunicode(QCoreApplication.translate('get_spatialite_db_path_from_dbsettings_string', 'Error message failed! Could not be converted to string!'))
-                utils.MessagebarAndLog.info(log_msg=utils.returnunicode(QCoreApplication.translate('get_spatialite_db_path_from_dbsettings_string', '%s error msg from db_settings string "%s": %s')) % ('get_spatialite_db_path_from_dbsettings_string', db_settings, msg))
+                    msg = ru(QCoreApplication.translate('get_spatialite_db_path_from_dbsettings_string', 'Error message failed! Could not be converted to string!'))
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('get_spatialite_db_path_from_dbsettings_string', '%s error msg from db_settings string "%s": %s')) % ('get_spatialite_db_path_from_dbsettings_string', db_settings, msg))
                 return ''
             else:
                 return db_settings.get('spatialite', {}).get('dbpath', '')
