@@ -39,7 +39,7 @@ from contextlib import contextmanager
 from functools import wraps
 from operator import itemgetter
 from qgis.core import QgsLogger, QgsMapLayer, QgsMapLayerRegistry, QgsMessageLog, QgsProject
-from qgis.gui import QgsMessageBar, QtCore
+from qgis.gui import QgsMessageBar
 
 import numpy as np
 from PyQt4.QtCore import QCoreApplication
