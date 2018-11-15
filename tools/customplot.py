@@ -461,31 +461,37 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
         plot_settings = self.templates.loaded_template.get('Axes_plot', {"zorder": 8, 'markersize': 6, 'linewidth': 1})
         plot_date_settings = self.templates.loaded_template.get('Axes_plot_date', {"zorder": 8, 'markersize': 6, 'linewidth': 1})
 
-        if FlagTimeXY == "time" and plottype == "step-pre":
-            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-pre', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_date_settings)# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
-        elif FlagTimeXY == "time" and plottype == "step-post":
-            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-post', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_date_settings)
-        elif FlagTimeXY == "time" and plottype == "line and cross":
-            self.p[i], = self.axes.plot_date(numtime, table2.values,  style, c=color, label=self.plabels[i], **plot_date_settings)
-        elif FlagTimeXY == "time" and plottype == "frequency":
-            try:
-                self.p[i], = self.axes.plot_date(numtime, table2.values,  linestyle=style, marker='None',c=color,label='frequency '+str(self.plabels[i]), **plot_date_settings)
-                self.plabels[i]='frequency '+str(self.plabels[i])
-            except:
-                self.p[i], = self.axes.plot_date(np.array([]),np.array([]),  linestyle=style, marker='None',c=color,label='frequency '+str(self.plabels[i]))
-                self.plabels[i]='frequency '+str(self.plabels[i])
-        elif FlagTimeXY == "time" and plottype == "marker":
-            self.p[i], = self.axes.plot_date(numtime, table2.values, linestyle='None', marker=style,c=color,label=self.plabels[i], **plot_date_settings)
-        elif FlagTimeXY == "time" and plottype == "line":
-            self.p[i], = self.axes.plot_date(numtime, table2.values,  linestyle=style, marker='None',c=color ,label=self.plabels[i], **plot_date_settings)
-        elif FlagTimeXY == "XY" and plottype == "step-pre":
-            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-pre', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_settings)
-        elif FlagTimeXY == "XY" and plottype == "step-post":
-            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-post', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_settings)
-        elif FlagTimeXY == "XY" and plottype == "line and cross":
-            self.p[i], = self.axes.plot(numtime, table2.values,  style, c=color, markersize = 6, label=self.plabels[i], **plot_settings)
+        if FlagTimeXY == "time":
+            if plottype == "step-pre":
+                self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-pre', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_date_settings)# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
+            elif plottype == "step-post":
+                self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-post', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_date_settings)
+            elif plottype == "line and cross":
+                self.p[i], = self.axes.plot_date(numtime, table2.values,  style, c=color, label=self.plabels[i], **plot_date_settings)
+            elif plottype == "frequency":
+                try:
+                    self.p[i], = self.axes.plot_date(numtime, table2.values,  linestyle=style, marker='None',c=color,label='frequency '+str(self.plabels[i]), **plot_date_settings)
+                    self.plabels[i]='frequency '+str(self.plabels[i])
+                except:
+                    self.p[i], = self.axes.plot_date(np.array([]),np.array([]),  linestyle=style, marker='None',c=color,label='frequency '+str(self.plabels[i]))
+                    self.plabels[i]='frequency '+str(self.plabels[i])
+            elif plottype == "marker":
+                self.p[i], = self.axes.plot_date(numtime, table2.values, linestyle='None', marker=style,c=color,label=self.plabels[i], **plot_date_settings)
+            elif plottype == "line":
+                self.p[i], = self.axes.plot_date(numtime, table2.values,  linestyle=style, marker='None',c=color ,label=self.plabels[i], **plot_date_settings)
+            else:
+                self.p[i], = self.axes.plot_date(numtime, table2.values, MarkVar, label=self.plabels[i], **plot_date_settings)
+        elif FlagTimeXY == "XY":
+            if plottype == "step-pre":
+                self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-pre', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_settings)
+            elif plottype == "step-post":
+                self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-post', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_settings)
+            elif plottype == "line and cross":
+                self.p[i], = self.axes.plot(numtime, table2.values,  style, c=color, markersize = 6, label=self.plabels[i], **plot_settings)
+            else:
+                self.p[i], = self.axes.plot(numtime, table2.values,  style, c=color, label=self.plabels[i], **plot_settings)
         else:
-            self.p[i], = self.axes.plot(numtime, table2.values,  style, c=color, label=self.plabels[i], **plot_settings)
+            raise Exception('Programming error. Must be time or XY!')
 
 
 
