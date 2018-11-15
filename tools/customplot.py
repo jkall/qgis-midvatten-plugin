@@ -480,7 +480,7 @@ class plotsqlitewindow(QtGui.QMainWindow, customplot_ui_class):
             elif plottype == "line":
                 self.p[i], = self.axes.plot_date(numtime, table2.values,  linestyle=style, marker='None',c=color ,label=self.plabels[i], **plot_date_settings)
             else:
-                self.p[i], = self.axes.plot_date(numtime, table2.values, MarkVar, label=self.plabels[i], **plot_date_settings)
+                self.p[i], = self.axes.plot_date(numtime, table2.values, style, label=self.plabels[i], **plot_date_settings)
         elif FlagTimeXY == "XY":
             if plottype == "step-pre":
                 self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-pre', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_settings)
