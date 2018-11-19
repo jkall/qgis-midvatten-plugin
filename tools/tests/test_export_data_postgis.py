@@ -29,10 +29,10 @@ import sqlite3 as sqlite
 import db_utils
 import midvatten_utils as utils
 import mock
-from midvatten.midvatten import midvatten
+from midvatten import midvatten
 
 import utils_for_tests
-from .mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance, MockReturnUsingDictIn, DummyInterface2
+from mocks_for_tests import MockUsingReturnValue, MockQgsProjectInstance, MockReturnUsingDictIn, DummyInterface2
 
 EXPORT_DB_PATH = '/tmp/tmp_midvatten_export_db.sqlite'
 TEMP_DIR = '/tmp/'

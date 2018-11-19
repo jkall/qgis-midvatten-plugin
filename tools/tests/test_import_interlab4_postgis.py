@@ -70,7 +70,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
             @mock.patch('import_data_to_db.utils.Askuser', mocks_for_tests.mock_askuser.get_v)
             @mock.patch('qgis.utils.iface', autospec=True)
             @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
-            @mock.patch('import_data_to_db.PyQt4.QtWidgets.QFileDialog.getOpenFileNames')
+            @mock.patch('import_data_to_db.qgis.PyQt.QtWidgets.QFileDialog.getOpenFileNames')
             def _test(self, filename, mock_filenames, mock_skippopup, mock_iface, mock_not_found_question):
                 mock_not_found_question.return_value.answer = 'ok'
                 mock_not_found_question.return_value.value = 'anobsid'

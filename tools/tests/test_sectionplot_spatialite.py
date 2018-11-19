@@ -30,7 +30,7 @@ import gui_utils
 import mock
 from mock import call
 from nose.plugins.attrib import attr
-from utils import returnunicode as ru
+from midvatten_utils import returnunicode as ru
 
 import utils_for_tests
 

@@ -381,7 +381,7 @@ class TestExportFieldloggerNoDb(object):
 
     @mock.patch('export_fieldlogger.utils.pop_up_info')
     @mock.patch('export_fieldlogger.utils.MessagebarAndLog')
-    @mock.patch('export_fieldlogger.PyQt4.QtWidgets.QInputDialog.getText')
+    @mock.patch('export_fieldlogger.qgis.PyQt.QtWidgets.QInputDialog.getText')
     @mock.patch('export_fieldlogger.db_utils.tables_columns')
     @mock.patch('qgis.utils.iface', autospec=True)
     def test_create_parameter_groups_using_stored_settings_string(self, mock_iface, mock_tables_columns, mock_settingsstrings, mock_settingsbarandlog, mock_popup):

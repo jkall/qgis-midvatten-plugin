@@ -33,7 +33,7 @@ from import_diveroffice import DiverofficeImport
 from nose.plugins.attrib import attr
 
 import utils_for_tests
-from .mocks_for_tests import MockReturnUsingDictIn
+from mocks_for_tests import MockReturnUsingDictIn
 
 
 @attr(status='on')

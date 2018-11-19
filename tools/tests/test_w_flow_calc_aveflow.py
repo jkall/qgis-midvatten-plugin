@@ -25,7 +25,7 @@ from qgis.PyQt import QtGui
 import mock
 import w_flow_calc_aveflow
 
-from .mocks_for_tests import MockUsingReturnValue, MockQgisUtilsIface, MockReturnUsingDictIn
+from mocks_for_tests import MockUsingReturnValue, MockQgisUtilsIface, MockReturnUsingDictIn
 from tools.tests.mocks_for_tests import DummyInterface
 
 

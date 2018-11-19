@@ -22,15 +22,10 @@
 from builtins import str
 from builtins import object
 import  qgis.core
-from qgis.PyQt import QtGui
+from qgis.PyQt import QtGui, QtWidgets
 from qgis.core import QgsProject
 
 import mock
-try:
-    from PyQt4.QtCore import QString
-except:
-    pass
-
 
 class MockUsingReturnValue(object):
     def __init__(self, v=None):

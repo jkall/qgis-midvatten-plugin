@@ -50,7 +50,7 @@ from loaddefaultlayers import LoadLayers
 from prepareforqgis2threejs import PrepareForQgis2Threejs
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru
-from .definitions import midvatten_defs
+from definitions import midvatten_defs
 from sectionplot import SectionPlot
 import customplot
 from midvsettings import midvsettings

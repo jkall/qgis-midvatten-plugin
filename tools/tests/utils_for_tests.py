@@ -35,9 +35,9 @@ import db_utils
 import midvatten_utils as utils
 import mock
 from import_data_to_db import midv_data_importer
-from midvatten.midvatten import midvatten
+from midvatten import midvatten
 
-from .mocks_for_tests import DummyInterface2
+from mocks_for_tests import DummyInterface2
 from tools.tests.mocks_for_tests import DummyInterface
 
 
@@ -157,7 +157,7 @@ class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInt')
+    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
@@ -173,7 +173,7 @@ class MidvattenTestSpatialiteDbEn(MidvattenTestSpatialiteNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInt')
+    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
     @mock.patch('midvatten_utils.QgsProject.instance', MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def setUp(self, mock_savefilename, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
@@ -245,7 +245,7 @@ class MidvattenTestPostgisDbSv(MidvattenTestPostgisNotCreated):
     @mock.patch('qgis.utils.iface')
     @mock.patch('create_db.utils.NotFoundQuestion')
     @mock.patch('midvatten_utils.Askuser')
-    @mock.patch('create_db.PyQt4.QtWidgets.QInputDialog.getInt')
+    @mock.patch('create_db.qgis.PyQt.QtWidgets.QInputDialog.getInt')
     def setUp(self, mock_crs_question, mock_answer_yes, mock_locale, mock_iface):
         super(MidvattenTestPostgisDbSv, self).setUp()
         mock_locale.return_value.answer = 'ok'

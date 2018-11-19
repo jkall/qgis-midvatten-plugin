@@ -29,8 +29,10 @@ import datetime
 from functools import partial
 from collections import OrderedDict
 import import_diveroffice
-import PyQt4
-from PyQt4.QtCore import QCoreApplication
+
+from qgis.PyQt import QtGui, QtWidgets
+from qgis.PyQt.QtCore import QCoreApplication
+
 import midvatten_utils as utils
 import date_utils
 import gui_utils
@@ -75,8 +77,8 @@ class HobologgerImport(import_diveroffice.DiverofficeImport):
         if enddate is not None:
             enddate = date_utils.datestring_to_date(enddate)
 
-        with io.open(path, 'rt', encoding=str(charset)) as f:
-            rows_unsplit = [row.lstrip().rstrip('\n').rstrip('\r').encode('utf-8') for row in f]
+        with open(path, 'rt', encoding=str(charset)) as f:
+            rows_unsplit = [row.lstrip().rstrip('\n').rstrip('\r') for row in f]
             csvreader = csv.reader(rows_unsplit, delimiter=',', quotechar='"')
 
         rows = [ru(row, keep_containers=True) for row in csvreader]
@@ -192,10 +194,10 @@ class TzConverter(gui_utils.RowEntry):
     def __init__(self):
         super(TzConverter, self).__init__()
         self.source_tz = None
-        self.label = PyQt4.QtGui.QLabel(ru(QCoreApplication.translate('TzSelector', 'Select target timezone: ')))
-        timezones = ['GMT{:+d}'.format(x) for x in xrange(-11, 15)]
+        self.label = QtWidgets.QLabel(ru(QCoreApplication.translate('TzSelector', 'Select target timezone: ')))
+        timezones = ['GMT{:+d}'.format(x) for x in range(-11, 15)]
 
-        self._tz_list = PyQt4.QtGui.QComboBox()
+        self._tz_list = QtWidgets.QComboBox()
         self._tz_list.addItems(timezones)
 
         for widget in [self.label, self._tz_list]:
@@ -232,6 +234,6 @@ class FileError(Exception):
     pass
 
 def set_groupbox_children_visibility(parent_widget, visible=True):
-    children = parent_widget.findChildren(PyQt4.QtGui.QWidget)
+    children = parent_widget.findChildren(QtGui.QWidget)
     for child in children:
         child.setVisible(visible)
