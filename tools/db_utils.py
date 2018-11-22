@@ -128,7 +128,7 @@ class DbConnectionManager(object):
 
         if self.connector is not None:
             self.conn = self.connector.connection
-            self.cursor = self.connector.cursor()
+            self.cursor = self.conn.cursor()
 
     def connect2db(self):
         self.check_db_is_locked()

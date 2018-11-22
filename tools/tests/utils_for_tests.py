@@ -166,7 +166,7 @@ class MidvattenTestSpatialiteDbSv(MidvattenTestSpatialiteNotCreated):
         mock_locale.return_value.value = 'sv_SE'
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
-        mock_savefilename.return_value = self.TEMP_DBPATH
+        mock_savefilename.return_value = (self.TEMP_DBPATH, 'Spatialite (*.sqlite)')
         self.midvatten.new_db()
 
 class MidvattenTestSpatialiteDbEn(MidvattenTestSpatialiteNotCreated):
@@ -182,7 +182,7 @@ class MidvattenTestSpatialiteDbEn(MidvattenTestSpatialiteNotCreated):
         mock_locale.return_value.value = 'en_US'
         mock_answer_yes.return_value.result = 1
         mock_crs_question.return_value.__getitem__.return_value = 3006
-        mock_savefilename.return_value = self.TEMP_DBPATH
+        mock_savefilename.return_value = (self.TEMP_DBPATH, 'Spatialite (*.sqlite)')
         self.midvatten.new_db()
 
 class MidvattenTestSpatialiteDbSvImportInstance(MidvattenTestSpatialiteDbSv):
