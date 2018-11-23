@@ -28,6 +28,7 @@ import gui_utils
 import mock
 from nose.plugins.attrib import attr
 from wlevels_calc_calibr import Calibrlogger
+from decimal import Decimal
 
 import utils_for_tests
 
@@ -224,8 +225,9 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
         calibrlogger.M2_date.setDateTime(date_utils.datestring_to_date('2017-02-10 00:00'))
 
         calibrlogger.adjust_trend_func()
-
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, ROUND(level_masl, 11), comment FROM w_levels_logger'))
+        res = db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, ROUND(level_masl, 11), comment FROM w_levels_logger')
+        res[1][5] = '%.11E' % Decimal(res[1][5])
+        test = utils_for_tests.create_test_string(res)
         print(mock_messagebar.mock_calls)
 
         ref = '(True, [(rb1, 2017-02-01 00:00, None, None, None, 100.0, None), (rb1, 2017-02-10 00:00, None, None, None, -2.84217094304e-14, None)])'
