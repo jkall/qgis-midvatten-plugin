@@ -32,7 +32,7 @@ from wlevels_calc_calibr import Calibrlogger
 import utils_for_tests
 
 
-@attr(status='only')
+@attr(status='on')
 class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
@@ -204,6 +204,7 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(test)
         assert test == ref
 
+    @attr(status='only')
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_calibrlogger_adjust_trend(self, mock_messagebar):
@@ -222,6 +223,13 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
         calibrlogger.M1_date.setDateTime(date_utils.datestring_to_date('2017-02-01 00:00'))
         calibrlogger.M2_date.setDateTime(date_utils.datestring_to_date('2017-02-10 00:00'))
 
+        print(str(date_utils.long_dateformat(calibrlogger.L1_date.dateTime().toPyDateTime())))
+        print(str(date_utils.long_dateformat(calibrlogger.L2_date.dateTime().toPyDateTime())))
+        print(str(date_utils.long_dateformat(calibrlogger.M1_date.dateTime().toPyDateTime())))
+        print(str(date_utils.long_dateformat(calibrlogger.M2_date.dateTime().toPyDateTime())))
+
+        print(str(date_utils.long_dateformat(calibrlogger.FromDateTime.dateTime().toPyDateTime())))
+        print(str(date_utils.long_dateformat(calibrlogger.ToDateTime.dateTime().toPyDateTime())))
 
         calibrlogger.adjust_trend_func()
 
