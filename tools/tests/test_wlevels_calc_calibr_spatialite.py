@@ -226,7 +226,9 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         calibrlogger.adjust_trend_func()
         res = db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, ROUND(level_masl, 11), comment FROM w_levels_logger')
-        res[1][5] = '%.11E' % Decimal(res[1][5])
+        l = list(res[1][1])
+        l[5] = '%.11E' % Decimal(l[5])
+        res[1][1] = tuple(l)
         test = utils_for_tests.create_test_string(res)
         print(mock_messagebar.mock_calls)
 
