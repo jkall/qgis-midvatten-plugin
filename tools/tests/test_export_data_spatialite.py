@@ -40,7 +40,7 @@ TEMP_DIR = '/tmp/'
 from nose.plugins.attrib import attr
 
 
-@attr(status='on')
+@attr(status='only')
 class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1

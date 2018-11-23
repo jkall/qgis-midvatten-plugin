@@ -29,7 +29,7 @@ from nose.plugins.attrib import attr
 import utils_for_tests
 
 
-@attr(status='only')
+@attr(status='on')
 class TestDbTablesColumnsInfo(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_tables_columns_info_all_tables(self):
