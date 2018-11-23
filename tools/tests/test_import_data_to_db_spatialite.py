@@ -189,7 +189,7 @@ class TestGeneralImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstanc
         assert test_string == reference_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
@@ -292,7 +292,7 @@ class TestImportObsPointsObsLines(utils_for_tests.MidvattenTestSpatialiteDbSvImp
         assert test_string == reference_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
@@ -345,7 +345,7 @@ class TestWquallabImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
         assert test_string == reference_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
@@ -394,7 +394,7 @@ class TestWflowImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance)
         assert test_string == reference_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
@@ -509,7 +509,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
         assert test_string == reference_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestWlevelsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
@@ -541,7 +541,7 @@ class TestWlevelsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstanc
         assert test_string == reference_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestWlevelsImportOldWlevels(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     """
     This test is for an older version of w_levels where level_masl was not null
@@ -585,7 +585,7 @@ class TestWlevelsImportOldWlevels(utils_for_tests.MidvattenTestSpatialiteDbSvImp
         assert test_string == reference_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestSeismicImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
@@ -602,7 +602,7 @@ class TestSeismicImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstanc
         assert test_string == reference_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestCommentsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
@@ -619,7 +619,7 @@ class TestCommentsImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
         assert test_string == reference_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
@@ -695,7 +695,7 @@ class TestStratImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance)
         assert test_string == reference_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestMeteoImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
@@ -712,7 +712,7 @@ class TestMeteoImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance)
         assert test_string == reference_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
@@ -746,7 +746,7 @@ class TestVlfImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
         assert test_string == reference_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestObsLinesImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
@@ -763,7 +763,7 @@ class TestObsLinesImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
         assert test_string == reference_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestGetForeignKeys(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
@@ -775,7 +775,7 @@ class TestGetForeignKeys(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstan
             assert isinstance(v, (list, tuple))
 
 
-@attr(status='on')
+@attr(status='only')
 class TestDeleteExistingDateTimesFromTemptable(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
