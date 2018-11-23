@@ -144,10 +144,10 @@ class TestTempinput(object):
 
 @attr(status='on')
 class TestAskUser(object):
-    qgis.PyQt_QtGui_QInputDialog_getText = MockUsingReturnValue(['-1 hours'])
+    qgis_PyQt_QtGui_QInputDialog_getText = MockUsingReturnValue(['-1 hours'])
     cancel = MockUsingReturnValue([''])
 
-    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText', qgis.PyQt_QtGui_QInputDialog_getText.get_v)
+    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText', qgis_PyQt_QtGui_QInputDialog_getText.get_v)
     def test_askuser_dateshift(self):
         question = utils.Askuser('DateShift')
         assert question.result == ['-1', 'hours']
@@ -183,7 +183,7 @@ class TestSqlToParametersUnitsTuple(object):
         reference_string = '''((par1, (un1)), (par2, (un2)))'''
         assert test_string == reference_string
 
-@attr(status='onlyly')
+@attr(status='only')
 class TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
