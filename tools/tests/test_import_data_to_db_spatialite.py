@@ -424,7 +424,6 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
         reference_string = r'''(True, [(obsid1, teststaff, 2011-10-19 12:30:00, testinstrument, DO, 12.0, <12, %, None, testcomment)])'''
         assert test_string == reference_string
 
-    @attr(status='only')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('import_data_to_db.utils.Askuser', mock.MagicMock())
     @mock.patch('midvatten_utils.MessagebarAndLog')
