@@ -33,7 +33,7 @@ import calculate_statistics
 
 import utils_for_tests
 
-@attr(status='only')
+@attr(status='on')
 class TestCalculateStatistics(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
