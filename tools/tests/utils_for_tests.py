@@ -77,7 +77,7 @@ def dict_to_sorted_list(adict):
         for k in adict:
             result_list.extend(dict_to_sorted_list(k))
     else:
-        result_list.append(utils.returnunicode(adict).encode('utf-8'))
+        result_list.append(utils.returnunicode(adict)) #.encode('utf-8'))
     return result_list
 
 def init_test():
