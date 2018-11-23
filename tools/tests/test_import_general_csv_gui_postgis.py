@@ -63,7 +63,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
@@ -135,7 +135,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
@@ -208,7 +208,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfound):
@@ -284,7 +284,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfound):
@@ -358,7 +358,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
@@ -431,7 +431,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
@@ -505,7 +505,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_selectedobsids):
@@ -581,7 +581,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_selectedobsids):
@@ -656,7 +656,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
@@ -727,7 +727,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
@@ -797,7 +797,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
@@ -867,7 +867,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
@@ -940,7 +940,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
@@ -1010,7 +1010,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
@@ -1081,7 +1081,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_messagebar):
@@ -1157,7 +1157,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
                     @mock.patch('import_data_to_db.utils.Askuser')
                     @mock.patch('qgis.utils.iface', autospec=True)
-                    @mock.patch('PyQt4.QtWidgets.QInputDialog.getText')
+                    @mock.patch('qgis.PyQt.QtWidgets.QInputDialog.getText')
                     @mock.patch('import_data_to_db.utils.pop_up_info', autospec=True)
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):

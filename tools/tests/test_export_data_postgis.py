@@ -55,7 +55,7 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_selection.get_v)
-    @mock.patch('PyQt4.QtWidgets.QFileDialog.getExistingDirectory')
+    @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getExistingDirectory')
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)

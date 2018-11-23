@@ -73,7 +73,7 @@ class MockReturnUsingDictIn(object):
                     if isinstance(a, QString):
                         a = str(a)
                 except:
-                    if str(type(a)) == 'PyQt4.QtCore.QString':
+                    if str(type(a)) == 'qgis.PyQt.QtCore.QString':
                         a = str(a)
                 if a.startswith(k):
                    return_value = v
