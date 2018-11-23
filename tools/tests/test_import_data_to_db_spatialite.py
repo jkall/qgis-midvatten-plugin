@@ -437,6 +437,7 @@ class TestWqualfieldImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInst
         with nose.tools.assert_raises(MidvDataImporterError) as err:
             self.importinstance.general_import(goal_table = 'w_qual_field', file_data = f)
         ex = err.exception
+        print(str(ex))
         assert ex.message == 'Required columns parameter are missing for table w_qual_field'
 
         test_string = utils_for_tests.create_test_string(
