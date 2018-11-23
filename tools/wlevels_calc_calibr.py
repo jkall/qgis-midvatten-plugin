@@ -30,19 +30,19 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
 import os
 from qgis.PyQt import uic
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.dates import datestr2num, num2date
 import numpy as np
 
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication, Qt
+from qgis.PyQt import QtCore
 from qgis.PyQt.QtGui import QCursor
 
 try:#assume matplotlib >=1.5.1
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 except:
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
-from matplotlib.backends.backend_qt5agg import SubplotToolQt
 import datetime
 import midvatten_utils as utils
 from midvatten_utils import fn_timer, returnunicode as ru
@@ -163,12 +163,14 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.axes = self.calibrplotfigure.add_subplot( 111 )
         self.canvas = FigureCanvas( self.calibrplotfigure )
         self.mpltoolbar = NavigationToolbar( self.canvas, self.widgetPlot )
-        self.subplottoolqt = SubplotToolQt(self.canvas, self.widgetPlot) #TODOTEST
         lstActions = self.mpltoolbar.actions()
         self.mpltoolbar.removeAction( lstActions[ 7 ] )
         self.layoutplot.addWidget( self.canvas )
         self.layoutplot.addWidget( self.mpltoolbar )
-        self.layoutplot.addWidget(self.subplottoolqt) #TODOTEST
+
+        #self.addToolBar(QtCore.Qt.BottomToolBarArea,
+        #                self.mpltoolbar)
+
         self.calibrplotfigure.tight_layout()
         self.show()
 
