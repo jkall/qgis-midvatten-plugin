@@ -32,7 +32,7 @@ from tools.tests.mocks_for_tests import DummyInterface
 
 
 #
-@attr(status='only')
+
 class TestWFlowCalcAveflow(object):
     return_int = MockUsingReturnValue(int)
     db_all_distinct_obsids = MockUsingReturnValue([True, ['1', '2']])

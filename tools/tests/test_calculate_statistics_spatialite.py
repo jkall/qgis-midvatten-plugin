@@ -35,7 +35,7 @@ import calculate_statistics
 
 import utils_for_tests
 
-@attr(status='on')
+@attr(status='only')
 class TestCalculateStatistics(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('midvatten_utils.MessagebarAndLog')

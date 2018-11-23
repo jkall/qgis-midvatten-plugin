@@ -34,7 +34,7 @@ from wlevels_calc_calibr import Calclvl
 import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestCalclvl(utils_for_tests.MidvattenTestPostgisDbSv):
     def setUp(self):
         super(self.__class__, self).setUp()
