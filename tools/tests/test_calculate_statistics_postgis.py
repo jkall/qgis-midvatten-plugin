@@ -45,7 +45,7 @@ class TestCalculateStatistics(utils_for_tests.MidvattenTestPostgisDbSv):
         db_utils.sql_alter_db("""INSERT INTO obs_points(obsid) VALUES('1')""")
         db_utils.sql_alter_db("""INSERT INTO obs_points(obsid) VALUES('2')""")
         db_utils.sql_alter_db("""INSERT INTO w_levels(obsid, date_time, meas) VALUES('1', '2017-01-01', '1')""")
-        db_utils.sql_alter_db("""INSERT INTO w_levels(obsid, date_time, meas) VALUES('1', '2017-01-02', '4')""")
+        db_utils.sql_alter_db("""INSERT INTO w_levels(obsid, date_time, meas) VALUES('1', '2017-01-02', '3')""")
         db_utils.sql_alter_db("""INSERT INTO w_levels(obsid, date_time, meas) VALUES('1', '2017-01-03', '5')""")
         db_utils.sql_alter_db("""INSERT INTO w_levels(obsid, date_time, meas) VALUES('2', '2017-01-04', '2')""")
         db_utils.sql_alter_db("""INSERT INTO w_levels(obsid, date_time, meas) VALUES('2', '2017-01-05', '8')""")
@@ -60,5 +60,6 @@ class TestCalculateStatistics(utils_for_tests.MidvattenTestPostgisDbSv):
         calc_stats.db_browser.table_list = 'w_levels'
         calc_stats.db_browser.column_list = 'meas'
         calc_stats.calculate()
-        ref = call.info(bar_msg='Statistics for table w_levels column meas done, see log for results.', button=True, duration=15, log_msg='Obsid;Min;Median;Average;Max;Nr of values\n1;1.0;4.0;3.33333333333;5.0;3\n2;2.0;8.5;7.25;10.0;4')
+        ref = call.info(bar_msg='Statistics for table w_levels column meas done, see log for results.', button=True, duration=15, log_msg='Obsid;Min;Median;Average;Max;Nr of values\n1;1.0;3.0;3.0;5.0;3\n2;2.0;8.5;7.25;10.0;4')
+        print(str(mock_messagebar.mock_calls))
         assert ref in mock_messagebar.mock_calls
