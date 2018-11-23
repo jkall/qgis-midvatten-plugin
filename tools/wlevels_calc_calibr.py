@@ -461,11 +461,11 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             logger_line_style = '-'                
 
         logger_time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(self.level_masl_ts))
-        self.plot_recarray(self.axes, self.level_masl_ts, obsid + str(' logger', 'utf-8'), logger_line_style, picker=5, time_list=logger_time_list)
+        self.plot_recarray(self.axes, self.level_masl_ts, obsid + ' logger', logger_line_style, picker=5, time_list=logger_time_list)
 
         #Plot the original head_cm
         if self.plot_logger_head.isChecked():
-            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + str(' original logger head', 'utf-8'), logger_line_style, picker=5, time_list=logger_time_list)
+            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + ' original logger head', logger_line_style, picker=5, time_list=logger_time_list)
 
         """ Finish plot """
         self.axes.grid(True)
