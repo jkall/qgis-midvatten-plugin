@@ -456,7 +456,8 @@ class UnicodeWriter(object):
 
     def writerow(self, row):
         self.writer.writerow([self.encodeone(s) for s in row])
-        data = ru(self.queue.getvalue())
+        data = self.queue.getvalue()
+        data = data.decode("utf-8")
         data = self.encoder.encode(data)
         self.stream.write(data)
         self.queue.truncate(0)
