@@ -104,7 +104,7 @@ class DbConnectionManager(object):
             #Create the database if it's not existing
             self.uri.setDatabase(self.dbpath)
             if not os.path.isfile(self.dbpath):
-                conn = self.connect_with_spatialite_connect()
+                conn = connect_with_spatialite_connect(self.dbpath)
                 conn.close()
 
             try:
@@ -135,9 +135,7 @@ class DbConnectionManager(object):
         if self.cursor:
             return True
 
-    def connect_with_spatialite_connect(self):
-        conn = spatialite_connect(self.dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
-        return conn
+
 
     def execute(self, sql, all_args=None):
         """
@@ -271,6 +269,9 @@ class DbConnectionManager(object):
                 self.execute(sql)
         return temptable_name
 
+def connect_with_spatialite_connect(dbpath):
+    conn = spatialite_connect(dbpath, detect_types=sqlite.PARSE_DECLTYPES | sqlite.PARSE_COLNAMES)
+    return conn
 
 def check_connection_ok():
     dbconnection = DbConnectionManager()

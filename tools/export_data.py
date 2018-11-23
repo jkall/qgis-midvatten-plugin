@@ -62,7 +62,8 @@ class ExportData(object):
         source_db = dbconnection.dbpath
         dbconnection.closedb()
 
-        conn = sqlite.connect(target_db,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        #conn = sqlite.connect(target_db,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        conn = db_utils.connect_with_spatialite_connect(target_db)
 
         self.curs = conn.cursor()
         self.curs.execute("PRAGMA foreign_keys = ON")
