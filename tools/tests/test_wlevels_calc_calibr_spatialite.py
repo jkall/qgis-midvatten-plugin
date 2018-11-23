@@ -225,13 +225,11 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
         calibrlogger.M2_date.setDateTime(date_utils.datestring_to_date('2017-02-10 00:00'))
 
         calibrlogger.adjust_trend_func()
-        res = db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, ROUND(level_masl, 11), comment FROM w_levels_logger')
-        _test = utils_for_tests.create_test_string(res)
-        test = _test[:120] + _test[-13:]
-        #l = list(res[1][1])
-        #l[5] = str(l[5])[0:14] + str(l[5])[-4:]
-        #res[1][1] = tuple(l)
-        #test = utils_for_tests.create_test_string(res)
+        res = db_utils.sql_load_fr_db('SELECT obsid, date_time, head_cm, temp_degc, cond_mscm, level_masl, comment FROM w_levels_logger')
+        l = list(res[1][1])
+        l[5] = '%.15E'%Decimal(l[5])
+        res[1][1] = tuple(l)
+        test = utils_for_tests.create_test_string(res)
         print(mock_messagebar.mock_calls)
 
         ref = '(True, [(rb1, 2017-02-01 00:00, None, None, None, 100.0, None), (rb1, 2017-02-10 00:00, None, None, None, -2.84217094304e-14, None)])'
