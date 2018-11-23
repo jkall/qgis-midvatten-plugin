@@ -223,20 +223,17 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
         calibrlogger.M1_date.setDateTime(date_utils.datestring_to_date('2017-02-01 00:00'))
         calibrlogger.M2_date.setDateTime(date_utils.datestring_to_date('2017-02-10 00:00'))
 
-        print(str(date_utils.long_dateformat(calibrlogger.L1_date.dateTime().toPyDateTime())))
-        print(str(date_utils.long_dateformat(calibrlogger.L2_date.dateTime().toPyDateTime())))
-        print(str(date_utils.long_dateformat(calibrlogger.M1_date.dateTime().toPyDateTime())))
-        print(str(date_utils.long_dateformat(calibrlogger.M2_date.dateTime().toPyDateTime())))
-
-        print(str(date_utils.long_dateformat(calibrlogger.FromDateTime.dateTime().toPyDateTime())))
-        print(str(date_utils.long_dateformat(calibrlogger.ToDateTime.dateTime().toPyDateTime())))
-
         calibrlogger.adjust_trend_func()
 
         test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
         print(mock_messagebar.mock_calls)
-        print(str(test))
+
         ref = '(True, [(rb1, 2017-02-01 00:00, None, None, None, 100.0, None), (rb1, 2017-02-10 00:00, None, None, None, -2.84217094304e-14, None)])'
+        print("Ref")
+
+        print(ref)
+        print("Test")
+        print(test)
         assert test == ref
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
