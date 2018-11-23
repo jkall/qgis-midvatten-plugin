@@ -37,6 +37,7 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         super(self.__class__, self).setUp()
         self.importinstance = Interlab4Import(self.iface.mainWindow(), self.ms)
 
+    @attr(status='only')
     def test_interlab4_parse_filesettings_utf16(self):
         interlab4_lines = (
                     "#Interlab",
@@ -51,9 +52,11 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             result_string = str(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_filesettings(testfile)))
 
         reference_string = "['False', '4.0', 'utf-16', ',', 'False']"
-
+        print(result_string)
+        print(reference_string)
         assert result_string == reference_string
 
+    @attr(status='only')
     def test_interlab4_parse_filesettings_utf8(self):
         interlab4_lines = (
                     "#Interlab",
@@ -68,6 +71,8 @@ class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
             result_string = str(utils_for_tests.dict_to_sorted_list(self.importinstance.parse_filesettings(testfile)))
 
         reference_string = "['False', '4.0', 'utf-8', ',', 'False']"
+        print(result_string)
+        print(reference_string)
 
         assert result_string == reference_string
 
