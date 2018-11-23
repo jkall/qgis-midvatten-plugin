@@ -26,13 +26,14 @@ import date_utils
 import db_utils
 import gui_utils
 import mock
+from decimal import Decimal
 from nose.plugins.attrib import attr
 from wlevels_calc_calibr import Calibrlogger
 
 import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
@@ -236,7 +237,13 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
 
         calibrlogger.adjust_trend_func()
 
-        test = utils_for_tests.create_test_string(db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger'))
+        res = db_utils.sql_load_fr_db('SELECT * FROM w_levels_logger')
+
+        l = list(res[1][1])
+        l[5] = '%.11e'%Decimal(l[5])
+        res[1][1] = tuple(l)
+        test = utils_for_tests.create_test_string(res)
+
         print(mock_messagebar.mock_calls)
         print(test)
         ref = '(True, [(rb1, 2017-02-01 00:00, None, None, None, 100.0, None), (rb1, 2017-02-10 00:00, None, None, None, -2.84217094304e-14, None)])'

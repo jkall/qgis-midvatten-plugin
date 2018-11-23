@@ -33,7 +33,7 @@ from decimal import Decimal
 import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
@@ -205,7 +205,6 @@ class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print(test)
         assert test == ref
 
-    @attr(status='only')
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_calibrlogger_adjust_trend(self, mock_messagebar):
