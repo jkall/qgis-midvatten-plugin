@@ -165,10 +165,11 @@ class ExportData(object):
         :param obsids:
         :return:
         """
-        output = UnicodeWriter(file(os.path.join(self.exportfolder, tname + ".csv"), 'w'))
-        self.curs.execute("select * from %s where obsid in %s"%(tname, self.format_obsids(obsids)))
-        output.writerow([col[0] for col in self.curs.description])
-        [_f for _f in (output.writerow(row) for row in self.curs) if _f]
+        with open(os.path.join(self.exportfolder, tname + ".csv"), 'w') as f:
+            output = UnicodeWriter(f)
+            self.curs.execute("select * from %s where obsid in %s"%(tname, self.format_obsids(obsids)))
+            output.writerow([col[0] for col in self.curs.description])
+            [_f for _f in (output.writerow(row) for row in self.curs) if _f]
 
     def to_sql(self, tname, tname_with_prefix, obsids):
         """
@@ -283,10 +284,11 @@ class ExportData(object):
         return transformed_column_names
 
     def zz_to_csv(self, tname, tname_with_prefix):
-        output = UnicodeWriter(file(os.path.join(self.exportfolder, tname + ".csv"), 'w'))
-        self.curs.execute(r"select * from %s"%(tname))
-        output.writerow([col[0] for col in self.curs.description])
-        [_f for _f in (output.writerow(row) for row in self.curs) if _f]
+        with open(os.path.join(self.exportfolder, tname + ".csv"), 'w') as f:
+            output = UnicodeWriter(f)
+            self.curs.execute(r"select * from %s"%(tname))
+            output.writerow([col[0] for col in self.curs.description])
+            [_f for _f in (output.writerow(row) for row in self.curs) if _f]
 
     def zz_to_sql(self, tname, tname_with_prefix):
         column_names = self.get_and_check_existing_column_names(tname, tname_with_prefix)
