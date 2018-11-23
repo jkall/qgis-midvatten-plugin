@@ -24,7 +24,6 @@ from __future__ import absolute_import
 import io
 import os
 import unittest
-import sqlite3 as sqlite
 
 import db_utils
 import midvatten_utils as utils

@@ -22,7 +22,6 @@ from future import standard_library
 standard_library.install_aliases()
 from builtins import str
 from builtins import object
-import sqlite3 as sqlite
 import csv, codecs, io, os, os.path
 import db_utils
 import midvatten_utils as utils
@@ -62,7 +61,6 @@ class ExportData(object):
         source_db = dbconnection.dbpath
         dbconnection.closedb()
 
-        #conn = sqlite.connect(target_db,detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
         conn = db_utils.connect_with_spatialite_connect(target_db)
 
         self.curs = conn.cursor()

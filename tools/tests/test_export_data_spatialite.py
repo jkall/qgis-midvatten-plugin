@@ -24,7 +24,6 @@ from __future__ import absolute_import
 import io
 import os
 import unittest
-import sqlite3 as sqlite
 
 import db_utils
 import midvatten_utils as utils
@@ -170,7 +169,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                     '''select obsid, instrumentid, parameter, date_time from meteo''']
 
 
-        conn = sqlite.connect(EXPORT_DB_PATH, detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        conn = db_utils.connect_with_spatialite_connect(EXPORT_DB_PATH)
         curs = conn.cursor()
 
         test_list = []
