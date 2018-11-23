@@ -238,7 +238,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                     '''select staff from zz_staff''',
                     '''select obsid, date_time, staff, comment from comments''']
 
-        conn = sqlite.connect(EXPORT_DB_PATH, detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        conn = db_utils.connect_with_spatialite_connect(EXPORT_DB_PATH)
         curs = conn.cursor()
 
         test_list = []
@@ -306,7 +306,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                     '''select obsid, length from seismic_data''',
                     '''select obsid, instrumentid, parameter, date_time from meteo''']
 
-        conn = sqlite.connect(EXPORT_DB_PATH, detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        conn = db_utils.connect_with_spatialite_connect(EXPORT_DB_PATH)
         curs = conn.cursor()
 
         test_list = []
@@ -389,7 +389,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                     '''SELECT capacity, explanation FROM zz_capacity WHERE capacity IN (0, 1)''',
                     '''SELECT capacity, color_qt FROM zz_capacity_plots WHERE capacity IN (0, 1) ''']
 
-        conn = sqlite.connect(EXPORT_DB_PATH, detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
+        conn = db_utils.connect_with_spatialite_connect(EXPORT_DB_PATH)
         curs = conn.cursor()
 
         test_list = []
