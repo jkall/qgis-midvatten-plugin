@@ -33,7 +33,7 @@ from wlevels_calc_calibr import Calibrlogger
 import utils_for_tests
 
 
-@attr(status='only')
+@attr(status='on')
 class TestCalibrlogger(utils_for_tests.MidvattenTestPostgisDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
