@@ -111,10 +111,10 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
             if goal_table == 'stratigraphy':
                 self.check_and_delete_stratigraphy(existing_columns_in_goal_table, dbconnection)
             # Check if current table has geometry:
-            geom_column = db_utils.get_geometry_types(dbconnection, goal_table)
-            if geom_column:
-                if geom_column in existing_columns_in_temptable:
-                    self.calculate_geometry(geom_column, goal_table, dbconnection)
+            geom_columns = db_utils.get_geometry_types(dbconnection, goal_table)
+            for geom_col in geom_columns.keys():
+                if geom_col in existing_columns_in_temptable:
+                    self.calculate_geometry(geom_col, goal_table, dbconnection)
 
             # Import foreign keys in some special cases
             foreign_keys = db_utils.get_foreign_keys(goal_table, dbconnection=dbconnection)
@@ -271,13 +271,12 @@ class midv_data_importer(object):  # this class is intended to be a multipurpose
                                                                                           goal_table)
         dbconnection.execute(sql)
 
-    def calculate_geometry(self, geometry_columns, table_name, dbconnection):
+    def calculate_geometry(self, geom_col, table_name, dbconnection):
         # Calculate the geometry
         # THIS IS DUE TO WKT-import of geometries below
         srid = dbconnection.execute_and_fetchall("""SELECT srid FROM geometry_columns WHERE f_table_name = '%s'""" % table_name)[0][0]
-        for geocol, geotype in geometry_columns.items():
-            sql = """UPDATE {} SET {} = ST_GeomFromText({}, {})""".format(self.temptable_name, geocol, geocol, srid)
-            dbconnection.execute(sql)
+        sql = """UPDATE {} SET {} = ST_GeomFromText({}, {})""".format(self.temptable_name, geom_col, geom_col, srid)
+        dbconnection.execute(sql)
 
     def check_and_delete_stratigraphy(self, existing_columns, dbconnection):
         if all(['stratid' in existing_columns, 'depthtop' in existing_columns, 'depthbot' in existing_columns]):

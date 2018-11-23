@@ -12,19 +12,22 @@
         "markersize": 6,
         "zorder": 8},
     "Axes_set_title": {
-        "label": ""},
+        "label": u""},
     "Axes_set_xlabel": {
-        "fontsize": 10,
-        "xlabel": ""},
+        "fontsize": 12,
+        "xlabel": u""},
     "Axes_set_ylabel": {
-        "fontsize": 10,
-        "ylabel": ""},
+        "fontsize": 12,
+        "ylabel": u""},
     "Axes_tick_param": {
         "axis": "both",
         "labelsize": 10},
     "Figure_add_subplot": {},
     "Figure_subplots_adjust": {
-},
+        "bottom": 0.122,
+        "left": 0.05,
+        "right": 0.98,
+        "top": 0.95},
     "grid_Axes_grid": {
         "b": True,
         "color": "0.65",
@@ -39,8 +42,9 @@
     "legend_Frame_set_facecolor": "1",
     "legend_Frame_set_fill": False,
     "legend_Text_set_fontsize": 10,
-    "plot_height": "",
-    "plot_width": "",
+    "legend_Line2D_methods": {'set_linewidth': 1.5},
+    "plot_height": u"",
+    "plot_width": u"",
     "rcParams": {"savefig.dpi": 450},
     "styles_colors": [
         "b",
@@ -85,7 +89,7 @@
     "tight_layout": False,
     "x_Axes_tick_param": {
         "axis": "x",
-        "labelrotation": 45},
+        "labelrotation": 20},
     "y_Axes_tick_param": {
         "axis": "y",
         "labelrotation": 0}}

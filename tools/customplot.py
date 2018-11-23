@@ -240,6 +240,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         :param args: Needed when using general_exception_handler for some reason?!?
         :return:
         """
+        self.style_indexes = {}
 
         self.used_format = None
 
@@ -451,41 +452,52 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
             style = MarkVar[0]
         else:
             style_color_list = [(style, color) for style in MarkVar for color in colors]
+            utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('plotsqlitewindow', 'Used style_color_list: %s'))%(str(style_color_list)))
             try:
-                style = style_color_list[i][0]
-                color = style_color_list[i][1]
+                style_index = self.style_indexes.get(plottype, 0)
+                style = style_color_list[style_index][0]
+                color = style_color_list[style_index][1]
+                self.style_indexes[plottype] = style_index + 1
+
             except IndexError:
+                utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate('plotsqlitewindow', 'style_color_list index error, index %s'))%str(style_index))
                 color = _color
                 style = MarkVar[0]
 
         plot_settings = self.templates.loaded_template.get('Axes_plot', {"zorder": 8, 'markersize': 6, 'linewidth': 1})
         plot_date_settings = self.templates.loaded_template.get('Axes_plot_date', {"zorder": 8, 'markersize': 6, 'linewidth': 1})
 
-        if FlagTimeXY == "time" and plottype == "step-pre":
-            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-pre', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_date_settings)# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
-        elif FlagTimeXY == "time" and plottype == "step-post":
-            self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-post', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_date_settings)
-        elif FlagTimeXY == "time" and plottype == "line and cross":
-            self.p[i], = self.axes.plot_date(numtime, table2.values,  style, c=color, label=self.plabels[i], **plot_date_settings)
-        elif FlagTimeXY == "time" and plottype == "frequency":
-            try:
-                self.p[i], = self.axes.plot_date(numtime, table2.values,  linestyle=style, marker='None',c=color,label='frequency '+str(self.plabels[i]), **plot_date_settings)
-                self.plabels[i]='frequency '+str(self.plabels[i])
-            except:
-                self.p[i], = self.axes.plot_date(np.array([]),np.array([]),  linestyle=style, marker='None',c=color,label='frequency '+str(self.plabels[i]))
-                self.plabels[i]='frequency '+str(self.plabels[i])
-        elif FlagTimeXY == "time" and plottype == "marker":
-            self.p[i], = self.axes.plot_date(numtime, table2.values, linestyle='None', marker=style,c=color,label=self.plabels[i], **plot_date_settings)
-        elif FlagTimeXY == "time" and plottype == "line":
-            self.p[i], = self.axes.plot_date(numtime, table2.values,  linestyle=style, marker='None',c=color ,label=self.plabels[i], **plot_date_settings)
-        elif FlagTimeXY == "XY" and plottype == "step-pre":
-            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-pre', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_settings)
-        elif FlagTimeXY == "XY" and plottype == "step-post":
-            self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-post', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_settings)
-        elif FlagTimeXY == "XY" and plottype == "line and cross":
-            self.p[i], = self.axes.plot(numtime, table2.values,  style, c=color, markersize = 6, label=self.plabels[i], **plot_settings)
+        if FlagTimeXY == "time":
+            if plottype == "step-pre":
+                self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-pre', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_date_settings)# 'steps-pre' best for precipitation and flowmeters, optional types are 'steps', 'steps-mid', 'steps-post'
+            elif plottype == "step-post":
+                self.p[i], = self.axes.plot_date(numtime, table2.values, drawstyle='steps-post', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_date_settings)
+            elif plottype == "line and cross":
+                self.p[i], = self.axes.plot_date(numtime, table2.values,  style, c=color, label=self.plabels[i], **plot_date_settings)
+            elif plottype == "frequency":
+                try:
+                    self.p[i], = self.axes.plot_date(numtime, table2.values,  linestyle=style, marker='None',c=color,label='frequency '+str(self.plabels[i]), **plot_date_settings)
+                    self.plabels[i]='frequency '+str(self.plabels[i])
+                except:
+                    self.p[i], = self.axes.plot_date(np.array([]),np.array([]),  linestyle=style, marker='None',c=color,label='frequency '+str(self.plabels[i]))
+                    self.plabels[i]='frequency '+str(self.plabels[i])
+            elif plottype == "marker":
+                self.p[i], = self.axes.plot_date(numtime, table2.values, linestyle='None', marker=style,c=color,label=self.plabels[i], **plot_date_settings)
+            elif plottype == "line":
+                self.p[i], = self.axes.plot_date(numtime, table2.values,  linestyle=style, marker='None',c=color ,label=self.plabels[i], **plot_date_settings)
+            else:
+                self.p[i], = self.axes.plot_date(numtime, table2.values, style, label=self.plabels[i], **plot_date_settings)
+        elif FlagTimeXY == "XY":
+            if plottype == "step-pre":
+                self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-pre', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_settings)
+            elif plottype == "step-post":
+                self.p[i], = self.axes.plot(numtime, table2.values, drawstyle='steps-post', linestyle=style, marker='None',c=color,label=self.plabels[i], **plot_settings)
+            elif plottype == "line and cross":
+                self.p[i], = self.axes.plot(numtime, table2.values,  style, c=color, markersize = 6, label=self.plabels[i], **plot_settings)
+            else:
+                self.p[i], = self.axes.plot(numtime, table2.values,  style, c=color, label=self.plabels[i], **plot_settings)
         else:
-            self.p[i], = self.axes.plot(numtime, table2.values,  style, c=color, label=self.plabels[i], **plot_settings)
+            raise Exception('Programming error. Must be time or XY!')
 
 
 
@@ -791,8 +803,15 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
                     else:
                         leg = self.axes.legend(bbox_to_anchor=(self.spnLegX.value(),self.spnLegY.value()),loc=10)
 
+
             leg.set_zorder(999)
             leg.draggable(state=True)
+
+            lines_args = self.templates.loaded_template.get('legend_Line2D_methods', {})
+            if lines_args:
+                for line in leg.get_lines():
+                    for method, arg in lines_args.items():
+                        getattr(line, method)(arg)
 
             frame = leg.get_frame()    # the matplotlib.patches.Rectangle instance surrounding the legend
 
@@ -1013,13 +1032,12 @@ class PandasCalculations(object):
             except ValueError:
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('PandasCalculations', 'Resample base must be an integer')))
             else:
-                # new api for pandas >=0.18
-                try:
+                if pd.__version__ > '0.18.0':
+                    # new api for pandas >=0.18
                     df = getattr(df.resample(rule,base=int(base)),how)()
-                # old pandas
-                except:
+                else:
+                    #old pandas
                     df = df.resample(rule, how=how, base=int(base))
-
         #Rolling mean
         window = self.window.text()
         if window:
