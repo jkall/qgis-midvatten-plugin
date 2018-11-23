@@ -20,7 +20,7 @@ import matplotlib.ticker as tick
 import os
 from functools import partial
 from matplotlib import container, patches
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from qgis.core import QgsCoordinateReferenceSystem, QgsProject
 
 import qgis.PyQt
@@ -29,9 +29,9 @@ import numpy as np
 import db_utils
 
 try:#assume matplotlib >=1.5.1
-    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 except:
-    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
+    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
 import sqlite3 as sqlite #needed since spatialite-specific sql will be used during polyline layer import
 import midvatten_utils as utils
 from midvatten_utils import returnunicode as ru

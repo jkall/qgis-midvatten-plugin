@@ -33,17 +33,17 @@ import db_utils
 from qgis.PyQt import QtGui, QtCore, uic, QtWidgets  # , QtSql
 from qgis.PyQt.QtCore import QCoreApplication
 from functools import partial  # only to get combobox signals to work
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.dates import datestr2num
 
 import numpy as np
 
 try:#assume matplotlib >=1.5.1
-    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
-    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT    
+    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 except:
-    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg as NavigationToolbar
-    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QTAgg
+    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg as NavigationToolbar
+    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QTAgg
 import datetime
 import matplotlib.ticker as tick
 

@@ -168,9 +168,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.layoutplot.addWidget( self.canvas )
         self.layoutplot.addWidget( self.mpltoolbar )
 
-        #self.addToolBar(QtCore.Qt.BottomToolBarArea,
-        #                self.mpltoolbar)
-
         self.calibrplotfigure.tight_layout()
         self.show()
 
@@ -552,8 +549,6 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
         self.ToDateTime.setDateTime(datestring_to_date('2099-12-31 23:59:59'))
         self.Add2Levelmasl.setText('')
         self.bestFitSearchRadius.setText('10 minutes')
-        print(str(self.mpltoolbar.__dict__))
-        #self.mpltoolbar._views.clear()
         self.mpltoolbar.home()
 
         last_calibration = self.getlastcalibration(self.obsid)
