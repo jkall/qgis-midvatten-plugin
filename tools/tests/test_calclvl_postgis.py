@@ -23,7 +23,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 from builtins import str
 
-from qgis.PyQt import QtGui
+from qgis.PyQt import QtGui, QtWidgets
 
 import db_utils
 import mock
