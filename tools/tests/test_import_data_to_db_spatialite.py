@@ -35,7 +35,7 @@ from nose.plugins.attrib import attr
 import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestGeneralImport(utils_for_tests.MidvattenTestSpatialiteDbSvImportInstance):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
