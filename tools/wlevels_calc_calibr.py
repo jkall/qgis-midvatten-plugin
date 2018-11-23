@@ -357,7 +357,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
 
     @fn_timer
     def calibrate(self, obsid=None):
-        self.calib_help.setText("Calibrating")
+        self.calib_help.setText(ru(QCoreApplication.translate('Calibrlogger', "Calibrating")))
 
         qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
         if obsid is None:
@@ -438,7 +438,7 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
     def update_plot(self):
         """ Plots self.level_masl_ts, self.meas_ts and maybe self.head_ts """
         self.reset_plot_selects_and_calib_help()
-        self.calib_help.setText("Updating plot")
+        self.calib_help.setText(ru(QCoreApplication.translate('Calibrlogger', "Updating plot")))
         qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
         last_used_obsid = self.obsid
         obsid = self.load_obsid_and_init()
@@ -461,18 +461,18 @@ class Calibrlogger(qgis.PyQt.QtWidgets.QMainWindow, Calibr_Ui_Dialog): # An inst
             logger_line_style = '-'                
 
         logger_time_list = self.timestring_list_to_time_list(self.a_recarray_to_timestring_list(self.level_masl_ts))
-        self.plot_recarray(self.axes, self.level_masl_ts, obsid + ' logger', logger_line_style, picker=5, time_list=logger_time_list)
+        self.plot_recarray(self.axes, self.level_masl_ts, obsid + ru(QCoreApplication.translate('Calibrlogger', ' logger')), logger_line_style, picker=5, time_list=logger_time_list)
 
         #Plot the original head_cm
         if self.plot_logger_head.isChecked():
-            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + ' original logger head', logger_line_style, picker=5, time_list=logger_time_list)
+            self.plot_recarray(self.axes, self.head_ts_for_plot, obsid + ru(QCoreApplication.translate('Calibrlogger', ' original logger head')), logger_line_style, picker=5, time_list=logger_time_list)
 
         """ Finish plot """
         self.axes.grid(True)
         self.axes.yaxis.set_major_formatter(tick.ScalarFormatter(useOffset=False, useMathText=False))
         self.calibrplotfigure.autofmt_xdate()
-        self.axes.set_ylabel(str('Level (masl)', 'utf-8'))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
-        self.axes.set_title(str('Plot for ', 'utf-8') + str(obsid))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
+        self.axes.set_ylabel(ru(QCoreApplication.translate('Calibrlogger', 'Level (masl)')))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
+        self.axes.set_title(ru(QCoreApplication.translate('Calibrlogger', 'Plot for ')) + str(obsid))  #This is the method that accepts even national characters ('åäö') in matplotlib axes labels
         for label in self.axes.xaxis.get_ticklabels():
             label.set_fontsize(10)
         for label in self.axes.yaxis.get_ticklabels():
