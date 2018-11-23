@@ -40,7 +40,7 @@ class CalculateStatisticsGui(qgis.PyQt.QtWidgets.QMainWindow, calculate_statisti
         self.setupUi(self)  # Required by Qt4 to initialize the UI
 
         tables_columns = db_utils.tables_columns()
-        self.db_browser = DbBrowser(tables_columns, self.connect)
+        self.db_browser = DbBrowser(tables_columns)
 
 
         self.gridLayout.addWidget(self.db_browser.widget, 0, 0)
