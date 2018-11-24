@@ -39,7 +39,7 @@ TEMP_DIR = '/tmp/'
 from nose.plugins.attrib import attr
 
 
-@attr(status='only')
+@attr(status='on')
 class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
@@ -345,6 +345,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         reference_string = '\n'.join(reference_string)
         assert test_string == reference_string
 
+    @attr(status='only')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -378,7 +379,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         dbconnection.execute('''UPDATE zz_stratigraphy_plots SET color_mplot = 'OrangeFIX' WHERE strata = 'made ground' ''')
         dbconnection.execute('''UPDATE zz_capacity SET explanation = 'anexpl' WHERE capacity = 0 ''')
         dbconnection.execute('''UPDATE zz_capacity_plots SET color_qt = 'whiteFIX' WHERE capacity = 0 ''')
-
+        print(str(dbconnection.execute_and_fetchall('select * from zz_strat')))
         dbconnection.commit_and_closedb()
 
         mock_locale.return_value.answer = 'ok'
