@@ -343,6 +343,8 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                             '''select obsid, instrumentid, parameter, date_time from meteo''',
                             ''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)]]''']
         reference_string = '\n'.join(reference_string)
+        print("Test\n" + test_string)
+        print("Ref\n" + reference_string)
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
