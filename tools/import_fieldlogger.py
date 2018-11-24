@@ -113,7 +113,7 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
         self.stored_settings = utils.get_stored_settings(self.ms, self.stored_settingskey)
 
         #Input fields
-        self.input_fields = InputFields(self.connect)
+        self.input_fields = InputFields()
         self.input_fields.update_parameter_imports_queue(self.observations, self.stored_settings)
 
         splitter.addWidget(self.input_fields.widget)
@@ -702,7 +702,7 @@ class InputFields(RowEntry):
             return
 
         for parametername in parameter_names:
-            param_import_obj = ImportMethodChooser(parametername, parameter_names, self.connect)
+            param_import_obj = ImportMethodChooser(parametername, parameter_names)
             param_import_obj.label.setFixedWidth(maximumwidth)
             if parametername not in self.parameter_imports:
                 self.parameter_imports[parametername] = param_import_obj
@@ -886,7 +886,7 @@ class ImportMethodChooser(RowEntry):
             self.layout.insertStretch(-1, 0)
 
         else:
-            self.parameter_import_fields = parameter_import_fields_class(self, self.connect)
+            self.parameter_import_fields = parameter_import_fields_class(self)
             self.parameter_widget = self.parameter_import_fields.widget
             self.layout.addWidget(self.parameter_widget)
 

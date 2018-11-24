@@ -67,7 +67,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
 
         splitter.addWidget(self.specific_meta_filter.widget)
 
-        self.metadata_filter = MetadataFilter(self.all_lab_results, self.connect)
+        self.metadata_filter = MetadataFilter(self.all_lab_results)
         splitter.addWidget(self.metadata_filter.widget)
 
         self.metadata_filter.update_selection_button.clicked.connect(lambda : self.metadata_filter.set_selection(self.specific_meta_filter.get_items_dict()))

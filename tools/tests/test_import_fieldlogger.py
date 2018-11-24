@@ -360,9 +360,9 @@ def _test_set_parameters_using_stored_settings(mock_w_qual_field_parameter_units
                    ['f.Accvol.m3', [['import_method', 'w_flow'], ['flowtype', 'Accvol'], ['unit', 'm3']]],
                    ['s.turbiditet.FNU', [['import_method', 'w_qual_field'], ['parameter', 'turbiditet'], ['unit', 'FNU'], ['depth', '1'], ['instrument', 'testid']]]]
 
-    mock_connect = MagicMock()
-    input_fields = InputFields(mock_connect)
-    input_fields.parameter_imports = OrderedDict([(k, import_fieldlogger.ImportMethodChooser(k, [x[0] for x in stored_settings], mock_connect)) for k in [x[0] for x in stored_settings]])
+
+    input_fields = InputFields()
+    input_fields.parameter_imports = OrderedDict([(k, import_fieldlogger.ImportMethodChooser(k, [x[0] for x in stored_settings])) for k in [x[0] for x in stored_settings]])
 
     input_fields.set_parameters_using_stored_settings(stored_settings)
 

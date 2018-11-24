@@ -62,10 +62,9 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
             if settingskey not in self.ms.settingsdict:
                 utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('ExportToFieldLogger', '%s did not exist in settingsdict'))%settingskey)
 
-        self.parameter_groups = self.create_parameter_groups_using_stored_settings(utils.get_stored_settings(self.ms, self.stored_settingskey),
-                                                                                   self.connect)
+        self.parameter_groups = self.create_parameter_groups_using_stored_settings(utils.get_stored_settings(self.ms, self.stored_settingskey))
         if self.parameter_groups is None or not self.parameter_groups:
-            self.parameter_groups = [ParameterGroup(self.connect)]
+            self.parameter_groups = [ParameterGroup()]
 
 
         self.main_vertical_layout.addWidget(qgis.PyQt.QtWidgets.QLabel(ru(QCoreApplication.translate('ExportToFieldLogger', 'Fieldlogger input fields and locations:'))))
@@ -87,7 +86,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         #Buttons
 
         #ParameterUnitBrowser
-        self.parameter_browser = ParameterBrowser(tables_columns, self.connect, self.widget)
+        self.parameter_browser = ParameterBrowser(tables_columns, self.widget)
         self.parameter_browser_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('ExportToFieldLogger', 'Create Input Fields')))
         self.gridLayout_buttons.addWidget(self.parameter_browser_button, 0, 0)
         self.parameter_browser_button.clicked.connect(
@@ -100,7 +99,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
         self.gridLayout_buttons.addWidget(self.add_parameter_group, 1, 0)
         #Lambda and map is used to run several functions for every button click
         self.add_parameter_group.clicked.connect(
-                     lambda: [x() for x in [lambda: self.parameter_groups.append(ParameterGroup(self.connect)),
+                     lambda: [x() for x in [lambda: self.parameter_groups.append(ParameterGroup()),
                                   lambda: self.add_parameter_group_to_gui(self.widgets_layouts, self.parameter_groups[-1])]])
 
         self.gridLayout_buttons.addWidget(get_line(), 2, 0)
