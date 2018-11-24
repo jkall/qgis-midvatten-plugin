@@ -381,11 +381,15 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         dbconnection.execute('''UPDATE zz_stratigraphy_plots SET color_mplot = 'OrangeFIX' WHERE strata = 'made ground' ''')
         dbconnection.execute('''UPDATE zz_capacity SET explanation = 'anexpl' WHERE capacity = 0 ''')
         dbconnection.execute('''UPDATE zz_capacity_plots SET color_qt = 'whiteFIX' WHERE capacity = 0 ''')
-        print(str(dbconnection.execute_and_fetchall('select * from zz_strat')))
+        #print(str(dbconnection.execute_and_fetchall('select * from zz_strat')))
         dbconnection.commit_and_closedb()
         print("Before export")
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'en_US'
+
+        dbconnection = db_utils.DbConnectionManager()
+        print(str(dbconnection.execute_and_fetchall('select * from zz_strat')))
+        dbconnection.closedb()
         self.midvatten.export_spatialite()
         print("After export")
         print(str(mock_messagebar.mock_calls))
