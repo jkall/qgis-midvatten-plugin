@@ -950,7 +950,7 @@ class WLevelsImportFields(RowEntryGrid):
         self.layout.addWidget(self._calculate_level_masl_checkbox, 1, 1)
         self.layout.setColumnStretch(1, 2)
 
-        self._value_column.currentIndexChanged.connect( self.set_calculate_level_masl_visibility)
+        self._value_column.currentIndexChanged.connect(self.set_calculate_level_masl_visibility)
 
         self.set_calculate_level_masl_visibility()
 
