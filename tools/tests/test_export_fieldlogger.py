@@ -34,7 +34,7 @@ import midvatten_utils as utils
 from .utils_for_tests import create_test_string
 
 
-@attr(status='on')
+@attr(status='only')
 class TestExportFieldloggerNoDb(object):
     def setUp(self):
         #self.ExportToFieldLogger = ExportToFieldLogger
