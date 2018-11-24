@@ -165,11 +165,11 @@ class ExportData(object):
         :param obsids:
         :return:
         """
-        with open(os.path.join(self.exportfolder, tname + ".csv"), 'w') as f:
-            output = UnicodeWriter(f)
-            self.curs.execute("select * from %s where obsid in %s"%(tname, self.format_obsids(obsids)))
-            output.writerow([col[0] for col in self.curs.description])
-            [_f for _f in (output.writerow(row) for row in self.curs) if _f]
+        printlist = [[col[0] for col in self.curs.description]]
+        self.curs.execute("select * from %s where obsid in %s" % (tname, self.format_obsids(obsids)))
+        printlist.extend(self.curs.fetchall())
+        filename = os.path.join(self.exportfolder, tname + ".csv")
+        utils.write_printlist_to_file(filename, printlist)
 
     def to_sql(self, tname, tname_with_prefix, obsids):
         """
@@ -284,11 +284,11 @@ class ExportData(object):
         return transformed_column_names
 
     def zz_to_csv(self, tname, tname_with_prefix):
-        with open(os.path.join(self.exportfolder, tname + ".csv"), 'w') as f:
-            output = UnicodeWriter(f)
-            self.curs.execute(r"select * from %s"%(tname))
-            output.writerow([col[0] for col in self.curs.description])
-            [_f for _f in (output.writerow(row) for row in self.curs) if _f]
+        printlist = [[col[0] for col in self.curs.description]]
+        self.curs.execute(r"select * from %s"%(tname))
+        printlist.extend(self.curs.fetchall())
+        filename = os.path.join(self.exportfolder, tname + ".csv")
+        utils.write_printlist_to_file(filename, printlist)
 
     def zz_to_sql(self, tname, tname_with_prefix):
         column_names = self.get_and_check_existing_column_names(tname, tname_with_prefix)
@@ -434,36 +434,6 @@ class ExportData(object):
         return printable_msg
 
 
-class UnicodeWriter(object):
-    """
-    A CSV writer which will write rows to CSV file "f",
-    which is encoded in the given encoding.
-    Source: http://docs.python.org/library/csv.html#csv-examples
-    Modified to cope with non-string columns.
-    """
 
-    def __init__(self, f, dialect=csv.excel, delimiter=';', encoding="utf-8", **kwds):
-        self.queue = io.StringIO()
-        self.writer = csv.writer(self.queue, dialect=dialect, delimiter=delimiter,**kwds)
-        self.stream = f
-        self.encoder = codecs.getincrementalencoder(encoding)()
 
-    def encodeone(self, item):
-        if type(item) == str:
-            return self.encoder.encode(item)
-        else:
-            return item
 
-    def writerow(self, row):
-        self.writer.writerow([self.encodeone(s) for s in row])
-        data = self.queue.getvalue()
-        if not isinstance(data, str):
-            data = str(data, 'utf-8')
-        data = str(data)
-        data = self.encoder.encode(data)
-        self.stream.write(data)
-        self.queue.truncate(0)
-
-    def writerows(self, rows):
-        for row in rows:
-            self.writerow(row)
