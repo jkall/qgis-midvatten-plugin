@@ -73,6 +73,7 @@ class NewDb(object):
 
         #delete the file if exists
         if os.path.exists(dbpath):
+            print("DEV: Createdb" +  str(dbpath))
             utils.MessagebarAndLog.critical(
                 bar_msg=ru(QCoreApplication.translate('NewDb', 'A database with the chosen name already existed. Cancelling...')))
             return ''
