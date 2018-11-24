@@ -217,11 +217,16 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
             return
         for index, attrs in stored_settings:
             for attr in attrs:
-                print(attr)
-                if hasattr(parameter_browser, ru(attr[0])):
-                    setattr(parameter_browser, ru(attr[0]), ru(attr[1], keep_containers=True))
-                else:
-                    utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('ExportToFieldLogger', 'Tried to load input field fields browser but the variable %s did not exist.'))%attr[0])
+                try:
+                    if hasattr(parameter_browser, ru(attr[0])):
+                        setattr(parameter_browser, ru(attr[0]), ru(attr[1], keep_containers=True))
+                    utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('ExportToFieldLogger',
+                                                                                         'Tried to load input field fields browser but the variable %s did not exist.')) %
+                                                           attr[0])
+                except UnicodeEncodeError:
+                    utils.MessagebarAndLog.warning(log_msg=ru(QCoreApplication.translate('ExportToFieldLogger',
+                                                                                         'Tried to load input field fields browser but the variable %s did not exist.')) %
+                                                           attr[0])
 
     @staticmethod
     def update_stored_settings(objects_with_get_settings):

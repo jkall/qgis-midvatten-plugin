@@ -36,7 +36,7 @@ import utils_for_tests
 from mocks_for_tests import MockReturnUsingDictIn
 
 
-@attr(status='on')
+@attr(status='only')
 class TestParseDiverofficeFile(object):
     utils_ask_user_about_stopping = MockReturnUsingDictIn({'Failure, delimiter did not match': 'cancel',
                                                            'Failure: The number of data columns in file': 'cancel',
