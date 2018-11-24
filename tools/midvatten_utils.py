@@ -494,7 +494,6 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
     :param anything: just about anything
     :return: hopefully a unicode converted anything
     """
-    print("val " + str(anything) + " type: " + str(type(anything)))
     if isinstance(anything, str):
         return anything
     elif anything is None:
