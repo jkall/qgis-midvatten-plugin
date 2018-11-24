@@ -39,7 +39,7 @@ TEMP_DIR = '/tmp/'
 from nose.plugins.attrib import attr
 
 
-@attr(status='on')
+@attr(status='only')
 class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
@@ -276,7 +276,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         mock_find_layer.return_value.crs.return_value.authid.return_value = 'EPSG:3006'
         mock_createdb_crs_question.return_value = [3010, True]
 
-        mock_newdbpath.return_value = EXPORT_DB_PATH
+        mock_newdbpath.return_value = (EXPORT_DB_PATH, '')
         mock_verify.return_value = 0
 
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(1 1)', 3006))''')
@@ -345,7 +345,6 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         reference_string = '\n'.join(reference_string)
         assert test_string == reference_string
 
-    @attr(status='only')
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
@@ -363,7 +362,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         print("Before connection")
         dbconnection = db_utils.DbConnectionManager()
         print("After connection, file exists: " + str(os.path.isfile(EXPORT_DB_PATH)))
-        mock_newdbpath.return_value = EXPORT_DB_PATH
+        mock_newdbpath.return_value = (EXPORT_DB_PATH, '')
         mock_verify.return_value = 0
 
         """
