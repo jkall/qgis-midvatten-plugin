@@ -166,7 +166,7 @@ class ExportData(object):
         :return:
         """
         printlist = [[col[0] for col in self.curs.description]]
-        print(str(printlist))
+        print(str(self.curs.description))
         self.curs.execute("select * from %s where obsid in %s" % (tname, self.format_obsids(obsids)))
         printlist.extend(self.curs.fetchall())
         filename = os.path.join(self.exportfolder, tname + ".csv")
