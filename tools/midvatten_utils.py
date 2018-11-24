@@ -340,6 +340,7 @@ class UnicodeWriter(object):
         data = self.queue.getvalue()
         if not isinstance(data, str):
             data = str(data, 'utf-8')
+        data = str(data)
         # ... and reencode it into the target encoding
         data = self.encoder.encode(data)
         # write to the target stream
