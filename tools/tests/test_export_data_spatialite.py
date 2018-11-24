@@ -117,7 +117,8 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
             ", [obsid;length;ground;bedrock;gw_table;comment",
             ", L1;5.0;;;;",
             "]]"])
-
+        print(test_string)
+        print(reference_string)
         assert test_string == reference_string
 
     @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
