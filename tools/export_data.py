@@ -457,7 +457,8 @@ class UnicodeWriter(object):
     def writerow(self, row):
         self.writer.writerow([self.encodeone(s) for s in row])
         data = self.queue.getvalue()
-        data = str(data, 'utf-8')
+        if not isinstance(data, str):
+            data = str(data, 'utf-8')
         data = self.encoder.encode(data)
         self.stream.write(data)
         self.queue.truncate(0)
