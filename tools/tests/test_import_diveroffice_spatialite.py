@@ -38,7 +38,7 @@ import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue
 
 
-@attr(status='on')
+@attr(status='only')
 class TestWlvllogImportFromDiverofficeFiles(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
