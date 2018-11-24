@@ -34,7 +34,7 @@ import midvatten_utils as utils
 from .utils_for_tests import create_test_string
 
 
-@attr(status='only')
+@attr(status='on')
 class TestExportFieldloggerNoDb(object):
     def setUp(self):
         #self.ExportToFieldLogger = ExportToFieldLogger
@@ -154,6 +154,7 @@ class TestExportFieldloggerNoDb(object):
         reference = '[[0, ((input_field_list, [p1.u1;it1:h1, p2.u2;it2:h2]))]]'
         assert test_string == reference
 
+    @attr(status='only')
     @staticmethod
     def test_create_parameter_browser_using_stored_settings_nonexisting_variable_name():
         tables_columns = OrderedDict([('testtable', ('col1', 'col2'))])
