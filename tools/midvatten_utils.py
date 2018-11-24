@@ -559,7 +559,10 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
             elif isinstance(text, str):
                 pass
             else:
-                text = str(text, charset)
+                try:
+                    text = str(text, charset)
+                except TypeError:
+                    test = str(text)
 
         except UnicodeEncodeError:
             continue
