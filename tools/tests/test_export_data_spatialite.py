@@ -362,7 +362,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         mock_createdb_crs_question.return_value = [3006, True]
         print("Before connection")
         dbconnection = db_utils.DbConnectionManager()
-        print("After connection, file exists: " + os.path.isfile(EXPORT_DB_PATH))
+        print("After connection, file exists: " + str(os.path.isfile(EXPORT_DB_PATH)))
         mock_newdbpath.return_value = EXPORT_DB_PATH
         mock_verify.return_value = 0
 
