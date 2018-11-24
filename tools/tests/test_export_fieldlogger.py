@@ -120,7 +120,7 @@ class TestExportFieldloggerNoDb(object):
 
     @staticmethod
     def test_create_parameter_groups_using_stored_settings_nonexisting_variable_name():
-        stored_settings = [(0, (('parameter_läist', ['p1.u1;it1:h1, p2.u2;it2:h2']), ('key0_2', 'value0_2'))),
+        stored_settings = [(0, (('parameter_läistä', ['p1.u1;it1:h1, p2.u2;it2:h2']), ('key0_2', 'value0_2'))),
                            (1, (('location_suffix', 'value1_1'), ('key1_2', 'value1_2')))]
 
 
@@ -157,7 +157,7 @@ class TestExportFieldloggerNoDb(object):
     @staticmethod
     def test_create_parameter_browser_using_stored_settings_nonexisting_variable_name():
         tables_columns = OrderedDict([('testtable', ('col1', 'col2'))])
-        stored_settings = [(0, (('input_field_läist', ['p1.u1;it1:h1', 'p2.u2;it2:h2']), ('key0_2', 'value0_2'))),
+        stored_settings = [(0, (('input_field_läistä', ['p1.u1;it1:h1', 'p2.u2;it2:h2']), ('key0_2', 'value0_2'))),
                            (1, (('location_suffix', 'value1_1'), ('key1_2', 'value1_2')))]
 
 
