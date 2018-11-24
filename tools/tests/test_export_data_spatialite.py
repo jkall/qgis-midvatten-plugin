@@ -385,7 +385,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'en_US'
         self.midvatten.export_spatialite()
-
+        print(str(mock_messagebar.mock_calls))
         sql_list = ['''SELECT geoshort, strata FROM zz_strat WHERE geoshort IN ('land fill', 'rock') ''',
                     '''SELECT strata, color_mplot FROM zz_stratigraphy_plots WHERE strata IN ('made ground', 'rock', 'filling') ''',
                     '''SELECT capacity, explanation FROM zz_capacity WHERE capacity IN (0, 1)''',
