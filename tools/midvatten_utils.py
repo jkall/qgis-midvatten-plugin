@@ -526,59 +526,48 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
     :param anything: just about anything
     :return: hopefully a unicode converted anything
     """
-
-    text = None
-    for charset in ['ascii', 'utf-8', 'utf-16', 'cp1252', 'iso-8859-1']:
-        try:
-            if anything is None:
-                text = ''
-            elif isinstance(anything, list):
-                text = [returnunicode(x, keep_containers) for x in anything]
-            elif isinstance(anything, tuple):
-                text = tuple([returnunicode(x, keep_containers) for x in anything])
-            elif isinstance(anything, dict):
-                text = dict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.items()])
-            elif isinstance(anything, OrderedDict):
-                text = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.items()])
-            # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
-            elif str(type(anything)) == "<class 'PyQt4.QtCore.QVariant'>":
-                if anything.isNull():
-                    text = ''
-                else:
-                    text = returnunicode(anything.toString())
-            # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
-            elif str(type(anything)) == "<class 'PyQt4.QtCore.QString'>":
-                text = returnunicode(str(anything.toUtf8(), 'utf-8'))
-            # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
-            elif str(type(anything)) == "<class 'PyQt4.QtCore.QPyNullVariant'>":
-                return ''
+    if anything is None:
+        decoded = ''
+    elif isinstance(anything, str):
+        decoded = anything
+    elif isinstance(anything, bytes):
+        for charset in ['ascii', 'utf-8', 'utf-16', 'cp1252', 'iso-8859-1']:
+            try:
+                decoded = anything.decode(charset)
+            except UnicodeEncodeError:
+                continue
+            except UnicodeDecodeError:
+                continue
             else:
-                text = anything
-
-            if isinstance(text, (list, tuple, dict, OrderedDict)):
-                if not keep_containers:
-                    text = str(text)
-            elif isinstance(text, str):
-                pass
-            else:
-                try:
-                    text = str(text, charset)
-                except TypeError:
-                    test = str(text)
-
-        except UnicodeEncodeError:
-            continue
-        except UnicodeDecodeError:
-            continue
+                break
         else:
-            break
-
-    if text is None:
-        try:
-            text = str(str(anything))
-        except:
-            text = str(QCoreApplication.translate('returnunicode', 'data type unknown, check database'))
-    return text
+            decoded = str(QCoreApplication.translate('returnunicode', 'data type unknown, check database'))
+    elif isinstance(anything, (list, tuple, dict, OrderedDict)):
+        if isinstance(anything, list):
+            decoded = [returnunicode(x, keep_containers) for x in anything]
+        elif isinstance(anything, tuple):
+            decoded = tuple([returnunicode(x, keep_containers) for x in anything])
+        elif isinstance(anything, dict):
+            decoded = dict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.items()])
+        elif isinstance(anything, OrderedDict):
+            decoded = OrderedDict([(returnunicode(k, keep_containers), returnunicode(v, keep_containers)) for k, v in anything.items()])
+        if not keep_containers:
+            decoded = str(decoded)
+    # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
+    elif str(type(anything)) == "<class 'PyQt4.QtCore.QVariant'>":
+        if anything.isNull():
+            decoded = ''
+        else:
+            decoded = returnunicode(anything.toString())
+    # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
+    elif str(type(anything)) == "<class 'PyQt4.QtCore.QString'>":
+        decoded = returnunicode(str(anything.toUtf8(), 'utf-8'))
+    # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
+    elif str(type(anything)) == "<class 'PyQt4.QtCore.QPyNullVariant'>":
+        decoded = ''
+    else:
+        decoded = str(anything)
+    return decoded
 
 
 def selection_check(layer='', selectedfeatures=0):  #defaultvalue selectedfeatures=0 is for a check if any features are selected at all, the number is unimportant
