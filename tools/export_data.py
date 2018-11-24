@@ -165,9 +165,8 @@ class ExportData(object):
         :param obsids:
         :return:
         """
-        printlist = [[col[0] for col in self.curs.description]]
-        print(str(self.curs.description))
         self.curs.execute("select * from %s where obsid in %s" % (tname, self.format_obsids(obsids)))
+        printlist = [[col[0] for col in self.curs.description]]
         printlist.extend(self.curs.fetchall())
         filename = os.path.join(self.exportfolder, tname + ".csv")
         utils.write_printlist_to_file(filename, printlist)
@@ -285,8 +284,8 @@ class ExportData(object):
         return transformed_column_names
 
     def zz_to_csv(self, tname, tname_with_prefix):
+        self.curs.execute("select * from %s"%(tname))
         printlist = [[col[0] for col in self.curs.description]]
-        self.curs.execute(r"select * from %s"%(tname))
         printlist.extend(self.curs.fetchall())
         filename = os.path.join(self.exportfolder, tname + ".csv")
         utils.write_printlist_to_file(filename, printlist)
