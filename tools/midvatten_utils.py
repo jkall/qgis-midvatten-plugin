@@ -1838,4 +1838,4 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
 def write_printlist_to_file(filename, printlist, dialect=csv.excel, delimiter=';', encoding="utf-8", **kwds):
     with open(filename, 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=delimiter, dialect=dialect, **kwds)
-        csvwriter.writerows([[returnunicode(col).encode(encoding) for col in row] for row in printlist])
+        csvwriter.writerows([[bytes(returnunicode(col), encoding) for col in row] for row in printlist])
