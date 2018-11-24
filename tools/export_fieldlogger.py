@@ -217,6 +217,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
             return
         for index, attrs in stored_settings:
             for attr in attrs:
+                print(attr)
                 if hasattr(parameter_browser, attr[0]):
                     setattr(parameter_browser, attr[0], attr[1])
                 else:
