@@ -526,22 +526,10 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
     :param anything: just about anything
     :return: hopefully a unicode converted anything
     """
-    if anything is None:
+    if isinstance(anything, str):
+        return anything
+    elif anything is None:
         decoded = ''
-    elif isinstance(anything, str):
-        decoded = anything
-    elif isinstance(anything, bytes):
-        for charset in ['ascii', 'utf-8', 'utf-16', 'cp1252', 'iso-8859-1']:
-            try:
-                decoded = anything.decode(charset)
-            except UnicodeEncodeError:
-                continue
-            except UnicodeDecodeError:
-                continue
-            else:
-                break
-        else:
-            decoded = str(QCoreApplication.translate('returnunicode', 'data type unknown, check database'))
     elif isinstance(anything, (list, tuple, dict, OrderedDict)):
         if isinstance(anything, list):
             decoded = [returnunicode(x, keep_containers) for x in anything]
@@ -567,6 +555,20 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
         decoded = ''
     else:
         decoded = str(anything)
+
+    if isinstance(decoded, bytes):
+        for charset in ['ascii', 'utf-8', 'utf-16', 'cp1252', 'iso-8859-1']:
+            try:
+                decoded = anything.decode(charset)
+            except UnicodeEncodeError:
+                continue
+            except UnicodeDecodeError:
+                continue
+            else:
+                break
+        else:
+            decoded = str(QCoreApplication.translate('returnunicode', 'data type unknown, check database'))
+
     return decoded
 
 
@@ -1834,6 +1836,6 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
 
 
 def write_printlist_to_file(filename, printlist, dialect=csv.excel, delimiter=';', encoding="utf-8", **kwds):
-    with open(filename, 'w') as csvfile:
+    with open(filename, 'wb') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=delimiter, dialect=dialect, **kwds)
         csvwriter.writerows([[returnunicode(col).encode(encoding) for col in row] for row in printlist])
