@@ -136,7 +136,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         mock_find_layer.return_value.crs.return_value.authid.return_value = 'EPSG:3006'
         mock_createdb_crs_question.return_value = [3006, True]
         dbconnection = db_utils.DbConnectionManager()
-        mock_newdbpath.return_value = EXPORT_DB_PATH
+        mock_newdbpath.return_value = (EXPORT_DB_PATH, '')
         mock_verify.return_value = 0
 
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''', dbconnection=dbconnection)
@@ -224,7 +224,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         mock_find_layer.return_value.crs.return_value.authid.return_value = 'EPSG:3006'
         mock_createdb_crs_question.return_value = [3006, True]
 
-        mock_newdbpath.return_value = EXPORT_DB_PATH
+        mock_newdbpath.return_value = (EXPORT_DB_PATH, '')
         mock_verify.return_value = 0
 
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ("åäö", ST_GeomFromText('POINT(633466 711659)', 3006))''')
@@ -359,9 +359,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
     def test_export_spatialite_zz_tables(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify, mock_locale, mock_createdb_crs_question, mock_messagebar):
         mock_find_layer.return_value.crs.return_value.authid.return_value = 'EPSG:3006'
         mock_createdb_crs_question.return_value = [3006, True]
-        print("Before connection")
         dbconnection = db_utils.DbConnectionManager()
-        print("After connection, file exists: " + str(os.path.isfile(EXPORT_DB_PATH)))
         mock_newdbpath.return_value = (EXPORT_DB_PATH, '')
         mock_verify.return_value = 0
 
@@ -386,12 +384,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         mock_locale.return_value.answer = 'ok'
         mock_locale.return_value.value = 'en_US'
 
-        dbconnection = db_utils.DbConnectionManager()
-        print(str(dbconnection.execute_and_fetchall('select * from zz_strat')))
-        dbconnection.closedb()
         self.midvatten.export_spatialite()
-        print("After export")
-        print(str(mock_messagebar.mock_calls))
         sql_list = ['''SELECT geoshort, strata FROM zz_strat WHERE geoshort IN ('land fill', 'rock') ''',
                     '''SELECT strata, color_mplot FROM zz_stratigraphy_plots WHERE strata IN ('made ground', 'rock', 'filling') ''',
                     '''SELECT capacity, explanation FROM zz_capacity WHERE capacity IN (0, 1)''',

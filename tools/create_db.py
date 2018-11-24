@@ -90,7 +90,6 @@ class NewDb(object):
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return ''
         d =dbconnection.connector
-        print("TODO {}".format(str(d.hasSpatialSupport())))
         #First, find spatialite version
         versionstext = dbconnection.execute_and_fetchall('select spatialite_version()')[0][0]
         # load sql syntax to initialise spatial metadata, automatically create GEOMETRY_COLUMNS and SPATIAL_REF_SYS
