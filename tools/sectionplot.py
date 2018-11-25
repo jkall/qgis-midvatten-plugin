@@ -779,11 +779,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Must select only one feature in qgis layer: %s)"))%layer.name())
             return False
 
-        print(str(layer.geometryType()))
-        if not layer.hasGeometryType():
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Layer %s is missing geometry"))%layer.name())
-            return False
-
         """
         qgis geometry types:
         0 = MULTIPOINT,
@@ -793,8 +788,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         4 = ?
         """
 
-        if layer.geometryType() != 1:
-            utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Layer %s is missing geometry type MULTILINESTRING, had %s"))%(layer.name(), str(layer.geometryType())))
+        try:
+            if layer.geometryType() != 1:
+                utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Layer %s is missing geometry type MULTILINESTRING, had %s"))%(layer.name(), str(layer.geometryType())))
+                return False
+        except:
+            utils.MessagebarAndLog.critical(
+                bar_msg=ru(QCoreApplication.translate('SectionPlot', "Layer %s is missing geometry")) % layer.name())
             return False
 
         self.temptable_name = self.dbconnection.create_temporary_table_for_import(self.temptable_name, ['dummyfield TEXT'], ['geometry', 'LINESTRING', srid])
