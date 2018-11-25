@@ -298,7 +298,7 @@ class TestCommentsImportFields(object):
     def setUp(self):
         mock_import_method_chooser = MagicMock()
         mock_import_method_chooser.parameter_name = 'comment'
-        self.comments_import = import_fieldlogger.CommentsImportFields(mock_import_method_chooser, None)
+        self.comments_import = import_fieldlogger.CommentsImportFields(mock_import_method_chooser)
 
     def test_alter_data(self):
         observations = [{'parametername': 'comment',
