@@ -49,6 +49,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
+        print("create_and_select_vlayer:" + str(feature_ids))
         self.vlayer.selectByIds(feature_ids)
 
     @attr(status='only')
