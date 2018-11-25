@@ -258,6 +258,8 @@ class DbConnectionManager(object):
                 print("Contents {}: ".format(sql) + str(self.execute_and_fetchall(sql)))
                 sql = """SELECT RecoverGeometryColumn('%s','%s',%s,'%s',2) from %s AS a"""%(temptable_name, geom_column, srid, geom_type, temptable_name)
                 self.execute(sql)
+                print("Contents {}: ".format(sql) + str(self.execute_and_fetchall(sql)))
+                print("cols" + str(self.cursor.description))
             else:
                 sql = """CREATE table %s (%s)""" % (temptable_name, ', '.join(fieldnames_types))
                 self.execute(sql)
