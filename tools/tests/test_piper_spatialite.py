@@ -144,7 +144,7 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
         print("data: " + str(data))
         for l in data:
             for idx in [3, 4]:
-                l[idx] = '{0:.11f}'.format(l[idx])
+                l[idx] = '{0:.11f}'.format(float(l[idx]))
         print("data: " + str(data))
         #data[0]
         test_data = utils.anything_to_string_representation(data)
