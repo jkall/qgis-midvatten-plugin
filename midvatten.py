@@ -27,7 +27,7 @@ import qgis.utils
 import shutil
 import sys
 # Import the PyQt and QGIS libraries
-from qgis.core import Qgis, QgsApplication
+from qgis.core import Qgis, QgsApplication, QgsWKBTypes
 import qgis.PyQt
 from qgis.PyQt.QtCore import QCoreApplication, QDir, QObject, QSettings, QUrl, Qt
 from qgis.PyQt.QtWidgets import QAction, QApplication, QFileDialog, QMenu
@@ -782,6 +782,8 @@ class midvatten(object):
         if nrofselected == 1:#First verify only one feature is selected in the active layer...
             for feat in SectionLineLayer.getFeatures():
                 geom = feat.geometry()
+                print("type: " + str(geom.wkbType()))
+                print(str(QgsWKBTypes.Type))
                 if geom.wkbType() == Qgis.WKBLineString:#...and that the active layer is a line vector layer
                     pass
                 else:
