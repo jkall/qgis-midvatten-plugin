@@ -68,7 +68,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         def side_effect(*args, **kwargs):
@@ -140,7 +140,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         def side_effect(*args, **kwargs):
@@ -213,7 +213,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfound):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         mock_notfound.return_value.answer = 'ok'
@@ -289,7 +289,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_notfound):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         mock_notfound.return_value.answer = 'ok'
@@ -363,7 +363,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         def side_effect(*args, **kwargs):
@@ -436,7 +436,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         def side_effect(*args, **kwargs):
@@ -510,7 +510,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_selectedobsids):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         mock_selectedobsids.return_value = ('rb2', )
@@ -586,7 +586,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_selectedobsids):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         mock_selectedobsids.return_value = ('rb1', )
@@ -661,7 +661,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         def side_effect(*args, **kwargs):
@@ -732,7 +732,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         def side_effect(*args, **kwargs):
@@ -802,7 +802,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         def side_effect(*args, **kwargs):
@@ -872,7 +872,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         def side_effect(*args, **kwargs):
@@ -945,7 +945,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         def side_effect(*args, **kwargs):
@@ -1015,7 +1015,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         def side_effect(*args, **kwargs):
@@ -1086,7 +1086,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser, mock_messagebar):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         def side_effect(*args, **kwargs):
@@ -1162,7 +1162,7 @@ class TestGeneralCsvGui(utils_for_tests.MidvattenTestPostgisDbSv):
                     @mock.patch.object(qgis.PyQt.QtWidgets.QFileDialog, 'getOpenFileName')
                     def _test(self, filename, mock_filename, mock_skippopup, mock_encoding, mock_iface, mock_askuser):
 
-                        mock_filename.return_value = filename
+                        mock_filename.return_value = [filename]
                         mock_encoding.return_value = ['utf-8', True]
 
                         def side_effect(*args, **kwargs):
