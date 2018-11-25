@@ -800,7 +800,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                 bar_msg=ru(QCoreApplication.translate('SectionPlot', "Layer %s is missing geometry")) % layer.name())
             return False
 
-        for f in layer.features():
+        for f in layer.getFeatures():
             g = f.geometry()
             print("wkt" + str(g.asWkt()))
         self.temptable_name = self.dbconnection.create_temporary_table_for_import(self.temptable_name, ['dummyfield TEXT'], ['geometry', 'LINESTRING', srid])
