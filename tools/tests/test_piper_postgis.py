@@ -143,16 +143,26 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestPostgisDbSv):
         piperplot.ms.settingsdict['piper_markers'] = 'obsid'
         piperplot.get_data_and_make_plot()
         data = piperplot.obsnp_nospecformat
+        print("data: " + str(data))
+        for l in data:
+            for idx in range(3, 9):
+                l[idx] = '{0:.10f}'.format(float(l[idx]))
+        print("data: " + str(data))
+        # data[0]
         test_data = utils.anything_to_string_representation(data)
 
         test_paramlist = utils.anything_to_string_representation(piperplot.ParameterList)
         ref_paramlist = '''["(lower(parameter) like '%klorid%' or lower(parameter) like '%chloride%')", "(lower(parameter) like '%alkalinitet%' or lower(parameter) like '%alcalinity%')", "(lower(parameter) like '%sulfat%' or lower(parameter) like '%sulphat%')", "(lower(parameter) like '%natrium%')", "(lower(parameter) like '%kalium%' or lower(parameter) like '%potassium%')", "(lower(parameter) like '%kalcium%' or lower(parameter) like '%calcium%')", "(lower(parameter) like '%magnesium%')"]'''
         assert test_paramlist == ref_paramlist
 
-        ref_data = """[['P1' '2017-01-01' 'well' '0.028206357713' '0.0327778579014'
-  u'0.0624590112739' '0.301873002325' '0.29941613853' '0.576013166015']
- ['P2' '2017-01-01' 'notwell' '0.28206357713' '0.327778579014'
-  u'0.624590112739' '3.01873002325' '2.9941613853' '5.76013166015']]"""
+        ref_data = """[['P1' '2017-01-01' 'well' '0.0282063577' '0.0327778579' '0.0624590113'
+         '0.3018730023' '0.2994161385' '0.5760131660']
+        ['P2' '2017-01-01' 'notwell' '0.2820635771' '0.3277785790' '0.6245901127'
+         '3.0187300232' '2.9941613853' '5.7601316602']]"""
+        print("test")
+        print(test_data)
+        print("REF")
+        print(ref_data)
         assert test_data == ref_data
 
         assert len(mock_messagebar.mock_calls) == 0
