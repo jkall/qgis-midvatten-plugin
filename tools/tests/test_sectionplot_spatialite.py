@@ -61,6 +61,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         features = self.vlayer.getFeatures()
         for feature in features:
             featureid = feature.id()
+        print("feat: " + str(featureid))
         self.vlayer.selectByIds([featureid])
         print("valid: " + str(self.vlayer.isValid()))
 
