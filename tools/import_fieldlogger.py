@@ -26,6 +26,7 @@ standard_library.install_aliases()
 from builtins import str
 from builtins import range
 from builtins import object
+from operator import itemgetter
 
 import copy
 import io
@@ -180,7 +181,7 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
                     break
 
         #Remove duplicates
-        observations = [dict(no_duplicate) for no_duplicate in set([tuple(possible_duplicate.items()) for possible_duplicate in observations])]
+        observations = [dict(sorted(no_duplicate, key=itemgetter(0))) for possible_duplicate in observations for no_duplicate in set([tuple(possible_duplicate.items())])]
 
         return observations
 
