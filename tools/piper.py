@@ -62,7 +62,7 @@ class PiperPlot(object):
             #print ','.join([unicode(col).encode('utf-8') for col in row])
             try:
                 # fix_print_with_import
-                print(','.join([utils.returnunicode(col) for col in row]))
+                print(','.join([ru(col) for col in row]))
             except:
                 try:
                     # fix_print_with_import
