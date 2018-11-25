@@ -183,7 +183,7 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
         #Remove duplicates
         print("before")
         for no_duplicate in sorted(
-                set([tuple(sorted(tuple(possible_duplicate))) for possible_duplicate in observations]),
+                set([tuple(sorted(tuple(possible_duplicate.items()))) for possible_duplicate in observations]),
                 key=itemgetter(0)):
             print("no_duplicate")
             print(str(no_duplicate))
