@@ -810,6 +810,12 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         #    return False
         #layer.setCrs(Qsrid)
+
+
+        featureid = selected_features[0].id()
+        # Bug?
+        feature = [f for f in layer.getFeatures() if f.id() == featureid]
+
         for f in layer.getFeatures():
             g = f.geometry()
             print("all:featureid: " + str(f.id()) + " wkt" + str(g.asWkt()))
@@ -819,7 +825,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             print("selected:featureid: " + str(f.id()) + " wkt" + str(g.asWkt()))
 
         print(str(selected_features))
-        feature = selected_features[0]
+        #feature = selected_features[0]
 
         #print("featureid:" + str(feature.id()) + " type:" + str(type(feature)))
         geom = feature.geometry()
