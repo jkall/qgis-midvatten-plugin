@@ -441,7 +441,7 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
                           'comments': self.prepare_comments_data,
                           'w_qual_field_depth': lambda x: None}
 
-        for import_method, observations in observations_importmethods.items():
+        for import_method, observations in sorted(observations_importmethods.items()):
             if import_method:
                 file_data = data_preparers[import_method](observations)
                 if file_data is None:
