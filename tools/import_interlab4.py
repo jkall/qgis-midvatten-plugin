@@ -156,14 +156,10 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                 utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "Warning: The file information %s could not be read. Skipping file"))%filename)
                 continue
 
-            print(str(filename))
             with io.open(filename, 'r', encoding=encoding) as f:
-                #csvreader = csv.reader(f, dialect=csv.excel, quotechar=str(quotechar), delimiter=';')
                 if quotechar:
                     unicode_reader = csv.reader(f, dialect=csv.excel, quotechar=str(quotechar), delimiter=';')
-                    #unicode_reader = utils.UnicodeReader(f, encoding=encoding, quotechar=str(quotechar), delimiter=';')
                 else:
-                    #unicode_reader = utils.UnicodeReader(f, encoding=encoding, delimiter=';')
                     unicode_reader = csv.reader(f, dialect=csv.excel, delimiter=';')
 
                 lab_results = {}
