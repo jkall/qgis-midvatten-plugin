@@ -166,9 +166,13 @@ class SurveyStore(object):
         print("vlayer: " + str(vlayer))
         if(vlayer):
             nF = vlayer.selectedFeatureCount()
+            print("featureIds:" + str(featureIds))
+            print("nF:" + str(nF))
             if (nF > 0):
                 # Load all selected observation points
-                ob = [f for f in vlayer.getFeatures() if f.id() in featureIds]
+                ob = [f for f in vlayer.getFeatures() if f.id()
+                      in featureIds]
+
                 print("nF" + str(nF))
                 obsid_list=[None for i in range(nF)] # List for obsid
                 toplvl_list=[None for i in range(nF)] # List for top_lvl
