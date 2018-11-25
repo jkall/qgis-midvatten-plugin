@@ -48,7 +48,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         dbtype = db_utils.get_dbtype(dbconnection.dbtype)
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
 
-        obsidcol = list(self.vlayer.fields())
+        obsidcol = [field.name() for field in self.vlayer.fields()].index('obsid')
 
         print(str(obsidcol))
         #.index('obsid')
