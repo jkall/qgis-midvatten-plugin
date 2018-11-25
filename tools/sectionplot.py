@@ -446,13 +446,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                   ORDER BY absdist"""%(self.temptable_name, self.temptable_name, '({})'.format(', '.join(["'{}'".format(o) for o in obsidtuple])))
 
         data = self.dbconnection.execute_and_fetchall(sql)
-        print("Data in tempt: " + str(self.dbconnection.execute_and_fetchall('select * from %s'%self.temptable_name)))
-        print("data: " + str(data))
         data = ru(data, keep_containers=True)
         #data = [[col.encode('utf-8') for col in row] for row in ru(data, keep_containers=True)]
         #data = utils.sql_load_fr_db(sql)[1]
         My_format = [('obs_id', np.unicode_, 32),('length', float)] #note that here is a limit of maximum 32 characters in obsid
-        print(str(data))
         npdata = np.array(data, dtype=My_format)  #NDARRAY
         LengthAlongTable=npdata.view(np.recarray)   # RECARRAY   Makes the two columns into callable objects, i.e. write self.LengthAlong.obs_id and self.LengthAlong.length
         del data, npdata
@@ -827,13 +824,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             print("selected:featureid: " + str(f.id()) + " wkt" + str(g.asWkt()))
         """
         geom = feature.geometry()
-        print(str(type(geom)))
         wkt = geom.asWkt()
-        print(str(wkt))
         sql = """INSERT INTO %s (dummyfield, geometry) VALUES ('0', ST_GeomFromText('%s', %s))"""%(self.temptable_name, wkt, srid)
-        print(sql)
         self.dbconnection.execute(sql)
-
 
         #Test without commit
         #self.dbconnection.commit()
