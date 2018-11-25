@@ -166,18 +166,13 @@ class SurveyStore(object):
             nF = vlayer.selectedFeatureCount()
             if (nF > 0):
                 # Load all selected observation points
-                selected_ids = vlayer.selectedFeatureIds()
-                ob = [f for f in vlayer.getFeatures() if f.id() in selected_ids]
-                print("Feats " + str(ob))
-                #ob = vlayer.selectedFeatures()
+                ob = [f for f in vlayer.getFeatures() if f.id() in featureIds]
                 obsid_list=[None]*nF # List for obsid
                 toplvl_list=[None]*nF # List for top_lvl
                 coord_list=[None]*nF # List for coordinates
                 for i, k in enumerate(ob):    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
                     attributes = ob[i].attributes()
-                    print("attributes %s type %s"%(str(attributes), str(type(attributes))))
                     obsid = ru(attributes[obsid_ColNo])
-                    print("obsid" + str(obsid))
                     obsid_list[i] = obsid # Copy value in column obsid in the attribute list
                     h_gs = ru(attributes[h_gs_ColNo])
 
