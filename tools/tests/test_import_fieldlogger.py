@@ -325,7 +325,7 @@ class TestCommentsImportFields(object):
         observations = self.comments_import.alter_data(observations)
 
         test_string = create_test_string(sorted(observations, key=itemgetter('date_time')))
-        reference_string = sorted([{'date_time': '2016-01-01 00:00:00', 'parametername': 'comment', 'skip_comment_import': True, 'sublocation': '1', 'value': 'shared_comment'}, {'comment': 'shared_comment', 'date_time': '2016-01-01 00:00:00', 'parametername': 'par_get_shared_comment', 'sublocation': '1', 'value': '1'}, {'date_time': '2016-01-02 00:00:00', 'parametername': 'par_not_get_shared_comment', 'sublocation': '2', 'value': '1'}, {'date_time': '2016-01-04 00:00:00', 'parametername': 'par_not_get_shared_comment', 'sublocation': '1', 'value': '1'}, {'date_time': '2016-01-03 00:00:00', 'parametername': 'comment', 'sublocation': '1', 'value': 'not_shared_comment'}], key=itemgetter('date_time'))
+        reference_string = create_test_string(sorted([{'date_time': '2016-01-01 00:00:00', 'parametername': 'comment', 'skip_comment_import': True, 'sublocation': '1', 'value': 'shared_comment'}, {'comment': 'shared_comment', 'date_time': '2016-01-01 00:00:00', 'parametername': 'par_get_shared_comment', 'sublocation': '1', 'value': '1'}, {'date_time': '2016-01-02 00:00:00', 'parametername': 'par_not_get_shared_comment', 'sublocation': '2', 'value': '1'}, {'date_time': '2016-01-04 00:00:00', 'parametername': 'par_not_get_shared_comment', 'sublocation': '1', 'value': '1'}, {'date_time': '2016-01-03 00:00:00', 'parametername': 'comment', 'sublocation': '1', 'value': 'not_shared_comment'}], key=itemgetter('date_time')))
         assert test_string == reference_string
 
 @attr(status='only')
@@ -356,7 +356,7 @@ class TestObsidFilter(object):
         observations = [{'sublocation': 'rb1'}, {'sublocation': 'rb2'}]
 
         test_string = create_test_string(self.obsid_filter.alter_data(observations))
-        reference_string = sorted([{'obsid': 'rb1', 'sublocation': 'rb1'}, {'obsid': 'rb2', 'sublocation': 'rb2'}], key=itemgetter('obsid'))
+        reference_string = create_test_string(sorted([{'obsid': 'rb1', 'sublocation': 'rb1'}, {'obsid': 'rb2', 'sublocation': 'rb2'}], key=itemgetter('obsid')))
         print(test_string)
         print(reference_string)
         assert test_string == reference_string
