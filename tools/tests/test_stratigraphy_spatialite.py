@@ -48,7 +48,11 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         dbtype = db_utils.get_dbtype(dbconnection.dbtype)
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
 
+        obsidcol = self.vlayer.fields().index('obsid')
         features = self.vlayer.getFeatures()
+        for feat in features:
+            obsid = feat.attributes()[obsidcol]
+            feat.setId(obsid)
         feature_ids = [feature.id() for feature in features]
         print("create_and_select_vlayer:" + str(feature_ids))
         self.vlayer.selectByIds(feature_ids)
@@ -69,7 +73,6 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, h_gs, geometry) VALUES ('P3', 20, ST_GeomFromText('POINT(6720728 016569)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('P1', 1, 0, 1, 'sand', 'sand', '3', 'j')''')
         db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid, depthtop, depthbot, geology, geoshort, capacity, development) VALUES ('P1', 2, 1, 4.5, 'morän', 'morän', '3', 'j')''')
-        print(str(db_utils.sql_load_fr_db('select * from obs_points')))
         self.create_and_select_vlayer()
 
         dlg = Stratigraphy(self.iface, self.vlayer, self.ms.settingsdict)
