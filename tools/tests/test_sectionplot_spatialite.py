@@ -35,7 +35,7 @@ from midvatten_utils import returnunicode as ru
 import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ The test doesn't go through the whole section plot unfortunately
     """
