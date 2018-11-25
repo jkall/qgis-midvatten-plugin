@@ -157,6 +157,7 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
     @utils.general_exception_handler
     def select_file_and_parse_rows(row_parser):
         filenames = utils.select_files(only_one_file=False, extension="csv (*.csv)")
+        print(str(filenames))
         if filenames is None or not filenames:
             raise utils.UserInterruptError()
         observations = []
