@@ -100,7 +100,7 @@ def create_test_string(anything=None):
      '{1: (c, d), 2: b, 3: a}'
     """
     if isinstance(anything, dict):
-        aunicode = ''.join(['{', ', '.join([': '.join([create_test_string(k), create_test_string(v)]) for k, v in sorted(anything)]), '}'])
+        aunicode = ''.join(['{', ', '.join([': '.join([create_test_string(k), create_test_string(v)]) for k, v in sorted(anything.items())]), '}'])
     elif isinstance(anything, list):
         aunicode = ''.join(['[', ', '.join([create_test_string(x) for x in anything]), ']'])
     elif isinstance(anything, tuple):
