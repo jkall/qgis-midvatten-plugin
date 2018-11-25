@@ -275,6 +275,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
                                    ['q.temperatur.grC', [['import_method', 'w_qual_field'], ['parameter', 'temperatur'], ['unit', 'grC'], ['depth', ''], ['instrument', 'testid']]]]
                 importer.input_fields.set_parameters_using_stored_settings(stored_settings)
                 importer.start_import(importer.observations)
+                print(str(mock_MessagebarAndLog.mock_calls))
 
             _test(self, filename)
 
