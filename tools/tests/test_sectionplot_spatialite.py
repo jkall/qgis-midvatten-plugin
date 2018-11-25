@@ -44,6 +44,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         super(TestSectionPlot, self).setUp()
         self.midvatten.ms.settingsdict['secplot_loaded_template'] = ''
         self.midvatten.ms.settingsdict['secplot_templates'] = ''
+        self.midvatten.ms.settingsdict['secplotlocation'] = 0
 
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def create_and_select_vlayer(self):
