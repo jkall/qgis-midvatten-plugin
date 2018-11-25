@@ -35,7 +35,7 @@ from midvatten_utils import returnunicode as ru
 import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ The test doesn't go through the whole section plot unfortunately
     """
@@ -60,6 +60,9 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
         features = self.vlayer.getFeatures()
         for feature in features:
+            print("has geometry" + str(feature.hasGeometry()))
+            geom = feature.geometry()
+            print("wkt: " + str(geom.asWkt()))
             featureid = feature.id()
         self.vlayer.selectByIds([featureid])
 
