@@ -81,7 +81,6 @@ class Stratigraphy(object):
         #lyr = self.iface.activeLayer() # THIS IS TSPLOT-method, GETS THE SELECTED LAYER
         lyr = self.layer
         ids = lyr.selectedFeatureIds()
-        print("selectedFeatureIds" + str(ids))
         if len(ids) == 0:
             utils.pop_up_info(ru(QCoreApplication.translate(' Stratigraphy', "No selection")), ru(QCoreApplication.translate(' Stratigraphy', "No features are selected")))
             return
@@ -167,7 +166,9 @@ class SurveyStore(object):
             nF = vlayer.selectedFeatureCount()
             if (nF > 0):
                 # Load all selected observation points
-                ob = vlayer.selectedFeatures()
+                selected_ids = vlayer.selectedFeatureIds()
+                ob = [f for f in vlayer.getFeatures() if f.id() in selected_ids]
+                #ob = vlayer.selectedFeatures()
                 obsid_list=[None]*nF # List for obsid
                 toplvl_list=[None]*nF # List for top_lvl
                 coord_list=[None]*nF # List for coordinates
