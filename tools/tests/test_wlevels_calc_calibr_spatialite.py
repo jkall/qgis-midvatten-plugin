@@ -33,7 +33,7 @@ from decimal import Decimal
 import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestCalibrlogger(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ Test to make sure wlvllogg_import goes all the way to the end without errors
     """
