@@ -324,8 +324,8 @@ class TestCommentsImportFields(object):
                         ]
         observations = self.comments_import.alter_data(observations)
 
-        test_string = create_test_string(sorted(observations, key=itemgetter('date_time', 'parametername')))
-        reference_string = create_test_string(sorted([{'date_time': '2016-01-01 00:00:00', 'parametername': 'comment', 'skip_comment_import': True, 'sublocation': '1', 'value': 'shared_comment'}, {'comment': 'shared_comment', 'date_time': '2016-01-01 00:00:00', 'parametername': 'par_get_shared_comment', 'sublocation': '1', 'value': '1'}, {'date_time': '2016-01-02 00:00:00', 'parametername': 'par_not_get_shared_comment', 'sublocation': '2', 'value': '1'}, {'date_time': '2016-01-04 00:00:00', 'parametername': 'par_not_get_shared_comment', 'sublocation': '1', 'value': '1'}, {'date_time': '2016-01-03 00:00:00', 'parametername': 'comment', 'sublocation': '1', 'value': 'not_shared_comment'}], key=itemgetter('date_time', 'parametername')))
+        test_string = create_test_string(sorted(observations, key=itemgetter('date_time', 'parametername', 'sublocation')))
+        reference_string = create_test_string(sorted([{'date_time': '2016-01-01 00:00:00', 'parametername': 'comment', 'skip_comment_import': True, 'sublocation': '1', 'value': 'shared_comment'}, {'comment': 'shared_comment', 'date_time': '2016-01-01 00:00:00', 'parametername': 'par_get_shared_comment', 'sublocation': '1', 'value': '1'}, {'date_time': '2016-01-02 00:00:00', 'parametername': 'par_not_get_shared_comment', 'sublocation': '2', 'value': '1'}, {'date_time': '2016-01-04 00:00:00', 'parametername': 'par_not_get_shared_comment', 'sublocation': '1', 'value': '1'}, {'date_time': '2016-01-03 00:00:00', 'parametername': 'comment', 'sublocation': '1', 'value': 'not_shared_comment'}], key=itemgetter('date_time', 'parametername', 'sublocation')))
         assert test_string == reference_string
 
 @attr(status='only')
