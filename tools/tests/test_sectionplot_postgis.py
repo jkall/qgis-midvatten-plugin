@@ -43,6 +43,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestPostgisDbSv):
         super(TestSectionPlot, self).setUp()
         self.midvatten.ms.settingsdict['secplot_loaded_template'] = ''
         self.midvatten.ms.settingsdict['secplot_templates'] = ''
+        self.midvatten.ms.settingsdict['secplotlocation'] = 0
     
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)

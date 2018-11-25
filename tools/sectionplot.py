@@ -446,6 +446,8 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
                   ORDER BY absdist"""%(self.temptable_name, self.temptable_name, '({})'.format(', '.join(["'{}'".format(o) for o in obsidtuple])))
 
         data = self.dbconnection.execute_and_fetchall(sql)
+        print("Data in tempt: " + str(self.dbconnection.execute_and_fetchall('select * from %s'%self.temptable_name)))
+        print("data: " + str(data))
         data = ru(data, keep_containers=True)
         #data = [[col.encode('utf-8') for col in row] for row in ru(data, keep_containers=True)]
         #data = utils.sql_load_fr_db(sql)[1]
