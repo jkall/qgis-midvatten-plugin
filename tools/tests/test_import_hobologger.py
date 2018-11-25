@@ -33,7 +33,7 @@ from nose.plugins.attrib import attr
 import utils_for_tests
 from mocks_for_tests import MockReturnUsingDictIn
 
-@attr(status='on')
+@attr(status='only')
 class TestParseHobologgerFile(object):
 
     def setUp(self):
