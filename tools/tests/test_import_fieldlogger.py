@@ -251,7 +251,7 @@ class TestFieldLoggerImporterNoDb(object):
                 test_string = FieldloggerImport.select_file_and_parse_rows(FieldloggerImport.parse_rows)
                 return test_string
 
-            t = sorted(_test(self, filename), key=itemgetter(0))
+            t = sorted(_test(self, filename), key=itemgetter('date_time'))
             test_string = utils_for_tests.create_test_string(t)
             reference = sorted([{'date_time': '2016-03-30 15:29:26', 'parametername': 'q.comment', 'sublocation': 'Rb1505.quality', 'value': 'hej'}, {'date_time': '2016-03-30 15:30:39', 'parametername': 'q.syre.mg/L', 'sublocation': 'Rb1512.quality', 'value': '67'}, {'date_time': '2016-03-30 15:31:30', 'parametername': 's.turbiditet.FNU', 'sublocation': 'Rb1512.sample', 'value': '899'}, {'date_time': '2016-03-30 15:29:26', 'parametername': 'q.konduktivitet.µS/cm', 'sublocation': 'Rb1505.quality', 'value': '863'}, {'date_time': '2016-03-30 15:30:09', 'parametername': 'f.comment', 'sublocation': 'Rb1615.flow', 'value': 'gick bra'}, {'date_time': '2016-03-30 15:30:40', 'parametername': 'q.syre.%', 'sublocation': 'Rb1512.quality', 'value': '58'}, {'date_time': '2016-03-30 15:34:13', 'parametername': 'l.meas.m', 'sublocation': 'Rb1608.level', 'value': '555'}, {'date_time': '2016-03-30 15:30:39', 'parametername': 'q.comment', 'sublocation': 'Rb1512.quality', 'value': 'test'}, {'date_time': '2016-03-30 15:31:30', 'parametername': 's.comment', 'sublocation': 'Rb1202.sample', 'value': 'hej2'}, {'date_time': '2016-03-30 15:34:40', 'parametername': 'l.comment', 'sublocation': 'Rb1608.level', 'value': 'testc'}, {'date_time': '2016-03-30 15:30:09', 'parametername': 'f.Accvol.m3', 'sublocation': 'Rb1615.flow', 'value': '357'}, {'date_time': '2016-03-30 15:34:13', 'parametername': 'l.comment', 'sublocation': 'Rb1608.level', 'value': 'ergv'}, {'date_time': '2016-03-30 15:30:39', 'parametername': 'q.temperatur.grC', 'sublocation': 'Rb1512.quality', 'value': '8'}], key=itemgetter('date_time'))
             
@@ -357,6 +357,8 @@ class TestObsidFilter(object):
 
         test_string = create_test_string(self.obsid_filter.alter_data(observations))
         reference_string = sorted([{'obsid': 'rb1', 'sublocation': 'rb1}, {obsid: rb2', 'sublocation': 'rb2'}], key=itemgetter('obsid'))
+        print(test_string)
+        print(reference_string)
         assert test_string == reference_string
 
 @attr(status='only')
