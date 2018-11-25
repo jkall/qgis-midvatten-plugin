@@ -72,6 +72,7 @@ class PiperPlot(object):
         self.make_the_plot()
 
     def big_sql(self):
+        print("obs {} type {} after ru {}".format(self.observations[0], str(type(self.observations[0])), str(type(ru(self.observations[0])))))
         # Data must be stored as mg/l in the database since it is converted to meq/l in code here...
         sql = """select a.obsid as obsid, date_time, obs_points.type as type, Cl_meqPl, HCO3_meqPl, SO4_meqPl, Na_meqPl + K_meqPl as NaK_meqPl, Ca_meqPl, Mg_meqPl
         from (select u.obsid, u.date_time, u.Cl_meqPl, u.HCO3_meqPl, u.SO4_meqPl, u.Na_meqPl, u.K_meqPl, u.Ca_meqPl, u.Mg_meqPl
@@ -88,7 +89,7 @@ class PiperPlot(object):
                   group by obsid, date_time
                 ) AS u
             where u.Ca_meqPl is not null and u.Mg_meqPl is not null and u.Na_meqPl is not null and u.K_meqPl is not null and u.HCO3_meqPl is not null and u.Cl_meqPl is not null and u.SO4_meqPl is not null
-            ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(self.ParameterList[0],self.ParameterList[1],self.ParameterList[2],self.ParameterList[3],self.ParameterList[4],self.ParameterList[5],self.ParameterList[6], ', '.join(["'{}'".format(ru(_)) for _ in self.observations]))
+            ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(self.ParameterList[0],self.ParameterList[1],self.ParameterList[2],self.ParameterList[3],self.ParameterList[4],self.ParameterList[5],self.ParameterList[6], ', '.join(["'{}'".format(ru(obsid)) for obsid in self.observations]))
         return sql
 
     def create_markers(self):
