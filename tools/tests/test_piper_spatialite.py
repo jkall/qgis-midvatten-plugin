@@ -28,6 +28,7 @@ import midvatten_utils as utils
 import mock
 import piper
 from nose.plugins.attrib import attr
+from decimal import Decimal
 
 import utils_for_tests
 
@@ -141,9 +142,10 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
         piperplot.get_data_and_make_plot()
         data = piperplot.obsnp_nospecformat
         print("data: " + str(data))
-        #for l in data:
-        #    for idx in [3, 4]:
-
+        for l in data:
+            for idx in [3, 4]:
+                l[idx] = '%.11'.format(Decimal(l[idx]))
+        print("data: " + str(data))
         #data[0]
         test_data = utils.anything_to_string_representation(data)
 
