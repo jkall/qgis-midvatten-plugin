@@ -178,7 +178,9 @@ class SurveyStore(object):
                     attributes = ob[i].attributes()
                     print("obsid_ColNo" + str(obsid_ColNo))
                     obsid = ru(attributes[obsid_ColNo])
+                    print("here0")
                     obsid_list[i] = obsid # Copy value in column obsid in the attribute list
+                    print("here0.5")
                     h_gs = ru(attributes[h_gs_ColNo])
 
                     level_val = None
