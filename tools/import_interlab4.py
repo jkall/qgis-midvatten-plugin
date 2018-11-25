@@ -155,6 +155,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                 utils.pop_up_info(ru(QCoreApplication.translate('Interlab4Import', "Warning: The file information %s could not be read. Skipping file"))%filename)
                 continue
 
+            print(str(filename))
             with open(filename, 'rb') as f:
                 if quotechar:
                     unicode_reader = utils.UnicodeReader(f, encoding=encoding, quotechar=str(quotechar), delimiter=';')
