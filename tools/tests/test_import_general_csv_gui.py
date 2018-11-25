@@ -31,7 +31,7 @@ from nose.plugins.attrib import attr
 import utils_for_tests
 
 
-@attr(status='only')
+@attr(status='on')
 class TestStaticMethods(object):
 
     def test_translate_and_reorder_file_data(self):
