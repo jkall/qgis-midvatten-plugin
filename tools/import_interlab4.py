@@ -156,7 +156,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                 continue
 
             print(str(filename))
-            with open(filename, 'rb') as f:
+            with open(filename, 'r') as f:
                 if quotechar:
                     unicode_reader = utils.UnicodeReader(f, encoding=encoding, quotechar=str(quotechar), delimiter=';')
                 else:
