@@ -50,6 +50,9 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         #obsidcol = [field.name() for field in self.vlayer.fields()].index('obsid')
 
+        #TODO: The problem is that selectedFeatureIds returns only one [0] due the features having the same feature id!
+        # No idea why they get the same id! They should not! Maybe I can change it to selected obsids instead.
+
         #print(str(obsidcol))
         #.index('obsid')
         features = self.vlayer.getFeatures()
