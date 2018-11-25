@@ -44,9 +44,10 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         dbconnection = db_utils.DbConnectionManager()
         uri = dbconnection.uri
-        uri.setDataSource('', 'obs_points', 'geometry', '', 'obsid')
+        uri.setDataSource('', 'obs_points', 'Geometry', '', 'obsid')
         dbtype = db_utils.get_dbtype(dbconnection.dbtype)
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
+
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
         print("create_and_select_vlayer:" + str(feature_ids))
