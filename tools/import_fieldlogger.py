@@ -159,11 +159,10 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
         filenames = utils.select_files(only_one_file=False, extension="csv (*.csv)")
         if filenames is None or not filenames:
             raise utils.UserInterruptError()
-
         observations = []
         for filename in filenames:
             filename = ru(filename)
-
+            print(str(filename))
             supported_encodings = ['utf-8', 'cp1252']
             for encoding in supported_encodings:
                 try:
