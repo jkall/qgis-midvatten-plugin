@@ -143,7 +143,7 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
         data = piperplot.obsnp_nospecformat
         print("data: " + str(data))
         for l in data:
-            for idx in [3, 4]:
+            for idx in range(3, 9):
                 l[idx] = '{0:.12f}'.format(float(l[idx]))
         print("data: " + str(data))
         #data[0]
