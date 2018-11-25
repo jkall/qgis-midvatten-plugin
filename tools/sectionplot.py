@@ -814,7 +814,10 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         feature = selected_features[0]
         geom = feature.geometry()
         wkt = geom.asWkt()
-        self.dbconnection.execute("""INSERT INTO %s (dummyfield, geometry) VALUES ('0', ST_GeomFromText('%s', %s))"""%(self.temptable_name, wkt, srid))
+        sql = """INSERT INTO %s (dummyfield, geometry) VALUES ('0', ST_GeomFromText('%s', %s))"""%(self.temptable_name, wkt, srid)
+        print(sql)
+        self.dbconnection.execute(sql)
+
 
         #Test without commit
         #self.dbconnection.commit()
