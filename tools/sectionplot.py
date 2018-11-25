@@ -813,6 +813,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
 
         print(str(selected_features))
         feature = selected_features[0]
+        print("feature" + str(type(feature)))
         geom = feature.geometry()
         print(str(type(geom)))
         wkt = geom.asWkt()
