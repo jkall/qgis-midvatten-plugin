@@ -150,6 +150,10 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
   u'0.0624590112739' '0.301873002325' '0.29941613853' '0.576013166015']
  ['P2' '2017-01-01' 'notwell' '0.28206357713' '0.327778579014'
   u'0.624590112739' '3.01873002325' '2.9941613853' '5.76013166015']]"""
+        print("test")
+        print(test_data)
+        print("REF")
+        print(ref_data)
         assert test_data == ref_data
 
         assert len(mock_messagebar.mock_calls) == 0
