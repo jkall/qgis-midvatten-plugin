@@ -89,7 +89,7 @@ class PiperPlot(object):
                   group by obsid, date_time
                 ) AS u
             where u.Ca_meqPl is not null and u.Mg_meqPl is not null and u.Na_meqPl is not null and u.K_meqPl is not null and u.HCO3_meqPl is not null and u.Cl_meqPl is not null and u.SO4_meqPl is not null
-            ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(self.ParameterList[0],self.ParameterList[1],self.ParameterList[2],self.ParameterList[3],self.ParameterList[4],self.ParameterList[5],self.ParameterList[6], ', '.join(["'{}'".format(ru(obsid)) for obsid in self.observations]))
+            ) as a, obs_points WHERE a.obsid = obs_points.obsid""" %(ru(self.ParameterList[0]), ru(self.ParameterList[1]), ru(self.ParameterList[2]), ru(self.ParameterList[3]), ru(self.ParameterList[4]), ru(self.ParameterList[5]), ru(self.ParameterList[6]), utils.sql_unicode_list(self.observations))
         return sql
 
     def create_markers(self):
@@ -136,19 +136,13 @@ class PiperPlot(object):
         ConnOK, self.date_times = db_utils.sql_load_fr_db(sql2)
         
     def get_selected_observations(self):
-        obsar = utils.getselectedobjectnames(self.activelayer)
-        observations = obsar
-        i=0
-        for obs in obsar:
-                observations[i] = obs.encode('utf-8') #turn into a list of python byte strings
-                i += 1 
-        self.observations=observations#A list with selected obsid
+        self.observations = utils.getselectedobjectnames(self.activelayer)
 
     def get_selected_obstypes(self):
-        sql = "select obsid, type from obs_points where obsid in " +  str(self.observations).encode('utf-8').replace('[','(').replace(']',')')
+        sql = "select obsid, type from obs_points where obsid in ({})".format(utils.sql_unicode_list(self.observations))
         ConnOK, types = db_utils.sql_load_fr_db(sql)
         self.typedict = dict(types)#make it a dictionary
-        sql = "select distinct type from obs_points where obsid in " +  str(self.observations).encode('utf-8').replace('[','(').replace(']',')')
+        sql = "select distinct type from obs_points where obsid in ({})".format(utils.sql_unicode_list(self.observations))
         ConnOK, self.distincttypes = db_utils.sql_load_fr_db(sql)
         
     def get_piper_data(self):

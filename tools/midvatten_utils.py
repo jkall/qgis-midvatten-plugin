@@ -1773,3 +1773,6 @@ def write_printlist_to_file(filename, printlist, dialect=csv.excel, delimiter=';
         csvwriter = csv.writer(csvfile, delimiter=delimiter, dialect=dialect, **kwds)
         #csvwriter.writerows([[bytes(returnunicode(col), encoding) for col in row] for row in printlist])
         csvwriter.writerows(returnunicode(printlist, keep_containers=True))
+
+def sql_unicode_list(an_iterator):
+    return ', '.join(["'{}'".format(returnunicode(x)) for x in an_iterator])
