@@ -254,10 +254,10 @@ class DbConnectionManager(object):
                 fieldnames_types.append('geometry %s'%geometry_colname_type_srid[0])
                 sql = """CREATE table %s (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, %s)"""%(temptable_name, ', '.join(fieldnames_types))
                 self.execute(sql)
-                sql = 'select * from ' + temptable_name
-                print("Contents {}: ".format(sql) + str(self.execute_and_fetchall(sql)))
+
                 sql = """SELECT RecoverGeometryColumn('%s','%s',%s,'%s',2) from %s AS a"""%(temptable_name, geom_column, srid, geom_type, temptable_name)
                 self.execute(sql)
+                sql = 'select * from ' + temptable_name
                 print("Contents {}: ".format(sql) + str(self.execute_and_fetchall(sql)))
                 print("cols" + str(self.cursor.description))
             else:
