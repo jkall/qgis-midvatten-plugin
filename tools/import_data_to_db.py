@@ -362,6 +362,7 @@ class MidvDataImporterError(Exception):
 def import_exception_handler(func):
     def new_func(*args, **kwargs):
         print("args {} kwargs {}".format(args, kwargs))
+        raise Exception()
         print
         try:
             result = func(*args, **kwargs)
