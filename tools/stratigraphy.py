@@ -213,7 +213,7 @@ class SurveyStore(object):
                     surveys[obsid_list[i]] = SurveyInfo(obsid_list[i], toplvl_list[i], coord_list[i])
         else:
             utils.pop_up_info(ru(QCoreApplication.translate('Stratigraphy', "getDataStep1 failed")))  # _CHANGE_ for debugging
-
+        print("surveys" + str(surveys))
         return surveys
 
     def _getDataStep2(self, surveys):
