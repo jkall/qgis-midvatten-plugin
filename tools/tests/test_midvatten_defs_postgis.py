@@ -30,7 +30,7 @@ import utils_for_tests
 from definitions import midvatten_defs
 
 
-@attr(status='on')
+@attr(status='only')
 class TestDefsFunctions(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)
@@ -45,7 +45,7 @@ class TestDefsFunctions(utils_for_tests.MidvattenTestPostgisDbSv):
                 assert isinstance(x, (tuple, list))
                 assert x
 
-@attr(status='on')
+@attr(status='only')
 class TestGeocolorsymbols(utils_for_tests.MidvattenTestPostgisDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestPostgisNotCreated.mock_instance_settings_database)
     @mock.patch('db_utils.get_postgis_connections', utils_for_tests.MidvattenTestPostgisNotCreated.mock_postgis_connections)

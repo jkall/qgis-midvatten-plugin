@@ -38,7 +38,7 @@ import utils_for_tests
 from mocks_for_tests import MockUsingReturnValue
 
 
-@attr(status='only')
+@attr(status='on')
 class TestWlvllogImportFromLeveloggerFiles(utils_for_tests.MidvattenTestPostgisDbSv):
     """ Test to make sure levelogger goes all the way to the end without errors
     """
