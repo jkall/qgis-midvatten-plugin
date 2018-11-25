@@ -53,7 +53,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
             def _test_staff_not_given(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
 
                 ms = MagicMock()
                 ms.settingsdict = OrderedDict()
@@ -101,7 +101,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
                 mock_ask_instrument.return_value.value = 'testid'
 
                 ms = MagicMock()
@@ -174,7 +174,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
                 mock_ask_instrument.return_value.value = 'testid'
 
                 ms = MagicMock()
@@ -247,7 +247,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
                 mock_ask_instrument.return_value.value = 'testid'
 
                 ms = MagicMock()
@@ -321,7 +321,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
                 mock_ask_instrument.return_value.value = 'testid'
 
                 ms = MagicMock()
@@ -395,7 +395,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
                 mock_ask_instrument.return_value.value = 'testid'
 
                 ms = MagicMock()
@@ -473,7 +473,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
                 mock_ask_instrument.return_value.value = 'testid'
 
                 ms = MagicMock()
@@ -570,7 +570,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
                 mock_ask_instrument.return_value.value = 'testid'
 
                 ms = MagicMock()
@@ -669,7 +669,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
                 mock_ask_instrument.return_value.value = 'testid'
 
                 ms = MagicMock()
@@ -744,7 +744,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_askuser):
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
                 mock_ask_instrument.return_value.value = 'testid'
 
                 def side_effect(*args, **kwargs):
@@ -824,7 +824,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
                 mock_ask_instrument.return_value.value = 'testid'
 
                 ms = MagicMock()
@@ -899,7 +899,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_ask_instrument, mock_vacuum):
                 mock_vacuum.return_value.result = 1
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
                 mock_ask_instrument.return_value.value = 'testid'
 
                 ms = MagicMock()
