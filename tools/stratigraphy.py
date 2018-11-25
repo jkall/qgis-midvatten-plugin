@@ -152,7 +152,7 @@ class SurveyStore(object):
         
     def _getDataStep1(self, featureIds, vlayer):
         """ STEP 1: get data from selected layer"""  # _CHANGE_ Completely revised to TSPLot method
-        print("_getDataStep1")
+        print("_getDataStep1" + str(featureIds))
         provider = vlayer.dataProvider()  #_CHANGE_  THIS IS TSPLOT-method, we do not use the db loadeds by ARPAT _init_ surveystore
         obsid_ColNo = provider.fieldNameIndex('obsid') # _CHANGE_  THIS IS TSPLOT-method To find the column named 'obsid'
         if obsid_ColNo == -1:
