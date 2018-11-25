@@ -279,7 +279,7 @@ class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
             _test(self, filename)
             t = dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY obsid, date_time' % k)) for k in ('w_levels', 'w_qual_field', 'w_flow', 'zz_staff', 'comments')])
-            t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s ORDER BY' % k)) for k in ('zz_staff')]))
+            t.update(dict([(k, db_utils.sql_load_fr_db('SELECT * FROM %s' % k)) for k in ('zz_staff')]))
             test_string = create_test_string(t)
             reference_string = '{comments: (True, [(Rb1202, 2016-03-30 15:31:30, hej2, teststaff), (Rb1608, 2016-03-30 15:34:40, testc, teststaff)]), w_flow: (True, [(Rb1615, testid, Accvol, 2016-03-30 15:30:09, 357.0, m3, gick bra)]), w_levels: (True, [(Rb1608, 2016-03-30 15:34:13, 555.0, None, None, ergv)]), w_qual_field: (True, [(Rb1512, teststaff, 2016-03-30 15:30:39, testid, syre, 67.0, 67, mg/L, None, test), (Rb1512, teststaff, 2016-03-30 15:31:30, testid, turbiditet, 899.0, 899, FNU, None, None), (Rb1505, teststaff, 2016-03-30 15:29:26, testid, konduktivitet, 863.0, 863, µS/cm, None, hej), (Rb1512, teststaff, 2016-03-30 15:30:40, testid, syre, 58.0, 58, %, None, None), (Rb1512, teststaff, 2016-03-30 15:30:39, testid, temperatur, 8.0, 8, grC, None, test)]), zz_staff: (True, [(teststaff, None)])}'
             print(test_string)
