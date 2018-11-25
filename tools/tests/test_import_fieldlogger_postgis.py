@@ -17,7 +17,7 @@ from mocks_for_tests import MockUsingReturnValue, MockReturnUsingDictIn, MockQgi
 from .utils_for_tests import create_test_string
 
 
-@attr(status='only')
+@attr(status='on')
 class TestFieldLoggerImporterDb(utils_for_tests.MidvattenTestPostgisDbSv):
     answer_yes = mock_answer('yes')
     answer_no = mock_answer('no')
