@@ -131,7 +131,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P1', '2015-01-01 00:00:00', '15', '200', '185')''')
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P2', '2015-01-01 00:00:00', '17', '200', '183')''')
 
-        print(str(db_utils.sql_load_fr_db('select * from obs_lines')))
+        print(str(db_utils.sql_load_fr_db('select obsid, ST_AsText(geometry) from obs_lines')))
         self.create_and_select_vlayer()
 
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
