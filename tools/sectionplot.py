@@ -450,6 +450,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         #data = [[col.encode('utf-8') for col in row] for row in ru(data, keep_containers=True)]
         #data = utils.sql_load_fr_db(sql)[1]
         My_format = [('obs_id', np.unicode_, 32),('length', float)] #note that here is a limit of maximum 32 characters in obsid
+        print(str(data))
         npdata = np.array(data, dtype=My_format)  #NDARRAY
         LengthAlongTable=npdata.view(np.recarray)   # RECARRAY   Makes the two columns into callable objects, i.e. write self.LengthAlong.obs_id and self.LengthAlong.length
         del data, npdata
