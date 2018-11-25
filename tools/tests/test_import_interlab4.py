@@ -31,7 +31,7 @@ from nose.plugins.attrib import attr
 import utils_for_tests
 
 
-@attr(status='only')
+@attr(status='on')
 class TestInterlab4Importer(utils_for_tests.MidvattenTestSpatialiteNotCreated):
     def setUp(self):
         super(self.__class__, self).setUp()
