@@ -172,7 +172,8 @@ class SurveyStore(object):
                 # Load all selected observation points
                 ob = [f for f in vlayer.getFeatures() if f.id()
                       in featureIds]
-
+                print("featureIds:" + str([f.id() for f in vlayer.getFeatures()]))
+                print("ob:" + str(ob))
                 print("nF" + str(nF))
                 obsid_list=[None for i in range(nF)] # List for obsid
                 toplvl_list=[None for i in range(nF)] # List for top_lvl
