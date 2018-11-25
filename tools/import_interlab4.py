@@ -26,6 +26,7 @@ from builtins import range
 import copy
 import io
 import os
+import csv
 from datetime import datetime
 
 import qgis.PyQt
@@ -156,11 +157,14 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
                 continue
 
             print(str(filename))
-            with open(filename, 'r') as f:
+            with io.open(filename, 'r', encoding=encoding) as f:
+                #csvreader = csv.reader(f, dialect=csv.excel, quotechar=str(quotechar), delimiter=';')
                 if quotechar:
-                    unicode_reader = utils.UnicodeReader(f, encoding=encoding, quotechar=str(quotechar), delimiter=';')
+                    unicode_reader = csv.reader(f, dialect=csv.excel, quotechar=str(quotechar), delimiter=';')
+                    #unicode_reader = utils.UnicodeReader(f, encoding=encoding, quotechar=str(quotechar), delimiter=';')
                 else:
-                    unicode_reader = utils.UnicodeReader(f, encoding=encoding, delimiter=';')
+                    #unicode_reader = utils.UnicodeReader(f, encoding=encoding, delimiter=';')
+                    unicode_reader = csv.reader(f, dialect=csv.excel, delimiter=';')
 
                 lab_results = {}
                 file_error = False
