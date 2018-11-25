@@ -269,3 +269,4 @@ def foreign_key_test_from_exception(e, dbtype):
         return str(e) == 'FOREIGN KEY constraint failed'
     elif dbtype == 'postgis':
         return 'is not present in table' in str(e)
+

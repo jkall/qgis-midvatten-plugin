@@ -140,6 +140,11 @@ class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
         piperplot.ms.settingsdict['piper_markers'] = 'obsid'
         piperplot.get_data_and_make_plot()
         data = piperplot.obsnp_nospecformat
+        print("data: " + str(data))
+        #for l in data:
+        #    for idx in [3, 4]:
+
+        #data[0]
         test_data = utils.anything_to_string_representation(data)
 
         test_paramlist = utils.anything_to_string_representation(piperplot.ParameterList)
