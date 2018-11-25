@@ -186,11 +186,7 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
             as_tuple = possible_duplicate.items()
             if as_tuple not in observations_no_duplicates:
                 observations_no_duplicates.append(as_tuple)
-
         observations = [dict(x) for x in observations_no_duplicates]
-        print(str(observations))
-        #    if tuple(sorted(tuple(possible_duplicate.items())))
-        #observations = [dict(no_duplicate) for no_duplicate in sorted(set([tuple(sorted(tuple(possible_duplicate.items()))) for possible_duplicate in observations]), key=itemgetter(0))]
 
         return observations
 
