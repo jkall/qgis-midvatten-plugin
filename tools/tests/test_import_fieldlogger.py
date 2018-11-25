@@ -356,7 +356,7 @@ class TestObsidFilter(object):
         observations = [{'sublocation': 'rb1'}, {'sublocation': 'rb2'}]
 
         test_string = create_test_string(self.obsid_filter.alter_data(observations))
-        reference_string = sorted([{'obsid': 'rb1', 'sublocation': 'rb1}, {obsid: rb2', 'sublocation': 'rb2'}], key=itemgetter('obsid'))
+        reference_string = sorted([{'obsid': 'rb1', 'sublocation': 'rb1'}, {'obsid': 'rb2', 'sublocation': 'rb2'}], key=itemgetter('obsid'))
         print(test_string)
         print(reference_string)
         assert test_string == reference_string
