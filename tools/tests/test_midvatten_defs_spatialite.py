@@ -28,7 +28,7 @@ import db_utils
 import utils_for_tests
 from definitions import midvatten_defs
 
-@attr(status='only')
+@attr(status='on')
 class TestDefsFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_tables_columns(self):
@@ -42,7 +42,7 @@ class TestDefsFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
                 assert isinstance(x, (tuple, list))
                 assert x
 
-@attr(status='only')
+@attr(status='on')
 class TestGeocolorsymbols(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_only_moran(self):

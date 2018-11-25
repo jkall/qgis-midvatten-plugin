@@ -35,7 +35,7 @@ from mocks_for_tests import MockUsingReturnValue
 from .utils_for_tests import create_test_string
 
 
-@attr(status='only')
+@attr(status='on')
 class TestFilterNonexistingObsidsAndAsk(object):
     @mock.patch('qgis.utils.iface', autospec=True)
     @mock.patch('midvatten_utils.NotFoundQuestion', autospec=True)
@@ -132,7 +132,7 @@ class TestFilterNonexistingObsidsAndAsk(object):
             #The mock should only be called twice. First for 1, then for 21, and then 1 again should use the already given answer.
             assert len(mock_notfound.mock_calls) == 2
 
-@attr(status='only')
+@attr(status='on')
 class TestTempinput(object):
     def test_tempinput(self):
         rows = '543\n21'
@@ -142,7 +142,7 @@ class TestTempinput(object):
         reference_list = ['543\n', '21']
         assert res == reference_list
 
-@attr(status='only')
+@attr(status='on')
 class TestAskUser(object):
     qgis_PyQt_QtGui_QInputDialog_getText = MockUsingReturnValue(['-1 hours'])
     cancel = MockUsingReturnValue([''])
@@ -157,7 +157,7 @@ class TestAskUser(object):
         question = utils.Askuser('DateShift')
         assert question.result == 'cancel'
 
-@attr(status='only')
+@attr(status='on')
 class TestGetFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_get_last_logger_dates(self):
@@ -173,7 +173,7 @@ class TestGetFunctions(utils_for_tests.MidvattenTestSpatialiteDbSv):
         reference_string = '''{rb1: [(2015-01-01 00:00:00)], rb2: [(2016-01-01 00:00)]}'''
         assert test_string == reference_string
 
-@attr(status='only')
+@attr(status='on')
 class TestSqlToParametersUnitsTuple(object):
     @mock.patch('db_utils.sql_load_fr_db', autospec=True)
     def test_sql_to_parameters_units_tuple(self, mock_sqlload):
@@ -183,7 +183,7 @@ class TestSqlToParametersUnitsTuple(object):
         reference_string = '''((par1, (un1)), (par2, (un2)))'''
         assert test_string == reference_string
 
-@attr(status='only')
+@attr(status='on')
 class TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -197,7 +197,7 @@ class TestCalculateDbTableRows(utils_for_tests.MidvattenTestSpatialiteDbSv):
 
         assert len(str(mock_messagebar.mock_calls[0])) > 1500 and 'about_db' in str(mock_messagebar.mock_calls[0])
 
-@attr(status='only')
+@attr(status='on')
 class TestGetCurrentLocale(object):
     @mock.patch('locale.getdefaultlocale')
     @mock.patch('midvatten_utils.get_locale_from_db')
@@ -209,7 +209,7 @@ class TestGetCurrentLocale(object):
         reference_string = '[a_lang, an_enc]'
         assert test_string == reference_string
         
-@attr(status='only')
+@attr(status='on')
 class TestGetDelimiter(object):
     def test_get_delimiter_only_one_column(self):
         file = ['obsid',
