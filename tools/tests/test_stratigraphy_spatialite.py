@@ -56,6 +56,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         for idx, feat in enumerate(features):
             #obsid = feat.attributes()[obsidcol]
             feat.setId(idx)
+        features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
         print(str(features))
         print("create_and_select_vlayer:" + str(feature_ids))
