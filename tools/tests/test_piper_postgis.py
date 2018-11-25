@@ -32,7 +32,7 @@ from nose.plugins.attrib import attr
 import utils_for_tests
 
 
-@attr(status='only')
+@attr(status='on')
 class TestPiperPlotDb(utils_for_tests.MidvattenTestPostgisDbSv):
     """ The test doesn't go through the whole section plot unfortunately
     """

@@ -33,7 +33,7 @@ from decimal import Decimal
 import utils_for_tests
 
 
-@attr(status='only')
+@attr(status='on')
 class TestPiperPlotDb(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ The test doesn't go through the whole section plot unfortunately
     """

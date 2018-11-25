@@ -38,7 +38,7 @@ import utils_for_tests
 from definitions import midvatten_defs as defs
 
 
-@attr(status='on')
+@attr(status='only')
 class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
 
     def setUp(self):
@@ -221,7 +221,7 @@ class TestSecplotTemplates(utils_for_tests.MidvattenTestSpatialiteNotCreated):
         assert call.info(log_msg='Loaded template from default hard coded template.') in mock_messagebar.mock_calls
         assert test == reference
 
-@attr(status='on')
+@attr(status='only')
 class TestDefaultHardcodedTemplate(object):
     def test_secplot_default_template(self):
         adict = defs.secplot_default_template()
