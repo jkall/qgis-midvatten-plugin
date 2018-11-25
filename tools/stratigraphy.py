@@ -173,8 +173,10 @@ class SurveyStore(object):
                 toplvl_list=[None]*nF # List for top_lvl
                 coord_list=[None]*nF # List for coordinates
                 for i, k in enumerate(ob):    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
+                    print("ob i " + str(i))
                     print("ob: " + str(ob) + " i " + str(i))
                     attributes = ob[i].attributes()
+                    print("obsid_ColNo" + str(obsid_ColNo))
                     obsid = ru(attributes[obsid_ColNo])
                     obsid_list[i] = obsid # Copy value in column obsid in the attribute list
                     h_gs = ru(attributes[h_gs_ColNo])
