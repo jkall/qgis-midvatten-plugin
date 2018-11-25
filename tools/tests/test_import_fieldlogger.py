@@ -340,7 +340,7 @@ class TestStaffQuestion(object):
 
         self.staff_question.staff = 'teststaff'
         test_string = create_test_string(self.staff_question.alter_data(observation))
-        reference_string = '{staff: teststaff, sublocation: 1}'
+        reference_string = create_test_string({'staff': 'teststaff', 'sublocation': '1'})
         assert test_string == reference_string
 
 @attr(status='only')
