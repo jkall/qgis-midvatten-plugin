@@ -163,6 +163,7 @@ class SurveyStore(object):
             h_gs_ColNo = provider.fieldNameIndex('SURF_LVL') # backwards compatibility
         surveys = {}
         strata = {}
+        print("vlayer: " + str(vlayer))
         if(vlayer):
             nF = vlayer.selectedFeatureCount()
             if (nF > 0):
