@@ -184,7 +184,7 @@ class SurveyStore(object):
                     level_val = None
 
                     error_msg = False
-
+                    print("here1")
                     if h_gs:
                         try:
                             level_val = float(h_gs)
@@ -192,7 +192,7 @@ class SurveyStore(object):
                             error_msg = ru(QCoreApplication.translate('Stratigraphy', 'Converting to float failed.'))
                         except Exception as e:
                             error_msg = e
-
+                    print("here2")
                     if level_val is None:
                         h_toc = ru(attributes[h_toc_ColNo])
                         try:
@@ -210,11 +210,12 @@ class SurveyStore(object):
                         if self.warning_popup:
                             utils.pop_up_info(ru(QCoreApplication.translate('Stratigraphy', 'Warning, h_gs is missing. See messagebar.')))
                             self.warning_popup = False
-
+                    print("here3")
                     toplvl_list[i] = level_val
-
+                    print("here4")
                     coord_list[i]= k.geometry().asPoint()
                     # add to array
+                    print("here5")
                     surveys[obsid_list[i]] = SurveyInfo(obsid_list[i], toplvl_list[i], coord_list[i])
         else:
             utils.pop_up_info(ru(QCoreApplication.translate('Stratigraphy', "getDataStep1 failed")))  # _CHANGE_ for debugging
