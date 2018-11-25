@@ -59,10 +59,8 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         dbtype = db_utils.get_dbtype(dbconnection.dbtype)
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
         features = self.vlayer.getFeatures()
-        for feature in features:
-            geom = feature.geometry()
-            featureid = feature.id()
-        self.vlayer.selectByIds([featureid])
+        feature_ids = [feature.id() for feature in features]
+        self.vlayer.selectByIds([feature_ids[0]])
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
@@ -133,7 +131,6 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas, h_toc, level_masl) VALUES ('P2', '2015-01-01 00:00:00', '17', '200', '183')''')
 
         self.create_and_select_vlayer()
-        print(str(db_utils.sql_load_fr_db('select obsid, ST_AsText(geometry) FROM obs_points')))
 
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
         @mock.patch('qgis.utils.iface', autospec=True)
