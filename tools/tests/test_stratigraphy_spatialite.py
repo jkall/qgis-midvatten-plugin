@@ -33,7 +33,7 @@ from stratigraphy import Stratigraphy
 import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def create_and_select_vlayer(self):
@@ -72,6 +72,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         dlg = Stratigraphy(self.iface, self.vlayer, self.ms.settingsdict)
 
         dlg.showSurvey()
+        print(str(mock_skippopup.mock_calls))
         test = utils.anything_to_string_representation(dlg.data)
         test_survey = utils.anything_to_string_representation(repr(dlg.data['P1']))
         test_strata = utils.anything_to_string_representation(utils.returnunicode(dlg.data['P1'].strata, keep_containers=True))
