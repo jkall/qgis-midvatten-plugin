@@ -62,6 +62,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         for feature in features:
             featureid = feature.id()
         self.vlayer.selectByIds([featureid])
+        print("valid: " + str(self.vlayer.isValid()))
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
