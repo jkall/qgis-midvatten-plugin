@@ -75,7 +75,7 @@ class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
                 mock_not_found_question.return_value.answer = 'ok'
                 mock_not_found_question.return_value.value = 'anobsid'
                 mock_not_found_question.return_value.reuse_column = 'obsid'
-                mock_filenames.return_value = [filename]
+                mock_filenames.return_value = [[filename]]
                 importer = Interlab4Import(self.iface.mainWindow(), self.ms)
                 importer.parse_observations_and_populate_gui()
                 importer.start_import(importer.all_lab_results, importer.metadata_filter.get_selected_lablitteras())
