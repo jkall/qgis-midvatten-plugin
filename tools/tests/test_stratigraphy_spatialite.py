@@ -33,7 +33,7 @@ from stratigraphy import Stratigraphy
 import utils_for_tests
 
 
-@attr(status='only')
+@attr(status='on')
 class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def create_and_select_vlayer(self):
@@ -51,6 +51,7 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         feature_ids = [feature.id() for feature in features]
         self.vlayer.selectByIds(feature_ids)
 
+    @attr(status='only')
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
