@@ -778,7 +778,6 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         #upload two fields only, one id field set to dummy and one geometry field.
 
         selected_features = layer.selectedFeatures()
-        print("Selected features"+str(selected_features))
         if len(selected_features) != 1:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', "Must select only one feature in qgis layer: %s)"))%layer.name())
             return False
