@@ -48,14 +48,14 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         dbtype = db_utils.get_dbtype(dbconnection.dbtype)
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
 
-        obsidcol = [field.name() for field in self.vlayer.fields()].index('obsid')
+        #obsidcol = [field.name() for field in self.vlayer.fields()].index('obsid')
 
-        print(str(obsidcol))
+        #print(str(obsidcol))
         #.index('obsid')
         features = self.vlayer.getFeatures()
-        for feat in features:
-            obsid = feat.attributes()[obsidcol]
-            feat.setId(obsid)
+        for idx, feat in enumerate(features):
+            #obsid = feat.attributes()[obsidcol]
+            feat.setId(idx)
         feature_ids = [feature.id() for feature in features]
         print("create_and_select_vlayer:" + str(feature_ids))
         self.vlayer.selectByIds(feature_ids)
