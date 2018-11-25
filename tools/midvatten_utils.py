@@ -825,7 +825,6 @@ def select_files(only_one_file=True, extension="csv (*.csv)"):
         csvpath = [QtWidgets.QFileDialog.getOpenFileName(parent=None, caption=QCoreApplication.translate('select_files', "Select file"), directory=dir, filter=extension)]
     else:
         csvpath = QtWidgets.QFileDialog.getOpenFileNames(parent=None, caption=QCoreApplication.translate('select_files', "Select files"), directory=dir, filter=extension)
-    print(str(csvpath))
     csvpath = [returnunicode(p[0]) for p in csvpath if p]
     return csvpath
 

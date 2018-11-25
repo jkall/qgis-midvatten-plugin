@@ -137,7 +137,7 @@ class TestFieldLoggerImporterNoDb(object):
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
 
                 test_string = create_test_string(FieldloggerImport.select_file_and_parse_rows(FieldloggerImport.parse_rows))
                 return test_string
@@ -171,7 +171,7 @@ class TestFieldLoggerImporterNoDb(object):
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
 
                 test_string = create_test_string(FieldloggerImport.select_file_and_parse_rows(FieldloggerImport.parse_rows))
                 return test_string
@@ -205,7 +205,7 @@ class TestFieldLoggerImporterNoDb(object):
             @mock.patch('import_fieldlogger.utils.MessagebarAndLog')
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename ):
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
 
                 test_string = create_test_string(FieldloggerImport.select_file_and_parse_rows(FieldloggerImport.parse_rows))
                 return test_string
@@ -241,7 +241,7 @@ class TestFieldLoggerImporterNoDb(object):
             def _test(self, filename, mock_MessagebarAndLog, mock_charset, mock_savefilename, mock_delimiter_question):
                 mock_delimiter_question.return_value = (',', True)
                 mock_charset.return_value = ('utf-8', True)
-                mock_savefilename.return_value = [filename]
+                mock_savefilename.return_value = [[filename]]
 
                 test_string = FieldloggerImport.select_file_and_parse_rows(FieldloggerImport.parse_rows)
                 return test_string
