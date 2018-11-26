@@ -304,6 +304,7 @@ class TestGeneralExceptionHandler(object):
 
         assert not args_kwargs()[0]
         assert not args_kwargs()[1]
+        assert len(args_kwargs()) == 0
         assert False
 
 
