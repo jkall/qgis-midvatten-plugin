@@ -307,6 +307,16 @@ class TestGeneralExceptionHandler(object):
         assert len(args_kwargs()) == 0
         assert False
 
+    def test_one_arg_args_kwargs(self):
+        @utils.general_exception_handler
+        def one_arg_args_kwargs(t, *args, **kwargs):
+            return t, args, kwargs
+        print(str(one_arg_args_kwargs(1)))
+        assert False
+
+
+
+
 
 
 
