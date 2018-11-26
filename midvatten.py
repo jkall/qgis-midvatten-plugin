@@ -412,7 +412,7 @@ class midvatten(object):
                 
             QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
-    @utils.general_exception_handler
+    #@utils.general_exception_handler
     def export_spatialite(self, *args, **kwargs):
         print("export args: '{}' kwargs: '{}' ".format(str(args), str(kwargs)))
 
