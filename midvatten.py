@@ -72,6 +72,7 @@ class midvatten(object):
     def initGui(self):
         # Create actions that will start plugin configuration
         self.actionNewDB = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "create_new.xpm")), ru(QCoreApplication.translate("Midvatten","Create a new Midvatten project DB")), self.iface.mainWindow())
+        self.actionNewDB.setCheckable(False)
         self.actionNewDB.triggered.connect(self.new_db)
 
         self.actionNewPostgisDB = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "create_new.xpm")), ru(QCoreApplication.translate("Midvatten", "Populate a postgis database to a new Midvatten project DB")), self.iface.mainWindow())
@@ -81,11 +82,13 @@ class midvatten(object):
         self.actionloadthelayers.setWhatsThis(QCoreApplication.translate("Midvatten","Load default layers from the selected database"))
         self.iface.registerMainWindowAction(self.actionloadthelayers, "F7")   # The function should also be triggered by the F7 key
         self.actionloadthelayers.triggered.connect(self.loadthelayers)
+        self.actionloadthelayers.setCheckable(False)
 
         self.actionsetup = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "MidvSettings.png")), QCoreApplication.translate("Midvatten","Midvatten Settings"), self.iface.mainWindow())
         self.actionsetup.setWhatsThis(QCoreApplication.translate("Midvatten","Configuration for Midvatten toolset"))
         self.iface.registerMainWindowAction(self.actionsetup, "F6")   # The function should also be triggered by the F6 key
         self.actionsetup.triggered.connect(self.setup)
+        self.actionsetup.setCheckable(False)
         
         self.actionresetSettings = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "ResetSettings.png")), QCoreApplication.translate("Midvatten","Reset Settings"), self.iface.mainWindow())
         self.actionresetSettings.triggered.connect(self.reset_settings)
@@ -188,6 +191,7 @@ class midvatten(object):
 
         self.action_export_spatialite = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "export_spatialite.png")), QCoreApplication.translate("Midvatten","Export to another spatialite db"), self.iface.mainWindow())
         self.action_export_spatialite.setWhatsThis(QCoreApplication.translate("Midvatten","All data for the selected objects (obs_points and obs_lines) will be exported to another spatialite db."))
+        self.action_export_spatialite.setCheckable(False)
         self.action_export_spatialite.triggered.connect(self.export_spatialite)
 
         self.action_export_fieldlogger = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "export_csv.png")), QCoreApplication.translate("Midvatten","Export to FieldLogger format"), self.iface.mainWindow())
@@ -412,7 +416,7 @@ class midvatten(object):
                 
             QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
-    #@utils.general_exception_handler
+    @utils.general_exception_handler
     def export_spatialite(self):
         #, *args, **kwargs
         #print("export args: '{}' kwargs: '{}' ".format(str(args), str(kwargs)))
