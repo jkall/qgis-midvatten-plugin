@@ -263,7 +263,7 @@ class TestGetDelimiter(object):
                 assert delimiter == ','
             _test(filename)
 
-@attr(status='only')
+@attr(status='on')
 class TestGeneralExceptionHandler(object):
     def test_no_args_no_kwargs(self):
         @utils.general_exception_handler
@@ -279,7 +279,6 @@ class TestGeneralExceptionHandler(object):
         assert only_args(True)[0]
         assert only_args(True, False)[0]
         assert not only_args(True, False)[1]
-        assert False
 
     def test_only_kwargs(self):
         @utils.general_exception_handler
