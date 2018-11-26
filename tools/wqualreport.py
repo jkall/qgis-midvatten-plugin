@@ -64,9 +64,8 @@ class Wqualreport(object):        # extracts water quality data for selected obj
 
         dbconnection = db_utils.DbConnectionManager()
 
-        for i, object in enumerate(observations):
-            attributes = observations[i]
-            obsid = attributes[kolumnindex]
+        for i, o in enumerate(observations):
+            obsid = o[kolumnindex]
             try:
                 print('about to get data for ' + obsid + ', at time: ' + str(time.time()))#debug
             except:

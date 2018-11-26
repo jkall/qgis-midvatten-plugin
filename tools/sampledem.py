@@ -107,13 +107,8 @@ def points_along_line(layerout, startpoint, endpoint, distance, layer):#,selecte
     provider.addAttributes([QgsField("cum_dist", qgis.PyQt.QtCore.QVariant.Int)])
     provider.addAttributes([QgsField("unit", qgis.PyQt.QtCore.QVariant.String)])
 
-
-    def get_features():
-        # only selected feature!!!
-        return layer.getSelectedFeatures()
-
     # Loop through all (selected) features
-    for feature in get_features():
+    for feature in layer.getSelectedFeatures():
         geom = feature.geometry()
         # Add feature ID of selected feature
         fid = feature.id()
