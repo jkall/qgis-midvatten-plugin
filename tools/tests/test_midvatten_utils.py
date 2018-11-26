@@ -275,7 +275,6 @@ class TestGeneralExceptionHandler(object):
         @utils.general_exception_handler
         def only_args(*args):
             return args
-
         assert only_args(True)[0]
         assert only_args(True, False)[0]
         assert not only_args(True, False)[1]
@@ -297,6 +296,15 @@ class TestGeneralExceptionHandler(object):
         def one_arg(t):
             return t
         assert one_arg(True)
+
+    def test_args_kwargs(self):
+        @utils.general_exception_handler
+        def args_kwargs(*args, **kwargs):
+            return args, kwargs
+
+        assert not args_kwargs()[0]
+        assert not args_kwargs()[1]
+        assert False
 
 
 
