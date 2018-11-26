@@ -279,7 +279,7 @@ class TestGeneralExceptionHandler(object):
         assert only_args(True)[0]
         assert only_args(True, False)[0]
         assert not only_args(True, False)[1]
-
+        assert False
 
     def test_only_kwargs(self):
         @utils.general_exception_handler
