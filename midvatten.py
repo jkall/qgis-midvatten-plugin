@@ -413,8 +413,9 @@ class midvatten(object):
             QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
 
     #@utils.general_exception_handler
-    def export_spatialite(self, *args, **kwargs):
-        print("export args: '{}' kwargs: '{}' ".format(str(args), str(kwargs)))
+    def export_spatialite(self):
+        #, *args, **kwargs
+        #print("export args: '{}' kwargs: '{}' ".format(str(args), str(kwargs)))
 
         allcritical_layers = tuple(midvatten_defs.get_subset_of_tables_fr_db('obs_points') + midvatten_defs.get_subset_of_tables_fr_db('obs_lines') + midvatten_defs.get_subset_of_tables_fr_db('data_domains') + midvatten_defs.get_subset_of_tables_fr_db('default_layers') +  midvatten_defs.get_subset_of_tables_fr_db('default_nonspatlayers') )#none of these layers must be in editing mode
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
