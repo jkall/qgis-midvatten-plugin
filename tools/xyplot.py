@@ -54,7 +54,7 @@ class XYPlot(object):
             nF = layer.selectedFeatureCount()
             if (nF > 0):
                 # Load all selected observation points
-                ob = layer.selectedFeatures()
+                ob = layer.getSelectedFeatures()
 
                 # Create a plot window with one single subplot
                 fig = plt.figure()  # causes conflict with plugins "statist" and "chartmaker"

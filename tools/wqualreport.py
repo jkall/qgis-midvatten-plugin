@@ -45,7 +45,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         self.settingsdict = settingsdict
         provider = layer.dataProvider()  # OGR provider
         kolumnindex = provider.fieldNameIndex('obsid') # To find the column named 'obsid'
-        observations = layer.selectedFeatures()
+        observations = layer.getSelectedFeatures()
 
         reportfolder = os.path.join(QDir.tempPath(), 'midvatten_reports')
         if not os.path.exists(reportfolder):

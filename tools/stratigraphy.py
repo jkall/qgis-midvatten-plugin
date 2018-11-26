@@ -81,7 +81,6 @@ class Stratigraphy(object):
         #lyr = self.iface.activeLayer() # THIS IS TSPLOT-method, GETS THE SELECTED LAYER
         lyr = self.layer
         ids = lyr.selectedFeatureIds()
-        print("ids: " + str(ids))
         if len(ids) == 0:
             utils.pop_up_info(ru(QCoreApplication.translate(' Stratigraphy', "No selection")), ru(QCoreApplication.translate(' Stratigraphy', "No features are selected")))
             return
@@ -153,7 +152,6 @@ class SurveyStore(object):
         
     def _getDataStep1(self, featureIds, vlayer):
         """ STEP 1: get data from selected layer"""  # _CHANGE_ Completely revised to TSPLot method
-        print("_getDataStep1" + str(featureIds))
         provider = vlayer.dataProvider()  #_CHANGE_  THIS IS TSPLOT-method, we do not use the db loadeds by ARPAT _init_ surveystore
         obsid_ColNo = provider.fieldNameIndex('obsid') # _CHANGE_  THIS IS TSPLOT-method To find the column named 'obsid'
         if obsid_ColNo == -1:
@@ -164,40 +162,21 @@ class SurveyStore(object):
             h_gs_ColNo = provider.fieldNameIndex('SURF_LVL') # backwards compatibility
         surveys = {}
         strata = {}
-        print("vlayer: " + str(vlayer))
         if(vlayer):
             nF = vlayer.selectedFeatureCount()
-            print("featureIds:" + str(featureIds))
-            print("nF:" + str(nF))
             if (nF > 0):
                 # Load all selected observation points
-                ob = [f for f in vlayer.getFeatures() if f.id()
-                      in featureIds]
-                print("featureIds:" + str([f.id() for f in vlayer.getFeatures()]))
-                print("ob:" + str(ob))
-                print("nF" + str(nF))
-                obsid_list=[None for i in range(nF)] # List for obsid
-                toplvl_list=[None for i in range(nF)] # List for top_lvl
-                coord_list=[None for i in range(nF)] # List for coordinates
-                print("obsid_list" + str(obsid_list))
-                print("toplvl_list" + str(toplvl_list))
-                print("coord_list" + str(obsid_list))
+                ob = vlayer.getSelectedFeatures()
+                obsid_list=[None]*nF # List for obsid
+                toplvl_list=[None]*nF # List for top_lvl
+                coord_list=[None]*nF # List for coordinates
                 for i, k in enumerate(ob):    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
-                    print("ob i " + str(i))
-                    print("ob: " + str(ob) + " i " + str(i))
                     attributes = ob[i].attributes()
-                    print("obsid_ColNo" + str(obsid_ColNo))
                     obsid = ru(attributes[obsid_ColNo])
-                    print("here0")
-                    print(str(obsid_list))
                     obsid_list[i] = obsid # Copy value in column obsid in the attribute list
-                    print("here0.5")
                     h_gs = ru(attributes[h_gs_ColNo])
-
                     level_val = None
-
                     error_msg = False
-                    print("here1")
                     if h_gs:
                         try:
                             level_val = float(h_gs)
@@ -205,7 +184,6 @@ class SurveyStore(object):
                             error_msg = ru(QCoreApplication.translate('Stratigraphy', 'Converting to float failed.'))
                         except Exception as e:
                             error_msg = e
-                    print("here2")
                     if level_val is None:
                         h_toc = ru(attributes[h_toc_ColNo])
                         try:
@@ -223,16 +201,12 @@ class SurveyStore(object):
                         if self.warning_popup:
                             utils.pop_up_info(ru(QCoreApplication.translate('Stratigraphy', 'Warning, h_gs is missing. See messagebar.')))
                             self.warning_popup = False
-                    print("here3")
                     toplvl_list[i] = level_val
-                    print("here4")
                     coord_list[i]= k.geometry().asPoint()
                     # add to array
-                    print("here5")
                     surveys[obsid_list[i]] = SurveyInfo(obsid_list[i], toplvl_list[i], coord_list[i])
         else:
             utils.pop_up_info(ru(QCoreApplication.translate('Stratigraphy', "getDataStep1 failed")))  # _CHANGE_ for debugging
-        print("surveys" + str(surveys))
         return surveys
 
     def _getDataStep2(self, surveys):

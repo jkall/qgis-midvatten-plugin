@@ -139,23 +139,24 @@ class ExportData(object):
         return formatted_obsids
 
     def get_number_of_obsids(self, obsids, tname):
-        self.curs.execute("select count(obsid) from %s where obsid in %s" %(tname, self.format_obsids(obsids)))
+        sql = "select count(obsid) from %s"%tname
+        if obsids:
+            sql += " where obsid in %s"%self.format_obsids(obsids)
+        self.curs.execute(sql)
         no_of_obs = self.curs.fetchall()
         return no_of_obs
 
     def write_data(self, to_writer, obsids, ptabs, verify_table_exists, tname_prefix=''):
-        if len(obsids) > 0 or obsids == 'no_obsids':#only if there are any obs_points selected at all
-            for tname in ptabs:
-                tname_with_prefix = tname_prefix + tname
-                if not verify_table_exists(tname):
-                    continue
-                if obsids != 'no_obsids':
-                    no_of_obs = self.get_number_of_obsids(obsids, tname_with_prefix)
-
-                    if no_of_obs[0][0] > 0:#only go on if there are any observations for this obsid
-                        to_writer(tname, tname_with_prefix, obsids)
-                else:
-                    to_writer(tname, tname_with_prefix)
+        for tname in ptabs:
+            tname_with_prefix = tname_prefix + tname
+            if not verify_table_exists(tname):
+                continue
+            if obsids != 'no_obsids':
+                no_of_obs = self.get_number_of_obsids(obsids, tname_with_prefix)
+                if no_of_obs[0][0] > 0:#only go on if there are any observations for this obsid
+                    to_writer(tname, tname_with_prefix, obsids)
+            else:
+                to_writer(tname, tname_with_prefix)
 
     def to_csv(self, tname, tname_with_prefix, obsids):
         """
@@ -165,7 +166,10 @@ class ExportData(object):
         :param obsids:
         :return:
         """
-        self.curs.execute("select * from %s where obsid in %s" % (tname, self.format_obsids(obsids)))
+        sql = "select * from %s"%tname
+        if obsids:
+            sql += " where obsid in %s"%self.format_obsids(obsids)
+        self.curs.execute(sql)
         printlist = [[col[0] for col in self.curs.description]]
         printlist.extend(self.curs.fetchall())
         filename = os.path.join(self.exportfolder, tname + ".csv")
@@ -191,7 +195,9 @@ class ExportData(object):
 
             #If the current table contains obsid, filter only the chosen ones.
             try:
-                sql = """INSERT OR IGNORE INTO %s (%s) select distinct %s from  %s where obsid in %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix, self.format_obsids(obsids))
+                sql = """INSERT OR IGNORE INTO %s (%s) select distinct %s from  %s """ % (reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
+                if obsids:
+                    sql += """ where obsid in %s""" % self.format_obsids(obsids)
             except:
                 sql = """INSERT OR IGNORE INTO %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
             try:

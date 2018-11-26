@@ -47,25 +47,13 @@ class TestStratigraphy(utils_for_tests.MidvattenTestSpatialiteDbSv):
         uri.setDataSource('', 'obs_points', 'Geometry', '', 'obsid')
         dbtype = db_utils.get_dbtype(dbconnection.dbtype)
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
-
-        #obsidcol = [field.name() for field in self.vlayer.fields()].index('obsid')
-
-        #TODO: The problem is that selectedFeatureIds returns only one [0] due the features having the same feature id!
-        # No idea why they get the same id! They should not! Maybe I can change it to selected obsids instead.
-
-        #print(str(obsidcol))
-        #.index('obsid')
-        features = self.vlayer.getFeatures()
-        for idx, feat in enumerate(features):
-            #obsid = feat.attributes()[obsidcol]
-            feat.setId(idx)
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
-        print(str(features))
-        print("create_and_select_vlayer:" + str(feature_ids))
-        self.vlayer.selectByIds(feature_ids)
+        self.vlayer.selectByIds([feature_ids[0]])
 
-    @attr(status='only')
+
+
+    @attr(status='on')
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)

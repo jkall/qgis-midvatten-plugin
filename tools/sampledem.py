@@ -110,7 +110,7 @@ def points_along_line(layerout, startpoint, endpoint, distance, layer):#,selecte
 
     def get_features():
         # only selected feature!!!
-        return layer.selectedFeatures()
+        return layer.getSelectedFeatures()
 
     # Loop through all (selected) features
     for feature in get_features():

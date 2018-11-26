@@ -45,12 +45,12 @@ class TestStratigraphy(utils_for_tests.MidvattenTestPostgisDbSv):
 
         dbconnection = db_utils.DbConnectionManager()
         uri = dbconnection.uri
-        uri.setDataSource('', 'obs_points', 'geometry', '', 'obsid')
+        uri.setDataSource('', 'obs_points', 'Geometry', '', 'obsid')
         dbtype = db_utils.get_dbtype(dbconnection.dbtype)
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
-        self.vlayer.selectByIds(feature_ids)
+        self.vlayer.selectByIds([feature_ids[0]])
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('stratigraphy.utils.pop_up_info', autospec=True)
