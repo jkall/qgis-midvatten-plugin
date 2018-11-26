@@ -141,7 +141,7 @@ class ExportData(object):
     def get_number_of_obsids(self, obsids, tname):
         sql = "select count(obsid) from %s"%tname
         if obsids:
-            sql += " where obsid in %s"%self.format_obsids(obsids)
+            sql += " WHERE obsid IN %s"%self.format_obsids(obsids)
         self.curs.execute(sql)
         no_of_obs = self.curs.fetchall()
         return no_of_obs
@@ -166,9 +166,9 @@ class ExportData(object):
         :param obsids:
         :return:
         """
-        sql = "select * from %s"%tname
+        sql = "SELECT * FROM %s"%tname
         if obsids:
-            sql += " where obsid in %s"%self.format_obsids(obsids)
+            sql += " WHERE obsid IN %s"%self.format_obsids(obsids)
         self.curs.execute(sql)
         printlist = [[col[0] for col in self.curs.description]]
         printlist.extend(self.curs.fetchall())
@@ -194,12 +194,9 @@ class ExportData(object):
             to_list = [x[1] for x in from_to_fields]
 
             #If the current table contains obsid, filter only the chosen ones.
-            try:
-                sql = """INSERT OR IGNORE INTO %s (%s) select distinct %s from  %s """ % (reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
-                if obsids:
-                    sql += """ where obsid in %s""" % self.format_obsids(obsids)
-            except:
-                sql = """INSERT OR IGNORE INTO %s (%s) select distinct %s from  %s"""%(reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
+            sql = """INSERT OR IGNORE INTO %s (%s) SELECT DISTINCT %s FROM  %s """ % (reference_table, ', '.join(to_list), ', '.join(from_list), tname_with_prefix)
+            if obsids:
+                sql += """ WHERE obsid IN %s""" % self.format_obsids(obsids)
             try:
                 self.curs.execute(sql)
             except Exception as e:
