@@ -296,6 +296,8 @@ class TestGeneralExceptionHandler(object):
         def one_arg(t):
             return t
         assert one_arg(True)
+        assert isinstance(one_arg('t'), str)
+        assert one_arg('a') == 'a'
 
     def test_args_kwargs(self):
         @utils.general_exception_handler
@@ -311,8 +313,10 @@ class TestGeneralExceptionHandler(object):
         @utils.general_exception_handler
         def one_arg_args_kwargs(t, *args, **kwargs):
             return t, args, kwargs
-        print(str(one_arg_args_kwargs(1)))
-        assert False
+        assert one_arg_args_kwargs('a')[0] == 'a'
+        assert len(one_arg_args_kwargs('a')[1]) == 0
+        assert len(one_arg_args_kwargs('a')[2]) == 0
+
 
 
 
