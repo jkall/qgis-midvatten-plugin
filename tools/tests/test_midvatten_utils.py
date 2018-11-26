@@ -262,3 +262,45 @@ class TestGetDelimiter(object):
                 delimiter = utils.get_delimiter(filename, 'utf-8')
                 assert delimiter == ','
             _test(filename)
+
+@attr(status='only')
+class TestGeneralExceptionHandler(object):
+    def test_no_args_no_kwargs(self):
+        @utils.general_exception_handler
+        def no_args_no_kwargs():
+            return True
+        assert no_args_no_kwargs()
+
+    def test_only_args(self):
+        @utils.general_exception_handler
+        def only_args(*args):
+            return args
+
+        assert only_args(True)[0]
+        assert only_args(True, False)[0]
+        assert not only_args(True, False)[1]
+
+
+    def test_only_kwargs(self):
+        @utils.general_exception_handler
+        def only_kwargs(**kwargs):
+            return kwargs
+
+        assert only_kwargs(true=True)['true']
+        assert not only_kwargs(false=False)['false']
+        assert only_kwargs(true=True, false=False)['true']
+        assert only_kwargs(true=True, false=False)['true']
+        assert len(only_kwargs(true=True)) == 1
+        assert len(only_kwargs(true=True, false=False)) == 2
+
+    def test_one_arg(self):
+        @utils.general_exception_handler
+        def one_arg(t):
+            return t
+        assert one_arg(True)
+
+
+
+
+
+
