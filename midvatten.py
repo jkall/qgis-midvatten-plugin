@@ -191,8 +191,8 @@ class midvatten(object):
 
         self.action_export_spatialite = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "export_spatialite.png")), QCoreApplication.translate("Midvatten","Export to another spatialite db"), self.iface.mainWindow())
         self.action_export_spatialite.setWhatsThis(QCoreApplication.translate("Midvatten","All data for the selected objects (obs_points and obs_lines) will be exported to another spatialite db."))
-        self.action_export_spatialite.setCheckable(False)
-        self.action_export_spatialite.triggered.connect(self.export_spatialite)
+        #self.action_export_spatialite.setCheckable(False)
+        self.action_export_spatialite.triggered.connect(lambda x: self.export_spatialite())
 
         self.action_export_fieldlogger = QAction(QIcon(os.path.join(os.path.dirname(__file__),"icons", "export_csv.png")), QCoreApplication.translate("Midvatten","Export to FieldLogger format"), self.iface.mainWindow())
         self.action_export_fieldlogger.setWhatsThis(self.export_fieldlogger.__doc__)
