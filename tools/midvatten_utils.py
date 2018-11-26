@@ -1420,7 +1420,7 @@ def general_exception_handler(func):
     :return:
     """
     def new_func(*args, **kwargs):
-        print("general_exception_handler args: '{}' kwargs: '{}' ".format(str(args), str(kwargs)))
+        #print("general_exception_handler args: '{}' kwargs: '{}' ".format(str(args), str(kwargs)))
         try:
             result = func(*args, **kwargs)
         except UserInterruptError:
