@@ -254,8 +254,15 @@ class DbConnectionManager(object):
                 fieldnames_types.append('geometry %s'%geometry_colname_type_srid[0])
                 sql = """CREATE table %s (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, %s)"""%(temptable_name, ', '.join(fieldnames_types))
                 self.execute(sql)
-                sql = """SELECT RecoverGeometryColumn('%s','%s',%s,'%s',2) from %s AS a"""%(temptable_name, geom_column, srid, geom_type, temptable_name)
-                self.execute(sql)
+                self.conn.commit()
+
+                # This sql doesnt work for some reason, error msg "RecoverGeometryColumn() error: table 'mem.temp_temporary_section_line' does not exist"
+                # Doesn't seem to work with memory databases. It doesn't seem to be needed for us though.
+                try:
+                    sql = """SELECT RecoverGeometryColumn('%s','%s',%s,'%s',2) from %s AS a"""%(temptable_name, geom_column, srid, geom_type, temptable_name)
+                    self.execute(sql)
+                except:
+                    pass
             else:
                 sql = """CREATE table %s (%s)""" % (temptable_name, ', '.join(fieldnames_types))
                 self.execute(sql)
