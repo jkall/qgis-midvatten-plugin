@@ -475,22 +475,22 @@ def returnunicode(anything, keep_containers=False): #takes an input and tries to
         if not keep_containers:
             decoded = str(decoded)
     # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
-    elif str(type(anything)) == "<class 'PyQt4.QtCore.QVariant'>":
+    elif str(type(anything)) in ("<class 'PyQt4.QtCore.QVariant'>", "<class 'PyQt5.QtCore.QVariant'>"):
         if anything.isNull():
             decoded = ''
         else:
             decoded = returnunicode(anything.toString())
     # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
-    elif str(type(anything)) == "<class 'PyQt4.QtCore.QString'>":
+    elif str(type(anything)) in ("<class 'PyQt4.QtCore.QString'>", "<class 'PyQt5.QtCore.QString'>"):
         decoded = returnunicode(str(anything.toUtf8(), 'utf-8'))
     # This is not optimal, but needed for tests where nosetests stand alone PyQt4 instead of QGis PyQt4.
-    elif str(type(anything)) == "<class 'PyQt4.QtCore.QPyNullVariant'>":
+    elif str(type(anything)) in ("<class 'PyQt4.QtCore.QPyNullVariant'>", "<class 'PyQt5.QtCore.QPyNullVariant'>"):
         decoded = ''
     else:
         decoded = str(anything)
 
     if isinstance(decoded, bytes):
-        for charset in ['ascii', 'utf-8', 'utf-16', 'cp1252', 'iso-8859-1']:
+        for charset in ['ascii', 'utf-8', 'utf-16', 'cp1252', 'iso-8859-1', 'ascii']:
             try:
                 decoded = anything.decode(charset)
             except UnicodeEncodeError:

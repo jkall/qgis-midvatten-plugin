@@ -171,7 +171,7 @@ class SurveyStore(object):
                 toplvl_list=[None]*nF # List for top_lvl
                 coord_list=[None]*nF # List for coordinates
                 for i, k in enumerate(ob):    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
-                    attributes = ob[i].attributes()
+                    attributes = k.attributes()
                     obsid = ru(attributes[obsid_ColNo])
                     obsid_list[i] = obsid # Copy value in column obsid in the attribute list
                     h_gs = ru(attributes[h_gs_ColNo])
@@ -237,7 +237,7 @@ class SurveyStore(object):
                     geology = " "
                 geo_short_txt = record[4]  # geo_short might contain national special characters
                 if geo_short_txt:   # Must not try to encode an empty field
-                    geo_short = unicodedata.normalize('NFKD', geo_short_txt).encode('ascii','ignore')  # geo_short normalized for symbols and color
+                    geo_short = unicodedata.normalize('NFKD', geo_short_txt).encode('ascii','ignore').decode('ascii')  # geo_short normalized for symbols and color
                 else:  # If the field is empty, then store an empty string
                     geo_short = ''
                 hydro = record[5] # waterloss (hydrogeo parameter) for color
@@ -353,12 +353,13 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
         
         if xMax - xMin > yMax - yMin:
             # sort using x coordinate
-            cc = lambda a,b: cmp(a.coord.x(), b.coord.x())
+            cc = lambda a: a.coord.x()
+            #cc = lambda a,b: cmp(a.coord.x(), b.coord.x())
         else:
             # sort using y coordinate
-            cc = lambda a,b: cmp(a.coord.y(), b.coord.y())
-        
-        order = sorted(iter(self.sondaggio.values()), cc)
+            cc = lambda a: a.coord.y()
+            #cc = lambda a,b: cmp(a.coord.y(), b.coord.y())
+        order = sorted(self.sondaggio.values(), key=cc)
         self.order = order  # THIS SHOULD BE REPLACED BY 2L BELOW
         #for o in order:
         #    self.order.append(o.obsid)   # _CHANGE_  Should be fixed 

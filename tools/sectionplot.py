@@ -798,38 +798,13 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             return False
 
         self.temptable_name = self.dbconnection.create_temporary_table_for_import(self.temptable_name, ['dummyfield TEXT'], ['geometry', 'LINESTRING', srid])
-        #self.dbconnection.execute("INSERT into %s VALUES ('test')"%self.temptable_name)
-
-        #Qsrid = QgsCoordinateReferenceSystem()
-        #Qsrid.createFromId(srid)
-        #if not Qsrid.isValid():  # check if crs is ok
-        #    utils.pop_up_info(ru(QCoreApplication.translate('SectionPlot', "Destination SRID isn't valid for table %s")) % layer.name(), self.parent)
-
-        #    return False
-        #layer.setCrs(Qsrid)
 
         feature = selected_features[0]
-        #featureid = feature.id()
-        #feature = [f for f in layer.getFeatures() if f.id() == featureid][0]
 
-        # Bug?
-        """
-        for f in layer.getFeatures():
-            g = f.geometry()
-            print("all:featureid: " + str(f.id()) + " wkt" + str(g.asWkt()))
-
-        for f in selected_features:
-            g = f.geometry()
-            print("selected:featureid: " + str(f.id()) + " wkt" + str(g.asWkt()))
-        """
         geom = feature.geometry()
         wkt = geom.asWkt()
         sql = """INSERT INTO %s (dummyfield, geometry) VALUES ('0', ST_GeomFromText('%s', %s))"""%(self.temptable_name, wkt, srid)
         self.dbconnection.execute(sql)
-
-        #Test without commit
-        #self.dbconnection.commit()
-
         return True
 
     def write_annotation(self):

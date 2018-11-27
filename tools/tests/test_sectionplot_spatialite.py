@@ -35,7 +35,7 @@ from midvatten_utils import returnunicode as ru
 import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     """ The test doesn't go through the whole section plot unfortunately
     """
@@ -60,18 +60,53 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
         self.vlayer = QgsVectorLayer(uri.uri(), 'TestLayer', dbtype)
         features = self.vlayer.getFeatures()
         feature_ids = [feature.id() for feature in features]
-        self.vlayer.selectByIds([feature_ids[0]])
+        self.vlayer.selectByIds(feature_ids)
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash """
+        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(6720728 016569)', 3006))''')
+
+        self.create_and_select_vlayer()
+        print(str(self.vlayer.selectedFeatureCount()))
+
+        @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+        @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
+        @mock.patch('qgis.utils.iface', autospec=True)
+        def _test_plot_section(self, mock_iface, mock_getselectedobjectnames):
+            mock_iface.mapCanvas.return_value.currentLayer.return_value = self.vlayer
+            mock_getselectedobjectnames.return_value = ('P1', 'P2', 'P3')
+            mock_mapcanvas = mock_iface.mapCanvas.return_value
+            mock_mapcanvas.layerCount.return_value = 0
+            self.midvatten.plot_section()
+            self.midvatten.ms = self.ms
+            self.myplot = self.midvatten.myplot
+            self.myplot.drillstoplineEdit.setText("%berg%")
+            self.myplot.draw_plot()
+            self.selected_obsids = self.myplot.selected_obsids
+        _test_plot_section(self)
+
+        assert """call.info(log_msg='Settings {""" in str(mock_messagebar.mock_calls)
+        assert self.myplot.drillstoplineEdit.text() == '%berg%'
+        assert utils_for_tests.create_test_string(self.myplot.selected_obsids) == "['P1' 'P2' 'P3']"
+        assert not mock_messagebar.warning.called
+        assert not mock_messagebar.critical.called
+        
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    def test_plot_section_with_string_obsid(self, mock_messagebar):
+        """For now, the test only initiates the plot. Check that it does not crash with string obsid """
         db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(6720728 016569)', 3006))''')
 
         self.create_and_select_vlayer()
+        print(str(self.vlayer.selectedFeatureCount()))
 
         @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
         @mock.patch('midvatten_utils.getselectedobjectnames', autospec=True)
@@ -98,7 +133,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_with_depth(self, mock_messagebar):
-        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
@@ -123,7 +158,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_with_w_levels(self, mock_messagebar):
-        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(633466.711659 6720684.24498, 633599.530455 6720727.016568)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006), 2)''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P2', ST_GeomFromText('POINT(6720727 016568)', 3006), '1')''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry, length) VALUES ('P3', ST_GeomFromText('POINT(6720727 016568)', 3006), NULL)''')
@@ -156,7 +191,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     def test_plot_section_length_along_slope(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash """
 
-        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(2 0, 10 10)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(2 0, 10 10)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(1 0)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(3 0)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(5 0)', 3006))''')
@@ -188,7 +223,7 @@ class TestSectionPlot(utils_for_tests.MidvattenTestSpatialiteDbSv):
     @mock.patch('db_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
     def test_plot_section_length_along(self, mock_messagebar):
         """For now, the test only initiates the plot. Check that it does not crash """
-        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('L1', ST_GeomFromText('LINESTRING(0 0, 1 0, 10 0)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid, geometry) VALUES ('1', ST_GeomFromText('LINESTRING(0 0, 1 0, 10 0)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(1 0)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(3 5)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P3', ST_GeomFromText('POINT(5 10)', 3006))''')
