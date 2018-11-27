@@ -319,6 +319,12 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         conn.close()
 
         test_string = utils_for_tests.create_test_string(test_list)
+        """
+        # The coordinates aquired from st_transform differs from Linux Mint 18.2 to Linux Mint 19
+        # In Mint 18, it's -517888.383773 for both postgis and spatialite
+        # In Mint 19, it's -517888.383737 for both postgis and spatialite
+        # !!! No idea why
+        
         reference_string = ['''[''',
                             '''select obsid, ST_AsText(geometry) from obs_points''',
                             ''', [(P1, POINT(-517888.383773 1.002821))], ''',
@@ -342,6 +348,31 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                             ''', [(L1, 5.0)], ''',
                             '''select obsid, instrumentid, parameter, date_time from meteo''',
                             ''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)]]''']
+        """
+        reference_string = ['''[''',
+                            '''select obsid, ST_AsText(geometry) from obs_points''',
+                            ''', [(P1, POINT(-517888.383737 1.002821))], ''',
+                            '''select staff from zz_staff''',
+                            ''', [(s1)], ''',
+                            '''select obsid, date_time, staff, comment from comments''',
+                            ''', [(P1, 2015-01-01 00:00:00, s1, comment1)], ''',
+                            '''select obsid, parameter, report, staff from w_qual_lab''',
+                            ''', [(P1, labpar1, report1, s1)], ''',
+                            '''select obsid, parameter, staff, date_time, comment from w_qual_field''',
+                            ''', [(P1, par1, s1, 2015-01-01 01:00:00, None)], ''',
+                            '''select obsid, instrumentid, flowtype, date_time, unit from w_flow''',
+                            ''', [(P1, inst1, Momflow, 2015-04-13 00:00:00, l/s)], ''',
+                            '''select obsid, date_time, meas from w_levels''',
+                            ''', [(P1, 2015-01-02 00:00:01, 2.0)], ''',
+                            '''select obsid, stratid from stratigraphy''',
+                            ''', [(P1, 1)], ''',
+                            '''select obsid from obs_lines''',
+                            ''', [(L1)], ''',
+                            '''select obsid, length from seismic_data''',
+                            ''', [(L1, 5.0)], ''',
+                            '''select obsid, instrumentid, parameter, date_time from meteo''',
+                            ''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)]]''']
+
         reference_string = '\n'.join(reference_string)
         print("Test\n" + test_string)
         print("Ref\n" + reference_string)
