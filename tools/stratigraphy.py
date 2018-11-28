@@ -333,7 +333,6 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
         self.geoColorSymbols = defs.geocolorsymbols()
         #print(self.geoColorSymbols)#debug
         self.hydroColors = defs.hydrocolors()
-        print(str(self.hydroColors))
         #print(self.hydroColors)#debug
         self.switchGeoHydro = 0        #Default is to show colors according to geo
         self.GeoOrComment = "geology"     #Default is that text =  geology description
@@ -508,6 +507,9 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
                     if layer.hydro is None or layer.hydro=='NULL':
                         hydr = ''
                     else:
+                        print("layer.hydr"+str(layer.hydro))
+                        print("layer.hydro in self.hydroColors"+str(layer.hydro in self.hydroColors))
+                        print("type(layer.hydro"+str(type(layer.hydro)))
                         hydr = self.hydroColors.get(layer.hydro, '')[0]
                     p.drawText(tRect, qgis.PyQt.QtCore.Qt.AlignVCenter, hydr)
 
