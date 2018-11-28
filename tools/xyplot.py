@@ -69,10 +69,9 @@ class XYPlot(object):
                 p=[None]*nF*nY # List for plot objects
                 plabel=[None]*nF*nY # List for label strings
 
-                i=0
                 j=0
-                for k in ob:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
-                    attributes = ob[i]
+                for i, k in enumerate(ob):    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
+                    attributes = ob
                     obsid = attributes[kolumnindex] # Copy value in column obsid in the attribute list
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
                     sql =r"""SELECT """
@@ -127,7 +126,6 @@ class XYPlot(object):
                             p[j], = ax.plot(table2.x, table2.y3, marker = 'None', linestyle = '-', label=obsid)    # PLOT!!
                         plabel[j] = obsid + str(self.y3col) #+ str(j)# Label for the plot #MacOSX fix1
                     j = j + 1
-                    i = i+1
 
                 """ Finish plot """
                 ax.grid(True)
