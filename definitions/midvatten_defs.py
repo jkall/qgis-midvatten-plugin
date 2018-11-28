@@ -335,7 +335,8 @@ def hydrocolors():
     Default method is to read the database table zz_capacity, the user may change zz_capacity table to change the stratigraphy plots
     Fallback methods use color codes found in code below
     """
-    res, dict_qt = db_utils.get_sql_result_as_dict('select a.capacity, a.explanation, b.color_qt from zz_capacity a, zz_capacity_plots b where a.capacity = b.capacity')
+    res, dict_qt1 = db_utils.get_sql_result_as_dict('select a.capacity, a.explanation, b.color_qt from zz_capacity a, zz_capacity_plots b where a.capacity = b.capacity')
+
     print("res" + str(res))
     print("dict_qt" + str(res))
 
@@ -371,7 +372,9 @@ def hydrocolors():
                       '6 ': ('mycket god', 'blue'),
                       '6+': ('mycket god', 'darkBlue'),
                     }
-    dict_qt = ru(dict_qt, keep_containers=True)
+    else:
+        dict_qt = ru({k: v[0] for k, v in dict_qt1.items()}, keep_containers=True)
+
     print("after ru" + str(dict_qt))
     for k, v in dict_qt.items():
         print("k {} type {} v {} type {}".format(k, str(type(k)), v, str(type(v))))
