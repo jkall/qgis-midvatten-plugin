@@ -372,6 +372,9 @@ def hydrocolors():
                       '6+': ('mycket god', 'darkBlue'),
                     }
     dict_qt = ru(dict_qt, keep_containers=True)
+    print("after ru" + str(dict_qt))
+    for k, v in dict_qt.items():
+        print("k {} type {} v {} type {}".format(k, str(type(k)), v, str(type(v))))
     return dict_qt
 
 def PlotTypesDict(international='no'): 
