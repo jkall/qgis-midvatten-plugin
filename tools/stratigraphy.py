@@ -504,12 +504,10 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
                 elif self.GeoOrComment == "hydro":
                     p.drawText(tRect, qgis.PyQt.QtCore.Qt.AlignVCenter, '' if layer.hydro=='NULL' else layer.hydro)
                 elif self.GeoOrComment == "hydro explanation":
-                    print("layer.hydro {} type {} in dict {}".format(layer.hydro, str(type(layer.hydro)), str(layer.hydro in self.hydroColors) ))
                     if layer.hydro is None or layer.hydro=='NULL':
                         hydr = ''
                     else:
                         hydr = self.hydroColors.get(layer.hydro, '')[0]
-                    print("hydro: " + str(hydr))
                     p.drawText(tRect, qgis.PyQt.QtCore.Qt.AlignVCenter, hydr)
 
                 else:
