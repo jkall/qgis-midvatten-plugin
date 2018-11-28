@@ -170,8 +170,8 @@ class SurveyStore(object):
                 obsid_list=[None]*nF # List for obsid
                 toplvl_list=[None]*nF # List for top_lvl
                 coord_list=[None]*nF # List for coordinates
-                for i, k in enumerate(ob):    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
-                    attributes = k.attributes()
+                for i, feature in enumerate(ob):    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
+                    attributes = feature.attributes()
                     obsid = ru(attributes[obsid_ColNo])
                     obsid_list[i] = obsid # Copy value in column obsid in the attribute list
                     h_gs = ru(attributes[h_gs_ColNo])
@@ -202,7 +202,7 @@ class SurveyStore(object):
                             utils.pop_up_info(ru(QCoreApplication.translate('Stratigraphy', 'Warning, h_gs is missing. See messagebar.')))
                             self.warning_popup = False
                     toplvl_list[i] = level_val
-                    coord_list[i]= k.geometry().asPoint()
+                    coord_list[i]= feature.geometry().asPoint()
                     # add to array
                     surveys[obsid_list[i]] = SurveyInfo(obsid_list[i], toplvl_list[i], coord_list[i])
         else:

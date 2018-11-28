@@ -275,8 +275,8 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         indexes = {column: fields.indexFromName(column) for column in columns}
 
         data = {}
-        for feat in w_qual_lab_layer.getSelectedFeatures():
-            attrs = feat.attributes()
+        for feature in w_qual_lab_layer.getSelectedFeatures():
+            attrs = feature.attributes()
             obsid = attrs[indexes['obsid']]
             date_time = attrs[indexes['date_time']]
             report = attrs[indexes['report']]

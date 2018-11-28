@@ -70,8 +70,8 @@ class XYPlot(object):
                 plabel=[None]*nF*nY # List for label strings
 
                 j=0
-                for i, k in enumerate(ob):    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
-                    attributes = ob.attributes()
+                for feature in ob:    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
+                    attributes = feature.attributes()
                     obsid = attributes[kolumnindex] # Copy value in column obsid in the attribute list
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
                     sql =r"""SELECT """
