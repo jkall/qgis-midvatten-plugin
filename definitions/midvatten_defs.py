@@ -336,7 +336,6 @@ def hydrocolors():
     Fallback methods use color codes found in code below
     """
     res, dict_qt1 = db_utils.get_sql_result_as_dict('select a.capacity, a.explanation, b.color_qt from zz_capacity a, zz_capacity_plots b where a.capacity = b.capacity')
-
     # fallback method to maintain backwards compatibility
     if not res:
         try:
@@ -369,10 +368,6 @@ def hydrocolors():
                       '6 ': ('mycket god', 'blue'),
                       '6+': ('mycket god', 'darkBlue'),
                     }
-    else:
-        dict_qt = utils.unicode_2_utf8(dict_qt1)
-        for k, v in dict_qt.items():
-            dict_qt[k] = v[0]
     return dict_qt
 
 def PlotTypesDict(international='no'): 

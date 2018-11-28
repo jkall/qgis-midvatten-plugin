@@ -507,12 +507,7 @@ class SurveyWidget(qgis.PyQt.QtWidgets.QFrame):
                     if layer.hydro is None or layer.hydro=='NULL':
                         hydr = ''
                     else:
-                        print("layer.hydr"+str(layer.hydro.encode('utf-8')))
-                        print("layer.hydro in self.hydroColors"+str(layer.hydro.encode('utf-8') in self.hydroColors))
-                        print("type(layer.hydro"+str(type(layer.hydro.encode('utf-8'))))
-                        hydr = self.hydroColors.get(layer.hydro.encode('utf-8'), '')[0]
-                        print(str(hydr))
-                        print(str(type(hydr)))
+                        hydr = self.hydroColors.get(layer.hydro, '')[0]
                     p.drawText(tRect, qgis.PyQt.QtCore.Qt.AlignVCenter, hydr)
 
                 else:
