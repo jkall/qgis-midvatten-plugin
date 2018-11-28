@@ -61,7 +61,8 @@ class TimeSeriesPlot(object):
                 plabel=[None]*nF # List for label strings
 
                 for i, k in enumerate(ob):    # Loop through all selected objects, a plot is added for each one of the observation points (i.e. selected objects)
-                    obsid = ru(k[kolumnindex])
+                    attributes = k.attributes()
+                    obsid = ru(attributes[kolumnindex])
                     # Load all observations (full time series) for the object [i] (i.e. selected observation point no i)
                     sql =r"""SELECT date_time, """
                     sql += str(self.settingsdict['tscolumn']) #MacOSX fix1

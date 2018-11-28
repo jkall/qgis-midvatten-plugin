@@ -170,8 +170,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         features = active_layer.getSelectedFeatures()
         file_data = [[ru(field.name()) for field in active_layer.fields()]]
 
-        for feature in features:
-            file_data.append([ru(attr) if all([ru(attr).strip() != 'NULL' if attr is not None else '', attr is not None]) else '' for attr in feature])
+        [file_data.append([ru(attr) if all([ru(attr).strip() != 'NULL' if attr is not None else '', attr is not None]) else '' for attr in feature]) for feature in features]
 
         self.file_data = file_data
         self.table_chooser.file_header = file_data[0]
