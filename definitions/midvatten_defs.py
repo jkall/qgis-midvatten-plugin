@@ -373,6 +373,7 @@ def hydrocolors():
         dict_qt = utils.unicode_2_utf8(dict_qt1)
         for k, v in dict_qt.items():
             dict_qt[k] = v[0]
+    print(str(dict_qt))
     return dict_qt
 
 def PlotTypesDict(international='no'): 
