@@ -33,7 +33,7 @@ import mocks_for_tests
 import utils_for_tests
 
 
-@attr(status='on')
+@attr(status='only')
 class TestInterlab4ImporterDB(utils_for_tests.MidvattenTestPostgisDbSv):
     def setUp(self):
         super(self.__class__, self).setUp()
