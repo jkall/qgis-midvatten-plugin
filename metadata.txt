@@ -22,6 +22,7 @@ changelog=
         Version 1.5.3:
         - Customplot: Fixed default values for customplot templates. Added style_-lists for linestyles, colors and markers.
         - Csv import: Fixes imports of wkt-columns.
+        - Csv import: Fixes #282 missing exception handler.
         Version 1.5.2:
         - Version for qgis 2.18.
         - Qgis2threejs: Fix for when geoshorts are upper case.
