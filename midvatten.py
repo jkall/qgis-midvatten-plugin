@@ -405,6 +405,7 @@ class midvatten(object):
 
             #sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""")), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
             #exportfolder =    QtWidgets.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtWidgets.QFileDialog.ShowDirsOnly)
+            QApplication.restoreOverrideCursor()
             exportfolder = QFileDialog.getExistingDirectory(None, ru(QCoreApplication.translate("Midvatten", 'Select a folder where the csv files will be created:')), '.',QFileDialog.ShowDirsOnly)
             QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
             if len(exportfolder) > 0:
@@ -428,12 +429,13 @@ class midvatten(object):
             dbconnection.closedb()
             if dbtype != 'spatialite':
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('export_spatialite', 'Export to spatialite only works when source db is spatialite.')))
+                QApplication.restoreOverrideCursor()
                 return
 
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
-
+            QApplication.restoreOverrideCursor()
             sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
             if sanity.result == 1:
                 QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
@@ -466,6 +468,7 @@ class midvatten(object):
                     if not new_dbpath:
                         utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('export_spatialite', 'Export to spatialite failed, see log message panel')),
                                                         button=True)
+                        QApplication.restoreOverrideCursor()
                         return
 
                     exportinstance = ExportData(OBSID_P, OBSID_L)

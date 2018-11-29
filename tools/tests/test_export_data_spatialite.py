@@ -39,7 +39,7 @@ TEMP_DIR = '/tmp/'
 from nose.plugins.attrib import attr
 
 
-@attr(status='on')
+@attr(status='only')
 class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
     answer_yes_obj = MockUsingReturnValue()
     answer_yes_obj.result = 1
@@ -50,6 +50,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
     mock_askuser = MockReturnUsingDictIn({'It is a strong': answer_no_obj, 'Please note!\nThere are ': answer_yes_obj}, 1)
     skip_popup = MockUsingReturnValue('')
     mock_selection = MockReturnUsingDictIn({'obs_points': ('P1', ), 'obs_lines': ('L1', )}, 0)
+    mock_no_selection = MockReturnUsingDictIn({'obs_points': tuple(), 'obs_lines': tuple()}, 0)
     exported_csv_files = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv', 'zz_flowtype.csv', 'zz_meteoparam.csv', 'zz_staff.csv', 'zz_strat.csv', 'zz_capacity.csv']]
     exported_csv_files_no_zz = [os.path.join(TEMP_DIR, filename) for filename in ['obs_points.csv', 'comments.csv', 'w_levels.csv', 'w_flow.csv', 'w_qual_lab.csv', 'w_qual_field.csv', 'stratigraphy.csv', 'meteo.csv', 'obs_lines.csv', 'seismic_data.csv']]
 
@@ -207,6 +208,95 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                             ''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)]]''']
         reference_string = '\n'.join(reference_string)
         assert test_string == reference_string
+
+    @mock.patch('midvatten_utils.QgsProject.instance', utils_for_tests.MidvattenTestSpatialiteNotCreated.mock_instance_settings_database)
+    @mock.patch('midvatten_utils.MessagebarAndLog')
+    @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')
+    @mock.patch('create_db.utils.NotFoundQuestion')
+    @mock.patch('midvatten_utils.Askuser', answer_yes.get_v)
+    @mock.patch('midvatten_utils.get_selected_features_as_tuple', mock_no_selection.get_v)
+    @mock.patch('midvatten_utils.verify_msettings_loaded_and_layer_edit_mode', autospec=True)
+    @mock.patch('qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName')
+    @mock.patch('midvatten_utils.find_layer', autospec=True)
+    @mock.patch('qgis.utils.iface', autospec=True)
+    @mock.patch('export_data.utils.pop_up_info', autospec=True)
+    def test_export_spatialite_no_selected(self, mock_skip_popup, mock_iface, mock_find_layer, mock_newdbpath, mock_verify, mock_locale, mock_createdb_crs_question, mock_messagebar):
+        mock_find_layer.return_value.crs.return_value.authid.return_value = 'EPSG:3006'
+        mock_createdb_crs_question.return_value = [3006, True]
+        dbconnection = db_utils.DbConnectionManager()
+        mock_newdbpath.return_value = (EXPORT_DB_PATH, '')
+        mock_verify.return_value = 0
+
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('s1')''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO comments (obsid, date_time, staff, comment) VALUES ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, parameter, report, staff) VALUES ('P1', 'labpar1', 'report1', 's1')''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO w_qual_field (obsid, parameter, staff, date_time, unit) VALUES ('P1', 'par1', 's1', '2015-01-01 01:00:00', 'unit1')''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO w_flow (obsid, instrumentid, flowtype, date_time, unit) VALUES ('P1', 'inst1', 'Momflow', '2015-04-13 00:00:00', 'l/s')''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO w_levels (obsid, date_time, meas) VALUES ('P1', '2015-01-02 00:00:01', '2')''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO stratigraphy (obsid, stratid) VALUES ('P1', 1)''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO obs_lines (obsid) VALUES ('L1')''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO seismic_data (obsid, length) VALUES ('L1', '5')''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO meteo (obsid, instrumentid, parameter, date_time) VALUES ('P1', 'meteoinst', 'precip', '2017-01-01 00:19:00')''', dbconnection=dbconnection)
+
+        dbconnection.commit_and_closedb()
+
+        mock_locale.return_value.answer = 'ok'
+        mock_locale.return_value.value = 'sv_SE'
+        self.midvatten.export_spatialite()
+
+        sql_list = ['''select obsid, ST_AsText(geometry) from obs_points''',
+                    '''select staff from zz_staff''',
+                    '''select obsid, date_time, staff, comment from comments''',
+                    '''select obsid, parameter, report, staff from w_qual_lab''',
+                    '''select obsid, parameter, staff, date_time, comment from w_qual_field''',
+                    '''select obsid, instrumentid, flowtype, date_time, unit from w_flow''',
+                    '''select obsid, date_time, meas from w_levels''',
+                    '''select obsid, stratid from stratigraphy''',
+                    '''select obsid from obs_lines''',
+                    '''select obsid, length from seismic_data''',
+                    '''select obsid, instrumentid, parameter, date_time from meteo''']
+
+
+        conn = db_utils.connect_with_spatialite_connect(EXPORT_DB_PATH)
+        curs = conn.cursor()
+
+        test_list = []
+        for sql in sql_list:
+            test_list.append('\n' + sql + '\n')
+            test_list.append(curs.execute(sql).fetchall())
+
+        conn.commit()
+        conn.close()
+
+        test_string = utils_for_tests.create_test_string(test_list)
+        reference_string = ['''[''',
+                            '''select obsid, ST_AsText(geometry) from obs_points''',
+                            ''', [(P1, POINT(633466 711659))], ''',
+                            '''select staff from zz_staff''',
+                            ''', [(s1)], ''',
+                            '''select obsid, date_time, staff, comment from comments''',
+                            ''', [(P1, 2015-01-01 00:00:00, s1, comment1)], ''',
+                            '''select obsid, parameter, report, staff from w_qual_lab''',
+                            ''', [(P1, labpar1, report1, s1)], ''',
+                            '''select obsid, parameter, staff, date_time, comment from w_qual_field''',
+                            ''', [(P1, par1, s1, 2015-01-01 01:00:00, None)], ''',
+                            '''select obsid, instrumentid, flowtype, date_time, unit from w_flow''',
+                            ''', [(P1, inst1, Momflow, 2015-04-13 00:00:00, l/s)], ''',
+                            '''select obsid, date_time, meas from w_levels''',
+                            ''', [(P1, 2015-01-02 00:00:01, 2.0)], ''',
+                            '''select obsid, stratid from stratigraphy''',
+                            ''', [(P1, 1)], ''',
+                            '''select obsid from obs_lines''',
+                            ''', [(L1)], ''',
+                            '''select obsid, length from seismic_data''',
+                            ''', [(L1, 5.0)], ''',
+                            '''select obsid, instrumentid, parameter, date_time from meteo''',
+                            ''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)]]''']
+        reference_string = '\n'.join(reference_string)
+        print(str(mock_messagebar.mock_calls))
+        assert test_string == reference_string
+
 
     @mock.patch('midvatten_utils.MessagebarAndLog')
     @mock.patch('midvatten_utils.QtWidgets.QInputDialog.getText')

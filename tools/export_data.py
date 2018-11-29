@@ -62,7 +62,6 @@ class ExportData(object):
         dbconnection.closedb()
 
         conn = db_utils.connect_with_spatialite_connect(target_db)
-
         self.curs = conn.cursor()
         self.curs.execute("PRAGMA foreign_keys = ON")
         self.curs.execute(r"""ATTACH DATABASE '%s' AS a"""%source_db)
@@ -150,11 +149,15 @@ class ExportData(object):
         for tname in ptabs:
             tname_with_prefix = tname_prefix + tname
             if not verify_table_exists(tname):
+                utils.MessagebarAndLog.info(bar_msg=ru(QCoreApplication.translate('ExportData', "Table %s didn't exist. Skipping it."))%tname)
                 continue
             if obsids != 'no_obsids':
-                no_of_obs = self.get_number_of_obsids(obsids, tname_with_prefix)
-                if no_of_obs[0][0] > 0:#only go on if there are any observations for this obsid
+                if not obsids:
                     to_writer(tname, tname_with_prefix, obsids)
+                else:
+                    no_of_obs = self.get_number_of_obsids(obsids, tname_with_prefix)
+                    if no_of_obs[0][0] > 0:#only go on if there are any observations for this obsid
+                        to_writer(tname, tname_with_prefix, obsids)
             else:
                 to_writer(tname, tname_with_prefix)
 
@@ -211,7 +214,9 @@ class ExportData(object):
         else:
             transformed_column_names = column_names
 
-        sql = """INSERT INTO %s (%s) SELECT %s FROM %s WHERE obsid IN %s"""%(tname, ', '.join(column_names), ', '.join(transformed_column_names), tname_with_prefix, self.format_obsids(obsids))
+        sql = """INSERT INTO %s (%s) SELECT %s FROM %s"""%(tname, ', '.join(column_names), ', '.join(transformed_column_names), tname_with_prefix)
+        if obsids:
+            sql += """ WHERE obsid IN %s""" % self.format_obsids(obsids)
         try:
             self.curs.execute(sql)
         except Exception as e:

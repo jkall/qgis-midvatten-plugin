@@ -59,9 +59,11 @@ class NewDb(object):
         # If a CRS is selectd, go on and create the database
 
         #path and name of new db
+        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
         dbpath = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption="New DB",
                                                                     directory="midv_obsdb.sqlite",
                                                                     filter="Spatialite (*.sqlite)")
+        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
 
         if not dbpath:
             qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
@@ -75,6 +77,7 @@ class NewDb(object):
         if os.path.exists(dbpath):
             utils.MessagebarAndLog.critical(
                 bar_msg=ru(QCoreApplication.translate('NewDb', 'A database with the chosen name already existed. Cancelling...')))
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return ''
 
         self.db_settings = ru(utils.anything_to_string_representation({'spatialite': {'dbpath': dbpath}}))
@@ -96,6 +99,7 @@ class NewDb(object):
         # then the syntax defines a Midvatten project db according to the loaded .sql-file
         if not int(versionstext[0][0]) > 3: # which file to use depends on spatialite version installed
             utils.pop_up_info(ru(QCoreApplication.translate('NewDb', "Midvatten plugin needs spatialite4.\nDatabase can not be created")))
+            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
             return ''
 
         filenamestring = "create_db.sql"
