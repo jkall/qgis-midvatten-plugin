@@ -406,6 +406,7 @@ class midvatten(object):
             #sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""")), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
             #exportfolder =    QtWidgets.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtWidgets.QFileDialog.ShowDirsOnly)
             exportfolder = QFileDialog.getExistingDirectory(None, ru(QCoreApplication.translate("Midvatten", 'Select a folder where the csv files will be created:')), '.',QFileDialog.ShowDirsOnly)
+            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
             if len(exportfolder) > 0:
                 exportinstance = ExportData(OBSID_P, OBSID_L)
                 exportinstance.export_2_csv(exportfolder)
@@ -421,6 +422,7 @@ class midvatten(object):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
         if err_flag == 0:
+            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))  # show the user this may take a long time..
             dbconnection = db_utils.DbConnectionManager()
             dbtype = dbconnection.dbtype
             dbconnection.closedb()
