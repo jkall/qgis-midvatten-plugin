@@ -129,6 +129,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
     def test_export_csv_no_selection(self, mock_iface, mock_savepath):
         mock_savepath.return_value = '/tmp/'
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(1 2)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('s1')''')
         db_utils.sql_alter_db('''INSERT INTO comments (obsid, date_time, staff, comment) VALUES ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
         db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, parameter, report, staff) VALUES ('P1', 'labpar1', 'report1', 's1')''')
@@ -158,6 +159,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
             "[obs_points.csv",
             ", [obsid;name;place;type;length;drillstop;diam;material;screen;capacity;drilldate;wmeas_yn;wlogg_yn;east;north;ne_accur;ne_source;h_toc;h_tocags;h_gs;h_accur;h_syst;h_source;source;com_onerow;com_html",
             ", P1;;;;;;;;;;;;;633466.0;711659.0;;;;;;;;;;;",
+            ", P2;;;;;;;;;;;;;1.0;2.0;;;;;;;;;;;",
             "], comments.csv",
             ", [obsid;date_time;comment;staff",
             ", P1;2015-01-01 00:00:00;comment1;s1",
@@ -296,6 +298,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         mock_verify.return_value = 0
 
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''', dbconnection=dbconnection)
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(1 2)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('s1')''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO comments (obsid, date_time, staff, comment) VALUES ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''', dbconnection=dbconnection)
         db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, parameter, report, staff) VALUES ('P1', 'labpar1', 'report1', 's1')''', dbconnection=dbconnection)
@@ -340,7 +343,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
         test_string = utils_for_tests.create_test_string(test_list)
         reference_string = ['''[''',
                             '''select obsid, ST_AsText(geometry) from obs_points''',
-                            ''', [(P1, POINT(633466 711659))], ''',
+                            ''', [(P1, POINT(633466 711659)), (P2, POINT(1 2))], ''',
                             '''select staff from zz_staff''',
                             ''', [(s1)], ''',
                             '''select obsid, date_time, staff, comment from comments''',
@@ -362,6 +365,7 @@ class TestExport(utils_for_tests.MidvattenTestSpatialiteDbEn):
                             '''select obsid, instrumentid, parameter, date_time from meteo''',
                             ''', [(P1, meteoinst, precip, 2017-01-01 00:19:00)]]''']
         reference_string = '\n'.join(reference_string)
+        print(test_string)
         print(str(mock_messagebar.mock_calls))
         assert test_string == reference_string
 

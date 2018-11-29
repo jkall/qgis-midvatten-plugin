@@ -133,6 +133,7 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
     def test_export_csv_no_selection(self, mock_iface, mock_savepath, mock_messagebar):
         mock_savepath.return_value = '/tmp/'
         db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P1', ST_GeomFromText('POINT(633466 711659)', 3006))''')
+        db_utils.sql_alter_db('''INSERT INTO obs_points (obsid, geometry) VALUES ('P2', ST_GeomFromText('POINT(1 2)', 3006))''')
         db_utils.sql_alter_db('''INSERT INTO zz_staff (staff) VALUES ('s1')''')
         db_utils.sql_alter_db('''INSERT INTO comments (obsid, date_time, staff, comment) VALUES ('P1', '2015-01-01 00:00:00', 's1', 'comment1')''')
         db_utils.sql_alter_db('''INSERT INTO w_qual_lab (obsid, parameter, report, staff) VALUES ('P1', 'labpar1', 'report1', 's1')''')
@@ -164,6 +165,7 @@ class TestExport(utils_for_tests.MidvattenTestPostgisDbSv):
             "[obs_points.csv",
             ", [obsid;name;place;type;length;drillstop;diam;material;screen;capacity;drilldate;wmeas_yn;wlogg_yn;east;north;ne_accur;ne_source;h_toc;h_tocags;h_gs;h_accur;h_syst;h_source;source;com_onerow;com_html",
             ", P1;;;;;;;;;;;;;633466.0;711659.0;;;;;;;;;;;",
+            ", P2;;;;;;;;;;;;;1.0;2.0;;;;;;;;;;;",
             "], comments.csv",
             ", [obsid;date_time;comment;staff",
             ", P1;2015-01-01 00:00:00;comment1;s1",
