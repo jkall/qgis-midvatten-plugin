@@ -110,6 +110,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         self.show()
 
     @utils.waiting_cursor
+    @utils.general_exception_handler
     def load_files(self):
         charset = utils.ask_for_charset()
         if not charset:
