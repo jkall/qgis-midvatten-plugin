@@ -1757,6 +1757,10 @@ def add_layers_to_list(resultlist, tablenames, geometrycolumn=None, dbconnection
         dbconnection = db_utils.DbConnectionManager()
 
     for tablename in tablenames:  # first load all non-spatial layers
+        existing_tables = db_utils.get_tables(dbconnection, skip_views=False)
+        if not tablename in existing_tables:
+            continue
+
         layer = create_layer(tablename, geometrycolumn=geometrycolumn)
         if not layer.isValid():
             #Try to add it as a view by adding key column
