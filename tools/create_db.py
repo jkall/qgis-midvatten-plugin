@@ -154,6 +154,21 @@ class NewDb(object):
 
     def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code='4326'):
 
+        dbconnection = db_utils.DbConnectionManager()
+        db_settings = dbconnection.db_settings
+        if not isinstance(db_settings, str):
+            self.db_settings = ru(utils.anything_to_string_representation(dbconnection.db_settings))
+        else:
+            self.db_settings = ru(db_settings)
+        if dbconnection.dbtype != 'postgis':
+            raise utils.UsageError('Database type postgis not selected, check Midvatten settings!')
+
+        dbconnection.execute('CREATE EXTENSION IF NOT EXISTS postgis;')
+
+        result = dbconnection.execute_and_fetchall('select version(), PostGIS_full_version();')
+
+        versionstext = ', '.join(result[0])
+
         utils.stop_waiting_cursor()
         set_locale = self.ask_for_locale()
         utils.start_waiting_cursor()
@@ -167,19 +182,6 @@ class NewDb(object):
 
         if EPSGID=='0' or not EPSGID:
             raise utils.UserInterruptError()
-
-        dbconnection = db_utils.DbConnectionManager()
-        db_settings = dbconnection.db_settings
-        if not isinstance(db_settings, str):
-            self.db_settings = ru(utils.anything_to_string_representation(dbconnection.db_settings))
-        else:
-            self.db_settings = ru(db_settings)
-
-        dbconnection.execute('CREATE EXTENSION IF NOT EXISTS postgis;')
-
-        result = dbconnection.execute_and_fetchall('select version(), PostGIS_full_version();')
-
-        versionstext = ', '.join(result[0])
 
         filenamestring = "create_db.sql"
 

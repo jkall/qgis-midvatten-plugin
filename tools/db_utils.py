@@ -120,6 +120,7 @@ class DbConnectionManager(object):
             try:
                 self.connector = postgis_connector.PostGisDBConnector(self.uri)
             except Exception as e:
+                print(str(e))
                 if 'no password supplied' in str(e):
                     utils.MessagebarAndLog.warning(bar_msg=ru(QCoreApplication.translate('DbConnectionManager', 'No password supplied for postgis connection')))
                     raise utils.UserInterruptError()

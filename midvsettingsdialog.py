@@ -232,6 +232,7 @@ class midvsettingsdialogdock(QDockWidget, midvsettingsdock_ui_class): #THE CLASS
         self.database_settings.update_settings(self.ms.settingsdict['database'])
         self.load_plot_settings()
 
+    @utils.general_exception_handler
     def load_plot_settings(self):
         self.loadTablesFromDB()        # All ListOfTables are filled with relevant information
         self.LoadDistinctPiperParams()
@@ -701,6 +702,7 @@ class PostgisSettings(gui_utils.RowEntryGrid):
             self._connection.setCurrentIndex(index)
 
     def set_db(self):
-        self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({'postgis': {'connection': self.connection}})
-        self.midvsettingsdialogdock.ms.save_settings('database')
-        self.midvsettingsdialogdock.load_plot_settings()
+        if self.connection:
+            self.midvsettingsdialogdock.ms.settingsdict['database'] = utils.anything_to_string_representation({'postgis': {'connection': self.connection}})
+            self.midvsettingsdialogdock.ms.save_settings('database')
+            self.midvsettingsdialogdock.load_plot_settings()
