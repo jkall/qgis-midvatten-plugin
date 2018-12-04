@@ -26,6 +26,7 @@ import os.path
 import qgis.utils
 import shutil
 import sys
+import io
 # Import the PyQt and QGIS libraries
 from qgis.core import Qgis, QgsApplication
 import qgis.PyQt
@@ -358,13 +359,11 @@ class midvatten(object):
         ABOUT_outputfile = os.path.join(ABOUT_outpath, "about.htm")
         shutil.copy2(os.path.join(os.path.dirname(ABOUT_templatefile), 'midvatten_logga.png'), os.path.join(ABOUT_outpath, 'midvatten_logga.png'))
 
-        f_in = open(ABOUT_templatefile, 'r')
-        f_out = open(ABOUT_outputfile, 'w')
-        wholefile = f_in.read().decode('cp1252')
-        changedfile = wholefile.replace('VERSIONCHANGETHIS',verno).replace('AUTHORCHANGETHIS',author).replace('EMAILCHANGETHIS',email).replace('HOMEPAGECHANGETHIS',homepage)
-        f_out.write(changedfile.encode('cp1252'))
-        f_in.close()
-        f_out.close()
+        with io.open(ABOUT_templatefile, 'rt', encoding='cp1252') as infile:
+            rows = [row.replace('VERSIONCHANGETHIS',verno).replace('AUTHORCHANGETHIS',author).replace('EMAILCHANGETHIS',email).replace('HOMEPAGECHANGETHIS',homepage)
+                    for row in infile]
+        with io.open(ABOUT_outputfile, 'w', encoding='cp1252') as outfile:
+            outfile.write('\n'.join(rows))
         dlg = utils.HtmlDialog("About Midvatten plugin for QGIS",QUrl.fromLocalFile(ABOUT_outputfile))
         dlg.exec_()
 
