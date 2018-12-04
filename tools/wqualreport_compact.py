@@ -188,7 +188,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
     def __init__(self, settingsdict, num_data_cols, rowheader_colwidth_percent, empty_row_between_tables,
                             page_break_between_tables, from_active_layer, sql_table):
         #show the user this may take a long time...
-        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        utils.start_waiting_cursor()
 
         self.nr_header_rows = 3
 
@@ -233,7 +233,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         f.write("\n</body></html>")
         f.close()
 
-        QApplication.restoreOverrideCursor()  # now this long process is done and the cursor is back as normal
+        utils.stop_waiting_cursor()  # now this long process is done and the cursor is back as normal
 
         if report_data:
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))

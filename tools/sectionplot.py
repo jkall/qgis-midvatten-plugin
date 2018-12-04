@@ -82,7 +82,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
     def do_it(self,msettings,OBSIDtuplein,SectionLineLayer):#must recieve msettings again if this plot windows stayed open while changing qgis project
 
         #show the user this may take a long time...
-        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))
+        utils.start_waiting_cursor()
         #settings must be recieved here since plot windows may stay open (hence sectionplot instance activated) while a new qgis project is opened or midv settings are chaned 
         self.ms = msettings
         #Draw the widget
@@ -128,7 +128,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.fill_dem_list()
 
         
-        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor() #now this long process is done and the cursor is back as normal
+        utils.stop_waiting_cursor() #now this long process is done and the cursor is back as normal
         
         #get PlotData
         self.get_plot_data()
@@ -163,7 +163,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         self.change_plot_size(width, height)
 
         try:
-            qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))#show the user this may take a long time...
+            utils.start_waiting_cursor()#show the user this may take a long time...
             try:
                 self.annotationtext.remove()
             except:
@@ -224,17 +224,17 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         except KeyError as e:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('SectionPlot', 'Section plot optional settings error, press "Restore defaults"')),
                                             log_msg=ru(QCoreApplication.translate('SectionPlot', 'Error msg: %s'))%e)
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             self.dbconnection.closedb()
             self.dbconnection = None
 
         except:
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             self.dbconnection.closedb()
             self.dbconnection = None
             raise
         else:
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+            utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
     def execute_query(self,query,params=(),commit=False):#from qspatialite, it is only used by self.uploadQgisVectorLayer
         """Execute query (string) with given parameters (tuple) (optionnaly perform commit to save Db) and return resultset [header,data] or [flase,False] if error"""
@@ -456,7 +456,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
         return LengthAlongTable
 
     def get_plot_data(self):#this is called when class is instantiated, collecting data specific for the profile line layer and the obs_points
-        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))#show the user this may take a long time...
+        utils.start_waiting_cursor()#show the user this may take a long time...
         self.plotx = {}
         self.plotbottom = {}
         self.plotbarlength = {}
@@ -567,7 +567,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             table = np.array(recs, dtype=My_format)  #NDARRAY
             self.obs_lines_plot_data=table.view(np.recarray)   # RECARRAY   Makes the two columns inte callable objects, i.e. write self.obs_lines_plot_data.values
         #print('debug info: ' + str(self.selected_obsids) + str(self.x_id) + str(self.z_id) + str(self.barlengths) + str(self.bottoms))#debug
-        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+        utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
     def get_plot_data_2(self):#collecting data depending on a number of selections in left side panel
         self.obsid_wlid=[]#if no stratigr plot, then obsid will be plotted close to water level instead of toc or gs

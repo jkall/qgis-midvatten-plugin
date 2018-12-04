@@ -1247,14 +1247,17 @@ def anything_to_string_representation(anything, itemjoiner=', ', pad='', dictfor
 
 def waiting_cursor(func):
     def func_wrapper(*args, **kwargs):
-        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtGui.QCursor(qgis.PyQt.QtCore.Qt.WaitCursor))
-
+        start_waiting_cursor()
         result = func(*args, **kwargs)
-
-        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+        stop_waiting_cursor()
         return result
     return func_wrapper
 
+def start_waiting_cursor():
+    qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+
+def stop_waiting_cursor():
+    qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
 
 class Cancel(object):
     """Object for transmitting cancel messages instead of using string 'cancel'.
@@ -1425,15 +1428,15 @@ def general_exception_handler(func):
             result = func(*args, **kwargs)
         except UserInterruptError:
             # The user interrupted the process.
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             pass
         except UsageError as e:
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             msg = str(e)
             if msg:
                 MessagebarAndLog.critical(bar_msg=returnunicode(QCoreApplication.translate('general_exception_handler', 'Usage error: %s'))%str(e))
         except:
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             raise
         else:
             return result
@@ -1614,10 +1617,7 @@ class PlotTemplates(object):
 
     @general_exception_handler
     def save_as(self):
-        filename = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption=returnunicode(QCoreApplication.translate('PlotTemplates', 'Choose a file name')), directory='', filter='txt (*.txt)')
-        if filename is None or not filename:
-            raise UserInterruptError()
-        filename = filename[0]
+        filename = get_save_file_name_no_extension(parent=None, caption=returnunicode(QCoreApplication.translate('PlotTemplates', 'Choose a file name')), directory='', filter='txt (*.txt)')
         as_str = self.readable_output(self.loaded_template)
         with io.open(filename, 'w', encoding='utf8') as of:
             of.write(as_str)
@@ -1775,5 +1775,16 @@ def write_printlist_to_file(filename, printlist, dialect=csv.excel, delimiter=';
         #csvwriter.writerows([[bytes(returnunicode(col), encoding) for col in row] for row in printlist])
         csvwriter.writerows(returnunicode(printlist, keep_containers=True))
 
+
 def sql_unicode_list(an_iterator):
     return ', '.join(["'{}'".format(returnunicode(x)) for x in an_iterator])
+
+
+def get_save_file_name_no_extension(**kwargs):
+    filename = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(**kwargs)
+    if not filename[0]:
+        raise UserInterruptError()
+    else:
+        return filename[0]
+
+

@@ -40,7 +40,7 @@ from midvatten_utils import returnunicode as ru
 class Wqualreport(object):        # extracts water quality data for selected objects, selected db and given table, results shown in html report
     def __init__(self,layer, settingsdict = {}):
         #show the user this may take a long time...
-        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        utils.start_waiting_cursor()
 
         self.settingsdict = settingsdict
         provider = layer.dataProvider()  # OGR provider
@@ -88,7 +88,7 @@ class Wqualreport(object):        # extracts water quality data for selected obj
         f.write("\n</body></html>")        
         f.close()
 
-        QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+        utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
         if ReportData:
             QDesktopServices.openUrl(QUrl.fromLocalFile(reportpath))

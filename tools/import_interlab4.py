@@ -140,7 +140,7 @@ class Interlab4Import(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_dia
         if self.close_after_import.isChecked():
             self.close()
 
-        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+        utils.stop_waiting_cursor()
 
     def parse(self, filenames):
         """ Reads the interlab

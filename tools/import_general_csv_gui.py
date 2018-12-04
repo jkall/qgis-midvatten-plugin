@@ -68,25 +68,16 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
         #General buttons
         self.select_file_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('GeneralCsvImportGui', 'Load data from file')))
         self.gridLayout_buttons.addWidget(self.select_file_button, 0, 0)
-        self.select_file_button.clicked.connect(
-                     lambda: [x() for x in [lambda: self.load_files(),
-                                                 lambda: self.table_chooser.reload(),
-                                                 lambda: self.file_data_loaded_popup()]])
+        self.select_file_button.clicked.connect(lambda x: self.select_file())
 
 
         self.import_all_features_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('GeneralCsvImportGui', 'Load data from all features\nfrom active layer')))
         self.gridLayout_buttons.addWidget(self.import_all_features_button, 1, 0)
-        self.import_all_features_button.clicked.connect(
-                     lambda: [x() for x in [lambda: self.load_from_active_layer(only_selected=False),
-                                                 lambda: self.table_chooser.reload(),
-                                                 lambda: self.file_data_loaded_popup()]])
+        self.import_all_features_button.clicked.connect(lambda x: self.import_all_features())
 
         self.import_selected_features_button = qgis.PyQt.QtWidgets.QPushButton(ru(QCoreApplication.translate('GeneralCsvImportGui', 'Load data from selected features\nfrom active layer')))
         self.gridLayout_buttons.addWidget(self.import_selected_features_button, 2, 0)
-        self.import_selected_features_button.clicked.connect(
-                     lambda: [x() for x in [lambda: self.load_from_active_layer(only_selected=True),
-                                                 lambda: self.table_chooser.reload(),
-                                                 lambda: self.file_data_loaded_popup()]])
+        self.import_selected_features_button.clicked.connect(lambda x: self.import_selected_features())
 
         self.gridLayout_buttons.addWidget(get_line(), 3, 0)
 
@@ -109,25 +100,44 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         self.show()
 
-    @utils.waiting_cursor
     @utils.general_exception_handler
+    def select_file(self):
+        self.load_files()
+        self.table_chooser.reload()
+        self.file_data_loaded_popup()
+
+    @utils.general_exception_handler
+    @utils.waiting_cursor
+    def import_all_features(self):
+        self.load_from_active_layer(only_selected=False)
+        self.table_chooser.reload()
+        self.file_data_loaded_popup()
+
+    @utils.general_exception_handler
+    @utils.waiting_cursor
+    def import_selected_features(self):
+        self.load_from_active_layer(only_selected=True)
+        self.table_chooser.reload()
+        self.file_data_loaded_popup()
+
     def load_files(self):
         charset = utils.ask_for_charset()
         if not charset:
             return None
         filename = utils.select_files(only_one_file=True, extension=ru(QCoreApplication.translate('GeneralCsvImportGui', "Comma or semicolon separated csv file %s;;Comma or semicolon separated csv text file %s;;Comma or semicolon separated file %s"))%('(*.csv)', '(*.txt)', '(*.*)'))
         if not filename:
-            return None
+            raise utils.UserInterruptError()
         if isinstance(filename, (list, tuple)):
             filename = filename[0]
-        else:
-            filename = filename
+
         filename = ru(filename)
 
         delimiter = utils.get_delimiter(filename=filename, charset=charset, delimiters=[',', ';'])
         self.file_data = self.file_to_list(filename, charset, delimiter)
 
         header_question = utils.Askuser(question="YesNo", msg=ru(QCoreApplication.translate('GeneralCsvImportGui', """Does the file contain a header?""")))
+
+        utils.start_waiting_cursor()
         if header_question.result:
             # Remove duplicate header entries
             header = self.file_data[0]
@@ -143,6 +153,7 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
             self.file_data.reverse()
             self.file_data.append(header)
             self.file_data.reverse()
+        utils.stop_waiting_cursor()
 
     def file_data_loaded_popup(self):
         if self.file_data is not None:
@@ -150,12 +161,12 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
                 button.setEnabled(False)
             utils.pop_up_info(msg=ru(QCoreApplication.translate('GeneralCsvImportGui', 'File data loaded. Select table to import to.')))
 
+    @utils.waiting_cursor
     def file_to_list(self, filename, charset, delimiter):
         with io.open(filename, 'r', encoding=charset) as f:
             file_data = [rawrow.rstrip('\n').rstrip('\r').split(delimiter) for rawrow in f if rawrow.strip()]
         return file_data
 
-    @utils.waiting_cursor
     def load_from_active_layer(self, only_selected=False):
         self.file_data = None
         self.table_chooser.file_header = None
@@ -250,9 +261,9 @@ class GeneralCsvImportGui(qgis.PyQt.QtWidgets.QMainWindow, import_ui_dialog):
 
         importer = import_data_to_db.midv_data_importer()
         answer = importer.general_import(goal_table=goal_table, file_data=file_data)
-        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+        utils.stop_waiting_cursor()
         importer.SanityCheckVacuumDB()
-        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+        utils.stop_waiting_cursor()
 
         if self.close_after_import.isChecked():
             self.close()

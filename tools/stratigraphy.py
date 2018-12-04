@@ -86,20 +86,20 @@ class Stratigraphy(object):
             return
         # initiate the datastore if not yet done   
         self.initStore()   
-        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)  # Sets the mouse cursor to wait symbol
+        utils.start_waiting_cursor()  # Sets the mouse cursor to wait symbol
         try:  # return from store.getData is stored in data only if no object belonging to DataSanityError class is created
             self.data = self.store.getData(ids, lyr)    # added lyr as an argument!!!
         except DataSanityError as e: # if an object 'e' belonging to DataSanityError is created, then do following
             print("DataSanityError %s"%str(e))
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             utils.pop_up_info(ru(QCoreApplication.translate(' Stratigraphy', "Data sanity problem, obsid: %s\n%s")) % (e.sond_id, e.message))
             return
         except Exception as e: # if an object 'e' belonging to DataSanityError is created, then do following
             print("exception : %s"%str(e))
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate(' Stratigraphy', "The stratigraphy plot failed, check Midvatten plugin settings and your data!")))
             return
-        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()  # Restores the mouse cursor to normal symbol
+        utils.stop_waiting_cursor()  # Restores the mouse cursor to normal symbol
         # show widget
         w = SurveyDialog()
         #w.widget.setData2_nosorting(data)  #THIS IS IF DATA IS NOT TO BE SORTED!!

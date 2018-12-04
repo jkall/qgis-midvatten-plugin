@@ -272,6 +272,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
         return True
 
+    @utils.general_exception_handler
     @utils.waiting_cursor
     def export(self):
         utils.save_stored_settings(self.ms, self.update_stored_settings(self.parameter_groups), self.stored_settingskey)
@@ -357,11 +358,7 @@ class ExportToFieldLogger(qgis.PyQt.QtWidgets.QMainWindow, export_fieldlogger_ui
 
     @staticmethod
     def write_printlist_to_file(printlist):
-        filename = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption=ru(QCoreApplication.translate('ExportToFieldLogger', 'Choose a file name')), directory='', filter='csv (*.csv)')
-        if not filename:
-            return
-        else:
-            filename = filename[0]
+        filename = utils.get_save_file_name_no_extension(parent=None, caption=ru(QCoreApplication.translate('ExportToFieldLogger', 'Choose a file name')), directory='', filter='csv (*.csv)')
         if os.path.splitext(filename)[1] != '.csv':
             filename += '.csv'
         try:

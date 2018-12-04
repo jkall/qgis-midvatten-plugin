@@ -112,7 +112,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.select_button_t3f1.clicked.connect( partial(self.select_in_filterlist_from_selection, self.Filter1_QListWidget_3, self.Filter1_ComboBox_3))
         self.select_button_t3f2.clicked.connect( partial(self.select_in_filterlist_from_selection, self.Filter2_QListWidget_3, self.Filter2_ComboBox_3))
 
-        self.save_to_eps_button.clicked.connect( self.save_to_eps)
+        self.save_to_eps_button.clicked.connect(lambda x: self.save_to_eps())
 
         self.listfilter_1_1.editingFinished.connect( partial(self.filter_filterlist, self.Filter1_QListWidget_1, self.listfilter_1_1))
         self.listfilter_2_1.editingFinished.connect( partial(self.filter_filterlist, self.Filter2_QListWidget_1, self.listfilter_2_1))
@@ -125,7 +125,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         self.filtersettings3.clicked.connect( partial(self.set_groupbox_children_visibility, self.filtersettings3))
 
         self.PlotChart_QPushButton.clicked.connect(lambda x: self.drawPlot_all())
-        self.Redraw_pushButton.clicked.connect( self.refreshPlot )
+        self.Redraw_pushButton.clicked.connect(lambda x: self.refreshPlot())
 
         self.templates = utils.PlotTemplates(self,
                                              self.template_list,
@@ -285,7 +285,7 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
 
         self.refreshPlot()
     
-        QtWidgets.QApplication.restoreOverrideCursor()  # now this long process is done and the cursor is back as normal
+        utils.stop_waiting_cursor()  # now this long process is done and the cursor is back as normal
 
     def drawPlot(self, dbconnection, nop, i, My_format, table_ComboBox, xcol_ComboBox, ycol_ComboBox, Filter1_ComboBox, Filter1_QListWidget, Filter2_ComboBox, Filter2_QListWidget, PlotType_comboBox, pandas_calc, checkBox_remove_mean, LineEditFactor, LineEditOffset):
                 
@@ -902,13 +902,11 @@ class plotsqlitewindow(QtWidgets.QMainWindow, customplot_ui_class):
         selected_values = utils.getselectedobjectnames(column_name=current_column)
         [filter_listwidget.item(nr).setSelected(True) for nr in range(filter_listwidget.count()) if ru(filter_listwidget.item(nr).text()) in selected_values]
 
+    @utils.general_exception_handler
     def save_to_eps(self):
-        filename = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption=ru(
+        filename = utils.get_save_file_name_no_extension(parent=None, caption=ru(
             QCoreApplication.translate('CustomPlot', 'Choose a file name, extension sets format')), directory='')
-        if not filename:
-            return
-        else:
-            filename = filename[0]
+
         name, ext = os.path.splitext(filename)
         self.custplotfigure.savefig(filename, format=ext.lstrip('.'), dpi=float(self.figure_dpi.text()))
 

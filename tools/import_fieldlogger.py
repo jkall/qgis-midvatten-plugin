@@ -459,7 +459,7 @@ class FieldloggerImport(qgis.PyQt.QtWidgets.QMainWindow, import_fieldlogger_ui_d
 
         if self.close_after_import.isChecked():
             self.close()
-        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+        utils.stop_waiting_cursor()
 
 
 class ObsidFilter(object):

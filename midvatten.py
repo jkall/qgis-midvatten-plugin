@@ -397,7 +397,7 @@ class midvatten(object):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
         if err_flag == 0:     
-            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
+            utils.start_waiting_cursor()#show the user this may take a long time...
             
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines           
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
@@ -405,14 +405,14 @@ class midvatten(object):
 
             #sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """You are about to export data for the selected obs_points and obs_lines into a set of csv files. \n\nContinue?""")), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
             #exportfolder =    QtWidgets.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtWidgets.QFileDialog.ShowDirsOnly)
-            QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             exportfolder = QFileDialog.getExistingDirectory(None, ru(QCoreApplication.translate("Midvatten", 'Select a folder where the csv files will be created:')), '.',QFileDialog.ShowDirsOnly)
-            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+            utils.start_waiting_cursor()
             if len(exportfolder) > 0:
                 exportinstance = ExportData(OBSID_P, OBSID_L)
                 exportinstance.export_2_csv(exportfolder)
                 
-            QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+            utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
     @utils.general_exception_handler
     def export_spatialite(self):
@@ -423,38 +423,38 @@ class midvatten(object):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms, allcritical_layers)#verify midv settings are loaded and the critical layers are not in editing mode
 
         if err_flag == 0:
-            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))  # show the user this may take a long time..
+            utils.start_waiting_cursor()  # show the user this may take a long time..
             dbconnection = db_utils.DbConnectionManager()
             dbtype = dbconnection.dbtype
             dbconnection.closedb()
             if dbtype != 'spatialite':
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('export_spatialite', 'Export to spatialite only works when source db is spatialite.')))
-                QApplication.restoreOverrideCursor()
+                utils.stop_waiting_cursor()
                 return
 
             #Get two lists (OBSID_P and OBSID_L) with selected obs_points and obs_lines
             OBSID_P = utils.get_selected_features_as_tuple('obs_points')
             OBSID_L = utils.get_selected_features_as_tuple('obs_lines')
-            QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This will create a new empty Midvatten DB with predefined design\nand fill the database with data from selected obs_points and obs_lines.\n\nContinue?""")), ru(QCoreApplication.translate("Midvatten", 'Are you sure?')))
             if sanity.result == 1:
-                QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
+                utils.start_waiting_cursor()#show the user this may take a long time...
                 obsp_layer = utils.find_layer('obs_points')
                 try:
                     CRS = obsp_layer.crs()
                 except AttributeError:
                     utils.pop_up_info(ru(QCoreApplication.translate("Midvatten", "Export error!\n\nMust use \"load default db-layers to qgis\" from Midvatten menu (or key F7) first!")))
-                    QApplication.restoreOverrideCursor()  # now this long process is done and the cursor is back as normal
+                    utils.stop_waiting_cursor()  # now this long process is done and the cursor is back as normal
                     return None
                 EPSG_code = str(CRS.authid()[5:])
 
                 #Let the user chose an EPSG-code for the exported database
-                qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+                utils.stop_waiting_cursor()
                 user_chosen_EPSG_code = utils.ask_for_export_crs(EPSG_code)
-                qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+                utils.start_waiting_cursor()
 
                 if not user_chosen_EPSG_code:
-                    QApplication.restoreOverrideCursor()
+                    utils.stop_waiting_cursor()
                     return None
 
                 filenamepath = os.path.join(os.path.dirname(__file__),"metadata.txt" )
@@ -468,13 +468,13 @@ class midvatten(object):
                     if not new_dbpath:
                         utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('export_spatialite', 'Export to spatialite failed, see log message panel')),
                                                         button=True)
-                        QApplication.restoreOverrideCursor()
+                        utils.stop_waiting_cursor()
                         return
 
                     exportinstance = ExportData(OBSID_P, OBSID_L)
                     exportinstance.export_2_splite(new_dbpath, user_chosen_EPSG_code)
             
-                QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+                utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
     def export_fieldlogger(self):
         """
@@ -520,7 +520,7 @@ class midvatten(object):
                             pass
             else:
                 utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
-        QApplication.restoreOverrideCursor()
+        utils.stop_waiting_cursor()
 
     def import_csv(self):
         """
@@ -545,7 +545,7 @@ class midvatten(object):
                         pass
             else:
                 utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
-        QApplication.restoreOverrideCursor()
+        utils.stop_waiting_cursor()
 
     @utils.general_exception_handler
     def import_wqual_lab_from_interlab4(self):
@@ -597,7 +597,7 @@ class midvatten(object):
                             pass
             else: 
                 utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
-        QApplication.restoreOverrideCursor()    
+        utils.stop_waiting_cursor()
         
     @utils.general_exception_handler
     def import_leveloggerdata(self): 
@@ -633,7 +633,7 @@ class midvatten(object):
                             pass
             else: 
                 utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
-        QApplication.restoreOverrideCursor()  
+        utils.stop_waiting_cursor()
 
     @utils.general_exception_handler
     def import_hobologgerdata(self):
@@ -666,13 +666,13 @@ class midvatten(object):
                             pass
             else:
                 utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", "You have to select database first!"))
-        QApplication.restoreOverrideCursor()
+        utils.stop_waiting_cursor()
 
 
     def load_data_domains(self):
         #utils.pop_up_info(msg='This feature is not yet implemented',title='Hold on...')
         #return
-        QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        utils.start_waiting_cursor()
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms)#verify midv settings are loaded
         utils.MessagebarAndLog.info(log_msg=ru(QCoreApplication.translate("Midvatten", 'load_data_domains err_flag: %s'))%str(err_flag))
         if err_flag == 0:
@@ -680,7 +680,7 @@ class midvatten(object):
             err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(qgis.utils.iface, self.ms, d_domain_tables)#verify none of the tables are already loaded and in edit mode
             if err_flag == 0:
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict,'Midvatten_data_domains')
-        QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+        utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
     def loadthelayers(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
@@ -688,9 +688,9 @@ class midvatten(object):
             sanity = utils.Askuser("YesNo", ru(QCoreApplication.translate("Midvatten", """This operation will load default layers ( with predefined layout, edit forms etc.) from your selected database to your qgis project.\n\nIf any default Midvatten DB layers already are loaded into your qgis project, then those layers first will be removed from your qgis project.\n\nProceed?""")), ru(QCoreApplication.translate("Midvatten", 'Warning!')))
             if sanity.result == 1:
                 #show the user this may take a long time...
-                QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+                utils.start_waiting_cursor()
                 LoadLayers(qgis.utils.iface, self.ms.settingsdict)
-                QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+                utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
     @utils.general_exception_handler
     def new_db(self, *args):
@@ -846,9 +846,9 @@ class midvatten(object):
                 utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('prepare_layers_for_qgis2threejs', 'Only supported for spatialite.')))
                 return
 
-            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))#show the user this may take a long time...
+            utils.start_waiting_cursor()#show the user this may take a long time...
             PrepareForQgis2Threejs(qgis.utils.iface, self.ms.settingsdict)
-            QApplication.restoreOverrideCursor()#now this long process is done and the cursor is back as normal
+            utils.stop_waiting_cursor()#now this long process is done and the cursor is back as normal
 
     def project_created(self):
         self.reset_settings()
@@ -883,7 +883,7 @@ class midvatten(object):
         if err_flag == 0:
             QApplication.setOverrideCursor(Qt.WaitCursor)
             db_utils.sql_alter_db('vacuum')
-            QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
 
     def waterqualityreport(self):
         err_flag = utils.verify_msettings_loaded_and_layer_edit_mode(self.iface, self.ms)#verify midv settings are loaded
@@ -951,7 +951,7 @@ class midvatten(object):
         """ Counts the number of rows for all tables in the database """
         QApplication.setOverrideCursor(Qt.WaitCursor)
         utils.calculate_db_table_rows()
-        QApplication.restoreOverrideCursor()
+        utils.stop_waiting_cursor()
 
     @utils.general_exception_handler
     def list_of_obsids_from_selected_features(self):

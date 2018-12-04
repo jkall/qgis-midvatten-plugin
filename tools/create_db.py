@@ -43,14 +43,14 @@ class NewDb(object):
     def create_new_spatialite_db(self, verno, user_select_CRS='y', EPSG_code='4326', delete_srids=True):  #CreateNewDB(self, verno):
         """Open a new DataBase (create an empty one if file doesn't exists) and set as default DB"""
 
-        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+        utils.stop_waiting_cursor()
         set_locale = self.ask_for_locale()
-        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+        utils.start_waiting_cursor()
 
         if user_select_CRS=='y':
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
-            qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+            utils.start_waiting_cursor()
         else:
             EPSGID=EPSG_code
 
@@ -59,25 +59,17 @@ class NewDb(object):
         # If a CRS is selectd, go on and create the database
 
         #path and name of new db
-        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
-        dbpath = qgis.PyQt.QtWidgets.QFileDialog.getSaveFileName(parent=None, caption="New DB",
+        utils.stop_waiting_cursor()
+        dbpath = ru(utils.get_save_file_name_no_extension(parent=None, caption="New DB",
                                                                     directory="midv_obsdb.sqlite",
-                                                                    filter="Spatialite (*.sqlite)")
-        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+                                                                    filter="Spatialite (*.sqlite)"))
 
-        if not dbpath:
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
-            return ''
-        else:
-            dbpath = ru(dbpath[0])
+        utils.start_waiting_cursor()
 
-        #create Spatialite database
-
-        #delete the file if exists
         if os.path.exists(dbpath):
             utils.MessagebarAndLog.critical(
                 bar_msg=ru(QCoreApplication.translate('NewDb', 'A database with the chosen name already existed. Cancelling...')))
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             return ''
 
         self.db_settings = ru(utils.anything_to_string_representation({'spatialite': {'dbpath': dbpath}}))
@@ -90,7 +82,7 @@ class NewDb(object):
         except Exception as e:
             utils.MessagebarAndLog.critical(bar_msg=ru(QCoreApplication.translate('NewDb', "Impossible to connect to selected DataBase, see log message panel")), log_msg=ru(QCoreApplication.translate('NewDb', 'Msg:\n') + str(e)))
             #utils.pop_up_info("Impossible to connect to selected DataBase")
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             return ''
         d =dbconnection.connector
         #First, find spatialite version
@@ -99,7 +91,7 @@ class NewDb(object):
         # then the syntax defines a Midvatten project db according to the loaded .sql-file
         if not int(versionstext[0][0]) > 3: # which file to use depends on spatialite version installed
             utils.pop_up_info(ru(QCoreApplication.translate('NewDb', "Midvatten plugin needs spatialite4.\nDatabase can not be created")))
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             return ''
 
         filenamestring = "create_db.sql"
@@ -158,18 +150,18 @@ class NewDb(object):
         AddLayerStyles(dbpath)
         """
 
-        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+        utils.stop_waiting_cursor()
 
     def populate_postgis_db(self, verno, user_select_CRS='y', EPSG_code='4326'):
 
-        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+        utils.stop_waiting_cursor()
         set_locale = self.ask_for_locale()
-        qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+        utils.start_waiting_cursor()
 
         if user_select_CRS=='y':
-            qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+            utils.stop_waiting_cursor()
             EPSGID=str(self.ask_for_CRS(set_locale)[0])
-            qgis.PyQt.QtWidgets.QApplication.setOverrideCursor(qgis.PyQt.QtCore.Qt.WaitCursor)
+            utils.start_waiting_cursor()
         else:
             EPSGID=EPSG_code
 
@@ -247,7 +239,7 @@ class NewDb(object):
         #Finally add the layer styles info into the data base
         AddLayerStyles(dbpath)
         """
-        qgis.PyQt.QtWidgets.QApplication.restoreOverrideCursor()
+        utils.stop_waiting_cursor()
 
     def replace_words(self, line, replace_word_replace_with):
         for replace_word, replace_with in replace_word_replace_with:
