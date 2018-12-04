@@ -695,8 +695,9 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             settings['color'] = settings.get('color', self.Colors[Typ])
             settings['hatch'] = settings.get('hatch', self.Hatches[Typ])
 
-            plotxleftbarcorner = [i - self.barwidth/2 for i in self.plotx[Typ]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
-            self.p.append(self.secax.bar(plotxleftbarcorner, self.plotbarlength[Typ], bottom=self.plotbottom[Typ], **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
+            plotxleftbarcorner = [float(i) - float(self.barwidth)/2.0 for i in self.plotx[Typ]]#subtract half bar width from x position (x position is stored as bar center in self.plotx)
+            print("barwidth {} self.plotx[Typ] {}".format(str(self.barwidth), self.plotx))
+            self.p.append(self.secax.bar(plotxleftbarcorner, self.plotbarlength[Typ], bottom=self.plotbottom[Typ], align='edge', **settings))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)
             self.Labels.append(Typ)
 
     def plot_obs_lines_data(self):
@@ -832,7 +833,7 @@ class SectionPlot(qgis.PyQt.QtWidgets.QDockWidget, Ui_SecPlotDock):#the Ui_SecPl
             obsid_Axes_bar = copy.deepcopy(self.secplot_templates.loaded_template['obsid_Axes_bar'])
             obsid_Axes_bar['width'] = obsid_Axes_bar.get('width', self.barwidth)
             obsid_Axes_bar['bottom'] = obsid_Axes_bar.get('bottom', bottoms)
-            self.p.append(self.secax.bar(plotxleftbarcorner, barlengths, **obsid_Axes_bar))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
+            self.p.append(self.secax.bar(plotxleftbarcorner, barlengths, align='edge', **obsid_Axes_bar))#matplotlib.pyplot.bar(left, height, width=0.8, bottom=None, hold=None, **kwargs)#plot empty bars
             if plot_labels==2:#only plot the obsid as annotation if plot_labels is 2, i.e. if checkbox is activated
                 for m,n,o in zip(self.x_id,self.z_id,self.selected_obsids):#change last arg to the one to be written in plot
                     text = self.secax.annotate(o, xy=(m,n), **self.secplot_templates.loaded_template['obsid_Axes_annotate'])

@@ -58,7 +58,7 @@ import midvsettingsdialog
 from piper import PiperPlot
 from export_data import ExportData
 import db_utils
-from qgis.core import QgsWkbTypes
+from qgis.core import QgsWkbTypes, QgsVectorLayer
 #import profilefromdem
 
 
@@ -793,6 +793,11 @@ class midvatten(object):
             return
 
         SectionLineLayer = qgis.utils.iface.mapCanvas().currentLayer()#MUST BE LINE VECTOR LAYER WITH SAME EPSG as MIDV_OBSDB AND THERE MUST BE ONLY ONE SELECTED FEATURE
+        if not isinstance(SectionLineLayer, QgsVectorLayer):
+            utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten",
+                                                                               'You must activate the vector line layer that defines the section.'))
+            raise utils.UsageError()
+
         msg = None
         nrofselected = SectionLineLayer.selectedFeatureCount()
         if nrofselected == 1:#First verify only one feature is selected in the active layer...
@@ -803,7 +808,7 @@ class midvatten(object):
                     pass
                 else:
                     utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer that defines the section.'))
-                    error = True
+                    raise utils.UsageError()
         else:
             utils.MessagebarAndLog.critical(bar_msg=QCoreApplication.translate("Midvatten", 'You must activate the vector line layer and select exactly one feature that defines the section'))
             error = True
