@@ -46,6 +46,7 @@ import os
 import qgis.utils
 import tempfile
 import time
+from PyQt5.QtWebKitWidgets import QWebView
 from qgis.PyQt import QtCore, QtGui, uic, QtWidgets
 from collections import OrderedDict
 from contextlib import contextmanager
@@ -262,7 +263,7 @@ class HtmlDialog(QtWidgets.QDialog):
 
     def setupUi(self, title, filepath):
         self.resize(600, 500)
-        self.webView = QtWebKit.QWebView()
+        self.webView = QWebView()
         self.setWindowTitle(title)
         self.verticalLayout= QtWidgets.QVBoxLayout()
         self.verticalLayout.setSpacing(2)
